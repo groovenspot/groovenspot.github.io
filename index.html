@@ -63,6 +63,7 @@
   .btn.primary{background:var(--fire);color:#2a0f04;box-shadow:0 12px 34px rgba(255,77,0,.4)}
   .btn.ghost{background:rgba(255,255,255,.08);border:1px solid var(--line);color:#fff;backdrop-filter:blur(8px)}
   .btn.mini{padding:10px 14px;font-size:13px;border-radius:11px}
+  .btn.danger{background:linear-gradient(120deg,#ff5a5a,#b01515);color:#fff;box-shadow:0 8px 22px rgba(255,90,90,.3)}
 
   /* TICKER / STATS */
   .ticker{overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(255,77,0,.07);padding:10px 0;font-size:13px;font-weight:800;letter-spacing:.06em}
@@ -247,6 +248,8 @@
   .adminLink{margin-top:10px;display:inline-block;font-size:11px;color:#6d6266;text-decoration:underline;cursor:pointer}
 
   /* BGM + NAV */
+  #scDock{position:fixed;left:12px;right:12px;bottom:150px;z-index:54;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:#120d0f}
+  #scDock iframe{display:block;width:100%;height:88px;border:0}
   .bgm{position:fixed;right:14px;bottom:96px;z-index:55;display:flex;align-items:center;gap:8px;background:rgba(21,16,16,.9);border:1px solid var(--line);color:var(--txt);font-family:inherit;font-size:12px;font-weight:800;padding:11px 15px;border-radius:100px;box-shadow:var(--shadow);cursor:pointer;backdrop-filter:blur(14px)}
   .bgm .eq{display:inline-flex;align-items:flex-end;gap:2px;height:14px}
   .bgm .eq i{width:3px;height:5px;border-radius:2px;background:var(--orange)}
@@ -337,6 +340,27 @@
   .cpTicket .usedmark{display:none;position:absolute;inset:0;background:rgba(255,255,255,.72);color:#b00020;font-size:28px;font-weight:900;align-items:center;justify-content:center;transform:rotate(-12deg)}
   .cpTicket.used .usedmark{display:flex}
 
+  /* ===== 게시판 ===== */
+  #board .cmt{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+  .cmt .ch{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-bottom:5px}
+  .cmt .cn{font-weight:800;color:var(--gold)}
+  .cmt .cx{font-size:13.5px;line-height:1.6;word-break:break-word;white-space:pre-wrap}
+  .cmt .cdel{display:none;background:rgba(255,90,90,.15);color:#ff9d9d;border:none;border-radius:8px;padding:4px 9px;font-weight:900;cursor:pointer;font-family:inherit;font-size:11px}
+  body.admin .cmt .cdel{display:inline-block}
+  .bdForm textarea.minput{min-height:72px;resize:vertical}
+  .bdMore{width:100%;padding:11px;border-radius:12px;border:1px dashed var(--line);background:none;color:var(--muted);font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer}
+
+  /* ===== 신청곡 음악검색 ===== */
+  .rqres{display:none;max-height:225px;overflow-y:auto;margin:-6px 0 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
+  .rqres.show{display:block}
+  .rqitem{display:flex;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px dashed var(--line);cursor:pointer}
+  .rqitem:last-child{border-bottom:none}
+  .rqitem:active{background:var(--card-2)}
+  .rqitem .cover{width:40px;height:40px;border-radius:8px;background:var(--card);flex:0 0 40px;object-fit:cover;display:grid;place-items:center;font-size:16px}
+  .rqitem .ti{font-size:13px;font-weight:800;line-height:1.3}
+  .rqitem .ar{font-size:11.5px;color:var(--muted)}
+  .rqhint{padding:12px;text-align:center;font-size:12px;color:var(--muted)}
+
   /* ===== FAQ ===== */
   .faqi{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
   .faqi summary{list-style:none;cursor:pointer;padding:15px 16px;font-weight:800;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
@@ -355,6 +379,13 @@
   .g1{background:radial-gradient(120% 120% at 30% 20%,rgba(255,59,92,.25),#151013)}
   .g2{background:radial-gradient(120% 120% at 70% 20%,rgba(161,91,255,.25),#151013)}
   .g3{background:radial-gradient(120% 120% at 50% 80%,rgba(255,122,26,.25),#151013)}
+  .igwrap{display:none;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px;margin-bottom:18px;-webkit-overflow-scrolling:touch}
+  .igwrap.show{display:flex}
+  .igwrap::-webkit-scrollbar{display:none}
+  .igcard{flex:0 0 280px;height:400px;scroll-snap-align:start;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#0d0a0b}
+  .igcard iframe{width:100%;height:100%;border:0;display:block}
+  .igTitle{display:none;font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin:0 0 10px}
+  .igTitle.show{display:block}
   .gal .gph.hasimg{border:1px solid var(--line);padding:0;background-size:cover;background-position:center;cursor:pointer}
   .gal .gph.hasimg .em,.gal .gph.hasimg .gtxt{display:none}
   .galAdminGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
@@ -445,13 +476,6 @@
   </header>
 
   <div class="ticker"><div class="tk">🔥 이번 주 금요일 GUEST DJ SORA · 💜 3F EDM ZONE 포토존 오픈 · 🍾 바틀세트 서비스 샴페인 증정 · 🎂 버스데이 케이크 서비스 · 📅 연중무휴 · 365일 OPEN · 🔥 이번 주 금요일 GUEST DJ SORA · 💜 3F EDM ZONE 포토존 오픈 · 🍾 바틀세트 서비스 샴페인 증정</div></div>
-
-  <section class="stats">
-    <div class="stat"><div class="num">2</div><div class="lbl">플로어</div></div>
-    <div class="stat"><div class="num">2</div><div class="lbl">장르 존</div></div>
-    <div class="stat"><div class="num">32</div><div class="lbl">혼술 H석</div></div>
-    <div class="stat"><div class="num">40+</div><div class="lbl">테이블·좌석</div></div>
-  </section>
 
   <!-- ZONES -->
   <section class="sec" id="zones">
@@ -582,18 +606,6 @@
 
   <div class="divider"></div>
 
-  <!-- COUPON -->
-  <section class="sec" id="coupon">
-    <div class="cpcard">
-      <span class="em">🥃</span>
-      <h3 id="cpTitle">웰컴샷 쿠폰</h3>
-      <p id="cpDesc">오늘 밤 입장 시 웰컴샷 1잔 무료! 버튼을 눌러 오늘의 쿠폰을 발급받으세요.</p>
-      <button class="btn primary" type="button" id="cpBtn">🎁 쿠폰 받기</button>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
   <!-- FAQ -->
   <section class="sec" id="faq">
     <p class="eyebrow">FAQ</p>
@@ -640,6 +652,8 @@
     <p class="eyebrow">Gallery</p>
     <h2 class="title" id="galTitle">매장 갤러리</h2>
     <p class="subtitle" id="galSub">사진 준비중 — 곧 실제 매장 사진으로 채워집니다.</p>
+    <p class="igTitle" id="igTitle">📸 인스타 최신 게시물 · 옆으로 넘겨보세요</p>
+    <div class="igwrap" id="igSlider"></div>
     <div class="gal">
       <a class="gph g1" href="https://www.instagram.com/groovenspot/" target="_blank" rel="noopener"><span class="em">📷</span><span class="gtxt">2F 힙합존</span></a>
       <a class="gph g2" href="https://www.instagram.com/groovenspot/" target="_blank" rel="noopener"><span class="em">📷</span><span class="gtxt">3F EDM존</span></a>
@@ -653,6 +667,22 @@
 
   <div class="divider"></div>
 
+  <!-- BOARD (방명록) -->
+  <section class="sec" id="board">
+    <p class="eyebrow">Guestbook</p>
+    <h2 class="title" id="bdTitle">손님 게시판</h2>
+    <p class="subtitle" id="bdSub">오늘 밤 어땠나요? 후기·인사를 자유롭게 남겨주세요. (실시간 공유)</p>
+    <div id="bdList"></div>
+    <div class="card bdForm">
+      <input type="text" class="minput" id="bdNick" maxlength="12" placeholder="닉네임" />
+      <textarea class="minput" id="bdText" maxlength="200" placeholder="내용을 입력하세요 (200자)"></textarea>
+      <button class="btn primary full" type="button" id="bdSend">등록하기</button>
+      <p class="form-note" id="bdNote">모두에게 보이는 공개 게시판이에요 · 전화번호 등 개인정보는 남기지 마세요 · 도배 방지를 위해 1분에 1개씩 등록됩니다</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
   <!-- INFO -->
   <section class="sec" id="info">
     <p class="eyebrow">Find us</p>
@@ -662,6 +692,7 @@
       <a class="info-row" href="https://map.naver.com/v5/search/부산%20부산진구%20중앙대로680번가길%2052" target="_blank" rel="noopener"><div class="ic">📍</div><div class="t"><small>주소 · 지도 보기</small><b>부산 부산진구 중앙대로680번가길 52 (2·3층)</b></div></a>
       <a class="info-row" href="tel:050713015970"><div class="ic">📞</div><div class="t"><small>예약 · 문의 전화</small><b>0507-1301-5970</b></div></a>
       <a class="info-row" href="https://www.instagram.com/groovenspot/" target="_blank" rel="noopener"><div class="ic">📷</div><div class="t"><small>인스타그램 (예약 DM)</small><b>@groovenspot</b></div></a>
+      <a class="info-row" href="https://on.soundcloud.com/IWtEmqOHfTecbn1cBI" target="_blank" rel="noopener"><div class="ic">☁️</div><div class="t"><small id="scSmall">사운드클라우드 (공식 믹스)</small><b>Groove &amp; Spot Official</b></div></a>
       <a class="info-row" href="https://pf.kakao.com/" target="_blank" rel="noopener"><div class="ic">💬</div><div class="t"><small>카카오톡 채널</small><b>채널 연결 필요</b></div></a>
       <a class="info-row" href="#" id="a2hRow"><div class="ic">📲</div><div class="t"><small id="a2hSm">앱처럼 사용하기</small><b id="a2hB">홈 화면에 추가하는 방법</b></div></a>
     </div>
@@ -683,23 +714,6 @@
   <button type="button" data-l="en">🇺🇸 English</button>
   <button type="button" data-l="ja">🇯🇵 日本語</button>
   <button type="button" data-l="zh">🇨🇳 中文</button>
-</div>
-
-<!-- COUPON MODAL -->
-<div class="ov center" id="cpOv">
-  <div class="modal">
-    <div class="cpTicket" id="cpTicket">
-      <h4>WELCOME SHOT</h4>
-      <div class="cpd" id="cpD1">1잔 무료 · 입장 시 직원에게 이 화면을 보여주세요</div>
-      <div class="cpcode" id="cpCode">GS-0000-XXXX</div>
-      <div class="cpd" id="cpD2">오늘만 유효</div>
-      <div class="usedmark" id="cpUsedMark">사용완료</div>
-    </div>
-    <div class="mrow2">
-      <button class="btn ghost mini" type="button" id="cpClose">닫기</button>
-      <button class="btn primary mini" type="button" id="cpUse">직원 확인 · 사용처리</button>
-    </div>
-  </div>
 </div>
 
 <button class="bgm" id="bgmBtn" type="button"><span class="eq"><i></i><i></i><i></i></span><b id="bgmLabel">BGM</b></button>
@@ -738,7 +752,8 @@
   <div class="modal">
     <h3 id="rqT">🎵 신청곡 보내기</h3>
     <p class="msub" id="rqS">DJ 인스타 DM으로 전달돼요. 오늘 분위기에 맞으면 틀어드립니다!</p>
-    <input type="text" class="minput" id="rqSong" placeholder="곡명" />
+    <input type="text" class="minput" id="rqSong" placeholder="곡명 검색 (또는 직접 입력)" autocomplete="off" />
+    <div class="rqres" id="rqResults"></div>
     <input type="text" class="minput" id="rqArtist" placeholder="아티스트" />
     <div class="mrow2"><button class="btn ghost mini" type="button" id="rqClose">닫기</button><button class="btn primary mini" type="button" id="rqSend">DM으로 보내기</button></div>
   </div>
@@ -838,7 +853,8 @@
       <div class="rng"><span>2F BPM</span><input type="range" id="bpm2" min="80" max="112" value="92"><b id="bpm2v">92</b></div>
       <div class="rng"><span>3F BPM</span><input type="range" id="bpm3" min="118" max="140" value="126"><b id="bpm3v">126</b></div>
       <div class="rng"><span>볼륨</span><input type="range" id="bgmVol" min="0" max="40" value="17"><b id="bgmVolV">17%</b></div>
-      <p class="msub" style="margin:10px 0 6px">🎧 음원 URL (선택) — 넣으면 합성 비트 대신 이 음원이 재생돼요 (mp3 등 직접 링크)</p>
+      <p class="msub" style="margin:10px 0 6px">🎧 음원 URL (선택) — mp3 직접 링크 또는 <b>SoundCloud</b> 트랙/플레이리스트 링크 지원. 넣으면 합성 비트 대신 재생돼요.</p>
+      <div class="mrow2" style="margin-bottom:8px"><button class="btn ghost mini" type="button" id="scFill">☁️ 공식 SoundCloud 채우기</button></div>
       <div class="aprow"><span style="flex:0 0 26px;font-weight:800;font-size:12px;align-self:center">2F</span><input class="grow" type="url" id="bgmUrl2" placeholder="https://…/hiphop-mix.mp3"></div>
       <div class="aprow"><span style="flex:0 0 26px;font-weight:800;font-size:12px;align-self:center">3F</span><input class="grow" type="url" id="bgmUrl3" placeholder="https://…/edm-mix.mp3"></div>
       <button class="btn primary mini" type="button" id="bgmSave" style="width:100%">BGM 설정 저장</button>
@@ -901,11 +917,24 @@
       <button class="btn primary mini" type="button" id="bkAdd" style="width:100%">장부에 추가 (+테이블 자동 ‘게스트’ 표시)</button>
     </div>
 
+    <div class="apsec"><h4>📸 인스타 게시물 연동 <span style="font-weight:400;font-size:11px;color:var(--muted)">(갤러리 상단 가로 슬라이드 · 실시간 반영)</span></h4>
+      <p class="msub" style="margin-bottom:10px">@groovenspot 게시물·릴스의 링크를 등록하면 손님 갤러리에 임베드돼요.<br>인스타 앱: 게시물 → ⋯ → <b>링크 복사</b></p>
+      <div id="igAdminList"></div>
+      <div class="aprow"><input class="grow" type="url" id="igUrl" placeholder="https://www.instagram.com/p/... 또는 /reel/..."></div>
+      <button class="btn primary mini" type="button" id="igAdd" style="width:100%">게시물 추가 (최대 8개)</button>
+    </div>
+
     <div class="apsec"><h4>🖼 갤러리 관리 <span style="font-weight:400;font-size:11px;color:var(--muted)">(최대 9장 · 자동 압축 · 손님 화면 실시간 반영)</span></h4>
       <div class="galAdminGrid" id="galAdminList"></div>
       <input type="file" id="galFile" accept="image/*" multiple style="display:none">
       <button class="btn primary mini" type="button" id="galAddBtn" style="width:100%">📷 사진 추가 (사진첩에서 선택)</button>
       <p class="msub" style="margin:10px 0 0" id="galNote">동기화가 켜져 있어야 손님 화면에도 사진이 보여요.</p>
+    </div>
+
+    <div class="apsec"><h4>💬 게시판 관리 <span style="font-weight:400;font-size:11px;color:var(--muted)">(손님 글 삭제·게시판 ON/OFF)</span></h4>
+      <div class="mrow2" style="margin-bottom:10px"><button class="btn primary mini" type="button" id="bdOnBtn">게시판 ON</button><button class="btn ghost mini" type="button" id="bdOffBtn">OFF (숨김)</button></div>
+      <p class="msub" style="margin-bottom:8px">글 삭제는 아래 게시판 섹션에서 각 글의 ✕ 버튼으로 하세요.</p>
+      <button class="btn danger mini" type="button" id="bdClear" style="width:100%">🗑 게시판 전체 비우기</button>
     </div>
 
     <div class="apsec"><h4>👥 일반관리자 계정 <span style="font-weight:400;font-size:11px;color:var(--muted)">(현황 열람 + 라인업·BGM 수정 권한)</span></h4>
@@ -925,7 +954,9 @@
     </div>
 
     <div class="apsec"><h4>🧹 초기화</h4>
-      <div class="mrow2"><button class="btn ghost mini" type="button" id="apReset">전 테이블 ‘가능’으로</button><button class="btn ghost mini" type="button" id="apLogout">로그아웃</button></div>
+      <div class="mrow2" style="margin-bottom:12px"><button class="btn ghost mini" type="button" id="apReset">전 테이블 ‘가능’으로</button><button class="btn ghost mini" type="button" id="apLogout">로그아웃</button></div>
+      <button class="btn danger mini" type="button" id="wipeSales" style="width:100%">💥 매출 기록 영구 삭제 (판매·게스트)</button>
+      <p class="msub" style="margin:10px 0 0">판매·게스트로 표시된 모든 기록을 영구 삭제합니다. 이용중·마감·계정·타임테이블 등은 유지돼요.<br>⚠️ 복구 불가 — 단, <b>삭제 이전에 복사해둔 백업 코드</b>에는 남아있으니, 완전 삭제를 원하면 삭제 후 이전 백업을 폐기하고 새 백업을 만드세요.</p>
     </div>
   </div>
 </div>
@@ -954,6 +985,9 @@ var DEFAULT_STATE = {
   bgm: {bpm2:92,bpm3:126,vol:17,url2:"",url3:""},
   gallery: {id:"",ts:0},
   galItems: [],
+  board: {id:""},
+  boardOn: true,
+  igPosts: [],
   book: [],
   tables: {
     "3F:T4":{st:"sold",md:"소라",memo:""},
@@ -978,8 +1012,9 @@ function saveState(){try{localStorage.setItem('gs_state_v1',JSON.stringify(STATE
 var STATE = loadState() || JSON.parse(JSON.stringify(DEFAULT_STATE));
 /* 구버전 저장 데이터 마이그레이션 */
 (function(){var D=DEFAULT_STATE;
- ['notice','week','book','waiting','events','mds','crowd','tables','accounts','bgm','gallery','galItems'].forEach(function(k){
+ ['notice','week','book','waiting','events','mds','crowd','tables','accounts','bgm','gallery','galItems','board','igPosts'].forEach(function(k){
    if(STATE[k]===undefined)STATE[k]=JSON.parse(JSON.stringify(D[k]));});
+ if(STATE.boardOn===undefined)STATE.boardOn=true;
  if(STATE.goal===undefined)STATE.goal=D.goal;
  if(!STATE.pw)STATE.pw=D.pw;
 })();
@@ -1006,7 +1041,7 @@ var syncId=null,_pushT=null,_pollT=null;
 function hashSyncId(){var m=(location.hash||'').match(/#s=([A-Za-z0-9\-]+)/);return m?m[1]:null;}
 function shareLink(){return location.href.split('#')[0]+'#s='+syncId;}
 function stripTables(){var o={};for(var k in STATE.tables){var x=STATE.tables[k];o[k]={st:x.st,md:x.md||''};}return o;}
-function payload(){return {v:7,ts:STATE.ts||0,updated:STATE.updated,crowd:STATE.crowd,tables:stripTables(),notice:STATE.notice,week:STATE.week,waiting:STATE.waiting,events:STATE.events,accounts:STATE.accounts,bgm:STATE.bgm,gallery:STATE.gallery};}
+function payload(){return {v:8,ts:STATE.ts||0,updated:STATE.updated,crowd:STATE.crowd,tables:stripTables(),notice:STATE.notice,week:STATE.week,waiting:STATE.waiting,events:STATE.events,accounts:STATE.accounts,bgm:STATE.bgm,gallery:STATE.gallery,board:STATE.board,boardOn:STATE.boardOn,igPosts:STATE.igPosts};}
 function applyRemote(d){
   STATE.ts=d.ts;STATE.updated=d.updated;STATE.crowd=d.crowd||STATE.crowd;STATE.tables=d.tables||{};
   if(d.notice)STATE.notice=d.notice;
@@ -1018,6 +1053,10 @@ function applyRemote(d){
   if(d.gallery&&(d.gallery.id!==(STATE.gallery&&STATE.gallery.id)||d.gallery.ts!==(STATE.gallery&&STATE.gallery.ts))){
     STATE.gallery=d.gallery;try{fetchGallery();}catch(e){}
   }
+  if(d.boardOn!==undefined)STATE.boardOn=d.boardOn;
+  if(d.igPosts){STATE.igPosts=d.igPosts;try{renderIg();}catch(e){}}
+  if(d.board&&d.board.id!==(STATE.board&&STATE.board.id)){STATE.board=d.board;try{fetchBoard();}catch(e){}}
+  try{renderBoardVis();}catch(e){}
   if(staff){
     var a=(STATE.accounts||[]).filter(function(x){return x.id===staff})[0];
     if(!a||!a.ap){forceLogout();toast('계정 승인이 해제되어 로그아웃되었어요');}
@@ -1028,6 +1067,7 @@ function pullSync(){
   if(!syncId)return;
   fetch(SYNC_BASE+'/'+syncId,{cache:'no-store'}).then(function(r){return r.json()})
   .then(function(d){if(d&&d.ts&&d.ts>(STATE.ts||0))applyRemote(d);}).catch(function(){});
+  if(typeof fetchBoard==='function')try{fetchBoard();}catch(e){}
 }
 function pushSync(){
   if(!syncId||!(admin||staff))return;
@@ -1224,6 +1264,7 @@ function setLang(l){
   fillSelects();renderFAQ();
   if(typeof renderTop==='function'){try{renderTop();renderLive();renderTT();}catch(e){}}
   if(typeof renderGallery==='function'){try{renderGallery();}catch(e){}}
+  if(typeof renderBoard==='function'){try{renderBoard();}catch(e){}}
 }
 
 /* ---- 렌더 ---- */
@@ -1352,6 +1393,7 @@ function adminOn(){
   $('lockBtn').textContent='🟢 관리자 ON';
   $('loginOv').classList.remove('show');
   renderMap();renderStats();
+  if(typeof ensureBoard==='function')try{ensureBoard();}catch(e){}
   toast('관리자 모드 ON — 테이블을 탭해 편집하세요');
   document.getElementById('status').scrollIntoView({behavior:'smooth'});
 }
@@ -1433,6 +1475,7 @@ function renderPanel(){
   if(typeof renderEvAdmin==='function'){renderEvAdmin();renderWaiting();renderGoal();}
   if(typeof renderAccts==='function')renderAccts();
   if(typeof renderGalAdmin==='function')renderGalAdmin();
+  if(typeof renderIgAdmin==='function')renderIgAdmin();
   $('rng2').value=STATE.crowd['2F'];$('rng2v').textContent=STATE.crowd['2F']+'%';
   $('rng3').value=STATE.crowd['3F'];$('rng3v').textContent=STATE.crowd['3F']+'%';
   var host=$('mdList');host.innerHTML='';
@@ -1491,6 +1534,18 @@ $('apReset').onclick=function(){
   STATE.tables={};touch();renderMap();renderTop();renderStats();
   toast('전 테이블을 예약 가능으로 초기화했어요');
 };
+/* 💥 매출 기록 영구 삭제 (판매·게스트만, 복구 불가) */
+$('wipeSales').onclick=function(){
+  var n=0;for(var k in STATE.tables){var s=STATE.tables[k].st;if(s==='sold'||s==='guest')n++;}
+  if(!n){toast('삭제할 매출 기록이 없어요');return;}
+  var v=prompt('⚠️ 판매·게스트 기록 '+n+'건을 영구 삭제합니다.\n복구할 수 없습니다. 진행하려면 "삭제" 라고 입력하세요.');
+  if(v!=='삭제'){toast('취소되었습니다');return;}
+  for(var k2 in STATE.tables){var s2=STATE.tables[k2].st;if(s2==='sold'||s2==='guest')delete STATE.tables[k2];}
+  lastChange=null;
+  touch();renderMap();renderTop();renderStats();
+  if(typeof renderMdStats==='function')renderMdStats();
+  toast('매출 기록 '+n+'건 영구 삭제 완료 💥 모든 기기에 반영됩니다');
+};
 
 /* ---- 동기화 버튼들 ---- */
 $('syncOn').onclick=function(){
@@ -1505,6 +1560,7 @@ $('syncOn').onclick=function(){
     syncId=id;STATE.sync={id:id};STATE.ts=Date.now();saveState();
     try{history.replaceState(null,'',location.href.split('#')[0]+'#s='+id);}catch(e){}
     startPolling();updateSyncUI();
+    if(typeof ensureBoard==='function')try{ensureBoard();}catch(e){}
     toast('실시간 동기화 ON 🌐 손님용 링크를 복사해 공유하세요');
   })
   .catch(function(){btn.textContent='동기화 켜기';toast('동기화 서버 연결 실패 — 잠시 후 다시 시도해 주세요');});
@@ -1537,7 +1593,7 @@ $('qrOv').addEventListener('click',function(e){if(e.target===this)this.classList
 function curFloor(){return $('gf3')&&$('gf3').checked?'3F':'2F'}
 function syncFloor(){
   var f=curFloor();document.body.dataset.floor=f;
-  if(playing){$('bgmLabel').textContent=(f==='2F'?'🔥 HIPHOP':'💜 EDM');try{startBgm();}catch(e){}}
+  if(playing){try{startBgm();$('bgmLabel').textContent=bgmLabelTxt();}catch(e){}}
   var sel=$('f-floor');if(sel&&sel.selectedIndex<2)sel.selectedIndex=(f==='2F'?0:1);
   if(typeof renderTT==='function'){try{renderTT();}catch(e){}}
 }
@@ -1606,38 +1662,6 @@ function renderTT(){
   });
 }
 setInterval(function(){try{renderTT();}catch(e){}},60000);
-
-/* ---- 웰컴샷 쿠폰 ---- */
-function todayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function loadCp(){try{var s=localStorage.getItem('gs_coupon_v1');if(s)return JSON.parse(s);}catch(e){}return null;}
-function saveCp(c){try{localStorage.setItem('gs_coupon_v1',JSON.stringify(c));}catch(e){}}
-var CP=loadCp();
-function cpRender(){
-  if(!CP)return;
-  $('cpCode').textContent=CP.code;
-  var d=new Date();
-  $('cpD2').textContent=t('cp.d2')+' · '+(d.getMonth()+1)+'/'+d.getDate();
-  $('cpTicket').classList.toggle('used',!!CP.used);
-}
-$('cpBtn').onclick=function(){
-  var td=todayStr();
-  if(!CP||CP.d!==td){
-    var chars='ABCDEFGHJKMNPQRSTUVWXYZ23456789',c='';
-    for(var i=0;i<4;i++)c+=chars.charAt(Math.floor(Math.random()*chars.length));
-    CP={d:td,code:'GS-'+td.slice(5).replace('-','')+'-'+c,used:false};
-    saveCp(CP);toast(t('j.cpnew'));
-  }
-  cpRender();$('cpOv').classList.add('show');
-};
-$('cpClose').onclick=function(){$('cpOv').classList.remove('show')};
-$('cpOv').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show')});
-$('cpUse').onclick=function(){
-  if(!CP)return;
-  if(CP.used){toast(t('j.cpused'));return;}
-  if(confirm(t('cp.cf'))){
-    CP.used=true;saveCp(CP);cpRender();
-  }
-};
 
 /* ---- 관리자: 공지/타임테이블/장부/MD실적 ---- */
 $('ntOn').onclick=function(){
@@ -1769,13 +1793,13 @@ $('bkAdd').onclick=function(){
  var ext={
  ko:{"sh.b":"📤 공유","sh.done":"링크가 복사됐어요! 친구에게 붙여넣어 보내세요 🔗",
   "ag.q":"만 19세 이상이신가요?","ag.s":"본 페이지는 성인 전용입니다. 입장 시 신분증 확인이 필요합니다.","ag.y":"네, 19세 이상입니다","ag.n":"아니요","ag.deny":"죄송해요, 본 페이지는 만 19세 이상만 이용할 수 있어요. 🙏",
-  "rq.b":"🎵 DJ에게 신청곡 보내기","rq.t":"🎵 신청곡 보내기","rq.s":"DJ 인스타 DM으로 전달돼요. 오늘 분위기에 맞으면 틀어드립니다!","rq.p1":"곡명","rq.p2":"아티스트","rq.send":"DM으로 보내기","rq.done":"신청곡이 복사됐어요! DM에 붙여넣어 보내주세요 🎵","rq.need":"곡명을 입력해 주세요",
+  "rq.b":"🎵 DJ에게 신청곡 보내기","rq.t":"🎵 신청곡 보내기","rq.s":"DJ 인스타 DM으로 전달돼요. 오늘 분위기에 맞으면 틀어드립니다!","rq.p1":"곡명 검색 (또는 직접 입력)","rq.p2":"아티스트","rq.send":"DM으로 보내기","rq.done":"신청곡이 복사됐어요! DM에 붙여넣어 보내주세요 🎵","rq.need":"곡명을 입력해 주세요",
   "wq.lab":"⏳ 현재 웨이팅","wq.team":"팀","wq.btn":"웨이팅 등록하기","wq.t":"⏳ 웨이팅 등록","wq.s":"아래 정보가 복사되고 인스타 DM이 열려요. 붙여넣어 보내주시면 순서대로 안내드립니다.","wq.p1":"성함","wq.p2":"인원 (예: 4명)","wq.send":"웨이팅 신청","wq.done":"웨이팅 정보가 복사됐어요! DM에 붙여넣어 주세요 ⏳","wq.need":"성함을 입력해 주세요",
   "pk.t":"🔥 피크타임","a2h.sm":"앱처럼 사용하기","a2h.b":"홈 화면에 추가하는 방법","a2h.t":"📲 홈 화면에 추가","a2h.s":"앱처럼 아이콘으로 바로 열 수 있어요.","a2h.ok":"확인",
   "ev.today":"오늘","ev.tmr":"내일","cl":"닫기"},
  en:{"sh.b":"📤 Share","sh.done":"Link copied! Send it to your friends 🔗",
   "ag.q":"Are you 19 or older?","ag.s":"This page is for adults only. ID check required at the door.","ag.y":"Yes, I'm 19+","ag.n":"No","ag.deny":"Sorry — this page is for adults aged 19+ only. 🙏",
-  "rq.b":"🎵 Request a song","rq.t":"🎵 Song Request","rq.s":"Sent to the DJ via Instagram DM. If it fits the vibe, we'll play it!","rq.p1":"Song title","rq.p2":"Artist","rq.send":"Send via DM","rq.done":"Request copied! Paste it into the DM 🎵","rq.need":"Please enter a song title",
+  "rq.b":"🎵 Request a song","rq.t":"🎵 Song Request","rq.s":"Sent to the DJ via Instagram DM. If it fits the vibe, we'll play it!","rq.p1":"Search a song (or type it)","rq.p2":"Artist","rq.send":"Send via DM","rq.done":"Request copied! Paste it into the DM 🎵","rq.need":"Please enter a song title",
   "wq.lab":"⏳ Now waiting","wq.team":" grp","wq.btn":"Join the waitlist","wq.t":"⏳ Join Waitlist","wq.s":"Your info gets copied and Instagram opens — paste it into the DM and we'll call you in order.","wq.p1":"Name","wq.p2":"Party size (e.g. 4)","wq.send":"Join waitlist","wq.done":"Waitlist info copied! Paste it into the DM ⏳","wq.need":"Please enter your name",
   "pk.t":"🔥 Peak hours","a2h.sm":"Use like an app","a2h.b":"How to add to Home Screen","a2h.t":"📲 Add to Home Screen","a2h.s":"Open us with one tap, like an app.","a2h.ok":"OK",
   "ev.today":"Tonight","ev.tmr":"Tmrw","cl":"Close"}};
@@ -1837,7 +1861,7 @@ I18N.ja={
  "j.cpnew":"本日のクーポンを発行しました！入場時にご提示ください 🥃","j.cpused":"使用済みのクーポンです",
  "sh.b":"📤 シェア","sh.done":"リンクをコピーしました！友達に送ってください 🔗",
  "ag.q":"19歳以上ですか？","ag.s":"当ページは成人専用です。入場時に身分証の確認が必要です。","ag.y":"はい、19歳以上です","ag.n":"いいえ","ag.deny":"申し訳ありません。当ページは19歳以上の方のみご利用いただけます。🙏",
- "rq.b":"🎵 DJに曲をリクエスト","rq.t":"🎵 曲リクエスト","rq.s":"DJのインスタDMに届きます。今夜の雰囲気に合えばプレイします！","rq.p1":"曲名","rq.p2":"アーティスト","rq.send":"DMで送る","rq.done":"リクエストをコピーしました！DMに貼り付けてください 🎵","rq.need":"曲名を入力してください",
+ "rq.b":"🎵 DJに曲をリクエスト","rq.t":"🎵 曲リクエスト","rq.s":"DJのインスタDMに届きます。今夜の雰囲気に合えばプレイします！","rq.p1":"曲名を検索（直接入力も可）","rq.p2":"アーティスト","rq.send":"DMで送る","rq.done":"リクエストをコピーしました！DMに貼り付けてください 🎵","rq.need":"曲名を入力してください",
  "wq.lab":"⏳ 現在のウェイティング","wq.team":"組","wq.btn":"ウェイティング登録","wq.t":"⏳ ウェイティング登録","wq.s":"情報がコピーされInstagramが開きます。DMに貼り付けて送信いただければ、順番にご案内します。","wq.p1":"お名前","wq.p2":"人数（例：4名）","wq.send":"登録する","wq.done":"コピーしました！DMに貼り付けてください ⏳","wq.need":"お名前を入力してください",
  "pk.t":"🔥 ピークタイム","a2h.sm":"アプリのように使う","a2h.b":"ホーム画面に追加する方法","a2h.t":"📲 ホーム画面に追加","a2h.s":"アイコンからワンタップで開けます。","a2h.ok":"OK",
  "ev.today":"今夜","ev.tmr":"明日","cl":"閉じる",
@@ -1891,7 +1915,7 @@ I18N.zh={
  "j.cpnew":"今日酒券已领取！入场时请出示 🥃","j.cpused":"该酒券已被使用",
  "sh.b":"📤 分享","sh.done":"链接已复制！发给朋友吧 🔗",
  "ag.q":"您已满19岁吗？","ag.s":"本页面仅限成年人。入场时需查验证件。","ag.y":"是，我已满19岁","ag.n":"否","ag.deny":"抱歉，本页面仅限19岁以上成年人使用。🙏",
- "rq.b":"🎵 向DJ点歌","rq.t":"🎵 点歌","rq.s":"通过DJ的Instagram私信送达。合适的话今晚就放！","rq.p1":"歌名","rq.p2":"歌手","rq.send":"通过私信发送","rq.done":"点歌信息已复制！请粘贴到私信 🎵","rq.need":"请输入歌名",
+ "rq.b":"🎵 向DJ点歌","rq.t":"🎵 点歌","rq.s":"通过DJ的Instagram私信送达。合适的话今晚就放！","rq.p1":"搜索歌曲（也可直接输入）","rq.p2":"歌手","rq.send":"通过私信发送","rq.done":"点歌信息已复制！请粘贴到私信 🎵","rq.need":"请输入歌名",
  "wq.lab":"⏳ 当前排队","wq.team":"组","wq.btn":"登记排队","wq.t":"⏳ 登记排队","wq.s":"信息将被复制并打开Instagram。粘贴到私信发送后，我们会按顺序通知您。","wq.p1":"姓名","wq.p2":"人数（例：4位）","wq.send":"登记排队","wq.done":"已复制！请粘贴到私信 ⏳","wq.need":"请输入姓名",
  "pk.t":"🔥 高峰时段","a2h.sm":"像App一样使用","a2h.b":"添加到主屏幕的方法","a2h.t":"📲 添加到主屏幕","a2h.s":"一键打开，像App一样方便。","a2h.ok":"好的",
  "ev.today":"今晚","ev.tmr":"明天","cl":"关闭",
@@ -1907,6 +1931,17 @@ I18N.en["st.sub1"]="🪑 Tables · Stage";I18N.en["st.sub2"]="🍺 Solo Bar H Zo
 I18N.ja["st.sub1"]="🪑 テーブル・ステージ";I18N.ja["st.sub2"]="🍺 一人飲みHゾーン";
 I18N.zh["st.sub1"]="🪑 卡座·舞台";I18N.zh["st.sub2"]="🍺 单人吧台H区";
 APPLY.push(['#sub2main','txt','st.sub1'],['#sub2h','txt','st.sub2']);
+(function(){
+var bd={
+ko:{"bd.t":"손님 게시판","bd.s":"오늘 밤 어땠나요? 후기·인사를 자유롭게 남겨주세요. (실시간 공유)","bd.p1":"닉네임","bd.p2":"내용을 입력하세요 (200자)","bd.send":"등록하기","bd.note":"모두에게 보이는 공개 게시판이에요 · 전화번호 등 개인정보는 남기지 마세요 · 1분에 1개씩 등록됩니다","bd.empty":"아직 글이 없어요 — 첫 글을 남겨보세요! ✍️","bd.ready":"게시판 준비중이에요 (관리자 동기화 후 열려요)","bd.anon":"익명","bd.needtext":"내용을 입력해 주세요","bd.rate":"도배 방지 — 1분 뒤에 다시 등록할 수 있어요","bd.done":"등록 완료! 💬","bd.fail":"등록 실패 — 잠시 후 다시 시도해 주세요","bd.now":"방금","bd.min":"분 전","bd.hr":"시간 전"},
+en:{"bd.t":"Guestbook","bd.s":"How was your night? Leave a note — everyone sees it live.","bd.p1":"Nickname","bd.p2":"Write something (200 chars)","bd.send":"Post","bd.note":"Public board — please don't post personal info · 1 post per minute","bd.empty":"No posts yet — be the first! ✍️","bd.ready":"Board opening soon","bd.anon":"Guest","bd.needtext":"Please write something","bd.rate":"Anti-spam — you can post again in a minute","bd.done":"Posted! 💬","bd.fail":"Failed — please try again","bd.now":"now","bd.min":"m ago","bd.hr":"h ago"},
+ja:{"bd.t":"ゲストブック","bd.s":"今夜はどうでしたか？感想を自由にどうぞ。（リアルタイム共有）","bd.p1":"ニックネーム","bd.p2":"内容を入力（200字）","bd.send":"投稿する","bd.note":"公開掲示板です · 電話番号などの個人情報は書かないでください · 投稿は1分に1回","bd.empty":"まだ投稿がありません — 最初のひと言をどうぞ！✍️","bd.ready":"掲示板は準備中です","bd.anon":"名無し","bd.needtext":"内容を入力してください","bd.rate":"連投防止 — 1分後に投稿できます","bd.done":"投稿しました！💬","bd.fail":"失敗しました — もう一度お試しください","bd.now":"たった今","bd.min":"分前","bd.hr":"時間前"},
+zh:{"bd.t":"留言板","bd.s":"今晚玩得怎么样？欢迎留言分享。（实时共享）","bd.p1":"昵称","bd.p2":"输入内容（200字）","bd.send":"发布","bd.note":"公开留言板 · 请勿留下电话等个人信息 · 每分钟限发1条","bd.empty":"还没有留言 — 来抢沙发吧！✍️","bd.ready":"留言板即将开放","bd.anon":"匿名","bd.needtext":"请输入内容","bd.rate":"防刷屏 — 1分钟后可再发布","bd.done":"发布成功！💬","bd.fail":"发布失败，请重试","bd.now":"刚刚","bd.min":"分钟前","bd.hr":"小时前"}};
+['ko','en','ja','zh'].forEach(function(l){Object.keys(bd[l]).forEach(function(k){I18N[l][k]=bd[l][k];});});
+APPLY.push(['#bdTitle','txt','bd.t'],['#bdSub','txt','bd.s'],['#bdNick','ph','bd.p1'],['#bdText','ph','bd.p2'],['#bdSend','txt','bd.send'],['#bdNote','txt','bd.note']);
+I18N.ko["if.r5"]="사운드클라우드 (공식 믹스)";I18N.en["if.r5"]="SoundCloud (official mixes)";I18N.ja["if.r5"]="SoundCloud（公式ミックス）";I18N.zh["if.r5"]="SoundCloud（官方混音）";
+APPLY.push(['#scSmall','txt','if.r5']);
+})();
 I18N.ja["gal.ig"]="📷 Instagramでもっと見る @groovenspot";
 I18N.ko["gal.ig"]="📷 @groovenspot 인스타에서 더 보기";
 I18N.en["gal.ig"]="📷 See more on Instagram @groovenspot";
@@ -1949,7 +1984,49 @@ $('shareBtn').onclick=function(){
   else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){toast(t('sh.done'));});}
 };
 
-/* 신청곡 */
+/* 신청곡 — 음악 검색엔진 (Apple iTunes Search, JSONP·키 불필요) */
+var _jpc=0,_rqT=null;
+function jsonp(url,cb){
+  var name='__gsjp'+(++_jpc),s=document.createElement('script'),done=false;
+  window[name]=function(d){done=true;cb(d);try{delete window[name];}catch(e){window[name]=undefined;}s.remove();};
+  s.src=url+'&callback='+name;
+  s.onerror=function(){if(!done)cb(null);try{delete window[name];}catch(e){}s.remove();};
+  setTimeout(function(){if(!done){try{delete window[name];}catch(e){}s.remove();cb(null);}},6000);
+  document.head.appendChild(s);
+}
+function rqRender(list){
+  var el=$('rqResults');if(!el)return;
+  if(!list||!list.length){el.classList.remove('show');el.innerHTML='';return;}
+  el.innerHTML='';
+  list.slice(0,8).forEach(function(r){
+    var d=document.createElement('div');d.className='rqitem';
+    d.innerHTML=(r.artworkUrl60?'<img class="cover" src="'+r.artworkUrl60+'" alt="">':'<span class="cover">🎵</span>')+
+      '<div><div class="ti">'+r.trackName+'</div><div class="ar">'+r.artistName+'</div></div>';
+    d.addEventListener('click',function(){
+      $('rqSong').value=r.trackName;
+      $('rqArtist').value=r.artistName;
+      el.classList.remove('show');el.innerHTML='';
+    });
+    el.appendChild(d);
+  });
+  el.classList.add('show');
+}
+function rqSearch(term){
+  var el=$('rqResults');
+  el.innerHTML='<div class="rqhint">🔍 검색 중…</div>';el.classList.add('show');
+  jsonp('https://itunes.apple.com/search?media=music&entity=song&limit=8&country=KR&term='+encodeURIComponent(term),function(d){
+    if(($('rqSong').value||'').trim()!==term)return; // 입력이 바뀌었으면 무시
+    if(d&&d.results&&d.results.length)rqRender(d.results);
+    else{el.innerHTML='<div class="rqhint">검색 결과가 없어요 — 직접 입력해 주세요</div>';
+      setTimeout(function(){if(el.querySelector('.rqhint'))el.classList.remove('show');},1600);}
+  });
+}
+$('rqSong').addEventListener('input',function(){
+  var v=(this.value||'').trim();
+  clearTimeout(_rqT);
+  if(v.length<2){rqRender(null);return;}
+  _rqT=setTimeout(function(){rqSearch(v);},450);
+});
 $('reqBtn').onclick=function(){$('reqOv').classList.add('show');};
 $('rqClose').onclick=function(){$('reqOv').classList.remove('show');};
 $('reqOv').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show')});
@@ -2189,6 +2266,89 @@ if($('galAddBtn')){
   });
 }
 
+/* ---- 💬 손님 게시판 (별도 저장소 · 실시간 공유) ---- */
+var BRD=null;
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
+function relT(ts){
+  var d=Date.now()-ts;
+  if(d<60000)return t('bd.now');
+  if(d<3600000)return Math.floor(d/60000)+t('bd.min');
+  if(d<86400000)return Math.floor(d/3600000)+t('bd.hr');
+  var x=new Date(ts);return (x.getMonth()+1)+'/'+x.getDate();
+}
+function renderBoardVis(){
+  var sec=document.getElementById('board');
+  if(sec)sec.style.display=(STATE.boardOn===false)?'none':'';
+}
+function renderBoard(){
+  renderBoardVis();
+  var el=$('bdList');if(!el)return;el.innerHTML='';
+  if(!STATE.board||!STATE.board.id){el.innerHTML='<div class="ttempty">'+t('bd.ready')+'</div>';return;}
+  if(!BRD||!BRD.length){el.innerHTML='<div class="ttempty">'+t('bd.empty')+'</div>';return;}
+  BRD.slice(0,50).forEach(function(c,i){
+    var d=document.createElement('div');d.className='cmt';
+    d.innerHTML='<div class="ch"><span class="cn">'+esc(c.n)+'</span><span>'+relT(c.ts)+
+      ' <button type="button" class="cdel" data-i="'+i+'">✕</button></span></div>'+
+      '<div class="cx">'+esc(c.x)+'</div>';
+    el.appendChild(d);
+  });
+}
+function fetchBoard(cb){
+  var id=STATE.board&&STATE.board.id;
+  if(!id){renderBoard();cb&&cb();return;}
+  fetch(SYNC_BASE+'/'+id,{cache:'no-store'}).then(function(r){return r.json()})
+  .then(function(d){if(d&&d.c)BRD=d.c;renderBoard();cb&&cb();})
+  .catch(function(){cb&&cb();});
+}
+function putBoard(){
+  var id=STATE.board&&STATE.board.id;if(!id)return Promise.reject();
+  return fetch(SYNC_BASE+'/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({v:1,c:BRD||[]})});
+}
+function ensureBoard(){
+  if(!admin||!syncId)return;
+  if(STATE.board&&STATE.board.id)return;
+  fetch(SYNC_BASE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({v:1,c:[]})})
+  .then(function(r){
+    var loc=r.headers.get('Location')||r.headers.get('location');
+    if(!loc&&r.url&&r.url.indexOf(SYNC_BASE+'/')===0)loc=r.url;
+    if(!loc)throw 0;
+    STATE.board={id:loc.split('/').pop()};BRD=[];
+    saveState();touch();renderBoard();
+  }).catch(function(){});
+}
+$('bdSend').onclick=function(){
+  var nick=($('bdNick').value||'').trim()||t('bd.anon');
+  var text=($('bdText').value||'').trim();
+  if(!text){toast(t('bd.needtext'));return;}
+  if(!STATE.board||!STATE.board.id){toast(t('bd.ready'));return;}
+  var last=0;try{last=+localStorage.getItem('gs_bd_last')||0;}catch(e){}
+  if(Date.now()-last<60000){toast(t('bd.rate'));return;}
+  var btn=this;btn.disabled=true;
+  fetchBoard(function(){
+    BRD=BRD||[];
+    BRD.unshift({n:nick.slice(0,12),x:text.slice(0,200),ts:Date.now()});
+    BRD=BRD.slice(0,100);
+    putBoard().then(function(){
+      try{localStorage.setItem('gs_bd_last',String(Date.now()));}catch(e){}
+      $('bdText').value='';renderBoard();toast(t('bd.done'));btn.disabled=false;
+    }).catch(function(){toast(t('bd.fail'));btn.disabled=false;});
+  });
+};
+document.addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('.cdel'):null;
+  if(!b||!admin)return;
+  var i=+b.dataset.i;
+  if(!confirm('이 글을 삭제할까요?'))return;
+  BRD.splice(i,1);
+  putBoard().then(function(){renderBoard();toast('삭제 완료');}).catch(function(){toast('삭제 실패 — 다시 시도해 주세요');});
+});
+if($('bdOnBtn'))$('bdOnBtn').onclick=function(){STATE.boardOn=true;touch();renderBoardVis();toast('게시판 ON 💬');};
+if($('bdOffBtn'))$('bdOffBtn').onclick=function(){STATE.boardOn=false;touch();renderBoardVis();toast('게시판을 숨겼어요');};
+if($('bdClear'))$('bdClear').onclick=function(){
+  if(!confirm('게시판의 모든 글을 삭제할까요? 복구할 수 없습니다.'))return;
+  BRD=[];putBoard().then(function(){renderBoard();toast('게시판을 비웠어요 🗑');}).catch(function(){toast('실패 — 다시 시도해 주세요');});
+};
+
 /* 2F 서브탭: 테이블/스테이지 ↔ H 혼술바존 */
 if($('sub2main')&&$('sub2h')){
   $('sub2main').onclick=function(){
@@ -2200,6 +2360,47 @@ if($('sub2main')&&$('sub2h')){
     $('sub2h').classList.add('on');$('sub2main').classList.remove('on');
   };
 }
+
+/* ---- 📸 인스타 게시물 임베드 (토큰 불필요 공식 embed) ---- */
+function igEmbedUrl(u){
+  var m=String(u).match(/instagram\.com\/(p|reel|reels|tv)\/([A-Za-z0-9_\-]+)/);
+  if(!m)return null;
+  return 'https://www.instagram.com/'+(m[1]==='reels'?'reel':m[1])+'/'+m[2]+'/embed/';
+}
+function renderIg(){
+  var host=$('igSlider'),tt=$('igTitle');if(!host)return;
+  var list=(STATE.igPosts||[]).slice(0,8);
+  host.innerHTML='';
+  var shown=0;
+  list.forEach(function(u){
+    var e=igEmbedUrl(u);if(!e)return;
+    var d=document.createElement('div');d.className='igcard';
+    d.innerHTML='<iframe loading="lazy" src="'+e+'" allowfullscreen></iframe>';
+    host.appendChild(d);shown++;
+  });
+  host.classList.toggle('show',shown>0);
+  if(tt)tt.classList.toggle('show',shown>0);
+}
+function renderIgAdmin(){
+  var el=$('igAdminList');if(!el)return;el.innerHTML='';
+  (STATE.igPosts||[]).forEach(function(u,i){
+    var d=document.createElement('div');d.className='bkrow';
+    var code=(String(u).match(/\/(p|reel|reels|tv)\/([A-Za-z0-9_\-]+)/)||[])[2]||u.slice(-12);
+    d.innerHTML='<b>📸</b> …/'+code;
+    var x=document.createElement('button');x.className='bkx';x.textContent='✕';
+    x.onclick=function(){STATE.igPosts.splice(i,1);touch();renderIg();renderIgAdmin();};
+    d.appendChild(x);el.appendChild(d);
+  });
+  if(!(STATE.igPosts||[]).length)el.innerHTML='<p class="msub" style="margin:0 0 8px">등록된 게시물이 없어요.</p>';
+}
+if($('igAdd'))$('igAdd').onclick=function(){
+  var u=($('igUrl').value||'').trim();
+  if(!igEmbedUrl(u)){toast('인스타그램 게시물/릴스 링크가 아니에요 — 게시물에서 링크 복사를 사용해 주세요');return;}
+  STATE.igPosts=STATE.igPosts||[];
+  if(STATE.igPosts.length>=8){toast('최대 8개까지 등록할 수 있어요 — 오래된 것을 삭제해 주세요');return;}
+  STATE.igPosts.push(u);$('igUrl').value='';
+  touch();renderIg();renderIgAdmin();toast('인스타 게시물 추가 완료 📸');
+};
 
 /* 잠금카드 로그인 버튼 + 직원 자동 로그인 복원 */
 $('lkBtn').onclick=openLogin;
@@ -2214,6 +2415,8 @@ $('lkBtn').onclick=openLogin;
 
 renderNotice();renderTT();renderWaiting();renderEvents();renderPeak();
 renderGallery();fetchGallery();
+renderBoard();fetchBoard();
+renderIg();
 setInterval(renderPeak,60000);
 setLang(L);
 
@@ -2259,22 +2462,37 @@ function applyBgmSettings(){
   if(master)master.gain.value=(s.vol||17)/100;
   if(audioEl)audioEl.volume=Math.min(1,(s.vol||17)/40);
 }
-function stopSources(){if(timer){clearInterval(timer);timer=null;}if(audioEl){try{audioEl.pause();}catch(e){}audioEl=null;}}
+var SC_OFFICIAL='https://on.soundcloud.com/IWtEmqOHfTecbn1cBI';
+function scStart(url){
+  scStop();
+  var d=document.createElement('div');d.id='scDock';
+  d.innerHTML='<iframe allow="autoplay" src="https://w.soundcloud.com/player/?url='+encodeURIComponent(url)+
+    '&auto_play=true&color=%23ff7a1a&show_comments=false&show_user=true&visual=false"></iframe>';
+  document.body.appendChild(d);
+}
+function scStop(){var d=document.getElementById('scDock');if(d)d.remove();}
+function stopSources(){if(timer){clearInterval(timer);timer=null;}if(audioEl){try{audioEl.pause();}catch(e){}audioEl=null;}scStop();}
 function startSynth(){ensureAC();AC.resume&&AC.resume();applyBgmSettings();step=0;nextT=AC.currentTime+0.06;timer=setInterval(tickSched,30);}
 function startBgm(){
   stopSources();
   var s=bgmSettings(),f=curFloor(),url=(f==='2F'?s.url2:s.url3)||'';
+  if(url&&/soundcloud\.com/.test(url)){scStart(url);return;}
   if(url){
     audioEl=new Audio(url);audioEl.loop=true;audioEl.volume=Math.min(1,(s.vol||17)/40);
     audioEl.play().catch(function(){toast('음원 재생 실패 — 합성 비트로 재생합니다 🎧');audioEl=null;startSynth();});
     audioEl&&audioEl.addEventListener('error',function(){if(playing&&!timer){audioEl=null;startSynth();}});
   }else{startSynth();}
 }
+function bgmLabelTxt(){
+  var s=bgmSettings(),f=curFloor(),u=(f==='2F'?s.url2:s.url3)||'';
+  if(/soundcloud\.com/.test(u))return '☁️ MIX';
+  return f==='2F'?'🔥 HIPHOP':'💜 EDM';
+}
 $('bgmBtn').addEventListener('click',function(){
   try{
     if(!playing){
       startBgm();playing=true;document.body.classList.add('playing');
-      $('bgmLabel').textContent=(curFloor()==='2F'?'🔥 HIPHOP':'💜 EDM');
+      $('bgmLabel').textContent=bgmLabelTxt();
       toast('BGM ON · 층을 바꾸면 사운드도 바뀝니다 🎧');
     }else{
       stopSources();playing=false;document.body.classList.remove('playing');
@@ -2292,6 +2510,10 @@ $('bgmBtn').addEventListener('click',function(){
     applyBgmSettings();touch();
   });
 });
+if($('scFill'))$('scFill').onclick=function(){
+  $('bgmUrl2').value=SC_OFFICIAL;$('bgmUrl3').value=SC_OFFICIAL;
+  toast('공식 SoundCloud 링크를 채웠어요 — 저장을 눌러주세요 ☁️');
+};
 if($('bgmSave'))$('bgmSave').onclick=function(){
   STATE.bgm=bgmSettings();
   STATE.bgm.url2=($('bgmUrl2').value||'').trim();
