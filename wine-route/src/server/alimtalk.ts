@@ -34,8 +34,24 @@ async function send(to: string, templateId: string, variables: Record<string, st
   if (!res.ok) throw new Error(`알림톡 발송 실패 ${res.status}: ${await res.text()}`);
 }
 
-export function sendPriceAlimtalk(to: string, v: { wine: string; price: string; target: string; link: string }) {
-  return send(to, process.env.SOLAPI_TEMPLATE_PRICE_ALERT!, { "#{와인}": v.wine, "#{도착가}": v.price, "#{목표가}": v.target, "#{링크}": v.link });
+/** 알림 종류별 템플릿 (승인받은 템플릿 ID). 변수: #{제목}, #{내용}, #{링크} */
+export const ALIMTALK_TEMPLATE_ENV: Record<string, string> = {
+  TARGET: "SOLAPI_TEMPLATE_PRICE_ALERT",
+  DROP: "SOLAPI_TEMPLATE_PRICE_DROP",
+  RESTOCK: "SOLAPI_TEMPLATE_RESTOCK",
+  VINTAGE: "SOLAPI_TEMPLATE_VINTAGE",
+  ALLOCATION: "SOLAPI_TEMPLATE_ALLOCATION",
+  FX: "SOLAPI_TEMPLATE_FX",
+  DIGEST: "SOLAPI_TEMPLATE_DIGEST",
+};
+
+export function alimtalkTemplate(type: string) {
+  const env = ALIMTALK_TEMPLATE_ENV[type];
+  return base() && env ? process.env[env] || null : null;
+}
+
+export function sendGenericAlimtalk(to: string, templateId: string, v: { title: string; body: string; link: string }) {
+  return send(to, templateId, { "#{제목}": v.title, "#{내용}": v.body, "#{링크}": v.link });
 }
 
 export function sendOrderAlimtalk(to: string, v: { wine: string; status: string; seller: string; link: string }) {

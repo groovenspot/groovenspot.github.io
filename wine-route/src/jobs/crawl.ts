@@ -1,7 +1,7 @@
 import { prisma } from "@/server/db";
 import { parseJsonLdOffer } from "@/lib/crawl/jsonld";
 
-const UA = "WineRouteBot/0.1 (+price comparison; contact via site)";
+const UA = "CellarDoorBot/0.1 (+price comparison; contact via site)";
 
 /** JSONLD 셀러의 상품 페이지를 돌며 가격·재고를 갱신합니다. 셀러당 요청 간격 1.5초. */
 export async function runCrawlJob(sellerId?: string, fetchFn: typeof fetch = fetch) {

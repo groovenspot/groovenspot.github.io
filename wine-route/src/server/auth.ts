@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "./db";
 import { sendMail } from "./mail";
+import { attributeSignup } from "./referral";
 
 const COOKIE = "wr_session";
 const SESSION_DAYS = 30;
@@ -21,7 +22,7 @@ export async function requestLoginCode(rawEmail: string) {
   if (recent >= 5) return { ok: false as const, error: "요청이 너무 많습니다. 15분 뒤 다시 시도해 주세요." };
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
   await prisma.loginCode.create({ data: { email, codeHash: hash(`${email}:${code}`), expiresAt: new Date(Date.now() + CODE_MINUTES * 60e3) } });
-  await sendMail(email, `[와인루트] 로그인 코드 ${code}`, `로그인 코드: ${code}\n${CODE_MINUTES}분 안에 입력해 주세요. 요청하지 않았다면 이 메일을 무시하세요.`);
+  await sendMail(email, `[셀러도어] 로그인 코드 ${code}`, `로그인 코드: ${code}\n${CODE_MINUTES}분 안에 입력해 주세요. 요청하지 않았다면 이 메일을 무시하세요.`);
   return { ok: true as const, email };
 }
 
@@ -39,7 +40,12 @@ export async function verifyLoginCode(rawEmail: string, code: string) {
     return { ok: false as const, error: "코드가 맞지 않습니다." };
   }
   await prisma.loginCode.update({ where: { id: row.id }, data: { usedAt: new Date() } });
-  const user = await prisma.user.upsert({ where: { email }, update: {}, create: { email } });
+  let user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    user = await prisma.user.create({ data: { email } });
+    // 공유 카드 링크로 들어온 신규 가입
+    await attributeSignup(user.id, (await cookies()).get("wr_ref")?.value).catch((e) => console.error("referral", e));
+  }
   const token = randomBytes(32).toString("base64url");
   await prisma.session.create({ data: { id: hash(token), userId: user.id, expiresAt: new Date(Date.now() + SESSION_DAYS * 86400e3) } });
   (await cookies()).set(COOKIE, token, {

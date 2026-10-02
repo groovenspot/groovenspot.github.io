@@ -2,7 +2,7 @@
 import { prisma } from "@/server/db";
 import { normEmail, validEmail } from "@/server/auth";
 
-export type FormState = { ok?: boolean; error?: string; message?: string };
+export type FormState = { ok?: boolean; error?: string; message?: string; limit?: boolean };
 
 export async function joinWaitlist(_: FormState, fd: FormData): Promise<FormState> {
   const email = normEmail(String(fd.get("email") ?? ""));

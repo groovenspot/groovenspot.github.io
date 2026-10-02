@@ -38,7 +38,7 @@ export function SellerForm({ seller }: { seller?: Seller }) {
       </div>
       <div className="field"><label className="label" htmlFor="s-cart">장바구니 URL 템플릿 (템플릿 방식일 때: {"{url} {ref} {qty} {clickId} {email} {note}"})</label><input id="s-cart" name="cartTpl" defaultValue={s?.cartTpl ?? ""} placeholder="https://shop.example/cart/add?sku={ref}&qty={qty}&sub={clickId}" /></div>
       <p className="small muted">Shopify 방식은 판매 정보마다 상품 variant ID를 넣어야 장바구니에 담깁니다. 없으면 상품 페이지로 이동합니다. 포스트백에 {"{clickId}"}를 넘겨 받으면 주문 확정·발송이 손님에게 자동으로 알려집니다.</p>
-      <div className="field"><label className="label" htmlFor="s-aff">제휴 링크 템플릿 ({"{url}"}, {"{clickId}"} 치환)</label><input id="s-aff" name="affiliateTpl" defaultValue={s?.affiliateTpl ?? ""} placeholder="{url}?ref=wineroute&sub={clickId}" /></div>
+      <div className="field"><label className="label" htmlFor="s-aff">제휴 링크 템플릿 ({"{url}"}, {"{clickId}"} 치환)</label><input id="s-aff" name="affiliateTpl" defaultValue={s?.affiliateTpl ?? ""} placeholder="{url}?ref=cellardoor&sub={clickId}" /></div>
       <div className="row">
         <label className="check"><input type="checkbox" name="shipsToKorea" defaultChecked={s?.shipsToKorea ?? true} /> 한국 발송</label>
         <label className="check"><input type="checkbox" name="insured" defaultChecked={s?.insured} /> 파손 보험</label>

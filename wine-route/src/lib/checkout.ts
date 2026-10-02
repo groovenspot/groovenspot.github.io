@@ -55,8 +55,8 @@ export function buildCheckoutUrl(i: CheckoutInput): { url: string; prefilled: bo
   if (i.mode === "SHOPIFY_CART" && i.checkoutRef) {
     const origin = new URL(i.website || i.productUrl).origin;
     const u = new URL(`${origin}/cart/${encodeURIComponent(i.checkoutRef)}:${qty}`);
-    u.searchParams.set("ref", "wineroute");
-    u.searchParams.set("attributes[wineroute_click]", i.clickId);
+    u.searchParams.set("ref", "cellardoor");
+    u.searchParams.set("attributes[cellardoor_click]", i.clickId);
     let prefilled = false;
     if (s) {
       const fields: [string, string | null | undefined][] = [

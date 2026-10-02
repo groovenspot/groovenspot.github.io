@@ -65,15 +65,15 @@ export default async function AdminHome() {
         <div className="row between">
           <h2>정기 작업</h2>
           <div className="row">
-            {(["fx", "crawl", "alerts"] as const).map((j) => (
+            {(["fx", "crawl", "alerts", "digest"] as const).map((j) => (
               <form key={j} action={runJobAction}>
                 <input type="hidden" name="job" value={j} />
-                <button className="btn ghost small">{j === "fx" ? "환율 갱신" : j === "crawl" ? "가격 수집" : "가격 알림 확인"} 지금 실행</button>
+                <button className="btn ghost small">{j === "fx" ? "환율 갱신" : j === "crawl" ? "가격 수집" : j === "alerts" ? "찜 알림 확인" : "주간 묶음 발송"} 지금 실행</button>
               </form>
             ))}
           </div>
         </div>
-        <p className="small muted">운영 환경에서는 /api/cron/fx (1시간마다), /api/cron/crawl (주 1회), /api/cron/alerts (매일 환율 갱신 후)를 스케줄러로 호출합니다.</p>
+        <p className="small muted">운영 환경에서는 /api/cron/fx (1시간마다), /api/cron/crawl (6시간마다), /api/cron/alerts (수집 직후), /api/cron/digest (월요일 아침)를 스케줄러로 호출합니다.</p>
         <div className="table-wrap">
           <table className="data">
             <thead><tr><th>시각</th><th>작업</th><th>결과</th><th>내용</th></tr></thead>

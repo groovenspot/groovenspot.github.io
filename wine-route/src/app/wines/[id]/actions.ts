@@ -23,14 +23,17 @@ export async function createAlert(_: FormState, fd: FormData): Promise<FormState
   if (!existing && !isPremium(user)) {
     const { freeAlertLimit } = await getTaxConfig();
     const n = await prisma.priceAlert.count({ where: { userId: user.id, active: true } });
-    if (n >= freeAlertLimit) return { error: `무료 회원은 가격 알림을 ${freeAlertLimit}개까지 걸 수 있습니다. 내 알림에서 기존 알림을 정리하거나 프리미엄으로 바꿔 주세요.` };
+    if (n >= freeAlertLimit) {
+      if (!user.hitWatchLimitAt) await prisma.user.update({ where: { id: user.id }, data: { hitWatchLimitAt: new Date() } });
+      return { error: `무료 회원은 ${freeAlertLimit}개까지 찜할 수 있습니다. 프리미엄은 찜 무제한에 가격 하락·재입고·배정 오픈·환율 알림을 바로 받습니다.`, limit: true };
+    }
   }
   if (channel === "KAKAO" && phone) await prisma.user.update({ where: { id: user.id }, data: { phone } });
   await prisma.priceAlert.upsert({
     where: { userId_wineId_qty_bottleMl: { userId: user.id, wineId, qty, bottleMl } },
     update: { targetPerBottle: target, channel, active: true, notifiedPrice: null },
-    create: { userId: user.id, wineId, qty, bottleMl, targetPerBottle: target, channel },
+    create: { userId: user.id, wineId, qty, bottleMl, targetPerBottle: target, channel, source: String(fd.get("source") ?? "detail") },
   });
   revalidatePath("/me");
-  return { ok: true, message: `병당 ${target.toLocaleString("ko-KR")}원 아래로 내려가면 ${channel === "KAKAO" ? "카카오 알림톡으로" : "이메일로"} 알려드립니다.` };
+  return { ok: true, message: `찜했습니다. 병당 ${target.toLocaleString("ko-KR")}원 이하가 되면 ${channel === "KAKAO" ? "카카오 알림톡으로" : "이메일로"} 알려드립니다.` };
 }

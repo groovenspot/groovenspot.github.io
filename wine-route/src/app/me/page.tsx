@@ -6,6 +6,8 @@ import { ROUTE_LABEL } from "@/lib/engine";
 import { money, sizeLabel, won, ymd } from "@/lib/format";
 import { addPurchase, customerOrderStep, deleteAlert, deletePurchase, markDelivered, toggleAlert } from "./actions";
 import { ProfileForm } from "@/components/ProfileForm";
+import { Spark } from "@/components/Spark";
+import { compareLoaded, loadContext } from "@/server/compare";
 import { InviteForm, RedeemButton } from "@/components/PointsPanel";
 import { balance, isPremium } from "@/server/points";
 import { getCommunityConfig } from "@/server/settings";
@@ -33,12 +35,32 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
     getCommunityConfig(),
   ]);
   const premium = isPremium(user);
+  // 찜한 와인의 지금 도착가와 30일 기록
+  const keys = [...new Set(alerts.map((a) => `${a.wineId}|${a.qty}|${a.bottleMl}`))];
+  const livePrice = new Map<string, number | null>();
+  if (keys.length) {
+    const ctx = await loadContext();
+    const ws = await prisma.wine.findMany({ where: { id: { in: alerts.map((a) => a.wineId) } }, include: { offers: { include: { seller: true } } } });
+    for (const k of keys) {
+      const [wid, q, ml] = k.split("|");
+      const w = ws.find((x) => x.id === wid);
+      const r = w ? compareLoaded(w, Number(q), Number(ml), ctx) : null;
+      livePrice.set(k, r?.best ? Math.round(r.best.perBottle) : null);
+    }
+  }
+  const since = new Date(Date.now() - 30 * 86400e3);
+  const rows = keys.length ? await prisma.watchPrice.findMany({ where: { wineId: { in: alerts.map((a) => a.wineId) }, day: { gte: since } }, orderBy: { day: "asc" } }) : [];
+  const history = new Map<string, (number | null)[]>();
+  for (const r of rows) {
+    const k = `${r.wineId}|${r.qty}|${r.bottleMl}`;
+    history.set(k, [...(history.get(k) ?? []), r.perBottle]);
+  }
 
   return (
     <div className="stack-lg">
       <section className="row between">
         <div className="stack" style={{ gap: 4 }}>
-          <h1 style={{ fontSize: 28 }}>내 알림·기록</h1>
+          <h1 style={{ fontSize: 28 }}>내 찜·주문·기록</h1>
           <p className="muted small">{user.email}{user.nickname ? ` · ${user.nickname}` : ""} · {premium ? `프리미엄 회원 (알림 무제한${user.premiumUntil && user.plan !== "PREMIUM" ? `, ${ymd(user.premiumUntil)}까지` : ""})` : `무료 회원 (알림 ${activeCount}/${tax.freeAlertLimit})`}{user.founding ? " · 초기 회원" : ""}</p>
         </div>
       </section>
@@ -97,6 +119,13 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
         }) : <div className="box"><p className="muted">아직 주문이 없습니다. 와인 상세에서 &lsquo;이 경로로 주문하기&rsquo;를 누르면 여기서 진행 상황을 볼 수 있습니다.</p></div>}
       </section>
 
+      <section className="box tight">
+        <div className="row between">
+          <span>이번 달 직구로 아낀 금액을 카드 한 장으로</span>
+          <Link className="btn ghost small" href="/share?kind=month">월간 결산 카드</Link>
+        </div>
+      </section>
+
       <section className="stack" id="points">
         <h2>포인트</h2>
         <div className="box">
@@ -147,33 +176,52 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
         />
       </section>
 
-      <section className="stack">
-        <h2>가격 알림</h2>
+      <section className="stack" id="watch">
+        <div className="row between">
+          <h2>찜한 와인 {alerts.length ? alerts.length : ""}</h2>
+          <span className="small muted">{premium ? "프리미엄: 찜 무제한 · 모든 알림 즉시" : `무료: 찜 ${activeCount}/${tax.freeAlertLimit} · 가격 하락은 주 1회 묶음`}</span>
+        </div>
         {alerts.length ? (
           <div className="table-wrap">
             <table className="data">
-              <thead><tr><th>와인</th><th>조건</th><th className="r">목표가</th><th className="r">현재 도착가</th><th>방법</th><th>상태</th><th></th></tr></thead>
+              <thead><tr><th>와인</th><th className="r">지금 도착가</th><th className="r">목표가</th><th className="r">남은 금액</th><th>최근 30일</th><th>상태</th><th></th></tr></thead>
               <tbody>
-                {alerts.map((a) => (
-                  <tr key={a.id}>
-                    <td><Link href={`/wines/${a.wineId}?qty=${a.qty}&ml=${a.bottleMl}`}>{a.wine.nameKo}</Link></td>
-                    <td className="small">{a.qty}병 · {sizeLabel(a.bottleMl)}</td>
-                    <td className="r">{won(a.targetPerBottle)}</td>
-                    <td className="r">{a.lastPrice ? won(a.lastPrice) : "다음 확인 때 계산"}</td>
-                    <td className="small">{a.channel === "KAKAO" ? "알림톡" : "이메일"}</td>
-                    <td>{a.active ? <span className="chip ok">켜짐</span> : <span className="chip">꺼짐</span>}{a.notifiedAt && <span className="small muted"> · {ymd(a.notifiedAt)} 발송</span>}</td>
-                    <td className="row" style={{ flexWrap: "nowrap" }}>
-                      <form action={toggleAlert}><input type="hidden" name="id" value={a.id} /><button className="btn ghost small">{a.active ? "끄기" : "켜기"}</button></form>
-                      <form action={deleteAlert}><input type="hidden" name="id" value={a.id} /><button className="btn ghost small">삭제</button></form>
-                    </td>
-                  </tr>
-                ))}
+                {alerts.map((a) => {
+                  const now = livePrice.get(`${a.wineId}|${a.qty}|${a.bottleMl}`) ?? null;
+                  const hist = history.get(`${a.wineId}|${a.qty}|${a.bottleMl}`) ?? [];
+                  return (
+                    <tr key={a.id}>
+                      <td><Link href={`/wines/${a.wineId}?qty=${a.qty}&ml=${a.bottleMl}`}>{a.wine.nameKo}</Link><div className="small muted">{a.qty}병 · {sizeLabel(a.bottleMl)} · {a.channel === "KAKAO" ? "알림톡" : "이메일"}</div></td>
+                      <td className="r">{now !== null ? won(now) : <span className="muted">품절</span>}</td>
+                      <td className="r">{won(a.targetPerBottle)}</td>
+                      <td className="r">{now === null ? "-" : now <= a.targetPerBottle ? <span className="pos">도달</span> : won(now - a.targetPerBottle)}</td>
+                      <td><Spark values={hist} target={a.targetPerBottle} /></td>
+                      <td>{a.active ? <span className="chip ok">알림 켜짐</span> : <span className="chip">꺼짐</span>}{a.notifiedAt && <div className="small muted">{ymd(a.notifiedAt)} 알림</div>}</td>
+                      <td className="row" style={{ flexWrap: "nowrap" }}>
+                        <form action={toggleAlert}><input type="hidden" name="id" value={a.id} /><button className="btn ghost small">{a.active ? "끄기" : "켜기"}</button></form>
+                        <form action={deleteAlert}><input type="hidden" name="id" value={a.id} /><button className="btn ghost small">삭제</button></form>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         ) : (
-          <div className="box"><p className="muted">아직 건 알림이 없습니다. 와인 상세 화면에서 목표 도착가를 정해 알림을 걸어 보세요.</p></div>
+          <div className="box"><p className="muted">아직 찜한 와인이 없습니다. 와인 상세에서 &lsquo;찜하고 알림 받기&rsquo;를 누르면 목표가 도달, 가격 하락을 알려드립니다.</p></div>
         )}
+        <details className="box tight">
+          <summary className="small">알림 종류 (무료·프리미엄)</summary>
+          <table className="taxtable" style={{ marginTop: 8 }}>
+            <tbody>
+              <tr><td>목표가 도달</td><td>무료 찜 {tax.freeAlertLimit}개까지 · 프리미엄 무제한</td></tr>
+              <tr><td>가격 하락 (직전 대비 5% 이상)</td><td>무료 주 1회 묶음 · 프리미엄 즉시</td></tr>
+              <tr><td>재입고·신규 빈티지</td><td>프리미엄 즉시</td></tr>
+              <tr><td>와이너리 배정 판매 시작</td><td>프리미엄 즉시</td></tr>
+              <tr><td>유로·달러 30일 저점</td><td>프리미엄 즉시</td></tr>
+            </tbody>
+          </table>
+        </details>
       </section>
 
       <section className="stack">

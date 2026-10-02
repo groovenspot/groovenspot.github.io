@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import { TaxBreakdown } from "@/components/TaxBreakdown";
 import { AlertForm } from "@/components/AlertForm";
 import { ReviewCard, reviewInclude } from "@/components/ReviewCard";
+import { defaultTarget } from "@/lib/alerts";
 import { FX_SOURCE_LABEL, money, sizeLabel, won, ymd, ymdhm } from "@/lib/format";
 import type { Candidate } from "@/lib/engine";
 
@@ -130,6 +131,7 @@ export default async function WinePage({ params, searchParams }: P) {
               </div>
             </div>
             {result.warnings.map((w) => <div key={w} className="alert">{w}</div>)}
+            {result.best && <div><Link className="btn ghost small" href={`/share?kind=wine&wine=${id}&qty=${qty}&ml=${ml}`}>카드로 저장</Link></div>}
             {!ctx.fx.asOf && <div className="alert bad">환율 정보가 없어 일부 경로를 계산하지 못했습니다.</div>}
           </section>
 
@@ -243,9 +245,9 @@ export default async function WinePage({ params, searchParams }: P) {
           </section>
 
           <section className="box">
-            <h2>가격 알림</h2>
-            <p className="small muted">{qty}병 · {sizeLabel(ml)} 기준 병당 도착가가 목표가 아래로 내려가면 알려드립니다.</p>
-            <AlertForm wineId={id} qty={qty} ml={ml} suggested={result.best ? Math.floor((result.best.perBottle * 0.9) / 1000) * 1000 : 0} loggedIn={!!user} phone={user?.phone ?? null} existingTarget={existing?.active ? existing.targetPerBottle : null} />
+            <h2>{existing?.active ? "찜한 와인" : "찜하고 알림 받기"}</h2>
+            <p className="small muted">{qty}병 · {sizeLabel(ml)} 기준 병당 도착가가 목표가 이하가 되면 알려드립니다. 목표가 기본값은 지금 도착가의 90%입니다.</p>
+            <AlertForm wineId={id} qty={qty} ml={ml} suggested={result.best ? defaultTarget(result.best.perBottle) : 0} loggedIn={!!user} phone={user?.phone ?? null} existingTarget={existing?.active ? existing.targetPerBottle : null} />
           </section>
 
           <section className="box">
@@ -255,7 +257,7 @@ export default async function WinePage({ params, searchParams }: P) {
               <li>배송지는 영문 주소로 적습니다.</li>
               <li>같은 판매자에게 같은 날 산 물품은 합산과세됩니다. 주문을 나눠도 세금은 줄지 않습니다.</li>
               <li>세금은 통관 때 오는 납부 안내에 따라 수령인이 냅니다.</li>
-              <li>결제는 해외 판매처에서 직접 합니다. 와인루트는 대금을 받지 않습니다.</li>
+              <li>결제는 해외 판매처에서 직접 합니다. 셀러도어는 대금을 받지 않습니다.</li>
             </ul>
             <Link href="/guide" className="small">통관 가이드 전체 보기</Link>
           </section>

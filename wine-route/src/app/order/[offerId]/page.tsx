@@ -53,7 +53,7 @@ export default async function OrderPage({ params, searchParams }: P) {
       <section className="stack" style={{ gap: 6 }}>
         <div className="label"><Link href={`/wines/${offer.wineId}?qty=${qty}&ml=${offer.bottleMl}`} style={{ textDecoration: "none" }}>← {offer.wine.nameKo}</Link></div>
         <h1 style={{ fontSize: 28 }}>주문하기</h1>
-        <p className="lede">결제는 판매처에서 손님이 직접 합니다. 와인루트는 결제 화면을 열고 주문 진행 상황을 알려드립니다.</p>
+        <p className="lede">결제는 판매처에서 손님이 직접 합니다. 셀러도어는 결제 화면을 열고 주문 진행 상황을 알려드립니다.</p>
       </section>
 
       <section className="box">

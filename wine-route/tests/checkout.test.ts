@@ -28,7 +28,7 @@ describe("buildCheckoutUrl", () => {
     expect(u.searchParams.get("checkout[shipping_address][country]")).toBe("South Korea");
     expect(u.searchParams.get("checkout[shipping_address][phone]")).toBe("+82 10-1234-5678");
     expect(u.searchParams.get("note")).toContain("P123456789012");
-    expect(u.searchParams.get("attributes[wineroute_click]")).toBe("clk1");
+    expect(u.searchParams.get("attributes[cellardoor_click]")).toBe("clk1");
     expect(r).toMatchObject({ prefilled: true, cart: true });
   });
 

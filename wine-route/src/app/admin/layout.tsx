@@ -10,6 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="stack-lg">
       <nav className="admin-nav" aria-label="관리자 메뉴">
         <Link href="/admin">지표·작업</Link>
+        <Link href="/admin/growth">성장 지표</Link>
         <Link href="/admin/orders">주문</Link>
         <Link href="/admin/community">커뮤니티</Link>
         <Link href="/admin/wines">와인·판매 정보</Link>

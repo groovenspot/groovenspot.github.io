@@ -139,7 +139,7 @@ async function main() {
   for (const s of SELLERS) {
     const { key, shopify, ...data } = s;
     const row = await prisma.seller.create({
-      data: { ...data, checkoutMode: shopify ? "SHOPIFY_CART" : "PRODUCT_PAGE", shipsToKorea: s.shipsToKorea ?? true, insured: s.insured ?? false, website: shopify ? `https://${key}.example.com` : `https://example.com/${key}`, affiliateTpl: "{url}?ref=wineroute&sub={clickId}" },
+      data: { ...data, checkoutMode: shopify ? "SHOPIFY_CART" : "PRODUCT_PAGE", shipsToKorea: s.shipsToKorea ?? true, insured: s.insured ?? false, website: shopify ? `https://${key}.example.com` : `https://example.com/${key}`, affiliateTpl: "{url}?ref=cellardoor&sub={clickId}" },
     });
     sellerIds[key] = row.id;
   }

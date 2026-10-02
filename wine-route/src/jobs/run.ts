@@ -1,9 +1,15 @@
 import { prisma } from "@/server/db";
 import { runFxJob } from "./fx";
 import { runCrawlJob } from "./crawl";
-import { runAlertsJob } from "./alerts";
+import { notifyFxLows, runAlertsJob } from "./alerts";
+import { sendDigests } from "@/server/notify";
 
-export const JOBS = { fx: () => runFxJob(), crawl: () => runCrawlJob(), alerts: () => runAlertsJob() } as const;
+export const JOBS = {
+  fx: async () => [await runFxJob(), await notifyFxLows()].filter(Boolean).join(" · "),
+  crawl: () => runCrawlJob(),
+  alerts: () => runAlertsJob(),
+  digest: () => sendDigests(),
+} as const;
 export type JobName = keyof typeof JOBS;
 
 export async function runJob(name: JobName) {

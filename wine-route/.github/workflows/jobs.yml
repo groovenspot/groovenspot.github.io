@@ -1,15 +1,17 @@
 # 배포한 사이트의 정기 작업을 호출합니다.
-# 저장소 Settings → Secrets에 APP_URL(예: https://wineroute.kr)과 CRON_SECRET을 넣어야 동작합니다.
+# 저장소 Settings → Secrets에 APP_URL(예: https://cellardoor.kr)과 CRON_SECRET,
+# Variables에 JOBS_ENABLED=true를 넣어야 동작합니다.
 name: Scheduled jobs
 on:
   schedule:
-    - cron: "7 * * * *" # 매시 7분 환율 갱신 (investing.com)
-    - cron: "20 1 * * *" # 매일 10:20 KST 가격 알림 확인
-    - cron: "0 18 * * 0" # 월요일 03:00 KST 가격 수집
+    - cron: "7 * * * *" # 매시 7분: 환율 갱신 (+ 유로·달러 30일 저점 알림)
+    - cron: "15 */6 * * *" # 6시간마다: 판매처 가격 수집 (하루 4회)
+    - cron: "45 */6 * * *" # 수집 30분 뒤: 찜 알림 (목표가·하락·재입고)
+    - cron: "55 0 * * 1" # 월요일 09:55 KST: 무료 회원 주간 묶음
   workflow_dispatch:
     inputs:
       job:
-        description: fx | crawl | alerts
+        description: fx | crawl | alerts | digest
         required: true
         default: alerts
 
@@ -23,8 +25,9 @@ jobs:
         run: |
           case "${{ github.event.schedule }}" in
             "7 * * * *") echo "job=fx" >> "$GITHUB_OUTPUT" ;;
-            "20 1 * * *") echo "job=alerts" >> "$GITHUB_OUTPUT" ;;
-            "0 18 * * 0") echo "job=crawl" >> "$GITHUB_OUTPUT" ;;
+            "15 */6 * * *") echo "job=crawl" >> "$GITHUB_OUTPUT" ;;
+            "45 */6 * * *") echo "job=alerts" >> "$GITHUB_OUTPUT" ;;
+            "55 0 * * 1") echo "job=digest" >> "$GITHUB_OUTPUT" ;;
             *) echo "job=${{ github.event.inputs.job }}" >> "$GITHUB_OUTPUT" ;;
           esac
       - name: Call endpoint

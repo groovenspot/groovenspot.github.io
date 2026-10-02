@@ -179,6 +179,11 @@ model User {
   founding        Boolean   @default(false) // 초기 초대 회원
   inviteCode      String?
 
+  // 공유 카드 추천
+  refCode         String?   @unique // 공유 카드 링크의 공유자 코드
+  referredById    String? // 이 회원을 데려온 공유자
+  hitWatchLimitAt DateTime? // 무료 찜 한도(3개)에 처음 닿은 때 (프리미엄 전환율 KPI)
+
   // 주문서 정보 (해외 판매처 결제 화면에 미리 채우거나 복사해서 붙여넣기)
   firstNameEn String?
   lastNameEn  String?
@@ -200,6 +205,8 @@ model User {
   helpfuls  Helpful[]
   reports   Report[]
   points    PointTx[]
+  notifications Notification[]
+  days      UserDay[]
 }
 
 model LoginCode {
@@ -232,6 +239,7 @@ model PriceAlert {
   targetPerBottle Int // 목표 병당 도착가 (원)
   channel         AlertChannel @default(EMAIL)
   active          Boolean      @default(true)
+  source          String? // detail | scan | share — 어디서 찜했는지
   lastPrice       Int? // 마지막으로 계산한 병당 도착가
   notifiedPrice   Int? // 마지막으로 알린 병당 도착가
   notifiedAt      DateTime?
@@ -502,4 +510,131 @@ model OrderEvent {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId, createdAt])
+}
+
+/// 찜한 와인 조건별 하루 단위 도착가 기록 (30일 가격 선, 하락·재입고 감지)
+model WatchPrice {
+  id        String   @id @default(cuid())
+  wineId    String
+  qty       Int
+  bottleMl  Int
+  day       DateTime @db.Date
+  perBottle Int? // null = 살 수 있는 경로 없음 (품절)
+  route     String?
+  updatedAt DateTime @updatedAt
+
+  @@unique([wineId, qty, bottleMl, day])
+}
+
+enum NotificationType {
+  TARGET // 목표가 도달
+  DROP // 직전 대비 5% 이상 하락
+  RESTOCK // 재입고
+  VINTAGE // 신규 빈티지
+  ALLOCATION // 와이너리 배정 오픈
+  FX // 환율 30일 저점
+  DIGEST // 무료 회원 주간 묶음
+}
+
+enum NotificationStatus {
+  QUEUED // 무료 회원 주간 묶음 대기
+  SENT
+  FAILED
+  SKIPPED // 묶음에 포함되어 개별 발송 안 함
+}
+
+/// 회원에게 보낸(또는 묶음 대기 중인) 알림. 링크는 /n/{id}를 거쳐 클릭률을 잽니다.
+model Notification {
+  id        String             @id @default(cuid())
+  userId    String
+  type      NotificationType
+  wineId    String?
+  title     String
+  body      String
+  link      String
+  channel   String? // kakao | email
+  status    NotificationStatus @default(SENT)
+  dedupeKey String             @unique
+  digestId  String? // 이 알림을 담아 보낸 주간 묶음
+  sentAt    DateTime?
+  clickedAt DateTime?
+  createdAt DateTime           @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status, type])
+}
+
+/// 메일링 회원제 와이너리의 판매(배정) 시즌 시작
+model AllocationOpen {
+  id        String   @id @default(cuid())
+  producer  String
+  note      String
+  url       String?
+  createdAt DateTime @default(now())
+}
+
+/// 공유 카드 저장·공유 기록
+model ShareEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  anonId    String?
+  kind      String // wine | review | month
+  format    String // story | square
+  action    String // save | share
+  wineId    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+/// 공유 카드 링크 방문
+model RefVisit {
+  id        String   @id @default(cuid())
+  refCode   String
+  anonId    String?
+  path      String
+  createdAt DateTime @default(now())
+
+  @@index([refCode, createdAt])
+}
+
+/// 로그인 회원의 방문일 (재방문율 KPI)
+model UserDay {
+  userId String
+  day    DateTime @db.Date
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, day])
+}
+
+/// 사진 검색 기록. 사진은 저장하지 않고 인식 결과만 남깁니다.
+model ScanLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  provider     String
+  extracted    Json // 인식한 와인 후보들 [{query, price, vintage}]
+  topWineId    String?
+  confidence   Float    @default(0)
+  chosenWineId String? // 사용자가 고른 와인 (틀린 매칭 수정 데이터)
+  correct      Boolean? // 첫 후보가 정답이었는지
+  createdAt    DateTime @default(now())
+  resolvedAt   DateTime?
+
+  @@index([createdAt])
+}
+
+/// 구해주세요: 국내에도 셀러도어 목록에도 없는 와인 요청 (미수입 와인 수요 리스트)
+model WineRequest {
+  id        String   @id @default(cuid())
+  userId    String?
+  text      String
+  source    String // scan | manual
+  scanId    String?
+  status    String   @default("open") // open | added | closed
+  createdAt DateTime @default(now())
+
+  @@index([status, createdAt])
 }

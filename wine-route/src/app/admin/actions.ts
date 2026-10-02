@@ -8,6 +8,7 @@ import { requireAdmin } from "@/server/auth";
 import { getCommunityConfig, getTaxConfig, saveCommunityConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
 import { award, extendPremium } from "@/server/points";
 import { monthKings } from "@/server/ranking";
+import { notifyAllocation, notifyNewVintage } from "@/jobs/alerts";
 import { runJob, type JobName } from "@/jobs/run";
 import { runCrawlJob } from "@/jobs/crawl";
 
@@ -56,6 +57,7 @@ export async function saveWine(fd: FormData) {
   const data = wineData(fd);
   if (!data.name || !data.nameKo || !data.country) throw new Error("원어명·한글명·국가는 필수입니다");
   const w = id ? await prisma.wine.update({ where: { id }, data }) : await prisma.wine.create({ data });
+  if (!id) await notifyNewVintage(w.id); // 같은 와인의 다른 빈티지를 찜한 프리미엄 회원에게
   revalidatePath("/admin/wines");
   redirect(`/admin/wines/${w.id}`);
 }
@@ -312,4 +314,33 @@ export async function saveCommunity(fd: FormData) {
     stage2: { reviews: numOr(fd, "s2Reviews", cur.stage2.reviews), members: numOr(fd, "s2Members", cur.stage2.members) },
   });
   revalidatePath("/", "layout");
+}
+
+/* ---------- 와이너리 배정 오픈 ---------- */
+export async function openAllocation(fd: FormData) {
+  await requireAdmin();
+  const producer = str(fd, "producer");
+  const note = str(fd, "note");
+  if (!producer || !note) throw new Error("생산자와 안내 문구를 입력해 주세요");
+  const a = await prisma.allocationOpen.create({ data: { producer, note, url: str(fd, "url") || null } });
+  await notifyAllocation(a.id);
+  revalidatePath("/admin/growth");
+}
+
+/* ---------- 사진 검색·구해주세요 ---------- */
+/** 사용자가 고친 매칭을 와인의 검색 보정 표기로 추가 (다음 인식부터 반영) */
+export async function addScanAlias(fd: FormData) {
+  await requireAdmin();
+  const wineId = str(fd, "wineId");
+  const alias = str(fd, "alias").slice(0, 120);
+  const w = await prisma.wine.findUnique({ where: { id: wineId } });
+  if (!w || !alias || w.aliases.includes(alias)) return;
+  await prisma.wine.update({ where: { id: wineId }, data: { aliases: [...w.aliases, alias] } });
+  revalidatePath("/admin/growth");
+}
+
+export async function setRequestStatus(fd: FormData) {
+  await requireAdmin();
+  await prisma.wineRequest.update({ where: { id: str(fd, "id") }, data: { status: str(fd, "status") } });
+  revalidatePath("/admin/growth");
 }

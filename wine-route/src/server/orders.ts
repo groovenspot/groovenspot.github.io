@@ -38,5 +38,5 @@ async function notify(email: string, phone: string | null, wine: string, seller:
   if (to === "SHIPPED" && tracking) lines.push(`운송장 번호: ${tracking}`);
   if (to === "SHIPPED") lines.push("한국에 도착하면 통관 단계에서 세금 납부 안내가 옵니다.");
   lines.push(link);
-  await sendMail(email, `[와인루트] 주문 ${status}: ${wine}`, lines.join("\n"));
+  await sendMail(email, `[셀러도어] 주문 ${status}: ${wine}`, lines.join("\n"));
 }

@@ -43,7 +43,10 @@ export default async function Community({ searchParams }: { searchParams: Promis
       </section>
 
       {sp.written && (
-        <div className="alert ok">후기를 올렸습니다. {Number(sp.p) > 0 ? `${Number(sp.p).toLocaleString("ko-KR")}P를 드렸습니다.` : ""} 통관 내역 사진을 올렸다면 운영자 확인 후 인증 배지와 {cfg.points.proof * mult}P가 더해집니다.</div>
+        <div className="alert ok row between">
+          <span>후기를 올렸습니다. {Number(sp.p) > 0 ? `${Number(sp.p).toLocaleString("ko-KR")}P를 드렸습니다.` : ""} 통관 내역 사진을 올렸다면 운영자 확인 후 인증 배지와 {cfg.points.proof * mult}P가 더해집니다.</span>
+          <Link className="btn small" href={`/share?kind=review&review=${sp.written}`}>&lsquo;나는 이만큼 아꼈다&rsquo; 카드 만들기</Link>
+        </div>
       )}
 
       <div className="grid-side">
