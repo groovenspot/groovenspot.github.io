@@ -26,7 +26,7 @@ export default async function EditWine({ params }: { params: Promise<{ id: strin
         <h2>판매 정보 {wine.offers.length}건</h2>
         <div className="table-wrap">
           <table className="data">
-            <thead><tr><th>셀러</th><th>용량</th><th>가격</th><th>재고</th><th>URL</th><th>확인</th><th></th></tr></thead>
+            <thead><tr><th>셀러</th><th colSpan={5}>용량(ml) · 병당 가격 · 재고 · 상품 URL</th><th>가격 확인</th><th></th></tr></thead>
             <tbody>
               {wine.offers.map((o) => (
                 <tr key={o.id}>
@@ -35,10 +35,10 @@ export default async function EditWine({ params }: { params: Promise<{ id: strin
                     <form action={saveOffer} className="row" style={{ flexWrap: "nowrap" }}>
                       <input type="hidden" name="id" value={o.id} />
                       <input type="hidden" name="wineId" value={wine.id} />
-                      <input name="bottleMl" type="number" defaultValue={o.bottleMl} style={{ width: 80 }} aria-label="용량 ml" />
-                      <input name="price" type="number" step="0.01" defaultValue={o.price} style={{ width: 100 }} aria-label="가격" />
-                      <label className="check small"><input type="checkbox" name="inStock" defaultChecked={o.inStock} />재고</label>
-                      <input name="url" defaultValue={o.url} style={{ minWidth: 200 }} aria-label="상품 URL" />
+                      <input name="bottleMl" type="number" defaultValue={o.bottleMl} style={{ width: 96, flex: "none" }} aria-label="용량 ml" />
+                      <input name="price" type="number" step="0.01" defaultValue={o.price} style={{ width: 120, flex: "none" }} aria-label="가격" />
+                      <label className="check small" style={{ whiteSpace: "nowrap" }}><input type="checkbox" name="inStock" defaultChecked={o.inStock} />재고</label>
+                      <input name="url" defaultValue={o.url} style={{ minWidth: 240, flex: 1 }} aria-label="상품 URL" />
                       <button className="btn ghost small">저장</button>
                     </form>
                     {o.lastError && <div className="small neg">수집 오류: {o.lastError}</div>}
