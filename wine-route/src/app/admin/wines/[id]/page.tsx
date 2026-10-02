@@ -26,7 +26,7 @@ export default async function EditWine({ params }: { params: Promise<{ id: strin
         <h2>판매 정보 {wine.offers.length}건</h2>
         <div className="table-wrap">
           <table className="data">
-            <thead><tr><th>셀러</th><th colSpan={5}>용량(ml) · 병당 가격 · 재고 · 상품 URL</th><th>가격 확인</th><th></th></tr></thead>
+            <thead><tr><th>셀러</th><th colSpan={5}>용량(ml) · 병당 가격 · 재고 · 장바구니 ID · 상품 URL</th><th>가격 확인</th><th></th></tr></thead>
             <tbody>
               {wine.offers.map((o) => (
                 <tr key={o.id}>
@@ -38,6 +38,7 @@ export default async function EditWine({ params }: { params: Promise<{ id: strin
                       <input name="bottleMl" type="number" defaultValue={o.bottleMl} style={{ width: 96, flex: "none" }} aria-label="용량 ml" />
                       <input name="price" type="number" step="0.01" defaultValue={o.price} style={{ width: 120, flex: "none" }} aria-label="가격" />
                       <label className="check small" style={{ whiteSpace: "nowrap" }}><input type="checkbox" name="inStock" defaultChecked={o.inStock} />재고</label>
+                      {o.seller.checkoutMode !== "PRODUCT_PAGE" && <input name="checkoutRef" defaultValue={o.checkoutRef ?? ""} placeholder="variant ID" style={{ width: 130, flex: "none" }} aria-label="장바구니 상품 ID" />}
                       <input name="url" defaultValue={o.url} style={{ minWidth: 240, flex: 1 }} aria-label="상품 URL" />
                       <button className="btn ghost small">저장</button>
                     </form>
@@ -59,6 +60,7 @@ export default async function EditWine({ params }: { params: Promise<{ id: strin
             <div className="field"><label className="label" htmlFor="o-price">병당 가격 (셀러 통화)</label><input id="o-price" name="price" type="number" step="0.01" required /></div>
             <div className="field"><label className="label" htmlFor="o-ml">용량 (ml)</label><input id="o-ml" name="bottleMl" type="number" defaultValue={750} /></div>
             <div className="field"><label className="label" htmlFor="o-url">상품 URL</label><input id="o-url" name="url" type="url" required /></div>
+            <div className="field"><label className="label" htmlFor="o-ref">장바구니 상품 ID (Shopify variant 등, 선택)</label><input id="o-ref" name="checkoutRef" /></div>
           </div>
           <label className="check"><input type="checkbox" name="inStock" defaultChecked /> 재고 있음</label>
           <div><button className="btn">추가</button></div>

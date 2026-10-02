@@ -50,7 +50,7 @@ export default async function WinePage({ params, searchParams }: P) {
     for (const [k, v] of Object.entries(allp)) if (v !== undefined && v !== "") p.set(k, String(v));
     return `/wines/${id}?${p}`;
   };
-  const goHref = (c: Candidate) => `/go/${c.offerId}?qty=${qty}&route=${c.channel}`;
+  const goHref = (c: Candidate) => `/order/${c.offerId}?qty=${qty}&route=${c.channel}`;
 
   return (
     <div className="stack-lg">
@@ -149,7 +149,7 @@ export default async function WinePage({ params, searchParams }: P) {
                     </div>
                     <div className="bar"><i style={{ width: `${((showing.perBottle / max) * 100).toFixed(1)}%` }} /></div>
                     <div className="actions">
-                      <a className="btn small" href={goHref(showing)} rel="nofollow sponsored">판매처로 이동</a>
+                      <Link className="btn small" href={goHref(showing)}>이 경로로 주문하기</Link>
                       {!selected && <Link className="btn ghost small" href={href({ sel: `${c.channel}:${c.offerId}` })} scroll={false}>세금 내역</Link>}
                       <Link className="small muted" href={`/sellers/${showing.sellerId}`}>판매처 정보·후기</Link>
                       {r.candidates.length > 1 && (

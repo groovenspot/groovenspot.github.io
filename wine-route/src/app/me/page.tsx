@@ -4,14 +4,19 @@ import { requireUser } from "@/server/auth";
 import { getTaxConfig, getFx } from "@/server/settings";
 import { ROUTE_LABEL } from "@/lib/engine";
 import { money, sizeLabel, won, ymd } from "@/lib/format";
-import { addPurchase, deleteAlert, deletePurchase, toggleAlert, updatePhone } from "./actions";
+import { addPurchase, customerOrderStep, deleteAlert, deletePurchase, markDelivered, toggleAlert } from "./actions";
+import { ProfileForm } from "@/components/ProfileForm";
+import { decrypt } from "@/server/crypto";
+import { maskPccc, ORDER_FLOW, ORDER_LABEL } from "@/lib/order";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "내 알림·기록" };
 
-export default async function Me() {
+export default async function Me({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const sp = await searchParams;
   const user = await requireUser("/me");
-  const [alerts, purchases, wines, tax, fx] = await Promise.all([
+  const [orders, alerts, purchases, wines, tax, fx] = await Promise.all([
+    prisma.order.findMany({ where: { userId: user.id }, include: { wine: true, seller: true, events: { orderBy: { createdAt: "asc" } } }, orderBy: { createdAt: "desc" }, take: 50 }),
     prisma.priceAlert.findMany({ where: { userId: user.id }, include: { wine: true }, orderBy: { createdAt: "desc" } }),
     prisma.purchase.findMany({ where: { userId: user.id }, include: { wine: true }, orderBy: { orderedAt: "desc" } }),
     prisma.wine.findMany({ select: { id: true, nameKo: true }, orderBy: { nameKo: "asc" } }),
@@ -27,11 +32,76 @@ export default async function Me() {
           <h1 style={{ fontSize: 28 }}>내 알림·기록</h1>
           <p className="muted small">{user.email} · {user.plan === "PREMIUM" ? "프리미엄 회원 (알림 무제한)" : `무료 회원 (알림 ${activeCount}/${tax.freeAlertLimit})`}</p>
         </div>
-        <form action={updatePhone} className="row">
-          <label className="label" htmlFor="phone">알림톡 번호</label>
-          <input id="phone" name="phone" defaultValue={user.phone ?? ""} placeholder="01012345678" style={{ width: 160 }} inputMode="numeric" />
-          <button className="btn ghost small">저장</button>
-        </form>
+      </section>
+
+      <section className="stack" id="orders">
+        <h2>내 주문</h2>
+        {orders.length ? orders.map((o) => {
+          const done = new Map(o.events.map((e) => [e.status, e.createdAt]));
+          const idx = ORDER_FLOW.indexOf(o.status as (typeof ORDER_FLOW)[number]);
+          return (
+            <div key={o.id} className="box">
+              <div className="row between" style={{ alignItems: "flex-start" }}>
+                <div className="stack" style={{ gap: 2 }}>
+                  <Link href={`/wines/${o.wineId}?qty=${o.qty}&ml=${o.bottleMl}`}><b>{o.wine.nameKo}</b></Link>
+                  <span className="small muted">{o.seller.name} · {o.qty}병 · 예상 도착가 {won(o.estTotal)} (세금 약 {won(o.estTax)}){o.orderRef ? ` · 주문번호 ${o.orderRef}` : ""}</span>
+                </div>
+                {o.status === "CANCELLED" ? <span className="chip bad">취소</span> : <span className={`chip ${o.status === "DELIVERED" ? "ok" : "best"}`}>{ORDER_LABEL[o.status]}</span>}
+              </div>
+              {o.status !== "CANCELLED" && (
+                <ol className="seg" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                  {ORDER_FLOW.map((st, i) => (
+                    <li key={st} className={`chip ${i <= idx ? "ok" : ""}`}>{ORDER_LABEL[st]}{done.get(st) ? ` ${ymd(done.get(st)!).slice(5)}` : ""}</li>
+                  ))}
+                </ol>
+              )}
+              {o.trackingNo && <p className="small">운송장 {o.carrier ? `${o.carrier} ` : ""}<span className="num">{o.trackingNo}</span> · 통관 진행은 <a href="https://unipass.customs.go.kr/csp/index.do" target="_blank" rel="noopener">관세청 유니패스</a>에서 조회할 수 있습니다.</p>}
+              <div className="row">
+                {o.status === "CLICKED" && (
+                  <>
+                    <form action={customerOrderStep} className="row">
+                      <input type="hidden" name="id" value={o.id} />
+                      <input type="hidden" name="to" value="CONFIRMED" />
+                      <input name="orderRef" placeholder="판매처 주문번호 (선택)" style={{ width: 190 }} aria-label="판매처 주문번호" />
+                      <button className="btn small">결제 완료했어요</button>
+                    </form>
+                    <form action={customerOrderStep}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="to" value="CANCELLED" /><button className="btn ghost small">주문 안 함</button></form>
+                  </>
+                )}
+                {(o.status === "CONFIRMED" || o.status === "SHIPPED") && (
+                  <form action={customerOrderStep}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="to" value="CUSTOMS" /><button className="btn ghost small">세금 납부 안내를 받았어요 (통관 중)</button></form>
+                )}
+                {["CONFIRMED", "SHIPPED", "CUSTOMS"].includes(o.status) && (
+                  <form action={markDelivered} className="row">
+                    <input type="hidden" name="id" value={o.id} />
+                    <input name="taxPaid" type="number" min={0} required placeholder="실제 낸 세금 (원)" style={{ width: 170 }} aria-label="실제 낸 세금" />
+                    <button className="btn small">받았어요</button>
+                  </form>
+                )}
+              </div>
+            </div>
+          );
+        }) : <div className="box"><p className="muted">아직 주문이 없습니다. 와인 상세에서 &lsquo;이 경로로 주문하기&rsquo;를 누르면 여기서 진행 상황을 볼 수 있습니다.</p></div>}
+      </section>
+
+      <section className="stack" id="profile">
+        <h2>주문서 정보</h2>
+        <p className="small muted">한 번 저장하면 판매처 결제 화면에 미리 채우거나 복사해서 붙여넣을 수 있습니다. 가격 알림톡도 이 휴대폰 번호로 갑니다.</p>
+        <ProfileForm
+          next={sp.next}
+          v={{
+            firstNameEn: user.firstNameEn ?? "",
+            lastNameEn: user.lastNameEn ?? "",
+            address1En: user.address1En ?? "",
+            address2En: user.address2En ?? "",
+            cityEn: user.cityEn ?? "",
+            provinceEn: user.provinceEn ?? "",
+            zip: user.zip ?? "",
+            phone: user.phone ?? "",
+            pcccMasked: maskPccc(decrypt(user.pcccEnc)),
+            pcccInNote: user.pcccInNote,
+          }}
+        />
       </section>
 
       <section className="stack">

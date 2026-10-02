@@ -1,7 +1,8 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { Channel, PriceSource } from "@prisma/client";
+import type { Channel, CheckoutMode, OrderStatus, PriceSource } from "@prisma/client";
+import { moveOrder } from "@/server/orders";
 import { prisma } from "@/server/db";
 import { requireAdmin } from "@/server/auth";
 import { getTaxConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
@@ -69,7 +70,7 @@ export async function saveOffer(fd: FormData) {
   await requireAdmin();
   const id = str(fd, "id");
   const wineId = str(fd, "wineId");
-  const data = { url: str(fd, "url"), price: numOr(fd, "price", 0), bottleMl: numOr(fd, "bottleMl", 750), inStock: bool(fd, "inStock"), checkedAt: new Date(), lastError: null };
+  const data = { url: str(fd, "url"), price: numOr(fd, "price", 0), bottleMl: numOr(fd, "bottleMl", 750), inStock: bool(fd, "inStock"), checkoutRef: str(fd, "checkoutRef") || null, checkedAt: new Date(), lastError: null };
   if (!data.url || data.price <= 0) throw new Error("URL과 가격을 입력해 주세요");
   if (id) await prisma.offer.update({ where: { id }, data });
   else await prisma.offer.upsert({ where: { wineId_sellerId_bottleMl: { wineId, sellerId: str(fd, "sellerId"), bottleMl: data.bottleMl } }, update: data, create: { ...data, wineId, sellerId: str(fd, "sellerId") } });
@@ -82,7 +83,7 @@ export async function deleteOffer(fd: FormData) {
   revalidatePath(`/admin/wines/${str(fd, "wineId")}`);
 }
 
-/** CSV: wine_id,seller_id,url,price,bottle_ml,in_stock (머리줄 필수, wine_id 대신 wine_name 가능) */
+/** CSV: wine_id,seller_id,url,price,bottle_ml,in_stock,checkout_ref (머리줄 필수, wine_id 대신 wine_name 가능) */
 export async function importOffers(_: { message?: string; error?: string }, fd: FormData) {
   await requireAdmin();
   const text = str(fd, "csv");
@@ -107,10 +108,11 @@ export async function importOffers(_: { message?: string; error?: string }, fd: 
       const url = col(row, "url");
       if (!wineId || !sellerId || !url || !(price > 0)) throw new Error("wine_id, seller_id, url, price는 필수입니다");
       const inStock = !/^(0|false|n|no|품절)$/i.test(col(row, "in_stock"));
+      const checkoutRef = head.includes("checkout_ref") ? col(row, "checkout_ref") || null : undefined;
       await prisma.offer.upsert({
         where: { wineId_sellerId_bottleMl: { wineId, sellerId, bottleMl } },
-        update: { url, price, inStock, checkedAt: new Date(), lastError: null },
-        create: { wineId, sellerId, bottleMl, url, price, inStock },
+        update: { url, price, inStock, checkedAt: new Date(), lastError: null, ...(checkoutRef !== undefined ? { checkoutRef } : {}) },
+        create: { wineId, sellerId, bottleMl, url, price, inStock, checkoutRef: checkoutRef ?? null },
       });
       ok++;
     } catch (e) {
@@ -140,6 +142,8 @@ export async function saveSeller(fd: FormData) {
     affiliateTpl: str(fd, "affiliateTpl") || null,
     commissionRate: numOr(fd, "commissionRate", 7) / 100,
     priceSource: str(fd, "priceSource") as PriceSource,
+    checkoutMode: (str(fd, "checkoutMode") || "PRODUCT_PAGE") as CheckoutMode,
+    cartTpl: str(fd, "cartTpl") || null,
     active: bool(fd, "active"),
   };
   if (!data.name || !data.country || !/^[A-Z]{3}$/.test(data.currency)) throw new Error("이름·국가·통화(3자리)를 확인해 주세요");
@@ -214,4 +218,16 @@ export async function setPlan(fd: FormData) {
   await requireAdmin();
   await prisma.user.update({ where: { id: str(fd, "id") }, data: { plan: str(fd, "plan") === "PREMIUM" ? "PREMIUM" : "FREE" } });
   revalidatePath("/admin/users");
+}
+
+/* ---------- 주문 ---------- */
+export async function adminMoveOrder(fd: FormData) {
+  await requireAdmin();
+  await moveOrder(str(fd, "id"), str(fd, "to") as OrderStatus, "admin", {
+    note: str(fd, "note") || undefined,
+    orderRef: str(fd, "orderRef") || null,
+    carrier: str(fd, "carrier") || null,
+    trackingNo: str(fd, "trackingNo") || null,
+  });
+  revalidatePath("/admin/orders");
 }

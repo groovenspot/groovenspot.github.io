@@ -21,11 +21,12 @@ type SellerSeed = {
   daysMax: number;
   shipsToKorea?: boolean;
   insured?: boolean;
+  shopify?: boolean; // 예시: Shopify 장바구니 링크 지원
 };
 
 const SELLERS: SellerSeed[] = [
   // 프랑스
-  { key: "fr-direct", name: "예시 와이너리 직판몰 (프랑스)", country: "프랑스", channel: "WINERY_DIRECT", currency: "EUR", shipBase: 26, shipPerBottle: 8.5, daysMin: 7, daysMax: 14 },
+  { key: "fr-direct", name: "예시 와이너리 직판몰 (프랑스)", country: "프랑스", channel: "WINERY_DIRECT", currency: "EUR", shipBase: 26, shipPerBottle: 8.5, daysMin: 7, daysMax: 14, shopify: true },
   { key: "fr-export", name: "예시 수출 리테일러 파리", country: "프랑스", channel: "EXPORT_RETAILER", currency: "EUR", shipBase: 24, shipPerBottle: 7.5, daysMin: 7, daysMax: 12, insured: true },
   { key: "fr-local", name: "예시 내수 와인숍 (프랑스)", country: "프랑스", channel: "LOCAL_SHOP", currency: "EUR", shipBase: 7.9, shipPerBottle: 1.2, daysMin: 2, daysMax: 4, shipsToKorea: false },
   // 독일
@@ -36,7 +37,7 @@ const SELLERS: SellerSeed[] = [
   { key: "it-export", name: "예시 수출 리테일러 밀라노", country: "이탈리아", channel: "EXPORT_RETAILER", currency: "EUR", shipBase: 25, shipPerBottle: 8, daysMin: 8, daysMax: 13, insured: true },
   { key: "it-local", name: "예시 내수 와인숍 (이탈리아)", country: "이탈리아", channel: "LOCAL_SHOP", currency: "EUR", shipBase: 8.5, shipPerBottle: 1.2, daysMin: 2, daysMax: 5, shipsToKorea: false },
   // 뉴질랜드·호주
-  { key: "nz-direct", name: "예시 와이너리 직판몰 (뉴질랜드)", country: "뉴질랜드", channel: "WINERY_DIRECT", currency: "NZD", shipBase: 55, shipPerBottle: 18, daysMin: 8, daysMax: 14 },
+  { key: "nz-direct", name: "예시 와이너리 직판몰 (뉴질랜드)", country: "뉴질랜드", channel: "WINERY_DIRECT", currency: "NZD", shipBase: 55, shipPerBottle: 18, daysMin: 8, daysMax: 14, shopify: true },
   { key: "nz-export", name: "예시 수출 리테일러 오클랜드", country: "뉴질랜드", channel: "EXPORT_RETAILER", currency: "NZD", shipBase: 50, shipPerBottle: 17, daysMin: 8, daysMax: 12 },
   { key: "au-direct", name: "예시 와이너리 직판몰 (호주)", country: "호주", channel: "WINERY_DIRECT", currency: "AUD", shipBase: 48, shipPerBottle: 16, daysMin: 8, daysMax: 14 },
   { key: "au-export", name: "예시 수출 리테일러 애들레이드", country: "호주", channel: "EXPORT_RETAILER", currency: "AUD", shipBase: 45, shipPerBottle: 15, daysMin: 8, daysMax: 12, insured: true },
@@ -111,6 +112,7 @@ const sellerKeyFor = (country: string, kind: "direct" | "export" | "local") => {
 
 async function main() {
   await prisma.$transaction([
+    prisma.order.deleteMany(),
     prisma.clickLog.deleteMany(),
     prisma.priceAlert.deleteMany(),
     prisma.purchase.deleteMany(),
@@ -135,9 +137,9 @@ async function main() {
 
   const sellerIds: Record<string, string> = {};
   for (const s of SELLERS) {
-    const { key, ...data } = s;
+    const { key, shopify, ...data } = s;
     const row = await prisma.seller.create({
-      data: { ...data, shipsToKorea: s.shipsToKorea ?? true, insured: s.insured ?? false, website: `https://example.com/${key}`, affiliateTpl: "{url}?ref=wineroute&sub={clickId}" },
+      data: { ...data, checkoutMode: shopify ? "SHOPIFY_CART" : "PRODUCT_PAGE", shipsToKorea: s.shipsToKorea ?? true, insured: s.insured ?? false, website: shopify ? `https://${key}.example.com` : `https://example.com/${key}`, affiliateTpl: "{url}?ref=wineroute&sub={clickId}" },
     });
     sellerIds[key] = row.id;
   }
@@ -180,7 +182,7 @@ async function main() {
       const sellerId = sellerIds[o.key];
       if (!sellerId) continue;
       await prisma.offer.create({
-        data: { wineId: wine.id, sellerId, price: Math.round(o.price * 100) / 100, bottleMl: o.ml, url: `https://example.com/${o.key}/${slug}${o.ml !== 750 ? `-${o.ml}` : ""}` },
+        data: { wineId: wine.id, sellerId, checkoutRef: SELLERS.find((x) => x.key === o.key)?.shopify ? String(40000000000 + Math.floor(Math.random() * 1e9)) : null, price: Math.round(o.price * 100) / 100, bottleMl: o.ml, url: `https://example.com/${o.key}/${slug}${o.ml !== 750 ? `-${o.ml}` : ""}` },
       });
     }
   }

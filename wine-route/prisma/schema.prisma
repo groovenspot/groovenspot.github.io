@@ -20,6 +20,22 @@ enum PriceSource {
   JSONLD // 상품 페이지의 schema.org Product/Offer 크롤링
 }
 
+/// 판매처 결제 화면 여는 방식
+enum CheckoutMode {
+  PRODUCT_PAGE // 상품 페이지로 이동 (기본)
+  SHOPIFY_CART // Shopify 장바구니 링크: 상품·수량 담고 이메일·배송지·메모 미리 채움
+  CART_TEMPLATE // 판매처별 장바구니 URL 템플릿
+}
+
+enum OrderStatus {
+  CLICKED // 판매처 결제 화면으로 이동
+  CONFIRMED // 주문 확정
+  SHIPPED // 발송
+  CUSTOMS // 통관 중
+  DELIVERED // 도착
+  CANCELLED // 취소
+}
+
 enum Plan {
   FREE
   PREMIUM
@@ -54,6 +70,7 @@ model Wine {
   clicks    ClickLog[]
   purchases Purchase[]
   views     WineView[]
+  orders    Order[]
 
   @@index([country])
   @@index([type])
@@ -77,6 +94,9 @@ model Seller {
   affiliateTpl    String?
   commissionRate  Float       @default(0.07)
   priceSource     PriceSource @default(MANUAL)
+  checkoutMode    CheckoutMode @default(PRODUCT_PAGE)
+  /// CART_TEMPLATE용. {url} {ref} {qty} {clickId} {email} {note} 치환
+  cartTpl         String?
   active          Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -84,6 +104,7 @@ model Seller {
   offers    Offer[]
   crawlRuns CrawlRun[]
   reviews   Review[]
+  orders    Order[]
 }
 
 /// 배송대행지. 원산지 국가 내수 판매처 물품을 받아 한국으로 보냅니다.
@@ -109,6 +130,8 @@ model Offer {
   price       Float // 병당 판매가 (판매처 통화)
   bottleMl    Int       @default(750)
   inStock     Boolean   @default(true)
+  /// 장바구니 담기용 판매처 상품 식별자 (Shopify variant ID 등)
+  checkoutRef String?
   checkedAt   DateTime  @default(now()) // 가격 확인 시각
   lastError   String?
   createdAt   DateTime  @default(now())
@@ -145,9 +168,21 @@ model User {
   email     String   @unique
   phone     String? // 알림톡 수신 번호
   plan      Plan     @default(FREE)
+
+  // 주문서 정보 (해외 판매처 결제 화면에 미리 채우거나 복사해서 붙여넣기)
+  firstNameEn String?
+  lastNameEn  String?
+  address1En  String?
+  address2En  String?
+  cityEn      String?
+  provinceEn  String?
+  zip         String?
+  pcccEnc     String? // 개인통관고유부호 (암호화 저장)
+  pcccInNote  Boolean @default(true) // 결제 화면 주문 메모에 통관부호 넣기
   createdAt DateTime @default(now())
 
   sessions  Session[]
+  orders    Order[]
   alerts    PriceAlert[]
   clicks    ClickLog[]
   purchases Purchase[]
@@ -211,6 +246,7 @@ model ClickLog {
   wine       Wine        @relation(fields: [wineId], references: [id], onDelete: Cascade)
   user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   conversion Conversion?
+  order      Order?
 
   @@index([createdAt])
 }
@@ -244,8 +280,9 @@ model Purchase {
   orderedAt    DateTime
   createdAt    DateTime @default(now())
 
-  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wine Wine? @relation(fields: [wineId], references: [id], onDelete: SetNull)
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wine  Wine?  @relation(fields: [wineId], references: [id], onDelete: SetNull)
+  order Order?
 }
 
 model Review {
@@ -309,4 +346,48 @@ model WineView {
   wine Wine @relation(fields: [wineId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
+}
+
+/// 손님의 주문 진행 상황. 판매처 결제 화면으로 넘어갈 때 만들고, 판매처 포스트백·손님·관리자가 상태를 바꿉니다.
+model Order {
+  id           String      @id @default(cuid())
+  userId       String
+  clickId      String      @unique
+  wineId       String
+  sellerId     String
+  route        String
+  qty          Int
+  bottleMl     Int
+  estTotal     Int // 이동 시점 예상 도착가 합계 (원)
+  estTax       Int // 이동 시점 예상 세금 (원)
+  status       OrderStatus @default(CLICKED)
+  orderRef     String? // 판매처 주문번호
+  carrier      String?
+  trackingNo   String?
+  purchaseId   String?     @unique // 도착 처리 때 남긴 구매 기록
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  click    ClickLog     @relation(fields: [clickId], references: [id], onDelete: Cascade)
+  wine     Wine         @relation(fields: [wineId], references: [id], onDelete: Cascade)
+  seller   Seller       @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  purchase Purchase?    @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+  events   OrderEvent[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model OrderEvent {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  by        String // seller | customer | admin | system
+  note      String?
+  createdAt DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
 }

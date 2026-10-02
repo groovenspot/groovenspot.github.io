@@ -24,7 +24,7 @@ export async function runAlertsJob() {
     if (hit) {
       const link = `${base}/wines/${a.wineId}?qty=${a.qty}&ml=${a.bottleMl}`;
       try {
-        if (a.channel === "KAKAO" && a.user.phone && alimtalkConfigured()) {
+        if (a.channel === "KAKAO" && a.user.phone && alimtalkConfigured("price")) {
           await sendPriceAlimtalk(a.user.phone, { wine: a.wine.nameKo, price: won(price), target: won(a.targetPerBottle), link });
         } else {
           await sendMail(
