@@ -1,4 +1,5 @@
 "use client";
+import { keepFormSubmit } from "@/components/useKeepForm";
 import { useActionState, useState } from "react";
 import { createAlert } from "@/app/wines/[id]/actions";
 import type { FormState } from "@/app/actions";
@@ -7,7 +8,7 @@ export function AlertForm(props: { wineId: string; qty: number; ml: number; sugg
   const [state, action, pending] = useActionState<FormState, FormData>(createAlert, {});
   const [channel, setChannel] = useState<"EMAIL" | "KAKAO">(props.phone ? "KAKAO" : "EMAIL");
   return (
-    <form action={action} className="stack">
+    <form onSubmit={keepFormSubmit(action)} className="stack">
       <input type="hidden" name="wineId" value={props.wineId} />
       <input type="hidden" name="qty" value={props.qty} />
       <input type="hidden" name="ml" value={props.ml} />

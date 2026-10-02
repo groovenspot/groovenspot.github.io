@@ -5,7 +5,9 @@ import type { Channel, CheckoutMode, OrderStatus, PriceSource } from "@prisma/cl
 import { moveOrder } from "@/server/orders";
 import { prisma } from "@/server/db";
 import { requireAdmin } from "@/server/auth";
-import { getTaxConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
+import { getCommunityConfig, getTaxConfig, saveCommunityConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
+import { award, extendPremium } from "@/server/points";
+import { monthKings } from "@/server/ranking";
 import { runJob, type JobName } from "@/jobs/run";
 import { runCrawlJob } from "@/jobs/crawl";
 
@@ -230,4 +232,84 @@ export async function adminMoveOrder(fd: FormData) {
     trackingNo: str(fd, "trackingNo") || null,
   });
   revalidatePath("/admin/orders");
+}
+
+/* ---------- 커뮤니티 ---------- */
+export async function approveProof(fd: FormData) {
+  await requireAdmin();
+  const id = str(fd, "id");
+  const r = await prisma.directReview.update({ where: { id }, data: { proofStatus: "APPROVED", proofNote: null } });
+  await prisma.proofFile.deleteMany({ where: { reviewId: id } }); // 개인정보가 담긴 사진은 확인 후 바로 삭제
+  const cfg = await getCommunityConfig();
+  await award(r.userId, "proof", id, cfg.points.proof, "통관 인증");
+  revalidatePath("/admin/community");
+}
+
+export async function rejectProof(fd: FormData) {
+  await requireAdmin();
+  const id = str(fd, "id");
+  await prisma.directReview.update({ where: { id }, data: { proofStatus: "REJECTED", proofNote: str(fd, "note") || "확인할 수 없는 자료" } });
+  await prisma.proofFile.deleteMany({ where: { reviewId: id } });
+  revalidatePath("/admin/community");
+}
+
+export async function resolveReports(fd: FormData) {
+  await requireAdmin();
+  const id = str(fd, "id");
+  const restore = str(fd, "action") === "restore";
+  await prisma.$transaction([
+    prisma.directReview.update({ where: { id }, data: { status: restore ? "PUBLISHED" : "DELETED" } }),
+    prisma.report.updateMany({ where: { reviewId: id, resolvedAt: null }, data: { resolvedAt: new Date(), resolution: restore ? "restored" : "deleted" } }),
+  ]);
+  if (!restore) await prisma.proofFile.deleteMany({ where: { reviewId: id } });
+  revalidatePath("/admin/community");
+}
+
+/** 대가성 후기 미표시 위반: 판매처 노출 중단 */
+export async function suspendSeller(fd: FormData) {
+  await requireAdmin();
+  await prisma.seller.update({ where: { id: str(fd, "sellerId") }, data: { active: false } });
+  revalidatePath("/admin/community");
+}
+
+export async function grantKings(fd: FormData) {
+  await requireAdmin();
+  const offset = Number(fd.get("offset")) || -1;
+  const { label, list } = await monthKings(offset);
+  for (const k of list.slice(0, 3)) {
+    // 0P 기록을 지급 표시로 씁니다. 처음 기록될 때만 프리미엄을 줍니다.
+    const { created } = await award(k.userId, "king", label, 0, `이달의 후기왕 ${label} · 프리미엄 1개월`, { bonus: false });
+    if (created) await extendPremium(k.userId, 1);
+  }
+  revalidatePath("/admin/community");
+}
+
+export async function createInvite(fd: FormData) {
+  await requireAdmin();
+  const code = (str(fd, "code") || `CD${Math.random().toString(36).slice(2, 8)}`).toUpperCase();
+  await prisma.inviteCode.create({ data: { code, note: str(fd, "note") || null, premiumMonths: numOr(fd, "premiumMonths", 6), maxUses: numOr(fd, "maxUses", 1) } });
+  revalidatePath("/admin/community");
+}
+
+export async function adjustPoints(fd: FormData) {
+  await requireAdmin();
+  const u = await prisma.user.findUnique({ where: { email: str(fd, "email").toLowerCase() } });
+  if (!u) throw new Error("회원을 찾을 수 없습니다");
+  await prisma.pointTx.create({ data: { userId: u.id, amount: Math.round(numOr(fd, "amount", 0)), reason: "admin", refId: new Date().toISOString(), note: str(fd, "note") || "운영자 조정" } });
+  revalidatePath("/admin/community");
+}
+
+export async function saveCommunity(fd: FormData) {
+  await requireAdmin();
+  const cur = await getCommunityConfig();
+  await saveCommunityConfig({
+    ...cur,
+    bannedPatterns: str(fd, "bannedPatterns").split("\n").map((x) => x.trim()).filter(Boolean),
+    bonusUntil: str(fd, "bonusUntil") || null,
+    bonusMultiplier: numOr(fd, "bonusMultiplier", cur.bonusMultiplier),
+    points: { review: numOr(fd, "pReview", cur.points.review), proof: numOr(fd, "pProof", cur.points.proof), helpful10: numOr(fd, "pHelpful", cur.points.helpful10), answer: cur.points.answer },
+    costs: { premiumMonth: numOr(fd, "cPremium", cur.costs.premiumMonth), tasting: numOr(fd, "cTasting", cur.costs.tasting) },
+    stage2: { reviews: numOr(fd, "s2Reviews", cur.stage2.reviews), members: numOr(fd, "s2Members", cur.stage2.members) },
+  });
+  revalidatePath("/", "layout");
 }

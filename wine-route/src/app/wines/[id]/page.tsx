@@ -7,6 +7,7 @@ import { getUser } from "@/server/auth";
 import { cookies } from "next/headers";
 import { TaxBreakdown } from "@/components/TaxBreakdown";
 import { AlertForm } from "@/components/AlertForm";
+import { ReviewCard, reviewInclude } from "@/components/ReviewCard";
 import { FX_SOURCE_LABEL, money, sizeLabel, won, ymd, ymdhm } from "@/lib/format";
 import type { Candidate } from "@/lib/engine";
 
@@ -40,8 +41,22 @@ export default async function WinePage({ params, searchParams }: P) {
   const max = Math.max(1, ...live.map((r) => r.best!.perBottle));
 
   const sellerIds = [...new Set(all.map((c) => c.sellerId))];
-  const trust = await prisma.review.groupBy({ by: ["sellerId"], where: { sellerId: { in: sellerIds } }, _avg: { rating: true }, _count: true });
+  const [trust, reviews] = await Promise.all([
+    prisma.directReview.groupBy({ by: ["sellerId"], where: { sellerId: { in: sellerIds }, status: "PUBLISHED", sponsored: false }, _avg: { rating: true }, _count: true }),
+    prisma.directReview.findMany({ where: { wineId: id, status: "PUBLISHED" }, include: reviewInclude, orderBy: [{ helpfulCount: "desc" }, { createdAt: "desc" }], take: 30 }),
+  ]);
+  // 통관 인증 후기를 먼저
+  reviews.sort((a, b) => Number(b.proofStatus === "APPROVED") - Number(a.proofStatus === "APPROVED"));
   const trustOf = (sid: string) => trust.find((t) => t.sellerId === sid);
+  // 경로별 실측 (협찬 제외)
+  const measured = (route: string) => {
+    const rs = reviews.filter((r) => r.route === route && !r.sponsored);
+    if (!rs.length) return null;
+    const days = rs.reduce((a, r) => a + r.shippingDays, 0) / rs.length;
+    const errs = rs.filter((r) => r.estTax).map((r) => (r.taxPaid - r.estTax!) / r.estTax!);
+    return { n: rs.length, days, err: errs.length ? errs.reduce((a, b) => a + b, 0) / errs.length : null };
+  };
+  const liked = user ? new Set((await prisma.helpful.findMany({ where: { userId: user.id, reviewId: { in: reviews.map((r) => r.id) } } })).map((h) => h.reviewId)) : new Set<string>();
   const existing = user ? await prisma.priceAlert.findUnique({ where: { userId_wineId_qty_bottleMl: { userId: user.id, wineId: id, qty, bottleMl: ml } } }) : null;
 
   const href = (patch: Record<string, string | number | undefined>) => {
@@ -147,6 +162,14 @@ export default async function WinePage({ params, searchParams }: P) {
                       {showing.forwarder ? ` → ${showing.forwarder.name}` : ""}
                       {t ? ` · 후기 ${t._avg.rating?.toFixed(1)}점(${t._count})` : ""} · {showing.daysMin}~{showing.daysMax}일 · 물품 {money(showing.unitPrice, showing.currency)}/병 · 운임 {won(showing.shipKrw)} · 세금 {won(showing.tax.pay)} · 가격 확인 {ymd(showing.checkedAt)}
                     </div>
+                    {(() => {
+                      const ms = measured(r.channel);
+                      return ms ? (
+                        <div className="meta" style={{ gridColumn: "1 / 3" }}>
+                          <span className="chip ok">실측</span> 직구 후기 {ms.n}건 · 실제 배송 평균 {Math.round(ms.days)}일{ms.err !== null ? ` · 실제 세금이 예상보다 평균 ${ms.err >= 0 ? "+" : ""}${(ms.err * 100).toFixed(0)}%` : ""}
+                        </div>
+                      ) : null;
+                    })()}
                     <div className="bar"><i style={{ width: `${((showing.perBottle / max) * 100).toFixed(1)}%` }} /></div>
                     <div className="actions">
                       <Link className="btn small" href={goHref(showing)}>이 경로로 주문하기</Link>
@@ -181,6 +204,17 @@ export default async function WinePage({ params, searchParams }: P) {
                 </div>
               ))}
             </div>
+          </section>
+
+          <section className="stack" id="reviews">
+            <div className="row between">
+              <h2>직구 후기 {reviews.length ? reviews.length : ""}</h2>
+              <Link className="btn ghost small" href={`/community/write?wine=${id}`}>후기 쓰기</Link>
+            </div>
+            {reviews.length ? reviews.slice(0, 5).map((rv) => <ReviewCard key={rv.id} r={rv} viewerId={user?.id} liked={liked.has(rv.id)} showWine={false} />) : (
+              <div className="box"><p className="small muted">아직 이 와인을 직구한 후기가 없습니다. 직구했다면 실제 낸 세금과 배송일을 남겨 주세요. 다음 사람의 도착가가 정확해집니다.</p></div>
+            )}
+            {reviews.length > 5 && <Link className="small" href={`/community`}>후기 더 보기</Link>}
           </section>
 
           {wine.notesKo && (

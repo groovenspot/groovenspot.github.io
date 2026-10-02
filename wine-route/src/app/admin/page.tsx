@@ -18,7 +18,11 @@ export default async function AdminHome() {
     prisma.clickLog.groupBy({ by: ["anonId"], where: { createdAt: { gte: since } } }).then((r) => r.length),
     prisma.priceAlert.groupBy({ by: ["userId"], where: { active: true } }).then((r) => r.length),
     prisma.waitlist.count(),
-    prisma.purchase.findMany({ where: { estTax: { not: null } }, select: { taxPaid: true, estTax: true } }),
+    prisma.purchase.findMany({ where: { estTax: { not: null } }, select: { taxPaid: true, estTax: true } }).then(async (ps) => [
+      ...ps,
+      // 주문 없이 쓴 직구 후기도 실측 기록 (주문에서 쓴 후기는 구매 기록과 중복이라 제외)
+      ...(await prisma.directReview.findMany({ where: { estTax: { not: null }, orderId: null, status: "PUBLISHED" }, select: { taxPaid: true, estTax: true } })),
+    ]),
     prisma.jobLog.findMany({ orderBy: { createdAt: "desc" }, take: 12 }),
     prisma.$queryRaw<{ buyers: bigint; repeaters: bigint }[]>`
       SELECT COUNT(*) AS buyers, COUNT(*) FILTER (WHERE n >= 2) AS repeaters FROM (
@@ -40,7 +44,7 @@ export default async function AdminHome() {
     ["경로 비교 → 판매처 이동률", views ? `${((clickers / Math.max(1, viewers)) * 100).toFixed(1)}%` : "-", `상세 조회 ${views.toLocaleString("ko-KR")}회 · 방문 기기 ${viewers.toLocaleString("ko-KR")}`],
     ["가격 알림 등록자", alertUsers.toLocaleString("ko-KR"), "알림 1개 이상 켠 회원"],
     ["대기자", waitlist.toLocaleString("ko-KR"), "1단계 목표 1,000명"],
-    ["도착가 오차", err !== null ? `±${(err * 100).toFixed(1)}%` : "-", `구매 기록 ${errs.length}건의 세금 예상 대비 실제 차이 평균`],
+    ["도착가 오차", err !== null ? `±${(err * 100).toFixed(1)}%` : "-", `구매 기록·직구 후기 ${errs.length}건의 세금 예상 대비 실제 차이 평균`],
     ["재구매율", repRate !== null ? `${(repRate * 100).toFixed(0)}%` : "-", "90일 내 2회 이상 구매 연결된 회원 비율"],
     ["이번 달 수수료", commission[0]?.krw ? `${Math.round(commission[0].krw).toLocaleString("ko-KR")}원` : "-", "포스트백 수수료 합계 (최근 환율 환산)"],
   ];

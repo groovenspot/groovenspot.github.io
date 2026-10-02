@@ -1,11 +1,12 @@
 "use client";
+import { keepFormSubmit } from "@/components/useKeepForm";
 import { useActionState } from "react";
 import { joinWaitlist, type FormState } from "@/app/actions";
 
 export function WaitlistForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(joinWaitlist, {});
   return (
-    <form action={action} className="stack">
+    <form onSubmit={keepFormSubmit(action)} className="stack">
       <div className="field">
         <label className="label" htmlFor="wl-email">알림 받을 이메일</label>
         <input id="wl-email" name="email" type="email" required placeholder="name@example.com" autoComplete="email" />

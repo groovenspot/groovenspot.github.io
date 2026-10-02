@@ -71,6 +71,7 @@ model Wine {
   purchases Purchase[]
   views     WineView[]
   orders    Order[]
+  reviews   DirectReview[]
 
   @@index([country])
   @@index([type])
@@ -103,7 +104,7 @@ model Seller {
 
   offers    Offer[]
   crawlRuns CrawlRun[]
-  reviews   Review[]
+  reviews   DirectReview[]
   orders    Order[]
 }
 
@@ -168,6 +169,15 @@ model User {
   email     String   @unique
   phone     String? // 알림톡 수신 번호
   plan      Plan     @default(FREE)
+  premiumUntil DateTime? // 포인트·보상으로 받은 프리미엄 기간
+
+  // 커뮤니티
+  nickname        String?   @unique
+  adultVerifiedAt DateTime? // 휴대폰 본인인증 (만 19세 이상)
+  birthDate       String? // YYYY-MM-DD
+  ciHash          String?   @unique // 본인인증 연계정보 해시 (중복 가입 방지)
+  founding        Boolean   @default(false) // 초기 초대 회원
+  inviteCode      String?
 
   // 주문서 정보 (해외 판매처 결제 화면에 미리 채우거나 복사해서 붙여넣기)
   firstNameEn String?
@@ -186,7 +196,10 @@ model User {
   alerts    PriceAlert[]
   clicks    ClickLog[]
   purchases Purchase[]
-  reviews   Review[]
+  reviews   DirectReview[]
+  helpfuls  Helpful[]
+  reports   Report[]
+  points    PointTx[]
 }
 
 model LoginCode {
@@ -285,21 +298,119 @@ model Purchase {
   order Order?
 }
 
-model Review {
-  id           String   @id @default(cuid())
-  userId       String
-  sellerId     String
-  rating       Int // 1~5
-  shippingDays Int?
-  damaged      Boolean  @default(false)
-  comment      String   @default("")
-  createdAt    DateTime @default(now())
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, sellerId])
+enum ReviewStatus {
+  PUBLISHED
+  HIDDEN // 신고 접수로 숨김 (운영자 확인 대기)
+  DELETED
 }
+
+enum ProofStatus {
+  NONE
+  PENDING // 통관 내역 사진 제출, 운영자 확인 대기
+  APPROVED // 인증 배지
+  REJECTED
+}
+
+/// 직구 인증 후기 = 실제 경로 1건의 검증된 비용 기록
+model DirectReview {
+  id           String       @id @default(cuid())
+  userId       String
+  wineId       String
+  sellerId     String?
+  orderId      String?      @unique // 내 주문에서 쓴 후기
+  route        String
+  qty          Int
+  bottleMl     Int          @default(750)
+  taxPaid      Int // 실제 낸 세금 (원)
+  estTax       Int? // 같은 조건 예상 세금 (원)
+  cardPaidKrw  Int? // 판매처 결제 청구액 (원, 선택) — 실측 절약액 계산용
+  shippingDays Int
+  damaged      Boolean      @default(false)
+  rating       Int // 1~5
+  oneLiner     String
+  sponsored    Boolean      @default(false) // 판매처로부터 대가를 받음 (표시 의무)
+  status       ReviewStatus @default(PUBLISHED)
+  proofStatus  ProofStatus  @default(NONE)
+  proofNote    String?
+  helpfulCount Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wine     Wine       @relation(fields: [wineId], references: [id], onDelete: Cascade)
+  seller   Seller?    @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  order    Order?     @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  proof    ProofFile?
+  helpfuls Helpful[]
+  reports  Report[]
+
+  @@index([status, createdAt])
+  @@index([wineId])
+  @@index([sellerId])
+}
+
+/// 인증용 통관 내역·영수증 사진. 개인정보가 담겨 있어 운영자 확인이 끝나면 지웁니다.
+model ProofFile {
+  id        String   @id @default(cuid())
+  reviewId  String   @unique
+  mime      String
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  review DirectReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+}
+
+model Helpful {
+  reviewId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  review DirectReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([reviewId, userId])
+}
+
+model Report {
+  id         String    @id @default(cuid())
+  reviewId   String
+  userId     String
+  reason     String
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+  resolution String? // restored | deleted
+
+  review DirectReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+}
+
+/// 포인트 원장. 같은 사유·대상으로 두 번 지급되지 않습니다.
+model PointTx {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int // 지급 +, 사용 -
+  reason    String // review | proof | helpful10 | redeem_premium | admin | ...
+  refId     String
+  note      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reason, refId])
+  @@index([userId, createdAt])
+}
+
+model InviteCode {
+  code          String   @id
+  note          String?
+  premiumMonths Int      @default(6)
+  maxUses       Int      @default(1)
+  uses          Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
 
 model CrawlRun {
   id         String    @id @default(cuid())
@@ -374,6 +485,7 @@ model Order {
   seller   Seller       @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   purchase Purchase?    @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
   events   OrderEvent[]
+  review   DirectReview?
 
   @@index([userId, createdAt])
   @@index([status])

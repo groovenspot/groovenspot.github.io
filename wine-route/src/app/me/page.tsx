@@ -6,6 +6,9 @@ import { ROUTE_LABEL } from "@/lib/engine";
 import { money, sizeLabel, won, ymd } from "@/lib/format";
 import { addPurchase, customerOrderStep, deleteAlert, deletePurchase, markDelivered, toggleAlert } from "./actions";
 import { ProfileForm } from "@/components/ProfileForm";
+import { InviteForm, RedeemButton } from "@/components/PointsPanel";
+import { balance, isPremium } from "@/server/points";
+import { getCommunityConfig } from "@/server/settings";
 import { decrypt } from "@/server/crypto";
 import { maskPccc, ORDER_FLOW, ORDER_LABEL } from "@/lib/order";
 
@@ -16,7 +19,7 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
   const sp = await searchParams;
   const user = await requireUser("/me");
   const [orders, alerts, purchases, wines, tax, fx] = await Promise.all([
-    prisma.order.findMany({ where: { userId: user.id }, include: { wine: true, seller: true, events: { orderBy: { createdAt: "asc" } } }, orderBy: { createdAt: "desc" }, take: 50 }),
+    prisma.order.findMany({ where: { userId: user.id }, include: { wine: true, seller: true, review: { select: { id: true } }, events: { orderBy: { createdAt: "asc" } } }, orderBy: { createdAt: "desc" }, take: 50 }),
     prisma.priceAlert.findMany({ where: { userId: user.id }, include: { wine: true }, orderBy: { createdAt: "desc" } }),
     prisma.purchase.findMany({ where: { userId: user.id }, include: { wine: true }, orderBy: { orderedAt: "desc" } }),
     prisma.wine.findMany({ select: { id: true, nameKo: true }, orderBy: { nameKo: "asc" } }),
@@ -24,13 +27,19 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
     getFx(),
   ]);
   const activeCount = alerts.filter((a) => a.active).length;
+  const [points, ledger, ccfg] = await Promise.all([
+    balance(user.id),
+    prisma.pointTx.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 20 }),
+    getCommunityConfig(),
+  ]);
+  const premium = isPremium(user);
 
   return (
     <div className="stack-lg">
       <section className="row between">
         <div className="stack" style={{ gap: 4 }}>
           <h1 style={{ fontSize: 28 }}>내 알림·기록</h1>
-          <p className="muted small">{user.email} · {user.plan === "PREMIUM" ? "프리미엄 회원 (알림 무제한)" : `무료 회원 (알림 ${activeCount}/${tax.freeAlertLimit})`}</p>
+          <p className="muted small">{user.email}{user.nickname ? ` · ${user.nickname}` : ""} · {premium ? `프리미엄 회원 (알림 무제한${user.premiumUntil && user.plan !== "PREMIUM" ? `, ${ymd(user.premiumUntil)}까지` : ""})` : `무료 회원 (알림 ${activeCount}/${tax.freeAlertLimit})`}{user.founding ? " · 초기 회원" : ""}</p>
         </div>
       </section>
 
@@ -71,6 +80,10 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
                 {(o.status === "CONFIRMED" || o.status === "SHIPPED") && (
                   <form action={customerOrderStep}><input type="hidden" name="id" value={o.id} /><input type="hidden" name="to" value="CUSTOMS" /><button className="btn ghost small">세금 납부 안내를 받았어요 (통관 중)</button></form>
                 )}
+                {o.status === "DELIVERED" && !o.review && (
+                  <Link className="btn small" href={`/community/write?order=${o.id}`}>후기 쓰고 {ccfg.points.review.toLocaleString("ko-KR")}P 받기</Link>
+                )}
+                {o.review && <span className="chip ok">후기 작성함</span>}
                 {["CONFIRMED", "SHIPPED", "CUSTOMS"].includes(o.status) && (
                   <form action={markDelivered} className="row">
                     <input type="hidden" name="id" value={o.id} />
@@ -82,6 +95,36 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
             </div>
           );
         }) : <div className="box"><p className="muted">아직 주문이 없습니다. 와인 상세에서 &lsquo;이 경로로 주문하기&rsquo;를 누르면 여기서 진행 상황을 볼 수 있습니다.</p></div>}
+      </section>
+
+      <section className="stack" id="points">
+        <h2>포인트</h2>
+        <div className="box">
+          <div className="row between">
+            <div className="stack" style={{ gap: 2 }}>
+              <span className="label">보유 포인트</span>
+              <span className="num" style={{ fontSize: 26 }}>{points.toLocaleString("ko-KR")}P</span>
+            </div>
+            <RedeemButton cost={ccfg.costs.premiumMonth} balance={points} />
+          </div>
+          <p className="small muted">직구 후기 {ccfg.points.review}P, 통관 인증 +{ccfg.points.proof}P, 도움됨 10개마다 +{ccfg.points.helpful10}P. 포인트는 프리미엄 구독에만 쓰고, 와인 값으로는 쓸 수 없습니다. 오프라인 시음회 참가권({ccfg.costs.tasting.toLocaleString("ko-KR")}P)은 3단계에서 열립니다.</p>
+          {!user.nickname && <p className="small"><Link href="/verify?next=/me">커뮤니티 가입</Link>(성인인증·닉네임) 후 후기를 쓸 수 있습니다.</p>}
+          {ledger.length > 0 && (
+            <details>
+              <summary className="small muted">적립·사용 내역</summary>
+              <table className="taxtable" style={{ marginTop: 8 }}>
+                <tbody>
+                  {ledger.map((t) => <tr key={t.id}><td>{ymd(t.createdAt)} · {t.note ?? t.reason}</td><td className={t.amount >= 0 ? "pos" : "neg"}>{t.amount >= 0 ? "+" : ""}{t.amount.toLocaleString("ko-KR")}P</td></tr>)}
+                </tbody>
+              </table>
+            </details>
+          )}
+          {user.inviteCode ? (
+            <p className="small pos">초기 회원 (초대 코드 {user.inviteCode}){user.premiumUntil ? ` · 프리미엄 ${ymd(user.premiumUntil)}까지` : ""}</p>
+          ) : (
+            <div className="row"><span className="small muted">초대 코드가 있나요?</span><InviteForm /></div>
+          )}
+        </div>
       </section>
 
       <section className="stack" id="profile">

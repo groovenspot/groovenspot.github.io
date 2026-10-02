@@ -1,4 +1,5 @@
 import { prisma } from "./db";
+import { DEFAULT_COMMUNITY, type CommunityConfig } from "@/lib/community";
 import { DEFAULT_TAX, type TaxConfig } from "@/lib/tax";
 
 export async function getTaxConfig(): Promise<TaxConfig> {
@@ -41,4 +42,14 @@ export async function getFx(): Promise<{ rates: Record<string, number>; asOf: Da
     }
   }
   return { rates, asOf, source };
+}
+
+export async function getCommunityConfig(): Promise<CommunityConfig> {
+  const row = await prisma.setting.findUnique({ where: { key: "community" } });
+  const v = (row?.value as Partial<CommunityConfig> | null) ?? {};
+  return { ...DEFAULT_COMMUNITY, ...v, points: { ...DEFAULT_COMMUNITY.points, ...(v.points ?? {}) }, costs: { ...DEFAULT_COMMUNITY.costs, ...(v.costs ?? {}) }, stage2: { ...DEFAULT_COMMUNITY.stage2, ...(v.stage2 ?? {}) } };
+}
+
+export async function saveCommunityConfig(cfg: CommunityConfig) {
+  await prisma.setting.upsert({ where: { key: "community" }, update: { value: cfg }, create: { key: "community", value: cfg } });
 }

@@ -116,7 +116,7 @@ async function main() {
     prisma.clickLog.deleteMany(),
     prisma.priceAlert.deleteMany(),
     prisma.purchase.deleteMany(),
-    prisma.review.deleteMany(),
+    prisma.directReview.deleteMany(),
     prisma.offer.deleteMany(),
     prisma.crawlRun.deleteMany(),
     prisma.seller.deleteMany(),

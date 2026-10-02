@@ -1,4 +1,5 @@
 "use client";
+import { keepFormSubmit } from "@/components/useKeepForm";
 import { useActionState } from "react";
 import { saveProfile } from "@/app/me/actions";
 
@@ -10,7 +11,7 @@ type P = {
 export function ProfileForm({ v, next }: P) {
   const [state, action, pending] = useActionState(saveProfile, {} as { ok?: boolean; error?: string });
   return (
-    <form action={action} className="box">
+    <form onSubmit={keepFormSubmit(action)} className="box">
       {next && <input type="hidden" name="next" value={next} />}
       <div className="form-grid">
         <div className="field"><label className="label" htmlFor="pf-first">이름 (영문)</label><input id="pf-first" name="firstNameEn" defaultValue={v.firstNameEn} placeholder="Gildong" autoComplete="given-name" /></div>

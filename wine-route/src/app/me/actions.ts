@@ -8,13 +8,14 @@ import { calcTax } from "@/lib/tax";
 import { normalizePccc } from "@/lib/order";
 import { encrypt } from "@/server/crypto";
 import { moveOrder } from "@/server/orders";
+import { isPremium } from "@/server/points";
 
 export async function toggleAlert(fd: FormData) {
   const u = await requireUser();
   const id = String(fd.get("id"));
   const a = await prisma.priceAlert.findFirst({ where: { id, userId: u.id } });
   if (!a) return;
-  if (!a.active && u.plan === "FREE") {
+  if (!a.active && !isPremium(u)) {
     const { freeAlertLimit } = await getTaxConfig();
     if ((await prisma.priceAlert.count({ where: { userId: u.id, active: true } })) >= freeAlertLimit) return;
   }

@@ -27,6 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </Link>
             <nav className="nav" aria-label="주 메뉴">
               <Link href="/">와인 찾기</Link>
+              <Link href="/community">직구 후기</Link>
               <Link href="/calculator">직접 계산</Link>
               <Link href="/guide">통관 가이드</Link>
               {user ? (
