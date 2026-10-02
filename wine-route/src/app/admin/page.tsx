@@ -69,7 +69,7 @@ export default async function AdminHome() {
             ))}
           </div>
         </div>
-        <p className="small muted">운영 환경에서는 /api/cron/fx (매일), /api/cron/crawl (주 1회), /api/cron/alerts (매일 환율 갱신 후)를 스케줄러로 호출합니다.</p>
+        <p className="small muted">운영 환경에서는 /api/cron/fx (1시간마다), /api/cron/crawl (주 1회), /api/cron/alerts (매일 환율 갱신 후)를 스케줄러로 호출합니다.</p>
         <div className="table-wrap">
           <table className="data">
             <thead><tr><th>시각</th><th>작업</th><th>결과</th><th>내용</th></tr></thead>

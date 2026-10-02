@@ -1,13 +1,14 @@
 import { prisma } from "@/server/db";
-import { getTaxConfig } from "@/server/settings";
-import { runJobAction, saveTax, setRate } from "@/app/admin/actions";
-import { ymd } from "@/lib/format";
+import { getFxConfig, getTaxConfig } from "@/server/settings";
+import { runJobAction, saveFx, saveTax, setRate } from "@/app/admin/actions";
+import { FX_SOURCE_LABEL, ymdhm } from "@/lib/format";
 
 export default async function SettingsPage() {
-  const [t, rates] = await Promise.all([
+  const [t, fxc, rates] = await Promise.all([
     getTaxConfig(),
-    prisma.$queryRaw<{ currency: string; krw: number; date: Date; source: string }[]>`
-      SELECT DISTINCT ON (currency) currency, krw, date, source FROM "ExchangeRate" ORDER BY currency, date DESC`,
+    getFxConfig(),
+    prisma.$queryRaw<{ currency: string; krw: number; fetchedAt: Date; source: string }[]>`
+      SELECT DISTINCT ON (currency) currency, krw, "fetchedAt", source FROM "ExchangeRate" ORDER BY currency, date DESC, "fetchedAt" DESC`,
   ]);
   const pct = (v: number) => +(v * 100).toFixed(4);
   return (
@@ -34,14 +35,27 @@ export default async function SettingsPage() {
       <section className="stack">
         <div className="row between">
           <h2>환율</h2>
-          <form action={runJobAction}><input type="hidden" name="job" value="fx" /><button className="btn ghost small">수출입은행에서 지금 갱신</button></form>
+          <form action={runJobAction}><input type="hidden" name="job" value="fx" /><button className="btn ghost small">지금 갱신</button></form>
         </div>
+        <form action={saveFx} className="box">
+          <div className="form-grid">
+            <div className="field"><label className="label" htmlFor="fx-src">환율 출처</label>
+              <select id="fx-src" name="source" defaultValue={fxc.source}>
+                <option value="investing">investing.com 시세</option>
+                <option value="koreaexim">수출입은행 매매기준율</option>
+              </select></div>
+            <div className="field"><label className="label" htmlFor="fx-jump">급변 차단 기준 (%)</label><input id="fx-jump" name="maxJump" type="number" step="0.1" defaultValue={+(fxc.maxJump * 100).toFixed(1)} /></div>
+          </div>
+          <label className="check"><input type="checkbox" name="fallbackExim" defaultChecked={fxc.fallbackExim} /> investing.com에서 못 받은 통화는 수출입은행 환율로 채우기 (KOREAEXIM_API_KEY 필요)</label>
+          <p className="small muted">받은 값은 즉시 모든 도착가 계산에 반영됩니다. 직전 값보다 급변 차단 기준 넘게 바뀐 값은 파싱 오류로 보고 버립니다. 운영에서는 /api/cron/fx를 1시간마다 호출합니다.</p>
+          <div><button className="btn">환율 설정 저장</button></div>
+        </form>
         <div className="table-wrap">
           <table className="data">
-            <thead><tr><th>통화</th><th className="r">1단위당 원</th><th>기준일</th><th>출처</th></tr></thead>
+            <thead><tr><th>통화</th><th className="r">1단위당 원</th><th>받은 시각 (KST)</th><th>출처</th></tr></thead>
             <tbody>
               {rates.map((r) => (
-                <tr key={r.currency}><td>{r.currency}</td><td className="r">{r.krw.toLocaleString("ko-KR", { maximumFractionDigits: 4 })}</td><td className="num small">{ymd(r.date)}</td><td className="small">{r.source}</td></tr>
+                <tr key={r.currency}><td>{r.currency}</td><td className="r">{r.krw.toLocaleString("ko-KR", { maximumFractionDigits: 4 })}</td><td className="num small">{ymdhm(r.fetchedAt)}</td><td className="small">{FX_SOURCE_LABEL[r.source] ?? r.source}</td></tr>
               ))}
             </tbody>
           </table>

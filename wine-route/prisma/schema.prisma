@@ -125,9 +125,10 @@ model Offer {
 model ExchangeRate {
   id       String   @id @default(cuid())
   currency String
-  krw      Float // 1단위당 원화
-  date     DateTime @db.Date
-  source   String   @default("koreaexim")
+  krw       Float // 1단위당 원화
+  date      DateTime @db.Date // 기준일 (같은 날 여러 번 받으면 최신 값으로 덮어씀)
+  source    String   @default("koreaexim") // investing | koreaexim | manual | seed
+  fetchedAt DateTime @default(now()) // 실제로 받은 시각
 
   @@unique([currency, date])
 }

@@ -7,7 +7,7 @@ import { getUser } from "@/server/auth";
 import { cookies } from "next/headers";
 import { TaxBreakdown } from "@/components/TaxBreakdown";
 import { AlertForm } from "@/components/AlertForm";
-import { money, sizeLabel, won, ymd } from "@/lib/format";
+import { FX_SOURCE_LABEL, money, sizeLabel, won, ymd, ymdhm } from "@/lib/format";
 import type { Candidate } from "@/lib/engine";
 
 export const dynamic = "force-dynamic";
@@ -201,7 +201,7 @@ export default async function WinePage({ params, searchParams }: P) {
               <>
                 <div className="label">{result.routes.find((r) => r.channel === sel.channel)?.label} · {sel.sellerName}{qty > 1 ? ` · ${qty}병 합산` : ""}</div>
                 <TaxBreakdown goodsKrw={sel.goodsKrw} shipKrw={sel.shipKrw} tax={sel.tax} total={sel.total} qty={qty} dutyRate={ctx.tax.dutyRate} />
-                <p className="small muted">환율 {ctx.fx.asOf ? ymd(ctx.fx.asOf) : "-"} 기준 · 실제 세금은 관세청 주간 과세환율로 계산됩니다.</p>
+                <p className="small muted">환율 {ctx.fx.asOf ? `${ymdhm(ctx.fx.asOf)} ${FX_SOURCE_LABEL[ctx.fx.source ?? ""] ?? ""}` : "-"} 기준 · 실제 세금은 관세청 주간 과세환율로 계산됩니다.</p>
               </>
             ) : (
               <p className="muted">이용 가능한 경로가 없습니다.</p>

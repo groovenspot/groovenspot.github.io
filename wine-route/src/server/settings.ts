@@ -10,15 +10,35 @@ export async function saveTaxConfig(cfg: TaxConfig) {
   await prisma.setting.upsert({ where: { key: "tax" }, update: { value: cfg }, create: { key: "tax", value: cfg } });
 }
 
-/** 통화별 가장 최근 환율. */
-export async function getFx(): Promise<{ rates: Record<string, number>; asOf: Date | null }> {
-  const rows = await prisma.$queryRaw<{ currency: string; krw: number; date: Date }[]>`
-    SELECT DISTINCT ON (currency) currency, krw, date FROM "ExchangeRate" ORDER BY currency, date DESC`;
+export type FxConfig = {
+  source: "investing" | "koreaexim"; // 환율 출처
+  fallbackExim: boolean; // investing.com 실패 시 수출입은행으로 보충
+  maxJump: number; // 직전 값 대비 이 비율 넘게 변하면 반영하지 않음 (파싱 오류 방지)
+};
+export const DEFAULT_FX: FxConfig = { source: "investing", fallbackExim: true, maxJump: 0.1 };
+
+export async function getFxConfig(): Promise<FxConfig> {
+  const row = await prisma.setting.findUnique({ where: { key: "fx" } });
+  return { ...DEFAULT_FX, ...((row?.value as Partial<FxConfig> | null) ?? {}) };
+}
+
+export async function saveFxConfig(cfg: FxConfig) {
+  await prisma.setting.upsert({ where: { key: "fx" }, update: { value: cfg }, create: { key: "fx", value: cfg } });
+}
+
+/** 통화별 가장 최근 환율 (같은 날이면 가장 늦게 받은 값). */
+export async function getFx(): Promise<{ rates: Record<string, number>; asOf: Date | null; source: string | null }> {
+  const rows = await prisma.$queryRaw<{ currency: string; krw: number; fetchedAt: Date; source: string }[]>`
+    SELECT DISTINCT ON (currency) currency, krw, "fetchedAt", source FROM "ExchangeRate" ORDER BY currency, date DESC, "fetchedAt" DESC`;
   const rates: Record<string, number> = { KRW: 1 };
   let asOf: Date | null = null;
+  let source: string | null = null;
   for (const r of rows) {
     rates[r.currency] = r.krw;
-    if (r.currency === "USD") asOf = r.date;
+    if (r.currency === "USD") {
+      asOf = r.fetchedAt;
+      source = r.source;
+    }
   }
-  return { rates, asOf };
+  return { rates, asOf, source };
 }

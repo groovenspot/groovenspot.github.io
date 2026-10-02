@@ -23,7 +23,7 @@
 | 마이페이지 | 구매 기록 + 실제 세금 vs 예상 세금 | P1 | `src/app/me` |
 | 마이페이지 | 셀러 후기 → 셀러 신뢰 점수 | P1 | `src/app/sellers/[id]` |
 | 관리자 | 셀러 등록, 국가별 운임표, 배송대행지, 가격 수집 상태 | P0 | `src/app/admin/sellers`, `src/app/admin/crawl` |
-| 관리자 | 세율을 설정값으로 관리, 환율 매일 자동 갱신 | P0 | `src/app/admin/settings`, `src/jobs/fx.ts` |
+| 관리자 | 세율을 설정값으로 관리, 환율 1시간마다 자동 반영 (investing.com) | P0 | `src/app/admin/settings`, `src/jobs/fx.ts`, `src/lib/investing.ts` |
 
 그 밖에:
 
@@ -73,7 +73,7 @@ npm run lint    # 타입 검사
 
 | 작업 | 주기 | 내용 | 수동 실행 |
 | --- | --- | --- | --- |
-| `fx` | 평일 매일 | 한국수출입은행 환율 API로 환율 갱신 (주말·공휴일은 직전 영업일) | `npm run job:fx` |
+| `fx` | 1시간마다 | investing.com 통화쌍 시세(USD/KRW, EUR/KRW …)를 받아 즉시 반영. 못 받은 통화는 수출입은행으로 보충하거나 직전 값 유지 | `npm run job:fx` |
 | `alerts` | 매일 | 알림별 최저 도착가 계산 → 목표가 이하이고 지난 알림보다 더 내려갔으면 발송 | `npm run job:alerts` |
 | `crawl` | 주 1회 | 수집 방식이 JSON-LD인 셀러의 상품 페이지에서 가격·재고 갱신 | `npm run job:crawl` |
 
@@ -83,10 +83,18 @@ npm run lint    # 타입 검사
 
 | 항목 | 환경 변수 | 비고 |
 | --- | --- | --- |
-| 환율 | `KOREAEXIM_API_KEY` | 한국수출입은행 Open API 인증키 |
+| 환율 | (없음) / `KOREAEXIM_API_KEY` | 기본 출처는 investing.com (키 불필요). 관리자 화면에서 수출입은행으로 바꾸거나 보충용으로 쓸 수 있습니다. |
 | 이메일 | `RESEND_API_KEY`, `MAIL_FROM` | 없으면 서버 로그로 출력 |
 | 카카오 알림톡 | `SOLAPI_*` | 카카오 비즈니스 채널과 알림톡 템플릿 승인이 필요합니다. 템플릿 변수: `#{와인}`, `#{도착가}`, `#{목표가}`, `#{링크}`. 없으면 이메일로 대신 보냅니다. |
 | 제휴 전환 | `POSTBACK_SECRET` | 제휴사에 `/api/postback?secret=…&click={sub}&order=…&amount=…&currency=…&commission=…` 등록 |
+
+## 환율 (investing.com)
+
+- 관리자 › 세율·환율에서 출처(investing.com / 수출입은행), 보충 여부, 급변 차단 기준(기본 10%)을 정합니다.
+- investing.com은 공식 API가 없어 통화쌍 페이지(`/currencies/usd-krw` 등)의 현재가를 읽습니다. 파서는 세 가지 표기를 순서대로 시도합니다 (`src/lib/investing.ts`).
+- 받은 시각과 출처가 와인 상세·계산기 화면에 표시됩니다.
+- **주의**: investing.com 이용약관은 자동 수집을 제한하고, 서버에서 보내는 요청은 봇 차단(HTTP 403)될 수 있습니다. 운영 전에 배포 서버에서 `npm run job:fx`로 실제 수신 여부를 확인하고, 상업적 이용 허가나 유료 시세 API 전환을 검토하세요. 수신이 안 되면 수출입은행 보충이 자동으로 동작합니다.
+- 실제 세금은 관세청 주간 과세환율로 매겨지므로, 시세 기준 도착가와 약간 차이가 날 수 있습니다.
 
 ## 데이터 넣기
 
@@ -106,6 +114,7 @@ npm run lint    # 타입 검사
 - [ ] 개인정보 처리방침·이용약관 페이지 (이메일·휴대폰 번호 수집)
 - [ ] 자가사용 수량 안내 기준 확정 (현재 6병 이상에서 경고, 관리자 설정값)
 - [ ] 프리미엄 회원 결제 연동
+- [ ] investing.com 환율 수신을 배포 서버에서 확인하고, 이용약관 검토 (차단되면 유료 시세 API 검토)
 
 ## 구조
 

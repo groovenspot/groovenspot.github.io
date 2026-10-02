@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import type { Channel, PriceSource } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { requireAdmin } from "@/server/auth";
-import { getTaxConfig, saveTaxConfig } from "@/server/settings";
+import { getTaxConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
 import { runJob, type JobName } from "@/jobs/run";
 import { runCrawlJob } from "@/jobs/crawl";
 
@@ -189,13 +189,23 @@ export async function saveTax(fd: FormData) {
   revalidatePath("/", "layout");
 }
 
+export async function saveFx(fd: FormData) {
+  await requireAdmin();
+  await saveFxConfig({
+    source: str(fd, "source") === "koreaexim" ? "koreaexim" : "investing",
+    fallbackExim: bool(fd, "fallbackExim"),
+    maxJump: Math.min(1, Math.max(0.01, numOr(fd, "maxJump", 10) / 100)),
+  });
+  revalidatePath("/admin/settings");
+}
+
 export async function setRate(fd: FormData) {
   await requireAdmin();
   const currency = str(fd, "currency").toUpperCase();
   const krw = Number(fd.get("krw"));
   if (!/^[A-Z]{3}$/.test(currency) || !(krw > 0)) throw new Error("통화와 환율을 확인해 주세요");
   const today = new Date(new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10));
-  await prisma.exchangeRate.upsert({ where: { currency_date: { currency, date: today } }, update: { krw, source: "manual" }, create: { currency, krw, date: today, source: "manual" } });
+  await prisma.exchangeRate.upsert({ where: { currency_date: { currency, date: today } }, update: { krw, source: "manual", fetchedAt: new Date() }, create: { currency, krw, date: today, source: "manual" } });
   revalidatePath("/", "layout");
 }
 

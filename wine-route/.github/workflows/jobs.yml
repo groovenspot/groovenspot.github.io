@@ -3,7 +3,7 @@
 name: Scheduled jobs
 on:
   schedule:
-    - cron: "10 1 * * 1-5" # 평일 10:10 KST 환율 갱신 (수출입은행 고시 후)
+    - cron: "7 * * * *" # 매시 7분 환율 갱신 (investing.com)
     - cron: "20 1 * * *" # 매일 10:20 KST 가격 알림 확인
     - cron: "0 18 * * 0" # 월요일 03:00 KST 가격 수집
   workflow_dispatch:
@@ -22,7 +22,7 @@ jobs:
         id: pick
         run: |
           case "${{ github.event.schedule }}" in
-            "10 1 * * 1-5") echo "job=fx" >> "$GITHUB_OUTPUT" ;;
+            "7 * * * *") echo "job=fx" >> "$GITHUB_OUTPUT" ;;
             "20 1 * * *") echo "job=alerts" >> "$GITHUB_OUTPUT" ;;
             "0 18 * * 0") echo "job=crawl" >> "$GITHUB_OUTPUT" ;;
             *) echo "job=${{ github.event.inputs.job }}" >> "$GITHUB_OUTPUT" ;;
