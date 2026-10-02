@@ -1,0 +1,38 @@
+{
+  "name": "wine-route",
+  "version": "0.1.0",
+  "private": true,
+  "description": "와인 직구 최적경로 비교 플랫폼 — 세금·운임을 모두 넣은 한국 도착가 기준으로 구매 경로를 추천합니다.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "job:fx": "tsx src/jobs/cli.ts fx",
+    "job:crawl": "tsx src/jobs/cli.ts crawl",
+    "job:alerts": "tsx src/jobs/cli.ts alerts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "next": "^15.5.27",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "prisma": "^6.19.3",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

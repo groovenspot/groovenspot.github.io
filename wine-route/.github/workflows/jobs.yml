@@ -1,0 +1,33 @@
+# 배포한 사이트의 정기 작업을 호출합니다.
+# 저장소 Settings → Secrets에 APP_URL(예: https://wineroute.kr)과 CRON_SECRET을 넣어야 동작합니다.
+name: Scheduled jobs
+on:
+  schedule:
+    - cron: "10 1 * * 1-5" # 평일 10:10 KST 환율 갱신 (수출입은행 고시 후)
+    - cron: "20 1 * * *" # 매일 10:20 KST 가격 알림 확인
+    - cron: "0 18 * * 0" # 월요일 03:00 KST 가격 수집
+  workflow_dispatch:
+    inputs:
+      job:
+        description: fx | crawl | alerts
+        required: true
+        default: alerts
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    if: ${{ vars.JOBS_ENABLED == 'true' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Pick job
+        id: pick
+        run: |
+          case "${{ github.event.schedule }}" in
+            "10 1 * * 1-5") echo "job=fx" >> "$GITHUB_OUTPUT" ;;
+            "20 1 * * *") echo "job=alerts" >> "$GITHUB_OUTPUT" ;;
+            "0 18 * * 0") echo "job=crawl" >> "$GITHUB_OUTPUT" ;;
+            *) echo "job=${{ github.event.inputs.job }}" >> "$GITHUB_OUTPUT" ;;
+          esac
+      - name: Call endpoint
+        run: |
+          curl -fsS --max-time 290 -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/${{ steps.pick.outputs.job }}"

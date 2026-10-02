@@ -1,0 +1,534 @@
+<title>와인 도착가 계산기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;800&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 좌측 조건 패널 + 우측 경로 비교(요약 → 세금 상세 → 체크리스트), 하단 대기자 등록. 병 유리의 초록빛 중성색 + 보르도 포인트. */
+:root{
+  --bg:#F2F4F1; --surface:#FFFFFF; --sunk:#E7EBE6; --line:#D3DAD3;
+  --fg:#18211D; --muted:#5B675F; --accent:#7A1F3D; --accent-soft:#F3E3E8;
+  --glass:#2F5D50; --glass-soft:#DDEBE5; --warn:#8A5A00; --warn-soft:#FBEFD5; --bad:#9B2C2C;
+  --display:"Noto Serif KR",Georgia,serif; --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111613; --surface:#18201C; --sunk:#202A25; --line:#2E3A34;
+  --fg:#E5ECE7; --muted:#9AA79F; --accent:#E58AA6; --accent-soft:#3A1E28;
+  --glass:#7FC2AE; --glass-soft:#1D3530; --warn:#E8B860; --warn-soft:#3A2E14; --bad:#F09090; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111613; --surface:#18201C; --sunk:#202A25; --line:#2E3A34;
+  --fg:#E5ECE7; --muted:#9AA79F; --accent:#E58AA6; --accent-soft:#3A1E28;
+  --glass:#7FC2AE; --glass-soft:#1D3530; --warn:#E8B860; --warn-soft:#3A2E14; --bad:#F09090; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:1120px;margin:0 auto}
+header{padding-block:32px 20px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:1px solid var(--line)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,36px);line-height:1.2;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.stamp{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+h2{font-family:var(--display);font-weight:600;font-size:19px;margin:0;text-wrap:balance}
+.label{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:28px;padding-top:24px}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{display:flex;flex-direction:column;gap:18px;min-width:0}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.tabs{display:flex;gap:4px;background:var(--sunk);border-radius:8px;padding:4px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:600;padding:8px;border-radius:6px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+input,select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.field{display:flex;flex-direction:column;gap:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--fg)}
+.check input{width:auto}
+.winelist{display:flex;flex-direction:column;max-height:330px;overflow-y:auto;border:1px solid var(--line);border-radius:8px}
+.wine{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.wine:last-child{border-bottom:0}
+.wine:hover{background:var(--sunk)}
+.wine:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.wine[aria-pressed="true"]{background:var(--accent-soft)}
+.wine b{font-weight:600;font-size:14px}
+.wine span{font-size:12px;color:var(--muted)}
+.empty{padding:14px;color:var(--muted);font-size:13px}
+.stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;width:max-content}
+.stepper button{border:0;background:var(--sunk);color:var(--fg);font:inherit;width:36px;height:36px;cursor:pointer}
+.stepper output{min-width:56px;text-align:center}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:13px;padding:6px 10px;border-radius:6px;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:600}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+/* summary */
+.hero{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:end;justify-content:space-between}
+.hero .big{font-family:var(--mono);font-size:clamp(30px,5vw,44px);font-weight:500;line-height:1;letter-spacing:-.02em}
+.hero .big small{font-size:15px;color:var(--muted);margin-left:4px}
+.save{font-size:14px}
+.save .num{font-weight:500}
+.pos{color:var(--glass)} .neg{color:var(--bad)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:var(--glass-soft);color:var(--glass)}
+.chip.best{background:var(--accent);color:var(--surface)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.off{background:var(--sunk);color:var(--muted)}
+.routes{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.route{all:unset;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;padding:14px 16px;border-bottom:1px solid var(--line);align-items:center}
+.route:last-child{border-bottom:0}
+.route:hover{background:var(--sunk)}
+.route:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.route[aria-pressed="true"]{box-shadow:inset 3px 0 0 var(--accent);background:var(--accent-soft)}
+.route.disabled{cursor:default;opacity:.62}
+.route.disabled:hover{background:transparent}
+.rname{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-weight:600}
+.rmeta{font-size:12.5px;color:var(--muted);grid-column:1}
+.rprice{text-align:right;grid-row:1/3;grid-column:2}
+.rprice .num{font-size:18px;font-weight:500;display:block}
+.rprice span{font-size:12px;color:var(--muted)}
+.bar{height:4px;border-radius:2px;background:var(--sunk);grid-column:1/3;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--glass)}
+.route[aria-pressed="true"] .bar i{background:var(--accent)}
+.taxtable{width:100%;border-collapse:collapse;font-size:14px}
+.taxtable td{padding:7px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.taxtable td:last-child{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
+.taxtable tr.sub td{color:var(--muted);font-size:13px}
+.taxtable tr.total td{font-weight:600;border-bottom:0;border-top:2px solid var(--fg)}
+.formula{display:block;font-size:12px;color:var(--muted)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:640px){.two{grid-template-columns:minmax(0,1fr)}}
+.list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.alert{border-radius:8px;padding:10px 12px;font-size:13.5px;background:var(--warn-soft);color:var(--warn)}
+.cta{border:0;background:var(--accent);color:var(--surface);font:inherit;font-weight:600;padding:10px 16px;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.cta[disabled]{opacity:.5;cursor:default}
+.ghost{border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;padding:8px 12px;border-radius:6px;cursor:pointer}
+.ratebook{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ratebook label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.wait{margin-top:32px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px}
+@media (max-width:760px){.wait{grid-template-columns:minmax(0,1fr)}}
+.meter{height:8px;border-radius:4px;background:var(--sunk);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent)}
+.status{font-size:13.5px;min-height:1.4em}
+footer{margin-top:28px;font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px;max-width:80ch}
+@media (prefers-reduced-motion:no-preference){.bar i,.meter i{transition:width .35s ease}}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <div class="label">와인 직구 최적경로 · 1단계 공개 계산기</div>
+    <h1>이 와인, 한국에 <em>얼마에</em> 도착할까?</h1>
+    <p class="lede">와이너리 직배송, 현지 리테일러, 배송대행지, 홍콩 경유. 네 경로의 운임과 관세·주세·교육세·부가세를 모두 더한 병당 도착가를 비교합니다.</p>
+  </div>
+  <div class="stamp">세율 기준 2026-10<br>와인·가격·운임은 예시 데이터</div>
+</header>
+
+<div class="grid">
+  <!-- 조건 -->
+  <section class="panel" aria-label="계산 조건">
+    <div class="tabs" role="tablist">
+      <button id="tab-db" role="tab" aria-selected="true">와인으로 찾기</button>
+      <button id="tab-manual" role="tab" aria-selected="false">직접 입력</button>
+    </div>
+
+    <div class="box" id="pane-db">
+      <div class="field">
+        <label class="label" for="q">와인 검색</label>
+        <input id="q" type="search" placeholder="샤블리, Riesling, 샴페인…" autocomplete="off">
+      </div>
+      <label class="check"><input type="checkbox" id="f-exempt"> 면세구간(1병·1L·150달러 이하)만 보기</label>
+      <div class="winelist" id="winelist" role="list"></div>
+    </div>
+
+    <div class="box" id="pane-manual" hidden>
+      <div class="row2">
+        <div class="field"><label class="label" for="m-price">병당 물품가</label><input id="m-price" type="number" min="0" step="0.01" value="68"></div>
+        <div class="field"><label class="label" for="m-cur">통화</label>
+          <select id="m-cur"><option>EUR</option><option>USD</option><option>AUD</option><option>NZD</option><option>HKD</option></select></div>
+      </div>
+      <div class="field"><label class="label" for="m-ship">한국까지 국제운임(주문 전체)</label><input id="m-ship" type="number" min="0" step="0.01" value="35"></div>
+      <div class="field"><label class="label" for="m-fta">구매 형태</label>
+        <select id="m-fta">
+          <option value="1">원산지 국가 판매처에서 구매 (FTA 관세 0%)</option>
+          <option value="0">제3국 또는 비FTA 국가에서 구매 (관세 15%)</option>
+        </select></div>
+      <div class="field"><label class="label" for="m-kr">국내 판매가(병당, 원) · 선택</label><input id="m-kr" type="number" min="0" step="1000" placeholder="없으면 비워 두세요"></div>
+    </div>
+
+    <div class="box">
+      <div class="row2">
+        <div class="field">
+          <span class="label">수량</span>
+          <div class="stepper"><button id="qminus" aria-label="한 병 빼기">−</button><output id="qty" class="num">1병</output><button id="qplus" aria-label="한 병 더하기">+</button></div>
+        </div>
+        <div class="field">
+          <span class="label">병 용량</span>
+          <div class="seg" id="sizes">
+            <button data-l="0.375" aria-pressed="false">375ml</button>
+            <button data-l="0.75" aria-pressed="true">750ml</button>
+            <button data-l="1.5" aria-pressed="false">1.5L</button>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary class="label" style="cursor:pointer">환율(원) · 직접 수정 가능</summary>
+        <div class="ratebook" style="margin-top:10px">
+          <label>USD<input id="r-USD" class="num" type="number" value="1390"></label>
+          <label>EUR<input id="r-EUR" class="num" type="number" value="1625"></label>
+          <label>AUD<input id="r-AUD" class="num" type="number" value="915"></label>
+          <label>NZD<input id="r-NZD" class="num" type="number" value="805"></label>
+          <label>HKD<input id="r-HKD" class="num" type="number" value="178"></label>
+        </div>
+        <p class="note" style="margin-top:8px">예시 환율입니다. 실제 세금은 관세청 주간 과세환율로 계산됩니다.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- 결과 -->
+  <section class="panel" aria-label="계산 결과" aria-live="polite">
+    <div class="box">
+      <div class="label" id="sel-title">선택한 와인</div>
+      <h2 id="wine-name"></h2>
+      <div class="hero">
+        <div>
+          <div class="label" id="best-label">최저 경로 병당 도착가</div>
+          <div class="big" id="best-price"></div>
+        </div>
+        <div class="save" id="save-line"></div>
+      </div>
+      <div id="alerts" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <div class="routes" id="routes"></div>
+
+    <div class="two">
+      <div class="box">
+        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
+          <h2>세금 내역</h2><span id="tax-chip"></span>
+        </div>
+        <div class="label" id="tax-route"></div>
+        <table class="taxtable" id="taxtable"></table>
+      </div>
+      <div class="box">
+        <h2>주문 전 체크리스트</h2>
+        <ul class="list">
+          <li>개인통관고유부호를 판매처 주문서에 입력하세요. 수령인 이름과 일치해야 합니다.</li>
+          <li>배송지는 영문 주소로 적습니다.</li>
+          <li>같은 판매자에게 같은 날 산 물품은 합산과세됩니다. 주문을 나눠도 세금은 줄지 않습니다.</li>
+          <li>세금은 통관 시 카카오톡·문자로 오는 납부 안내에 따라 수령인이 냅니다.</li>
+          <li>결제는 해외 판매처에서 직접 합니다. 이 서비스는 와인을 팔거나 대금을 받지 않습니다.</li>
+        </ul>
+        <button class="cta" id="go" disabled>판매처로 이동 (MVP에서 연결)</button>
+        <p class="note">제휴 링크 연결은 2단계(MVP)에서 열립니다.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 대기자 -->
+<section class="wait" id="waitlist" aria-labelledby="wait-h">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="label">대기자 모집 · 목표 1,000명</div>
+    <h2 id="wait-h">가격 알림이 열리면 가장 먼저 알려드립니다</h2>
+    <p class="note" style="font-size:14px">원하는 와인과 목표 도착가를 남겨 주세요. 도착가가 목표 아래로 내려가면 알림을 보내는 기능을 MVP에서 열 예정입니다.</p>
+    <div id="owner-stats" hidden style="display:flex;flex-direction:column;gap:6px">
+      <div class="label">운영자 전용 현황</div>
+      <div class="num" id="owner-count" style="font-size:22px"></div>
+      <div class="meter"><i id="owner-meter" style="width:0"></i></div>
+    </div>
+  </div>
+  <form id="wform" style="display:flex;flex-direction:column;gap:12px" novalidate>
+    <div class="field"><label class="label" for="w-email">알림 받을 이메일</label><input id="w-email" type="email" required placeholder="name@example.com" autocomplete="email"></div>
+    <div class="field"><label class="label" for="w-wine">찾고 있는 와인 또는 산지</label><input id="w-wine" type="text" maxlength="120" placeholder="예: 부르고뉴 1er Cru 화이트"></div>
+    <div class="row2">
+      <div class="field"><label class="label" for="w-target">목표 병당 도착가(원)</label><input id="w-target" type="number" min="0" step="1000" placeholder="예: 90000"></div>
+      <div class="field"><label class="label" for="w-who">구매 목적</label>
+        <select id="w-who"><option>개인 소장·음용</option><option>선물·기념일</option><option>와인바·업장 운영</option></select></div>
+    </div>
+    <label class="check"><input type="checkbox" id="w-agree"> 출시 알림 발송을 위한 이메일 수집에 동의합니다.</label>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="cta" type="submit" id="w-submit">대기자 등록</button>
+      <span class="status" id="w-status"></span>
+    </div>
+  </form>
+</section>
+
+<footer>
+  <span>세율: 1병·1L 이하·물품가 150달러 이하는 관세·부가세 면제, 주세 30%와 교육세(주세의 10%)만 부과. 그 외에는 FTA 원산지 구매 시 관세 0%, 제3국 구매 시 관세 15%. 세액 합계 1만원 미만은 징수 면제.</span>
+  <span>과세가격 = 물품가 + 한국까지 국제운임. 2026년 10월 공개 자료 기준이며 관세청 예상세액 조회로 재검증할 예정입니다.</span>
+  <span>와인 목록·가격·운임표는 계산 로직 시연용 예시입니다. 실제 판매가와 다릅니다.</span>
+</footer>
+</div>
+
+<script>
+/* ---------- 설정값 (세율은 코드가 아닌 설정으로 관리) ---------- */
+const TAX = { duty:0.15, liquor:0.30, edu:0.10, vat:0.10, exemptUSD:150, exemptLiters:1, minCollect:10000 };
+const MARKUP = { retailer:1.10, hk:1.18 };
+const FTA = new Set(['프랑스','독일','이탈리아','스페인','포르투갈','미국','칠레','호주','뉴질랜드']);
+
+/* 운임표 (USD, 주문당 기본 + 병당). 예시. */
+const SHIP = {
+  EU:{direct:[28,9], retailer:[25,8], forwarder:[18,14]},
+  US:{direct:[45,15], retailer:[45,15], forwarder:[30,14]},
+  SA:{direct:[40,14], retailer:[38,13], forwarder:[30,14]},
+  OC:{direct:[35,12], retailer:[32,11], forwarder:[24,13]},
+  HK:[12,6]
+};
+const REGION = {프랑스:'EU',독일:'EU',이탈리아:'EU',스페인:'EU',포르투갈:'EU',미국:'US',칠레:'SA',아르헨티나:'SA',호주:'OC',뉴질랜드:'OC'};
+const NO_ALCOHOL_FORWARDER = new Set(['미국','칠레']);
+
+/* 와인 예시 DB: 셀러도어가(현지 통화), 국내가(원, 미수입 null) */
+const WINES = [
+  {id:'chablis', name:'Domaine William Fèvre Chablis 1er Cru Montmains 2022', ko:'윌리엄 페브르 샤블리 프리미에 크뤼 몽맹', region:'부르고뉴 · 샤블리', country:'프랑스', type:'화이트', cur:'EUR', price:42, kr:139000, direct:true, retailer:true, hk:true},
+  {id:'faiveley', name:'Domaine Faiveley Bourgogne Pinot Noir 2022', ko:'페블레 부르고뉴 피노 누아', region:'부르고뉴', country:'프랑스', type:'레드', cur:'EUR', price:24, kr:79000, direct:true, retailer:true, hk:true},
+  {id:'billecart', name:'Billecart-Salmon Brut Réserve NV', ko:'빌카르 살몽 브뤼 리저브 샴페인', region:'샹파뉴', country:'프랑스', type:'스파클링', cur:'EUR', price:52, kr:159000, direct:false, retailer:true, hk:true},
+  {id:'peters', name:'Pierre Péters Cuvée de Réserve Blanc de Blancs NV', ko:'피에르 페테르 블랑 드 블랑 샴페인', region:'샹파뉴 · 코트 데 블랑', country:'프랑스', type:'스파클링', cur:'EUR', price:58, kr:210000, direct:true, retailer:true, hk:true},
+  {id:'keller', name:'Keller Riesling Trocken 2023', ko:'켈러 리슬링 트로켄', region:'라인헤센', country:'독일', type:'화이트', cur:'EUR', price:24, kr:null, direct:true, retailer:true, hk:false},
+  {id:'donnhoff', name:'Dönnhoff Kreuznacher Krötenpfuhl Riesling GG 2022', ko:'된호프 리슬링 그로세스 게벡스', region:'나헤', country:'독일', type:'화이트', cur:'EUR', price:48, kr:null, direct:false, retailer:true, hk:true},
+  {id:'feltonroad', name:'Felton Road Bannockburn Pinot Noir 2023', ko:'펠튼 로드 배녹번 피노 누아', region:'센트럴 오타고', country:'뉴질랜드', type:'레드', cur:'NZD', price:75, kr:180000, direct:true, retailer:true, hk:true},
+  {id:'torbreck', name:'Torbreck The Struie Shiraz 2021', ko:'토브렉 더 스트루이 쉬라즈', region:'바로사', country:'호주', type:'레드', cur:'AUD', price:55, kr:135000, direct:true, retailer:true, hk:true},
+  {id:'ridge', name:'Ridge Lytton Springs Zinfandel 2021', ko:'릿지 리튼 스프링스 진판델', region:'소노마 · 드라이 크릭 밸리', country:'미국', type:'레드', cur:'USD', price:50, kr:150000, direct:false, retailer:true, hk:true},
+  {id:'catena', name:'Catena Zapata Malbec Argentino 2021', ko:'카테나 자파타 말벡 아르헨티노', region:'멘도사', country:'아르헨티나', type:'레드', cur:'USD', price:110, kr:null, direct:true, retailer:true, hk:true},
+  {id:'errazuriz', name:'Errázuriz Don Maximiano Founder\'s Reserve 2021', ko:'에라주리즈 돈 막시미아노', region:'아콩카과 밸리', country:'칠레', type:'레드', cur:'USD', price:95, kr:190000, direct:true, retailer:true, hk:true},
+];
+
+/* 한글·영문 표기 보정 */
+const ALIAS = {'샤블리':'chablis','부르고뉴':'bourgogne','버건디':'bourgogne','샴페인':'샹파뉴','삼페인':'샹파뉴','리슬링':'riesling','피노누아':'pinot noir','피노':'pinot','쉬라즈':'shiraz','시라':'shiraz','말벡':'malbec','진판델':'zinfandel','블랑드블랑':'blanc de blancs'};
+
+const state = { mode:'db', wineId:'chablis', qty:1, liters:0.75, route:null, q:'', exemptOnly:false };
+const $ = id => document.getElementById(id);
+const won = n => Math.round(n).toLocaleString('ko-KR') + '원';
+const rate = cur => Math.max(0, Number($('r-'+cur).value) || 0);
+
+/* ---------- 세금 계산 ---------- */
+function calcTax({cif, goodsUSDPerBottle, qty, liters, fta}){
+  const exempt = qty === 1 && liters <= TAX.exemptLiters && goodsUSDPerBottle <= TAX.exemptUSD;
+  const f = Math.floor;
+  let duty=0, liquor, edu, vat=0;
+  if (exempt){
+    liquor = f(cif*TAX.liquor); edu = f(liquor*TAX.edu);
+  } else {
+    duty = fta ? 0 : f(cif*TAX.duty);
+    liquor = f((cif+duty)*TAX.liquor); edu = f(liquor*TAX.edu);
+    vat = f((cif+duty+liquor+edu)*TAX.vat);
+  }
+  const sum = duty+liquor+edu+vat;
+  const waived = sum < TAX.minCollect;
+  return {exempt, fta, duty, liquor, edu, vat, sum, waived, pay: waived?0:sum, cif};
+}
+
+/* ---------- 경로 계산 ---------- */
+function routesFor(w){
+  const {qty, liters} = state;
+  const fx = rate(w.cur), usd = rate('USD');
+  const reg = SHIP[REGION[w.country]];
+  const ftaOrigin = FTA.has(w.country);
+  const sizeK = liters/0.75;
+  const shipUSD = ([b,p]) => b + p*qty*Math.max(1,sizeK*0.9);
+  const defs = [
+    {key:'direct', name:'와이너리 직배송', days:'7~14일', mult:1, ship:reg.direct, fta:ftaOrigin,
+      off: !w.direct && '이 와이너리는 해외로 발송하지 않습니다'},
+    {key:'retailer', name:'현지 수출 리테일러', days:'7~12일', mult:MARKUP.retailer, ship:reg.retailer, fta:ftaOrigin,
+      off: !w.retailer && '재고가 있는 리테일러가 없습니다'},
+    {key:'forwarder', name:'현지 배송대행지', days:'10~20일', mult:1, ship:reg.forwarder, fta:ftaOrigin,
+      off: NO_ALCOHOL_FORWARDER.has(w.country) && `${w.country} 배송대행지는 대부분 주류를 접수하지 않습니다`},
+    {key:'hk', name:'홍콩 경유 리테일러', days:'4~7일', mult:MARKUP.hk, ship:SHIP.HK, fta:false,
+      off: !w.hk && '홍콩 리테일러 재고가 없습니다'},
+  ];
+  return defs.map(d=>{
+    const unit = w.price*d.mult*sizeK;               // 병당 물품가(현지 통화)
+    const goodsKRW = unit*qty*fx;
+    const shipKRW = shipUSD(d.ship)*usd;
+    const cif = Math.floor(goodsKRW+shipKRW);
+    const tax = calcTax({cif, goodsUSDPerBottle: unit*fx/usd, qty, liters, fta:d.fta});
+    const total = cif + tax.pay;
+    return {...d, unit, goodsKRW, shipKRW, tax, total, perBottle: total/qty};
+  });
+}
+
+function manualRoute(){
+  const cur = $('m-cur').value, fx = rate(cur), usd = rate('USD');
+  const {qty, liters} = state;
+  const unit = Math.max(0, Number($('m-price').value)||0);
+  const goodsKRW = unit*qty*fx, shipKRW = Math.max(0,Number($('m-ship').value)||0)*fx;
+  const cif = Math.floor(goodsKRW+shipKRW);
+  const fta = $('m-fta').value==='1';
+  const tax = calcTax({cif, goodsUSDPerBottle: unit*fx/usd, qty, liters, fta});
+  const total = cif+tax.pay;
+  return {key:'manual', name:'직접 입력한 조건', days:'', cur, unit, goodsKRW, shipKRW, tax, total, perBottle:total/qty, fta};
+}
+
+/* ---------- 렌더 ---------- */
+const strip = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[\s'-]+/g,'');
+function matches(w, q){
+  if(!q) return true;
+  const hay = strip(w.name+w.ko+w.region+w.country+w.type), nq = strip(q);
+  if(hay.includes(nq)) return true;
+  return Object.entries(ALIAS).some(([k,v])=> nq.includes(strip(k)) && hay.includes(strip(v)));
+}
+function inExemptBand(w){ return w.price*rate(w.cur)/rate('USD') <= TAX.exemptUSD; }
+
+function renderList(){
+  const list = $('winelist'); list.textContent='';
+  const items = WINES.filter(w => matches(w, state.q) && (!state.exemptOnly || inExemptBand(w)));
+  if(!items.length){ const d=document.createElement('div'); d.className='empty'; d.textContent='찾는 와인이 예시 목록에 없습니다. "직접 입력" 탭에서 가격으로 계산해 보세요.'; list.append(d); return; }
+  for(const w of items){
+    const b=document.createElement('button'); b.className='wine'; b.setAttribute('role','listitem');
+    b.setAttribute('aria-pressed', String(w.id===state.wineId));
+    const t=document.createElement('b'); t.textContent=w.ko;
+    const s=document.createElement('span'); s.textContent=`${w.country} · ${w.region} · ${w.type} · ${w.cur} ${w.price}`;
+    b.append(t,s);
+    b.onclick=()=>{ state.wineId=w.id; state.route=null; render(); };
+    list.append(b);
+  }
+}
+
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+
+function render(){
+  renderList();
+  $('qty').textContent = state.qty+'병';
+  document.querySelectorAll('#sizes button').forEach(b=>b.setAttribute('aria-pressed', String(Number(b.dataset.l)===state.liters)));
+
+  let rs, w=null, kr=null;
+  if(state.mode==='db'){
+    w = WINES.find(x=>x.id===state.wineId) || WINES[0];
+    rs = routesFor(w); kr = w.kr;
+    $('wine-name').textContent = w.name;
+    $('sel-title').textContent = `${w.ko} · ${w.country} ${FTA.has(w.country)?'(한국과 FTA 체결국)':'(한국과 FTA 미체결)'}`;
+  } else {
+    rs = [manualRoute()]; kr = Number($('m-kr').value)||null;
+    $('wine-name').textContent = '직접 입력한 와인';
+    $('sel-title').textContent = '판매처에서 본 가격과 운임으로 계산';
+  }
+  const sizeK = state.liters/0.75;
+  if(kr) kr = kr*sizeK;
+  const live = rs.filter(r=>!r.off).sort((a,b)=>a.perBottle-b.perBottle);
+  const best = live[0];
+  if(!state.route || !live.find(r=>r.key===state.route)) state.route = best ? best.key : null;
+  const sel = live.find(r=>r.key===state.route);
+
+  // 요약
+  $('best-label').textContent = state.mode==='db' ? `최저 경로 병당 도착가 · ${best?best.name:'-'}` : '병당 도착가';
+  $('best-price').innerHTML='';
+  if(best){ $('best-price').append(document.createTextNode(Math.round(best.perBottle).toLocaleString('ko-KR'))); $('best-price').append(el('small',null,'원')); }
+  const sv=$('save-line'); sv.textContent='';
+  if(best && kr){
+    const diff = kr - best.perBottle;
+    sv.append(el('div','label','국내 판매가 대비 (병당)'));
+    const line=el('div'); line.append(el('span','num '+(diff>=0?'pos':'neg'), (diff>=0?'−':'+')+won(Math.abs(diff))));
+    line.append(document.createTextNode(` · 국내가 ${won(kr)}`)); sv.append(line);
+    if(state.qty>1) sv.append(el('div','note',`${state.qty}병 합계 ${diff>=0?'절감':'추가'} ${won(Math.abs(diff*state.qty))}`));
+  } else if(best){
+    sv.append(el('div','label','국내 판매가')); sv.append(el('div',null,'국내 미수입 · 직구로만 구할 수 있습니다'));
+  }
+
+  // 경고
+  const al=$('alerts'); al.textContent='';
+  const warn = t => al.append(el('div','alert',t));
+  if(state.qty>=6) warn('수량이 많으면 재판매용으로 보아 일반 수입신고 대상이 될 수 있습니다. 자가사용 범위인지 확인하세요. (안내 기준은 법률 검토 후 확정)');
+  if(state.qty===2) warn('2병부터는 1병 면세구간을 벗어나 부가세가 붙습니다. 1병 도착가와 비교해 보세요.');
+  if(state.liters>1 && state.qty===1) warn('1L를 넘는 병은 1병이어도 면세구간에 해당하지 않습니다.');
+  if(w && !FTA.has(w.country)) warn(`${w.country}는 한국과 FTA를 맺지 않아 어느 경로든 관세 15%가 붙습니다.`);
+
+  // 경로 목록
+  const box=$('routes'); box.textContent='';
+  box.hidden = state.mode!=='db';
+  const max = Math.max(...live.map(r=>r.perBottle), 1);
+  const ordered = [...live, ...rs.filter(r=>r.off)];
+  for(const r of ordered){
+    const b=el('button','route'+(r.off?' disabled':''));
+    b.setAttribute('aria-pressed', String(r.key===state.route));
+    if(r.off) b.setAttribute('aria-disabled','true');
+    const nm=el('div','rname'); nm.append(document.createTextNode(r.name));
+    if(r===best) nm.append(el('span','chip best','최저'));
+    if(r.off) nm.append(el('span','chip off','이용 불가'));
+    else { nm.append(el('span','chip '+(r.fta?'ok':'warn'), r.fta?'FTA 관세 0%':'관세 15%')); if(r.tax.exempt) nm.append(el('span','chip ok','1병 면세구간')); }
+    const meta=el('div','rmeta', r.off ? r.off : `${r.days} · 물품 ${w.cur} ${(r.unit).toFixed(2)}/병 · 운임 ${won(r.shipKRW)} · 세금 ${won(r.tax.pay)}`);
+    const pr=el('div','rprice');
+    if(!r.off){ pr.append(el('span','num',won(r.perBottle))); pr.append(el('span',null, state.qty>1?`${state.qty}병 ${won(r.total)}`:'병당')); }
+    b.append(nm, pr, meta);
+    if(!r.off){ const bar=el('div','bar'); const i=el('i'); i.style.width=(r.perBottle/max*100).toFixed(1)+'%'; bar.append(i); b.append(bar);
+      b.onclick=()=>{ state.route=r.key; render(); }; }
+    box.append(b);
+  }
+
+  // 세금 표
+  renderTax(sel);
+}
+
+function renderTax(r){
+  const t=$('taxtable'); t.textContent=''; const chip=$('tax-chip'); chip.textContent='';
+  if(!r){ $('tax-route').textContent='이용 가능한 경로가 없습니다'; return; }
+  $('tax-route').textContent = r.name + (state.qty>1?` · ${state.qty}병 합산`:'');
+  const x=r.tax;
+  chip.append(el('span','chip '+(x.exempt?'ok':(x.fta?'ok':'warn')), x.exempt?'1병 면세구간':(x.fta?'FTA 원산지 구매':'제3국 구매')));
+  const row=(label, formula, val, cls)=>{ const tr=el('tr',cls); const a=el('td'); a.append(document.createTextNode(label)); if(formula) a.append(el('span','formula',formula)); tr.append(a, el('td',null,val)); t.append(tr); };
+  row('물품가', null, won(r.goodsKRW), 'sub');
+  row('국제운임', null, won(r.shipKRW), 'sub');
+  row('과세가격', '물품가 + 국제운임', won(x.cif));
+  row('관세', x.exempt?'1병 면세구간 면제':(x.fta?'FTA 원산지 0%':'과세가격 × 15%'), won(x.duty));
+  row('주세', x.exempt||x.fta?'과세가격 × 30%':'(과세가격 + 관세) × 30%', won(x.liquor));
+  row('교육세', '주세 × 10%', won(x.edu));
+  row('부가세', x.exempt?'1병 면세구간 면제':'(과세가격 + 관세 + 주세 + 교육세) × 10%', won(x.vat));
+  row('세금 합계', `과세가격 대비 ${(x.sum/x.cif*100||0).toFixed(1)}%`+(x.waived?' · 1만원 미만이라 징수 면제':''), x.waived?`0원 (${won(x.sum)} 면제)`:won(x.sum));
+  row('한국 도착가', state.qty>1?`병당 ${won(r.perBottle)}`:null, won(r.total), 'total');
+}
+
+/* ---------- 이벤트 ---------- */
+function setMode(m){
+  state.mode=m; state.route=null;
+  $('tab-db').setAttribute('aria-selected', String(m==='db'));
+  $('tab-manual').setAttribute('aria-selected', String(m==='manual'));
+  $('pane-db').hidden = m!=='db'; $('pane-manual').hidden = m!=='manual';
+  render();
+}
+$('tab-db').onclick=()=>setMode('db');
+$('tab-manual').onclick=()=>setMode('manual');
+$('q').addEventListener('input', e=>{ state.q=e.target.value.trim(); renderList(); });
+$('f-exempt').addEventListener('change', e=>{ state.exemptOnly=e.target.checked; if(e.target.checked){ state.qty=1; if(state.liters>1) state.liters=0.75; } render(); });
+$('qminus').onclick=()=>{ state.qty=Math.max(1,state.qty-1); render(); };
+$('qplus').onclick=()=>{ state.qty=Math.min(24,state.qty+1); render(); };
+document.querySelectorAll('#sizes button').forEach(b=>b.onclick=()=>{ state.liters=Number(b.dataset.l); render(); });
+['m-price','m-cur','m-ship','m-fta','m-kr','r-USD','r-EUR','r-AUD','r-NZD','r-HKD'].forEach(id=>$(id).addEventListener('input', render));
+render();
+
+/* ---------- 대기자 등록 (db) ---------- */
+let db=null, user=null, myId=null;
+const status = t => { $('w-status').textContent = t; };
+(async ()=>{
+  if(!window.claude?.use){ status('미리보기에서는 등록할 수 없습니다.'); $('w-submit').disabled=true; return; }
+  [user, db] = await Promise.all([claude.use('user'), claude.use('db')]);
+  if(!db || !user){ status('로그인한 뒤 등록할 수 있습니다.'); $('w-submit').disabled=true; return; }
+  myId = await user.id();
+  if(!myId){ status('로그인한 뒤 등록할 수 있습니다.'); $('w-submit').disabled=true; return; }
+  try{
+    const snap = await db.doc('waitlist/'+myId).get();
+    if(snap.exists){ const d=snap.data(); $('w-email').value=d.email||''; $('w-wine').value=d.wine||''; $('w-target').value=d.target||''; $('w-who').value=d.purpose||'개인 소장·음용'; $('w-agree').checked=true; $('w-submit').textContent='등록 정보 수정'; status('이미 대기자로 등록돼 있습니다.'); }
+  }catch(e){}
+  if(await user.isOwner()){
+    $('owner-stats').hidden=false;
+    db.collection('waitlist').limit(1000).onSnapshot(s=>{
+      $('owner-count').textContent = `${s.size.toLocaleString('ko-KR')} / 1,000명`;
+      $('owner-meter').style.width = Math.min(100, s.size/10)+'%';
+    }, ()=>{ $('owner-count').textContent='현황을 불러오지 못했습니다'; });
+  }
+})();
+
+$('wform').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const email=$('w-email').value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ status('이메일 주소 형식을 확인해 주세요.'); $('w-email').focus(); return; }
+  if(!$('w-agree').checked){ status('이메일 수집에 동의해야 등록할 수 있습니다.'); return; }
+  if(!db||!myId){ status('로그인한 뒤 등록할 수 있습니다.'); return; }
+  $('w-submit').disabled=true; status('등록하는 중…');
+  try{
+    await db.doc('waitlist/'+myId).set({
+      email, wine:$('w-wine').value.trim().slice(0,120),
+      target: Number($('w-target').value)||null, purpose:$('w-who').value,
+      lastCalc: state.mode==='db' ? state.wineId : 'manual',
+      createdAt: new Date().toISOString()
+    });
+    $('w-submit').textContent='등록 정보 수정'; status('대기자로 등록했습니다. 출시되면 이 이메일로 알려드릴게요.');
+  }catch(err){
+    status(err && err.code==='invalid_argument' ? '이 링크의 권한으로는 등록할 수 없습니다. 공유받은 링크의 참여 권한을 확인해 주세요.' : '등록하지 못했습니다. 잠시 뒤 다시 시도해 주세요.');
+  }finally{ $('w-submit').disabled=false; }
+});
+</script>

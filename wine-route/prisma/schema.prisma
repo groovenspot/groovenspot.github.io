@@ -1,0 +1,311 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// 구매 경로. 기획안의 4개 경로와 1:1로 대응합니다.
+enum Channel {
+  WINERY_DIRECT // 와이너리 직배송
+  EXPORT_RETAILER // 현지 수출 리테일러
+  LOCAL_SHOP // 현지 내수 판매처 (배송대행지 경로의 물품 공급처)
+  HK_RETAILER // 홍콩 경유 리테일러
+}
+
+enum PriceSource {
+  MANUAL // 관리자 입력 또는 CSV
+  JSONLD // 상품 페이지의 schema.org Product/Offer 크롤링
+}
+
+enum Plan {
+  FREE
+  PREMIUM
+}
+
+enum AlertChannel {
+  KAKAO
+  EMAIL
+}
+
+model Wine {
+  id         String   @id @default(cuid())
+  name       String // 원어 표기
+  nameKo     String // 한글 표기
+  producer   String
+  country    String // 한글 국가명 (예: 프랑스)
+  region     String
+  type       String // 레드 / 화이트 / 스파클링 / 로제 / 주정강화 / 디저트
+  grape      String   @default("")
+  vintage    Int?
+  aliases    String[] // 검색 보정용 추가 표기
+  krPrice    Int? // 국내 판매가 (원, 750ml 기준). 미수입이면 null
+  krPriceSrc String?
+  rating     Float? // 외부 평점 요약 (100점 만점)
+  ratingSrc  String?
+  notesKo    String? // 한국어 테이스팅 노트
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  offers    Offer[]
+  alerts    PriceAlert[]
+  clicks    ClickLog[]
+  purchases Purchase[]
+  views     WineView[]
+
+  @@index([country])
+  @@index([type])
+}
+
+model Seller {
+  id              String      @id @default(cuid())
+  name            String
+  country         String // 판매처 소재국 (홍콩 리테일러는 "홍콩")
+  channel         Channel
+  website         String
+  shipsToKorea    Boolean     @default(true)
+  currency        String // 판매 통화
+  /// 한국까지 운임: 주문당 기본료 + 병당(750ml 환산) 요금. LOCAL_SHOP은 현지 배송대행지까지 운임.
+  shipBase        Float       @default(0)
+  shipPerBottle   Float       @default(0)
+  daysMin         Int         @default(7)
+  daysMax         Int         @default(14)
+  insured         Boolean     @default(false)
+  /// 제휴 링크 템플릿. {url} {clickId} 치환. 비우면 상품 URL 그대로 이동.
+  affiliateTpl    String?
+  commissionRate  Float       @default(0.07)
+  priceSource     PriceSource @default(MANUAL)
+  active          Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  offers    Offer[]
+  crawlRuns CrawlRun[]
+  reviews   Review[]
+}
+
+/// 배송대행지. 원산지 국가 내수 판매처 물품을 받아 한국으로 보냅니다.
+model Forwarder {
+  id             String  @id @default(cuid())
+  name           String
+  country        String
+  website        String
+  acceptsAlcohol Boolean @default(false)
+  currency       String
+  shipBase       Float
+  shipPerBottle  Float
+  daysMin        Int     @default(10)
+  daysMax        Int     @default(20)
+  active         Boolean @default(true)
+}
+
+model Offer {
+  id          String    @id @default(cuid())
+  wineId      String
+  sellerId    String
+  url         String
+  price       Float // 병당 판매가 (판매처 통화)
+  bottleMl    Int       @default(750)
+  inStock     Boolean   @default(true)
+  checkedAt   DateTime  @default(now()) // 가격 확인 시각
+  lastError   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  wine   Wine       @relation(fields: [wineId], references: [id], onDelete: Cascade)
+  seller Seller     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  clicks ClickLog[]
+
+  @@unique([wineId, sellerId, bottleMl])
+  @@index([sellerId])
+}
+
+model ExchangeRate {
+  id       String   @id @default(cuid())
+  currency String
+  krw      Float // 1단위당 원화
+  date     DateTime @db.Date
+  source   String   @default("koreaexim")
+
+  @@unique([currency, date])
+}
+
+/// 설정값 (세율, 할증률, FTA 국가 등). key별 JSON.
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  phone     String? // 알림톡 수신 번호
+  plan      Plan     @default(FREE)
+  createdAt DateTime @default(now())
+
+  sessions  Session[]
+  alerts    PriceAlert[]
+  clicks    ClickLog[]
+  purchases Purchase[]
+  reviews   Review[]
+}
+
+model LoginCode {
+  id        String   @id @default(cuid())
+  email     String
+  codeHash  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model Session {
+  id        String   @id // 랜덤 토큰의 해시
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PriceAlert {
+  id              String       @id @default(cuid())
+  userId          String
+  wineId          String
+  qty             Int          @default(1)
+  bottleMl        Int          @default(750)
+  targetPerBottle Int // 목표 병당 도착가 (원)
+  channel         AlertChannel @default(EMAIL)
+  active          Boolean      @default(true)
+  lastPrice       Int? // 마지막으로 계산한 병당 도착가
+  notifiedPrice   Int? // 마지막으로 알린 병당 도착가
+  notifiedAt      DateTime?
+  createdAt       DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wine Wine @relation(fields: [wineId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wineId, qty, bottleMl])
+}
+
+/// 판매처 이동(제휴 링크 클릭) 기록
+model ClickLog {
+  id          String   @id @default(cuid())
+  offerId     String
+  wineId      String
+  userId      String?
+  anonId      String?
+  route       String
+  qty         Int
+  estPerBottle Int // 클릭 시점 예상 병당 도착가
+  createdAt   DateTime @default(now())
+
+  offer      Offer       @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  wine       Wine        @relation(fields: [wineId], references: [id], onDelete: Cascade)
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  conversion Conversion?
+
+  @@index([createdAt])
+}
+
+/// 제휴사 포스트백으로 확인된 실제 주문 (북극성 지표: 월 구매 연결 건수)
+model Conversion {
+  id         String   @id @default(cuid())
+  clickId    String   @unique
+  orderRef   String?
+  amount     Float?
+  currency   String?
+  commission Float?
+  createdAt  DateTime @default(now())
+
+  click ClickLog @relation(fields: [clickId], references: [id], onDelete: Cascade)
+}
+
+/// 사용자가 직접 입력한 구매 기록 (도착가 오차 검증용)
+model Purchase {
+  id           String   @id @default(cuid())
+  userId       String
+  wineId       String?
+  sellerName   String
+  route        String
+  qty          Int
+  goodsPaid    Float
+  shipPaid     Float
+  currency     String
+  taxPaid      Int // 실제 납부 세금 (원)
+  estTax       Int? // 같은 조건으로 계산한 예상 세금 (원)
+  orderedAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wine Wine? @relation(fields: [wineId], references: [id], onDelete: SetNull)
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  userId       String
+  sellerId     String
+  rating       Int // 1~5
+  shippingDays Int?
+  damaged      Boolean  @default(false)
+  comment      String   @default("")
+  createdAt    DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sellerId])
+}
+
+model CrawlRun {
+  id         String    @id @default(cuid())
+  sellerId   String
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  status     String    @default("running") // running | ok | partial | failed
+  updated    Int       @default(0)
+  failed     Int       @default(0)
+  message    String?
+
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([sellerId, startedAt])
+}
+
+/// 출시 전 대기자
+model Waitlist {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  wish      String?
+  target    Int?
+  purpose   String?
+  createdAt DateTime @default(now())
+}
+
+model JobLog {
+  id        String   @id @default(cuid())
+  job       String
+  ok        Boolean
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([job, createdAt])
+}
+
+/// 와인 상세 조회 (경로 비교 → 판매처 이동률 계산용)
+model WineView {
+  id        String   @id @default(cuid())
+  wineId    String
+  anonId    String?
+  createdAt DateTime @default(now())
+
+  wine Wine @relation(fields: [wineId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+}
