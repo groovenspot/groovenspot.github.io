@@ -4,9 +4,9 @@ import { useActionState, useState } from "react";
 import { createAlert } from "@/app/wines/[id]/actions";
 import type { FormState } from "@/app/actions";
 
-export function AlertForm(props: { wineId: string; qty: number; ml: number; suggested: number; loggedIn: boolean; phone: string | null; existingTarget: number | null; source?: string }) {
+export function AlertForm(props: { wineId: string; qty: number; ml: number; suggested: number; loggedIn: boolean; phone: string | null; existingTarget: number | null; existingChannel?: "EMAIL" | "KAKAO"; kakaoConfigured?: boolean; source?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(createAlert, {});
-  const [channel, setChannel] = useState<"EMAIL" | "KAKAO">(props.phone ? "KAKAO" : "EMAIL");
+  const [channel, setChannel] = useState<"EMAIL" | "KAKAO">(props.existingChannel ?? (props.kakaoConfigured ? "KAKAO" : "EMAIL"));
   return (
     <form onSubmit={keepFormSubmit(action)} className="stack">
       <input type="hidden" name="wineId" value={props.wineId} />
@@ -28,6 +28,7 @@ export function AlertForm(props: { wineId: string; qty: number; ml: number; sugg
           <input id="al-phone" name="phone" inputMode="numeric" placeholder="01012345678" defaultValue={props.phone ?? ""} />
         </div>
       )}
+      <p className="small muted">카카오 알림톡 발송이 어려우면 회원 이메일로 안내합니다.</p>
       <div className="row">
         <button className="btn" disabled={pending}>{props.loggedIn ? (props.existingTarget ? "목표가 바꾸기" : "찜하고 알림 받기") : "로그인하고 찜하기"}</button>
       </div>

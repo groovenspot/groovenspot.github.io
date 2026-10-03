@@ -19,10 +19,18 @@ export async function runAlertsJob() {
   const watches = await prisma.priceAlert.findMany({
     where: { active: true },
     include: { user: true, wine: { include: { offers: { include: { seller: true } } } } },
+    orderBy: { createdAt: "asc" },
   });
   const today = kstDay();
   const groups = new Map<string, typeof watches>();
+  const freeCounts = new Map<string, number>();
   for (const w of watches) {
+    // 프리미엄 기간이 끝난 회원도 무료 한도만큼만 알림을 받습니다.
+    if (!isPremium(w.user)) {
+      const count = freeCounts.get(w.userId) ?? 0;
+      if (count >= ctx.tax.freeAlertLimit) continue;
+      freeCounts.set(w.userId, count + 1);
+    }
     const k = `${w.wineId}|${w.qty}|${w.bottleMl}`;
     groups.set(k, [...(groups.get(k) ?? []), w]);
   }
@@ -52,7 +60,7 @@ export async function runAlertsJob() {
           user: w.user, type: "TARGET", wineId,
           title: `${wine.nameKo} 목표가 도달`,
           body: `${cond} 병당 도착가 ${won(price)} (목표 ${won(w.targetPerBottle)}) · ${routeLabel}`,
-          link, dedupeKey: `target:${w.id}:${price}`,
+          link, dedupeKey: `target:${w.id}:${today.toISOString().slice(0, 10)}:${price}`, channel: w.channel,
         });
         if (res.sent) {
           counts.target++;
@@ -68,7 +76,7 @@ export async function runAlertsJob() {
           user: w.user, type: "DROP", wineId,
           title: `${wine.nameKo} 도착가 ${pct}% 내려감`,
           body: `${cond} 병당 ${won(prev.perBottle!)} → ${won(price!)} · ${routeLabel}`,
-          link, dedupeKey: `drop:${w.id}:${price}`, queue: !premium,
+          link, dedupeKey: `drop:${w.id}:${today.toISOString().slice(0, 10)}:${price}`, queue: !premium, channel: w.channel,
         });
         if (res.sent || res.queued) counts.drop++;
       }
@@ -78,7 +86,7 @@ export async function runAlertsJob() {
           user: w.user, type: "RESTOCK", wineId,
           title: `${wine.nameKo} 다시 살 수 있어요`,
           body: `품절이던 와인을 ${routeLabel}로 살 수 있습니다. 병당 도착가 ${won(price)}`,
-          link, dedupeKey: `restock:${w.id}:${today.toISOString().slice(0, 10)}`,
+          link, dedupeKey: `restock:${w.id}:${today.toISOString().slice(0, 10)}`, channel: w.channel,
         });
         if (res.sent) counts.restock++;
       }
@@ -103,7 +111,7 @@ export async function notifyNewVintage(wineId: string) {
       user: a.user, type: "VINTAGE", wineId: w.id,
       title: `${w.nameKo} ${w.vintage} 새 빈티지`,
       body: `찜한 와인의 ${w.vintage} 빈티지가 등록됐습니다. 경로별 도착가를 확인해 보세요.`,
-      link: `/wines/${w.id}`, dedupeKey: `vintage:${a.userId}:${w.id}`,
+      link: `/wines/${w.id}`, dedupeKey: `vintage:${a.userId}:${w.id}`, channel: a.channel,
     });
     if (r.sent) n++;
   }
@@ -123,7 +131,7 @@ export async function notifyAllocation(allocationId: string) {
       user: w.user, type: "ALLOCATION", wineId: w.wineId,
       title: `${a.producer} 배정 판매 시작`,
       body: `${a.note}${a.url ? `\n${a.url}` : ""}`,
-      link: `/wines/${w.wineId}`, dedupeKey: `alloc:${a.id}:${w.userId}`,
+      link: `/wines/${w.wineId}`, dedupeKey: `alloc:${a.id}:${w.userId}`, channel: w.channel,
     });
     if (r.sent) n++;
   }
@@ -151,7 +159,7 @@ export async function notifyFxLows(currencies = ["EUR", "USD"]) {
         user: w.user, type: "FX", wineId: w.wineId,
         title: `${cur === "EUR" ? "유로" : "달러"} 환율 30일 저점`,
         body: `오늘 ${cur} ${t.krw.toLocaleString("ko-KR")}원으로 최근 30일 중 가장 낮습니다. 찜한 ${w.wine.nameKo} 도착가를 확인해 보세요.`,
-        link: "/me#watch", dedupeKey: `fx:${cur}:${today.toISOString().slice(0, 10)}:${w.userId}`,
+        link: "/me#watch", dedupeKey: `fx:${cur}:${today.toISOString().slice(0, 10)}:${w.userId}`, channel: w.channel,
       });
       if (r.sent) n++;
     }

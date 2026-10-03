@@ -1,10 +1,11 @@
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { addScanAlias, openAllocation, setRequestStatus } from "@/app/admin/actions";
 import { ymd } from "@/lib/format";
 
 const pct = (a: number, b: number) => (b ? `${((a / b) * 100).toFixed(1)}%` : "-");
-const days = (n: number) => new Date(Date.now() - n * 86400e3);
+const days = (n: number, now = Date.now()) => new Date(now - n * 86400e3);
 
 function Kpi({ label, value, goal, note }: { label: string; value: string; goal: string; note: string }) {
   return (
@@ -18,7 +19,89 @@ function Kpi({ label, value, goal, note }: { label: string; value: string; goal:
 }
 
 export default async function Growth() {
-  const d30 = days(30), d60 = days(60);
+  const now = new Date();
+  const d30 = days(30, now.getTime()), d60 = days(60, now.getTime());
+  const recentConsultations: Prisma.ConsultationWhereInput = { createdAt: { gte: d30, lt: now }, expiresAt: { gt: now } };
+  const [consultationUsers, consultationResponses, consultationFeedback, consultationHelpful, consultationCompared, consultationWatched, consultationTokens, consultationConversion] = await Promise.all([
+    prisma.consultation.groupBy({ by: ["userId"], where: recentConsultations }).then((rows) => rows.length),
+    prisma.consultation.count({ where: recentConsultations }),
+    prisma.consultation.count({ where: { ...recentConsultations, helpful: { not: null } } }),
+    prisma.consultation.count({ where: { ...recentConsultations, helpful: true } }),
+    prisma.consultation.count({ where: { ...recentConsultations, compareClickedAt: { not: null } } }),
+    prisma.consultation.count({ where: { ...recentConsultations, watchClickedAt: { not: null } } }),
+    prisma.consultation.aggregate({ where: { ...recentConsultations, OR: [{ inputTokens: { gt: 0 } }, { outputTokens: { gt: 0 } }] }, _avg: { inputTokens: true, outputTokens: true }, _count: { _all: true } }),
+    prisma.$queryRaw<{ consultantUsers: bigint; consultantPurchased: bigint; otherUsers: bigint; otherPurchased: bigint }[]>`
+      WITH purchase_confirmations AS (
+        SELECT o."userId", e."createdAt" AS "confirmedAt"
+          FROM "Order" o JOIN "OrderEvent" e ON e."orderId" = o.id
+          WHERE o.status NOT IN ('CLICKED', 'CANCELLED')
+            AND e.status IN ('CONFIRMED', 'SHIPPED', 'CUSTOMS', 'DELIVERED')
+        UNION ALL
+        SELECT o."userId", c."createdAt" AS "confirmedAt"
+          FROM "Order" o JOIN "Conversion" c ON c."clickId" = o."clickId"
+          WHERE o.status NOT IN ('CLICKED', 'CANCELLED')
+      ), first_purchases AS (
+        SELECT "userId", MIN("confirmedAt") AS "firstAt"
+          FROM purchase_confirmations GROUP BY "userId"
+      ), first_consultations AS (
+        SELECT "userId", MIN("createdAt") AS "firstAt"
+          FROM "Consultation"
+          WHERE "createdAt" >= ${d30} AND "createdAt" < ${now} AND "expiresAt" > ${now}
+          GROUP BY "userId"
+      ), eligible_members AS (
+        SELECT u.id, p."firstAt" AS "purchaseAt", c."firstAt" AS "consultedAt"
+          FROM "User" u LEFT JOIN first_purchases p ON p."userId" = u.id
+          LEFT JOIN first_consultations c ON c."userId" = u.id
+          WHERE u."createdAt" < ${d30} AND u."adultVerifiedAt" < ${d30}
+            AND (p."firstAt" IS NULL OR p."firstAt" >= ${d30})
+      )
+      SELECT COUNT(*) FILTER (WHERE "consultedAt" IS NOT NULL) AS "consultantUsers",
+             COUNT(*) FILTER (WHERE "consultedAt" IS NOT NULL AND "purchaseAt" >= "consultedAt" AND "purchaseAt" < ${now}) AS "consultantPurchased",
+             COUNT(*) FILTER (WHERE "consultedAt" IS NULL) AS "otherUsers",
+             COUNT(*) FILTER (WHERE "consultedAt" IS NULL AND "purchaseAt" >= ${d30} AND "purchaseAt" < ${now}) AS "otherPurchased"
+        FROM eligible_members`,
+  ]);
+  const consultationFirst = consultationConversion[0];
+  const consultantUsers = Number(consultationFirst?.consultantUsers ?? 0);
+  const consultantPurchased = Number(consultationFirst?.consultantPurchased ?? 0);
+  const otherConsultationUsers = Number(consultationFirst?.otherUsers ?? 0);
+  const otherConsultationPurchased = Number(consultationFirst?.otherPurchased ?? 0);
+  const consultationPurchaseMultiple = consultantUsers && otherConsultationUsers && otherConsultationPurchased
+    ? (consultantPurchased / consultantUsers) / (otherConsultationPurchased / otherConsultationUsers) : null;
+  // 단순 판매처 이동(CLICKED)은 구매로 세지 않습니다. 고객 확인도 구매 확인에 포함됩니다.
+  const purchasedOrders: Prisma.OrderWhereInput = { createdAt: { gte: d30 }, status: { in: ["CONFIRMED", "SHIPPED", "CUSTOMS", "DELIVERED"] } };
+  const deliveredTrackedOrders: Prisma.OrderWhereInput = { status: "DELIVERED", deliveredAt: { gte: d30 }, trackingRegisteredAt: { not: null } };
+  const [purchased, registered, deliveredTracked, reviewedTracked, guideStarted, guideCompleted, firstPurchaseCohort] = await Promise.all([
+    prisma.order.count({ where: purchasedOrders }),
+    prisma.order.count({ where: { ...purchasedOrders, trackingRegisteredAt: { not: null } } }),
+    prisma.order.count({ where: deliveredTrackedOrders }),
+    prisma.order.count({ where: { ...deliveredTrackedOrders, review: { is: { status: { not: "DELETED" } } } } }),
+    prisma.firstPurchaseGuide.count({ where: { startedAt: { gte: d30 } } }),
+    prisma.firstPurchaseGuide.count({ where: { startedAt: { gte: d30 }, completedAt: { not: null } } }),
+    prisma.$queryRaw<{ eligible: bigint; purchased: bigint; averageDays: number | null }[]>`
+      WITH purchase_confirmations AS (
+        SELECT o."userId", e."createdAt" AS "confirmedAt"
+          FROM "Order" o JOIN "OrderEvent" e ON e."orderId" = o.id
+          WHERE o.status NOT IN ('CLICKED', 'CANCELLED')
+            AND e.status IN ('CONFIRMED', 'SHIPPED', 'CUSTOMS', 'DELIVERED')
+        UNION ALL
+        SELECT o."userId", c."createdAt" AS "confirmedAt"
+          FROM "Order" o JOIN "Conversion" c ON c."clickId" = o."clickId"
+          WHERE o.status NOT IN ('CLICKED', 'CANCELLED')
+      ), first_purchases AS (
+        SELECT "userId", MIN("confirmedAt") AS "firstAt"
+          FROM purchase_confirmations GROUP BY "userId"
+      )
+      SELECT COUNT(*) FILTER (WHERE p."firstAt" IS NULL OR p."firstAt" >= g."startedAt") AS eligible,
+             COUNT(*) FILTER (WHERE p."firstAt" >= g."startedAt") AS purchased,
+             (AVG(EXTRACT(EPOCH FROM (p."firstAt" - g."startedAt")) / 86400)
+               FILTER (WHERE p."firstAt" >= g."startedAt"))::double precision AS "averageDays"
+        FROM "FirstPurchaseGuide" g LEFT JOIN first_purchases p ON p."userId" = g."userId"
+        WHERE g."startedAt" >= ${d30}`,
+  ]);
+  const firstPurchase = firstPurchaseCohort[0];
+  const firstEligible = Number(firstPurchase?.eligible ?? 0);
+  const firstPurchased = Number(firstPurchase?.purchased ?? 0);
   const [cohort, watchers, sent, clicked, alertOrders, limitHit, converted, views, saves, newUsers, referred, visits, sharers, resolved, correct, scanUsers, requests, reqFromScan] = await Promise.all([
     prisma.userDay.groupBy({ by: ["userId"], where: { day: { gte: d60, lt: d30 } } }).then((r) => r.map((x) => x.userId)),
     prisma.priceAlert.groupBy({ by: ["userId"], where: { active: true } }).then((r) => new Set(r.map((x) => x.userId))),
@@ -66,6 +149,34 @@ export default async function Growth() {
   return (
     <div className="stack-lg">
       <h1 style={{ fontSize: 28 }}>성장 지표 · 최근 30일</h1>
+
+      <section className="stack">
+        <h2>고객 편의 1차 · 통관·배송 추적과 첫 직구 도우미</h2>
+        <p className="small muted">구매 확인은 주문 확정·발송·통관·수령 상태로 집계합니다. 판매처로 이동만 한 주문과 취소 주문은 제외하며, 고객이 직접 확인한 주문도 포함합니다.</p>
+        <div className="grid-4">
+          <Kpi label="구매 확인 주문 운송장 등록률" value={pct(registered, purchased)} goal="40% 이상" note={`최근 30일 생성된 구매 확인 주문 ${purchased}건 중 운송장 등록 ${registered}건`} />
+          <Kpi label="수령한 추적 주문 후기 작성률" value={pct(reviewedTracked, deliveredTracked)} goal="30% 이상" note={`최근 30일 수령한 추적 주문 ${deliveredTracked}건 중 후기 ${reviewedTracked}건 · 삭제 후기 제외`} />
+          <Kpi label="첫 직구 도우미 완료율" value={pct(guideCompleted, guideStarted)} goal="60% 이상" note={`최근 30일 시작 ${guideStarted}명 중 완료 ${guideCompleted}명 · 시작 시점 기준`} />
+          <Kpi label="도우미 시작 후 첫 구매 확인" value={pct(firstPurchased, firstEligible)} goal="추적" note={`시작 전 구매 확인 기록이 없는 ${firstEligible}명 중 ${firstPurchased}명 · 첫 구매 확인까지 평균 ${firstPurchase?.averageDays != null ? `${firstPurchase.averageDays.toFixed(1)}일` : "-"}`} />
+        </div>
+        <p className="small muted">첫 구매는 플랫폼에 기록된 최초 주문 확인 이벤트 또는 제휴 전환 시각 기준입니다. 최근 시작한 회원의 완료·구매가 추가되면 같은 시작 집단의 비율도 갱신됩니다. 배송 문의 비율은 고객 문의 데이터 연동 후 측정합니다.</p>
+      </section>
+
+      <section className="stack">
+        <h2>AI 상담 1차 · 세금·직구 절차 안내</h2>
+        <p className="small muted">최근 30일 중 보관 기간이 남은 상담 응답을 집계합니다. AI 미사용 기본 안내도 포함하며, 설정된 보관 기간과 자동 삭제 작업에 따라 과거 집계가 달라질 수 있습니다.</p>
+        <div className="grid-4">
+          <Kpi label="상담 기능 사용 회원" value={String(consultationUsers)} goal="추적" note={`회원 ${consultationUsers}명 · 응답 ${consultationResponses}건`} />
+          <Kpi label="도움이 됐어요 응답률" value={pct(consultationHelpful, consultationFeedback)} goal="추적" note={`평가를 남긴 ${consultationFeedback}건 중 긍정 ${consultationHelpful}건 · 평가 없는 응답 제외`} />
+          <Kpi label="상담 후 경로 비교 클릭률" value={pct(consultationCompared, consultationResponses)} goal="추적" note={`응답 ${consultationResponses}건 중 경로 비교 클릭 ${consultationCompared}건 · 응답당 1회`} />
+          <Kpi label="상담 후 찜 링크 클릭률" value={pct(consultationWatched, consultationResponses)} goal="추적" note={`응답 ${consultationResponses}건 중 찜 링크 클릭 ${consultationWatched}건 · 실제 찜 등록과 구분`} />
+          <Kpi label="상담 집단 첫 구매 확인 비율" value={pct(consultantPurchased, consultantUsers)} goal="추적" note={`기간 시작 전 미구매 성인 ${consultantUsers}명 중 첫 상담 후 구매 확인 ${consultantPurchased}명`} />
+          <Kpi label="첫 구매 확인율 비교 (관측)" value={consultationPurchaseMultiple !== null ? `${consultationPurchaseMultiple.toFixed(2)}배` : "-"} goal="상담 기록 없는 집단의 1.5배" note={`상담 기록 없는 ${otherConsultationUsers}명 중 첫 구매 확인 ${otherConsultationPurchased}명 (${pct(otherConsultationPurchased, otherConsultationUsers)}) · 비교 집단 구매 0건이면 배수 미집계`} />
+          <Kpi label="모델 요청당 평균 토큰" value={consultationTokens._count._all ? `${Math.round(consultationTokens._avg.inputTokens ?? 0)} / ${Math.round(consultationTokens._avg.outputTokens ?? 0)}` : "-"} goal="사용량 추적" note={`입력 / 출력 · 사용량 기록 ${consultationTokens._count._all}건 · 기본 안내 전환 포함 · 원화 비용 미집계`} />
+          <Kpi label="숫자 답변 주간 오류" value="-" goal="0건" note="주 1회 수동 검토 필요 · 오류 기록 연동 전으로 자동 집계 없음" />
+        </div>
+        <p className="small muted">전환 비교는 기간 시작 전에 가입·성인인증했고 그때까지 구매 확인 기록이 없는 회원으로 한정합니다. 유효 상담 기록이 있는 집단은 기간 중 첫 상담 이후, 기록이 없는 집단은 같은 30일 중 최초 구매 확인을 셉니다. 만료·삭제된 상담 사용 이력은 집단 구분에서 확인할 수 없습니다. 주문 확인은 고객 확인·판매처 이벤트·제휴 전환을 통한 대리지표이며 결제 검증이나 상담의 인과 효과를 뜻하지 않습니다. 접속 빈도와 상담 시점 차이를 통제하지 않은 관측 비교입니다.</p>
+      </section>
 
       <section className="stack">
         <h2>1. 가격 하락·입고 알림</h2>

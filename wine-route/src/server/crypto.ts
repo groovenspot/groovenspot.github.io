@@ -1,7 +1,11 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 
 /** 개인통관고유부호 같은 민감 정보를 AES-256-GCM으로 암호화해 저장합니다. 키: ORDER_DATA_KEY (없으면 SESSION_SECRET) */
-const key = () => createHash("sha256").update(process.env.ORDER_DATA_KEY || process.env.SESSION_SECRET || "dev-secret").digest();
+const key = () => {
+  const configured = process.env.ORDER_DATA_KEY?.trim() || process.env.SESSION_SECRET?.trim();
+  if (!configured && process.env.NODE_ENV === "production") throw new Error("order_data_key_not_configured");
+  return createHash("sha256").update(configured || "dev-secret").digest();
+};
 
 export function encrypt(plain: string) {
   const iv = randomBytes(12);

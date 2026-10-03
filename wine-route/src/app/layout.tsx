@@ -3,6 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 import { getUser, isAdminEmail } from "@/server/auth";
 import { prisma } from "@/server/db";
+import { ConsultationWidget } from "@/components/ConsultationWidget";
 
 export const metadata: Metadata = {
   title: { default: "셀러도어 · 와인 직구 도착가 비교", template: "%s · 셀러도어" },
@@ -37,6 +38,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/community">직구 후기</Link>
               <Link href="/calculator">직접 계산</Link>
               <Link href="/guide">통관 가이드</Link>
+              <Link href="/guide/first">첫 직구 도우미</Link>
               {user ? (
                 <>
                   <Link href="/me">내 찜·주문</Link>
@@ -60,6 +62,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <span>세금은 2026년 10월 공개 기준(1병·1L·150달러 이하 주세·교육세만, FTA 원산지 구매 관세 0%, 제3국 구매 관세 15%)으로 계산한 예상치이며 실제 납부액과 다를 수 있습니다.</span>
           </div>
         </footer>
+        <ConsultationWidget />
       </body>
     </html>
   );

@@ -49,7 +49,10 @@ export function findBanned(text: string, patterns: string[]): string | null {
 
 /** 만 나이 (생년월일 YYYY-MM-DD, 기준일 KST) */
 export function fullAge(birthDate: string, now = new Date()) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) return NaN;
   const [y, m, d] = birthDate.split("-").map(Number);
+  const date = new Date(`${birthDate}T00:00:00Z`);
+  if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() !== y || date.getUTCMonth() + 1 !== m || date.getUTCDate() !== d) return NaN;
   const k = new Date(now.getTime() + 9 * 3600e3);
   const ny = k.getUTCFullYear(), nm = k.getUTCMonth() + 1, nd = k.getUTCDate();
   return ny - y - (nm < m || (nm === m && nd < d) ? 1 : 0);

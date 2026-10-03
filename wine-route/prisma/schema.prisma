@@ -36,6 +36,15 @@ enum OrderStatus {
   CANCELLED // 취소
 }
 
+enum ShipmentStage {
+  INTERNATIONAL
+  KOREA_ARRIVAL
+  CUSTOMS
+  TAX_NOTICE
+  DOMESTIC
+  DELIVERED
+}
+
 enum Plan {
   FREE
   PREMIUM
@@ -194,6 +203,10 @@ model User {
   zip         String?
   pcccEnc     String? // 개인통관고유부호 (암호화 저장)
   pcccInNote  Boolean @default(true) // 결제 화면 주문 메모에 통관부호 넣기
+
+  // 마케팅 수신 동의 (선택). null이면 미동의 또는 철회. 서비스 알림(가격 알림, 주문 상태)과 별개입니다.
+  marketingConsentAt        DateTime?
+  marketingConsentUpdatedAt DateTime? // 동의·철회를 바꾼 마지막 시각
   createdAt DateTime @default(now())
 
   sessions  Session[]
@@ -207,6 +220,50 @@ model User {
   points    PointTx[]
   notifications Notification[]
   days      UserDay[]
+  firstPurchaseGuide FirstPurchaseGuide?
+  consultations Consultation[]
+  consultationUsage ConsultationDailyUsage[]
+  tasteProfile TasteProfile?
+}
+
+/// 상담은 민감 정보가 제거된 질문과 플랫폼 계산 근거만 보관합니다.
+model Consultation {
+  id         String @id @default(cuid())
+  userId     String
+  question   String
+  answer     Json
+  aiUsed     Boolean @default(false)
+  model      String?
+  inputTokens Int @default(0)
+  outputTokens Int @default(0)
+  helpful    Boolean?
+  compareClickedAt DateTime?
+  watchClickedAt DateTime?
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+  @@index([expiresAt])
+}
+
+model ConsultationDailyUsage {
+  userId String
+  day    DateTime @db.Date
+  count  Int @default(0)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, day])
+}
+
+/// 첫 직구 준비 체크와 시작·완료 시각. 통관부호는 여기 저장하지 않습니다.
+model FirstPurchaseGuide {
+  userId           String   @id
+  pcccIssued       Boolean  @default(false)
+  cardChecked      Boolean  @default(false)
+  addressConfirmed Boolean  @default(false)
+  preparedRoutes   String[] @default([])
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model LoginCode {
@@ -483,6 +540,19 @@ model Order {
   orderRef     String? // 판매처 주문번호
   carrier      String?
   trackingNo   String?
+  trackingRegisteredAt DateTime?
+  shipmentStage ShipmentStage?
+  estimatedDeliveryAt DateTime?
+  actualTax    Int? // 고지 또는 사용자가 확인한 실제 세금 (원)
+  taxNoticeAt  DateTime?
+  deliveredAt  DateTime?
+  domesticCarrier String?
+  domesticTrackingNo String?
+  customsNo    String? // H B/L 번호 (운송장과 다른 경우)
+  customsYear  Int?
+  trackingSyncedAt DateTime?
+  trackingUpdatedAt DateTime? // 공급자 데이터의 갱신 시각 (지연된 콜백 차단)
+  trackingError String?
   purchaseId   String?     @unique // 도착 처리 때 남긴 구매 기록
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
@@ -494,9 +564,25 @@ model Order {
   purchase Purchase?    @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
   events   OrderEvent[]
   review   DirectReview?
+  shipmentEvents ShipmentEvent[]
 
   @@index([userId, createdAt])
   @@index([status])
+}
+
+model ShipmentEvent {
+  id         String @id @default(cuid())
+  orderId    String
+  stage      ShipmentStage
+  source     String // customer | api | seller | admin
+  occurredAt DateTime
+  note       String?
+  location   String?
+  externalId String? // API 재전송 중복 방지
+  createdAt  DateTime @default(now())
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  @@unique([orderId, externalId])
+  @@index([orderId, occurredAt])
 }
 
 model OrderEvent {
@@ -637,4 +723,15 @@ model WineRequest {
   createdAt DateTime @default(now())
 
   @@index([status, createdAt])
+}
+
+/// 취향 설문 (선택). 소득·자산은 받지 않고 산지·종류·병당 예산 구간만 저장합니다.
+model TasteProfile {
+  userId    String   @id
+  countries String[] @default([])
+  types     String[] @default([])
+  budget    String? // U50 | 50_100 | 100_200 | O200
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

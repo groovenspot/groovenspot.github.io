@@ -1,5 +1,5 @@
 "use client";
-import { startTransition, useActionState, useState } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { quickWatch, requestWine, resolveScan, scanPhoto, scanText, type ScanItem, type ScanState } from "@/app/scan/actions";
 import { ROUTE_LABEL, type ChannelKey } from "@/lib/engine";
@@ -16,6 +16,7 @@ async function shrink(file: File): Promise<File> {
     c.width = Math.round(bmp.width * k);
     c.height = Math.round(bmp.height * k);
     c.getContext("2d")!.drawImage(bmp, 0, 0, c.width, c.height);
+    bmp.close();
     const blob: Blob = await new Promise((ok, no) => c.toBlob((b) => (b ? ok(b) : no()), "image/jpeg", 0.85));
     return new File([blob], "label.jpg", { type: "image/jpeg" });
   } catch {
@@ -43,8 +44,8 @@ function Item({ it, loggedIn }: { it: ScanItem; loggedIn: boolean }) {
               <span className="small muted">{c.name} {c.vintage ?? "NV"}{!it.confident || pick !== 0 ? "" : " · 자동 인식"}</span>
             </div>
             {diff !== null ? (
-              diff > 0 ? <span className="chip ok">직구가 {won(diff)} 낮음</span> : <span className="chip">국내 구매가 {won(-diff)} 낮음</span>
-            ) : <span className="chip">비교할 국내가 없음</span>}
+              diff > 0 ? <span className="chip ok">직구가 {won(diff)} 낮음</span> : diff < 0 ? <span className="chip">국내 구매가 {won(-diff)} 낮음</span> : <span className="chip">같은 가격</span>
+            ) : <span className="chip">{c.perBottle === null ? "직구 경로 없음" : "비교할 국내가 없음"}</span>}
           </div>
           <table className="taxtable">
             <tbody>
@@ -55,7 +56,7 @@ function Item({ it, loggedIn }: { it: ScanItem; loggedIn: boolean }) {
           {diff !== null && diff <= 0 && <p className="small">이 와인은 국내에서 사는 편이 낫습니다. 직구는 시간이 걸리고 파손 위험도 있습니다.</p>}
           <div className="row">
             <button className="btn small" onClick={async () => {
-              const r = await quickWatch(it.scanId, c.wineId, c.perBottle);
+              const r = await quickWatch(it.scanId, c.wineId);
               setMsg(r.login ? "로그인하면 찜할 수 있습니다." : r.error ?? "찜했습니다. 도착가가 내려가면 알려드릴게요.");
             }}>찜하기</button>
             <Link className="btn ghost small" href={`/wines/${c.wineId}`} onClick={() => void resolveScan(it.scanId, c.wineId)}>경로 비교 보기</Link>
@@ -76,8 +77,9 @@ function Item({ it, loggedIn }: { it: ScanItem; loggedIn: boolean }) {
           </div>
           <div className="row">
             {requested ? <span className="small pos">요청을 남겼습니다. 요청이 모이면 판매처를 찾아 목록에 추가합니다.</span> : (
-              <button className="btn small" onClick={async () => { await requestWine(it.scanId, it.read.query); setRequested(true); }}>목록에 없어요 · 구해주세요</button>
+              <button className="btn small" onClick={async () => { const r = await requestWine(it.scanId, it.read.query); if (r.error) setMsg(r.error); else setRequested(true); }}>목록에 없어요 · 구해주세요</button>
             )}
+            {msg && <span className="small">{msg}</span>}
             {!loggedIn && <span className="small muted">로그인하면 추가될 때 알려드립니다.</span>}
           </div>
         </>
@@ -94,6 +96,7 @@ export function Scanner({ loggedIn, photoEnabled }: { loggedIn: boolean; photoEn
   const cur = mode === "text" ? tState : state;
   const shown = cur.items;
   const busy = pending || tPending;
+  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
 
   const onFile = async (f: File | undefined) => {
     if (!f) return;
@@ -139,4 +142,3 @@ export function Scanner({ loggedIn, photoEnabled }: { loggedIn: boolean; photoEn
     </div>
   );
 }
-

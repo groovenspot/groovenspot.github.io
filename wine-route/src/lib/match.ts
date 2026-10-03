@@ -65,10 +65,14 @@ export function matchWines(text: string, wines: MatchWine[], limit = 3): MatchRe
   const vintage = parseVintage(text);
   return wines
     .map((w) => {
-      const forms = [`${w.producer} ${w.name}`, w.name, w.nameKo, ...w.aliases].map(normalizeLabel).filter(Boolean);
-      const base = Math.max(...forms.map((f) => Math.max(dice(q, f), containment(q, f) * 0.9)));
-      const v = vintage && w.vintage ? (vintage === w.vintage ? 0.08 : -0.05) : 0;
-      return { wine: w, score: Math.max(0, Math.min(1, base + v)) };
+      const similarity = (f: string) => f ? Math.max(dice(q, f), containment(q, f) * 0.9) : 0;
+      const forms = [`${w.producer} ${w.name}`, w.nameKo, ...w.aliases].map(normalizeLabel).filter(Boolean);
+      // 여러 생산자가 같은 appellation 이름을 쓸 때 생산자 글자도 후보 순위에 반영합니다.
+      const named = similarity(normalizeLabel(w.name)) * 0.85 + containment(q, normalizeLabel(w.producer)) * 0.15;
+      const base = Math.max(named, ...forms.map(similarity));
+      const v = vintage && w.vintage ? (vintage === w.vintage ? 0.08 : -0.08) : 0;
+      // 정확한 이름의 점수가 1에서 잘려 빈티지 차이가 사라지지 않도록 여유를 둡니다.
+      return { wine: w, score: Math.max(0, Math.min(1, base * 0.92 + v)) };
     })
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);

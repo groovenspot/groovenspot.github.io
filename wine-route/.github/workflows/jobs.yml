@@ -5,13 +5,15 @@ name: Scheduled jobs
 on:
   schedule:
     - cron: "7 * * * *" # 매시 7분: 환율 갱신 (+ 유로·달러 30일 저점 알림)
+    - cron: "32 0 * * *" # 매일09:32KST: 만료 상담 기록 삭제
+    - cron: "22 * * * *" # 매시 22분: 등록된 운송장의 배송·통관 상태 갱신
     - cron: "15 */6 * * *" # 6시간마다: 판매처 가격 수집 (하루 4회)
     - cron: "45 */6 * * *" # 수집 30분 뒤: 찜 알림 (목표가·하락·재입고)
     - cron: "55 0 * * 1" # 월요일 09:55 KST: 무료 회원 주간 묶음
   workflow_dispatch:
     inputs:
       job:
-        description: fx | crawl | alerts | digest
+        description: fx | crawl | alerts | digest | tracking | consultation-cleanup
         required: true
         default: alerts
 
@@ -25,6 +27,8 @@ jobs:
         run: |
           case "${{ github.event.schedule }}" in
             "7 * * * *") echo "job=fx" >> "$GITHUB_OUTPUT" ;;
+            "32 0 * * *") echo "job=consultation-cleanup" >> "$GITHUB_OUTPUT" ;;
+            "22 * * * *") echo "job=tracking" >> "$GITHUB_OUTPUT" ;;
             "15 */6 * * *") echo "job=crawl" >> "$GITHUB_OUTPUT" ;;
             "45 */6 * * *") echo "job=alerts" >> "$GITHUB_OUTPUT" ;;
             "55 0 * * 1") echo "job=digest" >> "$GITHUB_OUTPUT" ;;

@@ -29,6 +29,13 @@ describe("성인 확인 (만 19세)", () => {
     expect(isAdult("2007-10-02", now)).toBe(true);
     expect(isAdult("bad", now)).toBe(false);
   });
+  it("존재하지 않는 생년월일을 성인으로 인정하지 않는다", () => {
+    for (const date of ["2007-00-00", "2007-02-29", "2007-04-31", "2007-13-01"]) {
+      expect(fullAge(date, now)).toBeNaN();
+      expect(isAdult(date, now)).toBe(false);
+    }
+    expect(isAdult("2004-02-29", now)).toBe(true);
+  });
 });
 
 describe("닉네임", () => {

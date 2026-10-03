@@ -8,10 +8,12 @@ import { won, ymd } from "@/lib/format";
 
 export default async function AdminCommunity() {
   const cfg = await getCommunityConfig();
-  const { start } = monthRange(0);
-  const [monthReviews, delivered, published, members, pending, hidden, invites, lastKings, granted] = await Promise.all([
-    prisma.directReview.count({ where: { createdAt: { gte: start }, status: { not: "DELETED" } } }),
-    prisma.orderEvent.count({ where: { status: "DELIVERED", createdAt: { gte: start } } }),
+  const { start, end } = monthRange(0);
+  const receivedOrders = { status: "DELIVERED" as const, deliveredAt: { gte: start, lt: end } };
+  const [monthReviews, delivered, reviewedDelivered, published, members, pending, hidden, invites, lastKings, granted] = await Promise.all([
+    prisma.directReview.count({ where: { createdAt: { gte: start, lt: end }, status: { not: "DELETED" } } }),
+    prisma.order.count({ where: receivedOrders }),
+    prisma.order.count({ where: { ...receivedOrders, review: { is: { status: { not: "DELETED" } } } } }),
     prisma.directReview.count({ where: { status: "PUBLISHED" } }),
     prisma.user.count({ where: { adultVerifiedAt: { not: null } } }),
     prisma.directReview.findMany({ where: { proofStatus: "PENDING", status: { not: "DELETED" } }, include: { user: true, wine: true, proof: { select: { mime: true } } }, orderBy: { createdAt: "asc" } }),
@@ -20,7 +22,7 @@ export default async function AdminCommunity() {
     monthKings(-1),
     prisma.pointTx.findMany({ where: { reason: "king", refId: monthRange(-1).label } }),
   ]);
-  const rate = delivered ? monthReviews / delivered : null;
+  const rate = delivered ? reviewedDelivered / delivered : null;
   const stage2Ready = published >= cfg.stage2.reviews && members >= cfg.stage2.members;
   const pct = (a: number, b: number) => `${Math.min(100, (a / Math.max(1, b)) * 100).toFixed(0)}%`;
 
@@ -30,7 +32,7 @@ export default async function AdminCommunity() {
 
       <div className="grid-4">
         <div className="box tight stat"><span className="label">이달 신규 후기</span><span className="v">{monthReviews}</span><span className="small muted">1단계 KPI</span></div>
-        <div className="box tight stat"><span className="label">후기 작성률</span><span className="v">{rate !== null ? `${(rate * 100).toFixed(0)}%` : "-"}</span><span className="small muted">이달 후기 ÷ 이달 도착 처리 {delivered}건</span></div>
+        <div className="box tight stat"><span className="label">수령 주문 후기 작성률</span><span className="v">{rate !== null ? `${(rate * 100).toFixed(0)}%` : "-"}</span><span className="small muted">이달 수령 주문 {delivered}건 중 후기 {reviewedDelivered}건 · 삭제 후기 제외</span></div>
         <div className="box tight stat"><span className="label">인증 확인 대기</span><span className="v">{pending.length}</span><span className="small muted">통관 내역 사진</span></div>
         <div className="box tight stat"><span className="label">신고로 숨긴 후기</span><span className="v">{hidden.length}</span><span className="small muted">복구 또는 삭제 필요</span></div>
       </div>

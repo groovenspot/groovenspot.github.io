@@ -24,14 +24,14 @@ export default async function WritePage({ searchParams }: { searchParams: Promis
     });
     if (o && !o.review) {
       const start = o.events.find((e) => e.status === "CONFIRMED")?.createdAt ?? o.createdAt;
-      const end = o.events.find((e) => e.status === "DELIVERED")?.createdAt;
+      const end = o.deliveredAt ?? o.events.find((e) => e.status === "DELIVERED")?.createdAt;
       prefill = {
         orderId: o.id,
         wineLabel: o.wine.nameKo,
         routeLabel: ROUTE_LABEL[o.route as ChannelKey] ?? o.route,
         sellerLabel: o.seller.name,
         qty: o.qty,
-        taxPaid: o.purchase?.taxPaid ?? null,
+        taxPaid: o.purchase?.taxPaid ?? o.actualTax ?? null,
         shippingDays: end ? daysBetween(start, end) : null,
       };
     }

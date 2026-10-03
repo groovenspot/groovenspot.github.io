@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/server/db";
 import { getUser } from "@/server/auth";
-import { compareMany } from "@/server/compare";
+import { compareMany, compareWine } from "@/server/compare";
 import { getTaxConfig } from "@/server/settings";
 import { isPremium } from "@/server/points";
 import { fromText, recognize, type Recognized } from "@/server/recognize";
@@ -67,16 +67,20 @@ export async function scanText(_: ScanState, fd: FormData): Promise<ScanState> {
 export async function resolveScan(scanId: string, chosenWineId: string | null) {
   const s = await prisma.scanLog.findUnique({ where: { id: scanId } });
   if (!s || s.resolvedAt) return;
+  const user = await getUser();
+  if (s.userId !== null && s.userId !== user?.id) return;
   await prisma.scanLog.update({ where: { id: scanId }, data: { chosenWineId, correct: chosenWineId !== null && chosenWineId === s.topWineId, resolvedAt: new Date() } });
 }
 
 /** 결과 화면의 찜하기: 목표가는 지금 도착가의 90% */
-export async function quickWatch(scanId: string, wineId: string, perBottle: number | null): Promise<{ ok?: boolean; error?: string; login?: boolean }> {
+export async function quickWatch(scanId: string, wineId: string): Promise<{ ok?: boolean; error?: string; login?: boolean }> {
   const user = await getUser();
   if (!user) return { login: true };
-  await resolveScan(scanId, wineId);
+  const comparison = await compareWine(wineId, 1, 750);
+  if (!comparison) return { error: "와인 정보를 찾을 수 없습니다. 다시 검색해 주세요." };
+  const perBottle = comparison.result.best?.perBottle ?? null;
   const exists = await prisma.priceAlert.findUnique({ where: { userId_wineId_qty_bottleMl: { userId: user.id, wineId, qty: 1, bottleMl: 750 } } });
-  if (!exists && !isPremium(user)) {
+  if (!exists?.active && !isPremium(user)) {
     const { freeAlertLimit } = await getTaxConfig();
     if ((await prisma.priceAlert.count({ where: { userId: user.id, active: true } })) >= freeAlertLimit) {
       if (!user.hitWatchLimitAt) await prisma.user.update({ where: { id: user.id }, data: { hitWatchLimitAt: new Date() } });
@@ -85,9 +89,10 @@ export async function quickWatch(scanId: string, wineId: string, perBottle: numb
   }
   await prisma.priceAlert.upsert({
     where: { userId_wineId_qty_bottleMl: { userId: user.id, wineId, qty: 1, bottleMl: 750 } },
-    update: { active: true },
+    update: { active: true, ...(exists?.active ? {} : { notifiedPrice: null }) },
     create: { userId: user.id, wineId, qty: 1, bottleMl: 750, targetPerBottle: perBottle ? defaultTarget(perBottle) : 50000, channel: user.phone ? "KAKAO" : "EMAIL", source: "scan" },
   });
+  await resolveScan(scanId, wineId);
   revalidatePath("/me");
   return { ok: true };
 }
@@ -95,7 +100,9 @@ export async function quickWatch(scanId: string, wineId: string, perBottle: numb
 /** 목록에 없는 와인: 구해주세요 (미수입 와인 수요 리스트) */
 export async function requestWine(scanId: string | null, text: string) {
   const user = await getUser();
+  const name = text.trim().slice(0, 300);
+  if (name.length < 3) return { error: "찾는 와인 이름을 3자 이상 입력해 주세요." };
   await resolveScan(scanId ?? "", null).catch(() => {});
-  await prisma.wineRequest.create({ data: { userId: user?.id ?? null, text: text.slice(0, 300), source: scanId ? "scan" : "manual", scanId } });
+  await prisma.wineRequest.create({ data: { userId: user?.id ?? null, text: name, source: scanId ? "scan" : "manual", scanId } });
   return { ok: true };
 }

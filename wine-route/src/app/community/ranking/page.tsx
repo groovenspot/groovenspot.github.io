@@ -14,7 +14,7 @@ export default async function Ranking() {
   const month = new Date(Date.now() - 30 * 86400e3);
   const [carted, savingRows, kings] = await Promise.all([
     prisma.clickLog.groupBy({ by: ["wineId"], where: { createdAt: { gte: week } }, _count: true, orderBy: { _count: { wineId: "desc" } }, take: 10 }),
-    prisma.directReview.findMany({ where: { status: "PUBLISHED", createdAt: { gte: month }, cardPaidKrw: { not: null } }, include: { wine: true } }),
+    prisma.directReview.findMany({ where: { status: "PUBLISHED", sponsored: false, createdAt: { gte: month }, cardPaidKrw: { not: null } }, include: { wine: true } }),
     monthKings(0),
   ]);
   const wines = await prisma.wine.findMany({ where: { id: { in: carted.map((c) => c.wineId) } }, select: { id: true, nameKo: true } });
@@ -51,7 +51,7 @@ export default async function Ranking() {
         </section>
         <section className="box">
           <h2>절약액 큰 경로 (실측)</h2>
-          <p className="small muted">최근 30일 후기의 카드 청구액+세금 기준, 국내가 대비 병당</p>
+          <p className="small muted">최근 30일 후기의 카드 청구액+세금 기준, 국내가 대비 병당. 협찬 후기는 제외합니다.</p>
           {savings.length ? (
             <ol className="list">
               {savings.map((g) => (

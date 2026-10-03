@@ -40,7 +40,8 @@ export async function wineCard(user: User | null, wineId: string, qty: number, m
 export async function reviewCard(user: User, reviewId: string): Promise<CardData | null> {
   const r = await prisma.directReview.findFirst({ where: { id: reviewId, userId: user.id }, include: { wine: true, order: true } });
   if (!r) return null;
-  const paid = r.cardPaidKrw ?? (r.order ? r.order.estTotal - r.order.estTax : null);
+  // 주문의 예상 결제액을 실제 지출로 바꾸어 표시하지 않습니다.
+  const paid = r.cardPaidKrw;
   const actual = paid !== null ? Math.round((paid + r.taxPaid) / r.qty) : null;
   const saving = paid !== null ? measuredSaving({ cardPaidKrw: paid, taxPaid: r.taxPaid, qty: r.qty, bottleMl: r.bottleMl }, r.wine.krPrice) : null;
   return {
@@ -63,7 +64,7 @@ export async function monthCard(user: User, monthStart: Date, monthEnd: Date, la
   const rs = await prisma.directReview.findMany({ where: { userId: user.id, status: "PUBLISHED", createdAt: { gte: monthStart, lt: monthEnd } }, include: { wine: true, order: true } });
   let kr = 0, mine = 0, bottles = 0;
   for (const r of rs) {
-    const paid = r.cardPaidKrw ?? (r.order ? r.order.estTotal - r.order.estTax : null);
+    const paid = r.cardPaidKrw;
     if (paid === null || !r.wine.krPrice) continue;
     kr += r.wine.krPrice * (r.bottleMl / 750) * r.qty;
     mine += paid + r.taxPaid;
@@ -73,7 +74,7 @@ export async function monthCard(user: User, monthStart: Date, monthEnd: Date, la
     kind: "month",
     eyebrow: `${label.replace("-", "년 ")}월 직구 결산`,
     title: bottles ? `와인 ${bottles}병을 직구했어요` : "이번 달 직구 기록이 없어요",
-    subtitle: `직구 후기 ${rs.length}건 기준`,
+    subtitle: `실제 결제액과 국내 추정가를 입력한 후기 ${rs.filter((r) => r.cardPaidKrw !== null && r.wine.krPrice !== null).length}건 기준`,
     krLabel: "국내 소매 추정가 합계",
     krValue: bottles ? Math.round(kr) : null,
     myLabel: "실제로 낸 금액 합계 (세금 포함)",

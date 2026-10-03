@@ -77,11 +77,14 @@ async function draw(canvas: HTMLCanvasElement, d: CardData, fmt: Fmt) {
   // 절약액: 가장 크게
   ctx.fillStyle = C.muted;
   ctx.font = `600 ${S.saveLabel}px ${SANS}`;
-  ctx.fillText(d.saving === null ? "국내 판매가 정보 없음" : d.saving >= 0 ? "국내 추정가 대비" : "국내 구매가 더 저렴해요", P, y);
+  ctx.fillText(d.saving === null ? (d.myValue === null && d.kind === "review" ? "실제 결제 금액 미입력" : "비교할 가격 정보 없음") : d.saving >= 0 ? "국내 추정가 대비" : "국내 구매가 더 저렴해요", P, y);
   y += S.bigGap;
   ctx.fillStyle = d.saving !== null && d.saving >= 0 ? C.glass : C.ink;
   ctx.font = `500 ${S.big}px ${MONO}`;
   const big = d.saving === null ? (d.myValue !== null ? won(d.myValue) : "-") : `${d.saving >= 0 ? "" : "+"}${won(Math.abs(d.saving))}`;
+  const maxBigWidth = W - P * 2 - (S.inlineAfter && d.saving !== null ? 240 : 0);
+  const bigWidth = ctx.measureText(big).width;
+  if (bigWidth > maxBigWidth) ctx.font = `500 ${Math.floor(S.big * maxBigWidth / bigWidth)}px ${MONO}`;
   ctx.fillText(big, P - 4, y);
   const bigW = ctx.measureText(big).width;
   if (d.saving !== null) {
@@ -150,8 +153,19 @@ export function ShareCard({ data, wineId }: { data: CardData; wineId?: string })
   const ref = useRef<HTMLCanvasElement>(null);
   const [fmt, setFmt] = useState<Fmt>("story");
   const [msg, setMsg] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
   useEffect(() => {
-    if (ref.current) draw(ref.current, data, fmt).catch((e) => setMsg(`카드를 그리지 못했습니다: ${e.message}`));
+    let active = true;
+    setReady(false);
+    const prepared = document.createElement("canvas");
+    draw(prepared, data, fmt).then(() => {
+      if (!active || !ref.current) return;
+      ref.current.width = prepared.width;
+      ref.current.height = prepared.height;
+      ref.current.getContext("2d")!.drawImage(prepared, 0, 0);
+      setReady(true);
+    }).catch((e) => { if (active) setMsg(`카드를 그리지 못했습니다: ${e.message}`); });
+    return () => { active = false; };
   }, [data, fmt]);
 
   const blob = () => new Promise<Blob>((ok, no) => ref.current!.toBlob((b) => (b ? ok(b) : no(new Error("이미지 생성 실패"))), "image/png"));
@@ -196,8 +210,8 @@ export function ShareCard({ data, wineId }: { data: CardData; wineId?: string })
             <a href="#" onClick={(e) => { e.preventDefault(); setFmt("square"); }} aria-current={fmt === "square" ? "true" : undefined}>정사각 1:1</a>
           </div>
           <div className="row">
-            <button className="btn" onClick={save}>이미지로 저장</button>
-            <button className="btn ghost" onClick={share}>공유하기</button>
+            <button className="btn" onClick={save} disabled={!ready}>이미지로 저장</button>
+            <button className="btn ghost" onClick={share} disabled={!ready}>공유하기</button>
           </div>
           {msg && <p className="small muted">{msg}</p>}
         </div>

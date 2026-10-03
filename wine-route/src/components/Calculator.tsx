@@ -80,7 +80,7 @@ export function Calculator({ tax, fx }: { tax: TaxConfig; fx: Record<string, num
         )}
         {qty === 2 && <div className="alert">2병부터는 1병 면세구간을 벗어나 부가세가 붙습니다.</div>}
         {qty >= tax.bulkWarnQty && <div className="alert">수량이 많으면 재판매용으로 보아 일반 수입신고 대상이 될 수 있습니다.</div>}
-        <TaxBreakdown goodsKrw={r.goodsKrw} shipKrw={r.shipKrw} tax={r.tax} total={r.total} qty={qty} dutyRate={tax.dutyRate} />
+        <TaxBreakdown goodsKrw={r.goodsKrw} shipKrw={r.shipKrw} tax={r.tax} total={r.total} qty={qty} dutyRate={tax.dutyRate} taxConfig={tax} />
       </div>
     </div>
   );

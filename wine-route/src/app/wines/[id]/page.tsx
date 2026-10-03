@@ -7,6 +7,7 @@ import { getUser } from "@/server/auth";
 import { cookies } from "next/headers";
 import { TaxBreakdown } from "@/components/TaxBreakdown";
 import { AlertForm } from "@/components/AlertForm";
+import { alimtalkTemplate } from "@/server/alimtalk";
 import { ReviewCard, reviewInclude } from "@/components/ReviewCard";
 import { defaultTarget } from "@/lib/alerts";
 import { FX_SOURCE_LABEL, money, sizeLabel, won, ymd, ymdhm } from "@/lib/format";
@@ -236,7 +237,7 @@ export default async function WinePage({ params, searchParams }: P) {
             {sel ? (
               <>
                 <div className="label">{result.routes.find((r) => r.channel === sel.channel)?.label} · {sel.sellerName}{qty > 1 ? ` · ${qty}병 합산` : ""}</div>
-                <TaxBreakdown goodsKrw={sel.goodsKrw} shipKrw={sel.shipKrw} tax={sel.tax} total={sel.total} qty={qty} dutyRate={ctx.tax.dutyRate} />
+                <TaxBreakdown goodsKrw={sel.goodsKrw} shipKrw={sel.shipKrw} tax={sel.tax} total={sel.total} qty={qty} dutyRate={ctx.tax.dutyRate} taxConfig={ctx.tax} />
                 <p className="small muted">환율 {ctx.fx.asOf ? `${ymdhm(ctx.fx.asOf)} ${FX_SOURCE_LABEL[ctx.fx.source ?? ""] ?? ""}` : "-"} 기준 · 실제 세금은 관세청 주간 과세환율로 계산됩니다.</p>
               </>
             ) : (
@@ -244,10 +245,10 @@ export default async function WinePage({ params, searchParams }: P) {
             )}
           </section>
 
-          <section className="box">
+          <section className="box" id="alerts">
             <h2>{existing?.active ? "찜한 와인" : "찜하고 알림 받기"}</h2>
             <p className="small muted">{qty}병 · {sizeLabel(ml)} 기준 병당 도착가가 목표가 이하가 되면 알려드립니다. 목표가 기본값은 지금 도착가의 90%입니다.</p>
-            <AlertForm wineId={id} qty={qty} ml={ml} suggested={result.best ? defaultTarget(result.best.perBottle) : 0} loggedIn={!!user} phone={user?.phone ?? null} existingTarget={existing?.active ? existing.targetPerBottle : null} />
+            <AlertForm wineId={id} qty={qty} ml={ml} suggested={result.best ? defaultTarget(result.best.perBottle) : 0} loggedIn={!!user} phone={user?.phone ?? null} existingTarget={existing?.active ? existing.targetPerBottle : null} existingChannel={existing?.channel} kakaoConfigured={!!alimtalkTemplate("TARGET")} />
           </section>
 
           <section className="box">

@@ -121,3 +121,91 @@ details > summary { cursor: pointer; }
 .admin-nav a { text-decoration: none; font-size: 13.5px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 12px; }
 @media (prefers-reduced-motion: no-preference) { .bar i, .meter i { transition: width 0.35s ease; } }
+
+/* 직구 상담: 페이지 흐름과 분리된 대화창. 모바일에서는 화면 안에 맞춥니다. */
+.consultation-launcher { position: fixed; z-index: 40; right: max(20px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); display: inline-flex; gap: 8px; align-items: center; padding: 13px 18px; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent); color: var(--on-accent); box-shadow: 0 5px 24px #0002; font: inherit; font-weight: 600; cursor: pointer; }
+.consultation-launcher span { font-size: 20px; line-height: 1; }
+.consultation-launcher[hidden] { display: none; }
+.consultation-backdrop { position: fixed; z-index: 50; inset: 0; background: #0005; }
+.consultation-panel { position: fixed; z-index: 51; right: 20px; bottom: 20px; width: min(480px, calc(100vw - 40px)); height: min(780px, calc(100dvh - 40px)); display: flex; flex-direction: column; min-height: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: 0 15px 60px #0003; }
+.consultation-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px 18px 12px; flex: 0 0 auto; border-bottom: 1px solid var(--line); }
+.consultation-head h1, .consultation-head h2 { font-size: 20px; margin-bottom: 3px; }
+.consultation-close { display: flex; justify-content: center; align-items: center; flex-shrink: 0; width: 36px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 8px; color: var(--fg); background: var(--surface); font: inherit; font-size: 25px; cursor: pointer; }
+.consultation-quota { padding: 7px 18px; color: var(--muted); background: var(--sunk); font-size: 12px; flex: 0 0 auto; }
+.consultation-transcript { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 18px; display: flex; flex-direction: column; gap: 20px; }
+.consultation-intro { display: flex; flex-direction: column; gap: 7px; }
+.consultation-turn { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.consultation-speaker { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 600; color: var(--muted); }
+.consultation-question { white-space: pre-wrap; overflow-wrap: anywhere; margin-left: 24px; background: var(--accent-soft); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.consultation-answer { display: flex; flex-direction: column; gap: 10px; font-size: 14px; min-width: 0; }
+.consultation-answer .consultation-speaker { margin-bottom: -6px; }
+.consultation-answer-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.consultation-wine-card { padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); min-width: 0; overflow-wrap: anywhere; }
+.consultation-price { display: flex; flex-direction: column; gap: 2px; }
+.consultation-price b { font-size: 23px; color: var(--accent); }
+.consultation-assumption { border-radius: 6px; padding: 7px 8px; color: var(--glass); background: var(--glass-soft); font-size: 12px; }
+.consultation-evidence > summary { font-size: 13px; font-weight: 600; }
+.consultation-evidence .taxtable { font-size: 12px; }
+.consultation-evidence .formula { font-size: 10px; }
+.consultation-evidence .taxtable td:first-child { overflow-wrap: anywhere; }
+.consultation-fx { display: flex; flex-direction: column; gap: 4px; margin: 8px 0 0; font-size: 12px; }
+.consultation-fx div { display: flex; justify-content: space-between; gap: 12px; }
+.consultation-fx dd { margin: 0; }
+.consultation-feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; font-size: 11px; color: var(--muted); }
+.consultation-feedback button { padding: 3px 9px; font: inherit; cursor: pointer; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.consultation-feedback button[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.consultation-feedback button:disabled { opacity: .5; cursor: default; }
+.consultation-loading { font-size: 13px; color: var(--muted); }
+.consultation-controls { padding: 12px 18px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line); background: var(--surface); flex: 0 0 auto; max-height: 58%; overflow-y: auto; overscroll-behavior: contain; }
+.consultation-error { color: var(--bad); background: var(--bad-soft); padding: 8px 10px; border-radius: 6px; font-size: 12px; display: flex; flex-direction: column; gap: 7px; }
+.consultation-suggestions { display: flex; gap: 6px; flex-wrap: wrap; }
+.consultation-suggestions button { font: inherit; font-size: 11px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--fg); background: var(--surface); cursor: pointer; }
+.consultation-suggestions button:disabled { color: var(--muted); cursor: default; opacity: .6; }
+.consultation-form { display: flex; flex-direction: column; gap: 5px; }
+.consultation-context { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 11px; }
+.consultation-context > span { color: var(--glass); width: 100%; }
+.consultation-context label { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.consultation-context input { width: 57px; padding: 3px 5px; font-size: 12px; }
+.consultation-context select { width: auto; padding: 3px 5px; font-size: 12px; }
+.consultation-assumption-note { font-size: 10px; color: var(--muted); }
+.consultation-input-row { display: flex; align-items: flex-end; gap: 7px; }
+.consultation-input-row textarea { min-height: 64px; max-height: 150px; resize: vertical; padding: 8px; font-size: 13px; line-height: 1.5; }
+.consultation-input-row .btn { flex: 0 0 auto; padding: 9px 12px; font-size: 13px; }
+.consultation-privacy { font-size: 10px; color: var(--muted); }
+.consultation-choice { white-space: normal; text-align: left; justify-content: flex-start; }
+.consultation-embedded { max-width: 840px; margin: 0 auto; }
+.consultation-embedded .consultation-panel { position: static; width: 100%; height: min(850px, calc(100dvh - 155px)); min-height: 520px; box-shadow: none; }
+@media (max-width: 520px) {
+  .consultation-launcher { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); padding: 11px 14px; font-size: 13px; }
+  .consultation-panel { inset: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); width: auto; height: auto; max-height: none; border-radius: 12px; }
+  .consultation-head { padding: 12px; }
+  .consultation-quota { padding-inline: 12px; }
+  .consultation-transcript { padding: 12px; gap: 16px; }
+  .consultation-controls { padding: 10px 12px; gap: 7px; }
+  .consultation-question { margin-left: 12px; }
+  .consultation-embedded .consultation-panel { min-height: 530px; height: calc(100dvh - 145px); }
+}
+
+.tracking-page { max-width: 1040px; }
+.tracking-estimate { text-align: right; }
+.tracking-number, .tracking-note { overflow-wrap: anywhere; }
+.tracking-stages { list-style: none; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 6px 0 0; padding: 0; }
+.tracking-stage { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; }
+.tracking-stage-dot { display: inline-flex; justify-content: center; align-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--sunk); color: var(--muted); font-family: var(--mono); margin-bottom: 4px; }
+.tracking-stage-state { color: var(--muted); font-size: 12px; }
+.tracking-recorded .tracking-stage-dot { background: var(--glass-soft); color: var(--glass); }
+.tracking-current { border: 2px solid var(--accent); padding: 11px 7px; background: var(--accent-soft); }
+.tracking-current .tracking-stage-dot { background: var(--accent); color: var(--on-accent); }
+.tracking-current .tracking-stage-state { color: var(--accent); font-weight: 600; }
+.tracking-facts { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+.tracking-facts > div { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 8px; }
+.tracking-facts dt { color: var(--muted); font-size: 13px; }
+.tracking-facts dd { margin: 0; overflow-wrap: anywhere; }
+.tracking-timeline { list-style: none; padding: 0; margin: 0; }
+.tracking-timeline > li { display: flex; flex-direction: column; gap: 7px; padding: 14px 0 14px 16px; border-left: 2px solid var(--line); border-bottom: 1px solid var(--line); }
+.tracking-timeline > li:first-child { padding-top: 4px; }
+.tracking-timeline > li:last-child { border-bottom: 0; padding-bottom: 4px; }
+.tracking-detail-fields { margin-top: 12px; }
+.tracking-review { border-color: var(--glass); }
+@media (max-width: 900px) { .tracking-stages { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .tracking-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tracking-estimate { text-align: left; } }

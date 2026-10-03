@@ -59,6 +59,18 @@ describe("라벨 매칭", () => {
   it("모르는 와인은 확신하지 않는다", () => {
     expect(confident(matchWines("Penfolds Grange Shiraz 2018", W))).toBe(false);
   });
+  it("같은 이름의 다른 빈티지는 읽은 빈티지로 확실하게 구분한다", () => {
+    const wines = [W[0], { ...W[0], id: "chablis-2021", vintage: 2021 }];
+    const r = matchWines("Domaine William Fevre Chablis 1er Cru Montmains 2022", wines);
+    expect(r[0].wine.id).toBe("chablis");
+    expect(confident(r)).toBe(true);
+  });
+  it("같은 와인 이름이어도 생산자가 다르면 라벨의 생산자를 우선한다", () => {
+    const wines = [W[1], { ...W[1], id: "other-bourgogne", nameKo: "다른 부르고뉴", producer: "Maison Louis Jadot" }];
+    const r = matchWines("Domaine Faiveley Bourgogne Pinot Noir 2022", wines);
+    expect(r[0].wine.id).toBe("faiveley");
+    expect(confident(r)).toBe(true);
+  });
   it("유사도, 빈티지, 가격 읽기", () => {
     expect(dice("chablis", "chablis")).toBe(1);
     expect(parseVintage("est. 1885 · 2021 vintage")).toBe(2021);

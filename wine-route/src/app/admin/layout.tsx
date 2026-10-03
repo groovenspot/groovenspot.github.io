@@ -19,6 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/crawl">가격 수집 상태</Link>
         <Link href="/admin/settings">세율·환율</Link>
         <Link href="/admin/users">회원·대기자</Link>
+        <Link href="/admin/segments">회원 세그먼트</Link>
       </nav>
       {children}
     </div>

@@ -6,28 +6,37 @@ import { ROUTE_LABEL } from "@/lib/engine";
 import { money, sizeLabel, won, ymd } from "@/lib/format";
 import { addPurchase, customerOrderStep, deleteAlert, deletePurchase, markDelivered, toggleAlert } from "./actions";
 import { ProfileForm } from "@/components/ProfileForm";
+import { PreferencesPanel } from "@/components/PreferencesPanel";
 import { Spark } from "@/components/Spark";
 import { compareLoaded, loadContext } from "@/server/compare";
 import { InviteForm, RedeemButton } from "@/components/PointsPanel";
 import { balance, isPremium } from "@/server/points";
 import { getCommunityConfig } from "@/server/settings";
 import { decrypt } from "@/server/crypto";
-import { maskPccc, ORDER_FLOW, ORDER_LABEL } from "@/lib/order";
+import { maskPccc, ORDER_LABEL } from "@/lib/order";
+import { SHIPMENT_STAGES, SHIPMENT_LABEL, shipmentStageForOrder } from "@/lib/tracking";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "내 알림·기록" };
 
 export default async function Me({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
-  const user = await requireUser("/me");
+  const profileNext = sp.next && !/[\\\x00-\x1f]/.test(sp.next) && (sp.next.startsWith("/order/") || sp.next === "/guide/first" || sp.next.startsWith("/guide/first?")) ? sp.next : undefined;
+  const user = await requireUser(profileNext ? `/me?next=${encodeURIComponent(profileNext)}#profile` : "/me");
   const [orders, alerts, purchases, wines, tax, fx] = await Promise.all([
-    prisma.order.findMany({ where: { userId: user.id }, include: { wine: true, seller: true, review: { select: { id: true } }, events: { orderBy: { createdAt: "asc" } } }, orderBy: { createdAt: "desc" }, take: 50 }),
+    prisma.order.findMany({ where: { userId: user.id }, include: { wine: true, seller: true, review: { select: { id: true } }, events: { orderBy: { createdAt: "asc" } }, shipmentEvents: { orderBy: { occurredAt: "asc" } } }, orderBy: { createdAt: "desc" }, take: 50 }),
     prisma.priceAlert.findMany({ where: { userId: user.id }, include: { wine: true }, orderBy: { createdAt: "desc" } }),
     prisma.purchase.findMany({ where: { userId: user.id }, include: { wine: true }, orderBy: { orderedAt: "desc" } }),
     prisma.wine.findMany({ select: { id: true, nameKo: true }, orderBy: { nameKo: "asc" } }),
     getTaxConfig(),
     getFx(),
   ]);
+  const [taste, wineFacets] = await Promise.all([
+    prisma.tasteProfile.findUnique({ where: { userId: user.id } }),
+    prisma.wine.findMany({ select: { country: true, type: true }, distinct: ["country", "type"] }),
+  ]);
+  const tasteCountries = [...new Set(wineFacets.map((w) => w.country))].sort();
+  const tasteTypes = [...new Set(wineFacets.map((w) => w.type))].sort();
   const activeCount = alerts.filter((a) => a.active).length;
   const [points, ledger, ccfg] = await Promise.all([
     balance(user.id),
@@ -65,28 +74,35 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
         </div>
       </section>
 
+      <section className="box tight"><div className="row between"><span>처음 직구하나요? 준비부터 운송장 등록까지 6단계로 확인하세요.</span><Link className="btn ghost small" href="/guide/first">첫 직구 도우미</Link></div></section>
+
       <section className="stack" id="orders">
         <h2>내 주문</h2>
         {orders.length ? orders.map((o) => {
-          const done = new Map(o.events.map((e) => [e.status, e.createdAt]));
-          const idx = ORDER_FLOW.indexOf(o.status as (typeof ORDER_FLOW)[number]);
+          const current = shipmentStageForOrder(o.status, o.shipmentStage);
+          const timestamps = new Map<string, Date>();
+          for (const e of o.shipmentEvents) if (!timestamps.has(e.stage)) timestamps.set(e.stage, e.occurredAt);
+          const start = o.events.find((e) => e.status === "CONFIRMED")?.createdAt ?? o.createdAt;
+          const estimated = (days: number) => new Date(start.getTime() + days * 86400e3);
           return (
             <div key={o.id} className="box">
               <div className="row between" style={{ alignItems: "flex-start" }}>
                 <div className="stack" style={{ gap: 2 }}>
                   <Link href={`/wines/${o.wineId}?qty=${o.qty}&ml=${o.bottleMl}`}><b>{o.wine.nameKo}</b></Link>
-                  <span className="small muted">{o.seller.name} · {o.qty}병 · 예상 도착가 {won(o.estTotal)} (세금 약 {won(o.estTax)}){o.orderRef ? ` · 주문번호 ${o.orderRef}` : ""}</span>
+                  <span className="small muted">{o.seller.name} · {ROUTE_LABEL[o.route as keyof typeof ROUTE_LABEL] ?? o.route} · {o.qty}병 · 예상 도착가 {won(o.estTotal)} (세금 약 {won(o.estTax)}){o.orderRef ? ` · 주문번호 ${o.orderRef}` : ""}</span>
                 </div>
-                {o.status === "CANCELLED" ? <span className="chip bad">취소</span> : <span className={`chip ${o.status === "DELIVERED" ? "ok" : "best"}`}>{ORDER_LABEL[o.status]}</span>}
+                {o.status === "CANCELLED" ? <span className="chip bad">취소</span> : <span className={`chip ${o.status === "DELIVERED" ? "ok" : "best"}`}>{current ? SHIPMENT_LABEL[current] : ORDER_LABEL[o.status]}</span>}
               </div>
               {o.status !== "CANCELLED" && (
                 <ol className="seg" style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                  {ORDER_FLOW.map((st, i) => (
-                    <li key={st} className={`chip ${i <= idx ? "ok" : ""}`}>{ORDER_LABEL[st]}{done.get(st) ? ` ${ymd(done.get(st)!).slice(5)}` : ""}</li>
+                  {SHIPMENT_STAGES.map((st) => (
+                    <li key={st} aria-current={current === st ? "step" : undefined} className={`chip ${timestamps.has(st) ? "ok" : ""} ${current === st ? "best" : ""}`}>{SHIPMENT_LABEL[st]}{timestamps.get(st) ? ` ${ymd(timestamps.get(st)!).slice(5)}` : ""}</li>
                   ))}
                 </ol>
               )}
-              {o.trackingNo && <p className="small">운송장 {o.carrier ? `${o.carrier} ` : ""}<span className="num">{o.trackingNo}</span> · 통관 진행은 <a href="https://unipass.customs.go.kr/csp/index.do" target="_blank" rel="noopener">관세청 유니패스</a>에서 조회할 수 있습니다.</p>}
+              {o.status !== "CANCELLED" && <p className="small muted">{o.status === "DELIVERED" ? `수령 ${o.deliveredAt ? ymd(o.deliveredAt) : "완료"}` : o.estimatedDeliveryAt ? `예상 도착일 ${ymd(o.estimatedDeliveryAt)} (배송 조회 기준)` : `예상 도착 ${ymd(estimated(o.seller.daysMin))}~${ymd(estimated(o.seller.daysMax))} (판매처 안내 기준)`}{o.trackingNo ? ` · ${o.carrier ?? ""} ${o.trackingNo}` : " · 운송장 미등록"}</p>}
+              {o.actualTax !== null && <p className="small">{o.status === "DELIVERED" ? "확인한 세금" : "고지 세금"} {won(o.actualTax)} · 예상 대비 {o.actualTax - o.estTax >= 0 ? "+" : "−"}{won(Math.abs(o.actualTax - o.estTax))}</p>}
+              <div className="row"><Link className="btn ghost small" href={`/tracking/${o.id}`}>{o.trackingNo ? "통관·배송 한 화면으로 보기" : "운송장 등록·배송 확인"}</Link></div>
               <div className="row">
                 {o.status === "CLICKED" && (
                   <>
@@ -109,7 +125,7 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
                 {["CONFIRMED", "SHIPPED", "CUSTOMS"].includes(o.status) && (
                   <form action={markDelivered} className="row">
                     <input type="hidden" name="id" value={o.id} />
-                    <input name="taxPaid" type="number" min={0} required placeholder="실제 낸 세금 (원)" style={{ width: 170 }} aria-label="실제 낸 세금" />
+                    <input name="taxPaid" type="number" min={0} defaultValue={o.actualTax ?? ""} required placeholder="실제 낸 세금 (원)" style={{ width: 170 }} aria-label="실제 낸 세금" />
                     <button className="btn small">받았어요</button>
                   </form>
                 )}
@@ -160,7 +176,7 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
         <h2>주문서 정보</h2>
         <p className="small muted">한 번 저장하면 판매처 결제 화면에 미리 채우거나 복사해서 붙여넣을 수 있습니다. 가격 알림톡도 이 휴대폰 번호로 갑니다.</p>
         <ProfileForm
-          next={sp.next}
+          next={profileNext}
           v={{
             firstNameEn: user.firstNameEn ?? "",
             lastNameEn: user.lastNameEn ?? "",
@@ -173,6 +189,17 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
             pcccMasked: maskPccc(decrypt(user.pcccEnc)),
             pcccInNote: user.pcccInNote,
           }}
+        />
+      </section>
+
+      <section className="stack" id="preferences">
+        <h2>수신·취향 설정</h2>
+        <PreferencesPanel
+          marketing={!!user.marketingConsentAt}
+          marketingUpdated={user.marketingConsentUpdatedAt ? ymd(user.marketingConsentUpdatedAt) : null}
+          taste={taste ? { countries: taste.countries, types: taste.types, budget: taste.budget } : null}
+          countries={tasteCountries}
+          types={tasteTypes}
         />
       </section>
 

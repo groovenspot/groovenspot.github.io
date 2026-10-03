@@ -20,7 +20,7 @@ export async function createAlert(_: FormState, fd: FormData): Promise<FormState
   if (channel === "KAKAO" && !/^01\d{8,9}$/.test(phone) && !user.phone) return { error: "카카오 알림톡을 받을 휴대폰 번호를 입력해 주세요." };
 
   const existing = await prisma.priceAlert.findUnique({ where: { userId_wineId_qty_bottleMl: { userId: user.id, wineId, qty, bottleMl } } });
-  if (!existing && !isPremium(user)) {
+  if (!existing?.active && !isPremium(user)) {
     const { freeAlertLimit } = await getTaxConfig();
     const n = await prisma.priceAlert.count({ where: { userId: user.id, active: true } });
     if (n >= freeAlertLimit) {

@@ -15,7 +15,7 @@ export type CardData = {
   link: string; // 공유자 코드 포함
 };
 
-export const CARD_FOOTER = ["19세 미만 음주 금지", "셀러도어는 와인을 판매하지 않습니다. 가격은 계산 시점 추정치입니다."];
+export const CARD_FOOTER = ["19세 미만 음주 금지", "셀러도어는 와인을 판매하지 않습니다. 국내 가격은 추정치입니다."];
 
 /** 카드에 들어갈 모든 문구가 광고 기준을 지키는지 */
 export function cardWordingProblems(c: CardData) {

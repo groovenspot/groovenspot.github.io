@@ -6,7 +6,8 @@ import { moveOrder } from "@/server/orders";
 import { prisma } from "@/server/db";
 import { requireAdmin } from "@/server/auth";
 import { getCommunityConfig, getTaxConfig, saveCommunityConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
-import { award, extendPremium } from "@/server/points";
+import { extendPremiumInTransaction } from "@/server/points";
+import { pointMultiplier } from "@/lib/community";
 import { monthKings } from "@/server/ranking";
 import { notifyAllocation, notifyNewVintage } from "@/jobs/alerts";
 import { runJob, type JobName } from "@/jobs/run";
@@ -240,18 +241,29 @@ export async function adminMoveOrder(fd: FormData) {
 export async function approveProof(fd: FormData) {
   await requireAdmin();
   const id = str(fd, "id");
-  const r = await prisma.directReview.update({ where: { id }, data: { proofStatus: "APPROVED", proofNote: null } });
-  await prisma.proofFile.deleteMany({ where: { reviewId: id } }); // 개인정보가 담긴 사진은 확인 후 바로 삭제
   const cfg = await getCommunityConfig();
-  await award(r.userId, "proof", id, cfg.points.proof, "통관 인증");
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "DirectReview" WHERE id = ${id} FOR UPDATE`;
+    const r = await tx.directReview.findUnique({ where: { id }, include: { proof: { select: { id: true } } } });
+    if (!r || r.status === "DELETED" || r.proofStatus !== "PENDING" || !r.proof) return;
+    await tx.directReview.update({ where: { id }, data: { proofStatus: "APPROVED", proofNote: null } });
+    await tx.proofFile.deleteMany({ where: { reviewId: id } });
+    await tx.pointTx.createMany({ data: [{ userId: r.userId, reason: "proof", refId: id, amount: Math.round(cfg.points.proof * pointMultiplier(cfg)), note: "통관 인증" }], skipDuplicates: true });
+  });
   revalidatePath("/admin/community");
+  revalidatePath("/community", "layout");
 }
 
 export async function rejectProof(fd: FormData) {
   await requireAdmin();
   const id = str(fd, "id");
-  await prisma.directReview.update({ where: { id }, data: { proofStatus: "REJECTED", proofNote: str(fd, "note") || "확인할 수 없는 자료" } });
-  await prisma.proofFile.deleteMany({ where: { reviewId: id } });
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "DirectReview" WHERE id = ${id} FOR UPDATE`;
+    const r = await tx.directReview.findUnique({ where: { id } });
+    if (!r || r.status === "DELETED" || r.proofStatus !== "PENDING") return;
+    await tx.directReview.update({ where: { id }, data: { proofStatus: "REJECTED", proofNote: str(fd, "note").slice(0, 500) || "확인할 수 없는 자료" } });
+    await tx.proofFile.deleteMany({ where: { reviewId: id } });
+  });
   revalidatePath("/admin/community");
 }
 
@@ -259,12 +271,17 @@ export async function resolveReports(fd: FormData) {
   await requireAdmin();
   const id = str(fd, "id");
   const restore = str(fd, "action") === "restore";
-  await prisma.$transaction([
-    prisma.directReview.update({ where: { id }, data: { status: restore ? "PUBLISHED" : "DELETED" } }),
-    prisma.report.updateMany({ where: { reviewId: id, resolvedAt: null }, data: { resolvedAt: new Date(), resolution: restore ? "restored" : "deleted" } }),
-  ]);
-  if (!restore) await prisma.proofFile.deleteMany({ where: { reviewId: id } });
+  if (!["restore", "delete"].includes(str(fd, "action"))) return;
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "DirectReview" WHERE id = ${id} FOR UPDATE`;
+    const r = await tx.directReview.findUnique({ where: { id } });
+    if (!r || r.status !== "HIDDEN") return;
+    await tx.directReview.update({ where: { id }, data: { status: restore ? "PUBLISHED" : "DELETED" } });
+    await tx.report.updateMany({ where: { reviewId: id, resolvedAt: null }, data: { resolvedAt: new Date(), resolution: restore ? "restored" : "deleted" } });
+    if (!restore) await tx.proofFile.deleteMany({ where: { reviewId: id } });
+  });
   revalidatePath("/admin/community");
+  revalidatePath("/community", "layout");
 }
 
 /** 대가성 후기 미표시 위반: 판매처 노출 중단 */
@@ -276,20 +293,29 @@ export async function suspendSeller(fd: FormData) {
 
 export async function grantKings(fd: FormData) {
   await requireAdmin();
-  const offset = Number(fd.get("offset")) || -1;
+  const offset = str(fd, "offset") === "" ? -1 : Number(fd.get("offset"));
+  if (!Number.isInteger(offset) || offset > -1 || offset < -120) throw new Error("종료된 월의 후기왕만 보상할 수 있습니다.");
   const { label, list } = await monthKings(offset);
-  for (const k of list.slice(0, 3)) {
-    // 0P 기록을 지급 표시로 씁니다. 처음 기록될 때만 프리미엄을 줍니다.
-    const { created } = await award(k.userId, "king", label, 0, `이달의 후기왕 ${label} · 프리미엄 1개월`, { bonus: false });
-    if (created) await extendPremium(k.userId, 1);
-  }
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`community-kings:${label}`}))`;
+    const granted = await tx.pointTx.findMany({ where: { reason: "king", refId: label }, select: { userId: true } });
+    const awarded = new Set(granted.map((g) => g.userId));
+    // 월별 최대 3명을 고정하고, 모든 지급 기록과 기간 연장을 함께 커밋합니다.
+    const winners = list.slice(0, 3).filter((k) => !awarded.has(k.userId)).slice(0, Math.max(0, 3 - granted.length)).sort((a, b) => a.userId.localeCompare(b.userId));
+    for (const k of winners) {
+      await tx.pointTx.create({ data: { userId: k.userId, reason: "king", refId: label, amount: 0, note: `이달의 후기왕 ${label} · 프리미엄 1개월` } });
+      await extendPremiumInTransaction(tx, k.userId, 1);
+    }
+  });
   revalidatePath("/admin/community");
 }
 
 export async function createInvite(fd: FormData) {
   await requireAdmin();
   const code = (str(fd, "code") || `CD${Math.random().toString(36).slice(2, 8)}`).toUpperCase();
-  await prisma.inviteCode.create({ data: { code, note: str(fd, "note") || null, premiumMonths: numOr(fd, "premiumMonths", 6), maxUses: numOr(fd, "maxUses", 1) } });
+  const premiumMonths = numOr(fd, "premiumMonths", 6), maxUses = numOr(fd, "maxUses", 1);
+  if (!/^[A-Z0-9_-]{3,32}$/.test(code) || !Number.isInteger(premiumMonths) || premiumMonths < 1 || premiumMonths > 120 || !Number.isInteger(maxUses) || maxUses < 1 || maxUses > 100_000) throw new Error("초대 코드, 기간, 사용 횟수를 확인해 주세요.");
+  await prisma.inviteCode.create({ data: { code, note: str(fd, "note").slice(0, 300) || null, premiumMonths, maxUses } });
   revalidatePath("/admin/community");
 }
 
@@ -297,14 +323,19 @@ export async function adjustPoints(fd: FormData) {
   await requireAdmin();
   const u = await prisma.user.findUnique({ where: { email: str(fd, "email").toLowerCase() } });
   if (!u) throw new Error("회원을 찾을 수 없습니다");
-  await prisma.pointTx.create({ data: { userId: u.id, amount: Math.round(numOr(fd, "amount", 0)), reason: "admin", refId: new Date().toISOString(), note: str(fd, "note") || "운영자 조정" } });
+  const amount = numOr(fd, "amount", 0);
+  if (!Number.isInteger(amount) || Math.abs(amount) > 100_000_000) throw new Error("포인트는 정수로 입력해 주세요.");
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${u.id}))`;
+    await tx.pointTx.create({ data: { userId: u.id, amount, reason: "admin", refId: crypto.randomUUID(), note: str(fd, "note").slice(0, 500) || "운영자 조정" } });
+  });
   revalidatePath("/admin/community");
 }
 
 export async function saveCommunity(fd: FormData) {
   await requireAdmin();
   const cur = await getCommunityConfig();
-  await saveCommunityConfig({
+  const next = {
     ...cur,
     bannedPatterns: str(fd, "bannedPatterns").split("\n").map((x) => x.trim()).filter(Boolean),
     bonusUntil: str(fd, "bonusUntil") || null,
@@ -312,7 +343,21 @@ export async function saveCommunity(fd: FormData) {
     points: { review: numOr(fd, "pReview", cur.points.review), proof: numOr(fd, "pProof", cur.points.proof), helpful10: numOr(fd, "pHelpful", cur.points.helpful10), answer: cur.points.answer },
     costs: { premiumMonth: numOr(fd, "cPremium", cur.costs.premiumMonth), tasting: numOr(fd, "cTasting", cur.costs.tasting) },
     stage2: { reviews: numOr(fd, "s2Reviews", cur.stage2.reviews), members: numOr(fd, "s2Members", cur.stage2.members) },
-  });
+  };
+  const nonnegativeInteger = (v: number) => Number.isInteger(v) && v >= 0 && v <= 1_000_000;
+  if (!Object.values(next.points).every(nonnegativeInteger)
+    || !Number.isFinite(next.bonusMultiplier) || next.bonusMultiplier < 1 || next.bonusMultiplier > 10
+    || !Number.isInteger(next.costs.premiumMonth) || next.costs.premiumMonth < 1 || next.costs.premiumMonth > 100_000_000
+    || !Number.isInteger(next.costs.tasting) || next.costs.tasting < 0 || next.costs.tasting > 100_000_000
+    || !Object.values(next.stage2).every((v) => Number.isInteger(v) && v > 0 && v <= 1_000_000)) throw new Error("포인트·비용·단계 기준은 유효한 정수, 배수는 1~10으로 입력해 주세요.");
+  if (next.bonusUntil) {
+    const date = new Date(`${next.bonusUntil}T00:00:00Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(next.bonusUntil) || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== next.bonusUntil) throw new Error("포인트 배수 종료 날짜를 확인해 주세요.");
+  }
+  if (next.bannedPatterns.length > 100 || next.bannedPatterns.some((p) => p.length > 500)) throw new Error("금지 표현은 100개 이하, 각 500자 이하로 입력해 주세요.");
+  try { next.bannedPatterns.forEach((p) => new RegExp(p, "i")); }
+  catch { throw new Error("금지 표현에 잘못된 정규식이 있습니다."); }
+  await saveCommunityConfig(next);
   revalidatePath("/", "layout");
 }
 

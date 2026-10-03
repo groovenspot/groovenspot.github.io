@@ -1,4 +1,4 @@
-import { Prisma, type NotificationType, type User } from "@prisma/client";
+import { Prisma, type AlertChannel, type NotificationType, type User } from "@prisma/client";
 import { prisma } from "./db";
 import { sendMail } from "./mail";
 import { alimtalkTemplate, sendGenericAlimtalk } from "./alimtalk";
@@ -15,6 +15,7 @@ export type NotifyInput = {
   link: string; // 사이트 안 경로 (/wines/...)
   dedupeKey: string;
   queue?: boolean; // true면 주간 묶음으로 미룸 (무료 회원)
+  channel?: AlertChannel; // 미지정 시 카카오를 우선합니다.
 };
 
 /**
@@ -29,27 +30,36 @@ export async function notify(n: NotifyInput): Promise<NotifyResult> {
   let row;
   try {
     row = await prisma.notification.create({
-      data: { userId: n.user.id, type: n.type, wineId: n.wineId ?? null, title: n.title, body: n.body, link: n.link, dedupeKey: n.dedupeKey, status: n.queue ? "QUEUED" : "SENT" },
+      data: { userId: n.user.id, type: n.type, wineId: n.wineId ?? null, title: n.title, body: n.body, link: n.link, dedupeKey: n.dedupeKey, channel: n.channel?.toLowerCase() ?? null, status: n.queue ? "QUEUED" : "SENT" },
     });
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") return { sent: false, duplicate: true };
-    throw e;
+    if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")) throw e;
+    const existing = await prisma.notification.findUnique({ where: { dedupeKey: n.dedupeKey } });
+    if (!existing || existing.status !== "FAILED") return { sent: false, duplicate: true };
+    // 실패한 알림은 다음 작업 실행에서 재시도합니다. 성공한 알림은 중복 발송하지 않습니다.
+    const claimed = await prisma.notification.updateMany({ where: { id: existing.id, status: "FAILED" }, data: { status: n.queue ? "QUEUED" : "SENT", title: n.title, body: n.body, link: n.link } });
+    if (!claimed.count) return { sent: false, duplicate: true };
+    row = existing;
   }
   if (n.queue) return { sent: false, queued: true };
-  return deliver(row.id, n.user, n.type, n.title, n.body);
+  return deliver(row.id, n.user, n.type, n.title, n.body, n.channel);
 }
 
-async function deliver(id: string, user: Pick<User, "email" | "phone">, type: string, title: string, body: string): Promise<NotifyResult> {
+async function deliver(id: string, user: Pick<User, "email" | "phone">, type: string, title: string, body: string, channel?: AlertChannel): Promise<NotifyResult> {
   const link = `${appUrl()}/n/${id}`;
   const tpl = alimtalkTemplate(type);
   try {
-    if (user.phone && tpl) {
-      await sendGenericAlimtalk(user.phone, tpl, { title, body, link });
-      await prisma.notification.update({ where: { id }, data: { channel: "kakao", sentAt: new Date() } });
-    } else {
-      await sendMail(user.email, `[셀러도어] ${title}`, `${body}\n\n${link}\n\n알림 설정: ${appUrl()}/me#watch`);
-      await prisma.notification.update({ where: { id }, data: { channel: "email", sentAt: new Date() } });
+    if (channel !== "EMAIL" && user.phone && tpl) {
+      try {
+        await sendGenericAlimtalk(user.phone, tpl, { title, body, link });
+        await prisma.notification.update({ where: { id }, data: { status: "SENT", channel: "kakao", sentAt: new Date() } });
+        return { sent: true };
+      } catch {
+        console.warn("alimtalk failed; retrying by email", id);
+      }
     }
+    await sendMail(user.email, `[셀러도어] ${title}`, `${body}\n\n${link}\n\n알림 설정: ${appUrl()}/me#watch`);
+    await prisma.notification.update({ where: { id }, data: { status: "SENT", channel: "email", sentAt: new Date() } });
     return { sent: true };
   } catch (e) {
     await prisma.notification.update({ where: { id }, data: { status: "FAILED" } });
@@ -68,10 +78,12 @@ export async function sendDigests(now = new Date()) {
     const user = items[0].user;
     const title = `이번 주 찜한 와인 소식 ${items.length}건`;
     const body = items.slice(0, 10).map((i) => `· ${i.title}`).join("\n") + (items.length > 10 ? `\n외 ${items.length - 10}건` : "");
-    const r = await notify({ user, type: "DIGEST", title, body, link: "/me#watch", dedupeKey: `digest:${user.id}:${weekKey(now)}` });
+    const r = await notify({ user, type: "DIGEST", title, body, link: "/me#watch", dedupeKey: `digest:${user.id}:${weekKey(now)}`, channel: items.every((i) => i.channel === "email") ? "EMAIL" : "KAKAO" });
     if (r.sent || r.duplicate) {
       const digest = await prisma.notification.findUnique({ where: { dedupeKey: `digest:${user.id}:${weekKey(now)}` } });
-      await prisma.notification.updateMany({ where: { id: { in: items.map((i) => i.id) } }, data: { status: "SKIPPED", digestId: digest?.id } });
+      // 같은 주 이미 보낸 묶음 뒤에 생긴 알림은 다음 주까지 대기시킵니다.
+      const included = r.sent ? items : digest?.sentAt ? items.filter((i) => i.createdAt <= digest.createdAt) : [];
+      if (included.length) await prisma.notification.updateMany({ where: { id: { in: included.map((i) => i.id) }, status: "QUEUED" }, data: { status: "SKIPPED", digestId: digest?.id } });
       if (r.sent) sent++;
     }
   }

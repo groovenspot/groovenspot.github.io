@@ -7,8 +7,10 @@ import { getFx, getTaxConfig } from "@/server/settings";
 import { calcTax } from "@/lib/tax";
 import { normalizePccc } from "@/lib/order";
 import { encrypt } from "@/server/crypto";
-import { moveOrder } from "@/server/orders";
+import { confirmReceived, moveOrder } from "@/server/orders";
 import { isPremium } from "@/server/points";
+import { consentChange } from "@/lib/consent";
+import { isEmptyTaste, parseTaste } from "@/lib/taste";
 
 export async function toggleAlert(fd: FormData) {
   const u = await requireUser();
@@ -65,7 +67,9 @@ export async function deletePurchase(fd: FormData) {
 
 /* ---------- 주문서 정보 ---------- */
 export async function saveProfile(_: { ok?: boolean; error?: string }, fd: FormData): Promise<{ ok?: boolean; error?: string }> {
-  const u = await requireUser();
+  const requestedNext = String(fd.get("next") ?? "");
+  const validNext = !/[\\\x00-\x1f]/.test(requestedNext) && (requestedNext.startsWith("/order/") || requestedNext === "/guide/first" || requestedNext.startsWith("/guide/first?"));
+  const u = await requireUser(validNext ? `/me?next=${encodeURIComponent(requestedNext)}#profile` : "/me#profile");
   const t = (k: string, max = 120) => String(fd.get(k) ?? "").trim().slice(0, max) || null;
   const ascii = (v: string | null) => !v || /^[\x20-\x7E]+$/.test(v);
   const data = {
@@ -85,15 +89,20 @@ export async function saveProfile(_: { ok?: boolean; error?: string }, fd: FormD
   if (phone && !/^01\d{8,9}$/.test(phone)) return { error: "휴대폰 번호를 확인해 주세요. 예: 01012345678" };
   const rawPccc = String(fd.get("pccc") ?? "").trim();
   let pcccEnc: string | null | undefined = undefined; // undefined = 그대로 둠
-  if (rawPccc) {
+  const storePccc = fd.get("storePccc") === "on";
+  if (fd.get("clearPccc") === "on" || !storePccc) pcccEnc = null;
+  else if (rawPccc) {
     const p = normalizePccc(rawPccc);
     if (!p) return { error: "개인통관고유부호는 P로 시작하는 13자리입니다. 예: P123456789012" };
-    pcccEnc = encrypt(p);
-  } else if (fd.get("clearPccc") === "on") pcccEnc = null;
+    try { pcccEnc = encrypt(p); }
+    catch { return { error: "통관부호 암호화 저장이 설정되지 않았습니다. 저장 선택을 해제하고 판매처에 직접 입력할 수 있습니다." }; }
+  }
+  data.pcccInNote = data.pcccInNote && storePccc && !!(pcccEnc === undefined ? u.pcccEnc : pcccEnc);
   await prisma.user.update({ where: { id: u.id }, data: { ...data, phone: phone || null, ...(pcccEnc !== undefined ? { pcccEnc } : {}) } });
   revalidatePath("/me");
+  revalidatePath("/guide/first");
   const next = String(fd.get("next") ?? "");
-  if (next.startsWith("/order/")) redirect(next);
+  if (!/[\\\x00-\x1f]/.test(next) && (next.startsWith("/order/") || next === "/guide/first" || next.startsWith("/guide/first?"))) redirect(next);
   return { ok: true };
 }
 
@@ -111,28 +120,37 @@ export async function customerOrderStep(fd: FormData) {
 
 export async function markDelivered(fd: FormData) {
   const u = await requireUser();
-  const o = await prisma.order.findFirst({ where: { id: String(fd.get("id")), userId: u.id }, include: { seller: true } });
-  if (!o) return;
-  const taxPaid = Math.round(Number(fd.get("taxPaid")));
-  if (!Number.isFinite(taxPaid) || taxPaid < 0) return;
-  const r = await moveOrder(o.id, "DELIVERED", "customer", { note: `실제 세금 ${taxPaid.toLocaleString("ko-KR")}원` });
-  if (!r.ok) return;
-  // 도착가 오차 검증용 구매 기록을 자동으로 남깁니다.
-  const p = await prisma.purchase.create({
-    data: {
-      userId: u.id,
-      wineId: o.wineId,
-      sellerName: o.seller.name,
-      route: o.route,
-      qty: o.qty,
-      goodsPaid: Math.max(0, o.estTotal - o.estTax),
-      shipPaid: 0,
-      currency: "KRW",
-      taxPaid,
-      estTax: o.estTax,
-      orderedAt: o.createdAt,
-    },
-  });
-  await prisma.order.update({ where: { id: o.id }, data: { purchaseId: p.id } });
+  const raw = String(fd.get("taxPaid") ?? "").trim();
+  if (!/^\d+$/.test(raw)) return;
+  await confirmReceived(String(fd.get("id")), u.id, Number(raw));
+  revalidatePath("/me");
+  revalidatePath(`/tracking/${String(fd.get("id"))}`);
+}
+
+/* ---------- 마케팅 수신 동의 ---------- */
+/** 홍보성 발송 동의. 가격 알림·주문 상태 같은 서비스 알림은 이 설정과 무관합니다. */
+export async function setMarketingConsent(fd: FormData) {
+  const u = await requireUser("/me#preferences");
+  await prisma.user.update({ where: { id: u.id }, data: consentChange(fd.get("marketing") === "on") });
+  revalidatePath("/me");
+}
+
+/* ---------- 취향 설문 (선택) ---------- */
+export async function saveTaste(fd: FormData) {
+  const u = await requireUser("/me#preferences");
+  const wines = await prisma.wine.findMany({ select: { country: true, type: true }, distinct: ["country", "type"] });
+  const taste = parseTaste(
+    { countries: fd.getAll("countries").map(String), types: fd.getAll("types").map(String), budget: String(fd.get("budget") ?? "") },
+    { countries: [...new Set(wines.map((w) => w.country))], types: [...new Set(wines.map((w) => w.type))] },
+  );
+  // 아무것도 고르지 않고 저장하면 설문을 지웁니다.
+  if (isEmptyTaste(taste)) await prisma.tasteProfile.deleteMany({ where: { userId: u.id } });
+  else await prisma.tasteProfile.upsert({ where: { userId: u.id }, create: { userId: u.id, ...taste }, update: taste });
+  revalidatePath("/me");
+}
+
+export async function deleteTaste() {
+  const u = await requireUser("/me#preferences");
+  await prisma.tasteProfile.deleteMany({ where: { userId: u.id } });
   revalidatePath("/me");
 }

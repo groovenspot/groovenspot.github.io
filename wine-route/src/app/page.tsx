@@ -17,7 +17,9 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
   const type = sp.type ?? "";
   const max = Number(sp.max) || 0;
   const exempt = sp.exempt === "1";
-  const sort = sp.sort ?? "saving";
+  const notKr = sp.notkr === "1"; // 국내 미유통(국내 판매가 없음) 와인만
+  // 국내가가 없으면 절감액을 계산할 수 없으므로 미유통만 볼 때는 도착가 순이 기본
+  const sort = sp.sort ?? (notKr ? "price" : "saving");
   const page = Math.max(1, Number(sp.page) || 1);
 
   const { items } = await compareMany({});
@@ -30,6 +32,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
     if (country && wine.country !== country) return false;
     if (type && wine.type !== type) return false;
     if (exempt && !result.best?.tax.exempt) return false;
+    if (notKr && result.krPerBottle !== null) return false;
     if (max && (!result.best || result.best.perBottle > max)) return false;
     return true;
   });
@@ -42,7 +45,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
   });
   const shown = filtered.slice((page - 1) * PAGE, page * PAGE);
   const pages = Math.ceil(filtered.length / PAGE);
-  const filtering = q || country || type || max || exempt;
+  const filtering = q || country || type || max || exempt || notKr;
 
   const top = items
     .filter((i) => i.result.savingPerBottle !== null && i.result.savingPerBottle > 0)
@@ -51,7 +54,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
 
   const qs = (patch: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams();
-    const all = { q, country, type, max: max || undefined, exempt: exempt ? "1" : undefined, sort, page, ...patch };
+    const all = { q, country, type, max: max || undefined, exempt: exempt ? "1" : undefined, notkr: notKr ? "1" : undefined, sort, page, ...patch };
     for (const [k, v] of Object.entries(all)) if (v !== undefined && v !== "" && !(k === "page" && v === 1)) p.set(k, String(v));
     return `/?${p}`;
   };
@@ -102,7 +105,10 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
           </div>
         </div>
         <div className="row between">
-          <label className="check"><input type="checkbox" name="exempt" value="1" defaultChecked={exempt} /> 면세구간(1병·1L·150달러 이하)만 보기</label>
+          <div className="row">
+            <label className="check"><input type="checkbox" name="exempt" value="1" defaultChecked={exempt} /> 면세구간(1병·1L·150달러 이하)만 보기</label>
+            <label className="check"><input type="checkbox" name="notkr" value="1" defaultChecked={notKr} /> 국내 미유통 와인만 보기</label>
+          </div>
           <div className="row">
             {filtering ? <Link href="/" className="btn ghost">초기화</Link> : null}
             <button className="btn">검색</button>

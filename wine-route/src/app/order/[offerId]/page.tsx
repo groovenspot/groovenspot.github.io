@@ -1,13 +1,15 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { prisma } from "@/server/db";
 import { getUser } from "@/server/auth";
 import { compareWine } from "@/server/compare";
-import { profileComplete, shipperOf } from "@/server/shipper";
+import { shipperOf } from "@/server/shipper";
 import { CopyFields } from "@/components/CopyFields";
 import { intlPhone, orderNote } from "@/lib/checkout";
-import { ROUTE_LABEL, type ChannelKey } from "@/lib/engine";
+import { ROUTE_LABEL, ROUTE_ORDER, type ChannelKey } from "@/lib/engine";
 import { money, sizeLabel, won } from "@/lib/format";
+import { FIRST_GUIDE_SEEN_COOKIE, firstPurchaseHref, firstPurchaseSelection, hasEnglishDeliveryAddress } from "@/lib/first-purchase";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "주문하기" };
@@ -17,19 +19,27 @@ type P = { params: Promise<{ offerId: string }>; searchParams: Promise<Record<st
 export default async function OrderPage({ params, searchParams }: P) {
   const { offerId } = await params;
   const sp = await searchParams;
-  const qty = Math.min(24, Math.max(1, Number(sp.qty) || 1));
   const offer = await prisma.offer.findUnique({ where: { id: offerId }, include: { seller: true, wine: true } });
   if (!offer) notFound();
-  const route = (sp.route ?? offer.seller.channel) as ChannelKey;
+  const fallback = ROUTE_ORDER.includes(offer.seller.channel as ChannelKey) ? offer.seller.channel as ChannelKey : "FORWARDER";
+  const selection = firstPurchaseSelection({ offerId, qty: sp.qty, route: sp.route }, fallback);
+  const { qty, route } = selection;
   const data = await compareWine(offer.wineId, qty, offer.bottleMl);
   const cand = data?.result.routes.flatMap((r) => r.candidates).find((c) => c.offerId === offerId && c.channel === route);
   const user = await getUser();
+  if (sp.guide !== "skip" && !(await cookies()).get(FIRST_GUIDE_SEEN_COOKIE)?.value) {
+    const [guide, previousOrder] = user ? await Promise.all([
+      prisma.firstPurchaseGuide.findUnique({ where: { userId: user.id }, select: { userId: true } }),
+      prisma.order.findFirst({ where: { userId: user.id }, select: { id: true } }),
+    ]) : [null, null];
+    if (!guide && !previousOrder) redirect(firstPurchaseHref(selection, "/guide/first/entry"));
+  }
   const s = user ? shipperOf(user) : null;
-  const complete = user ? profileComplete(user) : false;
+  const complete = hasEnglishDeliveryAddress(user);
   const forwarder = route === "FORWARDER";
   const canCart = offer.seller.checkoutMode !== "PRODUCT_PAGE" && (offer.seller.checkoutMode === "CART_TEMPLATE" ? !!offer.seller.cartTpl : !!offer.checkoutRef);
-  const goHref = `/go/${offer.id}?qty=${qty}&route=${route}`;
-  const here = `/order/${offer.id}?qty=${qty}&route=${route}`;
+  const goHref = `/go/${offer.id}?qty=${qty}&route=${route}&guide=skip`;
+  const here = `/order/${offer.id}?qty=${qty}&route=${route}&guide=skip`;
 
   const rows = s
     ? [
@@ -43,7 +53,7 @@ export default async function OrderPage({ params, searchParams }: P) {
         { label: "국가 (Country)", value: forwarder ? "" : "South Korea" },
         { label: "전화 (Phone)", value: intlPhone(s.phone) },
         { label: "이메일", value: s.email },
-        { label: "주문 메모 (Order note)", value: orderNote({ ...s, pcccInNote: true }), hint: "통관부호 입력란이 없으면 메모에" },
+        { label: "주문 메모 (Order note)", value: orderNote(s), hint: "통관부호 입력란이 없으면 메모에" },
         { label: "개인통관고유부호", value: s.pccc ?? "" },
       ]
     : [];
@@ -54,6 +64,12 @@ export default async function OrderPage({ params, searchParams }: P) {
         <div className="label"><Link href={`/wines/${offer.wineId}?qty=${qty}&ml=${offer.bottleMl}`} style={{ textDecoration: "none" }}>← {offer.wine.nameKo}</Link></div>
         <h1 style={{ fontSize: 28 }}>주문하기</h1>
         <p className="lede">결제는 판매처에서 손님이 직접 합니다. 셀러도어는 결제 화면을 열고 주문 진행 상황을 알려드립니다.</p>
+      </section>
+
+      <section className="box tight">
+        <h2>첫 직구 준비 확인</h2>
+        <p className="small muted">성인인증, 통관부호 발급, 해외결제 카드와 영문 주소를 차례로 확인하세요. 준비한 항목은 계정에 저장됩니다.</p>
+        <div><Link className="btn ghost small" href={firstPurchaseHref(selection)}>첫 직구 도우미 열기</Link></div>
       </section>
 
       <section className="box">
@@ -88,11 +104,11 @@ export default async function OrderPage({ params, searchParams }: P) {
         )}
         {user && !complete && (
           <div className="alert">
-            주문서 정보가 아직 비어 있습니다. <Link href={`/me?next=${encodeURIComponent(here)}#profile`}>영문 주소와 통관부호를 저장</Link>해 두면 다음부터 결제 화면이 미리 채워집니다.
+            주문서 정보가 아직 비어 있습니다. <Link href={`/me?next=${encodeURIComponent(here)}#profile`}>영문 수령인·주소를 저장</Link>해 두면 다음부터 결제 화면이 미리 채워집니다. 통관부호 저장은 선택이며, 저장하지 않으면 판매처나 배송대행지에 직접 입력하세요.
           </div>
         )}
         <div className="row">
-          <a className="btn" href={goHref} rel="nofollow sponsored">{offer.seller.name} 결제 화면 열기</a>
+          {cand ? <a className="btn" href={goHref} rel="nofollow sponsored">{offer.seller.name} 결제 화면 열기</a> : <div className="alert">현재 이 경로의 재고·배송 조건을 확인할 수 없습니다. <Link href={`/wines/${offer.wineId}?qty=${qty}&ml=${offer.bottleMl}`}>경로 비교에서 다시 확인해 주세요.</Link></div>}
           {user && <span className="small muted">결제를 마치면 <Link href="/me#orders">내 주문</Link>에서 진행 상황을 볼 수 있습니다.</span>}
         </div>
       </section>

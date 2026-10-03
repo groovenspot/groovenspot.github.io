@@ -5,6 +5,8 @@ import { getUser } from "@/server/auth";
 import { compareWine } from "@/server/compare";
 import { shipperOf } from "@/server/shipper";
 import { buildCheckoutUrl, safeHttpUrl } from "@/lib/checkout";
+import { ROUTE_ORDER, type ChannelKey } from "@/lib/engine";
+import { FIRST_GUIDE_SEEN_COOKIE, firstPurchaseHref, firstPurchaseSelection } from "@/lib/first-purchase";
 
 /**
  * 판매처 결제 화면으로 이동: 클릭을 기록하고, 로그인한 손님은 주문 추적을 시작한 뒤,
@@ -15,12 +17,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ offe
   const offer = await prisma.offer.findUnique({ where: { id: offerId }, include: { seller: true } });
   if (!offer) return NextResponse.redirect(new URL("/", req.url));
 
-  const qty = Math.min(24, Math.max(1, Number(req.nextUrl.searchParams.get("qty")) || 1));
-  const route = req.nextUrl.searchParams.get("route") ?? offer.seller.channel;
+  const fallback = ROUTE_ORDER.includes(offer.seller.channel as ChannelKey) ? offer.seller.channel as ChannelKey : "FORWARDER";
+  const selection = firstPurchaseSelection({ offerId, qty: req.nextUrl.searchParams.get("qty"), route: req.nextUrl.searchParams.get("route") }, fallback);
+  const { qty, route } = selection;
   const data = await compareWine(offer.wineId, qty, offer.bottleMl);
   const cand = data?.result.routes.flatMap((r) => r.candidates).find((c) => c.offerId === offerId && c.channel === route);
+  if (!cand) return NextResponse.redirect(new URL(`/wines/${offer.wineId}?qty=${qty}&ml=${offer.bottleMl}`, req.url));
 
   const user = await getUser();
+  if (req.nextUrl.searchParams.get("guide") !== "skip" && !req.cookies.get(FIRST_GUIDE_SEEN_COOKIE)?.value) {
+    const [guide, previousOrder] = user ? await Promise.all([
+      prisma.firstPurchaseGuide.findUnique({ where: { userId: user.id }, select: { userId: true } }),
+      prisma.order.findFirst({ where: { userId: user.id }, select: { id: true } }),
+    ]) : [null, null];
+    if (!guide && !previousOrder) return NextResponse.redirect(new URL(firstPurchaseHref(selection, "/guide/first/entry"), req.url));
+  }
   const anonId = req.cookies.get("wr_anon")?.value ?? randomUUID();
   const click = await prisma.clickLog.create({
     data: { offerId, wineId: offer.wineId, userId: user?.id, anonId, route, qty, estPerBottle: Math.round(cand?.perBottle ?? 0) },

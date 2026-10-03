@@ -29,7 +29,7 @@ const LabelSchema = z.object({
   ),
 });
 
-const PROMPT = `This photo shows a wine label, a shop shelf tag, or a restaurant wine list. List each wine you can read.
+const PROMPT = `This photo shows the label of one wine bottle, possibly with its shop shelf price tag. Read only that one wine. Do not process restaurant lists or multiple wine bottles; return an empty list when there is no single identifiable label.
 For each wine give: producer (winery/domaine/château, as printed), name (cuvée, appellation, grape or vineyard as printed — not the producer again), vintage year if printed (null for NV or unreadable), and price_krw if a Korean won price for that wine is visible (digits only, null otherwise).
 Copy names as printed in their original language; do not translate or guess wines that are not visible. If nothing is legible, return an empty list.`;
 
@@ -56,12 +56,12 @@ async function viaClaude(image: Uint8Array, mediaType: "image/jpeg" | "image/png
   if (res.stop_reason === "refusal") throw new Error("이 사진은 인식할 수 없습니다");
   const out = res.parsed_output;
   if (!out) throw new Error("라벨을 읽지 못했습니다");
-  return out.wines.slice(0, 8).map((w) => ({
+  return out.wines.slice(0, 1).map((w) => ({
     query: [w.producer, w.name, w.vintage].filter(Boolean).join(" "),
     producer: w.producer,
     name: w.name,
     vintage: w.vintage,
-    priceKrw: w.price_krw && w.price_krw >= 5000 ? w.price_krw : null,
+    priceKrw: w.price_krw && w.price_krw >= 5000 && w.price_krw <= 50_000_000 ? w.price_krw : null,
   }));
 }
 
@@ -72,7 +72,8 @@ async function viaGoogle(image: Uint8Array): Promise<Recognized[]> {
     body: JSON.stringify({ requests: [{ image: { content: Buffer.from(image).toString("base64") }, features: [{ type: "TEXT_DETECTION" }] }] }),
   });
   if (!res.ok) throw new Error(`이미지 인식 API 오류 ${res.status}`);
-  const j = (await res.json()) as { responses?: { fullTextAnnotation?: { text?: string } }[] };
+  const j = (await res.json()) as { responses?: { fullTextAnnotation?: { text?: string }; error?: { code?: number; message?: string } }[] };
+  if (j.responses?.[0]?.error) throw new Error("이미지 인식 API가 사진을 처리하지 못했습니다. 다른 사진으로 다시 시도해 주세요.");
   const text = j.responses?.[0]?.fullTextAnnotation?.text ?? "";
   return text.trim() ? [fromText(text)] : [];
 }
@@ -84,9 +85,9 @@ export function fromText(text: string): Recognized {
 }
 
 export async function recognize(image: Uint8Array, mediaType: string): Promise<{ provider: Provider; items: Recognized[] }> {
+  if (!["image/jpeg", "image/png", "image/webp"].includes(mediaType)) throw new Error("JPG·PNG·WEBP 사진만 인식할 수 있습니다");
   const p = scanProvider();
   if (!p) throw new Error("사진 인식이 설정되지 않았습니다. 라벨 글자를 직접 입력해 주세요.");
   if (p === "google") return { provider: p, items: await viaGoogle(image) };
-  if (!["image/jpeg", "image/png", "image/webp"].includes(mediaType)) throw new Error("JPG·PNG·WEBP 사진만 인식할 수 있습니다");
   return { provider: p, items: await viaClaude(image, mediaType as "image/jpeg" | "image/png" | "image/webp") };
 }

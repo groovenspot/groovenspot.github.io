@@ -12,15 +12,15 @@ export async function monthKings(offset = 0) {
   const { start, end, label } = monthRange(offset);
   const rows = await prisma.directReview.findMany({
     where: { status: "PUBLISHED", createdAt: { gte: start, lt: end }, sponsored: false },
-    select: { userId: true, proofStatus: true, helpfulCount: true, user: { select: { nickname: true } } },
+    select: { userId: true, proofStatus: true, _count: { select: { helpfuls: true } }, user: { select: { nickname: true } } },
   });
   const by = new Map<string, { userId: string; nickname: string; reviews: number; verified: number; helpful: number }>();
   for (const r of rows) {
     const x = by.get(r.userId) ?? { userId: r.userId, nickname: r.user.nickname ?? "탈퇴 회원", reviews: 0, verified: 0, helpful: 0 };
     x.reviews++;
     if (r.proofStatus === "APPROVED") x.verified++;
-    x.helpful += r.helpfulCount;
+    x.helpful += r._count.helpfuls;
     by.set(r.userId, x);
   }
-  return { label, list: [...by.values()].map((x) => ({ ...x, score: kingScore(x) })).sort((a, b) => b.score - a.score || b.helpful - a.helpful).slice(0, 10) };
+  return { label, list: [...by.values()].map((x) => ({ ...x, score: kingScore(x) })).sort((a, b) => b.score - a.score || b.helpful - a.helpful || a.userId.localeCompare(b.userId)).slice(0, 10) };
 }
