@@ -30,7 +30,7 @@ export default async function AdminHome() {
         WHERE v."createdAt" >= ${d90} AND c."userId" IS NOT NULL GROUP BY c."userId") t`,
     prisma.$queryRaw<{ krw: number | null }[]>`
       SELECT SUM(v.commission * COALESCE(r.krw, 0)) AS krw FROM "Conversion" v
-      LEFT JOIN LATERAL (SELECT krw FROM "ExchangeRate" e WHERE e.currency = v.currency ORDER BY date DESC LIMIT 1) r ON true
+      LEFT JOIN LATERAL (SELECT krw FROM "ExchangeRate" e WHERE e.currency = v.currency ORDER BY "fetchedAt" DESC LIMIT 1) r ON true
       WHERE v."createdAt" >= ${since}`,
   ]);
   const errs = purchases.filter((p) => p.estTax! > 0).map((p) => Math.abs(p.taxPaid - p.estTax!) / p.estTax!);

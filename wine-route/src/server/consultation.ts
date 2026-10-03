@@ -131,7 +131,7 @@ async function wineCalculation(wineId: string, qty: number, bottleMl: number): P
     const taxRow = await tx.setting.findUnique({ where: { key: "tax" } });
     const tax = { ...DEFAULT_TAX, ...((taxRow?.value as Partial<typeof DEFAULT_TAX> | null) ?? {}) };
     const fxRows = await tx.$queryRaw<{ currency: string; krw: number; fetchedAt: Date; source: string }[]>`
-      SELECT DISTINCT ON (currency) currency, krw, "fetchedAt", source FROM "ExchangeRate" ORDER BY currency, date DESC, "fetchedAt" DESC`;
+      SELECT DISTINCT ON (currency) currency, krw, "fetchedAt", source FROM "ExchangeRate" ORDER BY currency, "fetchedAt" DESC, date DESC`;
     const rates: Record<string, number> = { KRW: 1 };
     let asOf: Date | null = null;
     let source: string | null = null;

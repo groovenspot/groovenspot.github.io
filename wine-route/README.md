@@ -27,7 +27,7 @@
 | 마이페이지 | 구매 기록 + 실제 세금 vs 예상 세금 | P1 | `src/app/me` |
 | 마이페이지 | 셀러 후기 → 셀러 신뢰 점수 | P1 | `src/app/sellers/[id]` |
 | 관리자 | 셀러 등록, 국가별 운임표, 배송대행지, 가격 수집 상태 | P0 | `src/app/admin/sellers`, `src/app/admin/crawl` |
-| 관리자 | 세율을 설정값으로 관리, 환율 1시간마다 자동 반영 (investing.com) | P0 | `src/app/admin/settings`, `src/jobs/fx.ts`, `src/lib/investing.ts` |
+| 관리자 | 세율을 설정값으로 관리, 환율 1시간마다 자동 반영 (ECB 기준환율, 보충 출처 자동 전환) | P0 | `src/app/admin/settings`, `src/jobs/fx.ts`, `src/lib/fxSources.ts` |
 
 그 밖에:
 
@@ -278,7 +278,7 @@ npm run lint    # 타입 검사
 
 | 작업 | 주기 | 내용 | 수동 실행 |
 | --- | --- | --- | --- |
-| `fx` | 1시간마다 | investing.com 통화쌍 시세(USD/KRW, EUR/KRW …)를 받아 즉시 반영. 못 받은 통화는 수출입은행으로 보충하거나 직전 값 유지 | `npm run job:fx` |
+| `fx` | 1시간마다 | ECB 기준환율(기본)을 받아 즉시 반영. 못 받은 통화는 ExchangeRate-API → 수출입은행 순으로 보충하거나 직전 값 유지. 2회 연속 실패 시 관리자 메일 | `npm run job:fx` |
 | `alerts` | 수집 직후 (6시간마다) | 찜별 도착가 기록 → 목표가 도달·5% 하락·재입고 알림 | `npm run job:alerts` |
 | `digest` | 월요일 아침 | 무료 회원의 대기 알림을 한 통으로 | `npm run job:digest` |
 | `crawl` | 6시간마다 | 수집 방식이 JSON-LD인 셀러의 상품 페이지에서 가격·재고 갱신 | `npm run job:crawl` |
@@ -291,7 +291,7 @@ npm run lint    # 타입 검사
 
 | 항목 | 환경 변수 | 비고 |
 | --- | --- | --- |
-| 환율 | (없음) / `KOREAEXIM_API_KEY` | 기본 출처는 investing.com (키 불필요). 관리자 화면에서 수출입은행으로 바꾸거나 보충용으로 쓸 수 있습니다. |
+| 환율 | (없음) / `KOREAEXIM_API_KEY` | 기본 출처는 ECB 기준환율, 보충은 ExchangeRate-API (둘 다 키 불필요). 수출입은행은 키가 있으면 보충에 쓰입니다. |
 | 이메일 | `RESEND_API_KEY`, `MAIL_FROM` | 없으면 서버 로그로 출력 |
 | 카카오 알림톡 | `SOLAPI_*` | 카카오 비즈니스 채널과 알림톡 템플릿 승인이 필요합니다. 템플릿 변수: `#{와인}`, `#{도착가}`, `#{목표가}`, `#{링크}`. 없으면 이메일로 대신 보냅니다. |
 | 제휴 전환 | `POSTBACK_SECRET` | 제휴사에 `/api/postback?secret=…&click={sub}&order=…&amount=…&currency=…&commission=…` 등록 |
@@ -300,13 +300,14 @@ npm run lint    # 타입 검사
 | 소셜 로그인 | `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET`, `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET` | 키가 있는 곳만 로그인 버튼이 보입니다. Redirect URI `{APP_URL}/login/oauth/{kakao\|naver}/callback` 등록, 이메일 동의항목 필수. 카카오 시크릿은 켠 경우에만 |
 | 직구 상담 | `ANTHROPIC_API_KEY`, `CONSULTATION_MODEL`, `CONSULTATION_RETENTION_DAYS` | 라벨 인식과 API 키를 공유. 기본 분류 모델 `claude-haiku-4-5-20251001`, 기본 보관 30일(1~365일). 키 미설정·모델 실패 시 AI 미사용 기본 안내 |
 
-## 환율 (investing.com)
+## 환율
 
-- 관리자 › 세율·환율에서 출처(investing.com / 수출입은행), 보충 여부, 급변 차단 기준(기본 10%)을 정합니다.
-- investing.com은 공식 API가 없어 통화쌍 페이지(`/currencies/usd-krw` 등)의 현재가를 읽습니다. 파서는 세 가지 표기를 순서대로 시도합니다 (`src/lib/investing.ts`).
-- 받은 시각과 출처가 와인 상세·계산기 화면에 표시됩니다.
-- **주의**: investing.com 이용약관은 자동 수집을 제한하고, 서버에서 보내는 요청은 봇 차단(HTTP 403)될 수 있습니다. 운영 전에 배포 서버에서 `npm run job:fx`로 실제 수신 여부를 확인하고, 상업적 이용 허가나 유료 시세 API 전환을 검토하세요. 수신이 안 되면 수출입은행 보충이 자동으로 동작합니다.
-- 실제 세금은 관세청 주간 과세환율로 매겨지므로, 시세 기준 도착가와 약간 차이가 날 수 있습니다.
+- 기본 출처는 **유럽중앙은행(ECB) 기준환율**입니다 (`src/lib/fxSources.ts`). 키 없이 받는 공식 공개 자료로, 영업일 하루 한 번(16:00 CET 무렵) 갱신되고 필요한 9개 통화(USD·EUR·AUD·NZD·HKD·GBP·CHF·JPY·CAD)와 원화가 모두 있습니다. 유로 기준 값을 '외화 1단위당 원'으로 바꿔 씁니다.
+- 관리자 › 세율·환율에서 주 출처(ECB / ExchangeRate-API / 수출입은행 / investing.com), 보충 여부, 급변 차단 기준(기본 10%)을 정합니다.
+- 보충을 켜 두면(기본) 주 출처가 못 준 통화를 **ECB → ExchangeRate-API(open.er-api.com, 키 불필요) → 수출입은행(`KOREAEXIM_API_KEY`가 있을 때)** 순서로 채우고, 그래도 없으면 직전 값을 유지합니다. 직전 값보다 기준 넘게 바뀐 값은 버립니다.
+- 출처마다 기준일 표기가 달라(ECB는 전 영업일 날짜) 화면에는 **가장 최근에 받은 값**을 씁니다. 받은 시각과 출처가 와인 상세·계산기 화면에 표시됩니다(ECB·ExchangeRate-API 모두 출처 표시가 이용 조건).
+- investing.com은 공식 API가 없어 통화쌍 페이지를 읽는 방식이고, 서버 요청을 봇으로 막는 일이 잦아(HTTP 403, 2026-10-03 확인) 기본 출처에서 뺐습니다. 주 출처로 고르면 실패한 통화는 위 순서로 보충됩니다.
+- 실제 세금은 관세청 주간 과세환율로 매겨지므로, 기준환율로 계산한 도착가와 약간 차이가 날 수 있습니다.
 
 ## 데이터 넣기
 
@@ -343,7 +344,7 @@ npm run lint    # 타입 검사
 - [ ] 배송대행지별 합배송 요금(소포당 처리비·합포장 수수료·상자당 최대 병 수) 입력, 합배송 시 과세 방식 관세사 확인
 - [ ] 자유게시판 운영 인력(신고 처리)과 열 시점 결정 (기본은 2단계 기준 도달 시 자동)
 - [ ] 운영 주소로 `APP_URL` 설정 후 검색엔진(구글 서치 콘솔·네이버 서치어드바이저)에 사이트맵 등록, 카톡 공유 미리보기 확인
-- [ ] investing.com 환율 수신을 배포 서버에서 확인하고, 이용약관 검토 (차단되면 유료 시세 API 검토)
+- [ ] 배포 서버에서 `npm run job:fx`로 ECB 환율 수신 확인 (관세청 과세환율과 차이가 크면 출처 재검토)
 
 ## 구조
 

@@ -8,7 +8,7 @@ export default async function SettingsPage() {
     getTaxConfig(),
     getFxConfig(),
     prisma.$queryRaw<{ currency: string; krw: number; fetchedAt: Date; source: string }[]>`
-      SELECT DISTINCT ON (currency) currency, krw, "fetchedAt", source FROM "ExchangeRate" ORDER BY currency, date DESC, "fetchedAt" DESC`,
+      SELECT DISTINCT ON (currency) currency, krw, "fetchedAt", source FROM "ExchangeRate" ORDER BY currency, "fetchedAt" DESC, date DESC`,
   ]);
   const pct = (v: number) => +(v * 100).toFixed(4);
   return (
@@ -42,12 +42,14 @@ export default async function SettingsPage() {
           <div className="form-grid">
             <div className="field"><label className="label" htmlFor="fx-src">환율 출처</label>
               <select id="fx-src" name="source" defaultValue={fxc.source}>
-                <option value="investing">investing.com 시세</option>
-                <option value="koreaexim">수출입은행 매매기준율</option>
+                <option value="ecb">유럽중앙은행(ECB) 기준환율 · 키 불필요, 영업일 하루 1회</option>
+                <option value="erapi">ExchangeRate-API · 키 불필요, 하루 1회</option>
+                <option value="koreaexim">수출입은행 매매기준율 · KOREAEXIM_API_KEY 필요</option>
+                <option value="investing">investing.com 시세 · 봇 차단이 잦음</option>
               </select></div>
             <div className="field"><label className="label" htmlFor="fx-jump">급변 차단 기준 (%)</label><input id="fx-jump" name="maxJump" type="number" step="0.1" defaultValue={+(fxc.maxJump * 100).toFixed(1)} /></div>
           </div>
-          <label className="check"><input type="checkbox" name="fallbackExim" defaultChecked={fxc.fallbackExim} /> investing.com에서 못 받은 통화는 수출입은행 환율로 채우기 (KOREAEXIM_API_KEY 필요)</label>
+          <label className="check"><input type="checkbox" name="fallback" defaultChecked={fxc.fallback} /> 주 출처에서 못 받은 통화는 ECB → ExchangeRate-API → 수출입은행(키가 있으면) 순서로 채우기</label>
           <p className="small muted">받은 값은 즉시 모든 도착가 계산에 반영됩니다. 직전 값보다 급변 차단 기준 넘게 바뀐 값은 파싱 오류로 보고 버립니다. 운영에서는 /api/cron/fx를 1시간마다 호출합니다.</p>
           <div><button className="btn">환율 설정 저장</button></div>
         </form>

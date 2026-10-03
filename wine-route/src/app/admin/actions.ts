@@ -8,6 +8,7 @@ import { moveOrder } from "@/server/orders";
 import { prisma } from "@/server/db";
 import { requireAdmin } from "@/server/auth";
 import { audited } from "@/server/audit";
+import { FX_SOURCES, type FxSourceKey } from "@/lib/fxSources";
 import { saveSegmentConfig, getCommunityConfig, getTaxConfig, saveCommunityConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
 import { extendPremiumInTransaction } from "@/server/points";
 import { BOARD_MODES, pointMultiplier, type BoardMode } from "@/lib/community";
@@ -231,8 +232,8 @@ export async function saveFx(fd: FormData) {
   const admin = await requireAdmin();
   return audited(admin.email, "saveFx", fd, async () => {
     await saveFxConfig({
-      source: str(fd, "source") === "koreaexim" ? "koreaexim" : "investing",
-      fallbackExim: bool(fd, "fallbackExim"),
+      source: FX_SOURCES.includes(str(fd, "source") as FxSourceKey) ? (str(fd, "source") as FxSourceKey) : "ecb",
+      fallback: bool(fd, "fallback"),
       maxJump: Math.min(1, Math.max(0.01, numOr(fd, "maxJump", 10) / 100)),
     });
     revalidatePath("/admin/settings");
