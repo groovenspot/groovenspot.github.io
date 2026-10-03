@@ -8,7 +8,9 @@ import { addPurchase, customerOrderStep, deleteAlert, deletePurchase, markDelive
 import { ProfileForm } from "@/components/ProfileForm";
 import { DeleteAccountForm } from "@/components/DeleteAccountForm";
 import { PROVIDER_LABEL, enabledProviders, type ProviderKey } from "@/lib/oauth";
-import { unlinkOAuth } from "./actions";
+import { removePushDevice, unlinkOAuth } from "./actions";
+import { PushToggle } from "@/components/PushToggle";
+import { pushConfigured, pushPublicKey } from "@/lib/push";
 import { PreferencesPanel } from "@/components/PreferencesPanel";
 import { Spark } from "@/components/Spark";
 import { compareLoaded, loadContext } from "@/server/compare";
@@ -27,6 +29,7 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
   const profileNext = sp.next && !/[\\\x00-\x1f]/.test(sp.next) && (sp.next.startsWith("/order/") || sp.next === "/guide/first" || sp.next.startsWith("/guide/first?")) ? sp.next : undefined;
   const user = await requireUser(profileNext ? `/me?next=${encodeURIComponent(profileNext)}#profile` : "/me");
   const oauthAccounts = await prisma.oAuthAccount.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } });
+  const pushDevices = await prisma.pushSubscription.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, select: { id: true, userAgent: true, lastOkAt: true, createdAt: true } });
   const inbox = await prisma.notification.findMany({ where: { userId: user.id, status: { in: ["SENT", "QUEUED"] } }, orderBy: { createdAt: "desc" }, take: 30 });
   const [orders, alerts, purchases, wines, tax, fx] = await Promise.all([
     prisma.order.findMany({ where: { userId: user.id }, include: { wine: true, seller: true, review: { select: { id: true } }, events: { orderBy: { createdAt: "asc" } }, shipmentEvents: { orderBy: { occurredAt: "asc" } } }, orderBy: { createdAt: "desc" }, take: 50 }),
@@ -315,7 +318,7 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
                 <a href={`/n/${n.id}`}>
                   <span className="row between" style={{ gap: 8 }}>
                     <b>{n.title}</b>
-                    <span className="small muted nowrap">{ymd(n.createdAt)}{n.status === "QUEUED" ? " · 주간 묶음 대기" : n.channel === "kakao" ? " · 알림톡" : " · 메일"}</span>
+                    <span className="small muted nowrap">{ymd(n.createdAt)}{n.status === "QUEUED" ? " · 주간 묶음 대기" : n.channel === "kakao" ? " · 알림톡" : n.channel === "push" ? " · 브라우저 알림" : " · 메일"}</span>
                   </span>
                   <span className="small muted" style={{ whiteSpace: "pre-line" }}>{n.body}</span>
                 </a>
@@ -323,6 +326,29 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
             ))}
           </ul>
         ) : <p className="small muted">아직 받은 알림이 없습니다. 와인을 찜하면 목표가 도달·가격 하락을 알려드립니다.</p>}
+      </section>
+
+      <section className="stack" id="push">
+        <h2>브라우저 알림</h2>
+        {pushConfigured() ? (
+          <>
+            <p className="small muted">메일 대신 이 기기 화면으로 목표가 도달·가격 하락 알림을 받습니다. 보내지 못하면 메일로 대신 보냅니다.</p>
+            <PushToggle publicKey={pushPublicKey()} />
+            {pushDevices.length > 0 && (
+              <ul className="small" style={{ margin: 0, paddingLeft: 18 }}>
+                {pushDevices.map((d) => (
+                  <li key={d.id}>
+                    <form action={removePushDevice} className="row" style={{ gap: 6 }}>
+                      <input type="hidden" name="id" value={d.id} />
+                      <span>{deviceLabel(d.userAgent)} · 등록 {ymd(d.createdAt)}{d.lastOkAt ? ` · 마지막 수신 ${ymd(d.lastOkAt)}` : ""}</span>
+                      <button className="btn ghost small">삭제</button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : <p className="small muted">브라우저 알림은 아직 준비 중입니다. 지금은 메일·알림톡으로 보내드립니다.</p>}
       </section>
 
       <section className="stack" id="account">
@@ -360,4 +386,11 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
       </section>
     </div>
   );
+}
+
+function deviceLabel(ua: string | null) {
+  if (!ua) return "알 수 없는 기기";
+  const os = /iPhone|iPad/.test(ua) ? "iOS" : /Android/.test(ua) ? "Android" : /Mac OS X/.test(ua) ? "macOS" : /Windows/.test(ua) ? "Windows" : /Linux/.test(ua) ? "Linux" : "기기";
+  const br = /Edg\//.test(ua) ? "Edge" : /SamsungBrowser/.test(ua) ? "삼성 인터넷" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "브라우저";
+  return `${os} ${br}`;
 }

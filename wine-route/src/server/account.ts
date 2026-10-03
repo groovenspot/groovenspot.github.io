@@ -37,6 +37,7 @@ export async function exportAccount(userId: string) {
       oauthAccounts: { select: { provider: true, email: true, createdAt: true } },
       posts: { select: { id: true, category: true, title: true, body: true, status: true, createdAt: true } },
       postComments: { select: { id: true, postId: true, body: true, status: true, createdAt: true } },
+      pushSubs: { select: { userAgent: true, lastOkAt: true, createdAt: true } },
     },
   });
   const { pcccEnc, ciHash, ...rest } = u;

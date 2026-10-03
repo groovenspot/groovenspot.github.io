@@ -2,7 +2,8 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/server/db";
 import { getUser } from "@/server/auth";
-import { compareMany, compareWine } from "@/server/compare";
+import { compareWine } from "@/server/compare";
+import { ensureWinePrices } from "@/server/winePrice";
 import { getTaxConfig } from "@/server/settings";
 import { isPremium } from "@/server/points";
 import { fromText, recognize, scanProvider, type Recognized } from "@/server/recognize";
@@ -18,11 +19,13 @@ const MAX = 6 * 1024 * 1024;
 
 async function resolveItems(provider: string, items: Recognized[]): Promise<ScanItem[]> {
   const user = await getUser();
-  const { items: all } = await compareMany({}, 1, 750);
-  const wines = all.map((x) => x.wine);
+  // 매칭은 와인 이름만으로, 도착가는 미리 계산한 값(WinePrice)으로 — 와인이 많아도 전체 계산을 하지 않습니다.
+  await ensureWinePrices();
+  const wines = await prisma.wine.findMany({ select: { id: true, name: true, nameKo: true, producer: true, vintage: true, aliases: true, krPrice: true } });
   const out: ScanItem[] = [];
   for (const read of items) {
     const ms = matchWines(read.query, wines);
+    const prices = await prisma.winePrice.findMany({ where: { wineId: { in: ms.map((m) => m.wine.id) } } });
     const conf = confident(ms);
     const log = await prisma.scanLog.create({
       data: { userId: user?.id ?? null, provider, extracted: read, topWineId: ms[0]?.wine.id ?? null, confidence: ms[0]?.score ?? 0 },
@@ -32,10 +35,11 @@ async function resolveItems(provider: string, items: Recognized[]): Promise<Scan
       read,
       confident: conf,
       candidates: ms.map((m) => {
-        const c = all.find((x) => x.wine.id === m.wine.id)!;
+        const w = wines.find((x) => x.id === m.wine.id)!;
+        const pr = prices.find((x) => x.wineId === m.wine.id);
         return {
-          wineId: m.wine.id, nameKo: c.wine.nameKo, name: c.wine.name, vintage: c.wine.vintage, score: Math.round(m.score * 100) / 100,
-          perBottle: c.result.best ? Math.round(c.result.best.perBottle) : null, krPrice: c.wine.krPrice, route: c.result.best?.channel ?? null,
+          wineId: w.id, nameKo: w.nameKo, name: w.name, vintage: w.vintage, score: Math.round(m.score * 100) / 100,
+          perBottle: pr?.perBottle ?? null, krPrice: w.krPrice, route: pr?.route ?? null,
         };
       }),
     });

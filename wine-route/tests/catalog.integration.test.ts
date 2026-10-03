@@ -8,13 +8,13 @@ const integration = databaseUrl ? describe : describe.skip;
 
 const run = randomUUID().slice(0, 8);
 const HOST = `https://shop-${run}.example`;
-const product = (name: string, brand: string, price: number, currency = "EUR") =>
-  `<html><script type="application/ld+json">${JSON.stringify({ "@type": "Product", name, brand: { "@type": "Brand", name: brand }, offers: { "@type": "Offer", price, priceCurrency: currency, availability: "https://schema.org/InStock" } })}</script></html>`;
+const product = (name: string, brand: string, price: number, currency = "EUR", image?: unknown) =>
+  `<html><script type="application/ld+json">${JSON.stringify({ "@type": "Product", name, brand: { "@type": "Brand", name: brand }, image, offers: { "@type": "Offer", price, priceCurrency: currency, availability: "https://schema.org/InStock" } })}</script></html>`;
 const pages: Record<string, string> = {
   "/robots.txt": "User-agent: *\nDisallow: /private/",
   "/collections/wine": `<a href="/products/known-${run}">a</a><a href="/products/new-${run}">b</a><a href="/private/secret">c</a><a href="/cart">d</a><link rel="next" href="/collections/wine?page=2">`,
   "/collections/wine?page=2": `<a href="/pages/about">x</a><a href="/products/gift-card">g</a>`,
-  [`/products/known-${run}`]: product(`Catalog Known Wine ${run} 2021`, `Maison ${run}`, 31.5),
+  [`/products/known-${run}`]: product(`Catalog Known Wine ${run} 2021`, `Maison ${run}`, 31.5, "EUR", { "@type": "ImageObject", url: "/img/known.jpg" }),
   [`/products/new-${run}`]: product(`Brand New Cuvee ${run} 2020 Magnum`, `Domaine Neuf ${run}`, 80),
   "/products/gift-card": `<html><p>gift card, no JSON-LD</p></html>`,
 };
@@ -70,6 +70,8 @@ integration("카탈로그 수집 → 연결 · 새 와인 · CSV · LWIN", () =>
     await linkCatalogItem(known.id, knownWineId);
     const offer = await prisma.offer.findUniqueOrThrow({ where: { wineId_sellerId_bottleMl: { wineId: knownWineId, sellerId, bottleMl: 750 } } });
     expect(offer).toMatchObject({ price: 31.5, url: `${HOST}/products/known-${run}` });
+    // 사진이 없던 와인에는 판매처 상품 사진과 출처가 붙습니다
+    expect(await prisma.wine.findUnique({ where: { id: knownWineId }, select: { imageUrl: true, imageSrc: true } })).toEqual({ imageUrl: `${HOST}/img/known.jpg`, imageSrc: `Catalog Shop ${run}` });
     requested.length = 0;
     await runCatalogCrawl(sellerId, { fetchFn: fakeFetch, delayMs: 0 });
     expect(requested).not.toContain(`/products/known-${run}`);

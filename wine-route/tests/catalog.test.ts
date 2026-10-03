@@ -46,7 +46,7 @@ describe("목록 페이지", () => {
 describe("상품 페이지", () => {
   it("Product 의 이름·브랜드·가격·재고·GTIN·빈티지·용량", () => {
     const html = `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"Domaine X Chablis 1er Cru Montmains 2022 75cl","brand":{"@type":"Brand","name":"Domaine X"},"gtin13":"3760000000001","offers":{"@type":"Offer","price":"42.50","priceCurrency":"eur","availability":"https://schema.org/OutOfStock"}}</script>`;
-    expect(parseJsonLdProduct(html)).toEqual({ name: "Domaine X Chablis 1er Cru Montmains 2022 75cl", brand: "Domaine X", price: 42.5, currency: "EUR", inStock: false, gtin: "3760000000001", vintage: 2022, bottleMl: 750 });
+    expect(parseJsonLdProduct(html)).toEqual({ name: "Domaine X Chablis 1er Cru Montmains 2022 75cl", brand: "Domaine X", price: 42.5, currency: "EUR", inStock: false, gtin: "3760000000001", vintage: 2022, bottleMl: 750, image: null });
   });
   it("Product 가 없으면 null", () => {
     expect(parseJsonLdProduct('<script type="application/ld+json">{"@type":"BreadcrumbList"}</script>')).toBeNull();

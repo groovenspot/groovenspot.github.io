@@ -14,6 +14,8 @@ import { defaultTarget } from "@/lib/alerts";
 import { FX_SOURCE_LABEL, money, sizeLabel, won, ymd, ymdhm } from "@/lib/format";
 import { ROUTE_LABEL, type Candidate } from "@/lib/engine";
 import { PriceHistory } from "@/components/PriceHistory";
+import { pushConfigured } from "@/lib/push";
+import { WineThumb } from "@/components/WineThumb";
 import { RecentViewMark } from "@/components/RecentViewMark";
 import { fillDays } from "@/lib/history";
 import { COMPARE_COOKIE, COMPARE_MAX, parseIds } from "@/lib/wineList";
@@ -87,17 +89,16 @@ export default async function WinePage({ params, searchParams }: P) {
   // 비슷한 와인 (같은 종류 · 산지/품종/나라)
   const pool = await prisma.wine.findMany({
     where: { id: { not: id }, type: wine.type, OR: [{ region: wine.region }, { country: wine.country }, ...(wine.grape ? [{ grape: wine.grape }] : [])] },
-    include: { offers: { include: { seller: true } } },
-    take: 60,
+    include: { price: true },
+    take: 200,
   });
-  const similar = rankSimilar(wine, pool.map((w) => {
-    const r = compareLoaded(w, 1, 750, ctx);
-    return { wine: w, perBottle: r.best ? Math.round(r.best.perBottle) : null, saving: r.savingPerBottle };
-  }));
+  // 미리 계산한 최저 도착가(WinePrice)를 써서 후보가 많아도 다시 계산하지 않습니다.
+  const similar = rankSimilar(wine, pool.map((w) => ({ wine: w, perBottle: w.price?.perBottle ?? null, saving: w.price?.saving ?? null })));
   const myPrice = qty === 1 && ml === 750 && result.best ? Math.round(result.best.perBottle) : (compareLoaded(wine, 1, 750, ctx).best?.perBottle ?? null);
   const kstToday = new Date(Date.now() + 9 * 3600e3);
   const cells = fillDays(historyRows, HISTORY_DAYS, kstToday);
   const inCompare = compareIds.includes(id);
+  const pushDevices = user ? await prisma.pushSubscription.count({ where: { userId: user.id } }) : 0;
   const existing = user ? await prisma.priceAlert.findUnique({ where: { userId_wineId_qty_bottleMl: { userId: user.id, wineId: id, qty, bottleMl: ml } } }) : null;
 
   const href = (patch: Record<string, string | number | undefined>) => {
@@ -111,7 +112,9 @@ export default async function WinePage({ params, searchParams }: P) {
   return (
     <div className="stack-lg">
       <RecentViewMark wineId={id} />
-      <section className="stack" style={{ gap: 6 }}>
+      <section className="wine-head">
+        <WineThumb src={wine.imageUrl} type={wine.type} alt={`${wine.nameKo} 병 사진`} size="lg" credit={wine.imageSrc} />
+        <div className="stack" style={{ gap: 6 }}>
         <div className="label">
           <Link href="/" style={{ textDecoration: "none" }}>와인 찾기</Link> · {wine.country} · {wine.region}
         </div>
@@ -123,6 +126,7 @@ export default async function WinePage({ params, searchParams }: P) {
           {wine.krPrice === null && <span className="chip">국내 미수입</span>}
           {community._count > 0 && <a className="chip ok" href="#reviews" style={{ textDecoration: "none" }}>직구 후기 평점 {community._avg.rating!.toFixed(1)}/5 · {community._count}건</a>}
           {wine.rating && <span className="chip">평점 {wine.rating}점{wine.ratingSrc ? ` · ${wine.ratingSrc}` : ""}</span>}
+        </div>
         </div>
       </section>
 
@@ -333,7 +337,7 @@ export default async function WinePage({ params, searchParams }: P) {
           <section className="box" id="alerts">
             <h2>{existing?.active ? "찜한 와인" : "찜하고 알림 받기"}</h2>
             <p className="small muted">{qty}병 · {sizeLabel(ml)} 기준 병당 도착가가 목표가 이하가 되면 알려드립니다. 목표가 기본값은 지금 도착가의 90%입니다.</p>
-            <AlertForm wineId={id} qty={qty} ml={ml} suggested={result.best ? defaultTarget(result.best.perBottle) : 0} loggedIn={!!user} phone={user?.phone ?? null} existingTarget={existing?.active ? existing.targetPerBottle : null} existingChannel={existing?.channel} kakaoConfigured={!!alimtalkTemplate("TARGET")} />
+            <AlertForm wineId={id} qty={qty} ml={ml} suggested={result.best ? defaultTarget(result.best.perBottle) : 0} loggedIn={!!user} phone={user?.phone ?? null} existingTarget={existing?.active ? existing.targetPerBottle : null} existingChannel={existing?.channel} kakaoConfigured={!!alimtalkTemplate("TARGET")} pushConfigured={pushConfigured()} pushDevices={pushDevices} />
           </section>
 
           <section className="box">

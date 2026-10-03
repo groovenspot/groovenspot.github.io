@@ -53,6 +53,7 @@ enum Plan {
 enum AlertChannel {
   KAKAO
   EMAIL
+  PUSH // 브라우저 푸시 (구독이 없거나 실패하면 이메일)
 }
 
 model Wine {
@@ -73,6 +74,8 @@ model Wine {
   notesKo    String? // 한국어 테이스팅 노트
   notesSrc   String? // 테이스팅 노트 출처 (예: "생산자 공식 자료", "셀러도어 작성")
   lwin       String? // LWIN-7 와인 식별 코드 (빈티지 제외)
+  imageUrl   String? // 병 사진 (수집 허락받은 판매처 상품 사진 또는 생산자 공식 자료)
+  imageSrc   String? // 사진 출처 (판매처·생산자 이름)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -84,6 +87,7 @@ model Wine {
   orders    Order[]
   reviews   DirectReview[]
   posts     Post[]
+  price     WinePrice?
 
   @@index([country])
   @@index([type])
@@ -245,6 +249,7 @@ model User {
   consultationUsage ConsultationDailyUsage[]
   tasteProfile TasteProfile?
   oauthAccounts OAuthAccount[]
+  pushSubs      PushSubscription[]
   posts         Post[]
   postComments  PostComment[]
   postReports   PostReport[]
@@ -899,6 +904,7 @@ model CatalogItem {
   bottleMl    Int      @default(750)
   vintage     Int?
   gtin        String?
+  image       String? // 상품 사진 주소 (JSON-LD image)
   status      String   @default("new") // new | linked | ignored
   wineId      String? // 연결한 와인
   suggestId   String? // 자동 매칭 1순위 와인
@@ -927,4 +933,40 @@ model LwinRef {
   updatedAt   DateTime @updatedAt
 
   @@index([displayName])
+}
+
+/// 와인별 1병·750ml 최저 도착가 (목록·검색·정렬용으로 미리 계산). 환율·가격·세율이 바뀌면 다시 계산합니다.
+model WinePrice {
+  wineId      String   @id
+  perBottle   Int? // 최저 경로 병당 도착가 (원). null = 살 수 있는 경로 없음
+  route       String?
+  sellerCountry String?
+  krPerBottle Int?
+  saving      Int? // 국내가 대비 절감액 (원)
+  exempt      Boolean  @default(false) // 최저 경로가 1병 면세구간
+  ftaOrigin   Boolean  @default(false)
+  searchText  String   @default("") // 검색용: 이름·생산자·산지·품종·별칭을 접어 붙인 글자
+  updatedAt   DateTime @updatedAt
+
+  wine Wine @relation(fields: [wineId], references: [id], onDelete: Cascade)
+
+  @@index([perBottle])
+  @@index([saving])
+}
+
+/// 브라우저 푸시 구독 (기기·브라우저마다 하나)
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  failCount Int      @default(0)
+  lastOkAt  DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

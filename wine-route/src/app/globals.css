@@ -238,3 +238,17 @@ table.compare td, table.compare th { vertical-align: top; }
 .inbox li:not(.read) b::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: middle; }
 .legal h2 { font-size: 18px; }
 .demo-bar { background: var(--accent); color: var(--on-accent); text-align: center; font-size: 13px; font-weight: 600; padding: 6px 16px; }
+
+/* 병 사진 (고정 비율, 흰 배경 상품 사진 기준) */
+.thumb { margin: 0; flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--surface-2, rgba(127,127,127,.06)); border-radius: 8px; overflow: hidden; }
+.thumb.sm { width: 52px; height: 72px; }
+.thumb.lg { width: 112px; height: 168px; }
+.thumb img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+.thumb.lg img { height: calc(100% - 18px); }
+.thumb svg { height: 70%; }
+.thumb figcaption { font-size: 10.5px; color: var(--muted); line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; padding: 0 4px; }
+.card-head { display: flex; gap: 10px; align-items: flex-start; }
+.card-head > .stack { min-width: 0; flex: 1; }
+.wine-head { display: flex; gap: 16px; align-items: flex-start; }
+.wine-head > .stack { min-width: 0; flex: 1; }
+@media (max-width: 520px) { .thumb.lg { width: 84px; height: 132px; } }

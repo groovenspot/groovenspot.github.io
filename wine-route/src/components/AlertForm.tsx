@@ -4,9 +4,9 @@ import { useActionState, useState } from "react";
 import { createAlert } from "@/app/wines/[id]/actions";
 import type { FormState } from "@/app/actions";
 
-export function AlertForm(props: { wineId: string; qty: number; ml: number; suggested: number; loggedIn: boolean; phone: string | null; existingTarget: number | null; existingChannel?: "EMAIL" | "KAKAO"; kakaoConfigured?: boolean; source?: string }) {
+export function AlertForm(props: { wineId: string; qty: number; ml: number; suggested: number; loggedIn: boolean; phone: string | null; existingTarget: number | null; existingChannel?: "EMAIL" | "KAKAO" | "PUSH"; kakaoConfigured?: boolean; pushConfigured?: boolean; pushDevices?: number; source?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(createAlert, {});
-  const [channel, setChannel] = useState<"EMAIL" | "KAKAO">(props.existingChannel ?? (props.kakaoConfigured ? "KAKAO" : "EMAIL"));
+  const [channel, setChannel] = useState<"EMAIL" | "KAKAO" | "PUSH">(props.existingChannel ?? (props.kakaoConfigured ? "KAKAO" : "EMAIL"));
   return (
     <form onSubmit={keepFormSubmit(action)} className="stack">
       <input type="hidden" name="wineId" value={props.wineId} />
@@ -21,14 +21,16 @@ export function AlertForm(props: { wineId: string; qty: number; ml: number; sugg
         <legend className="label" style={{ marginBottom: 6 }}>받는 방법</legend>
         <label className="check"><input type="radio" name="channel" value="EMAIL" checked={channel === "EMAIL"} onChange={() => setChannel("EMAIL")} /> 이메일</label>
         <label className="check"><input type="radio" name="channel" value="KAKAO" checked={channel === "KAKAO"} onChange={() => setChannel("KAKAO")} /> 카카오 알림톡</label>
+        {props.pushConfigured && <label className="check"><input type="radio" name="channel" value="PUSH" checked={channel === "PUSH"} onChange={() => setChannel("PUSH")} /> 브라우저 알림</label>}
       </fieldset>
+      {channel === "PUSH" && !props.pushDevices && <p className="small">이 브라우저에서 아직 알림을 켜지 않았습니다. <a href="/me#push">내 정보에서 브라우저 알림 켜기</a></p>}
       {channel === "KAKAO" && (
         <div className="field">
           <label className="label" htmlFor="al-phone">휴대폰 번호</label>
           <input id="al-phone" name="phone" inputMode="numeric" placeholder="01012345678" defaultValue={props.phone ?? ""} />
         </div>
       )}
-      <p className="small muted">카카오 알림톡 발송이 어려우면 회원 이메일로 안내합니다.</p>
+      <p className="small muted">알림톡·브라우저 알림 발송이 어려우면 회원 이메일로 안내합니다.</p>
       <div className="row">
         <button className="btn" disabled={pending}>{props.loggedIn ? (props.existingTarget ? "목표가 바꾸기" : "찜하고 알림 받기") : "로그인하고 찜하기"}</button>
       </div>

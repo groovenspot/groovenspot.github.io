@@ -1,5 +1,6 @@
 import { prisma } from "@/server/db";
 import { parseJsonLdOffer } from "@/lib/crawl/jsonld";
+import { refreshQuietly } from "@/server/winePrice";
 
 const UA = "CellarDoorBot/0.1 (+price comparison; contact via site)";
 
@@ -33,5 +34,6 @@ export async function runCrawlJob(sellerId?: string, fetchFn: typeof fetch = fet
     await prisma.crawlRun.update({ where: { id: run.id }, data: { finishedAt: new Date(), status, updated, failed } });
     lines.push(`${s.name}: 갱신 ${updated}, 실패 ${failed}`);
   }
+  if (lines.length) await refreshQuietly();
   return lines.length ? lines.join(" / ") : "크롤링 대상 셀러가 없습니다";
 }

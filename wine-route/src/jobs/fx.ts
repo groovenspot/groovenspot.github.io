@@ -3,6 +3,7 @@ import { fetchEximRates } from "@/lib/fx";
 import { fetchInvestingRates } from "@/lib/investing";
 import { collectRates, fetchEcbRates, fetchErApiRates, sourceOrder, type FxFetch, type FxSourceKey } from "@/lib/fxSources";
 import { FX_SOURCE_LABEL } from "@/lib/format";
+import { refreshQuietly } from "@/server/winePrice";
 import { getFx, getFxConfig } from "@/server/settings";
 
 export const FX_CURRENCIES = ["USD", "EUR", "AUD", "NZD", "HKD", "GBP", "CHF", "JPY", "CAD"];
@@ -51,5 +52,6 @@ export async function runFxJob() {
   });
   const msg = `환율 ${saved.length}/${FX_CURRENCIES.length}개 통화 반영: ${parts.join(" → ")}${missing.length ? ` · 못 받은 통화(직전 값 유지) ${missing.join(", ")}` : ""}`;
   if (!saved.length) throw new Error(msg);
+  await refreshQuietly();
   return msg;
 }

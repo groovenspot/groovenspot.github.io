@@ -25,6 +25,10 @@ export function WineForm({ wine }: { wine?: Wine }) {
       <div className="field"><label className="label" htmlFor="w-aliases">검색 보정 표기 (쉼표 구분)</label><input id="w-aliases" name="aliases" defaultValue={wine?.aliases.join(", ") ?? ""} placeholder="예: 페브르, Fevre" /></div>
       <div className="field"><label className="label" htmlFor="w-notes">한국어 테이스팅 노트</label><textarea id="w-notes" name="notesKo" defaultValue={f("notesKo")} /></div>
       <div className="field"><label className="label" htmlFor="w-notessrc">노트 출처 (노트를 넣으면 필수 · 다른 서비스의 글을 옮겨 오지 마세요)</label><input id="w-notessrc" name="notesSrc" defaultValue={f("notesSrc")} placeholder="생산자 공식 자료 / 셀러도어 작성" /></div>
+      <div className="form-grid">
+        <div className="field"><label className="label" htmlFor="w-img">병 사진 주소 (https, 선택)</label><input id="w-img" name="imageUrl" type="url" defaultValue={f("imageUrl")} placeholder="https://..." /></div>
+        <div className="field"><label className="label" htmlFor="w-imgsrc">사진 출처 (사진을 넣으면 필수 · 허락받은 판매처나 생산자 자료만)</label><input id="w-imgsrc" name="imageSrc" defaultValue={f("imageSrc")} placeholder="생산자 공식 자료 / 판매처 이름" /></div>
+      </div>
       <div><button className="btn">저장</button></div>
     </form>
   );

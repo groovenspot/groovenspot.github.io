@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WineThumb } from "@/components/WineThumb";
 import { prisma } from "@/server/db";
 import { lwinSearch } from "@/server/catalog";
 import { createWineFromCatalog, crawlCatalogNow, ignoreCatalog, linkCatalog } from "@/app/admin/actions";
@@ -90,7 +91,8 @@ export default async function AdminCatalog({ searchParams }: { searchParams: Pro
           return (
             <div key={it.id} className="box tight">
               <div className="row between" style={{ alignItems: "flex-start" }}>
-                <div className="stack" style={{ gap: 2 }}>
+                {it.image && <WineThumb src={it.image} type="" alt="" />}
+                <div className="stack" style={{ gap: 2, flex: 1, minWidth: 0 }}>
                   <b>{it.name}</b>
                   <span className="small muted">{it.brand ?? "브랜드 없음"} · {it.seller.name} · {it.price ? money(it.price, it.currency ?? it.seller.currency) : "가격 없음"} · {sizeLabel(it.bottleMl)}{it.vintage ? ` · ${it.vintage}` : ""}{!it.inStock ? " · 품절" : ""}{it.gtin ? ` · GTIN ${it.gtin}` : ""}</span>
                   <a className="small" href={it.url} target="_blank" rel="noopener noreferrer">판매처 상품 페이지</a>

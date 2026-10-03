@@ -6,6 +6,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:16
@@ -17,7 +18,10 @@ jobs:
         options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       DATABASE_URL: postgresql://wine:wine@localhost:5432/wine?schema=public
+      INTEGRATION_DATABASE_URL: postgresql://wine:wine@localhost:5432/wine?schema=public
       SESSION_SECRET: ci-secret-0123456789-0123456789-ab
+      ADMIN_EMAILS: admin@example.com
+      APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,5 +32,23 @@ jobs:
       - run: npx prisma migrate deploy
       - run: npm run db:seed
       - run: npm run lint
-      - run: npm test
+      - name: Unit + integration tests
+        run: npm test
+      # 브라우저 알림 화면까지 확인하도록 일회용 키를 만듭니다 (빌드 때 공개 키가 화면에 들어갑니다)
+      - name: Throwaway VAPID keys
+        run: |
+          npx web-push generate-vapid-keys --json > /tmp/vapid.json
+          echo "NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY=$(node -p "require('/tmp/vapid.json').publicKey")" >> "$GITHUB_ENV"
+          echo "WEB_PUSH_PRIVATE_KEY=$(node -p "require('/tmp/vapid.json').privateKey")" >> "$GITHUB_ENV"
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Browser E2E
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7

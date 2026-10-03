@@ -1,5 +1,6 @@
 "use server";
 import { parseSegmentConfig, SEGMENT_ORDER } from "@/lib/segments";
+import { cleanImageUrl } from "@/lib/wineImage";
 import { sendCampaign } from "@/server/marketing";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -8,6 +9,7 @@ import { moveOrder } from "@/server/orders";
 import { prisma } from "@/server/db";
 import { requireAdmin } from "@/server/auth";
 import { audited } from "@/server/audit";
+import { refreshQuietly } from "@/server/winePrice";
 import { applyWineRows, linkCatalogItem, runCatalogCrawl } from "@/server/catalog";
 import { countryKo, lwinTypeKo } from "@/lib/lwin";
 import { parseWineCsv } from "@/lib/wineCsv";
@@ -60,6 +62,8 @@ function wineData(fd: FormData) {
     notesKo: str(fd, "notesKo") || null,
     notesSrc: str(fd, "notesSrc") || null,
     lwin: str(fd, "lwin").replace(/\D/g, "") || null,
+    imageUrl: cleanImageUrl(str(fd, "imageUrl")),
+    imageSrc: str(fd, "imageSrc") || null,
   };
 }
 
@@ -71,9 +75,12 @@ export async function saveWine(fd: FormData) {
     if (!data.name || !data.nameKo || !data.country) throw new Error("원어명·한글명·국가는 필수입니다");
     if (data.notesKo && !data.notesSrc) throw new Error("테이스팅 노트에는 출처를 함께 적어 주세요 (예: 생산자 공식 자료, 셀러도어 작성)");
     if (data.rating !== null && !data.ratingSrc) throw new Error("평점에는 출처를 함께 적어 주세요");
+    if (data.imageUrl && !data.imageSrc) throw new Error("사진에는 출처를 함께 적어 주세요 (예: 생산자 공식 자료, 판매처 이름)");
     if (data.lwin && data.lwin.length !== 7) throw new Error("LWIN 코드는 7자리입니다");
     const w = id ? await prisma.wine.update({ where: { id }, data }) : await prisma.wine.create({ data });
     if (!id) await notifyNewVintage(w.id); // 같은 와인의 다른 빈티지를 찜한 프리미엄 회원에게
+    // 목록·검색용 최저 도착가 다시 계산
+    await refreshQuietly([w.id]);
     revalidatePath("/admin/wines");
     redirect(`/admin/wines/${w.id}`);
   });
@@ -83,6 +90,7 @@ export async function deleteWine(fd: FormData) {
   const admin = await requireAdmin();
   return audited(admin.email, "deleteWine", fd, async () => {
     await prisma.wine.delete({ where: { id: str(fd, "id") } });
+    // WinePrice 는 와인과 함께 지워집니다 (cascade)
     revalidatePath("/admin/wines");
     redirect("/admin/wines");
   });
@@ -98,6 +106,8 @@ export async function saveOffer(fd: FormData) {
     if (!data.url || data.price <= 0) throw new Error("URL과 가격을 입력해 주세요");
     if (id) await prisma.offer.update({ where: { id }, data });
     else await prisma.offer.upsert({ where: { wineId_sellerId_bottleMl: { wineId, sellerId: str(fd, "sellerId"), bottleMl: data.bottleMl } }, update: data, create: { ...data, wineId, sellerId: str(fd, "sellerId") } });
+    // 목록·검색용 최저 도착가 다시 계산
+    await refreshQuietly([wineId]);
     revalidatePath(`/admin/wines/${wineId}`);
   });
 }
@@ -105,7 +115,9 @@ export async function saveOffer(fd: FormData) {
 export async function deleteOffer(fd: FormData) {
   const admin = await requireAdmin();
   return audited(admin.email, "deleteOffer", fd, async () => {
-    await prisma.offer.delete({ where: { id: str(fd, "id") } });
+    const gone = await prisma.offer.delete({ where: { id: str(fd, "id") } });
+    // 목록·검색용 최저 도착가 다시 계산 (그 와인만)
+    await refreshQuietly([gone.wineId]);
     revalidatePath(`/admin/wines/${str(fd, "wineId")}`);
   });
 }
@@ -147,6 +159,8 @@ export async function importOffers(_: { message?: string; error?: string }, fd: 
         errors.push(`${i + 2}행: ${(e as Error).message.split("\n")[0]}`);
       }
     }
+    // 목록·검색용 최저 도착가 다시 계산
+    await refreshQuietly();
     revalidatePath("/admin", "layout");
     return errors.length ? { error: `${ok}건 반영, ${errors.length}건 실패\n${errors.slice(0, 20).join("\n")}` } : { message: `${ok}건 반영했습니다` };
   });
@@ -186,6 +200,8 @@ export async function saveSeller(fd: FormData) {
     if (data.crawlConsentAt && !data.crawlConsentNote) throw new Error("수집 허락 날짜를 넣으면 근거(계약 조항·메일 등)도 적어 주세요");
     if (!data.name || !data.country || !/^[A-Z]{3}$/.test(data.currency)) throw new Error("이름·국가·통화(3자리)를 확인해 주세요");
     const s = id ? await prisma.seller.update({ where: { id }, data }) : await prisma.seller.create({ data });
+    // 목록·검색용 최저 도착가 다시 계산
+    await refreshQuietly((await prisma.offer.findMany({ where: { sellerId: s.id }, select: { wineId: true } })).map((o) => o.wineId));
     revalidatePath("/admin/sellers");
     redirect(`/admin/sellers/${s.id}`);
   });
@@ -212,6 +228,8 @@ export async function saveForwarder(fd: FormData) {
     };
     if (id) await prisma.forwarder.update({ where: { id }, data });
     else await prisma.forwarder.create({ data });
+    // 목록·검색용 최저 도착가 다시 계산
+    await refreshQuietly();
     revalidatePath("/admin/sellers");
   });
 }
@@ -236,6 +254,8 @@ export async function saveTax(fd: FormData) {
       cooExemptUsd: numOr(fd, "cooExemptUsd", cur.cooExemptUsd),
       freeAlertLimit: numOr(fd, "freeAlertLimit", cur.freeAlertLimit),
     });
+    // 목록·검색용 최저 도착가 다시 계산
+    await refreshQuietly();
     revalidatePath("/", "layout");
   });
 }
@@ -260,6 +280,8 @@ export async function setRate(fd: FormData) {
     if (!/^[A-Z]{3}$/.test(currency) || !(krw > 0)) throw new Error("통화와 환율을 확인해 주세요");
     const today = new Date(new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10));
     await prisma.exchangeRate.upsert({ where: { currency_date: { currency, date: today } }, update: { krw, source: "manual", fetchedAt: new Date() }, create: { currency, krw, date: today, source: "manual" } });
+    // 목록·검색용 최저 도착가 다시 계산
+    await refreshQuietly();
     revalidatePath("/", "layout");
   });
 }
@@ -554,6 +576,8 @@ export async function linkCatalog(fd: FormData) {
   const admin = await requireAdmin();
   return audited(admin.email, "linkCatalog", fd, async () => {
     await linkCatalogItem(str(fd, "itemId"), str(fd, "wineId"));
+    // 목록·검색용 최저 도착가 다시 계산
+    await refreshQuietly([str(fd, "wineId")]);
     revalidatePath("/admin/catalog");
   });
 }
@@ -588,6 +612,8 @@ export async function createWineFromCatalog(fd: FormData) {
     const w = await prisma.wine.create({ data });
     await linkCatalogItem(str(fd, "itemId"), w.id);
     await notifyNewVintage(w.id);
+    // 목록·검색용 최저 도착가 다시 계산
+    await refreshQuietly([w.id]);
     revalidatePath("/admin/catalog");
   });
 }
@@ -607,6 +633,7 @@ export async function importWinesCsv(_: ImportState, fd: FormData): Promise<Impo
     const r = await applyWineRows(rows, apply);
     if (r.errors.length) return { error: r.errors.slice(0, 30).join("\n"), csv };
     if (!apply) return { preview: { created: r.created, updated: r.updated }, csv };
+    await refreshQuietly();
     revalidatePath("/admin/wines");
     revalidatePath("/", "layout");
     return { message: `새 와인 ${r.created}개, 갱신 ${r.updated}개를 반영했습니다` };

@@ -15,7 +15,7 @@ export async function createAlert(_: FormState, fd: FormData): Promise<FormState
   if (!user) redirect(`/login?next=${encodeURIComponent(`/wines/${wineId}?qty=${qty}&ml=${bottleMl}`)}`);
   const target = Math.round(Number(fd.get("target")));
   if (!Number.isFinite(target) || target <= 0) return { error: "목표 병당 도착가를 원 단위로 입력해 주세요." };
-  const channel = fd.get("channel") === "KAKAO" ? "KAKAO" : "EMAIL";
+  const channel = fd.get("channel") === "KAKAO" ? "KAKAO" : fd.get("channel") === "PUSH" ? "PUSH" : "EMAIL";
   const phone = String(fd.get("phone") ?? "").replace(/[^\d]/g, "");
   if (channel === "KAKAO" && !/^01\d{8,9}$/.test(phone) && !user.phone) return { error: "카카오 알림톡을 받을 휴대폰 번호를 입력해 주세요." };
 
@@ -35,5 +35,5 @@ export async function createAlert(_: FormState, fd: FormData): Promise<FormState
     create: { userId: user.id, wineId, qty, bottleMl, targetPerBottle: target, channel, source: String(fd.get("source") ?? "detail") },
   });
   revalidatePath("/me");
-  return { ok: true, message: `찜했습니다. 병당 ${target.toLocaleString("ko-KR")}원 이하가 되면 ${channel === "KAKAO" ? "카카오 알림톡으로" : "이메일로"} 알려드립니다.` };
+  return { ok: true, message: `찜했습니다. 병당 ${target.toLocaleString("ko-KR")}원 이하가 되면 ${channel === "KAKAO" ? "카카오 알림톡으로" : channel === "PUSH" ? "브라우저 알림으로" : "이메일로"} 알려드립니다.` };
 }

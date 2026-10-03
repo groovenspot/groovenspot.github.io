@@ -101,7 +101,7 @@ export function nextPageUrl(html: string, pageUrl: string): string | null {
 }
 
 /* ---------- 상품 페이지 ---------- */
-export type ParsedProduct = { name: string; brand: string | null; price: number | null; currency: string | null; inStock: boolean; gtin: string | null; vintage: number | null; bottleMl: number };
+export type ParsedProduct = { name: string; brand: string | null; price: number | null; currency: string | null; inStock: boolean; gtin: string | null; vintage: number | null; bottleMl: number; image: string | null };
 
 /** 병 용량: 이름에 표기가 있으면 그것, 없으면 750ml */
 export function guessBottleMl(name: string): number {
@@ -120,7 +120,7 @@ export function guessBottleMl(name: string): number {
 const text = (v: unknown) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim() : "");
 
 /** schema.org Product 의 이름·브랜드·가격·재고. 와인 상품 페이지가 아니면 null */
-export function parseJsonLdProduct(html: string): ParsedProduct | null {
+export function parseJsonLdProduct(html: string, pageUrl?: string): ParsedProduct | null {
   for (const data of ldBlocks(html)) {
     for (const o of walk(data)) {
       if (!isType(o, "Product")) continue;
@@ -141,8 +141,26 @@ export function parseJsonLdProduct(html: string): ParsedProduct | null {
         }
       }
       const gtin = text(o.gtin13 ?? o.gtin ?? o.gtin14 ?? o.gtin12 ?? o.gtin8) || null;
-      return { name, brand, price, currency, inStock, gtin, vintage: parseVintage(name), bottleMl: guessBottleMl(name) };
+      return { name, brand, price, currency, inStock, gtin, vintage: parseVintage(name), bottleMl: guessBottleMl(name), image: productImage(o.image, pageUrl) };
     }
+  }
+  return null;
+}
+
+/**
+ * JSON-LD image: 문자열 · ImageObject{url|contentUrl} · 그 배열. 첫 번째 쓸 수 있는 https 주소 (상대 경로는 상품 페이지 기준).
+ */
+export function productImage(v: unknown, pageUrl?: string): string | null {
+  const list = Array.isArray(v) ? v : [v];
+  for (const x of list) {
+    const raw = typeof x === "string" ? x : x && typeof x === "object" ? (x as Record<string, unknown>).url ?? (x as Record<string, unknown>).contentUrl : null;
+    if (typeof raw !== "string" || !raw.trim()) continue;
+    try {
+      const u = new URL(raw.trim(), pageUrl);
+      if (u.protocol === "http:" && pageUrl?.startsWith("https:")) u.protocol = "https:";
+      if (u.protocol !== "https:" || u.href.length > 1000) continue;
+      return u.href;
+    } catch { continue; }
   }
   return null;
 }

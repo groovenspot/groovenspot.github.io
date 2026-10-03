@@ -3,6 +3,7 @@ import { prisma } from "./db";
 import { sendMail } from "./mail";
 import { alimtalkTemplate, sendGenericAlimtalk } from "./alimtalk";
 import { adWordsFound, weekKey } from "@/lib/alerts";
+import { sendPushToUser } from "./push";
 
 const appUrl = () => process.env.APP_URL ?? "http://localhost:3000";
 
@@ -42,13 +43,22 @@ export async function notify(n: NotifyInput): Promise<NotifyResult> {
     row = existing;
   }
   if (n.queue) return { sent: false, queued: true };
-  return deliver(row.id, n.user, n.type, n.title, n.body, n.channel);
+  return deliver(row.id, n.user, n.type, n.title, n.body, n.channel, n.link);
 }
 
-async function deliver(id: string, user: Pick<User, "email" | "phone">, type: string, title: string, body: string, channel?: AlertChannel): Promise<NotifyResult> {
+async function deliver(id: string, user: Pick<User, "id" | "email" | "phone">, type: string, title: string, body: string, channel?: AlertChannel, _path?: string): Promise<NotifyResult> {
   const link = `${appUrl()}/n/${id}`;
   const tpl = alimtalkTemplate(type);
   try {
+    // 브라우저 푸시: 등록한 기기 중 한 곳이라도 받으면 끝, 아니면 이메일로
+    if (channel === "PUSH") {
+      const r = await sendPushToUser(user.id, title, body, `/n/${id}`).catch(() => ({ sent: 0 }));
+      if (r.sent > 0) {
+        await prisma.notification.update({ where: { id }, data: { status: "SENT", channel: "push", sentAt: new Date() } });
+        return { sent: true };
+      }
+      console.warn("push not delivered; retrying by email", id);
+    }
     if (channel !== "EMAIL" && user.phone && tpl) {
       try {
         await sendGenericAlimtalk(user.phone, tpl, { title, body, link });

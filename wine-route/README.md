@@ -162,6 +162,20 @@ DB 변경: `prisma/migrations/20261003080000_consolidate_oauth_board`, `20261003
 
 DB 변경: `prisma/migrations/20261003120000_catalog_lwin`.
 
+## 규모·브라우저 알림·병 사진·E2E (2026-10-03 추가 7)
+
+- **와인 수천 개에서도 빠른 목록·검색**: 와인마다 1병·750ml 최저 도착가를 `WinePrice` 표에 미리 계산해 두고, 첫 화면·검색·필터·정렬·쪽 나누기를 DB 에서 처리합니다 (`src/server/winePrice.ts`). 판매 정보·판매처·배송대행지·세율·환율이 바뀌면(관리자 저장, 가격 수집, 환율 작업, CSV 반영) 바뀐 와인만 또는 전체를 다시 계산하고, 계산이 없는 와인은 첫 화면을 열 때 채웁니다. 와인 5,136개 기준 첫 화면·검색 5ms (이전 방식 2.3~2.9초), 전체 다시 계산 3.6초.
+- **브라우저 알림 (Web Push)**: `내 정보 → 브라우저 알림`에서 이 기기 알림을 켜면(서비스워커 `public/sw.js`), 찜 알림의 받는 방법으로 '브라우저 알림'을 고를 수 있습니다. 등록 기기 중 한 곳도 못 받으면 알림톡·메일로 대신 보냅니다. 기기가 구독을 끊으면(404·410) 바로, 다른 실패가 5번 쌓이면 구독을 지웁니다. 회원당 기기 10개, 내 정보에서 기기별 삭제·시험 알림. 키: `npx web-push generate-vapid-keys` → `NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY`, `WEB_PUSH_PRIVATE_KEY` (비우면 메일·알림톡만). iPhone 은 홈 화면에 추가한 뒤에만 됩니다.
+- **병 사진**: 수집을 허락한 판매처의 상품 JSON-LD `image`(https 만)를 수집 대기열에 저장하고, 연결·새 와인 등록 때 사진이 없는 와인에 판매처 이름을 출처로 붙입니다. 관리자 와인 화면·와인 CSV(`image_url`, `image_src`)로도 넣을 수 있고 **출처가 없으면 저장되지 않습니다**. 목록 카드·상세에 고정 비율로 보이고(판매처로 방문 주소를 넘기지 않음), 없거나 못 불러오면 종류 색의 병 모양을 보여 줍니다. 다른 서비스의 사진은 넣지 마세요.
+- **브라우저 E2E** (`e2e/`, Playwright): 첫 화면·검색·필터·쪽 이동·상세·비교함·합배송 견적·404·상태 확인(데스크톱·모바일), 회원 찜 알림·내 정보, 관리자 권한·카탈로그 수집(가짜 판매처 서버)→연결→작업 기록, 병 사진 저장→상세 표시. 로그인은 메일 대신 테스트가 세션을 직접 만듭니다.
+  ```bash
+  npm run build && npm run test:e2e   # 서버가 떠 있으면 그대로, 없으면 npm start 로 띄움
+  # 브라우저를 따로 받아 둔 환경: PLAYWRIGHT_CHROMIUM_PATH=/path/to/chromium npm run test:e2e
+  ```
+- **CI**: `.github/workflows/ci.yml` 이 Postgres 를 띄워 마이그레이션·시드 → 타입 검사 → 단위·통합 테스트 → 빌드 → E2E 를 돌립니다. 실패하면 Playwright 보고서를 올립니다. 이 폴더가 다른 저장소의 하위 폴더일 때는 GitHub 이 맨 위 `.github/workflows` 만 읽으므로 같은 내용을 저장소 맨 위에 두어야 합니다 (groovenspot.github.io 에는 `cellardoor-ci.yml` 로 두었습니다). 정기 작업(`jobs.yml`)의 schedule 은 기본 브랜치에서만 돌기 때문에 운영 전 별도 저장소로 옮기는 것을 권합니다.
+
+DB 변경: `prisma/migrations/20261003140000_price_push_images`.
+
 ## 출시 준비: 비용·법규·운영·편의 (2026-10-03 추가 5)
 
 - **라벨 사진 인식 한도** (`src/lib/quota.ts`, `src/server/quota.ts`): 유료 이미지 API 남용을 막습니다. 비회원은 접속지당 하루 5회, 회원은 하루 20회(같은 접속지 60회), 1분에 3회, 서비스 전체 하루 1,000회. 환경변수 `SCAN_LIMIT_ANON`·`SCAN_LIMIT_MEMBER`·`SCAN_LIMIT_PER_MINUTE`·`SCAN_LIMIT_GLOBAL`로 조정합니다. IP는 해시만 남기고 이틀 뒤 지웁니다(`consultation-cleanup` 작업). 인식이 꺼져 있거나 형식이 맞지 않으면 한도에서 빼지 않습니다. API 원문 오류는 화면에 보이지 않고 서버 로그에만 남습니다.

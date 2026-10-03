@@ -78,12 +78,12 @@ export async function runCatalogCrawl(sellerId?: string, opts: Opts = {}) {
     for (const url of todo) {
       if (!(await allowed(url))) { errors.push(`robots.txt 금지: ${url}`); continue; }
       try {
-        const p = parseJsonLdProduct(await get(url));
+        const p = parseJsonLdProduct(await get(url), url);
         if (!p || p.price === null) { notProduct++; continue; }
         const best = matchWines(`${p.brand ?? ""} ${p.name}`, wines, 1)[0];
         const data = {
           name: p.name.slice(0, 300), brand: p.brand?.slice(0, 120) ?? null, price: p.price, currency: p.currency, inStock: p.inStock,
-          bottleMl: p.bottleMl, vintage: p.vintage, gtin: p.gtin, suggestId: best?.wine.id ?? null, suggestScore: best?.score ?? null, lastSeenAt: new Date(),
+          bottleMl: p.bottleMl, vintage: p.vintage, gtin: p.gtin, image: p.image, suggestId: best?.wine.id ?? null, suggestScore: best?.score ?? null, lastSeenAt: new Date(),
         };
         const prev = await prisma.catalogItem.findUnique({ where: { sellerId_url: { sellerId: s.id, url } }, select: { id: true } });
         await prisma.catalogItem.upsert({ where: { sellerId_url: { sellerId: s.id, url } }, update: data, create: { sellerId: s.id, url, ...data } });
@@ -115,6 +115,8 @@ export async function linkCatalogItem(itemId: string, wineId: string) {
       create: { wineId, sellerId: item.sellerId, bottleMl: item.bottleMl, url: item.url, price: item.price, inStock: item.inStock },
     }),
     prisma.catalogItem.update({ where: { id: itemId }, data: { status: "linked", wineId } }),
+    // 사진이 없는 와인이면 수집을 허락한 판매처의 상품 사진을 출처와 함께 씁니다
+    ...(item.image ? [prisma.wine.updateMany({ where: { id: wineId, imageUrl: null }, data: { imageUrl: item.image, imageSrc: item.seller.name } })] : []),
   ]);
 }
 

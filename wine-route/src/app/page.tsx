@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { compareMany } from "@/server/compare";
-import { matchesQuery } from "@/lib/search";
+import type { Prisma } from "@prisma/client";
+import { ensureWinePrices, searchWhere } from "@/server/winePrice";
+import { ROUTE_LABEL, type ChannelKey } from "@/lib/engine";
 import { WineCard } from "@/components/WineCard";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { won } from "@/lib/format";
@@ -34,52 +35,61 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
   const hasTaste = !!taste && !isEmptyTaste(taste);
   const sort = sp.sort ?? (notKr ? "price" : "saving");
 
-  const { items } = await compareMany({});
-  const score = (i: (typeof items)[number]) => tasteScore(i.wine, i.result.best ? Math.round(i.result.best.perBottle) : null, hasTaste ? taste : null);
-  const countries = [...new Set(items.map((i) => i.wine.country))].sort();
-  const suggestions = [...new Set(items.flatMap((i) => [i.wine.nameKo, i.wine.name, i.wine.producer, i.wine.region]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko")).slice(0, 500);
-  const types = [...new Set(items.map((i) => i.wine.type))].sort();
-
-  const filtered = items.filter(({ wine, result }) => {
-    const hay = [wine.name, wine.nameKo, wine.producer, wine.region, wine.country, wine.type, wine.grape, ...wine.aliases].join(" ");
-    if (!matchesQuery(hay, q)) return false;
-    if (country && wine.country !== country) return false;
-    if (type && wine.type !== type) return false;
-    if (exempt && !result.best?.tax.exempt) return false;
-    if (notKr && result.krPerBottle !== null) return false;
-    if (max && (!result.best || result.best.perBottle > max)) return false;
-    return true;
-  });
-  filtered.sort((a, b) => {
-    const pa = a.result.best?.perBottle ?? Infinity;
-    const pb = b.result.best?.perBottle ?? Infinity;
-    if (sort === "price") return pa - pb;
-    if (sort === "name") return a.wine.nameKo.localeCompare(b.wine.nameKo, "ko");
-    if (sort === "taste") return score(b) - score(a) || pa - pb;
-    return (b.result.savingPerBottle ?? -Infinity) - (a.result.savingPerBottle ?? -Infinity);
-  });
-  const shown = filtered.slice((page - 1) * PAGE, page * PAGE);
-  const pages = Math.ceil(filtered.length / PAGE);
+  // 목록·검색·정렬·페이지는 미리 계산한 최저 도착가(WinePrice)로 DB에서 처리합니다. 와인이 수천 개여도 화면당 쿼리 몇 번.
+  await ensureWinePrices();
+  const wineSelect = { id: true, name: true, nameKo: true, country: true, region: true, type: true, vintage: true, imageUrl: true } as const;
+  const priceInclude = { wine: { select: wineSelect } } as const;
+  const where: Prisma.WinePriceWhereInput = {
+    ...searchWhere(q),
+    ...(country || type ? { wine: { ...(country ? { country } : {}), ...(type ? { type } : {}) } } : {}),
+    ...(exempt ? { exempt: true } : {}),
+    ...(notKr ? { krPerBottle: null } : {}),
+    ...(max ? { perBottle: { lte: max } } : {}),
+  };
+  const orderBy: Prisma.WinePriceOrderByWithRelationInput[] =
+    sort === "price" ? [{ perBottle: { sort: "asc", nulls: "last" } }]
+    : sort === "name" ? [{ wine: { nameKo: "asc" } }]
+    : [{ saving: { sort: "desc", nulls: "last" } }, { perBottle: { sort: "asc", nulls: "last" } }];
   const filtering = q || country || type || max || exempt || notKr;
+  const scoreOf = (r: { wine: { country: string; type: string }; perBottle: number | null }) => tasteScore(r.wine, r.perBottle, hasTaste ? taste : null);
+
+  const [total, pageRows, facetCountries, facetTypes, nameRows, topRows] = await Promise.all([
+    prisma.winePrice.count({ where }),
+    // 취향 정렬은 점수를 DB 에서 매기기 어려워 조건에 맞는 것을 최대 2,000개 가져와 정렬합니다.
+    sort === "taste" && hasTaste
+      ? prisma.winePrice.findMany({ where, include: priceInclude, take: 2000 }).then((rows) =>
+          rows.sort((a, b) => scoreOf(b) - scoreOf(a) || (a.perBottle ?? Infinity) - (b.perBottle ?? Infinity)).slice((page - 1) * PAGE, page * PAGE))
+      : prisma.winePrice.findMany({ where, include: priceInclude, orderBy, skip: (page - 1) * PAGE, take: PAGE }),
+    prisma.wine.findMany({ distinct: ["country"], select: { country: true }, orderBy: { country: "asc" } }),
+    prisma.wine.findMany({ distinct: ["type"], select: { type: true }, orderBy: { type: "asc" } }),
+    prisma.wine.findMany({ select: { nameKo: true, name: true, producer: true, region: true }, take: 2000 }),
+    prisma.winePrice.findMany({ where: { saving: { gt: 0 } }, include: priceInclude, orderBy: { saving: "desc" }, take: 10 }),
+  ]);
+  const countries = facetCountries.map((c) => c.country);
+  const types = facetTypes.map((t) => t.type);
+  const suggestions = [...new Set(nameRows.flatMap((w) => [w.nameKo, w.name, w.producer, w.region]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko")).slice(0, 500);
+  const shown = pageRows;
+  const pages = Math.ceil(total / PAGE);
 
   const picks = hasTaste
-    ? items.filter((i) => i.result.best && score(i) > 0).sort((a, b) => score(b) - score(a) || (b.result.savingPerBottle ?? -Infinity) - (a.result.savingPerBottle ?? -Infinity)).slice(0, 6)
+    ? (await prisma.winePrice.findMany({
+        where: { perBottle: { not: null }, wine: { OR: [{ country: { in: taste!.countries } }, { type: { in: taste!.types } }] } },
+        include: priceInclude, orderBy: { saving: { sort: "desc", nulls: "last" } }, take: 200,
+      })).filter((r) => scoreOf(r) > 0).sort((a, b) => scoreOf(b) - scoreOf(a) || (b.saving ?? -Infinity) - (a.saving ?? -Infinity)).slice(0, 6)
     : [];
   const tasteLine = hasTaste ? [taste!.countries.join("·"), taste!.types.join("·"), taste!.budget ? `병당 ${BUDGET_LABEL[taste!.budget]}` : ""].filter(Boolean).join(" / ") : "";
 
-  // 셀러도어 직구 후기 평점 (협찬 제외)
-  const ratingRows = await prisma.directReview.groupBy({ by: ["wineId"], where: { status: "PUBLISHED", sponsored: false }, _avg: { rating: true }, _count: true });
+  const recentIds = parseIds((await cookies()).get(RECENT_COOKIE)?.value, RECENT_MAX);
+  const recent = recentIds.length ? inOrder(recentIds, (await prisma.winePrice.findMany({ where: { wineId: { in: recentIds } }, include: priceInclude })).map((r) => ({ ...r, id: r.wineId }))) : [];
+  const top = topRows;
+
+  // 셀러도어 직구 후기 평점 (협찬 제외) · 화면에 나오는 와인만
+  const shownIds = [...new Set([...shown, ...picks].map((r) => r.wineId))];
+  const ratingRows = shownIds.length ? await prisma.directReview.groupBy({ by: ["wineId"], where: { wineId: { in: shownIds }, status: "PUBLISHED", sponsored: false }, _avg: { rating: true }, _count: true }) : [];
   const communityOf = (id: string) => {
     const r = ratingRows.find((x) => x.wineId === id);
     return r && r._avg.rating !== null ? { avg: r._avg.rating, n: r._count } : undefined;
   };
-  const recentIds = parseIds((await cookies()).get(RECENT_COOKIE)?.value, RECENT_MAX);
-  const recent = inOrder(recentIds, items.map((i) => ({ ...i, id: i.wine.id })));
-
-  const top = items
-    .filter((i) => i.result.savingPerBottle !== null && i.result.savingPerBottle > 0)
-    .sort((a, b) => b.result.savingPerBottle! - a.result.savingPerBottle!)
-    .slice(0, 10);
 
   const qs = (patch: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams();
@@ -161,11 +171,11 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
             </form>
           </div>
           <div className="recent-row">
-            {recent.map(({ wine, result }) => (
+            {recent.map(({ wine, perBottle }) => (
               <Link key={wine.id} href={`/wines/${wine.id}`} className="card recent">
                 <span className="name">{wine.nameKo}</span>
                 <span className="sub">{wine.country} · {wine.vintage ?? "NV"}</span>
-                <span className="num">{result.best ? won(result.best.perBottle) : "—"}</span>
+                <span className="num">{perBottle !== null ? won(perBottle) : "—"}</span>
               </Link>
             ))}
           </div>
@@ -179,7 +189,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
             <span className="small muted">취향 설문: {tasteLine} · <Link href="/me#preferences">바꾸기</Link></span>
           </div>
           <div className="cards">
-            {picks.map(({ wine, result }) => <WineCard key={wine.id} wine={wine} result={result} community={communityOf(wine.id)} />)}
+            {picks.map((r) => <WineCard key={r.wineId} wine={r.wine} price={r} community={communityOf(r.wineId)} />)}
           </div>
         </section>
       )}
@@ -199,14 +209,14 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
                 <tr><th>#</th><th>와인</th><th>최저 경로</th><th className="r">도착가</th><th className="r">국내가</th><th className="r">절감</th></tr>
               </thead>
               <tbody>
-                {top.map(({ wine, result }, i) => (
+                {top.map(({ wine, route, perBottle, krPerBottle, saving }, i) => (
                   <tr key={wine.id}>
                     <td className="num">{i + 1}</td>
                     <td><Link href={`/wines/${wine.id}`}>{wine.nameKo}</Link></td>
-                    <td className="small muted">{result.routes.find((r) => r.best === result.best)?.label}</td>
-                    <td className="r">{won(result.best!.perBottle)}</td>
-                    <td className="r muted">{won(result.krPerBottle!)}</td>
-                    <td className="r pos">−{won(result.savingPerBottle!)}</td>
+                    <td className="small muted">{route ? ROUTE_LABEL[route as ChannelKey] : "-"}</td>
+                    <td className="r">{won(perBottle!)}</td>
+                    <td className="r muted">{won(krPerBottle!)}</td>
+                    <td className="r pos">−{won(saving!)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -217,12 +227,12 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
 
       <section className="stack">
         <div className="row between">
-          <h2>{filtering ? `검색 결과 ${filtered.length}개` : `전체 와인 ${filtered.length}개`}</h2>
+          <h2>{filtering ? `검색 결과 ${total.toLocaleString("ko-KR")}개` : `전체 와인 ${total.toLocaleString("ko-KR")}개`}</h2>
           <span className="small muted">1병 · 750ml 기준</span>
         </div>
         {shown.length ? (
           <div className="cards">
-            {shown.map(({ wine, result }) => <WineCard key={wine.id} wine={wine} result={result} community={communityOf(wine.id)} />)}
+            {shown.map((r) => <WineCard key={r.wineId} wine={r.wine} price={r} community={communityOf(r.wineId)} />)}
           </div>
         ) : (
           <div className="box">

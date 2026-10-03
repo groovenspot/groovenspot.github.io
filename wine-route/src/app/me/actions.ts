@@ -174,3 +174,10 @@ export async function deleteMyAccount(_: { error?: string }, fd: FormData): Prom
   (await cookies()).delete("wr_session");
   redirect("/?deleted=1");
 }
+
+/** 등록된 브라우저 알림 기기 하나 지우기 (잃어버린 기기 등) */
+export async function removePushDevice(fd: FormData) {
+  const user = await requireUser("/me#push");
+  await prisma.pushSubscription.deleteMany({ where: { id: String(fd.get("id") ?? ""), userId: user.id } });
+  revalidatePath("/me");
+}
