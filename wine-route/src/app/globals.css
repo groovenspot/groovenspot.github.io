@@ -237,3 +237,4 @@ table.compare td, table.compare th { vertical-align: top; }
 .inbox a:hover { background: var(--sunk); }
 .inbox li:not(.read) b::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: middle; }
 .legal h2 { font-size: 18px; }
+.demo-bar { background: var(--accent); color: var(--on-accent); text-align: center; font-size: 13px; font-weight: 600; padding: 6px 16px; }

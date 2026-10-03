@@ -6,6 +6,7 @@ import { prisma } from "@/server/db";
 import { ConsultationWidget } from "@/components/ConsultationWidget";
 import { cookies } from "next/headers";
 import { siteUrl } from "@/lib/site";
+import { isDemo } from "@/lib/demo";
 import { COMPARE_COOKIE, COMPARE_MAX, parseIds } from "@/lib/wineList";
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body>
+        {isDemo() && <div className="demo-bar" role="note">둘러보기 데모입니다. 와인·판매처·가격은 예시이고(환율은 실제), 로그인과 등록은 꺼 두었습니다.</div>}
         <header className="site-head">
           <div className="wrap">
             <Link href="/" className="brand">
