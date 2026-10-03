@@ -278,7 +278,16 @@ npm run db:seed               # 예시 데이터 (와인 16종, 셀러 22곳, �
 npm run dev                   # http://localhost:3000
 ```
 
-Docker: `docker compose up --build` 후 `docker compose exec web npm run db:seed`
+Docker (Node·PostgreSQL 설치 없이):
+
+```bash
+cp .env.example .env
+docker compose up -d --build              # 처음엔 몇 분. DB가 준비되면 마이그레이션 후 서버 시작
+docker compose exec web npm run db:seed   # 예시 데이터 (처음 한 번)
+docker compose exec web npm run job:fx    # 오늘 환율 받기 (선택)
+# http://localhost:3000 · 로그인 코드는 docker compose logs web 에 찍힙니다
+docker compose down                       # 끄기 (데이터는 남음, 지우려면 down -v)
+```
 
 로그인은 이메일 6자리 코드입니다. `RESEND_API_KEY`가 없으면 코드가 서버 로그에 찍힙니다. `ADMIN_EMAILS`에 넣은 이메일로 로그인하면 `/admin`이 열립니다.
 
