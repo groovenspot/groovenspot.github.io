@@ -6,6 +6,9 @@ import { WaitlistForm } from "@/components/WaitlistForm";
 import { won } from "@/lib/format";
 import { getUser } from "@/server/auth";
 import { prisma } from "@/server/db";
+import { cookies } from "next/headers";
+import { RECENT_COOKIE, RECENT_MAX, inOrder, parseIds } from "@/lib/wineList";
+import { clearRecent } from "@/app/compare/actions";
 import { BUDGET_LABEL, isEmptyTaste, parseTaste, tasteScore, type TasteClean } from "@/lib/taste";
 
 export const dynamic = "force-dynamic";
@@ -62,6 +65,9 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
     ? items.filter((i) => i.result.best && score(i) > 0).sort((a, b) => score(b) - score(a) || (b.result.savingPerBottle ?? -Infinity) - (a.result.savingPerBottle ?? -Infinity)).slice(0, 6)
     : [];
   const tasteLine = hasTaste ? [taste!.countries.join("·"), taste!.types.join("·"), taste!.budget ? `병당 ${BUDGET_LABEL[taste!.budget]}` : ""].filter(Boolean).join(" / ") : "";
+
+  const recentIds = parseIds((await cookies()).get(RECENT_COOKIE)?.value, RECENT_MAX);
+  const recent = inOrder(recentIds, items.map((i) => ({ ...i, id: i.wine.id })));
 
   const top = items
     .filter((i) => i.result.savingPerBottle !== null && i.result.savingPerBottle > 0)
@@ -133,6 +139,27 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
           </div>
         </div>
       </form>
+
+      {!filtering && recent.length > 0 && (
+        <section className="stack" aria-labelledby="recent-h">
+          <div className="row between">
+            <h2 id="recent-h">최근 본 와인</h2>
+            <form action={clearRecent} className="row" style={{ gap: 8 }}>
+              <span className="small muted">이 브라우저에만 저장</span>
+              <button className="btn ghost small">기록 지우기</button>
+            </form>
+          </div>
+          <div className="recent-row">
+            {recent.map(({ wine, result }) => (
+              <Link key={wine.id} href={`/wines/${wine.id}`} className="card recent">
+                <span className="name">{wine.nameKo}</span>
+                <span className="sub">{wine.country} · {wine.vintage ?? "NV"}</span>
+                <span className="num">{result.best ? won(result.best.perBottle) : "—"}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {!filtering && picks.length > 0 && (
         <section className="stack">

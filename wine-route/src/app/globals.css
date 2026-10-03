@@ -209,3 +209,17 @@ details > summary { cursor: pointer; }
 .tracking-review { border-color: var(--glass); }
 @media (max-width: 900px) { .tracking-stages { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .tracking-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tracking-estimate { text-align: left; } }
+
+/* 최근 본 와인: 가로로 넘기는 작은 카드 */
+.recent-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x proximity; }
+.card.recent { flex: 0 0 184px; scroll-snap-align: start; gap: 2px; padding: 10px 12px; }
+.card.recent .name { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 나란히 비교 표: 첫 열은 항목 이름 */
+table.compare th[scope="row"] { color: var(--muted); font-weight: 500; white-space: nowrap; }
+table.compare td, table.compare th { vertical-align: top; }
+
+/* 404·오류 화면 */
+.oops { max-width: 560px; margin: 48px auto; text-align: center; align-items: center; }
+.oops .code { font-family: "IBM Plex Mono", monospace; color: var(--accent); font-size: 14px; letter-spacing: .08em; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }

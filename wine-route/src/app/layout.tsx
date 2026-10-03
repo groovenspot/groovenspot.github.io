@@ -4,14 +4,28 @@ import "./globals.css";
 import { getUser, isAdminEmail } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { ConsultationWidget } from "@/components/ConsultationWidget";
+import { cookies } from "next/headers";
+import { siteUrl } from "@/lib/site";
+import { COMPARE_COOKIE, COMPARE_MAX, parseIds } from "@/lib/wineList";
 
 export const metadata: Metadata = {
   title: { default: "셀러도어 · 와인 직구 도착가 비교", template: "%s · 셀러도어" },
   description: "세금·운임을 모두 넣은 한국 도착가로 와인 직구 경로를 비교합니다.",
+  metadataBase: new URL(siteUrl()),
+  applicationName: "셀러도어",
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    siteName: "셀러도어",
+    title: "셀러도어 · 와인 직구 도착가 비교",
+    description: "세금·운임을 모두 넣은 한국 도착가로 와인 직구 경로를 비교합니다.",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser();
+  const compareCount = parseIds((await cookies()).get(COMPARE_COOKIE)?.value, COMPARE_MAX).length;
   if (user) {
     // 재방문율 KPI용 방문일 기록 (KST 하루 1건)
     const day = new Date(new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10));
@@ -37,6 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/scan">라벨 검색</Link>
               <Link href="/community">직구 후기</Link>
               <Link href="/calculator">직접 계산</Link>
+              {compareCount > 0 && <Link href="/compare">비교함 {compareCount}</Link>}
               <Link href="/guide">통관 가이드</Link>
               <Link href="/guide/first">첫 직구 도우미</Link>
               {user ? (

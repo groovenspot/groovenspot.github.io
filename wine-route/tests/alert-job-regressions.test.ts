@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   alerts: { findMany: vi.fn(), update: vi.fn() },
   prices: { findUnique: vi.fn(), findFirst: vi.fn(), upsert: vi.fn() },
-  wine: { findUnique: vi.fn() },
+  wine: { findUnique: vi.fn(), findMany: vi.fn(async () => []) },
   allocation: { findUniqueOrThrow: vi.fn() },
   context: vi.fn(), compare: vi.fn(), notify: vi.fn(),
 }));

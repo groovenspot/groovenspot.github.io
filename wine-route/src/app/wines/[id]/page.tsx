@@ -11,16 +11,34 @@ import { alimtalkTemplate } from "@/server/alimtalk";
 import { ReviewCard, reviewInclude } from "@/components/ReviewCard";
 import { defaultTarget } from "@/lib/alerts";
 import { FX_SOURCE_LABEL, money, sizeLabel, won, ymd, ymdhm } from "@/lib/format";
-import type { Candidate } from "@/lib/engine";
+import { ROUTE_LABEL, type Candidate } from "@/lib/engine";
+import { PriceHistory } from "@/components/PriceHistory";
+import { RecentViewMark } from "@/components/RecentViewMark";
+import { fillDays } from "@/lib/history";
+import { COMPARE_COOKIE, COMPARE_MAX, parseIds } from "@/lib/wineList";
+import { addToCompare } from "@/app/compare/actions";
 
 export const dynamic = "force-dynamic";
 
 type P = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | undefined>> };
 
+const HISTORY_DAYS = 90;
+
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { id } = await params;
-  const w = await prisma.wine.findUnique({ where: { id }, select: { nameKo: true } });
-  return { title: w?.nameKo ?? "와인" };
+  const d = await compareWine(id, 1, 750);
+  if (!d) return { title: "와인" };
+  const { wine, result } = d;
+  const b = result.best;
+  const price = b ? `1병 직구 도착가 ${won(b.perBottle)}(세금·운임 포함, ${ROUTE_LABEL[b.channel]})` : "직구 판매처 확인 중";
+  const saving = result.savingPerBottle !== null && result.savingPerBottle > 0 ? `, 국내가보다 ${won(result.savingPerBottle)} 저렴` : wine.krPrice === null ? ", 국내 미수입" : "";
+  const description = `${wine.nameKo} (${wine.name} ${wine.vintage ?? "NV"}) · ${wine.country} ${wine.region}. ${price}${saving}. 경로 4가지의 관세·주세·교육세·부가세를 모두 더해 비교합니다.`;
+  return {
+    title: wine.nameKo,
+    description,
+    alternates: { canonical: `/wines/${id}` },
+    openGraph: { type: "website", title: `${wine.nameKo} 직구 도착가`, description, url: `/wines/${id}` },
+  };
 }
 
 export default async function WinePage({ params, searchParams }: P) {
@@ -59,6 +77,13 @@ export default async function WinePage({ params, searchParams }: P) {
     return { n: rs.length, days, err: errs.length ? errs.reduce((a, b) => a + b, 0) / errs.length : null };
   };
   const liked = user ? new Set((await prisma.helpful.findMany({ where: { userId: user.id, reviewId: { in: reviews.map((r) => r.id) } } })).map((h) => h.reviewId)) : new Set<string>();
+  const [historyRows, compareIds] = await Promise.all([
+    prisma.watchPrice.findMany({ where: { wineId: id, qty, bottleMl: ml, day: { gte: new Date(Date.now() - HISTORY_DAYS * 86400e3) } }, select: { day: true, perBottle: true } }),
+    cookies().then((c) => parseIds(c.get(COMPARE_COOKIE)?.value, COMPARE_MAX)),
+  ]);
+  const kstToday = new Date(Date.now() + 9 * 3600e3);
+  const cells = fillDays(historyRows, HISTORY_DAYS, kstToday);
+  const inCompare = compareIds.includes(id);
   const existing = user ? await prisma.priceAlert.findUnique({ where: { userId_wineId_qty_bottleMl: { userId: user.id, wineId: id, qty, bottleMl: ml } } }) : null;
 
   const href = (patch: Record<string, string | number | undefined>) => {
@@ -71,6 +96,7 @@ export default async function WinePage({ params, searchParams }: P) {
 
   return (
     <div className="stack-lg">
+      <RecentViewMark wineId={id} />
       <section className="stack" style={{ gap: 6 }}>
         <div className="label">
           <Link href="/" style={{ textDecoration: "none" }}>와인 찾기</Link> · {wine.country} · {wine.region}
@@ -132,7 +158,19 @@ export default async function WinePage({ params, searchParams }: P) {
               </div>
             </div>
             {result.warnings.map((w) => <div key={w} className="alert">{w}</div>)}
-            {result.best && <div><Link className="btn ghost small" href={`/share?kind=wine&wine=${id}&qty=${qty}&ml=${ml}`}>카드로 저장</Link></div>}
+            <div className="row">
+              {result.best && <Link className="btn ghost small" href={`/share?kind=wine&wine=${id}&qty=${qty}&ml=${ml}`}>카드로 저장</Link>}
+              {inCompare ? (
+                <Link className="btn ghost small" href="/compare">비교함에 담김 · 비교 보기</Link>
+              ) : (
+                <form action={addToCompare}>
+                  <input type="hidden" name="wineId" value={id} />
+                  <input type="hidden" name="back" value={`/wines/${id}`} />
+                  <button className="btn ghost small">비교에 담기</button>
+                </form>
+              )}
+            </div>
+            {sp.cmp === "1" && inCompare && <div className="alert ok">비교함에 담았습니다 ({compareIds.length}/{COMPARE_MAX}). <Link href="/compare">나란히 비교하기</Link></div>}
             {!ctx.fx.asOf && <div className="alert bad">환율 정보가 없어 일부 경로를 계산하지 못했습니다.</div>}
           </section>
 
@@ -207,6 +245,11 @@ export default async function WinePage({ params, searchParams }: P) {
                 </div>
               ))}
             </div>
+          </section>
+
+          <section className="box" id="history">
+            <h2>도착가 추이</h2>
+            <PriceHistory cells={cells} krPrice={result.krPerBottle} />
           </section>
 
           <section className="stack" id="reviews">

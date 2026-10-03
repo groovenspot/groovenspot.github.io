@@ -93,7 +93,29 @@ export async function runAlertsJob() {
       if (w.lastPrice !== price) await prisma.priceAlert.update({ where: { id: w.id }, data: { lastPrice: price } });
     }
   }
-  return `찜 ${watches.length}건 확인 · 목표가 ${counts.target} · 하락 ${counts.drop} · 재입고 ${counts.restock}`;
+  const snap = await snapshotAll(ctx, today, new Set(groups.keys()));
+  return `찜 ${watches.length}건 확인 · 목표가 ${counts.target} · 하락 ${counts.drop} · 재입고 ${counts.restock} · 도착가 기록 ${snap}개`;
+}
+
+/**
+ * 와인 상세의 도착가 추이용: 모든 와인의 1병·750ml 최저 도착가를 하루 한 줄씩 남깁니다.
+ * 찜 알림이 이미 쓴 칸(skip)은 건드리지 않습니다. 찜 알림보다 먼저 쓰면 '직전 가격'이 오늘 값이 돼 하락 알림이 안 갑니다.
+ */
+export async function snapshotAll(ctx: Awaited<ReturnType<typeof loadContext>>, today = kstDay(), skip = new Set<string>()) {
+  const wines = await prisma.wine.findMany({ include: { offers: { include: { seller: true } } } });
+  let n = 0;
+  for (const wine of wines) {
+    if (skip.has(`${wine.id}|1|750`)) continue;
+    const r = compareLoaded(wine, 1, 750, ctx);
+    const price = r.best ? Math.round(r.best.perBottle) : null;
+    await prisma.watchPrice.upsert({
+      where: { wineId_qty_bottleMl_day: { wineId: wine.id, qty: 1, bottleMl: 750, day: today } },
+      update: { perBottle: price, route: r.best?.channel ?? null },
+      create: { wineId: wine.id, qty: 1, bottleMl: 750, day: today, perBottle: price, route: r.best?.channel ?? null },
+    });
+    n++;
+  }
+  return n;
 }
 
 /** 신규 빈티지 등록: 같은 와인의 다른 빈티지를 찜한 프리미엄 회원에게 */
