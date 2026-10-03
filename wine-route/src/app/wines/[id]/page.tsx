@@ -62,9 +62,11 @@ export default async function WinePage({ params, searchParams }: P) {
   const max = Math.max(1, ...live.map((r) => r.best!.perBottle));
 
   const sellerIds = [...new Set(all.map((c) => c.sellerId))];
-  const [trust, reviews] = await Promise.all([
+  const [trust, reviews, community] = await Promise.all([
     prisma.directReview.groupBy({ by: ["sellerId"], where: { sellerId: { in: sellerIds }, status: "PUBLISHED", sponsored: false }, _avg: { rating: true }, _count: true }),
     prisma.directReview.findMany({ where: { wineId: id, status: "PUBLISHED" }, include: reviewInclude, orderBy: [{ helpfulCount: "desc" }, { createdAt: "desc" }], take: 30 }),
+    // 셀러도어 직구 후기 평점 (협찬 후기 제외)
+    prisma.directReview.aggregate({ where: { wineId: id, status: "PUBLISHED", sponsored: false }, _avg: { rating: true }, _count: true }),
   ]);
   // 통관 인증 후기를 먼저
   reviews.sort((a, b) => Number(b.proofStatus === "APPROVED") - Number(a.proofStatus === "APPROVED"));
@@ -119,6 +121,7 @@ export default async function WinePage({ params, searchParams }: P) {
           <span className="chip">{wine.type}</span>
           <span className={`chip ${result.ftaOrigin ? "ok" : "warn"}`}>{result.ftaOrigin ? `${wine.country} · 한국과 FTA` : `${wine.country} · FTA 미적용`}</span>
           {wine.krPrice === null && <span className="chip">국내 미수입</span>}
+          {community._count > 0 && <a className="chip ok" href="#reviews" style={{ textDecoration: "none" }}>직구 후기 평점 {community._avg.rating!.toFixed(1)}/5 · {community._count}건</a>}
           {wine.rating && <span className="chip">평점 {wine.rating}점{wine.ratingSrc ? ` · ${wine.ratingSrc}` : ""}</span>}
         </div>
       </section>
@@ -305,6 +308,7 @@ export default async function WinePage({ params, searchParams }: P) {
             <section className="box tight">
               <h2>테이스팅 노트</h2>
               <p>{wine.notesKo}</p>
+              {wine.notesSrc && <p className="small muted">출처: {wine.notesSrc}</p>}
             </section>
           )}
         </div>

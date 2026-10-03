@@ -14,6 +14,8 @@ const LABEL: Record<string, string> = {
   createInvite: "초대 코드 생성", adjustPoints: "포인트 조정", saveCommunity: "커뮤니티 설정", openAllocation: "배정 판매 알림",
   addScanAlias: "검색 별칭 추가", setRequestStatus: "구해주세요 상태", saveSegments: "세그먼트 기준값", sendMarketing: "홍보 발송",
   setRequestGroupStatus: "구해주세요 묶음 상태", saveStatement: "수수료 정산",
+  crawlCatalogNow: "카탈로그 수집", linkCatalog: "수집 상품 연결", ignoreCatalog: "수집 상품 제외", createWineFromCatalog: "수집 상품으로 와인 등록",
+  importWinesCsv: "와인 CSV 등록", uploadLwin: "LWIN 목록 올리기",
 };
 
 const PAGE = 50;

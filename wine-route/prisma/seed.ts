@@ -165,6 +165,7 @@ async function main() {
         rating: w.rating ?? null,
         ratingSrc: w.rating ? "외부 평론가 평균 (예시)" : null,
         notesKo: w.notes ?? null,
+        notesSrc: w.notes ? "셀러도어 작성 (예시)" : null,
       },
     });
     const slug = w.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");

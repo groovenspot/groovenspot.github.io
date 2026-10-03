@@ -67,6 +67,12 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
     : [];
   const tasteLine = hasTaste ? [taste!.countries.join("·"), taste!.types.join("·"), taste!.budget ? `병당 ${BUDGET_LABEL[taste!.budget]}` : ""].filter(Boolean).join(" / ") : "";
 
+  // 셀러도어 직구 후기 평점 (협찬 제외)
+  const ratingRows = await prisma.directReview.groupBy({ by: ["wineId"], where: { status: "PUBLISHED", sponsored: false }, _avg: { rating: true }, _count: true });
+  const communityOf = (id: string) => {
+    const r = ratingRows.find((x) => x.wineId === id);
+    return r && r._avg.rating !== null ? { avg: r._avg.rating, n: r._count } : undefined;
+  };
   const recentIds = parseIds((await cookies()).get(RECENT_COOKIE)?.value, RECENT_MAX);
   const recent = inOrder(recentIds, items.map((i) => ({ ...i, id: i.wine.id })));
 
@@ -173,7 +179,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
             <span className="small muted">취향 설문: {tasteLine} · <Link href="/me#preferences">바꾸기</Link></span>
           </div>
           <div className="cards">
-            {picks.map(({ wine, result }) => <WineCard key={wine.id} wine={wine} result={result} />)}
+            {picks.map(({ wine, result }) => <WineCard key={wine.id} wine={wine} result={result} community={communityOf(wine.id)} />)}
           </div>
         </section>
       )}
@@ -216,7 +222,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
         </div>
         {shown.length ? (
           <div className="cards">
-            {shown.map(({ wine, result }) => <WineCard key={wine.id} wine={wine} result={result} />)}
+            {shown.map(({ wine, result }) => <WineCard key={wine.id} wine={wine} result={result} community={communityOf(wine.id)} />)}
           </div>
         ) : (
           <div className="box">

@@ -8,6 +8,9 @@ import { moveOrder } from "@/server/orders";
 import { prisma } from "@/server/db";
 import { requireAdmin } from "@/server/auth";
 import { audited } from "@/server/audit";
+import { applyWineRows, linkCatalogItem, runCatalogCrawl } from "@/server/catalog";
+import { countryKo, lwinTypeKo } from "@/lib/lwin";
+import { parseWineCsv } from "@/lib/wineCsv";
 import { FX_SOURCES, type FxSourceKey } from "@/lib/fxSources";
 import { saveSegmentConfig, getCommunityConfig, getTaxConfig, saveCommunityConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
 import { extendPremiumInTransaction } from "@/server/points";
@@ -55,6 +58,8 @@ function wineData(fd: FormData) {
     rating: str(fd, "rating") ? Number(fd.get("rating")) : null,
     ratingSrc: str(fd, "ratingSrc") || null,
     notesKo: str(fd, "notesKo") || null,
+    notesSrc: str(fd, "notesSrc") || null,
+    lwin: str(fd, "lwin").replace(/\D/g, "") || null,
   };
 }
 
@@ -64,6 +69,9 @@ export async function saveWine(fd: FormData) {
     const id = str(fd, "id");
     const data = wineData(fd);
     if (!data.name || !data.nameKo || !data.country) throw new Error("원어명·한글명·국가는 필수입니다");
+    if (data.notesKo && !data.notesSrc) throw new Error("테이스팅 노트에는 출처를 함께 적어 주세요 (예: 생산자 공식 자료, 셀러도어 작성)");
+    if (data.rating !== null && !data.ratingSrc) throw new Error("평점에는 출처를 함께 적어 주세요");
+    if (data.lwin && data.lwin.length !== 7) throw new Error("LWIN 코드는 7자리입니다");
     const w = id ? await prisma.wine.update({ where: { id }, data }) : await prisma.wine.create({ data });
     if (!id) await notifyNewVintage(w.id); // 같은 와인의 다른 빈티지를 찜한 프리미엄 회원에게
     revalidatePath("/admin/wines");
@@ -170,8 +178,12 @@ export async function saveSeller(fd: FormData) {
       shipCountries: list(fd, "shipCountries"),
       shipMethod: str(fd, "shipMethod") || null,
       cooAvailable: bool(fd, "cooAvailable"),
+      catalogUrls: str(fd, "catalogUrls").split(/\s+/).map((u) => u.trim()).filter((u) => /^https?:\/\//.test(u)).slice(0, 20),
+      crawlConsentAt: str(fd, "crawlConsentAt") ? new Date(`${str(fd, "crawlConsentAt")}T00:00:00+09:00`) : null,
+      crawlConsentNote: str(fd, "crawlConsentNote") || null,
       active: bool(fd, "active"),
     };
+    if (data.crawlConsentAt && !data.crawlConsentNote) throw new Error("수집 허락 날짜를 넣으면 근거(계약 조항·메일 등)도 적어 주세요");
     if (!data.name || !data.country || !/^[A-Z]{3}$/.test(data.currency)) throw new Error("이름·국가·통화(3자리)를 확인해 주세요");
     const s = id ? await prisma.seller.update({ where: { id }, data }) : await prisma.seller.create({ data });
     revalidatePath("/admin/sellers");
@@ -525,5 +537,78 @@ export async function saveStatement(fd: FormData) {
     };
     await prisma.commissionStatement.upsert({ where: { sellerId_month: { sellerId, month } }, update: data, create: { sellerId, month, ...data } });
     revalidatePath("/admin/commissions");
+  });
+}
+
+/* ---------- 카탈로그: 판매처 수집 대기열, 와인 CSV ---------- */
+export async function crawlCatalogNow(fd: FormData) {
+  const admin = await requireAdmin();
+  return audited(admin.email, "crawlCatalogNow", fd, async () => {
+    // 화면에서 누를 때는 한 번에 30개까지만 (정기 작업은 판매처당 100개)
+    await runCatalogCrawl(str(fd, "sellerId") || undefined, { maxProducts: 30 });
+    revalidatePath("/admin/catalog");
+  });
+}
+
+export async function linkCatalog(fd: FormData) {
+  const admin = await requireAdmin();
+  return audited(admin.email, "linkCatalog", fd, async () => {
+    await linkCatalogItem(str(fd, "itemId"), str(fd, "wineId"));
+    revalidatePath("/admin/catalog");
+  });
+}
+
+export async function ignoreCatalog(fd: FormData) {
+  const admin = await requireAdmin();
+  return audited(admin.email, "ignoreCatalog", fd, async () => {
+    await prisma.catalogItem.updateMany({ where: { id: str(fd, "itemId"), status: "new" }, data: { status: "ignored" } });
+    revalidatePath("/admin/catalog");
+  });
+}
+
+/** 대기열 상품으로 새 와인을 만들고 바로 연결합니다. LWIN 을 고르면 생산자·산지·종류를 그 값으로 채웁니다. */
+export async function createWineFromCatalog(fd: FormData) {
+  const admin = await requireAdmin();
+  return audited(admin.email, "createWineFromCatalog", fd, async () => {
+    const lwin = str(fd, "lwin").replace(/\D/g, "") || null;
+    const ref = lwin ? await prisma.lwinRef.findUnique({ where: { lwin } }) : null;
+    const data = {
+      name: str(fd, "name") || ref?.wine || ref?.displayName || "",
+      nameKo: str(fd, "nameKo"),
+      producer: str(fd, "producer") || ref?.producer || "",
+      country: str(fd, "country") || countryKo(ref?.country),
+      region: str(fd, "region") || ref?.subRegion || ref?.region || "",
+      type: str(fd, "type") || lwinTypeKo(ref?.colour, ref?.type),
+      grape: str(fd, "grape"),
+      vintage: intOrNull(fd, "vintage"),
+      aliases: [] as string[],
+      lwin,
+    };
+    if (!data.name || !data.nameKo || !data.country) throw new Error("원어명·한글명·국가는 필수입니다");
+    const w = await prisma.wine.create({ data });
+    await linkCatalogItem(str(fd, "itemId"), w.id);
+    await notifyNewVintage(w.id);
+    revalidatePath("/admin/catalog");
+  });
+}
+
+type ImportState = { message?: string; error?: string; preview?: { created: number; updated: number }; csv?: string };
+
+/** 와인 CSV: 먼저 미리 보기(몇 개를 만들고 갱신할지), 확인하면 반영 */
+export async function importWinesCsv(_: ImportState, fd: FormData): Promise<ImportState> {
+  const admin = await requireAdmin();
+  return audited(admin.email, "importWinesCsv", null, async () => {
+    const file = fd.get("file");
+    const csv = file instanceof File && file.size ? await file.text() : str(fd, "csv");
+    if (!csv.trim()) return { error: "CSV 파일을 고르거나 내용을 붙여 넣어 주세요" };
+    const { rows, errors } = parseWineCsv(csv);
+    if (errors.length) return { error: `${errors.length}개 줄을 고쳐야 합니다\n${errors.slice(0, 30).join("\n")}`, csv };
+    const apply = str(fd, "mode") === "apply";
+    const r = await applyWineRows(rows, apply);
+    if (r.errors.length) return { error: r.errors.slice(0, 30).join("\n"), csv };
+    if (!apply) return { preview: { created: r.created, updated: r.updated }, csv };
+    revalidatePath("/admin/wines");
+    revalidatePath("/", "layout");
+    return { message: `새 와인 ${r.created}개, 갱신 ${r.updated}개를 반영했습니다` };
   });
 }

@@ -4,7 +4,7 @@
  */
 export type ParsedOffer = { price: number; currency: string; inStock: boolean };
 
-function* walk(node: unknown): Generator<Record<string, unknown>> {
+export function* walk(node: unknown): Generator<Record<string, unknown>> {
   if (Array.isArray(node)) for (const n of node) yield* walk(n);
   else if (node && typeof node === "object") {
     const o = node as Record<string, unknown>;
@@ -13,7 +13,7 @@ function* walk(node: unknown): Generator<Record<string, unknown>> {
   }
 }
 
-const isType = (o: Record<string, unknown>, t: string) => {
+export const isType = (o: Record<string, unknown>, t: string) => {
   const v = o["@type"];
   return v === t || (Array.isArray(v) && v.includes(t));
 };

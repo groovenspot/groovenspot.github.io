@@ -24,6 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/requests">구해주세요</Link>
         <Link href="/admin/commissions">수수료 정산</Link>
         <Link href="/admin/import-cost">수입 원가</Link>
+        <Link href="/admin/catalog">카탈로그</Link>
         <Link href="/admin/audit">작업 기록</Link>
       </nav>
       {children}

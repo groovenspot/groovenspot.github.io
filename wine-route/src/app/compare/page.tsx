@@ -22,7 +22,7 @@ export default async function ComparePage({ searchParams }: { searchParams: SP }
   const [rows, all, reviewCounts] = await Promise.all([
     ids.length ? prisma.wine.findMany({ where: { id: { in: ids } }, include: { offers: { include: { seller: true } } } }) : Promise.resolve([]),
     prisma.wine.findMany({ select: { id: true, nameKo: true, vintage: true }, orderBy: { nameKo: "asc" } }),
-    ids.length ? prisma.directReview.groupBy({ by: ["wineId"], where: { wineId: { in: ids }, status: "PUBLISHED" }, _count: true }) : Promise.resolve([]),
+    ids.length ? prisma.directReview.groupBy({ by: ["wineId"], where: { wineId: { in: ids }, status: "PUBLISHED", sponsored: false }, _count: true, _avg: { rating: true } }) : Promise.resolve([]),
   ]);
   const wines = inOrder(ids, rows).map((w) => ({ w, r: compareLoaded(w, 1, 750, ctx) }));
   const prices = wines.map(({ r }) => (r.best ? r.best.perBottle : Infinity));
@@ -30,6 +30,7 @@ export default async function ComparePage({ searchParams }: { searchParams: SP }
   const savings = wines.map(({ r }) => r.savingPerBottle ?? -Infinity);
   const biggest = Math.max(...savings);
   const reviewsOf = (id: string) => reviewCounts.find((x) => x.wineId === id)?._count ?? 0;
+  const ratingOf = (id: string) => reviewCounts.find((x) => x.wineId === id)?._avg.rating ?? null;
   const shareHref = `/compare?ids=${ids.join(",")}`;
 
   const row = (label: string, cells: React.ReactNode[]) => (
@@ -76,7 +77,7 @@ export default async function ComparePage({ searchParams }: { searchParams: SP }
               {row("국가 · 산지", wines.map(({ w }) => `${w.country} · ${w.region}`))}
               {row("종류 · 품종", wines.map(({ w }) => `${w.type}${w.grape ? ` · ${w.grape}` : ""}`))}
               {row("평점", wines.map(({ w }) => w.rating ? `${w.rating}점${w.ratingSrc ? ` (${w.ratingSrc})` : ""}` : "-"))}
-              {row("직구 후기", wines.map(({ w }) => reviewsOf(w.id) ? <Link href={`/wines/${w.id}#reviews`}>{reviewsOf(w.id)}건</Link> : "-"))}
+              {row("직구 후기", wines.map(({ w }) => reviewsOf(w.id) ? <Link href={`/wines/${w.id}#reviews`}>{reviewsOf(w.id)}건 · ★ {ratingOf(w.id)?.toFixed(1)}</Link> : "-"))}
               {!shared && row("", wines.map(({ w }) => (
                 <form action={removeFromCompare}><input type="hidden" name="wineId" value={w.id} /><button className="btn ghost small">빼기</button></form>
               )))}

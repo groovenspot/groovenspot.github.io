@@ -42,6 +42,15 @@ export function SellerForm({ seller }: { seller?: Seller }) {
         <div className="field"><label className="label" htmlFor="s-sm">운임 방식 메모</label><input id="s-sm" name="shipMethod" defaultValue={s?.shipMethod ?? ""} placeholder="6병 단위 박스 요금" /></div>
       </div>
       <label className="check"><input type="checkbox" name="cooAvailable" defaultChecked={s?.cooAvailable} /> 원산지증명서(또는 원산지 신고 문구가 있는 인보이스) 발급 가능</label>
+      <fieldset className="stack" style={{ border: "1px solid var(--line)", borderRadius: 8, padding: "10px 12px", gap: 8 }}>
+        <legend className="small"><b>카탈로그 수집</b> (판매처 목록 페이지에서 새 상품 찾기)</legend>
+        <div className="field"><label className="label" htmlFor="s-cat">목록(카테고리) 페이지 주소 · 한 줄에 하나</label><textarea id="s-cat" name="catalogUrls" defaultValue={s?.catalogUrls.join("\n") ?? ""} placeholder={"https://shop.example/collections/red-wine\nhttps://shop.example/collections/white-wine"} style={{ minHeight: 70 }} /></div>
+        <div className="form-grid">
+          <div className="field"><label className="label" htmlFor="s-cc">판매처 수집 허락 확인일</label><input id="s-cc" name="crawlConsentAt" type="date" defaultValue={s?.crawlConsentAt ? new Date(s.crawlConsentAt.getTime() + 9 * 3600e3).toISOString().slice(0, 10) : ""} /></div>
+          <div className="field"><label className="label" htmlFor="s-cn">허락 근거</label><input id="s-cn" name="crawlConsentNote" defaultValue={s?.crawlConsentNote ?? ""} placeholder="제휴 계약서 3조 / 2026-10-03 메일 회신" /></div>
+        </div>
+        <p className="small muted">허락 확인일이 비어 있으면 수집하지 않습니다. 허락을 받아도 robots.txt 에서 막은 주소는 건너뛰고, 요청 사이에 1.5초(robots.txt 의 Crawl-delay 가 더 길면 그만큼) 쉽니다.</p>
+      </fieldset>
       <p className="small muted">최소 주문 병수보다 적게 사면 이 판매처는 경로 비교에서 빠집니다. 과세가격이 기준(세율 설정, 기본 1,000달러)을 넘는 FTA 구매에서 원산지증명이 안 되면 손님에게 경고합니다.</p>
       <div className="field"><label className="label" htmlFor="s-cart">장바구니 URL 템플릿 (템플릿 방식일 때: {"{url} {ref} {qty} {clickId} {email} {note}"})</label><input id="s-cart" name="cartTpl" defaultValue={s?.cartTpl ?? ""} placeholder="https://shop.example/cart/add?sku={ref}&qty={qty}&sub={clickId}" /></div>
       <p className="small muted">Shopify 방식은 판매 정보마다 상품 variant ID를 넣어야 장바구니에 담깁니다. 없으면 상품 페이지로 이동합니다. 포스트백에 {"{clickId}"}를 넘겨 받으면 주문 확정·발송이 손님에게 자동으로 알려집니다.</p>

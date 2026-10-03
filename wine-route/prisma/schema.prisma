@@ -71,6 +71,8 @@ model Wine {
   rating     Float? // 외부 평점 요약 (100점 만점)
   ratingSrc  String?
   notesKo    String? // 한국어 테이스팅 노트
+  notesSrc   String? // 테이스팅 노트 출처 (예: "생산자 공식 자료", "셀러도어 작성")
+  lwin       String? // LWIN-7 와인 식별 코드 (빈티지 제외)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -85,6 +87,7 @@ model Wine {
 
   @@index([country])
   @@index([type])
+  @@index([lwin])
 }
 
 model Seller {
@@ -113,6 +116,11 @@ model Seller {
   shipCountries   String[]    @default([]) // 발송 가능 국가 (참고 표시, 비우면 미확인)
   shipMethod      String? // 운임 방식 메모 (예: "6병 단위 박스 요금", "200유로 이상 무료")
   cooAvailable    Boolean     @default(false) // 원산지증명서(또는 원산지 신고 문구 인보이스) 발급 가능
+  /// 카탈로그 수집: 판매처 목록(카테고리) 페이지에서 상품을 찾아 수집 대기열에 넣습니다.
+  catalogUrls      String[]  @default([])
+  crawlConsentAt   DateTime? // 판매처의 수집 허락(제휴 계약·서면 동의)을 확인한 날. 비어 있으면 수집하지 않음
+  crawlConsentNote String? // 허락 근거 (예: "제휴 계약서 3조", "2026-10-03 메일 회신")
+  catalogItems     CatalogItem[]
   active          Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -565,6 +573,7 @@ model CrawlRun {
   sellerId   String
   startedAt  DateTime  @default(now())
   finishedAt DateTime?
+  kind       String    @default("prices") // prices: 등록된 상품 가격 갱신 | catalog: 목록 페이지에서 새 상품 찾기
   status     String    @default("running") // running | ok | partial | failed
   updated    Int       @default(0)
   failed     Int       @default(0)
@@ -875,4 +884,47 @@ model AdminLog {
 
   @@index([createdAt])
   @@index([action, createdAt])
+}
+
+/// 판매처 카탈로그 수집 대기열: 상품 페이지에서 읽은 값. 관리자가 기존 와인에 연결하거나 새 와인으로 등록하면 판매 정보가 됩니다.
+model CatalogItem {
+  id          String   @id @default(cuid())
+  sellerId    String
+  url         String
+  name        String
+  brand       String?
+  price       Float?
+  currency    String?
+  inStock     Boolean  @default(true)
+  bottleMl    Int      @default(750)
+  vintage     Int?
+  gtin        String?
+  status      String   @default("new") // new | linked | ignored
+  wineId      String? // 연결한 와인
+  suggestId   String? // 자동 매칭 1순위 와인
+  suggestScore Float?
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@unique([sellerId, url])
+  @@index([status, sellerId])
+}
+
+/// LWIN(Liv-ex Wine Identification Number) 표준 와인 목록. 관리자가 받은 파일을 올리면 채워집니다.
+model LwinRef {
+  lwin        String   @id // LWIN-7
+  displayName String
+  producer    String?
+  wine        String?
+  country     String? // 원문(영문)
+  region      String?
+  subRegion   String?
+  colour      String?
+  type        String?
+  status      String?
+  updatedAt   DateTime @updatedAt
+
+  @@index([displayName])
 }

@@ -8,6 +8,7 @@ import { notifyFxLows, runAlertsJob } from "./alerts";
 import { sendDigests } from "@/server/notify";
 import { runTrackingJob } from "./tracking";
 import { runConsentNotices } from "./consent";
+import { runCatalogCrawl } from "@/server/catalog";
 
 export const JOBS = {
   "consultation-cleanup": () => runConsultationCleanup(),
@@ -17,6 +18,7 @@ export const JOBS = {
   digest: () => sendDigests(),
   tracking: () => runTrackingJob(),
   "consent-notice": () => runConsentNotices(),
+  catalog: () => runCatalogCrawl(),
 } as const;
 export type JobName = keyof typeof JOBS;
 
