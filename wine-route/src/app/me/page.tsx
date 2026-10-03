@@ -27,6 +27,7 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
   const profileNext = sp.next && !/[\\\x00-\x1f]/.test(sp.next) && (sp.next.startsWith("/order/") || sp.next === "/guide/first" || sp.next.startsWith("/guide/first?")) ? sp.next : undefined;
   const user = await requireUser(profileNext ? `/me?next=${encodeURIComponent(profileNext)}#profile` : "/me");
   const oauthAccounts = await prisma.oAuthAccount.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } });
+  const inbox = await prisma.notification.findMany({ where: { userId: user.id, status: { in: ["SENT", "QUEUED"] } }, orderBy: { createdAt: "desc" }, take: 30 });
   const [orders, alerts, purchases, wines, tax, fx] = await Promise.all([
     prisma.order.findMany({ where: { userId: user.id }, include: { wine: true, seller: true, review: { select: { id: true } }, events: { orderBy: { createdAt: "asc" } }, shipmentEvents: { orderBy: { occurredAt: "asc" } } }, orderBy: { createdAt: "desc" }, take: 50 }),
     prisma.priceAlert.findMany({ where: { userId: user.id }, include: { wine: true }, orderBy: { createdAt: "desc" } }),
@@ -302,6 +303,28 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
           </div>
         )}
       </section>
+      <section className="stack" id="inbox">
+        <div className="row between">
+          <h2>받은 알림</h2>
+          <span className="small muted">최근 30건 · 메일·알림톡으로 보낸 내용을 여기서도 볼 수 있습니다</span>
+        </div>
+        {inbox.length ? (
+          <ul className="inbox">
+            {inbox.map((n) => (
+              <li key={n.id} className={n.clickedAt ? "read" : ""}>
+                <a href={`/n/${n.id}`}>
+                  <span className="row between" style={{ gap: 8 }}>
+                    <b>{n.title}</b>
+                    <span className="small muted nowrap">{ymd(n.createdAt)}{n.status === "QUEUED" ? " · 주간 묶음 대기" : n.channel === "kakao" ? " · 알림톡" : " · 메일"}</span>
+                  </span>
+                  <span className="small muted" style={{ whiteSpace: "pre-line" }}>{n.body}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : <p className="small muted">아직 받은 알림이 없습니다. 와인을 찜하면 목표가 도달·가격 하락을 알려드립니다.</p>}
+      </section>
+
       <section className="stack" id="account">
         <h2>계정</h2>
         {sp.linked === "1" && <div className="alert ok">소셜 계정을 연결했습니다. 다음부터 그 계정으로도 로그인할 수 있습니다.</div>}

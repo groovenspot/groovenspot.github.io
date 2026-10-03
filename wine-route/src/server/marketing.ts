@@ -4,6 +4,7 @@ import { segmentRows, filterRows } from "./segments";
 import { canSendMarketing } from "@/lib/consent";
 import { adSubject, campaignProblems, inQuietHours, marketingFooter } from "@/lib/marketing";
 import type { Segment } from "@/lib/segments";
+import { unsubscribeUrl } from "@/lib/unsubscribe";
 
 export type Audience = { segment?: Segment; country?: string };
 
@@ -27,13 +28,18 @@ export async function sendCampaign(c: { title: string; body: string; link?: stri
     data: { title: c.title, body: c.body, link: c.link || null, segment: c.segment ?? null, tasteMatch: c.country ?? null, recipients: to.length, createdBy: c.createdBy },
   });
   let sent = 0, failed = 0;
-  const text = `${c.body.trim()}${c.link ? `\n\n${c.link}` : ""}${marketingFooter(appUrl)}`;
+  const base = `${c.body.trim()}${c.link ? `\n\n${c.link}` : ""}`;
   for (const r of to) {
     // 보내는 순간에도 동의 상태를 다시 확인 (작성 중 철회한 회원 제외)
     const fresh = await prisma.user.findUnique({ where: { id: r.id }, select: { marketingConsentAt: true } });
     if (!canSendMarketing(fresh)) continue;
     try {
-      await sendMail(r.email, adSubject(c.title), text);
+      // 받는 사람마다 로그인 없는 수신 거부 링크와 메일 앱의 '수신 거부' 버튼(List-Unsubscribe, RFC 8058)을 붙입니다.
+      const unsub = unsubscribeUrl(appUrl, r.id);
+      await sendMail(r.email, adSubject(c.title), `${base}${marketingFooter(appUrl, unsub)}`, {
+        "List-Unsubscribe": `<${unsub.replace("/unsubscribe?", "/api/unsubscribe?")}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      });
       sent++;
     } catch {
       failed++;

@@ -8,6 +8,7 @@ const m = vi.hoisted(() => ({
     directReview: { findUnique: vi.fn(), update: vi.fn() },
     proofFile: { deleteMany: vi.fn() }, report: { updateMany: vi.fn() },
     pointTx: { findMany: vi.fn(), create: vi.fn(), createMany: vi.fn() },
+    adminLog: { create: vi.fn() },
   },
   tx: {
     $queryRaw: vi.fn(), $executeRaw: vi.fn(),

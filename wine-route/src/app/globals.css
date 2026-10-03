@@ -228,3 +228,12 @@ table.compare td, table.compare th { vertical-align: top; }
 .btn.social { justify-content: center; border: 0; }
 .btn.social.kakao { background: #fee500; color: rgba(0, 0, 0, 0.85); }
 .btn.social.naver { background: #03c75a; color: #fff; }
+.nowrap { white-space: nowrap; }
+
+/* 받은 알림 */
+.inbox { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.inbox li + li { border-top: 1px solid var(--line); }
+.inbox a { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; text-decoration: none; color: inherit; }
+.inbox a:hover { background: var(--sunk); }
+.inbox li:not(.read) b::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: middle; }
+.legal h2 { font-size: 18px; }

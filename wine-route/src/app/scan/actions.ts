@@ -5,7 +5,8 @@ import { getUser } from "@/server/auth";
 import { compareMany, compareWine } from "@/server/compare";
 import { getTaxConfig } from "@/server/settings";
 import { isPremium } from "@/server/points";
-import { fromText, recognize, type Recognized } from "@/server/recognize";
+import { fromText, recognize, scanProvider, type Recognized } from "@/server/recognize";
+import { takeScanQuota } from "@/server/quota";
 import { confident, matchWines } from "@/lib/match";
 import { defaultTarget } from "@/lib/alerts";
 
@@ -47,12 +48,21 @@ export async function scanPhoto(_: ScanState, fd: FormData): Promise<ScanState> 
   const file = fd.get("photo");
   if (!(file instanceof File) || !file.size) return { error: "사진을 골라 주세요." };
   if (file.size > MAX) return { error: "사진이 너무 큽니다. 6MB 이하로 찍어 주세요." };
+  // 인식이 꺼져 있거나 형식이 맞지 않으면 API를 부르지 않으므로 한도에서 빼지 않습니다.
+  if (!scanProvider()) return { error: "사진 인식이 설정되지 않았습니다. 라벨 글자를 직접 입력해 주세요." };
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return { error: "JPG·PNG·WEBP 사진만 인식할 수 있습니다" };
+  const quota = await takeScanQuota((await getUser())?.id ?? null);
+  if (!quota.ok) return { error: quota.error };
   try {
     const { provider, items } = await recognize(new Uint8Array(await file.arrayBuffer()), file.type);
     if (!items.length) return { error: "글자를 읽지 못했습니다. 라벨이 화면에 꽉 차게, 밝은 곳에서 다시 찍어 주세요.", provider };
     return { items: await resolveItems(provider, items), provider };
   } catch (e) {
-    return { error: (e as Error).message };
+    // 우리가 쓴 한국어 안내는 그대로, API 원문 오류(영문 JSON 등)는 서버 로그로만 남깁니다.
+    const msg = (e as Error).message;
+    if (/[가-힣]/.test(msg)) return { error: msg };
+    console.error("scan", msg);
+    return { error: "사진 인식 서비스에 문제가 생겼습니다. 잠시 뒤 다시 시도하거나 라벨 글자를 직접 입력해 주세요." };
   }
 }
 

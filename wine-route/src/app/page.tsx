@@ -37,6 +37,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
   const { items } = await compareMany({});
   const score = (i: (typeof items)[number]) => tasteScore(i.wine, i.result.best ? Math.round(i.result.best.perBottle) : null, hasTaste ? taste : null);
   const countries = [...new Set(items.map((i) => i.wine.country))].sort();
+  const suggestions = [...new Set(items.flatMap((i) => [i.wine.nameKo, i.wine.name, i.wine.producer, i.wine.region]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko")).slice(0, 500);
   const types = [...new Set(items.map((i) => i.wine.type))].sort();
 
   const filtered = items.filter(({ wine, result }) => {
@@ -97,7 +98,11 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
       <form className="box" action="/" method="get" role="search">
         <div className="field">
           <label className="label" htmlFor="q">와인 검색</label>
-          <input id="q" name="q" type="search" defaultValue={q} placeholder="와인명·와이너리·산지·품종. 예: 샤블리, 리슬링, 샴페인" />
+          <input id="q" name="q" type="search" defaultValue={q} placeholder="와인명·와이너리·산지·품종. 예: 샤블리, 리슬링, 샴페인" list="wine-names" autoComplete="off" />
+          {/* 검색 자동완성: 한글·원어 이름, 생산자, 산지 (브라우저 기본 목록이라 스크립트 없이 동작) */}
+          <datalist id="wine-names">
+            {suggestions.map((v) => <option key={v} value={v} />)}
+          </datalist>
         </div>
         <div className="form-grid">
           <div className="field">

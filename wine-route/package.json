@@ -17,7 +17,8 @@
     "job:alerts": "tsx src/jobs/cli.ts alerts",
     "job:digest": "tsx src/jobs/cli.ts digest",
     "job:tracking": "tsx src/jobs/cli.ts tracking",
-    "job:consultation-cleanup": "tsx src/jobs/cli.ts consultation-cleanup"
+    "job:consultation-cleanup": "tsx src/jobs/cli.ts consultation-cleanup",
+    "job:consent-notice": "tsx src/jobs/cli.ts consent-notice"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

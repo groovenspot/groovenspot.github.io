@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { compareWine } from "@/server/compare";
+import { compareLoaded, compareWine } from "@/server/compare";
+import { rankSimilar } from "@/lib/similar";
 import { prisma } from "@/server/db";
 import { getUser } from "@/server/auth";
 import { cookies } from "next/headers";
@@ -81,6 +82,17 @@ export default async function WinePage({ params, searchParams }: P) {
     prisma.watchPrice.findMany({ where: { wineId: id, qty, bottleMl: ml, day: { gte: new Date(Date.now() - HISTORY_DAYS * 86400e3) } }, select: { day: true, perBottle: true } }),
     cookies().then((c) => parseIds(c.get(COMPARE_COOKIE)?.value, COMPARE_MAX)),
   ]);
+  // 비슷한 와인 (같은 종류 · 산지/품종/나라)
+  const pool = await prisma.wine.findMany({
+    where: { id: { not: id }, type: wine.type, OR: [{ region: wine.region }, { country: wine.country }, ...(wine.grape ? [{ grape: wine.grape }] : [])] },
+    include: { offers: { include: { seller: true } } },
+    take: 60,
+  });
+  const similar = rankSimilar(wine, pool.map((w) => {
+    const r = compareLoaded(w, 1, 750, ctx);
+    return { wine: w, perBottle: r.best ? Math.round(r.best.perBottle) : null, saving: r.savingPerBottle };
+  }));
+  const myPrice = qty === 1 && ml === 750 && result.best ? Math.round(result.best.perBottle) : (compareLoaded(wine, 1, 750, ctx).best?.perBottle ?? null);
   const kstToday = new Date(Date.now() + 9 * 3600e3);
   const cells = fillDays(historyRows, HISTORY_DAYS, kstToday);
   const inCompare = compareIds.includes(id);
@@ -263,6 +275,31 @@ export default async function WinePage({ params, searchParams }: P) {
             )}
             {reviews.length > 5 && <Link className="small" href={`/community`}>후기 더 보기</Link>}
           </section>
+
+          {similar.length > 0 && (
+            <section className="stack" aria-labelledby="similar-h">
+              <div className="row between">
+                <h2 id="similar-h">비슷한 와인</h2>
+                <span className="small muted">같은 종류 · 산지·품종·나라가 겹치는 와인 · 1병 도착가</span>
+              </div>
+              <div className="cards">
+                {similar.map((s) => {
+                  const diff = myPrice !== null ? Math.round(s.perBottle! - myPrice) : null;
+                  return (
+                    <Link key={s.wine.id} href={`/wines/${s.wine.id}`} className="card">
+                      <span className="name">{s.wine.nameKo}</span>
+                      <span className="sub">{s.wine.name} {s.wine.vintage ?? "NV"}</span>
+                      <span className="sub">{s.wine.region}{s.wine.grape ? ` · ${s.wine.grape}` : ""}</span>
+                      <div className="price">
+                        <span className="small muted">{diff === null ? "1병 최저" : diff < 0 ? <span className="pos">이 와인보다 {won(-diff)} 쌈</span> : diff > 0 ? `이 와인보다 ${won(diff)} 비쌈` : "도착가 같음"}</span>
+                        <span className="num" style={{ fontSize: 17 }}>{won(s.perBottle!)}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {wine.notesKo && (
             <section className="box tight">

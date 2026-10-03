@@ -10,10 +10,11 @@ on:
     - cron: "15 */6 * * *" # 6시간마다: 판매처 가격 수집 (하루 4회)
     - cron: "45 */6 * * *" # 수집 30분 뒤: 찜 알림 (목표가·하락·재입고)
     - cron: "55 0 * * 1" # 월요일 09:55 KST: 무료 회원 주간 묶음
+    - cron: "12 1 * * *" # 매일 10:12 KST: 마케팅 수신 동의 2년 안내
   workflow_dispatch:
     inputs:
       job:
-        description: fx | crawl | alerts | digest | tracking | consultation-cleanup
+        description: fx | crawl | alerts | digest | tracking | consultation-cleanup | consent-notice
         required: true
         default: alerts
 
@@ -32,6 +33,7 @@ jobs:
             "15 */6 * * *") echo "job=crawl" >> "$GITHUB_OUTPUT" ;;
             "45 */6 * * *") echo "job=alerts" >> "$GITHUB_OUTPUT" ;;
             "55 0 * * 1") echo "job=digest" >> "$GITHUB_OUTPUT" ;;
+            "12 1 * * *") echo "job=consent-notice" >> "$GITHUB_OUTPUT" ;;
             *) echo "job=${{ github.event.inputs.job }}" >> "$GITHUB_OUTPUT" ;;
           esac
       - name: Call endpoint

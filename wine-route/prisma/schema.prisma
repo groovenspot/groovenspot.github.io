@@ -218,6 +218,7 @@ model User {
   // 마케팅 수신 동의 (선택). null이면 미동의 또는 철회. 서비스 알림(가격 알림, 주문 상태)과 별개입니다.
   marketingConsentAt        DateTime?
   marketingConsentUpdatedAt DateTime? // 동의·철회를 바꾼 마지막 시각
+  marketingConsentNoticeAt  DateTime? // 수신 동의 사실을 마지막으로 알린 때 (정보통신망법: 2년마다)
   createdAt DateTime @default(now())
 
   sessions  Session[]
@@ -848,4 +849,30 @@ model CommissionStatement {
   seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 
   @@unique([sellerId, month])
+}
+
+/// 라벨 사진 인식 사용량 (유료 API 남용 방지). 사진을 보낼 때마다 한 줄, 이틀 지나면 지웁니다.
+model ScanQuota {
+  id        String   @id @default(cuid())
+  userId    String?
+  ipHash    String // 접속지 해시 (원래 IP는 저장하지 않음)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([ipHash, createdAt])
+}
+
+/// 관리자 작업 기록: 누가 언제 무엇을 바꿨는지
+model AdminLog {
+  id         String   @id @default(cuid())
+  adminEmail String
+  action     String
+  ok         Boolean
+  detail     Json // 보낸 값 요약 (긴 글은 자르고 비밀값은 가림)
+  error      String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action, createdAt])
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { checkCode, sendCode } from "./actions";
 import { PROVIDER_LABEL, enabledProviders, safeNext } from "@/lib/oauth";
 
@@ -11,7 +12,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<Re
   return (
     <div className="box" style={{ maxWidth: 420, margin: "24px auto" }}>
       <h1 style={{ fontSize: 24 }}>로그인</h1>
-      <p className="small muted">비밀번호 없이 이메일로 받은 6자리 코드로 로그인합니다. 처음이면 자동으로 가입됩니다.</p>
+      <p className="small muted">비밀번호 없이 이메일로 받은 6자리 코드로 로그인합니다. 처음이면 자동으로 가입됩니다. 가입 전에 <Link href="/terms">이용약관</Link>과 <Link href="/privacy">개인정보 처리방침</Link>을 확인해 주세요.</p>
       {sp.error && <div className="alert bad">{sp.error}</div>}
       {codeStep ? (
         <form action={checkCode} className="stack">

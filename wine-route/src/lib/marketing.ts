@@ -11,8 +11,8 @@ export function inQuietHours(now = new Date()) {
 }
 
 /** 본문 하단 고정 문구: 보낸 곳, 수신 거부 방법 */
-export const marketingFooter = (appUrl: string) =>
-  `\n\n—\n셀러도어 · 이 메일은 마케팅 수신에 동의한 회원에게 보냅니다.\n수신 거부: ${appUrl}/me#preferences 에서 마케팅 수신 동의를 끄면 됩니다.\n셀러도어는 와인을 판매하지 않습니다. 19세 미만 음주 금지.`;
+export const marketingFooter = (appUrl: string, unsubUrl?: string) =>
+  `\n\n—\n셀러도어 · 이 메일은 마케팅 수신에 동의한 회원에게 보냅니다.\n수신 거부: ${unsubUrl ? `${unsubUrl} (로그인 없이 바로) 또는 ` : ""}${appUrl}/me#preferences 에서 마케팅 수신 동의를 끄면 됩니다.\n셀러도어는 와인을 판매하지 않습니다. 19세 미만 음주 금지.`;
 
 export function campaignProblems(c: { title: string; body: string }) {
   const p: string[] = [];

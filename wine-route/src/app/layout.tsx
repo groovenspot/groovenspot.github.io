@@ -74,6 +74,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <footer className="site-foot">
           <div className="wrap">
             <span>셀러도어는 와인을 판매하지 않습니다. 해외 판매처 정보와 도착가 계산을 제공하고, 주문과 결제는 소비자가 해외 판매처에서 직접 합니다.</span>
+            <span><Link href="/terms">이용약관</Link> · <Link href="/privacy"><b>개인정보 처리방침</b></Link> · <Link href="/community/rules">커뮤니티 운영 정책</Link></span>
             <span>세금은 2026년 10월 공개 기준(1병·1L·150달러 이하 주세·교육세만, FTA 원산지 구매 관세 0%, 제3국 구매 관세 15%)으로 계산한 예상치이며 실제 납부액과 다를 수 있습니다.</span>
           </div>
         </footer>
