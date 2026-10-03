@@ -2,4 +2,4 @@
 export const siteUrl = () => (process.env.APP_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
 /** 검색엔진이 긁지 않을 경로. 로그인·개인 화면, 이동·기록용 주소, 관리자 */
-export const PRIVATE_PATHS = ["/admin", "/api", "/me", "/go", "/order", "/login", "/logout", "/r/", "/n/", "/tracking", "/verify", "/share", "/consultation", "/community/write"];
+export const PRIVATE_PATHS = ["/admin", "/api", "/me", "/go", "/order", "/login", "/logout", "/r/", "/n/", "/tracking", "/verify", "/share", "/consultation", "/community/write", "/community/board/write"];

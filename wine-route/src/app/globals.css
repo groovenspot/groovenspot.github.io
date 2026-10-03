@@ -223,3 +223,8 @@ table.compare td, table.compare th { vertical-align: top; }
 .oops { max-width: 560px; margin: 48px auto; text-align: center; align-items: center; }
 .oops .code { font-family: "IBM Plex Mono", monospace; color: var(--accent); font-size: 14px; letter-spacing: .08em; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* 소셜 로그인 버튼 (각 회사 표시 규정의 배경색) */
+.btn.social { justify-content: center; border: 0; }
+.btn.social.kakao { background: #fee500; color: rgba(0, 0, 0, 0.85); }
+.btn.social.naver { background: #03c75a; color: #fff; }

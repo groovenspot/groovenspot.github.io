@@ -10,7 +10,12 @@ export type CommunityConfig = {
   costs: { premiumMonth: number; tasting: number };
   /** 2단계(마이 셀러·구해주세요·등급)를 여는 기준 — 가안 */
   stage2: { reviews: number; members: number };
+  /** 자유게시판: auto = 2단계 기준에 닿으면 열림, open = 지금 열기, closed = 닫기 */
+  boardMode: BoardMode;
 };
+
+export type BoardMode = "auto" | "open" | "closed";
+export const BOARD_MODES: BoardMode[] = ["auto", "open", "closed"];
 
 export const DEFAULT_COMMUNITY: CommunityConfig = {
   bannedPatterns: [
@@ -18,7 +23,7 @@ export const DEFAULT_COMMUNITY: CommunityConfig = {
     "팝니다", "팔아요", "판매\\s*합니다", "판매해요", "판매\\s*중", "양도", "나눔", "교환\\s*(해요|원해|합니다|하실)", "삽니다", "사요\\b", "구매\\s*희망", "구해\\s*드립니다",
     "직거래", "택포", "반값", "입금", "계좌", "선착순",
     // 공동구매 모집
-    "공구", "공동\\s*구매", "같이\\s*(사|주문|구매)", "합배송", "묶음\\s*배송\\s*모집", "모집\\s*(합니다|해요|중)",
+    "공구", "공동\\s*구매", "같이\\s*(사|주문|구매|합배송)", "합배송\\s*(모집|구해|하실|참여|함께)", "묶음\\s*배송\\s*모집", "모집\\s*(합니다|해요|중)",
     // 연락처 유도
     "오픈\\s*채팅", "open\\.kakao", "카톡\\s*(아이디|id)", "텔레그램", "01[0-9][-\\s]?\\d{3,4}[-\\s]?\\d{4}",
     // 음주 권장
@@ -29,7 +34,43 @@ export const DEFAULT_COMMUNITY: CommunityConfig = {
   points: { review: 300, proof: 500, helpful10: 200, answer: 500 },
   costs: { premiumMonth: 3000, tasting: 5000 },
   stage2: { reviews: 300, members: 1000 },
+  boardMode: "auto",
 };
+
+/* ---------- 자유게시판 ---------- */
+export const BOARD_CATEGORIES = { free: "자유", question: "질문", info: "정보" } as const;
+export type BoardCategory = keyof typeof BOARD_CATEGORIES;
+export const isBoardCategory = (c: string): c is BoardCategory => c in BOARD_CATEGORIES;
+export const BOARD_LIMITS = { postsPerDay: 10, commentsPerDay: 60, title: [2, 80], body: [5, 5000], comment: [1, 1000] } as const;
+
+export function boardOpen(cfg: Pick<CommunityConfig, "boardMode" | "stage2">, published: number, members: number) {
+  if (cfg.boardMode === "open") return true;
+  if (cfg.boardMode === "closed") return false;
+  return published >= cfg.stage2.reviews && members >= cfg.stage2.members;
+}
+
+const len = (s: string) => [...s].length;
+
+/** 글 검사: 길이, 금지 표현(개인 간 거래·공동구매·연락처·음주 권장) */
+export function validatePost(input: { category: string; title: string; body: string }, patterns: string[]): string | null {
+  if (!isBoardCategory(input.category)) return "말머리를 골라 주세요.";
+  const title = input.title.trim(), body = input.body.trim();
+  const [tMin, tMax] = BOARD_LIMITS.title, [bMin, bMax] = BOARD_LIMITS.body;
+  if (len(title) < tMin || len(title) > tMax) return `제목은 ${tMin}~${tMax}자입니다.`;
+  if (len(body) < bMin || len(body) > bMax) return `본문은 ${bMin}~${bMax.toLocaleString("ko-KR")}자입니다.`;
+  const hit = findBanned(`${title}\n${body}`, patterns);
+  if (hit) return `'${hit}' 같은 표현은 쓸 수 없습니다. 개인 간 거래·공동구매·연락처 교환·음주 권장은 운영 정책상 금지입니다.`;
+  return null;
+}
+
+export function validateComment(body: string, patterns: string[]): string | null {
+  const b = body.trim();
+  const [min, max] = BOARD_LIMITS.comment;
+  if (len(b) < min || len(b) > max) return `댓글은 ${min}~${max.toLocaleString("ko-KR")}자입니다.`;
+  const hit = findBanned(b, patterns);
+  if (hit) return `'${hit}' 같은 표현은 쓸 수 없습니다.`;
+  return null;
+}
 
 /** 금지 표현을 찾으면 그 표현을 돌려줍니다. */
 export function findBanned(text: string, patterns: string[]): string | null {

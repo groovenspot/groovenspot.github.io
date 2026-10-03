@@ -1,10 +1,12 @@
 import { checkCode, sendCode } from "./actions";
+import { PROVIDER_LABEL, enabledProviders, safeNext } from "@/lib/oauth";
 
 export const metadata = { title: "로그인" };
 
 export default async function Login({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
-  const next = sp.next ?? "/me";
+  const next = safeNext(sp.next);
+  const socials = enabledProviders();
   const codeStep = sp.step === "code" && sp.email;
   return (
     <div className="box" style={{ maxWidth: 420, margin: "24px auto" }}>
@@ -32,6 +34,15 @@ export default async function Login({ searchParams }: { searchParams: Promise<Re
           </div>
           <button className="btn">코드 받기</button>
         </form>
+      )}
+      {!codeStep && socials.length > 0 && (
+        <div className="stack" style={{ gap: 8 }}>
+          <div className="small muted" style={{ textAlign: "center" }}>또는</div>
+          {socials.map((p) => (
+            <a key={p} className={`btn social ${p}`} href={`/login/oauth/${p}?next=${encodeURIComponent(next)}`}>{PROVIDER_LABEL[p]}로 계속하기</a>
+          ))}
+          <p className="small muted">소셜 계정의 인증된 이메일로 가입·로그인합니다. 같은 이메일로 가입한 계정이 있으면 그 계정에 연결됩니다.</p>
+        </div>
       )}
     </div>
   );

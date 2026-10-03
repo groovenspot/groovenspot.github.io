@@ -216,6 +216,7 @@ export default async function WinePage({ params, searchParams }: P) {
                       <Link className="btn small" href={goHref(showing)}>이 경로로 주문하기</Link>
                       {!selected && <Link className="btn ghost small" href={href({ sel: `${c.channel}:${c.offerId}` })} scroll={false}>세금 내역</Link>}
                       <Link className="small muted" href={`/sellers/${showing.sellerId}`}>판매처 정보·후기</Link>
+                      {showing.forwarder && <Link className="small muted" href={`/consolidate?f=${showing.forwarder.id}&q_${showing.offerId}=${qty}`}>다른 와인과 합배송 견적</Link>}
                       {r.candidates.length > 1 && (
                         <details style={{ width: "100%" }}>
                           <summary className="small muted">다른 판매처 {r.candidates.length - 1}곳</summary>

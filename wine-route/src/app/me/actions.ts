@@ -157,6 +157,14 @@ export async function deleteTaste() {
   revalidatePath("/me");
 }
 
+/* ---------- 소셜 로그인 연결 해제 ---------- */
+export async function unlinkOAuth(fd: FormData) {
+  const u = await requireUser("/me#account");
+  // 이메일 코드 로그인은 늘 남아 있으므로 해제해도 계정에 못 들어오는 일은 없습니다.
+  await prisma.oAuthAccount.deleteMany({ where: { id: String(fd.get("id") ?? ""), userId: u.id } });
+  revalidatePath("/me");
+}
+
 /* ---------- 회원 탈퇴 ---------- */
 export async function deleteMyAccount(_: { error?: string }, fd: FormData): Promise<{ error?: string }> {
   const u = await requireUser("/me#account");

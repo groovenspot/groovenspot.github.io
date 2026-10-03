@@ -15,9 +15,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages: MetadataRoute.Sitemap = [
     { url: `${base}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/calculator`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${base}/consolidate`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/guide`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/guide/first`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/community`, changeFrequency: "daily", priority: 0.6 },
+    { url: `${base}/community/board`, changeFrequency: "daily", priority: 0.5 },
     { url: `${base}/community/ranking`, changeFrequency: "weekly", priority: 0.4 },
     { url: `${base}/community/rules`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${base}/scan`, changeFrequency: "monthly", priority: 0.4 },

@@ -34,6 +34,9 @@ export async function exportAccount(userId: string) {
       consultations: { select: { question: true, answer: true, aiUsed: true, helpful: true, createdAt: true, expiresAt: true } },
       tasteProfile: true,
       firstPurchaseGuide: true,
+      oauthAccounts: { select: { provider: true, email: true, createdAt: true } },
+      posts: { select: { id: true, category: true, title: true, body: true, status: true, createdAt: true } },
+      postComments: { select: { id: true, postId: true, body: true, status: true, createdAt: true } },
     },
   });
   const { pcccEnc, ciHash, ...rest } = u;

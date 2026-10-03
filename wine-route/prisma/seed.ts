@@ -57,8 +57,8 @@ const SELLERS: SellerSeed[] = [
 ];
 
 const FORWARDERS = [
-  { name: "예시 배송대행 (프랑스)", country: "프랑스", acceptsAlcohol: true, currency: "EUR", shipBase: 12, shipPerBottle: 13, daysMin: 10, daysMax: 20 },
-  { name: "예시 배송대행 (독일)", country: "독일", acceptsAlcohol: true, currency: "EUR", shipBase: 11, shipPerBottle: 12.5, daysMin: 10, daysMax: 18 },
+  { name: "예시 배송대행 (프랑스)", country: "프랑스", acceptsAlcohol: true, currency: "EUR", shipBase: 12, shipPerBottle: 13, daysMin: 10, daysMax: 20, handlingPerPackage: 2, consolidateFee: 5, maxBottles: 12 },
+  { name: "예시 배송대행 (독일)", country: "독일", acceptsAlcohol: true, currency: "EUR", shipBase: 11, shipPerBottle: 12.5, daysMin: 10, daysMax: 18, handlingPerPackage: 2, consolidateFee: 5, maxBottles: 12 },
   { name: "예시 배송대행 (이탈리아)", country: "이탈리아", acceptsAlcohol: true, currency: "EUR", shipBase: 12, shipPerBottle: 14, daysMin: 12, daysMax: 20 },
   { name: "예시 배송대행 (미국)", country: "미국", acceptsAlcohol: false, currency: "USD", shipBase: 10, shipPerBottle: 12, daysMin: 10, daysMax: 18 },
   { name: "예시 배송대행 (칠레)", country: "칠레", acceptsAlcohol: false, currency: "USD", shipBase: 15, shipPerBottle: 14, daysMin: 12, daysMax: 20 },

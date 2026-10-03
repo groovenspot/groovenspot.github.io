@@ -2,7 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/server/db";
 import { getCommunityConfig } from "@/server/settings";
 import { monthKings, monthRange } from "@/server/ranking";
-import { adjustPoints, approveProof, createInvite, grantKings, rejectProof, resolveReports, saveCommunity, suspendSeller } from "@/app/admin/actions";
+import { adjustPoints, approveProof, createInvite, grantKings, rejectProof, resolveBoardReports, resolveReports, saveCommunity, suspendSeller } from "@/app/admin/actions";
+import { boardOpen } from "@/lib/community";
 import { ROUTE_LABEL, type ChannelKey } from "@/lib/engine";
 import { won, ymd } from "@/lib/format";
 
@@ -22,6 +23,13 @@ export default async function AdminCommunity() {
     monthKings(-1),
     prisma.pointTx.findMany({ where: { reason: "king", refId: monthRange(-1).label } }),
   ]);
+  const [hiddenPosts, hiddenComments, openReports] = await Promise.all([
+    prisma.post.findMany({ where: { status: "HIDDEN" }, include: { user: { select: { nickname: true } } }, orderBy: { updatedAt: "asc" } }),
+    prisma.postComment.findMany({ where: { status: "HIDDEN" }, include: { user: { select: { nickname: true } }, post: { select: { id: true, title: true } } }, orderBy: { createdAt: "asc" } }),
+    prisma.postReport.findMany({ where: { resolvedAt: null } }),
+  ]);
+  const reasonsOf = (t: string, id: string) => openReports.filter((r) => r.targetType === t && r.targetId === id).map((r) => r.reason);
+  const isBoardOpen = boardOpen(cfg, published, members);
   const rate = delivered ? reviewedDelivered / delivered : null;
   const stage2Ready = published >= cfg.stage2.reviews && members >= cfg.stage2.members;
   const pct = (a: number, b: number) => `${Math.min(100, (a / Math.max(1, b)) * 100).toFixed(0)}%`;
@@ -90,6 +98,38 @@ export default async function AdminCommunity() {
         )) : <p className="small muted">숨긴 후기가 없습니다.</p>}
       </section>
 
+      <section className="stack">
+        <div className="row between">
+          <h2>자유게시판 · 신고로 숨긴 글 {hiddenPosts.length}건, 댓글 {hiddenComments.length}건</h2>
+          {isBoardOpen ? <span className="chip ok">게시판 열림</span> : <span className="chip">게시판 닫힘</span>}
+        </div>
+        <p className="small muted">열기 방식은 아래 설정의 &lsquo;자유게시판&rsquo;에서 바꿉니다. 자동이면 2단계 기준에 닿을 때 열립니다.</p>
+        {hiddenPosts.map((p) => (
+          <div key={p.id} className="box tight">
+            <b>{p.title}</b>
+            <span className="small muted">{p.user.nickname} · 글</span>
+            <p style={{ whiteSpace: "pre-wrap" }}>{p.body.slice(0, 400)}{p.body.length > 400 ? "…" : ""}</p>
+            <div className="row" style={{ gap: 6 }}>{reasonsOf("post", p.id).map((r, i) => <span key={i} className="chip warn">{r}</span>)}</div>
+            <div className="row">
+              <form action={resolveBoardReports}><input type="hidden" name="targetType" value="post" /><input type="hidden" name="targetId" value={p.id} /><input type="hidden" name="action" value="restore" /><button className="btn ghost small">문제없음 · 복구</button></form>
+              <form action={resolveBoardReports}><input type="hidden" name="targetType" value="post" /><input type="hidden" name="targetId" value={p.id} /><input type="hidden" name="action" value="delete" /><button className="btn danger small">삭제</button></form>
+            </div>
+          </div>
+        ))}
+        {hiddenComments.map((c) => (
+          <div key={c.id} className="box tight">
+            <span className="small muted">{c.user.nickname} · 댓글 · 글 &lsquo;{c.post.title}&rsquo;</span>
+            <p style={{ whiteSpace: "pre-wrap" }}>{c.body}</p>
+            <div className="row" style={{ gap: 6 }}>{reasonsOf("comment", c.id).map((r, i) => <span key={i} className="chip warn">{r}</span>)}</div>
+            <div className="row">
+              <form action={resolveBoardReports}><input type="hidden" name="targetType" value="comment" /><input type="hidden" name="targetId" value={c.id} /><input type="hidden" name="action" value="restore" /><button className="btn ghost small">문제없음 · 복구</button></form>
+              <form action={resolveBoardReports}><input type="hidden" name="targetType" value="comment" /><input type="hidden" name="targetId" value={c.id} /><input type="hidden" name="action" value="delete" /><button className="btn danger small">삭제</button></form>
+            </div>
+          </div>
+        ))}
+        {!hiddenPosts.length && !hiddenComments.length && <p className="small muted">숨긴 글·댓글이 없습니다.</p>}
+      </section>
+
       <div className="grid-2" style={{ alignItems: "start" }}>
         <section className="box">
           <h2>지난달 후기왕 · {lastKings.label}</h2>
@@ -129,6 +169,14 @@ export default async function AdminCommunity() {
             <div className="field"><label className="label" htmlFor="c-ct">시음회 참가권 (P, 3단계)</label><input id="c-ct" name="cTasting" type="number" defaultValue={cfg.costs.tasting} /></div>
             <div className="field"><label className="label" htmlFor="c-s2r">2단계 기준 후기 수</label><input id="c-s2r" name="s2Reviews" type="number" defaultValue={cfg.stage2.reviews} /></div>
             <div className="field"><label className="label" htmlFor="c-s2m">2단계 기준 회원 수</label><input id="c-s2m" name="s2Members" type="number" defaultValue={cfg.stage2.members} /></div>
+            <div className="field">
+              <label className="label" htmlFor="c-board">자유게시판</label>
+              <select id="c-board" name="boardMode" defaultValue={cfg.boardMode} key={cfg.boardMode}>
+                <option value="auto">자동 (2단계 기준에 닿으면 열림)</option>
+                <option value="open">지금 열기</option>
+                <option value="closed">닫기</option>
+              </select>
+            </div>
           </div>
           <div className="field">
             <label className="label" htmlFor="c-ban">금지 표현 (한 줄에 하나, 정규식)</label>

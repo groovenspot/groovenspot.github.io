@@ -41,13 +41,23 @@ export async function verifyLoginCode(rawEmail: string, code: string) {
   }
   await prisma.loginCode.update({ where: { id: row.id }, data: { usedAt: new Date() } });
   let user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    user = await prisma.user.create({ data: { email } });
-    // 공유 카드 링크로 들어온 신규 가입
-    await attributeSignup(user.id, (await cookies()).get("wr_ref")?.value).catch((e) => console.error("referral", e));
-  }
+  if (!user) user = await createUser(email);
+  await startSession(user.id);
+  return { ok: true as const, user };
+}
+
+/** 신규 가입 (이메일 코드·소셜 로그인 공통) */
+export async function createUser(email: string) {
+  const user = await prisma.user.create({ data: { email: normEmail(email) } });
+  // 공유 카드 링크로 들어온 신규 가입
+  await attributeSignup(user.id, (await cookies()).get("wr_ref")?.value).catch((e) => console.error("referral", e));
+  return user;
+}
+
+/** 로그인 세션 쿠키 발급 */
+export async function startSession(userId: string) {
   const token = randomBytes(32).toString("base64url");
-  await prisma.session.create({ data: { id: hash(token), userId: user.id, expiresAt: new Date(Date.now() + SESSION_DAYS * 86400e3) } });
+  await prisma.session.create({ data: { id: hash(token), userId, expiresAt: new Date(Date.now() + SESSION_DAYS * 86400e3) } });
   (await cookies()).set(COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
@@ -55,7 +65,6 @@ export async function verifyLoginCode(rawEmail: string, code: string) {
     path: "/",
     maxAge: SESSION_DAYS * 86400,
   });
-  return { ok: true as const, user };
 }
 
 export async function getUser() {

@@ -9,7 +9,7 @@ import { prisma } from "@/server/db";
 import { requireAdmin } from "@/server/auth";
 import { saveSegmentConfig, getCommunityConfig, getTaxConfig, saveCommunityConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
 import { extendPremiumInTransaction } from "@/server/points";
-import { pointMultiplier } from "@/lib/community";
+import { BOARD_MODES, pointMultiplier, type BoardMode } from "@/lib/community";
 import { monthKings } from "@/server/ranking";
 import { notifyAllocation, notifyNewVintage } from "@/jobs/alerts";
 import { runJob, type JobName } from "@/jobs/run";
@@ -176,6 +176,9 @@ export async function saveForwarder(fd: FormData) {
     shipPerBottle: numOr(fd, "shipPerBottle", 0),
     daysMin: numOr(fd, "daysMin", 10),
     daysMax: numOr(fd, "daysMax", 20),
+    consolidateFee: Math.max(0, numOr(fd, "consolidateFee", 0)),
+    handlingPerPackage: Math.max(0, numOr(fd, "handlingPerPackage", 0)),
+    maxBottles: Math.min(60, Math.max(1, Math.floor(numOr(fd, "maxBottles", 12)))),
     active: bool(fd, "active"),
   };
   if (id) await prisma.forwarder.update({ where: { id }, data });
@@ -291,6 +294,27 @@ export async function resolveReports(fd: FormData) {
   revalidatePath("/community", "layout");
 }
 
+/** 자유게시판 신고 처리: 숨긴 글·댓글을 복구하거나 삭제합니다. */
+export async function resolveBoardReports(fd: FormData) {
+  await requireAdmin();
+  const targetType = str(fd, "targetType"), targetId = str(fd, "targetId"), action = str(fd, "action");
+  if (!["post", "comment"].includes(targetType) || !["restore", "delete"].includes(action)) return;
+  const status = action === "restore" ? "PUBLISHED" : "DELETED";
+  await prisma.$transaction(async (tx) => {
+    if (targetType === "post") {
+      await tx.post.updateMany({ where: { id: targetId, status: "HIDDEN" }, data: { status } });
+    } else {
+      const c = await tx.postComment.findUnique({ where: { id: targetId } });
+      if (!c || c.status !== "HIDDEN") return;
+      await tx.postComment.update({ where: { id: targetId }, data: { status } });
+      await tx.post.update({ where: { id: c.postId }, data: { commentCount: await tx.postComment.count({ where: { postId: c.postId, status: "PUBLISHED" } }) } });
+    }
+    await tx.postReport.updateMany({ where: { targetType, targetId, resolvedAt: null }, data: { resolvedAt: new Date(), resolution: action === "restore" ? "restored" : "deleted" } });
+  });
+  revalidatePath("/admin/community");
+  revalidatePath("/community/board", "layout");
+}
+
 /** 대가성 후기 미표시 위반: 판매처 노출 중단 */
 export async function suspendSeller(fd: FormData) {
   await requireAdmin();
@@ -350,6 +374,7 @@ export async function saveCommunity(fd: FormData) {
     points: { review: numOr(fd, "pReview", cur.points.review), proof: numOr(fd, "pProof", cur.points.proof), helpful10: numOr(fd, "pHelpful", cur.points.helpful10), answer: cur.points.answer },
     costs: { premiumMonth: numOr(fd, "cPremium", cur.costs.premiumMonth), tasting: numOr(fd, "cTasting", cur.costs.tasting) },
     stage2: { reviews: numOr(fd, "s2Reviews", cur.stage2.reviews), members: numOr(fd, "s2Members", cur.stage2.members) },
+    boardMode: BOARD_MODES.includes(str(fd, "boardMode") as BoardMode) ? (str(fd, "boardMode") as BoardMode) : cur.boardMode,
   };
   const nonnegativeInteger = (v: number) => Number.isInteger(v) && v >= 0 && v <= 1_000_000;
   if (!Object.values(next.points).every(nonnegativeInteger)

@@ -7,6 +7,8 @@ import { money, sizeLabel, won, ymd } from "@/lib/format";
 import { addPurchase, customerOrderStep, deleteAlert, deletePurchase, markDelivered, toggleAlert } from "./actions";
 import { ProfileForm } from "@/components/ProfileForm";
 import { DeleteAccountForm } from "@/components/DeleteAccountForm";
+import { PROVIDER_LABEL, enabledProviders, type ProviderKey } from "@/lib/oauth";
+import { unlinkOAuth } from "./actions";
 import { PreferencesPanel } from "@/components/PreferencesPanel";
 import { Spark } from "@/components/Spark";
 import { compareLoaded, loadContext } from "@/server/compare";
@@ -24,6 +26,7 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
   const sp = await searchParams;
   const profileNext = sp.next && !/[\\\x00-\x1f]/.test(sp.next) && (sp.next.startsWith("/order/") || sp.next === "/guide/first" || sp.next.startsWith("/guide/first?")) ? sp.next : undefined;
   const user = await requireUser(profileNext ? `/me?next=${encodeURIComponent(profileNext)}#profile` : "/me");
+  const oauthAccounts = await prisma.oAuthAccount.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } });
   const [orders, alerts, purchases, wines, tax, fx] = await Promise.all([
     prisma.order.findMany({ where: { userId: user.id }, include: { wine: true, seller: true, review: { select: { id: true } }, events: { orderBy: { createdAt: "asc" } }, shipmentEvents: { orderBy: { occurredAt: "asc" } } }, orderBy: { createdAt: "desc" }, take: 50 }),
     prisma.priceAlert.findMany({ where: { userId: user.id }, include: { wine: true }, orderBy: { createdAt: "desc" } }),
@@ -301,6 +304,26 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
       </section>
       <section className="stack" id="account">
         <h2>계정</h2>
+        {sp.linked === "1" && <div className="alert ok">소셜 계정을 연결했습니다. 다음부터 그 계정으로도 로그인할 수 있습니다.</div>}
+        {(oauthAccounts.length > 0 || enabledProviders().length > 0) && (
+          <div className="box tight">
+            <span className="label">로그인 방법</span>
+            <div className="row" style={{ gap: 8 }}>
+              <span className="chip">이메일 코드 · {user.email}</span>
+              {oauthAccounts.map((a) => (
+                <form key={a.id} action={unlinkOAuth} className="row" style={{ gap: 4 }}>
+                  <input type="hidden" name="id" value={a.id} />
+                  <span className="chip ok">{PROVIDER_LABEL[a.provider as ProviderKey] ?? a.provider} 연결됨</span>
+                  <button className="btn ghost small">연결 해제</button>
+                </form>
+              ))}
+              {enabledProviders().filter((p) => !oauthAccounts.some((a) => a.provider === p)).map((p) => (
+                <a key={p} className="btn ghost small" href={`/login/oauth/${p}?next=/me`}>{PROVIDER_LABEL[p]} 계정 연결</a>
+              ))}
+            </div>
+            <span className="small muted">소셜 계정을 해제해도 이메일 코드로 계속 로그인할 수 있습니다.</span>
+          </div>
+        )}
         <div className="box tight">
           <div className="row between">
             <span>셀러도어가 보관 중인 내 데이터를 파일(JSON)로 받습니다.</span>
