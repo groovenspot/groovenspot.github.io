@@ -96,6 +96,8 @@ export default async function OrderPage({ params, searchParams }: P) {
           {user && canCart && complete && !forwarder && <li>판매처가 지원하면 <b>이메일·영문 배송지·통관부호(주문 메모)</b>가 미리 채워집니다. 결제 전에 한 번 확인하세요.</li>}
           {forwarder && <li>배송대행지 경로입니다. 배송지는 <b>배송대행지 주소</b>로 입력하고, 배송대행지에 한국 주소와 통관부호를 등록하세요.</li>}
           <li>같은 판매자에게 같은 날 산 물품은 합산과세됩니다.</li>
+          {offer.seller.minBottles > 1 && <li>이 판매처는 <b>{offer.seller.minBottles}병부터</b> 주문할 수 있습니다.</li>}
+          {cand?.tax.fta && !cand.tax.exempt && <li>FTA 관세 0%로 계산했습니다. {offer.seller.cooAvailable ? "이 판매처는 원산지증명(신고 문구 인보이스)을 발급합니다." : "과세가격이 큰 주문은 원산지증명이 필요할 수 있으니 판매처에 인보이스 원산지 신고 문구를 요청하세요."}</li>}
         </ul>
         {!user && (
           <div className="alert">

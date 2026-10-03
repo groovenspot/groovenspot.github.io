@@ -12,6 +12,7 @@ export type TaxConfig = {
   minCollect: number; // 세액 합계가 이 금액 미만이면 징수 면제 (원)
   ftaCountries: string[]; // 한국과 FTA로 와인 관세가 0%인 원산지
   bulkWarnQty: number; // 이 수량 이상이면 자가사용 범위 경고
+  cooExemptUsd: number; // 과세가격이 이 금액(USD) 이하면 FTA 원산지증명 생략 가능으로 보고 경고하지 않음
   freeAlertLimit: number; // 무료 회원 가격 알림 개수 상한
   retailerMarkupHint: number; // 데이터 없는 경로 추정용 (표시만)
 };
@@ -26,6 +27,7 @@ export const DEFAULT_TAX: TaxConfig = {
   minCollect: 10000,
   ftaCountries: ["프랑스", "이탈리아", "스페인", "독일", "포르투갈", "오스트리아", "헝가리", "그리스", "미국", "칠레", "호주", "뉴질랜드", "캐나다", "영국"],
   bulkWarnQty: 6,
+  cooExemptUsd: 1000,
   freeAlertLimit: 3,
   retailerMarkupHint: 0.1,
 };

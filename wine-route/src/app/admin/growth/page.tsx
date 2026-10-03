@@ -254,7 +254,7 @@ export default async function Growth() {
                   <td className="small">{r.source === "scan" ? "사진 검색" : "직접"}</td>
                   <td className="num small">{ymd(r.createdAt)}</td>
                   <td>
-                    <form action={setRequestStatus} className="row" style={{ flexWrap: "nowrap" }}>
+                    <form key={`${r.id}-${r.status}`} action={setRequestStatus} className="row" style={{ flexWrap: "nowrap" }}>
                       <input type="hidden" name="id" value={r.id} />
                       <select name="status" defaultValue={r.status} aria-label="상태" style={{ width: 110 }}><option value="open">대기</option><option value="added">목록 추가함</option><option value="closed">종료</option></select>
                       <button className="btn ghost small">저장</button>

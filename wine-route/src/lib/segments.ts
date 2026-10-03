@@ -59,3 +59,17 @@ export function classify(orders: SegmentOrder[], cfg: SegmentConfig = SEGMENT_DE
   if (valid.length >= cfg.repeatOrders) return { segment: "COLLECTOR", ...base };
   return { segment: "STARTER", ...base };
 }
+
+/** 관리자 화면에서 받은 기준값을 안전한 범위로 맞춥니다. */
+export function parseSegmentConfig(v: Partial<Record<keyof SegmentConfig, unknown>> | null | undefined): SegmentConfig {
+  const n = (x: unknown, d: number, lo: number, hi: number) => {
+    const k = Number(x);
+    return Number.isFinite(k) ? Math.min(hi, Math.max(lo, Math.round(k))) : d;
+  };
+  return {
+    premiumPerBottle: n(v?.premiumPerBottle, SEGMENT_DEFAULTS.premiumPerBottle, 10_000, 10_000_000),
+    bulkQty: n(v?.bulkQty, SEGMENT_DEFAULTS.bulkQty, 2, 120),
+    bulkOrders: n(v?.bulkOrders, SEGMENT_DEFAULTS.bulkOrders, 1, 50),
+    repeatOrders: n(v?.repeatOrders, SEGMENT_DEFAULTS.repeatOrders, 2, 50),
+  };
+}

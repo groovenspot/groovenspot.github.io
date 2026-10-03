@@ -27,6 +27,8 @@ export type SellerIn = {
   daysMax: number;
   insured: boolean;
   active: boolean;
+  minBottles?: number; // 최소 주문 병수 (기본 1)
+  cooAvailable?: boolean; // 원산지증명(신고) 발급 가능
 };
 
 export type OfferIn = {
@@ -166,7 +168,9 @@ export function compare(input: EngineInput): Comparison {
     ["HK_RETAILER", "HK_RETAILER", "홍콩 리테일러 재고가 없습니다", "홍콩 리테일러가 한국으로 발송하지 않습니다"],
   ] as const) {
     const pool = offers.filter((o) => o.seller.channel === sellerChannel);
-    const shippable = pool.filter((o) => o.seller.shipsToKorea);
+    const toKorea = pool.filter((o) => o.seller.shipsToKorea);
+    const shippable = toKorea.filter((o) => (o.seller.minBottles ?? 1) <= qty);
+    const minNeeded = toKorea.length && !shippable.length ? Math.min(...toKorea.map((o) => o.seller.minBottles ?? 1)) : null;
     const cands = shippable
       .map((o) => build(channel, o, shipOf(o.seller), [o.seller.daysMin, o.seller.daysMax]))
       .filter((c): c is Candidate => !!c)
@@ -175,7 +179,15 @@ export function compare(input: EngineInput): Comparison {
       channel,
       label: ROUTE_LABEL[channel],
       available: cands.length > 0,
-      reason: cands.length ? undefined : pool.length && !shippable.length ? noShip : shippable.length ? "환율 정보가 없습니다" : noData,
+      reason: cands.length
+        ? undefined
+        : minNeeded
+          ? `${minNeeded}병 이상 주문해야 살 수 있습니다`
+          : pool.length && !toKorea.length
+            ? noShip
+            : shippable.length
+              ? "환율 정보가 없습니다"
+              : noData,
       best: cands[0],
       candidates: cands,
     });
@@ -185,7 +197,7 @@ export function compare(input: EngineInput): Comparison {
   {
     const fws = input.forwarders.filter((f) => f.active && f.country === wine.country);
     const okFws = fws.filter((f) => f.acceptsAlcohol);
-    const local = offers.filter((o) => o.seller.country === wine.country && o.seller.channel !== "HK_RETAILER");
+    const local = offers.filter((o) => o.seller.country === wine.country && o.seller.channel !== "HK_RETAILER" && (o.seller.minBottles ?? 1) <= qty);
     const cands: Candidate[] = [];
     for (const o of local) {
       for (const f of okFws) {
@@ -232,6 +244,12 @@ export function compare(input: EngineInput): Comparison {
     warnings.push("수량이 많으면 재판매용으로 보아 일반 수입신고 대상이 될 수 있습니다. 자가사용 범위인지 확인하세요.");
   if (qty === 2) warnings.push("2병부터는 1병 면세구간을 벗어나 부가세가 붙습니다. 1병 도착가와 비교해 보세요.");
   if (bottleMl > tax.exemptMaxMl && qty === 1) warnings.push("1L를 넘는 병은 1병이어도 면세구간에 해당하지 않습니다.");
+  // FTA 0%는 원산지 증빙이 필요합니다. 과세가격이 기준(기본 1,000달러)을 넘는데 판매처가 원산지증명을 못 해 주면 관세가 붙을 수 있습니다.
+  if (best?.tax.fta && !best.tax.exempt && usd) {
+    const seller = offers.find((o) => o.id === best.offerId)?.seller;
+    if (seller && !seller.cooAvailable && best.tax.cif / usd > tax.cooExemptUsd)
+      warnings.push(`과세가격이 ${tax.cooExemptUsd.toLocaleString("en-US")}달러를 넘어 FTA 관세 0%에 원산지증명(또는 원산지 신고 문구가 있는 인보이스)이 필요할 수 있습니다. ${seller.name}의 발급 가능 여부를 확인하세요.`);
+  }
   if (!ftaOrigin) warnings.push(`${wine.country}는 한국과 와인 FTA 관세 혜택이 없어 어느 경로든 관세 ${Math.round(tax.dutyRate * 100)}%가 붙습니다.`);
 
   return { qty, bottleMl, routes, best, krPerBottle, savingPerBottle, warnings, ftaOrigin };

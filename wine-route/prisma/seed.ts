@@ -143,6 +143,9 @@ async function main() {
     });
     sellerIds[key] = row.id;
   }
+  // 발송 조건 예시: 프랑스 직판몰은 원산지증명 발급, 이탈리아 리테일러는 3병부터
+  await prisma.seller.updateMany({ where: { id: sellerIds["fr-direct"] }, data: { cooAvailable: true, shipCountries: ["한국", "일본", "홍콩"], shipMethod: "6병 단위 박스 요금" } });
+  await prisma.seller.updateMany({ where: { id: sellerIds["it-export"] }, data: { minBottles: 3, shipMethod: "3병 이상 주문" } });
   await prisma.forwarder.createMany({ data: FORWARDERS.map((f) => ({ ...f, website: "https://example.com/forwarder" })) });
 
   for (const w of WINES) {

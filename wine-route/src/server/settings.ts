@@ -1,4 +1,5 @@
 import { prisma } from "./db";
+import { parseSegmentConfig } from "@/lib/segments";
 import { DEFAULT_COMMUNITY, type CommunityConfig } from "@/lib/community";
 import { DEFAULT_TAX, type TaxConfig } from "@/lib/tax";
 
@@ -52,4 +53,13 @@ export async function getCommunityConfig(): Promise<CommunityConfig> {
 
 export async function saveCommunityConfig(cfg: CommunityConfig) {
   await prisma.setting.upsert({ where: { key: "community" }, update: { value: cfg }, create: { key: "community", value: cfg } });
+}
+
+export async function getSegmentConfig() {
+  const row = await prisma.setting.findUnique({ where: { key: "segments" } });
+  return parseSegmentConfig((row?.value as Record<string, unknown> | null) ?? null);
+}
+
+export async function saveSegmentConfig(cfg: ReturnType<typeof parseSegmentConfig>) {
+  await prisma.setting.upsert({ where: { key: "segments" }, update: { value: cfg }, create: { key: "segments", value: cfg } });
 }

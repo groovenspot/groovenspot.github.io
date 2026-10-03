@@ -1,5 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { deleteAccount } from "@/server/account";
 import { redirect } from "next/navigation";
 import { prisma } from "@/server/db";
 import { requireUser } from "@/server/auth";
@@ -153,4 +155,14 @@ export async function deleteTaste() {
   const u = await requireUser("/me#preferences");
   await prisma.tasteProfile.deleteMany({ where: { userId: u.id } });
   revalidatePath("/me");
+}
+
+/* ---------- 회원 탈퇴 ---------- */
+export async function deleteMyAccount(_: { error?: string }, fd: FormData): Promise<{ error?: string }> {
+  const u = await requireUser("/me#account");
+  if (String(fd.get("confirm") ?? "").trim() !== "탈퇴합니다") return { error: "확인 칸에 '탈퇴합니다'를 그대로 입력해 주세요." };
+  if (String(fd.get("email") ?? "").trim().toLowerCase() !== u.email) return { error: "가입한 이메일을 정확히 입력해 주세요." };
+  await deleteAccount(u.id);
+  (await cookies()).delete("wr_session");
+  redirect("/?deleted=1");
 }

@@ -20,6 +20,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/settings">세율·환율</Link>
         <Link href="/admin/users">회원·대기자</Link>
         <Link href="/admin/segments">회원 세그먼트</Link>
+        <Link href="/admin/marketing">홍보 발송</Link>
+        <Link href="/admin/requests">구해주세요</Link>
+        <Link href="/admin/commissions">수수료 정산</Link>
+        <Link href="/admin/import-cost">수입 원가</Link>
       </nav>
       {children}
     </div>

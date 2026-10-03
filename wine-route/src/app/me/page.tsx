@@ -6,6 +6,7 @@ import { ROUTE_LABEL } from "@/lib/engine";
 import { money, sizeLabel, won, ymd } from "@/lib/format";
 import { addPurchase, customerOrderStep, deleteAlert, deletePurchase, markDelivered, toggleAlert } from "./actions";
 import { ProfileForm } from "@/components/ProfileForm";
+import { DeleteAccountForm } from "@/components/DeleteAccountForm";
 import { PreferencesPanel } from "@/components/PreferencesPanel";
 import { Spark } from "@/components/Spark";
 import { compareLoaded, loadContext } from "@/server/compare";
@@ -297,6 +298,19 @@ export default async function Me({ searchParams }: { searchParams: Promise<Recor
             </table>
           </div>
         )}
+      </section>
+      <section className="stack" id="account">
+        <h2>계정</h2>
+        <div className="box tight">
+          <div className="row between">
+            <span>셀러도어가 보관 중인 내 데이터를 파일(JSON)로 받습니다.</span>
+            <a className="btn ghost small" href="/me/export">내 데이터 내려받기</a>
+          </div>
+        </div>
+        <details className="box">
+          <summary className="small">회원 탈퇴</summary>
+          <DeleteAccountForm email={user.email} />
+        </details>
       </section>
     </div>
   );

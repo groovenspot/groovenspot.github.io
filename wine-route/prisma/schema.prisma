@@ -107,14 +107,20 @@ model Seller {
   checkoutMode    CheckoutMode @default(PRODUCT_PAGE)
   /// CART_TEMPLATE용. {url} {ref} {qty} {clickId} {email} {note} 치환
   cartTpl         String?
+  /// 발송 조건
+  minBottles      Int         @default(1) // 최소 주문 병수 (이보다 적으면 경로에서 제외)
+  shipCountries   String[]    @default([]) // 발송 가능 국가 (참고 표시, 비우면 미확인)
+  shipMethod      String? // 운임 방식 메모 (예: "6병 단위 박스 요금", "200유로 이상 무료")
+  cooAvailable    Boolean     @default(false) // 원산지증명서(또는 원산지 신고 문구 인보이스) 발급 가능
   active          Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  offers    Offer[]
-  crawlRuns CrawlRun[]
-  reviews   DirectReview[]
-  orders    Order[]
+  offers     Offer[]
+  crawlRuns  CrawlRun[]
+  reviews    DirectReview[]
+  orders     Order[]
+  statements CommissionStatement[]
 }
 
 /// 배송대행지. 원산지 국가 내수 판매처 물품을 받아 한국으로 보냅니다.
@@ -734,4 +740,36 @@ model TasteProfile {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// 동의 회원 대상 홍보 발송 기록 (이메일만, 제목에 (광고) 표기)
+model MarketingCampaign {
+  id         String   @id @default(cuid())
+  title      String
+  body       String
+  link       String?
+  segment    String? // 대상 세그먼트 (비우면 동의 회원 전체)
+  tasteMatch String? // 취향 설문 조건 (예: "프랑스")
+  recipients Int      @default(0)
+  sent       Int      @default(0)
+  failed     Int      @default(0)
+  createdBy  String
+  createdAt  DateTime @default(now())
+}
+
+/// 판매처·월별 제휴 수수료 정산 상태
+model CommissionStatement {
+  id         String    @id @default(cuid())
+  sellerId   String
+  month      String // YYYY-MM (KST)
+  status     String    @default("pending") // pending 예상 | invoiced 청구 | paid 입금 | disputed 이의
+  invoicedAt DateTime?
+  paidAt     DateTime?
+  paidAmount Float? // 실제 입금액 (판매처 통화)
+  note       String?
+  updatedAt  DateTime  @updatedAt
+
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@unique([sellerId, month])
 }

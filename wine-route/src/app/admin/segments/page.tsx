@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { prisma } from "@/server/db";
-import { COUNTED_STATUSES, SEGMENT_DEFAULTS, SEGMENT_LABEL, SEGMENT_ORDER, SEGMENT_USE, classify, type Segment, type SegmentOrder } from "@/lib/segments";
+import { SEGMENT_LABEL, SEGMENT_ORDER, SEGMENT_USE, type Segment } from "@/lib/segments";
+import { filterRows, segmentRows, SEGMENT_MAX_USERS as MAX_USERS } from "@/server/segments";
+import { saveSegments } from "@/app/admin/actions";
 import { BUDGET_LABEL } from "@/lib/taste";
 import { won, ymd } from "@/lib/format";
 
 export const metadata = { title: "회원 세그먼트" };
 
-const MAX_USERS = 5000;
 const SHOW = 200;
 type SP = Promise<Record<string, string | undefined>>;
 
@@ -15,19 +15,7 @@ export default async function SegmentsPage({ searchParams }: { searchParams: SP 
   const seg = SEGMENT_ORDER.find((s) => s === sp.seg) as Segment | undefined;
   const consentOnly = sp.consent === "1";
 
-  const [users, orders] = await Promise.all([
-    prisma.user.findMany({
-      select: { id: true, email: true, createdAt: true, marketingConsentAt: true, tasteProfile: { select: { countries: true, types: true, budget: true } } },
-      orderBy: { createdAt: "desc" },
-      take: MAX_USERS,
-    }),
-    prisma.order.findMany({ where: { status: { in: [...COUNTED_STATUSES] } }, select: { userId: true, qty: true, estTotal: true } }),
-  ]);
-
-  const byUser = new Map<string, SegmentOrder[]>();
-  for (const o of orders) byUser.set(o.userId, [...(byUser.get(o.userId) ?? []), { qty: o.qty, estTotal: o.estTotal }]);
-
-  const rows = users.map((u) => ({ u, r: classify(byUser.get(u.id) ?? []) }));
+  const { cfg, users, rows } = await segmentRows();
   const counts = new Map<Segment, { all: number; consent: number }>();
   for (const s of SEGMENT_ORDER) counts.set(s, { all: 0, consent: 0 });
   for (const { u, r } of rows) {
@@ -36,7 +24,7 @@ export default async function SegmentsPage({ searchParams }: { searchParams: SP 
     if (u.marketingConsentAt) c.consent += 1;
   }
 
-  const shown = rows.filter(({ u, r }) => (!seg || r.segment === seg) && (!consentOnly || u.marketingConsentAt));
+  const shown = filterRows(rows, seg, consentOnly);
   const href = (patch: { seg?: Segment; consent?: boolean }) => {
     const p = new URLSearchParams();
     const nextSeg = "seg" in patch ? patch.seg : seg;
@@ -53,9 +41,21 @@ export default async function SegmentsPage({ searchParams }: { searchParams: SP 
         <h1 style={{ fontSize: 28 }}>회원 세그먼트</h1>
         <p className="small muted">
           확정 주문(주문 확정·발송·통관·도착)의 병당 도착가와 구매 횟수로 나눕니다. 소득·자산은 쓰지 않습니다. 기준은 초기 가설입니다:
-          병당 {won(SEGMENT_DEFAULTS.premiumPerBottle)} 이상을 {SEGMENT_DEFAULTS.repeatOrders}회 이상 구매하면 고급 컬렉터, {SEGMENT_DEFAULTS.repeatOrders}회 이상이면 취향 수집가,
-          한 주문 {SEGMENT_DEFAULTS.bulkQty}병 이상이 {SEGMENT_DEFAULTS.bulkOrders}회 이상이면 다량 구매입니다. 첫 분기 주문 분포를 보고 <code>src/lib/segments.ts</code>에서 조정하세요.
+          병당 {won(cfg.premiumPerBottle)} 이상을 {cfg.repeatOrders}회 이상 구매하면 고급 컬렉터, {cfg.repeatOrders}회 이상이면 취향 수집가,
+          한 주문 {cfg.bulkQty}병 이상이 {cfg.bulkOrders}회 이상이면 다량 구매입니다. 첫 분기 주문 분포를 보고 아래에서 조정하세요.
         </p>
+        <details className="box tight">
+          <summary className="small">기준값 바꾸기</summary>
+          <form action={saveSegments} className="stack" style={{ marginTop: 8 }}>
+            <div className="form-grid">
+              <div className="field"><label className="label" htmlFor="sg-p">고급 컬렉터 병당 도착가 (원)</label><input id="sg-p" name="premiumPerBottle" type="number" min={10000} step={10000} defaultValue={cfg.premiumPerBottle} /></div>
+              <div className="field"><label className="label" htmlFor="sg-r">반복 구매 기준 (확정 주문 수)</label><input id="sg-r" name="repeatOrders" type="number" min={2} defaultValue={cfg.repeatOrders} /></div>
+              <div className="field"><label className="label" htmlFor="sg-bq">다량 주문 기준 (한 주문 병수)</label><input id="sg-bq" name="bulkQty" type="number" min={2} defaultValue={cfg.bulkQty} /></div>
+              <div className="field"><label className="label" htmlFor="sg-bo">다량 구매 기준 (다량 주문 횟수)</label><input id="sg-bo" name="bulkOrders" type="number" min={1} defaultValue={cfg.bulkOrders} /></div>
+            </div>
+            <div><button className="btn small">기준값 저장</button></div>
+          </form>
+        </details>
         <div className="table-wrap">
           <table className="data">
             <thead><tr><th>세그먼트</th><th className="r">회원</th><th className="r">마케팅 동의</th><th>활용</th></tr></thead>
@@ -80,6 +80,7 @@ export default async function SegmentsPage({ searchParams }: { searchParams: SP 
           <div className="row">
             <Link className={`btn small ${consentOnly ? "" : "ghost"}`} href={href({ consent: !consentOnly })}>{consentOnly ? "마케팅 동의 회원만 보는 중" : "마케팅 동의 회원만 보기"}</Link>
             {(seg || consentOnly) && <Link className="btn ghost small" href="/admin/segments">초기화</Link>}
+            <a className="btn ghost small" href={`/admin/segments/export${href({}).replace("/admin/segments", "")}`}>CSV 내보내기</a>
           </div>
         </div>
         <p className="small muted">홍보성 안내는 마케팅 동의 회원에게만 보낼 수 있습니다. 가격 알림과 주문 상태 안내는 서비스 알림이라 동의와 무관합니다.</p>

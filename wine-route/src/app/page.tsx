@@ -4,6 +4,9 @@ import { matchesQuery } from "@/lib/search";
 import { WineCard } from "@/components/WineCard";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { won } from "@/lib/format";
+import { getUser } from "@/server/auth";
+import { prisma } from "@/server/db";
+import { BUDGET_LABEL, isEmptyTaste, parseTaste, tasteScore, type TasteClean } from "@/lib/taste";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +22,17 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
   const exempt = sp.exempt === "1";
   const notKr = sp.notkr === "1"; // 국내 미유통(국내 판매가 없음) 와인만
   // 국내가가 없으면 절감액을 계산할 수 없으므로 미유통만 볼 때는 도착가 순이 기본
-  const sort = sp.sort ?? (notKr ? "price" : "saving");
   const page = Math.max(1, Number(sp.page) || 1);
 
+  // 취향 설문이 있는 회원은 '내 취향' 정렬과 추천을 씁니다 (설문은 선택, 비어 있으면 쓰지 않음)
+  const user = await getUser();
+  const profile = user ? await prisma.tasteProfile.findUnique({ where: { userId: user.id } }) : null;
+  const taste: TasteClean | null = profile ? parseTaste({ countries: profile.countries, types: profile.types, budget: profile.budget }) : null;
+  const hasTaste = !!taste && !isEmptyTaste(taste);
+  const sort = sp.sort ?? (notKr ? "price" : "saving");
+
   const { items } = await compareMany({});
+  const score = (i: (typeof items)[number]) => tasteScore(i.wine, i.result.best ? Math.round(i.result.best.perBottle) : null, hasTaste ? taste : null);
   const countries = [...new Set(items.map((i) => i.wine.country))].sort();
   const types = [...new Set(items.map((i) => i.wine.type))].sort();
 
@@ -41,11 +51,17 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
     const pb = b.result.best?.perBottle ?? Infinity;
     if (sort === "price") return pa - pb;
     if (sort === "name") return a.wine.nameKo.localeCompare(b.wine.nameKo, "ko");
+    if (sort === "taste") return score(b) - score(a) || pa - pb;
     return (b.result.savingPerBottle ?? -Infinity) - (a.result.savingPerBottle ?? -Infinity);
   });
   const shown = filtered.slice((page - 1) * PAGE, page * PAGE);
   const pages = Math.ceil(filtered.length / PAGE);
   const filtering = q || country || type || max || exempt || notKr;
+
+  const picks = hasTaste
+    ? items.filter((i) => i.result.best && score(i) > 0).sort((a, b) => score(b) - score(a) || (b.result.savingPerBottle ?? -Infinity) - (a.result.savingPerBottle ?? -Infinity)).slice(0, 6)
+    : [];
+  const tasteLine = hasTaste ? [taste!.countries.join("·"), taste!.types.join("·"), taste!.budget ? `병당 ${BUDGET_LABEL[taste!.budget]}` : ""].filter(Boolean).join(" / ") : "";
 
   const top = items
     .filter((i) => i.result.savingPerBottle !== null && i.result.savingPerBottle > 0)
@@ -61,6 +77,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
 
   return (
     <div className="stack-lg">
+      {sp.deleted === "1" && <div className="alert ok">탈퇴가 완료됐습니다. 그동안 셀러도어를 이용해 주셔서 고맙습니다.</div>}
       <section className="stack" style={{ gap: 8 }}>
         <div className="label">와인 직구 최적경로</div>
         <h1>
@@ -101,6 +118,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
               <option value="saving">국내가 대비 절감액 큰 순</option>
               <option value="price">도착가 낮은 순</option>
               <option value="name">이름순</option>
+              {hasTaste && <option value="taste">내 취향 맞춤</option>}
             </select>
           </div>
         </div>
@@ -115,6 +133,21 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
           </div>
         </div>
       </form>
+
+      {!filtering && picks.length > 0 && (
+        <section className="stack">
+          <div className="row between">
+            <h2>내 취향에 맞는 와인</h2>
+            <span className="small muted">취향 설문: {tasteLine} · <Link href="/me#preferences">바꾸기</Link></span>
+          </div>
+          <div className="cards">
+            {picks.map(({ wine, result }) => <WineCard key={wine.id} wine={wine} result={result} />)}
+          </div>
+        </section>
+      )}
+      {!filtering && user && !hasTaste && (
+        <div className="box tight"><div className="row between"><span className="small">좋아하는 산지·종류와 예산을 알려주시면 취향에 맞는 와인을 먼저 보여드립니다.</span><Link className="btn ghost small" href="/me#preferences">취향 설문 (선택)</Link></div></div>
+      )}
 
       {!filtering && top.length > 0 && (
         <section className="stack">

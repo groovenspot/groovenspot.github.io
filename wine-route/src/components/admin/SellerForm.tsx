@@ -36,6 +36,13 @@ export function SellerForm({ seller }: { seller?: Seller }) {
             <option value="CART_TEMPLATE">장바구니 URL 템플릿</option>
           </select></div>
       </div>
+      <div className="form-grid">
+        <div className="field"><label className="label" htmlFor="s-min">최소 주문 병수</label><input id="s-min" name="minBottles" type="number" min={1} defaultValue={s?.minBottles ?? 1} /></div>
+        <div className="field"><label className="label" htmlFor="s-sc">발송 가능 국가 (쉼표 구분)</label><input id="s-sc" name="shipCountries" defaultValue={s?.shipCountries.join(", ") ?? ""} placeholder="한국, 일본, 홍콩" /></div>
+        <div className="field"><label className="label" htmlFor="s-sm">운임 방식 메모</label><input id="s-sm" name="shipMethod" defaultValue={s?.shipMethod ?? ""} placeholder="6병 단위 박스 요금" /></div>
+      </div>
+      <label className="check"><input type="checkbox" name="cooAvailable" defaultChecked={s?.cooAvailable} /> 원산지증명서(또는 원산지 신고 문구가 있는 인보이스) 발급 가능</label>
+      <p className="small muted">최소 주문 병수보다 적게 사면 이 판매처는 경로 비교에서 빠집니다. 과세가격이 기준(세율 설정, 기본 1,000달러)을 넘는 FTA 구매에서 원산지증명이 안 되면 손님에게 경고합니다.</p>
       <div className="field"><label className="label" htmlFor="s-cart">장바구니 URL 템플릿 (템플릿 방식일 때: {"{url} {ref} {qty} {clickId} {email} {note}"})</label><input id="s-cart" name="cartTpl" defaultValue={s?.cartTpl ?? ""} placeholder="https://shop.example/cart/add?sku={ref}&qty={qty}&sub={clickId}" /></div>
       <p className="small muted">Shopify 방식은 판매 정보마다 상품 variant ID를 넣어야 장바구니에 담깁니다. 없으면 상품 페이지로 이동합니다. 포스트백에 {"{clickId}"}를 넘겨 받으면 주문 확정·발송이 손님에게 자동으로 알려집니다.</p>
       <div className="field"><label className="label" htmlFor="s-aff">제휴 링크 템플릿 ({"{url}"}, {"{clickId}"} 치환)</label><input id="s-aff" name="affiliateTpl" defaultValue={s?.affiliateTpl ?? ""} placeholder="{url}?ref=cellardoor&sub={clickId}" /></div>

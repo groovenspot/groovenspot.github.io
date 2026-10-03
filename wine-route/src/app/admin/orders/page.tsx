@@ -39,7 +39,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
                 <td><span className={`chip ${o.status === "CANCELLED" ? "bad" : o.status === "DELIVERED" ? "ok" : "best"}`}>{ORDER_LABEL[o.status]}</span></td>
                 <td>
                   {o.status !== "DELIVERED" && o.status !== "CANCELLED" && (
-                    <form action={adminMoveOrder} className="row" style={{ flexWrap: "wrap", gap: 6 }}>
+                    <form key={`${o.id}-${o.status}-${o.trackingNo}`} action={adminMoveOrder} className="row" style={{ flexWrap: "wrap", gap: 6 }}>
                       <input type="hidden" name="id" value={o.id} />
                       <select name="to" defaultValue={ORDER_FLOW[ORDER_FLOW.indexOf(o.status) + 1]} aria-label="새 상태" style={{ width: 110 }}>
                         {all.filter((s) => s === "CANCELLED" || ORDER_FLOW.indexOf(s) > ORDER_FLOW.indexOf(o.status)).map((s) => <option key={s} value={s}>{ORDER_LABEL[s]}</option>)}

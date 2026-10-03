@@ -37,3 +37,27 @@ export function parseTaste(input: TasteInput, allowed?: { countries?: string[]; 
 }
 
 export const isEmptyTaste = (t: TasteClean) => t.countries.length === 0 && t.types.length === 0 && t.budget === null;
+
+/** 예산 구간의 병당 도착가 범위 (원) */
+export const BUDGET_RANGE: Record<BudgetId, [number, number]> = {
+  U50: [0, 50_000],
+  "50_100": [50_000, 100_000],
+  "100_200": [100_000, 200_000],
+  O200: [200_000, Infinity],
+};
+
+/**
+ * 취향 점수: 좋아하는 산지 +2, 종류 +2, 병당 도착가가 예산 구간 안 +1.
+ * 0이면 취향과 무관. 설문이 비어 있으면 모두 0.
+ */
+export function tasteScore(w: { country: string; type: string }, perBottle: number | null, t: TasteClean | null) {
+  if (!t) return 0;
+  let s = 0;
+  if (t.countries.includes(w.country)) s += 2;
+  if (t.types.includes(w.type)) s += 2;
+  if (t.budget && perBottle !== null) {
+    const [lo, hi] = BUDGET_RANGE[t.budget];
+    if (perBottle >= lo && perBottle < hi) s += 1;
+  }
+  return s;
+}

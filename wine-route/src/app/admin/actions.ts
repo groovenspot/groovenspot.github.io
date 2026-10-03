@@ -1,11 +1,13 @@
 "use server";
+import { parseSegmentConfig, SEGMENT_ORDER } from "@/lib/segments";
+import { sendCampaign } from "@/server/marketing";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Channel, CheckoutMode, OrderStatus, PriceSource } from "@prisma/client";
 import { moveOrder } from "@/server/orders";
 import { prisma } from "@/server/db";
 import { requireAdmin } from "@/server/auth";
-import { getCommunityConfig, getTaxConfig, saveCommunityConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
+import { saveSegmentConfig, getCommunityConfig, getTaxConfig, saveCommunityConfig, saveFxConfig, saveTaxConfig } from "@/server/settings";
 import { extendPremiumInTransaction } from "@/server/points";
 import { pointMultiplier } from "@/lib/community";
 import { monthKings } from "@/server/ranking";
@@ -149,6 +151,10 @@ export async function saveSeller(fd: FormData) {
     priceSource: str(fd, "priceSource") as PriceSource,
     checkoutMode: (str(fd, "checkoutMode") || "PRODUCT_PAGE") as CheckoutMode,
     cartTpl: str(fd, "cartTpl") || null,
+    minBottles: Math.max(1, Math.round(numOr(fd, "minBottles", 1))),
+    shipCountries: list(fd, "shipCountries"),
+    shipMethod: str(fd, "shipMethod") || null,
+    cooAvailable: bool(fd, "cooAvailable"),
     active: bool(fd, "active"),
   };
   if (!data.name || !data.country || !/^[A-Z]{3}$/.test(data.currency)) throw new Error("이름·국가·통화(3자리)를 확인해 주세요");
@@ -193,6 +199,7 @@ export async function saveTax(fd: FormData) {
     minCollect: numOr(fd, "minCollect", cur.minCollect),
     ftaCountries: list(fd, "ftaCountries"),
     bulkWarnQty: numOr(fd, "bulkWarnQty", cur.bulkWarnQty),
+    cooExemptUsd: numOr(fd, "cooExemptUsd", cur.cooExemptUsd),
     freeAlertLimit: numOr(fd, "freeAlertLimit", cur.freeAlertLimit),
   });
   revalidatePath("/", "layout");
@@ -388,4 +395,50 @@ export async function setRequestStatus(fd: FormData) {
   await requireAdmin();
   await prisma.wineRequest.update({ where: { id: str(fd, "id") }, data: { status: str(fd, "status") } });
   revalidatePath("/admin/growth");
+}
+
+/* ---------- 세그먼트 기준값 ---------- */
+export async function saveSegments(fd: FormData) {
+  await requireAdmin();
+  await saveSegmentConfig(parseSegmentConfig(Object.fromEntries(["premiumPerBottle", "repeatOrders", "bulkQty", "bulkOrders"].map((k) => [k, fd.get(k)]))));
+  revalidatePath("/admin/segments");
+}
+
+/* ---------- 홍보 발송 (마케팅 동의 회원만) ---------- */
+export async function sendMarketing(_: { ok?: boolean; error?: string; message?: string }, fd: FormData) {
+  const admin = await requireAdmin();
+  if (fd.get("confirm") !== "on") return { error: "받는 사람 수와 내용을 확인했다는 칸을 체크해 주세요." };
+  const seg = SEGMENT_ORDER.find((s) => s === str(fd, "segment"));
+  const r = await sendCampaign({ title: str(fd, "title"), body: str(fd, "body"), link: str(fd, "link") || null, segment: seg, country: str(fd, "country") || undefined, createdBy: admin.email });
+  revalidatePath("/admin/marketing");
+  return r.ok ? { ok: true, message: `${r.recipients}명 중 ${r.sent}명에게 보냈습니다${r.failed ? `, 실패 ${r.failed}명` : ""}.` } : { error: r.error };
+}
+
+/** 비슷한 요청 묶음 전체의 상태를 한 번에 */
+export async function setRequestGroupStatus(fd: FormData) {
+  await requireAdmin();
+  const ids = str(fd, "ids").split(",").filter(Boolean).slice(0, 500);
+  const status = ["open", "added", "closed"].includes(str(fd, "status")) ? str(fd, "status") : "open";
+  await prisma.wineRequest.updateMany({ where: { id: { in: ids } }, data: { status } });
+  revalidatePath("/admin/requests");
+}
+
+/* ---------- 제휴 수수료 정산 ---------- */
+export async function saveStatement(fd: FormData) {
+  await requireAdmin();
+  const sellerId = str(fd, "sellerId");
+  const month = str(fd, "month");
+  if (!/^\d{4}-\d{2}$/.test(month)) throw new Error("월 형식이 아닙니다");
+  const status = ["pending", "invoiced", "paid", "disputed"].includes(str(fd, "status")) ? str(fd, "status") : "pending";
+  const prev = await prisma.commissionStatement.findUnique({ where: { sellerId_month: { sellerId, month } } });
+  const now = new Date();
+  const data = {
+    status,
+    paidAmount: str(fd, "paidAmount") ? Number(fd.get("paidAmount")) : null,
+    note: str(fd, "note") || null,
+    invoicedAt: status === "invoiced" || status === "paid" ? prev?.invoicedAt ?? now : prev?.invoicedAt ?? null,
+    paidAt: status === "paid" ? prev?.paidAt ?? now : null,
+  };
+  await prisma.commissionStatement.upsert({ where: { sellerId_month: { sellerId, month } }, update: data, create: { sellerId, month, ...data } });
+  revalidatePath("/admin/commissions");
 }

@@ -26,6 +26,7 @@ export default async function SettingsPage() {
             <div className="field"><label className="label" htmlFor="t-ml">면세구간 용량 상한 (ml)</label><input id="t-ml" name="exemptMaxMl" type="number" defaultValue={t.exemptMaxMl} /></div>
             <div className="field"><label className="label" htmlFor="t-min">소액 징수 면제 기준 (원)</label><input id="t-min" name="minCollect" type="number" defaultValue={t.minCollect} /></div>
             <div className="field"><label className="label" htmlFor="t-bulk">수량 경고 기준 (병)</label><input id="t-bulk" name="bulkWarnQty" type="number" defaultValue={t.bulkWarnQty} /></div>
+            <div className="field"><label className="label" htmlFor="t-coo">원산지증명 생략 상한 (과세가격 USD)</label><input id="t-coo" name="cooExemptUsd" type="number" defaultValue={t.cooExemptUsd} /></div>
             <div className="field"><label className="label" htmlFor="t-free">무료 회원 알림 개수</label><input id="t-free" name="freeAlertLimit" type="number" defaultValue={t.freeAlertLimit} /></div>
           </div>
           <div className="field"><label className="label" htmlFor="t-fta">FTA 관세 0% 원산지 (쉼표 구분)</label><textarea id="t-fta" name="ftaCountries" defaultValue={t.ftaCountries.join(", ")} /></div>

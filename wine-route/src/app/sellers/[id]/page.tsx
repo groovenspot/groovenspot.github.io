@@ -33,8 +33,10 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
           <span className="chip">{s.country}</span>
           <span className={`chip ${s.shipsToKorea ? "ok" : ""}`}>{s.shipsToKorea ? "한국 발송" : "한국 발송 안 함"}</span>
           {s.insured && <span className="chip ok">파손 보험</span>}
+          {s.cooAvailable && <span className="chip ok">원산지증명 발급</span>}
+          {s.minBottles > 1 && <span className="chip warn">{s.minBottles}병부터 주문</span>}
         </div>
-        <p className="small muted">안내 배송 기간 {s.daysMin}~{s.daysMax}일 · 운임 {money(s.shipBase, s.currency)} + 병당 {money(s.shipPerBottle, s.currency)} · <a href={s.website} rel="nofollow noopener" target="_blank">웹사이트</a></p>
+        <p className="small muted">안내 배송 기간 {s.daysMin}~{s.daysMax}일 · 운임 {money(s.shipBase, s.currency)} + 병당 {money(s.shipPerBottle, s.currency)}{s.shipMethod ? ` (${s.shipMethod})` : ""}{s.shipCountries.length ? ` · 발송 국가 ${s.shipCountries.join(", ")}` : ""} · <a href={s.website} rel="nofollow noopener" target="_blank">웹사이트</a></p>
       </section>
 
       <div className="grid-4">
