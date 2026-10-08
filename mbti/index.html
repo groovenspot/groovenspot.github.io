@@ -221,6 +221,23 @@ const SLINES={
   debate:['그건 논리적으로 틀렸어','근거를 대 봐'],comfort:['괜찮아, 잘하고 있어','힘든 일 있었지?'],
   praise:['오늘 진짜 잘했어!','너 없으면 가게 안 돌아가'],prank:['등에 뭐 묻었다~ㅋ','깜짝이야!'],flirt:['오늘 좀… 멋있다?','끝나고 커피 한잔?'],
 };
+/* 손님 요청 (손님 MBTI의 한 글자를 드러냄) */
+const REQ={0:{E:['💬','수다 떨고 싶어요'],I:['🤫','조용히 먹고 싶어요']},1:{S:['🍳','늘 먹던 걸로요'],N:['✨','새 메뉴 추천해 줘요']},2:{T:['📊','왜 늦었는지 설명해 줘요'],F:['🥺','서운해요… 공감해 줘요']}};
+const REQ_AXIS=['대화','메뉴 고민','불만 처리'];
+/* 흑화: 스트레스 90 이상이면 가장 약한 기능이 폭발 */
+const DARK={
+  INTJ:['법인카드로 충동 지출을 했다','cash'],INTP:['연락을 끊고 이상한 이론에 빠졌다','none'],ENTJ:['모두에게 화를 낸다','team'],ENTP:['회사 욕을 SNS에 올렸다','rep'],
+  INFJ:['문을 쾅 닫았다 (도어슬램)','none'],INFP:['울면서 퇴사 편지를 쓰는 중','none'],ENFJ:['혼자 다 떠안다가 무너졌다','team'],ENFP:['갑자기 잠수 모드','none'],
+  ISTJ:['최악의 시나리오에 사로잡혔다','none'],ISFJ:['쌓아 둔 서운함이 폭발했다','team'],ESTJ:['모두를 쥐 잡듯 잡는다','team'],ESFJ:['단톡방에서 뒷담화 중','rep'],
+  ISTP:['말없이 장비를 분해해 놨다','none'],ISFP:['벽에 그림만 그리고 있다','none'],ESTP:['매출금으로 내기를 걸었다','cash'],ESFP:['가게 돈으로 쇼핑했다','cash'],
+};
+/* 직원 말투 튜토리얼 */
+const TEACH={
+  req:{t:'손님 요청',b:'손님 머리 위 아이콘이 원하는 응대예요.<br>💬 수다 → <b>E</b> 직원 · 🤫 조용히 → <b>I</b><br>🍳 늘 먹던 걸로 → <b>S</b> · ✨ 새 메뉴 → <b>N</b><br>📊 논리적 설명 → <b>T</b> · 🥺 공감 → <b>F</b><br>캐릭터를 고른 뒤 손님을 누르면 그 직원을 보낼 수 있어요. 맞으면 팁과 평판이 올라요.'},
+  rush:{t:'피크타임 러시',b:'저녁 7시에 30초 동안 손님이 몰려와요. 손님을 누르고 요청에 <b>맞는 직원</b>을 보내면 콤보가 쌓이고, 콤보만큼 매출 배율이 올라요. 바쁘면 자동 처리(보상 80%)도 돼요.'},
+  stress:{t:'스트레스',b:'스트레스 <b>70</b>부터 실수가 잦아지고, <b>90</b>이면 흑화해서 일을 놔 버려요. 흑화가 3일 넘거나 <b>100</b>이 되면 떠나요. 휴식 보내기, 취향 가구, 칭찬·위로로 낮춰 주세요.'},
+  reg:{t:'단골 카드',b:'5번 이상 온 손님은 이름과 MBTI가 공개돼요. 요청을 잘 맞춰 주면 호감이 쌓이고, 호감이 가득 차면 <b>"여기서 일해 보고 싶어요"</b>라며 무료로 입사하기도 해요.'},
+};
 const W=12,H=10,DOOR={x:4,y:9};
 const OPEN=11*60,CLOSE=22*60,END=23*60;
 
@@ -236,7 +253,7 @@ const staff=()=>S?S.staff:[];
 
 function newSim(type,boss,name){
   return {id:seq++,name:name||R(SURN)+R(GIVEN),type,boss:!!boss,
-    needs:{hunger:80,energy:85,fun:70,social:65,hygiene:90},ml:[],working:true,present:false,arrive:0,
+    needs:{hunger:80,energy:85,fun:70,social:65,hygiene:90},ml:[],working:true,present:false,arrive:0,stress:10,dark:0,served:0,hired:S?S.day:1,
     x:DOOR.x,y:DOOR.y,path:[],job:null,queue:[],bubble:null,dir:1,carry:null,walkT:0,
     skin:R(['#f1c9a5','#e0ac7e','#c68b59','#f6d7bd']),hair:R(['#2b1b14','#4a2c1a','#111111','#7a4a2a','#d9a066'])};
 }
@@ -270,7 +287,7 @@ function intro(){
 }
 function startNew(company,bossType){
   seq=1;
-  S={company,day:1,min:0,money:600000,rep:2.5,objs:defaultLayout(),staff:[],rel:{},cands:null};
+  S={company,day:1,min:0,money:600000,rep:2.5,objs:defaultLayout(),staff:[],rel:{},cands:null,regs:[],alumni:[],taught:{},negDays:0,debt:0,titles:[]};
   const boss=newSim(bossType,true,'사장님');
   const others=TYPES.filter(t=>t!==bossType).sort(()=>Math.random()-.5);
   const good=others.slice().sort((a,b)=>compat(bossType,b)-compat(bossType,a))[0];
@@ -285,12 +302,15 @@ function save(){
     delete data.today;localStorage.setItem(SAVE_KEY,JSON.stringify(data))}catch(e){}
 }
 function load(){try{return JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){return null}}
-function loadGame(d){S=d;seq=d.seq||1000;resetDay();closeModal();sel=S.staff[0].id;renderPanel()}
+function loadGame(d){S=d;seq=d.seq||1000;
+  const def={regs:[],alumni:[],taught:{},negDays:0,debt:0,titles:[]};for(const k in def)if(S[k]===undefined)S[k]=def[k];
+  S.staff.forEach(s=>{if(s.stress===undefined)s.stress=10;s.dark=s.dark||0;s.served=s.served||0;s.hired=s.hired||1});
+  resetDay();closeModal();sel=S.staff[0].id;renderPanel()}
 
 /* ════════════════ 하루 흐름 ════════════════ */
 function resetDay(){
   S.min=9*60+20;custs=[];tasks=[];summaryShown=false;custTimer=0;
-  S.today={served:0,angry:0,revenue:0,tips:0,events:[]};
+  S.today={served:0,angry:0,revenue:0,tips:0,events:[],match:0,miss:0,pred:null,rushDone:false,darkStarted:false,maxCombo:0};S.rush=null;
   S.objs.forEach(o=>{o.busy=null;o.ready=[];o.dirty=false});
   // 출근 시각: J는 일찍, P는 들쭉날쭉 (지각할 수도)
   S.staff.forEach(s=>{s.present=false;s.path=[];s.job=null;s.queue=[];s.carry=null;s.x=DOOR.x;s.y=DOOR.y;s.ml=[];
@@ -333,7 +353,8 @@ const moodColor=m=>m>25?'#3ddc6a':m>-10?'#ffd23f':'#ff3b5c';
 function addML(s,k,mult=1){const d=ML[k];s.ml=s.ml.filter(x=>x.k!==k);s.ml.push({k,n:d.n,v:Math.round(d.v*mult),until:S.min+d.d})}
 function say(a,text,ms=2600){a.bubble={text,until:performance.now()+ms}}
 const SKILL={order:{E:1.35,I:.85,F:1.1},cook:{S:1.3,J:1.1,N:.9,I:1.1},serve:{E:1.2,P:1.1,I:.9},clean:{J:1.4,P:.7,S:1.1}};
-const skill=(s,k)=>prefOf(s.type,SKILL[k])*clamp(1+mood(s)/220,.6,1.35);
+function diversity(){const ws=S.staff.filter(s=>s.present&&s.working&&!s.dark);return new Set(ws.map(s=>s.type).join('').split('')).size===8}
+const skill=(s,k)=>prefOf(s.type,SKILL[k])*clamp(1+mood(s)/220,.6,1.35)*(s.stress>=70?.75:1)*(diversity()?1.1:1);
 
 /* ════════════════ 잡 실행기 ════════════════ */
 function setJob(s,job){
@@ -438,18 +459,28 @@ function resolveSocial(a,b,kind){
     r.f=clamp(r.f+6+Math.max(0,c)/3,-100,100);
     const m={chat:'chat',joke:'laugh',debate:'debate',comfort:'comforted',praise:'praised',prank:'laugh',flirt:'chat'}[kind];
     addML(b,m==='debate'?'chat':m,kind==='praise'&&bt[2]==='F'?1.5:1);addML(a,kind==='debate'?'debate':'chat');
-    say(b,R(['❤️','ㅋㅋㅋ 진짜?','고마워!','맞아맞아','😆']));
+    say(b,R(['❤️','ㅋㅋㅋ 진짜?','고마워!','맞아맞아','😆']));b.stress=clamp(b.stress-(kind==='comfort'||kind==='praise'?10:4),0,100);
     if(kind==='flirt'&&r.f>=60&&!r.love){r.love=true;addML(a,'love');addML(b,'love');say(a,'💕',3500);say(b,'💕',3500);logEv(`💕 ${nm(a)}(${a.type})와 ${nm(b)}(${b.type})가 연인이 되었다!`)}
   } else {
     r.f=clamp(r.f-6+Math.min(0,c)/3,-100,100);
     const harsh=(kind==='debate'&&a.type[2]==='T'&&bt[2]==='F')||(kind==='prank'&&bt[3]==='J')||c<=-15;
     addML(b,harsh?(kind==='prank'?'pranked':'fight'):'awkward');addML(a,harsh?'fight':'awkward');
-    say(b,R(harsh?['💢 선 넘네','진짜 짜증 나','그만해']:['…어? 응…','😐','아 네…']));
+    say(b,R(harsh?['💢 선 넘네','진짜 짜증 나','그만해']:['…어? 응…','😐','아 네…']));if(harsh){b.stress=clamp(b.stress+7,0,100);a.stress=clamp(a.stress+4,0,100)}
   }
   const after=relLabel(r)[0];
   if(after!==before&&!r.love)logEv(`${ok?'🤝':'⚡'} ${nm(a)}(${a.type})와 ${nm(b)}(${b.type}): ${before} → ${after}`);
 }
 /* 가게 업무 */
+function serveMatch(s,c,byPlayer){
+  const ok=s.type[c.req.axis]===c.req.want;c.match=ok;
+  if(ok){S.today.match++;s.stress=clamp(s.stress-2,0,100);
+    say(c,R({0:{E:['ㅋㅋ 말 잘 통한다!'],I:['(편하다…)👍']},1:{S:['역시 이 맛이지'],N:['오 이런 메뉴가?!']},2:{T:['납득했어요'],F:['마음이 풀렸어요🥹']}}[c.req.axis][c.req.want]));
+    if(c.reg)c.reg.aff=clamp(c.reg.aff+15,0,100)}
+  else{S.today.miss++;s.stress=clamp(s.stress+4,0,100);
+    say(c,R({0:{E:['…말이 없네'],I:['말 좀 그만 걸어요…']},1:{S:['그냥 늘 먹던 거 달라니까'],N:['또 그 메뉴…?']},2:{T:['감정 말고 이유를요'],F:['차갑다…']}}[c.req.axis][c.req.want]));
+    if(c.reg)c.reg.aff=clamp(c.reg.aff+3,0,100)}
+  if(byPlayer&&S.rush){if(ok){S.rush.combo++;S.today.combo=S.rush.combo;S.today.maxCombo=Math.max(S.today.maxCombo,S.rush.combo);toast(`🔥 콤보 ${S.rush.combo}! 매출 ×${(1+Math.min(S.rush.combo,10)*.1).toFixed(1)}`)}else{S.rush.combo=0;S.today.combo=0;toast('콤보 끊김…')}}
+}
 function addTask(t){t.id=seq++;t.claim=null;t.done=false;t.age=0;tasks.push(t)}
 function taskJob(s,t){
   t.claim=s.id;
@@ -458,19 +489,19 @@ function taskJob(s,t){
   if(t.type==='order'){const c=t.cust;return {kind:'task',task:t,label,steps:[
     {go:(x,y)=>adj({x:c.x0,y:c.y0},x,y)},
     {act:5*sp,start:()=>{if(!custs.includes(c)||c.state!=='waitOrder'){s.job.steps[1].act=0;return}say(s,s.type[0]==='E'?'뭐 드릴까요~?':'주문… 도와드릴게요')},
-     end:()=>{t.done=true;if(custs.includes(c)&&c.state==='waitOrder'){c.state='waitFood';c.wait=0;addTask({type:'cook',cust:c})}}}]}}
+     end:()=>{t.done=true;if(custs.includes(c)&&c.state==='waitOrder'){c.state='waitFood';c.wait=0;addTask({type:'cook',cust:c});serveMatch(s,c,t.player)}}}]}}
   if(t.type==='cook'){return {kind:'task',task:t,label,steps:[
     {go:(x,y)=>!!stove&&adj(stove,x,y)},
     {act:11*sp,start:()=>{s.dir=1;say(s,s.type[1]==='N'?'오늘은 새로운 레시피로…':'정석대로 갑니다')},
      end:()=>{t.done=true;if(!custs.includes(t.cust))return;
-       let q=s.type[1]==='N'?.6+Math.random()*.9:.9+Math.random()*.35;q*=clamp(1+mood(s)/250,.75,1.2);
+       let q=s.type[1]==='N'?.6+Math.random()*.9:.9+Math.random()*.35;q*=clamp(1+mood(s)/250,.75,1.2)*(s.stress>=70?.85:1);if(s.stress>=70&&Math.random()<.4)say(s,'아 소금을…😵');
        if(q>1.3){addML(s,'perfect');say(s,'완벽해 ✨')}
        stove.ready.push(t.cust.id);addTask({type:'serve',cust:t.cust,q})}}]}}
   if(t.type==='serve'){const c=t.cust;return {kind:'task',task:t,label,steps:[
     {go:(x,y)=>!!stove&&adj(stove,x,y)},
     {act:1,end:()=>{s.carry='🍲';t.picked=true;stove.ready=stove.ready.filter(i=>i!==c.id)}},
     {go:(x,y)=>adj({x:c.x0,y:c.y0},x,y)},
-    {act:2*sp,end:()=>{s.carry=null;t.done=true;if(custs.includes(c)&&c.state==='waitFood'){c.state='eat';c.wait=0;c.q=t.q;c.server=s.id;say(s,'맛있게 드세요!')}}}]}}
+    {act:2*sp,end:()=>{s.carry=null;t.done=true;if(custs.includes(c)&&c.state==='waitFood'){c.state='eat';c.wait=0;c.q=t.q;c.server=s.id;s.served++;say(s,'맛있게 드세요!')}}}]}}
   if(t.type==='clean'){const tb=t.table;return {kind:'task',task:t,label,steps:[
     {go:(x,y)=>adj(tb,x,y)},
     {act:5*sp,start:()=>say(s,s.type[3]==='J'?'깔끔하게!':'치워야지…'),end:()=>{tb.dirty=false;t.done=true}}]}}
@@ -488,7 +519,8 @@ function decide(s){
   const urgent=NEEDS.map(([k])=>k).filter(k=>s.needs[k]<25).sort((a,b)=>s.needs[a]-s.needs[b]);
   const open=S.min>=OPEN&&S.min<END;
   // 1) 일
-  if(s.working&&open&&!urgent.length&&m>-40){const t=pickTask(s);if(t){setJob(s,taskJob(s,t));return}}
+  if(s.dark&&Math.random()<.3)say(s,'🌑 '+DARK[s.type][0]);
+  if(s.working&&open&&!urgent.length&&m>-40&&!s.dark){const t=pickTask(s);if(t){setJob(s,taskJob(s,t));return}}
   if(s.working&&open&&m<=-40&&Math.random()<.3)say(s,'오늘은 진짜 못 하겠어요…');
   // 2) 사교 (E는 자주, I는 가끔)
   const wantSocial=s.needs.social<(s.type[0]==='E'?75:45)&&Math.random()<(s.type[0]==='E'?.5:.22);
@@ -531,19 +563,36 @@ function freeSeats(){
 function spawnCust(){
   const seats=freeSeats();if(!seats.length)return;
   const {ch,tb}=R(seats);
-  const c={id:seq++,em:R(CUST_EM),x:DOOR.x,y:DOOR.y,path:[],seat:ch,table:tb,x0:ch.x,y0:ch.y,state:'toSeat',wait:0,dir:1,walkT:0,
-    body:R(['#7d8597','#9c6644','#6c757d','#577590','#b56576','#4d908e'])};
+  const away=S.regs.filter(r=>!custs.some(c=>c.reg===r));
+  const reg=away.length&&Math.random()<.5?R(away):null;
+  const type=reg?reg.type:R(TYPES),r=Math.random(),axis=r<.45?0:r<.8?1:2;
+  const c={id:seq++,em:reg?reg.em:R(CUST_EM),type,reg,req:{axis,want:type[axis]},x:DOOR.x,y:DOOR.y,path:[],seat:ch,table:tb,x0:ch.x,y0:ch.y,state:'toSeat',wait:0,dir:1,walkT:0,rush:S.rush?(S.rush.auto?'auto':'manual'):null,
+    body:reg?reg.body:R(['#7d8597','#9c6644','#6c757d','#577590','#b56576','#4d908e'])};
   const p=bfs(c,(x,y)=>x===ch.x&&y===ch.y,true);if(!p)return;
   c.path=p;custs.push(c);
 }
 function updateCust(c,dm){
-  if(c.state==='toSeat'&&!c.path.length){c.state='waitOrder';c.wait=0;addTask({type:'order',cust:c})}
+  if(c.state==='toSeat'&&!c.path.length){c.state='waitOrder';c.wait=0;addTask({type:'order',cust:c});if(!S.taught.req)teach('req')}
   if(c.state==='waitOrder'||c.state==='waitFood'){c.wait+=dm;
     const lim=c.state==='waitOrder'?75:110;
     if(c.wait>lim*.7&&!c.warned){c.warned=1;say(c,'😤 언제 와요?')}
     if(c.wait>lim)custLeave(c,true)}
   if(c.state==='eat'){c.wait+=dm;if(c.wait>22)custLeave(c,false)}
   if(c.state==='leave'&&!c.path.length)custs=custs.filter(x=>x!==c);
+}
+function regVisit(c){
+  if(c.reg){c.reg.visits++;
+    if(c.reg.visits===5){logEv(`🪪 단골 카드: ${c.reg.name}(${c.reg.type}) — 다섯 번째 방문!`);if(!S.taught.reg)setTimeout(()=>teach('reg'),50);else toast(`🪪 새 단골: ${c.reg.name} (${c.reg.type})`)}
+    if(c.reg.aff>=100&&c.reg.visits>=6&&!c.reg.offered&&S.staff.length<8){c.reg.offered=true;setTimeout(()=>regOffer(c.reg),60)}
+  } else if(S.regs.length<12){S.regs.push({id:seq++,name:R(SURN)+R(GIVEN),type:c.type,em:c.em,body:c.body,visits:1,aff:c.match?15:5})}
+}
+function regOffer(r){
+  openModal(`<div style="font-size:44px">${r.em}</div><h2>"여기서 일해 보고 싶어요"</h2>
+    <p class="lead">단골 <b>${esc(r.name)}</b>(${r.type} ${T[r.type].nick})이(가) ${r.visits}번 오더니 이 가게가 좋아졌대요. 계약금 없이 바로 입사할 수 있어요.</p>
+    <div class="notes">"${MEME[r.type]}"</div>
+    <button class="btn primary" id="rgY">환영해요! (무료 입사)</button><button class="btn" style="margin-top:8px" id="rgN">다음에…</button>`);
+  $('rgY').onclick=()=>{const n=newSim(r.type,false,r.name);n.x=DOOR.x;n.y=DOOR.y;n.arrive=S.min;S.staff.push(n);S.regs=S.regs.filter(x=>x!==r);logEv(`🙋 단골 ${r.name}(${r.type}) 입사!`);closeModal();sel=n.id;renderPanel()};
+  $('rgN').onclick=closeModal;
 }
 function custLeave(c,angry){
   tasks.filter(t=>t.cust===c).forEach(t=>t.done=true);
@@ -555,7 +604,10 @@ function custLeave(c,angry){
     const server=staff().find(a=>a.id===c.server);
     let tip=0;
     if(server&&mood(server)>20&&(server.type[2]==='F'||server.type[0]==='E')){tip=Math.round((1000+Math.random()*3000)/100)*100;addML(server,'tip');say(server,'팁 감사합니다!')}
-    const pay=Math.round(14000*(c.q||1)/100)*100+tip;
+    if(c.match&&!tip&&server&&Math.random()<.5){tip=Math.round((1000+Math.random()*2000)/100)*100;addML(server,'tip')}
+    let pay=Math.round(14000*(c.q||1)*(c.match?1.15:.9)/100)*100+tip;
+    if(c.rush)pay=Math.round(pay*(c.rush==='auto'?.8:1+Math.min(S.today.combo||0,10)*.1));
+    regVisit(c);
     S.money+=pay;S.today.revenue+=pay;S.today.tips+=tip;S.today.served++;
     S.rep=clamp(S.rep+.02*((c.q||1)-.8)+.015,0,5);
     say(c,(c.q||1)>1.2?'😋 최고예요!':'+'+won(pay),2200);
@@ -572,7 +624,12 @@ function update(dtReal){
   S.min+=dm;
   for(const s of S.staff){if(!s.present&&S.min>=s.arrive&&S.min<END-30&&!s.done){s.present=true;s.done=true;s.x=DOOR.x;s.y=DOOR.y;
     if(s.arrive>10*60+5){addML(s,'late');say(s,'헉 늦었다…!')}else say(s,R(['좋은 아침!',MEME[s.type]]))}}
-  if(S.min>=OPEN&&S.min<CLOSE){custTimer-=dm;if(custTimer<=0){spawnCust();custTimer=(26+Math.random()*22)/(.45+S.rep/5*1.2)}}
+  if(S.min>=OPEN&&S.min<CLOSE){custTimer-=dm;if(custTimer<=0){spawnCust();custTimer=S.rush?2+Math.random()*3:(26+Math.random()*22)/(.45+S.rep/5*1.2)}}
+  // 예상 매출 (오픈 직전)
+  if(!S.today.pred&&S.min>=10*60+50)predict();
+  // 피크타임 러시 (2일차부터)
+  if(S.day>=2&&!S.today.rushDone&&S.min>=19*60){S.today.rushDone=true;rushStart();return}
+  if(S.rush){S.rush.left-=dtReal;if(S.rush.left<=0){const r=S.rush;S.rush=null;toast(r.auto?'러시 종료 · 자동 처리 완료':`러시 종료! 최대 콤보 ${S.today.maxCombo}`)}}
   if(S.min>=END)custs.filter(c=>c.state!=='leave').forEach(c=>custLeave(c,false));
   for(const c of custs.slice()){moveAlong(c,dtReal);updateCust(c,dm)}
   tasks=tasks.filter(t=>!t.done);tasks.forEach(t=>t.age+=dm);
@@ -584,6 +641,7 @@ function update(dtReal){
       if(work&&k==='energy')d+=.05;if(work&&k==='hygiene')d+=.02;
       s.needs[k]=clamp(s.needs[k]-d*dm,0,100)}
     s.ml=s.ml.filter(l=>l.until>S.min);
+    stressTick(s,dm,work);
     if(s.path.length){moveAlong(s,dtReal);if(!s.path.length&&s.job)nextStep(s);continue}
     if(s.job){runJob(s,dm);continue}
     decide(s);
@@ -592,6 +650,43 @@ function update(dtReal){
   if(S.min>=END)S.staff.forEach(s=>{if(s.present&&(!s.job||s.job.kind!=='leave'))setJob(s,leaveJob(s))});
   if(!summaryShown&&S.min>=END&&((!S.staff.some(s=>s.present)&&!custs.length)||S.min>=END+60)){
     summaryShown=true;S.staff.forEach(s=>{releaseJob(s);s.present=false});custs=[];daySummary()}
+}
+function stressTick(s,dm,work){
+  const m=mood(s),resting=s.job&&s.job.kind==='use';
+  const ds=(work&&!resting&&!s.dark?.045:-.03)+(m<0?-m*.0009:0)-(m>30?.02:0)-(resting?.05:0)+(S.rush&&work?.08:0);
+  const before=s.stress;s.stress=clamp(s.stress+ds*dm,0,100);
+  if(s.boss){s.stress=Math.min(s.stress,85);return}
+  if(before<70&&s.stress>=70){say(s,'요즘 좀 힘드네요…');if(!S.taught.stress)setTimeout(()=>teach('stress'),50)}
+  if(s.stress>=90&&!s.dark&&!S.today.darkStarted){s.dark=S.day;S.today.darkStarted=true;say(s,'🌑 '+DARK[s.type][0],4000);logEv(`🌑 ${nm(s)}(${s.type}) 흑화! ${DARK[s.type][0]}`)}
+  if(s.dark&&s.stress<70){s.dark=0;say(s,'…좀 나아졌어요');logEv(`🌤 ${nm(s)}(${s.type}) 흑화에서 돌아옴`)}
+}
+function predict(){
+  const ws=S.staff.filter(s=>s.present&&s.working);
+  const spawn=660/(37/(.45+S.rep/5*1.2)),cap=ws.length*7.5,seats=freeSeats().length*8;
+  let pairs=0,n=0;for(let i=0;i<ws.length;i++)for(let j=i+1;j<ws.length;j++){pairs+=compat(ws[i].type,ws[j].type);n++}
+  const est=Math.min(spawn,cap,seats)*14000*(1+(n?pairs/n:0)/100)*(diversity()?1.1:1);
+  S.today.pred=[Math.round(est*.8/10000)*10000,Math.round(est*1.15/10000)*10000];
+  toast(`📈 오늘 예상 매출 ${won(S.today.pred[0])} ~ ${won(S.today.pred[1])}`);
+}
+function rushStart(){
+  const t=S.staff.find(s=>s.present&&!s.boss)||S.staff[0];
+  openModal(`${teachHead(t)}<h2>🔥 피크타임 러시!</h2><div class="notes">${tone(t,'rush')}</div>
+    <button class="btn primary" id="rsM">직접 할게요 (콤보 보너스)</button><button class="btn" style="margin-top:8px" id="rsA">자동 처리 (보상 80%)</button>`);
+  S.taught.rush=true;
+  $('rsM').onclick=()=>{S.rush={left:30,combo:0,auto:false};speed=1;document.querySelectorAll('[data-sp]').forEach(x=>x.classList.toggle('on',x.dataset.sp==='1'));custTimer=0;closeModal()};
+  $('rsA').onclick=()=>{S.rush={left:30,combo:0,auto:true};custTimer=0;closeModal()};
+}
+function teachHead(t){return `<div class="row" style="gap:10px;margin-bottom:10px">${avatar(t.type,44)}<div><b>${esc(nm(t))}</b> ${typeBadge(t.type)}<div class="small muted">${T[t.type].nick}의 설명</div></div></div>`}
+function tone(t,key){
+  const d=TEACH[key],ty=t.type;
+  const open=ty[2]==='T'&&ty[3]==='J'?`📋 <b>${d.t} 매뉴얼 제1조.</b> 숙지 바랍니다.`:ty[2]==='F'&&ty[3]==='J'?`제가 차근차근 알려 드릴게요 😊 <b>${d.t}</b>예요!`:ty[2]==='T'?`<b>${d.t}</b>. 요약하면 이거예요.`:`헐 <b>${d.t}</b> 이거 진짜 재밌어요!! 들어 보세요~ 🎉`;
+  const close=ty[2]==='T'&&ty[3]==='J'?'이상입니다. 질문은 문서로.':ty[2]==='F'&&ty[3]==='J'?'모르면 언제든 물어보세요!':ty[2]==='T'?'나머진 해 보면 알아요.':'완전 쉽죠?? 화이팅!!💪';
+  return `${open}<br><br>${d.b}<br><br><span class="muted">${close}</span>`;
+}
+function teach(key){
+  if(S.taught[key])return;S.taught[key]=true;
+  const t=S.staff.find(s=>s.present&&!s.boss)||S.staff[0];
+  openModal(`${teachHead(t)}<div class="notes">${tone(t,key)}</div><button class="btn primary" onclick="closeModal()">알겠어요</button>`);
 }
 function contextMood(){
   const open=S.min>=OPEN&&S.min<CLOSE;
@@ -653,6 +748,12 @@ function draw(){
   ents.sort((a,b)=>a.d-b.d).forEach(e=>e.f());
   if(tool==='build'&&buildPick&&hover&&inB(hover.x,hover.y)){const ok=walk(hover.x,hover.y)&&!(hover.x===DOOR.x&&hover.y===DOOR.y);
     poly([iso(hover.x,hover.y),iso(hover.x+1,hover.y),iso(hover.x+1,hover.y+1),iso(hover.x,hover.y+1)],ok?'rgba(67,209,122,.4)':'rgba(255,59,92,.4)')}
+  const me=tool==='live'&&S.staff.find(s=>s.id===sel&&s.present);
+  if(me){const k=TW/64,pm=iso(me.x+.5,me.y+.5);ctx.save();ctx.setLineDash([4,4]);ctx.lineWidth=2;
+    for(const o of S.staff){if(o===me||!o.present)continue;const r=rel(me,o),po=iso(o.x+.5,o.y+.5);
+      ctx.strokeStyle=r.love?'rgba(255,120,190,.75)':r.f>=20?'rgba(67,209,122,.6)':r.f<=-10?'rgba(255,59,92,.65)':'rgba(255,255,255,.18)';
+      ctx.beginPath();ctx.moveTo(pm.x,pm.y-26*k);ctx.lineTo(po.x,po.y-26*k);ctx.stroke()}
+    ctx.restore()}
   const nt=nightTint();if(nt>0){ctx.fillStyle=`rgba(10,10,40,${nt})`;ctx.fillRect(0,0,CW,CH)}
   const now=performance.now();
   for(const a of [...S.staff.filter(s=>s.present),...custs])if(a.bubble&&a.bubble.until>now)drawBubble(a);
@@ -703,6 +804,8 @@ function drawSim(s){
   ctx.fillStyle=moodColor(m);ctx.shadowColor=moodColor(m);ctx.shadowBlur=8;
   ctx.beginPath();ctx.moveTo(h.x,py-8*k);ctx.lineTo(h.x+w,py);ctx.lineTo(h.x,py+8*k);ctx.lineTo(h.x-w,py);ctx.closePath();ctx.fill();ctx.shadowBlur=0;
   if(sleeping)emoji('💤',h.x+12*k,h.y-12*k,12*k);
+  if(s.dark){ctx.fillStyle='rgba(60,20,90,.35)';ctx.beginPath();ctx.arc(h.x,h.y-4*k,22*k,0,7);ctx.fill();emoji('🌑',h.x-13*k,h.y-14*k,11*k)}
+  else if(s.stress>=70)emoji('💦',h.x-12*k,h.y-10*k,10*k);
   if(sel===s.id||speed===0){const label=nm(s)+' '+s.type;ctx.font=`800 ${Math.max(10,10*k)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
     const tw=ctx.measureText(label).width,ly=h.y+54*k;ctx.fillStyle='rgba(0,0,0,.65)';rr(h.x-tw/2-5,ly-8,tw+10,16,7);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(label,h.x,ly)}
 }
@@ -710,7 +813,9 @@ function drawCust(c){
   drawPerson(c,c.body,(x,y,k)=>emoji(c.em,x,y,19*k),.92);
   if(c.state==='waitOrder'||c.state==='waitFood'){const p=iso(c.x+.5,c.y+.5),k=TW/64,lim=c.state==='waitOrder'?75:110,f=clamp(1-c.wait/lim,0,1);
     ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(p.x-10*k,p.y-62*k,20*k,4*k);ctx.fillStyle=f>.5?'#43d17a':f>.25?'#ffd23f':'#ff3b5c';ctx.fillRect(p.x-10*k,p.y-62*k,20*k*f,4*k);
-    emoji(c.state==='waitOrder'?'📝':'🍽️',p.x+15*k,p.y-60*k,11*k)}
+    if(c.state==='waitOrder'){const rq=REQ[c.req.axis][c.req.want];ctx.fillStyle='rgba(255,255,255,.92)';ctx.beginPath();ctx.arc(p.x+16*k,p.y-62*k,9*k,0,7);ctx.fill();emoji(rq[0],p.x+16*k,p.y-62*k,12*k)}
+    else emoji('🍽️',p.x+15*k,p.y-60*k,11*k)}
+  if(c.reg&&c.reg.visits>=5){const p=iso(c.x+.5,c.y+.5),k=TW/64;emoji('⭐',p.x-14*k,p.y-56*k,10*k)}
 }
 function drawBubble(a){
   const p=iso(a.x+.5,a.y+.5),k=TW/64,txt=a.bubble.text;
@@ -744,6 +849,8 @@ cv.addEventListener('pointerdown',e=>{
       ['👆 이 캐릭터 선택',()=>{sel=s.id;renderPanel()}]]);return}
     sel=s.id;tool='live';renderPanel();return;
   }
+  const c=custAt(sx,sy);
+  if(c){custPie(c,sx,sy,me);return}
   if(!inB(g.x,g.y)||!me)return;
   const o=objAt(g.x,g.y);
   if(o&&OBJ[o.t].acts){
@@ -751,6 +858,26 @@ cv.addEventListener('pointerdown',e=>{
   if(o&&o.t==='table'&&o.dirty){showPie(sx,sy,'더러운 테이블',[['🧽 치우기',()=>{const t=tasks.find(t=>t.table===o&&!t.done&&!t.claim);if(t)order(me,{kind:'task',task:t});else toast('이미 누가 치우러 가고 있어요')}]]);return}
   if(walk(g.x,g.y)&&me.present){showPie(sx,sy,nm(me),[['🚶 여기로 가기',()=>{me.queue=[];setJob(me,{kind:'idle',label:'지시받은 곳으로 이동',byPlayer:true,steps:[{go:(x,y)=>x===g.x&&y===g.y},{act:10}]});renderPanel()}]])}
 });
+function custAt(sx,sy){
+  let best=null,bd=1e9;
+  for(const c of custs){const p=iso(c.x+.5,c.y+.5),k=TW/64;
+    if(Math.abs(sx-p.x)<14*k&&sy<p.y+4&&sy>p.y-62*k){const d=Math.abs(sx-p.x)+Math.abs(sy-(p.y-28*k));if(d<bd){bd=d;best=c}}}
+  return best;
+}
+function custLabel(c){return c.reg&&c.reg.visits>=5?`${c.reg.name} (${c.type}) · 단골 ${c.reg.visits}회`:c.reg?`다시 온 손님 · ${c.reg.visits+1}번째`:'처음 온 손님'}
+function custPie(c,sx,sy,me){
+  const rq=REQ[c.req.axis][c.req.want];
+  if(c.state!=='waitOrder'){showPie(sx,sy,custLabel(c),[[c.state==='waitFood'?'🍽️ 음식 기다리는 중':c.state==='eat'?'😋 식사 중':'🚶 이동 중',()=>{}]]);return}
+  const ws=S.staff.filter(s=>s.present&&!s.dark).sort((a,b)=>(b.id===sel)-(a.id===sel));
+  showPie(sx,sy,`${custLabel(c)} · ${rq[0]} ${rq[1]}`,ws.map(w=>{const ok=w.type[c.req.axis]===c.req.want;return [`${ok?'✅':'⚠️'} ${T[w.type].em} ${esc(nm(w))} 보내기 <span class="muted" style="font-size:11px">${w.type[c.req.axis]}</span>`,()=>sendTo(w,c)]}));
+}
+function sendTo(w,c){
+  const t=tasks.find(t=>t.type==='order'&&t.cust===c&&!t.done);if(!t)return toast('이미 주문을 받았어요');
+  const prev=S.staff.find(x=>x.job&&x.job.task===t);if(prev&&prev!==w)releaseJob(prev);
+  t.player=true;t.claim=null;
+  if(!w.present)return;
+  releaseJob(w);w.queue=[{kind:'task',task:t}];decide(w);renderPanel();
+}
 function order(s,q){
   if(!s.present)return toast(`${nm(s)}은(는) 아직 출근 전이에요`);
   releaseJob(s);s.queue=[q];decide(s);renderPanel();
@@ -802,13 +929,14 @@ function renderPanel(){
     if(s){const m=mood(s);
       const rels=S.staff.filter(o=>o!==s).map(o=>{const r=rel(s,o),[l,c]=relLabel(r);return `<span class="chip ${c}">${T[o.type].em} ${esc(nm(o))} · ${l} ${r.f>0?'+':''}${Math.round(r.f)}</span>`}).join('');
       h=`<div class="ih">${avatar(s.type,48)}<div style="flex:1;min-width:0"><h3>${esc(nm(s))} ${typeBadge(s.type)} <span class="small muted">${T[s.type].nick}</span></h3>
-        <div class="small" style="margin-top:2px">기분 <b style="color:${moodColor(m)}">${m>25?'좋음':m>-10?'보통':'나쁨'} (${m>0?'+':''}${m})</b> · ${s.present?(s.working?'근무 모드':'휴식 모드'):'자리에 없음'}</div></div>
+        <div class="small" style="margin-top:2px">기분 <b style="color:${moodColor(m)}">${m>25?'좋음':m>-10?'보통':'나쁨'} (${m>0?'+':''}${m})</b> · 스트레스 <b style="color:${s.stress>=90?'#d4a8ff':s.stress>=70?'#ff8fa3':s.stress>=40?'#ffd23f':'#7dffb0'}">${Math.round(s.stress)}</b>${s.dark?' 🌑 흑화':s.stress>=70?' 💦':''} · ${s.present?(s.working?'근무':'휴식'):'자리에 없음'}</div></div>
         ${s.boss?'':`<button class="btn sm" data-work>${s.working?'☕ 휴식 보내기':'💼 근무 투입'}</button>`}</div>
         <div class="doing">${s.job?'▶ '+esc(s.job.label)+(s.job.byPlayer?' (지시)':''):s.present?'▶ 뭐 할지 고민 중…':''}</div>
         <div class="needs">${NEEDS.map(([k,n,e])=>{const v=Math.round(s.needs[k]);return `<div class="need">${e} ${n}<div class="nb"><span style="width:${v}%;background:${v>60?'#43d17a':v>30?'#ffd23f':'#ff3b5c'}"></span></div></div>`}).join('')}</div>
         <div class="chips">${s.ml.map(l=>`<span class="chip ${l.v>0?'good':'bad'}">${l.v>0?'+':''}${l.v} ${l.n}</span>`).join('')||'<span class="small muted">특별한 감정 없음</span>'}</div>
         <div class="chips">${rels}</div>
-        <p class="small muted" style="margin:8px 0 0;line-height:1.5">💡 선택한 캐릭터로 가구를 누르면 사용하고, 다른 캐릭터를 누르면 대화·장난·칭찬을 시켜요. 💖는 이 유형의 취향이에요.</p>`;
+        ${s.dark?`<div class="notes" style="margin-top:8px;border-color:rgba(161,91,255,.5)">🌑 <b>흑화 중</b> — ${DARK[s.type][0]}. 일을 안 해요. 스트레스를 70 아래로 내리지 못하면 ${Math.max(0,3-(S.day-s.dark))}일 뒤 떠나요.</div>`:''}
+        <p class="small muted" style="margin:8px 0 0;line-height:1.5">💡 가구를 누르면 사용, 다른 캐릭터를 누르면 대화·칭찬·위로, <b>손님</b>을 누르면 요청에 맞는 직원을 보내요. 점선은 관계(초록 친함·빨강 앙숙).</p>`;
     } else h='<p class="small muted">캐릭터를 눌러 선택하세요.</p>';
   }
   if(tool==='build'){
@@ -830,8 +958,16 @@ function renderPanel(){
     const t=S.today;
     h=`<table class="tbl"><tr><td>오늘 손님</td><td>${t.served}명 응대 · <span class="dn">${t.angry}명 화나서 떠남</span></td></tr>
       <tr><td>오늘 매출</td><td>${won(t.revenue)} (팁 ${won(t.tips)})</td></tr><tr><td>평판</td><td>${'★'.repeat(Math.round(S.rep))}${'☆'.repeat(5-Math.round(S.rep))} ${S.rep.toFixed(2)}</td></tr>
-      <tr><td>밀린 업무</td><td>${tasks.filter(x=>!x.done).length}건</td></tr><tr><td>영업시간</td><td>11:00 – 22:00</td></tr></table>
-      <div class="small muted" style="margin:10px 0 4px">오늘의 사건</div>
+      <tr><td>요청 응대</td><td><span class="up">맞춤 ${t.match}</span> · <span class="dn">어긋남 ${t.miss}</span></td></tr>
+      <tr><td>예상 매출</td><td>${t.pred?won(t.pred[0])+' ~ '+won(t.pred[1]):'오픈 전 계산'}</td></tr>
+      <tr><td>다양성 보너스</td><td>${diversity()?'<span class="up">E/I·S/N·T/F·J/P 모두 근무 중 → 효율 +10%</span>':'<span class="muted">8글자가 모두 근무하면 +10%</span>'}</td></tr>
+      ${S.debt>0?`<tr><td>사채 잔액</td><td class="dn">${won(S.debt)}</td></tr>`:''}
+      <tr><td>밀린 업무</td><td>${tasks.filter(x=>!x.done).length}건</td></tr></table>
+      <div class="small muted" style="margin:10px 0 4px">🪪 단골 카드 (5회 이상 방문)</div>
+      <div class="chips" style="margin-top:0">${S.regs.filter(r=>r.visits>=5).map(r=>`<span class="chip">${r.em} ${esc(r.name)} ${r.type} · ${r.visits}회 · 호감 ${r.aff}</span>`).join('')||'<span class="small muted">아직 없음 · 단골 후보 '+S.regs.length+'명</span>'}</div>
+      ${S.alumni.length?`<div class="small muted" style="margin:10px 0 4px">🖼 로비 액자 — 함께했던 사람들</div><div class="chips" style="margin-top:0">${S.alumni.map(a=>`<span class="chip">${T[a.type].em} ${esc(a.name)} ${a.type} · ${a.days}일</span>`).join('')}</div>`:''}
+      ${S.titles.length?`<div class="chips">${S.titles.map(x=>`<span class="chip good">🏅 ${x}</span>`).join('')}</div>`:''}
+      <div class="small muted" style="margin:12px 0 4px">오늘의 사건</div>
       <div class="notes">${t.events.length?t.events.slice(-8).map(esc).join('<br>'):'아직 없음'}</div>
       <button class="btn" data-reset style="color:var(--muted)">처음부터 다시 하기</button>`;
   }
@@ -858,28 +994,71 @@ function hud(){
   $('hClock').textContent=`${S.day}일차 ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
   $('hStars').textContent='★'+S.rep.toFixed(1);
   const open=S.min>=OPEN&&S.min<CLOSE;
-  $('banner').textContent=S.min<OPEN?`🌅 출근 시간 · 11:00 오픈`:open?`🏮 영업 중 · 손님 ${custs.filter(c=>c.state!=='leave').length}명 · 밀린 업무 ${tasks.filter(t=>!t.done).length}`:S.min<END?'🌙 마감 · 남은 손님 응대 중':'🌃 퇴근 중…';
+  $('banner').textContent=S.rush?`🔥 피크타임 러시 ${Math.ceil(S.rush.left)}초 · ${S.rush.auto?'자동 처리':'콤보 '+S.rush.combo}`:S.min<OPEN?`🌅 출근 시간 · 11:00 오픈`:open?`🏮 영업 중 · 손님 ${custs.filter(c=>c.state!=='leave').length}명 · 밀린 업무 ${tasks.filter(t=>!t.done).length}`:S.min<END?'🌙 마감 · 남은 손님 응대 중':'🌃 퇴근 중…';
 }
 
 /* ════════════════ 하루 정산 ════════════════ */
 function daySummary(){
   const t=S.today,wages=S.staff.filter(s=>!s.boss).length*60000,rent=50000;
-  S.money-=wages+rent;
+  const debtPay=Math.min(S.debt,100000);S.debt-=debtPay;
+  S.money-=wages+rent+debtPay;
+  // 흑화 여파
+  const darkNotes=[];
+  for(const s of S.staff.filter(x=>x.dark)){const k=DARK[s.type][1];
+    if(k==='cash'){S.money-=30000;darkNotes.push(`🌑 ${nm(s)}: ${DARK[s.type][0]} -₩30,000`)}
+    if(k==='team'){S.staff.forEach(o=>o!==s&&(o.stress=clamp(o.stress+10,0,100)));darkNotes.push(`🌑 ${nm(s)}: ${DARK[s.type][0]} (동료 스트레스 +10)`)}
+    if(k==='rep'){S.rep=clamp(S.rep-.1,0,5);darkNotes.push(`🌑 ${nm(s)}: ${DARK[s.type][0]} (평판 -0.1)`)}}
   const net=t.revenue-wages-rent;
-  const sorted=S.staff.slice().sort((a,b)=>mood(b)-mood(a)),best=sorted[0],worst=sorted[sorted.length-1];
+  // 예측 vs 실제
+  let verdict='';
+  if(t.pred){const [lo,hi]=t.pred;
+    const why=[];if(t.angry)why.push(`화나서 떠난 손님 ${t.angry}명`);if(t.miss>t.match)why.push(`요청 어긋남 ${t.miss}건 (맞춤 ${t.match})`);
+    const tired=S.staff.filter(x=>x.stress>=70);if(tired.length)why.push(`지친 직원: ${tired.map(x=>nm(x)+'('+x.type+')').join(', ')}`);
+    const fights=[];for(let i=0;i<S.staff.length;i++)for(let j=i+1;j<S.staff.length;j++){const r=rel(S.staff[i],S.staff[j]);if(r.f<=-20)fights.push(`${nm(S.staff[i])}↔${nm(S.staff[j])}`)}
+    if(fights.length)why.push(`사이 나쁜 조합: ${fights.join(', ')}`);
+    const good=[];if(t.match)good.push(`요청 맞춤 ${t.match}건`);if(t.maxCombo)good.push(`러시 최대 콤보 ${t.maxCombo}`);if(diversity())good.push('다양성 보너스');
+    verdict=t.revenue>hi?`<div class="notes">🎯 <b class="up">대박!</b> 예상 ${won(lo)}~${won(hi)}를 넘었어요.${good.length?'<br>'+good.join(' · '):''}</div>`
+      :t.revenue>=lo?`<div class="notes">🎯 <b>적중!</b> 예상 범위 ${won(lo)}~${won(hi)} 안이에요.</div>`
+      :`<div class="notes">🔍 <b class="dn">분석</b> — 예상 ${won(lo)}~${won(hi)}보다 낮았어요.<br>${why.length?why.join('<br>'):'손님이 적었던 하루예요.'}</div>`}
+  // 이별
+  const leaving=S.staff.filter(x=>!x.boss&&(x.stress>=100||(x.dark&&S.day-x.dark>=3)));
+  const fare=leaving.map(x=>{const days=S.day-x.hired+1;const best=S.staff.filter(o=>o!==x).sort((a,b)=>rel(x,b).f-rel(x,a).f)[0];
+    S.alumni.push({name:x.name,type:x.type,days});
+    return `<div class="notes" style="text-align:center"><div style="font-size:34px">${T[x.type].em}</div><b>${esc(x.name)} (${x.type})</b>가 떠납니다<br><span class="muted">함께한 ${days}일 · 서빙 ${x.served}번${best?` · 가장 친했던 ${esc(nm(best))}`:''}</span><br>"${x.type[2]==='F'?'그동안 정말 고마웠어요… 잊지 않을게요.':'여기까지인 것 같아요. 감사했습니다.'}"<br><span class="muted small">🖼 로비 액자에 사진이 걸렸어요</span></div>`}).join('');
+  if(leaving.length){S.staff=S.staff.filter(x=>!leaving.includes(x));if(!S.staff.some(x=>x.id===sel))sel=S.staff[0].id}
+  // 파산 위기
+  S.negDays=S.money<0?S.negDays+1:0;
+  let crisis='';
+  if(S.negDays>=5)crisis=`<div class="notes dn">💥 <b>파산</b> — 5일 연속 적자. 내일 아침 첫 가게로 돌아가 다시 시작해요. 사장과 친한 직원만 따라와요.</div>`;
+  else if(S.negDays>=3)crisis=`<div class="notes dn">⚠️ <b>파산 위기</b> — ${S.negDays}일째 마이너스예요. 가구를 팔거나 사채를 써서 버텨 보세요.</div>${S.debt?'':'<button class="btn" id="loan" style="margin-bottom:8px">💸 사채 ₩500,000 받기 (하루 ₩100,000씩 6일 상환)</button>'}`;
+  if(S.bankrupt&&S.money>=1000000&&!S.titles.includes('불사조 대표')){S.titles.push('불사조 대표');crisis+=`<div class="notes up">🔥 <b>불사조 대표</b> 칭호! 파산을 딛고 재기했어요.</div>`}
+  const sorted=S.staff.slice().sort((a,b)=>mood(b)-mood(a)),best=sorted[0],worst=S.staff.slice().sort((a,b)=>b.stress-a.stress)[0];
   openModal(`<div class="small muted">${S.day}일차 마감</div><h2>${net>=0?'💰':'📉'} 순이익 <span class="${net>=0?'up':'dn'}">${won(net)}</span></h2>
-    <table class="tbl"><tr><td>손님 응대</td><td>${t.served}명</td></tr><tr><td>화나서 떠난 손님</td><td class="dn">${t.angry}명</td></tr>
-    <tr><td>매출 (팁 포함)</td><td>${won(t.revenue)}</td></tr><tr><td>급여</td><td>-${won(wages)}</td></tr><tr><td>임대료</td><td>-${won(rent)}</td></tr></table>
-    <div class="notes" style="margin-top:10px">😊 오늘의 기분왕: <b>${esc(nm(best))}</b>(${best.type})<br>😣 제일 지친 사람: <b>${esc(nm(worst))}</b>(${worst.type})${t.events.length?'<br><br>'+t.events.slice(-6).map(esc).join('<br>'):''}</div>
-    ${S.money<0?'<div class="notes dn">⚠️ 잔고가 마이너스예요. 가구를 팔거나 인원을 줄여 보세요.</div>':''}
+    ${verdict}
+    <table class="tbl"><tr><td>손님 응대</td><td>${t.served}명 · 요청 맞춤 ${t.match}/${t.match+t.miss}</td></tr><tr><td>화나서 떠난 손님</td><td class="dn">${t.angry}명</td></tr>
+    <tr><td>매출 (팁 포함)</td><td>${won(t.revenue)}</td></tr><tr><td>급여</td><td>-${won(wages)}</td></tr><tr><td>임대료</td><td>-${won(rent)}</td></tr>${debtPay?`<tr><td>사채 상환</td><td>-${won(debtPay)}</td></tr>`:''}</table>
+    <div class="notes" style="margin-top:10px">😊 오늘의 기분왕: <b>${esc(nm(best))}</b>(${best.type})<br>😣 스트레스 최고: <b>${esc(nm(worst))}</b>(${worst.type}) ${Math.round(worst.stress)}${darkNotes.length?'<br>'+darkNotes.join('<br>'):''}${t.events.length?'<br><br>'+t.events.slice(-6).map(esc).join('<br>'):''}</div>
+    ${fare}${crisis}
     <button class="btn primary" id="nextDay">다음 날 아침으로 ☀️</button>`);
+  const ln=$('loan');if(ln)ln.onclick=()=>{S.money+=500000;S.debt=600000;ln.remove();toast('사채 ₩500,000 입금… 갚을 땐 ₩600,000')};
   $('nextDay').onclick=()=>{
     S.day++;S.cands=null;
+    if(S.negDays>=5)bankrupt();
     // 집에서 보낸 밤: 유형마다 회복이 다르다 (E는 사람이 그립고, I는 충전 완료)
     for(const s of S.staff){s.needs.hunger=Math.max(s.needs.hunger,80);s.needs.energy=s.needs.energy<20?70:Math.max(s.needs.energy,90);s.needs.hygiene=95;
-      s.needs.fun=clamp(s.needs.fun+25,0,100);s.needs.social=s.type[0]==='E'?Math.min(s.needs.social,55):clamp(s.needs.social+30,0,85);s.done=false}
+      s.needs.fun=clamp(s.needs.fun+25,0,100);s.needs.social=s.type[0]==='E'?Math.min(s.needs.social,55):clamp(s.needs.social+30,0,85);s.done=false;
+      s.stress=clamp(s.stress-(s.type[0]==='I'?32:22),0,100)}
     resetDay();closeModal();save();renderPanel();
   };
+}
+function bankrupt(){
+  const boss=S.staff.find(s=>s.boss);
+  const stay=S.staff.filter(s=>s.boss||rel(boss,s).f>=20);
+  const gone=S.staff.filter(s=>!stay.includes(s));
+  gone.forEach(g=>S.alumni.push({name:g.name,type:g.type,days:S.day-g.hired}));
+  S.staff=stay;S.objs=defaultLayout().filter(o=>['wall','stove','fridge','table','chair','sofa'].includes(o.t)&&!(o.t==='table'&&o.x===6)&&!(o.t==='chair'&&o.x===6));
+  S.money=200000;S.debt=0;S.negDays=0;S.bankrupt=true;S.rep=Math.max(1.5,S.rep-.5);
+  setTimeout(()=>openModal(`<div style="font-size:44px">🏮</div><h2>다시, 그 골목</h2><p class="lead">가게를 정리하고 첫 포장마차로 돌아왔다. 끝까지 남아 준 사람은 ${stay.length-1}명.${gone.length?`<br><span class="muted">떠난 사람: ${gone.map(g=>esc(g.name)+'('+g.type+')').join(', ')}</span>`:''}</p><div class="notes">누가 남았는지가 그동안의 경영 성적표예요. ₩1,000,000을 다시 모으면 <b>불사조 대표</b> 칭호!</div><button class="btn primary" onclick="closeModal()">다시 시작</button>`),60);
 }
 
 /* ════════════════ 공용 ════════════════ */
