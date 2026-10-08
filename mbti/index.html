@@ -8,6 +8,7 @@
 <meta name="description" content="MBTI 16유형 캐릭터들이 스스로 움직이며 일하고, 쉬고, 친해지고, 싸우는 심즈 스타일 가게 시뮬레이션." />
 <style>
 :root{
+  color-scheme:dark;
   --bg:#0b0808;--bg-2:#141010;--card:#171213;--card-2:#211919;--card-3:#2b2121;
   --line:rgba(255,255,255,.09);--txt:#fbf1ec;--muted:#a99a95;
   --orange:#ff7a1a;--gold:#ffcf7a;--red:#ff3b5c;--green:#43d17a;
@@ -975,9 +976,9 @@ function renderPanel(){
   const wb=document.querySelector('[data-work]');if(wb)wb.onclick=()=>{const s=S.staff.find(x=>x.id===sel);s.working=!s.working;releaseJob(s);say(s,s.working?'일하러 갑니다!':'쉬어도 돼요? 야호!');renderPanel()};
   document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{buildPick=b.dataset.b;renderPanel()});
   document.querySelectorAll('[data-hire]').forEach(b=>b.onclick=()=>hire(+b.dataset.hire));
-  document.querySelectorAll('[data-fire]').forEach(b=>b.onclick=()=>{const s=S.staff.find(x=>x.id===+b.dataset.fire);if(!confirm(`${s.name}을(를) 해고할까요?`))return;releaseJob(s);S.staff=S.staff.filter(x=>x!==s);if(sel===s.id)sel=S.staff[0].id;toast(`${s.name}: "${s.type[2]==='F'?'그동안 감사했어요…ㅠ':'네, 알겠습니다.'}"`);renderPanel()});
+  document.querySelectorAll('[data-fire]').forEach(b=>b.onclick=()=>{const s=S.staff.find(x=>x.id===+b.dataset.fire);askYes(`${esc(s.name)}(${s.type})을(를) 해고할까요?`,'해고하기',()=>{releaseJob(s);S.staff=S.staff.filter(x=>x!==s);if(sel===s.id)sel=S.staff[0].id;toast(`${s.name}: "${s.type[2]==='F'?'그동안 감사했어요…ㅠ':'네, 알겠습니다.'}"`);renderPanel()});});
   const rb=document.querySelector('[data-reroll]');if(rb)rb.onclick=()=>{if(S.money<20000)return toast('돈이 부족해요');S.money-=20000;S.cands=rollCands();renderPanel()};
-  const rs=document.querySelector('[data-reset]');if(rs)rs.onclick=()=>{if(confirm('저장된 게임을 지우고 처음부터 할까요?')){try{localStorage.removeItem(SAVE_KEY)}catch(e){}location.reload()}};
+  const rs=document.querySelector('[data-reset]');if(rs)rs.onclick=()=>{askYes('저장된 게임을 지우고 처음부터 할까요?','처음부터 하기',()=>{try{localStorage.removeItem(SAVE_KEY)}catch(e){}closeModal();S=null;custs=[];tasks=[];intro()})};
 }
 function rollCands(){const have=new Set(S.staff.map(s=>s.type));return TYPES.filter(t=>!have.has(t)).sort(()=>Math.random()-.5).slice(0,3).map(t=>newSim(t))}
 function hire(i){
@@ -1062,6 +1063,7 @@ function bankrupt(){
 }
 
 /* ════════════════ 공용 ════════════════ */
+function askYes(q,yes,fn){openModal(`<h2>${q}</h2><div class="row" style="margin-top:14px"><button class="btn" id="ayN">취소</button><button class="btn primary" id="ayY">${yes}</button></div>`);$('ayN').onclick=closeModal;$('ayY').onclick=()=>{closeModal();fn()}}
 function openModal(h){$('modal').innerHTML=h;$('modalBg').classList.add('on')}
 function closeModal(){$('modalBg').classList.remove('on')}
 function toast(m){const el=document.createElement('div');el.className='toast';el.textContent=m;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
