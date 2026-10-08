@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0808" />
+<title>MBTI 시티 타이쿤</title>
+<meta name="description" content="골목 포장마차 하나로 시작해 MBTI 16유형 직원을 뽑고 굴려서 네온시티 상권을 장악하는 경영 시뮬레이션 프로토타입." />
+<style>
+:root{
+  --bg:#0b0808;--bg-2:#141010;--card:#171213;--card-2:#211919;--card-3:#2b2121;
+  --line:rgba(255,255,255,.09);--txt:#fbf1ec;--muted:#a99a95;
+  --orange:#ff7a1a;--orange-2:#ff4d00;--gold:#ffcf7a;--red:#ff3b5c;
+  --purple:#a15bff;--teal:#2ec4b6;--blue:#4d8dff;--green:#43d17a;
+  --fire:linear-gradient(105deg,#ff4d00 0%,#ff7a1a 50%,#ffcf7a 100%);
+  --radius:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",Roboto,"Noto Sans KR",sans-serif;
+  min-height:100%;overscroll-behavior:none}
+body{background:radial-gradient(1200px 600px at 50% -10%,#2a1410 0%,var(--bg) 60%) fixed}
+button,input{font-family:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+.app{max-width:560px;margin:0 auto;padding:0 16px calc(150px + env(safe-area-inset-bottom));min-height:100vh}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.btn{display:block;width:100%;padding:15px;border-radius:14px;font-size:16px;font-weight:800;background:var(--card-2);border:1px solid var(--line);transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--fire);color:#1a0a00;border:0}
+.btn.ghost{background:transparent}
+.btn.sm{display:inline-block;width:auto;padding:8px 12px;font-size:13px;border-radius:10px}
+.btn[disabled]{opacity:.4;cursor:default}
+.badge{display:inline-block;font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.row{display:flex;gap:8px;align-items:center}
+.between{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.stack{display:flex;flex-direction:column;gap:10px}
+h1,h2,h3,h4{margin:0}
+.up{color:#7dffb0}.dn{color:#ff8fa3}
+
+/* 시작 화면 */
+#intro{padding-top:24px}
+.logo{font-size:40px;font-weight:900;letter-spacing:-.03em;line-height:1.05;background:var(--fire);-webkit-background-clip:text;background-clip:text;color:transparent}
+.intro-story{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;font-size:14px;line-height:1.7;margin:16px 0}
+.field{display:block;width:100%;padding:14px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:16px;outline:none}
+.field:focus{border-color:var(--orange)}
+.lbl{font-size:13px;font-weight:800;margin:18px 0 8px;display:block}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tcell{padding:10px 2px;border-radius:12px;background:var(--card);border:1px solid var(--line);text-align:center;font-size:12px;font-weight:800}
+.tcell .e{font-size:22px;display:block;margin-bottom:2px}
+.tcell.on{border-color:var(--gold);background:#2a1d10}
+
+/* 상단 바 */
+.hud{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 80%,transparent);padding:12px 0 10px;margin:0 -2px}
+.hud-top{display:flex;justify-content:space-between;align-items:baseline}
+.co{font-weight:900;font-size:17px}
+.day{font-size:13px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px;margin-top:8px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.kpi b{display:block;font-size:16px}
+.kpi span{font-size:11px;color:var(--muted)}
+.goal{margin-top:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:12px}
+.goal .g-t{font-weight:800;font-size:13px;margin-bottom:4px}
+.gl{display:flex;justify-content:space-between;gap:6px;margin-top:3px}
+.bar{height:6px;background:var(--card-3);border-radius:6px;overflow:hidden;margin-top:3px}
+.bar span{display:block;height:100%;border-radius:6px;background:var(--fire)}
+
+/* 탭 */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:rgba(11,8,8,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+.tabs-in{max-width:560px;margin:0 auto}
+.tabbar{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px}
+.tab{padding:7px 0;border-radius:10px;font-size:12px;font-weight:700;color:var(--muted);text-align:center;position:relative}
+.tab .i{font-size:18px;display:block}
+.tab.on{color:var(--txt);background:var(--card-2)}
+.tab .dot{position:absolute;top:4px;right:calc(50% - 18px);width:7px;height:7px;border-radius:50%;background:var(--red)}
+.page{display:none}.page.on{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.sec-t{font-size:13px;font-weight:800;color:var(--muted);margin:14px 2px 8px}
+
+/* 매장 */
+.store{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.store-h{display:flex;gap:10px;align-items:center}
+.store-ic{width:44px;height:44px;border-radius:12px;background:var(--card-2);display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
+.store-h h3{font-size:16px}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin-top:12px}
+.slot{min-height:76px;border-radius:12px;background:var(--bg-2);border:1px dashed rgba(255,255,255,.16);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 4px;text-align:center;font-size:12px}
+.slot.f{border-style:solid;border-color:var(--line);background:var(--card-2)}
+.slot .e{font-size:22px;line-height:1.1}
+.slot .n{font-weight:800;font-size:12px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.slot .ty{font-size:10px;font-weight:800}
+.sbar{width:80%;height:4px;background:var(--card-3);border-radius:4px;margin-top:4px;overflow:hidden}
+.sbar span{display:block;height:100%}
+.compat{margin-top:10px;font-size:12px;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.chip{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;background:var(--card-2);white-space:nowrap}
+.chip.good{background:rgba(67,209,122,.14);color:#7dffb0}
+.chip.bad{background:rgba(255,59,92,.14);color:#ff8fa3}
+.chip.hid{background:rgba(255,207,122,.15);color:var(--gold)}
+.store-f{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)}
+
+/* 직원 */
+.emp{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;text-align:left;width:100%}
+.av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex:none;border:2px solid var(--line)}
+.emp .mid{flex:1;min-width:0}
+.emp .nm{font-weight:800;font-size:14px;display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.emp .sub{font-size:11px;color:var(--muted);margin-top:2px}
+.gr{font-size:10px;font-weight:900;padding:1px 6px;border-radius:5px}
+.gr-N{background:#3a3030;color:#cfc3bf}.gr-R{background:#14304f;color:#8cc2ff}.gr-SR{background:#3a1d55;color:#d4a8ff}.gr-SSR{background:linear-gradient(90deg,#ff4d00,#ffcf7a);color:#1a0a00}
+
+/* 모달 */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.66);z-index:20;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.on{display:flex}
+.modal{width:100%;max-width:560px;max-height:90vh;overflow:auto;background:var(--bg-2);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));animation:up .22s ease}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.modal h2{font-size:20px;margin-bottom:6px}
+.modal .lead{font-size:14px;line-height:1.6;color:var(--muted);margin:0 0 14px}
+.ev-ic{font-size:44px;margin-bottom:6px}
+.result{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:14px;line-height:1.65;margin-bottom:12px}
+.fx{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl td{padding:5px 0;border-bottom:1px solid var(--line)}
+.tbl td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.tbl tr.tot td{font-weight:900;border-bottom:0;font-size:15px;padding-top:9px}
+.settle-store{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px}
+.notes{font-size:13px;line-height:1.7;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.stats6{display:grid;grid-template-columns:38px 1fr 26px;gap:5px 8px;align-items:center;font-size:12px;margin:10px 0}
+.stats6 .b{height:6px;background:var(--card-3);border-radius:6px;overflow:hidden}
+.stats6 .b span{display:block;height:100%;border-radius:6px;background:var(--orange)}
+.opt{display:block;width:100%;text-align:left;padding:14px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:14px;line-height:1.5;margin-bottom:8px}
+.opt:active{border-color:var(--orange)}
+.opt b{display:block;font-size:15px;margin-bottom:2px}
+.toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--card-3);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;z-index:40;animation:fade .2s;max-width:90vw;text-align:center}
+.dex{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.dex div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 2px;text-align:center;font-size:11px;font-weight:800}
+.dex div.no{opacity:.3;filter:grayscale(1)}
+.dex .e{font-size:22px;display:block}
+.combo{display:flex;justify-content:space-between;gap:8px;padding:9px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:6px;font-size:13px}
+.orgcard{background:linear-gradient(160deg,#2a1206,#0b0808 60%);border:1px solid rgba(255,122,26,.4);border-radius:22px;padding:22px 18px;text-align:center}
+.orgcard .o-t{font-size:12px;letter-spacing:.2em;color:var(--orange);font-weight:800}
+.orgcard h3{font-size:24px;margin:6px 0 16px}
+.org-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.org-p{width:76px;text-align:center;font-size:11px}
+.org-p .av{margin:0 auto 4px;width:52px;height:52px;font-size:28px}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="tabs" id="tabs" style="display:none"><div class="tabs-in">
+  <button class="btn primary" id="openBtn">☀️ 영업 시작</button>
+  <div class="tabbar">
+    <button class="tab on" data-tab="stores"><span class="i">🏮</span>매장</button>
+    <button class="tab" data-tab="staff"><span class="i">🧑‍🍳</span>직원</button>
+    <button class="tab" data-tab="hire"><span class="i">📇</span>채용</button>
+    <button class="tab" data-tab="dex"><span class="i">📖</span>도감</button>
+  </div>
+</div></div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+
+<script>
+'use strict';
+/* ═══════════════ 데이터 ═══════════════ */
+const TYPES=['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+const T={
+  INTJ:{nick:'전략가',em:'🦉',skill:'마스터플랜',sd:'매장 매출 변동 없음 (항상 +5%)'},
+  INTP:{nick:'논리술사',em:'🧪',skill:'과몰입',sd:'신메뉴 이벤트에서 대성공'},
+  ENTJ:{nick:'통솔자',em:'👑',skill:'지휘',sd:'소속 매장 효율 +20%'},
+  ENTP:{nick:'변론가',em:'🃏',skill:'말빨',sd:'협상 이벤트 성공 확률 2배'},
+  INFJ:{nick:'옹호자',em:'🔮',skill:'예지몽',sd:'내일 일어날 이벤트를 미리 보여줌'},
+  INFP:{nick:'중재자',em:'🦋',skill:'감성 폭발',sd:'근무 시 매일 평판 상승'},
+  ENFJ:{nick:'선도자',em:'🌟',skill:'리더의 한마디',sd:'같은 매장 동료 스트레스 매일 -6'},
+  ENFP:{nick:'활동가',em:'🎉',skill:'텐션 점화',sd:'매일 15% 확률로 손님 +50%'},
+  ISTJ:{nick:'현실주의자',em:'📋',skill:'매뉴얼',sd:'위생 점검·고장 사고 무효화'},
+  ISFJ:{nick:'수호자',em:'🛡️',skill:'도시락',sd:'동료 스트레스 매일 -3, 퇴사 위기 1회 막음'},
+  ESTJ:{nick:'경영자',em:'📊',skill:'일정 통제',sd:'영업시간 연장, 매장 매출 +10%'},
+  ESFJ:{nick:'집정관',em:'🍰',skill:'단골 모으기',sd:'매장 매출 +8%, 단골 이벤트 대성공'},
+  ISTP:{nick:'장인',em:'🔧',skill:'만능 손',sd:'고장 수리비 0원'},
+  ISFP:{nick:'모험가',em:'🎨',skill:'감각 해방',sd:'인테리어 효과 2배'},
+  ESTP:{nick:'사업가',em:'🏍️',skill:'즉흥 돌파',sd:'돌발 상황(비·시세 폭등)을 기회로'},
+  ESFP:{nick:'연예인',em:'🎤',skill:'무대 장악',sd:'바·클럽 매출 +50%, 그 외 +10%'},
+};
+const GROUP_COLOR=t=>t[1]==='N'?(t[2]==='T'?'#a15bff':'#2ec4b6'):(t[3]==='J'?'#4d8dff':'#ff7a1a');
+const STATS=['서비스','기획','실행','감각','영업','멘탈'];
+const GRADES={N:{mul:1,wage:6,p:60},R:{mul:1.2,wage:9,p:28},SR:{mul:1.45,wage:14,p:10},SSR:{mul:1.75,wage:22,p:2}};
+const QUIRKS=[
+  {n:'커피 없으면 못 일함',d:'카페 근무 시 스트레스 감소, 그 외 증가',k:'coffee'},
+  {n:'아침형 인간',d:'실행 +2',st:{실행:2}},
+  {n:'야행성',d:'주점·바·클럽에서 능력 +15%',k:'night'},
+  {n:'손이 빠름',d:'실행 +3',st:{실행:3}},
+  {n:'수다쟁이',d:'서비스 +3, 기획 -1',st:{서비스:3,기획:-1}},
+  {n:'강철 멘탈',d:'스트레스 증가량 -30%',k:'steel'},
+  {n:'유리 멘탈',d:'스트레스 증가량 +30%, 감각 +2',k:'glass',st:{감각:2}},
+  {n:'돈 냄새를 맡음',d:'영업 +3',st:{영업:3}},
+  {n:'집순이·집돌이',d:'휴무 회복량 1.5배',k:'home'},
+  {n:'완벽주의',d:'감각 +3, 매일 스트레스 +2',k:'perfect',st:{감각:3}},
+  {n:'덕업일치',d:'기획 +3',st:{기획:3}},
+  {n:'분위기 메이커',d:'서비스 +2, 멘탈 +1',st:{서비스:2,멘탈:1}},
+];
+const KINDS={
+  pojang:{n:'포장마차',e:'🏮',cost:500,slots:2,keys:['서비스','실행'],base:90,cr:.38,rent:3,tier:1,wk:[1,1.2]},
+  cafe:{n:'동네 카페',e:'☕',cost:1200,slots:3,keys:['감각','서비스'],base:170,cr:.32,rent:7,tier:1,wk:[1,1.15]},
+  conv:{n:'편의점',e:'🏪',cost:2000,slots:3,keys:['실행','멘탈'],base:230,cr:.45,rent:9,tier:1,wk:[1,1],note:'J 성향 직원 1명당 +6%'},
+  pub:{n:'한식 주점',e:'🍶',cost:6000,slots:4,keys:['서비스','멘탈'],base:620,cr:.38,rent:22,tier:2,wk:[.9,1.35]},
+  bar:{n:'칵테일 바',e:'🍸',cost:12000,slots:4,keys:['감각','영업'],base:980,cr:.3,rent:38,tier:2,wk:[.85,1.45]},
+  club:{n:'나이트클럽',e:'🪩',cost:40000,slots:5,keys:['영업','서비스'],base:3200,cr:.3,rent:120,tier:3,wk:[.6,1.9],note:'E 성향 직원 1명당 +6%'},
+};
+const DISTRICTS={
+  univ:{n:'대학가',rent:.7,m:{pojang:1.3,cafe:1.3,conv:1,pub:.95,bar:.8,club:.9},d:'20대 초반·가성비'},
+  station:{n:'역전 골목',rent:1,m:{pojang:1.1,cafe:1,conv:1.3,pub:1.3,bar:1,club:.8},d:'직장인 점심·저녁'},
+  night:{n:'유흥 중심가',rent:1.6,m:{pojang:1.1,cafe:.8,conv:1.1,pub:1.15,bar:1.4,club:1.5},d:'주말 밤·고액 지출'},
+  beach:{n:'해변 관광지',rent:1.2,m:{pojang:1.25,cafe:1.1,conv:1,pub:1.1,bar:1.25,club:1.1},d:'관광객·외국인'},
+  office:{n:'오피스 타운',rent:1.4,m:{pojang:.9,cafe:1.4,conv:1.2,pub:1.15,bar:.9,club:.6},d:'평일 낮 강세, 주말 공동화',weekendDead:1},
+  newtown:{n:'신도시',rent:.8,m:{pojang:.9,cafe:1.1,conv:1.25,pub:.95,bar:.9,club:.8},d:'가족 단위·성장 중'},
+};
+const RIVALS=[
+  {n:'한대표',t:'ESTJ',a:'물량 공세로 가격 전쟁을 걸었다'},
+  {n:'레이',t:'INFP',a:'감성 브랜딩 팝업으로 손님을 뺏어갔다'},
+  {n:'마이크',t:'ENTJ',a:'근처 매장을 공격적으로 인수했다'},
+  {n:'오사장',t:'ISTJ',a:'건물주들과 손잡고 임대료를 올렸다'},
+  {n:'제이',t:'ENTP',a:'SNS 논란 마케팅으로 시선을 끌었다'},
+];
+/* 궁합 */
+const pairKey=(a,b)=>[a,b].sort().join('+');
+const SPECIAL={};
+[
+  ['ENTJ','ISFJ',15,'지휘+보좌','good'],['ENFP','INTJ',15,'아이디어+설계','good'],['ESTP','ISTJ',15,'영업+관리','good'],
+  ['ENTJ','ENTJ',-20,'주도권 싸움','bad'],['ESTJ','INFP',-20,'압박 vs 상처','bad'],['ENTP','ISTJ',-20,'규칙 깨기 vs 지키기','bad'],
+  ['INFJ','ENFP',25,'운명적 만남','hidden'],['INTP','ENTP',18,'밤샘 토론 클럽','hidden'],['ISFJ','ESFJ',18,'엄마 손맛 듀오','hidden'],
+  ['ISTP','ESTP',18,'익스트림 브라더스','hidden'],['ESFP','ENFP',18,'흥 폭발','hidden'],['INFP','ISFP',16,'감성 아틀리에','hidden'],
+  ['ENFJ','INFP',18,'멘토와 몽상가','hidden'],['ESTJ','ISTJ',14,'엑셀 장인들','hidden'],['INTJ','ENTJ',16,'세계 정복 계획','hidden'],
+  ['ISFP','ESFJ',14,'플레이팅 장인','hidden'],['INTJ','INFJ',14,'고요한 천재들','hidden'],['ENTP','INFJ',16,'철학 카페','hidden'],
+].forEach(([a,b,v,n,k])=>SPECIAL[pairKey(a,b)]={v,n,k});
+const HIDDEN_TOTAL=Object.values(SPECIAL).filter(s=>s.k==='hidden').length;
+function pairInfo(a,b){
+  const sp=SPECIAL[pairKey(a,b)];
+  if(sp) return sp;
+  let v=0;
+  if(a===b) v-=3;
+  if(a[0]!==b[0]) v+=3;
+  if(a[1]===b[1]) v+=4;
+  if(a[2]!==b[2]) v+=2;
+  v+= a[3]===b[3]?2:-3;
+  if(a[0]==='E'&&b[0]==='E'&&a[2]==='T'&&b[2]==='T'&&a[3]==='J'&&b[3]==='J') v-=10;
+  return {v,k:v>=8?'good':v<=-4?'bad':'norm'};
+}
+const SURN='김이박최정강조윤장임한오서신권황안송류홍'.split('');
+const GIVEN=['민준','서연','도윤','하은','지호','수아','예준','지유','시우','서윤','주원','하린','은우','채원','유준','지안','태오','나연','건우','소율','현우','다인','준서','예린','로운','아린','승현','유나','재희','보람'];
+
+/* ═══════════════ 상태 ═══════════════ */
+const SAVE_KEY='mbti-tycoon-v1';
+let S=null;
+const R=(a)=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function fmt(v){
+  const neg=v<0;v=Math.abs(Math.round(v));
+  let s= v>=10000 ? (v/10000).toFixed(v>=100000?0:1).replace(/\.0$/,'')+'억' : v.toLocaleString()+'만';
+  return (neg?'-':'')+s;
+}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){return null}}
+const WD=['월','화','수','목','금','토','일'];
+const weekday=d=>(d-1)%7;
+const isWeekend=d=>weekday(d)>=5;
+
+function rollGrade(bonus=0){
+  const rep=S?S.rep:3;
+  const w={N:Math.max(20,60-(rep-3)*12-bonus*40),R:28+bonus*10,SR:10+(rep-3)*8+bonus*22,SSR:2+(rep-3)*3+bonus*8};
+  let tot=Object.values(w).reduce((a,b)=>a+Math.max(0,b),0),r=Math.random()*tot;
+  for(const g in w){r-=Math.max(0,w[g]);if(r<=0)return g}
+  return 'N';
+}
+function makeStaff(type,grade,opts={}){
+  return {id:++S.seq,name:opts.name||R(SURN)+R(GIVEN),type,grade,lv:1,xp:0,stress:opts.stress||10,
+    quirk:opts.quirk!==undefined?opts.quirk:Math.floor(Math.random()*QUIRKS.length),
+    boss:!!opts.boss,storeId:null,care:{}, savedOnce:false};
+}
+function baseStats(t){
+  const s={서비스:4,기획:4,실행:4,감각:4,영업:4,멘탈:4};
+  if(t[0]==='E'){s.서비스+=2;s.영업+=2}else{s.기획+=2;s.멘탈+=2}
+  if(t[1]==='S'){s.실행+=2;s.감각+=2}else{s.기획+=2;s.감각+=1}
+  if(t[2]==='T'){s.영업+=1;s.기획+=1}else{s.서비스+=2}
+  if(t[3]==='J'){s.실행+=1;s.멘탈+=1}else{s.감각+=1;s.영업+=1}
+  return s;
+}
+function stats(st){
+  const s=baseStats(st.type),q=QUIRKS[st.quirk];
+  if(q.st) for(const k in q.st) s[k]+=q.st[k];
+  const m=GRADES[st.grade].mul*(1+.03*(st.lv-1));
+  for(const k in s) s[k]=Math.max(1,Math.round(s[k]*m));
+  return s;
+}
+const wage=st=>st.boss?0:Math.round(GRADES[st.grade].wage*(1+.02*(st.lv-1)));
+const storeById=id=>S.stores.find(s=>s.id===id);
+const teamOf=store=>S.staff.filter(s=>s.storeId===store.id);
+const staffById=id=>S.staff.find(s=>s.id===id);
+
+function teamCompat(team){
+  let tot=0;const pairs=[];
+  for(let i=0;i<team.length;i++)for(let j=i+1;j<team.length;j++){
+    const p=pairInfo(team[i].type,team[j].type);
+    tot+=p.v;pairs.push({a:team[i],b:team[j],...p});
+  }
+  return {pct:clamp(tot,-30,50),pairs};
+}
+
+/* ═══════════════ 챕터 ═══════════════ */
+const CHAPTERS=[
+  {t:'1장 · 골목의 시작',story:'삼촌이 남긴 건 낡은 포장마차와 빚뿐. 일단 장사를 굴려 보자.',
+    goals:[['누적 순이익 400만',()=>[S.totalProfit,400]],['직원 3명 이상 (사장 포함)',()=>[S.staff.length,3]]],
+    reward:'동네 카페·편의점 출점 해금, 지명 스카우트 해금',unlock:['cafe','conv']},
+  {t:'2장 · 가게를 늘려라',story:'골목에 소문이 났다. 한대표의 체인점이 길 건너에 문을 열었다.',
+    goals:[['매장 3개 운영',()=>[S.stores.length,3]],['하루 매출 700만 달성',()=>[S.bestDayRev,700]]],
+    reward:'한식 주점·칵테일 바 출점 해금',unlock:['pub','bar']},
+  {t:'3장 · 밤의 상권',story:'밤의 네온시티는 돈이 다르다. 그런데 삼촌의 이름이 클럽 장부에서 보인다…',
+    goals:[['평판 ★4.0',()=>[S.rep,4]],['하루 매출 3,000만 달성',()=>[S.bestDayRev,3000]]],
+    reward:'나이트클럽 출점 해금',unlock:['club']},
+  {t:'4장 · 네온시티의 주인',story:'마지막 퍼즐. 유흥 중심가 한복판에 나만의 랜드마크를 세워라.',
+    goals:[['나이트클럽 오픈',()=>[S.stores.filter(s=>s.kind==='club').length,1]],['보유 MBTI 유형 10종',()=>[new Set(S.staff.map(s=>s.type)).size,10]]],
+    reward:'프로토타입 엔딩',unlock:[]},
+];
+function chapterDone(){const c=CHAPTERS[S.chapter];return c&&c.goals.every(([,f])=>{const [v,g]=f();return v>=g})}
+
+/* ═══════════════ 새 게임 ═══════════════ */
+let introType=null;
+function renderIntro(){
+  $('tabs').style.display='none';
+  const saved=load();
+  $('app').innerHTML=`<div id="intro">
+    <div class="small muted" style="font-weight:800;letter-spacing:.15em">PROTOTYPE</div>
+    <div class="logo">MBTI<br>시티 타이쿤</div>
+    <div class="intro-story">항구 도시 <b>네온시티</b>. 빚만 남긴 채 사라진 삼촌의 <b>포장마차</b>를 물려받았다.<br>
+    MBTI 16유형 직원을 뽑고, 궁합을 맞추고, 스트레스를 관리하며 상권을 넓혀 가자.<br>
+    <span class="muted">핵심은 능력치보다 <b>궁합</b>. "이 조합은 왜 망했지?"를 찾아내는 게임이다.</span></div>
+    ${saved?`<button class="btn primary" id="contBtn" style="margin-bottom:10px">이어하기 · ${esc(saved.company)} ${saved.day}일차</button>`:''}
+    <label class="lbl">회사 이름</label>
+    <input class="field" id="coName" maxlength="12" value="네온상회" />
+    <label class="lbl">내 MBTI = 사장 캐릭터 <span class="muted" style="font-weight:600">· 첫 직원은 사장과 궁합이 좋은 유형으로 배정돼요</span></label>
+    <div class="tgrid">${TYPES.map(t=>`<button class="tcell" data-t="${t}"><span class="e">${T[t].em}</span><span style="color:${GROUP_COLOR(t)}">${t}</span></button>`).join('')}</div>
+    <button class="btn" id="quizBtn" style="margin-top:8px;font-size:14px;padding:12px">내 MBTI를 모르겠어요 (4문항)</button>
+    <button class="btn primary" id="newBtn" style="margin-top:16px" disabled>새 게임 시작</button>
+    ${saved?`<p class="small muted" style="text-align:center">새 게임을 시작하면 이전 저장이 지워져요.</p>`:''}
+  </div>`;
+  document.querySelectorAll('.tcell').forEach(b=>b.onclick=()=>{introType=b.dataset.t;document.querySelectorAll('.tcell').forEach(x=>x.classList.toggle('on',x===b));$('newBtn').disabled=false});
+  $('newBtn').onclick=()=>newGame($('coName').value.trim()||'네온상회',introType);
+  $('quizBtn').onclick=quiz;
+  if(saved) $('contBtn').onclick=()=>{S=saved;startUI()};
+}
+const QUIZ=[
+  ['오랜만에 생긴 자유로운 주말, 나는?',['친구들에게 연락해 약속을 잡는다','집에서 혼자 충전한다'],'EI'],
+  ['새 게임을 시작할 때 나는?',['튜토리얼을 차근차근 따라 한다','일단 눌러보며 세계관을 상상한다'],'SN'],
+  ['친구가 고민을 털어놓으면?',['원인을 분석하고 해결책을 준다','먼저 마음을 들어주고 공감한다'],'TF'],
+  ['여행을 떠나기 전 나는?',['일정표와 동선을 미리 짠다','큰 틀만 정하고 즉흥으로'],'JP'],
+];
+function quiz(){
+  let i=0,ans='';
+  const step=()=>{
+    if(i>=QUIZ.length){closeModal();introType=ans;document.querySelectorAll('.tcell').forEach(x=>x.classList.toggle('on',x.dataset.t===ans));$('newBtn').disabled=false;toast(`당신은 ${ans} ${T[ans].em} ${T[ans].nick}!`);return}
+    const [q,o,l]=QUIZ[i];
+    openModal(`<div class="small muted">Q${i+1} / 4</div><h2 style="margin:6px 0 14px">${q}</h2>`+o.map((t,k)=>`<button class="opt" data-k="${k}">${t}</button>`).join(''));
+    document.querySelectorAll('#modal .opt').forEach(b=>b.onclick=()=>{ans+=l[+b.dataset.k];i++;step()});
+  };
+  step();
+}
+function newGame(company,bossType){
+  S={v:1,company,bossType,day:1,cash:300,rep:3,totalProfit:0,bestDayRev:0,chapter:0,seq:0,
+    staff:[],stores:[],candidates:[],found:{types:[],combos:[]},news:null,nextEvents:null,
+    unlocked:['pojang'],stats:{days:0}};
+  const boss=makeStaff(bossType,'SR',{boss:true,name:'사장님',stress:0});
+  S.staff.push(boss);
+  // 사장과 궁합이 가장 좋은 유형(히든 제외)을 첫 직원으로
+  const best=TYPES.filter(t=>t!==bossType).map(t=>({t,p:pairInfo(bossType,t)})).filter(x=>x.p.k!=='hidden').sort((a,b)=>b.p.v-a.p.v);
+  const first=makeStaff(R(best.slice(0,3)).t,'R');
+  S.staff.push(first);
+  S.stores.push({id:++S.seq,kind:'pojang',district:'univ',interior:0,opened:1});
+  boss.storeId=S.stores[0].id;first.storeId=S.stores[0].id;
+  S.staff.forEach(s=>discoverType(s.type));
+  rollCandidates();
+  rollNextEvents();
+  save();startUI();
+  openModal(`<div class="ev-ic">🏮</div><h2>${esc(company)} 개업!</h2>
+    <p class="lead">대학가 골목의 포장마차에서 시작합니다. 첫 직원 <b>${esc(first.name)}</b>(${first.type} ${T[first.type].nick})는 사장님과 궁합이 좋은 유형이에요.</p>
+    <div class="notes">
+    1. <b>매장</b> 탭에서 직원을 배치하고 팀 궁합을 확인해요.<br>
+    2. <b>☀️ 영업 시작</b>을 누르면 하루가 흘러가요. 이벤트가 생기면 누가 대응할지 고르세요 — 결과는 MBTI마다 달라요.<br>
+    3. 매주 월요일 <b>채용</b> 후보가 바뀌어요. 스트레스 100이 되면 직원이 떠나요!</div>
+    <button class="btn primary" onclick="closeModal()">시작하기</button>`);
+}
+
+/* ═══════════════ 렌더 ═══════════════ */
+let tab='stores';
+function startUI(){
+  $('tabs').style.display='';
+  render();
+}
+function render(){
+  if(!S) return;
+  const ch=CHAPTERS[S.chapter];
+  const fixedCost=S.staff.reduce((a,s)=>a+wage(s),0)+S.stores.reduce((a,s)=>a+rentOf(s),0);
+  let goal='';
+  if(ch){
+    goal=`<div class="goal"><div class="g-t">${ch.t}</div>`+ch.goals.map(([n,f])=>{const [v,g]=f();const done=v>=g;
+      return `<div class="gl"><span>${done?'✅':'⬜'} ${n}</span><span class="muted">${n.includes('평판')?v.toFixed(1):n.includes('매출')||n.includes('순이익')?fmt(v):v} / ${n.includes('평판')?g.toFixed(1):n.includes('매출')||n.includes('순이익')?fmt(g):g}</span></div><div class="bar"><span style="width:${clamp(v/g*100,0,100)}%"></span></div>`}).join('')+`</div>`;
+  } else goal=`<div class="goal"><div class="g-t">🏆 네온시티의 주인 — 프로토타입 클리어</div><span class="muted">계속 운영하며 히든 조합을 모두 찾아보세요.</span></div>`;
+  $('app').innerHTML=`
+    <div class="hud">
+      <div class="hud-top"><span class="co">${esc(S.company)}</span><span class="day">${S.day}일차 · ${WD[weekday(S.day)]}요일${isWeekend(S.day)?' 🎉':''}</span></div>
+      <div class="kpis">
+        <div class="kpi"><b>${fmt(S.cash)}</b><span>현금</span></div>
+        <div class="kpi"><b>★ ${S.rep.toFixed(1)}</b><span>평판</span></div>
+        <div class="kpi"><b>${fmt(fixedCost)}</b><span>일 고정비</span></div>
+      </div>
+      ${goal}
+      ${S.news&&S.news.until>=S.day?`<div class="goal" style="border-color:rgba(255,59,92,.35)">📰 <b>${S.news.n}</b>(${S.news.t})이(가) ${DISTRICTS[S.news.district].n}에서 ${S.news.a}. <span class="dn">이번 주 해당 구역 매출 -15%</span></div>`:''}
+    </div>
+    <div class="page ${tab==='stores'?'on':''}" id="p-stores">${renderStores()}</div>
+    <div class="page ${tab==='staff'?'on':''}" id="p-staff">${renderStaff()}</div>
+    <div class="page ${tab==='hire'?'on':''}" id="p-hire">${renderHire()}</div>
+    <div class="page ${tab==='dex'?'on':''}" id="p-dex">${renderDex()}</div>`;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===tab));
+  bindPage();
+}
+function avatar(t,size){return `<div class="av" style="background:radial-gradient(circle at 35% 30%,${GROUP_COLOR(t)}55,${GROUP_COLOR(t)}18 70%);border-color:${GROUP_COLOR(t)}88${size?`;width:${size}px;height:${size}px;font-size:${size*.55}px`:''}">${T[t].em}</div>`}
+const stressColor=v=>v>=70?'#ff3b5c':v>=40?'#ffb020':'#43d17a';
+function typeBadge(t){return `<span class="badge" style="background:${GROUP_COLOR(t)}33;color:${GROUP_COLOR(t)}">${t}</span>`}
+function rentOf(store){return Math.round(KINDS[store.kind].rent*DISTRICTS[store.district].rent)}
+
+function compatChips(team){
+  if(team.length<2) return `<span class="muted">직원이 2명 이상이면 궁합이 계산돼요</span>`;
+  const c=teamCompat(team);
+  let h=`<span class="chip ${c.pct>0?'good':c.pct<0?'bad':''}">팀 궁합 ${c.pct>0?'+':''}${c.pct}%</span>`;
+  for(const p of c.pairs){
+    if(p.k==='norm') continue;
+    const known=p.k!=='hidden'||S.found.combos.includes(pairKey(p.a.type,p.b.type));
+    const label=p.k==='hidden'?(known?`✨ ${p.n}`:'✨ ???'):(p.n||(p.k==='good'?'잘 맞음':'안 맞음'));
+    h+=`<span class="chip ${p.k==='hidden'?'hid':p.k}">${p.a.type}+${p.b.type} ${label} ${p.v>0?'+':''}${p.v}</span>`;
+  }
+  return h;
+}
+function renderStores(){
+  let h='';
+  for(const st of S.stores){
+    const k=KINDS[st.kind],team=teamOf(st);
+    h+=`<div class="store"><div class="store-h"><div class="store-ic">${k.e}</div><div style="flex:1"><h3>${k.n}</h3>
+      <div class="small muted">${DISTRICTS[st.district].n} · 핵심 ${k.keys.join('·')}${st.interior?` · 인테리어 Lv.${st.interior}`:''}</div></div>
+      <button class="btn sm" data-store-menu="${st.id}">관리</button></div>
+      <div class="slots">${Array.from({length:k.slots},(_,i)=>{const m=team[i];
+        return m?`<button class="slot f" data-staff="${m.id}"><div class="e">${T[m.type].em}</div><div class="n">${esc(m.name)}</div><div class="ty" style="color:${GROUP_COLOR(m.type)}">${m.type}</div><div class="sbar"><span style="width:${m.stress}%;background:${stressColor(m.stress)}"></span></div></button>`
+          :`<button class="slot" data-assign="${st.id}"><div style="font-size:20px" class="muted">＋</div><div class="muted">배치</div></button>`}).join('')}</div>
+      <div class="compat">${compatChips(team)}</div>
+      ${k.note?`<div class="small muted" style="margin-top:6px">💡 ${k.note}</div>`:''}
+    </div>`;
+  }
+  const idle=S.staff.filter(s=>!s.storeId);
+  if(idle.length) h+=`<div class="sec-t">휴무 중 (${idle.length}명) — 스트레스 회복, 급여는 지급</div><div class="row" style="flex-wrap:wrap">${idle.map(s=>`<button class="chip" data-staff="${s.id}">${T[s.type].em} ${esc(s.name)} ${s.type} · ${s.stress}</button>`).join('')}</div>`;
+  h+=`<button class="btn" style="margin-top:14px" data-open-store>＋ 새 매장 출점</button>`;
+  return h;
+}
+function empRow(s,extra=''){
+  const st=s.storeId?storeById(s.storeId):null;
+  return `<button class="emp" data-staff="${s.id}">${avatar(s.type)}<div class="mid">
+    <div class="nm">${esc(s.name)} ${typeBadge(s.type)} <span class="gr gr-${s.grade}">${s.grade}</span> <span class="small muted">Lv.${s.lv}</span>${s.boss?'<span class="badge" style="background:#ffffff14">사장</span>':''}</div>
+    <div class="sub">${st?KINDS[st.kind].e+' '+KINDS[st.kind].n:'🛌 휴무'} · ${QUIRKS[s.quirk].n}${extra}</div>
+    <div class="sbar" style="width:100%"><span style="width:${s.stress}%;background:${stressColor(s.stress)}"></span></div>
+  </div><div style="text-align:right;font-size:12px;min-width:48px"><b style="color:${stressColor(s.stress)}">${s.stress}</b><div class="muted" style="font-size:10px">스트레스</div></div></button>`;
+}
+function renderStaff(){
+  const list=S.staff.slice().sort((a,b)=>b.stress-a.stress);
+  return `<div class="sec-t">직원 ${S.staff.length}명 · 일 급여 ${fmt(S.staff.reduce((a,s)=>a+wage(s),0))}</div>`+list.map(s=>empRow(s)).join('')+
+    `<p class="small muted" style="line-height:1.6">스트레스 70↑ 실수 확률 증가 · 100이면 퇴사.<br>회복법은 유형마다 달라요: <b>E</b> 회식 · <b>I</b> 휴무 · <b>F</b> 면담 · <b>T</b> 보너스</p>`;
+}
+function renderHire(){
+  const ns=S.chapter>=1;
+  return `<div class="sec-t">이번 주 지원자 · 매주 월요일 갱신</div>
+    ${S.candidates.length?S.candidates.map(c=>empRow(c,` · 일급 ${fmt(wage(c))} · 계약금 ${fmt(signFee(c))}`).replace('data-staff','data-cand')).join(''):'<p class="muted small">이번 주 지원자를 모두 만났어요.</p>'}
+    <button class="btn" data-reroll style="margin-top:6px">🔄 헤드헌터 재요청 (${fmt(rerollCost())})</button>
+    <div class="sec-t">지명 스카우트 ${ns?'':'🔒 1장 클리어 후 해금'}</div>
+    <p class="small muted" style="margin:0 0 8px">원하는 유형을 지명해 데려와요. 높은 등급 확률 증가.</p>
+    <div class="tgrid">${TYPES.map(t=>`<button class="tcell" data-scout="${t}" ${ns?'':'disabled style="opacity:.35"'}><span class="e">${T[t].em}</span><span style="color:${GROUP_COLOR(t)}">${t}</span></button>`).join('')}</div>
+    <p class="small muted">지명 비용 ${fmt(scoutCost())} + 계약금</p>`;
+}
+function renderDex(){
+  const hidFound=S.found.combos.filter(k=>SPECIAL[k]&&SPECIAL[k].k==='hidden').length;
+  return `<div class="sec-t">유형 도감 ${S.found.types.length} / 16</div>
+    <div class="dex">${TYPES.map(t=>`<div class="${S.found.types.includes(t)?'':'no'}"><span class="e">${T[t].em}</span><span style="color:${GROUP_COLOR(t)}">${t}</span><div class="muted" style="font-weight:600;font-size:10px">${T[t].skill}</div></div>`).join('')}</div>
+    <div class="sec-t">알려진 조합</div>
+    ${Object.entries(SPECIAL).filter(([,v])=>v.k!=='hidden').map(([k,v])=>`<div class="combo"><span>${k.replace('+',' + ')} · <b>${v.n}</b></span><span class="${v.v>0?'up':'dn'}">${v.v>0?'+':''}${v.v}%</span></div>`).join('')}
+    <div class="sec-t">히든 조합 ${hidFound} / ${HIDDEN_TOTAL} <span style="font-weight:600">· 같은 매장에서 함께 일하면 발견</span></div>
+    ${Object.entries(SPECIAL).filter(([,v])=>v.k==='hidden').map(([k,v])=>S.found.combos.includes(k)?`<div class="combo"><span>${k.replace('+',' + ')} · <b style="color:var(--gold)">✨ ${v.n}</b></span><span class="up">+${v.v}%</span></div>`:`<div class="combo muted"><span>??? + ???</span><span>?</span></div>`).join('')}
+    <button class="btn" style="margin-top:14px" data-org>📸 우리 회사 조직도 카드</button>
+    <button class="btn ghost small" style="margin-top:8px;font-size:13px;color:var(--muted)" data-reset>처음부터 다시 하기</button>`;
+}
+
+/* ═══════════════ 상호작용 ═══════════════ */
+function bindPage(){
+  document.querySelectorAll('[data-staff]').forEach(b=>b.onclick=()=>staffModal(+b.dataset.staff));
+  document.querySelectorAll('[data-assign]').forEach(b=>b.onclick=()=>assignModal(+b.dataset.assign));
+  document.querySelectorAll('[data-store-menu]').forEach(b=>b.onclick=()=>storeModal(+b.dataset.storeMenu));
+  document.querySelectorAll('[data-open-store]').forEach(b=>b.onclick=openStoreModal);
+  document.querySelectorAll('[data-cand]').forEach(b=>b.onclick=()=>candModal(+b.dataset.cand));
+  document.querySelectorAll('[data-reroll]').forEach(b=>b.onclick=reroll);
+  document.querySelectorAll('[data-scout]').forEach(b=>b.onclick=()=>scout(b.dataset.scout));
+  document.querySelectorAll('[data-org]').forEach(b=>b.onclick=orgCard);
+  document.querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>{
+    openModal(`<h2>처음부터 다시 할까요?</h2><p class="lead">저장된 진행 상황이 모두 사라져요.</p><div class="stack"><button class="btn primary" id="rsY">다시 시작</button><button class="btn ghost" onclick="closeModal()">취소</button></div>`);
+    $('rsY').onclick=()=>{try{localStorage.removeItem(SAVE_KEY)}catch(e){}S=null;closeModal();renderIntro()};
+  });
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render();window.scrollTo(0,0)});
+$('openBtn').onclick=()=>runDay();
+
+function openModal(html){$('modal').innerHTML=html;$('modalBg').classList.add('on');$('modal').scrollTop=0}
+function closeModal(){$('modalBg').classList.remove('on')}
+let modalLock=false;
+$('modalBg').onclick=e=>{if(e.target.id==='modalBg'&&!modalLock)closeModal()};
+function toast(msg){const el=document.createElement('div');el.className='toast';el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
+
+function staffModal(id){
+  const s=staffById(id);if(!s)return;
+  const st=stats(s),store=s.storeId?storeById(s.storeId):null;
+  const mates=store?teamOf(store).filter(m=>m!==s):[];
+  const q=QUIRKS[s.quirk];
+  const canWine=store&&teamOf(store).length>0;
+  openModal(`<div class="row" style="gap:12px;margin-bottom:10px">${avatar(s.type,64)}<div><h2 style="margin:0">${esc(s.name)}</h2>
+    <div class="row" style="margin-top:4px">${typeBadge(s.type)}<span class="gr gr-${s.grade}">${s.grade}</span><span class="small muted">${T[s.type].nick} · Lv.${s.lv} (${s.xp}/${s.lv*20})</span></div></div></div>
+    <div class="notes"><b>🔹 ${T[s.type].skill}</b> — ${T[s.type].sd}<br><b>🔸 ${q.n}</b> — ${q.d}</div>
+    <div class="stats6">${STATS.map(k=>`<span class="muted">${k}</span><div class="b"><span style="width:${clamp(st[k]/16*100,0,100)}%"></span></div><b>${st[k]}</b>`).join('')}</div>
+    <div class="between small" style="margin-bottom:10px"><span>스트레스 <b style="color:${stressColor(s.stress)}">${s.stress}</b> / 100</span><span class="muted">${s.boss?'급여 없음':'일급 '+fmt(wage(s))} · ${store?KINDS[store.kind].n:'휴무'}</span></div>
+    ${mates.length?`<div class="small" style="margin-bottom:10px">${mates.map(m=>{const p=pairInfo(s.type,m.type);const known=p.k!=='hidden'||S.found.combos.includes(pairKey(s.type,m.type));return `<span class="chip ${p.k==='hidden'?'hid':p.k}" style="display:inline-block;margin:0 4px 4px 0">${esc(m.name)}(${m.type}) ${p.k==='hidden'&&!known?'???':(p.v>0?'+':'')+p.v}</span>`}).join('')}</div>`:''}
+    <div class="sec-t" style="margin-top:4px">케어</div>
+    <div class="stack" style="gap:6px">
+      <button class="btn" id="cTalk" ${s.care.talk===S.day?'disabled':''}>🗣 면담 (무료, 하루 1회) <span class="small muted">· F에 효과적</span></button>
+      <button class="btn" id="cBonus">💰 보너스 지급 (${fmt(bonusCost(s))}) <span class="small muted">· T에 효과적</span></button>
+      ${canWine&&store?`<button class="btn" id="cWine" ${store.wine===S.day?'disabled':''}>🍻 ${KINDS[store.kind].n} 팀 회식 (${fmt(wineCost(store))}) <span class="small muted">· E에 효과적</span></button>`:''}
+      <button class="btn" id="cMove">${s.storeId?'🔁 배치 변경 / 휴무 보내기':'📍 매장에 배치'}</button>
+      ${s.boss?'':`<button class="btn ghost" id="cFire" style="color:#ff8fa3;font-size:14px">해고</button>`}
+    </div>`);
+  $('cTalk').onclick=()=>{const d=s.type[2]==='F'?-25:-6;s.care.talk=S.day;addStress(s,d,true);toast(`${s.name}: ${s.type[2]==='F'?'"들어줘서 고마워요…" 스트레스 '+d:'"그래서 결론이 뭔데요?" 스트레스 '+d}`);save();render();staffModal(id)};
+  $('cBonus').onclick=()=>{const c=bonusCost(s);if(S.cash<c)return toast('현금이 부족해요');S.cash-=c;const d=s.type[2]==='T'?-30:-12;addStress(s,d,true);toast(`${s.name}: ${s.type[2]==='T'?'"합리적인 보상이네요." ':'"돈보다 마음이…그래도 고마워요." '}스트레스 ${d}`);save();render();staffModal(id)};
+  if($('cWine'))$('cWine').onclick=()=>{const c=wineCost(store);if(S.cash<c)return toast('현금이 부족해요');S.cash-=c;store.wine=S.day;
+    const lines=teamOf(store).map(m=>{const d=m.type[0]==='E'?-25:-4;addStress(m,d,true);return `${m.name}(${m.type}) ${d}`});toast('회식! '+lines.join(', '));save();render();staffModal(id)};
+  $('cMove').onclick=()=>moveModal(s);
+  if($('cFire'))$('cFire').onclick=()=>{
+    openModal(`<h2>${esc(s.name)} 해고?</h2><p class="lead">퇴직금 ${fmt(wage(s)*3)}가 나가요.</p><div class="stack"><button class="btn primary" id="fY">해고</button><button class="btn ghost" onclick="closeModal()">취소</button></div>`);
+    $('fY').onclick=()=>{S.cash-=wage(s)*3;S.staff=S.staff.filter(x=>x!==s);save();closeModal();render()};
+  };
+}
+const bonusCost=s=>Math.max(15,wage(s)*3);
+const wineCost=store=>teamOf(store).length*8;
+
+function teamPreview(store,cand){
+  const team=teamOf(store).filter(m=>m!==cand);
+  const before=team.length>=2?teamCompat(team).pct:0;
+  const after=teamCompat([...team,cand]).pct;
+  return {before,after,d:after-before};
+}
+function assignModal(storeId){
+  const store=storeById(storeId);
+  const cands=S.staff.filter(s=>s.storeId!==storeId);
+  if(!cands.length){openModal(`<h2>배치할 직원이 없어요</h2><p class="lead">채용 탭에서 새 직원을 뽑아 보세요.</p><button class="btn primary" onclick="closeModal();tab='hire';render()">채용하러 가기</button>`);return}
+  const rows=cands.map(s=>{const p=teamPreview(store,s);return {s,p}}).sort((a,b)=>b.p.after-a.p.after);
+  openModal(`<h2>${KINDS[store.kind].e} ${KINDS[store.kind].n}에 배치</h2><p class="lead">팀 궁합 예측을 보고 골라 보세요. 핵심 능력: ${KINDS[store.kind].keys.join('·')}</p>`+
+    rows.map(({s,p})=>{const st=stats(s),k=KINDS[store.kind].keys;
+      return `<button class="emp" data-pick="${s.id}">${avatar(s.type)}<div class="mid"><div class="nm">${esc(s.name)} ${typeBadge(s.type)} <span class="gr gr-${s.grade}">${s.grade}</span></div>
+      <div class="sub">${k[0]} ${st[k[0]]} · ${k[1]} ${st[k[1]]} · 스트레스 ${s.stress} · ${s.storeId?KINDS[storeById(s.storeId).kind].n+'에서 이동':'휴무 중'}</div></div>
+      <div style="text-align:right;min-width:56px"><b class="${p.after>0?'up':p.after<0?'dn':''}">${teamOf(store).length?(p.after>0?'+':'')+p.after+'%':'-'}</b><div class="muted" style="font-size:10px">팀 궁합</div></div></button>`}).join(''));
+  document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{
+    const s=staffById(+b.dataset.pick);
+    if(teamOf(store).length>=KINDS[store.kind].slots) return toast('자리가 없어요');
+    s.storeId=storeId;save();closeModal();render();
+  });
+}
+function moveModal(s){
+  openModal(`<h2>${esc(s.name)} 배치</h2><p class="lead">어디로 보낼까요?</p>`+
+    S.stores.map(st=>{const full=teamOf(st).length>=KINDS[st.kind].slots&&s.storeId!==st.id;const p=teamPreview(st,s);
+      return `<button class="opt" data-to="${st.id}" ${full?'disabled style="opacity:.4"':''}><b>${KINDS[st.kind].e} ${KINDS[st.kind].n} · ${DISTRICTS[st.district].n}</b>
+      ${teamOf(st).length}/${KINDS[st.kind].slots}명 ${full?'· 만석':`· 팀 궁합 ${teamOf(st).filter(m=>m!==s).length?((p.after>0?'+':'')+p.after+'%'):'-'}`}${s.storeId===st.id?' · 현재':''}</button>`}).join('')+
+    `<button class="opt" data-to="0"><b>🛌 휴무</b>매장에서 빼고 쉬게 해요 (I 유형 회복량 큼)</button>`);
+  document.querySelectorAll('[data-to]').forEach(b=>b.onclick=()=>{if(b.disabled)return;const to=+b.dataset.to;s.storeId=to||null;save();closeModal();render()});
+}
+function storeModal(id){
+  const st=storeById(id),k=KINDS[st.kind];
+  const cost=interiorCost(st);
+  const isfp=teamOf(st).some(m=>m.type==='ISFP');
+  openModal(`<div class="ev-ic">${k.e}</div><h2>${k.n} · ${DISTRICTS[st.district].n}</h2>
+    <p class="lead">${DISTRICTS[st.district].d} · 구역 적합도 ×${DISTRICTS[st.district].m[st.kind]} · 일 임대료 ${fmt(rentOf(st))}<br>주중 ×${k.wk[0]} / 주말 ×${k.wk[1]}${DISTRICTS[st.district].weekendDead?' · 주말 공동화 ×0.5':''}</p>
+    <div class="notes">🛋 인테리어 Lv.${st.interior} → 매출 +${st.interior*8}%${isfp?` <span class="up">(ISFP 감각 해방: ×2 = +${st.interior*16}%)</span>`:''}</div>
+    <button class="btn primary" id="intBtn" ${st.interior>=5?'disabled':''}>${st.interior>=5?'인테리어 최대':`인테리어 업그레이드 (${fmt(cost)})`}</button>
+    <button class="btn ghost" onclick="closeModal()" style="margin-top:8px">닫기</button>`);
+  $('intBtn').onclick=()=>{if(S.cash<cost)return toast('현금이 부족해요');S.cash-=cost;st.interior++;save();render();storeModal(id)};
+}
+const interiorCost=st=>Math.round(KINDS[st.kind].cost*.25*(st.interior+1));
+function openStoreModal(){
+  openModal(`<h2>새 매장 출점</h2><p class="lead">업종을 고르세요. 업종마다 필요한 능력이 달라요.</p>`+
+    Object.entries(KINDS).map(([key,k])=>{const un=S.unlocked.includes(key);
+      return `<button class="opt" data-kind="${key}" ${un?'':'disabled style="opacity:.4"'}><b>${k.e} ${k.n} ${un?'':'🔒'}</b>투자금 ${fmt(k.cost)} · 직원 ${k.slots}명 · 핵심 ${k.keys.join('·')} · 기본 매출 ${fmt(k.base)}/일</button>`}).join(''));
+  document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{if(!S.unlocked.includes(b.dataset.kind))return;districtModal(b.dataset.kind)});
+}
+function districtModal(kind){
+  const k=KINDS[kind];
+  openModal(`<h2>${k.e} ${k.n} · 구역 선택</h2><p class="lead">투자금 ${fmt(k.cost)} · 보유 현금 ${fmt(S.cash)}</p>`+
+    Object.entries(DISTRICTS).map(([key,d])=>`<button class="opt" data-d="${key}"><b>${d.n} <span class="${d.m[kind]>=1.2?'up':d.m[kind]<1?'dn':''}">×${d.m[kind]}</span></b>${d.d} · 일 임대료 ${fmt(Math.round(k.rent*d.rent))}</button>`).join(''));
+  document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{
+    if(S.cash<k.cost)return toast(`현금이 ${fmt(k.cost-S.cash)} 부족해요`);
+    S.cash-=k.cost;S.stores.push({id:++S.seq,kind,district:b.dataset.d,interior:0,opened:S.day});
+    save();closeModal();tab='stores';render();toast(`${k.n} 오픈! 직원을 배치하세요`);
+  });
+}
+
+/* 채용 */
+const signFee=c=>wage(c)*5;
+const rerollCost=()=>Math.round(20+S.stores.length*15);
+const scoutCost=()=>Math.round(120+S.stores.length*60);
+function rollCandidates(){
+  S.candidates=[];
+  const pool=TYPES.slice().sort(()=>Math.random()-.5);
+  for(let i=0;i<3;i++){const c=makeStaff(pool[i],rollGrade());S.candidates.push(c)}
+}
+function reroll(){const c=rerollCost();if(S.cash<c)return toast('현금이 부족해요');S.cash-=c;rollCandidates();save();render()}
+function candModal(id){
+  const c=S.candidates.find(x=>x.id===id),st=stats(c),q=QUIRKS[c.quirk];
+  const fee=signFee(c);
+  const fits=S.stores.map(store=>({store,p:teamPreview(store,c)}));
+  openModal(`<div class="row" style="gap:12px;margin-bottom:10px">${avatar(c.type,64)}<div><h2 style="margin:0">${esc(c.name)}</h2><div class="row" style="margin-top:4px">${typeBadge(c.type)}<span class="gr gr-${c.grade}">${c.grade}</span><span class="small muted">${T[c.type].nick}</span></div></div></div>
+    <div class="notes"><b>🔹 ${T[c.type].skill}</b> — ${T[c.type].sd}<br><b>🔸 ${q.n}</b> — ${q.d}</div>
+    <div class="stats6">${STATS.map(k=>`<span class="muted">${k}</span><div class="b"><span style="width:${clamp(st[k]/16*100,0,100)}%"></span></div><b>${st[k]}</b>`).join('')}</div>
+    <div class="small" style="margin-bottom:12px">${fits.map(({store,p})=>`<span class="chip ${p.after>0?'good':p.after<0?'bad':''}" style="display:inline-block;margin:0 4px 4px 0">${KINDS[store.kind].e} ${KINDS[store.kind].n} 합류 시 ${teamOf(store).length?(p.after>0?'+':'')+p.after+'%':'-'}</span>`).join('')}</div>
+    <button class="btn primary" id="hireBtn">채용 · 계약금 ${fmt(fee)} (일급 ${fmt(wage(c))})</button>
+    <button class="btn ghost" onclick="closeModal()" style="margin-top:8px">다음에</button>`);
+  $('hireBtn').onclick=()=>{
+    if(S.cash<fee)return toast('현금이 부족해요');
+    S.cash-=fee;S.candidates=S.candidates.filter(x=>x!==c);S.staff.push(c);discoverType(c.type);
+    const free=S.stores.find(st=>teamOf(st).length<KINDS[st.kind].slots);
+    save();closeModal();render();
+    toast(`${c.name} 입사!${free?' 매장 탭에서 배치하세요':''}`);
+  };
+}
+function scout(t){
+  if(S.chapter<1)return;
+  const c=scoutCost();
+  const cand=makeStaff(t,rollGrade(1));
+  if(S.cash<c+signFee(cand))return toast(`현금이 부족해요 (지명비 ${fmt(c)} + 계약금 약 ${fmt(signFee(cand))})`);
+  S.cash-=c;S.candidates.unshift(cand);save();render();candModal(cand.id);
+}
+function discoverType(t){if(!S.found.types.includes(t))S.found.types.push(t)}
+function addStress(s,d,care){
+  if(d>0&&!care){const q=QUIRKS[s.quirk].k;if(q==='steel')d*=.7;if(q==='glass')d*=1.3}
+  s.stress=clamp(Math.round(s.stress+d),0,100);
+}
+
+/* ═══════════════ 이벤트 ═══════════════ */
+const has=(team,t)=>team.some(m=>m.type===t);
+const L=(s,i,c)=>s.type[i]===c;
+const EVENTS=[
+ {id:'jinsang',e:'😤',t:'진상 손님',d:'반말하며 다 먹은 음식을 환불해 달라고 한다. 누가 나설까?',
+  r(h){const t=h.type;
+   if(t==='ENFJ')return{tx:'진심 어린 응대에 진상 손님이 감동… 다음 주부터 단골이 됐다!',rep:.12,st:5};
+   if(L(h,0,'E')&&L(h,2,'F'))return{tx:'웃으며 달래서 무사히 넘겼다. 손님이 미안하다며 팁까지 두고 갔다.',rep:.06,cash:.03,st:8};
+   if(L(h,2,'T')&&L(h,3,'J'))return{tx:'단호하게 규정을 설명하고 정리했다. 다른 손님들이 박수를 쳤다.',rep:.05,st:5};
+   if(L(h,0,'I')&&L(h,2,'F'))return{tx:'상처받은 얼굴로 환불해 줬다… 마음이 오래 쓰일 것 같다.',cash:-.03,st:30};
+   return{tx:t==='ENTP'?'논리로 완벽하게 이겼다. 그리고 리뷰 테러를 당했다.':'말싸움으로 번졌다. 가게 분위기가 싸해졌다.',rep:-.1,st:10};}},
+ {id:'influencer',e:'📱',t:'인플루언서 방문',d:'팔로워 50만 유튜버가 카메라를 들고 들어왔다!',
+  r(h){const t=h.type;
+   if(t==='ESFP')return{tx:'무대 장악! 같이 라이브를 켰다. 손님이 몰려들었다.',rev:1.8,rep:.15,st:-5};
+   if(t==='ENFP')return{tx:'텐션 폭발 리액션이 쇼츠로 올라가 조회수 100만!',rev:1.6,rep:.12,st:-5};
+   if(L(h,0,'E'))return{tx:'살갑게 응대해서 좋은 리뷰가 올라왔다.',rev:1.25,rep:.05};
+   if(L(h,2,'F')&&L(h,1,'N'))return{tx:'감성 포토존을 즉석에서 꾸몄다. 사진이 예쁘게 나왔다.',rev:1.2,rep:.06};
+   if(L(h,2,'F'))return{tx:'정성 가득한 플레이팅으로 화면이 살았다.',rev:1.15,rep:.05};
+   return{tx:'평소처럼 응대했다. …영상에 1초 나왔다.',rev:1.0,st:3};}},
+ {id:'group',e:'👔',t:'단체 예약 폭주',d:'40명 기업 회식 예약이 들어왔다. 오늘 저녁이다!',
+  r(h){if(L(h,3,'J'))return{tx:'좌석·메뉴·동선 완벽 세팅. 깔끔하게 성공했다.',rev:1.4,st:10};
+   return Math.random()<.5?{tx:'즉흥으로 밀어붙였는데 대박! 2차까지 여기서 했다.',rev:1.65,st:8}:{tx:'주문이 두 번씩 누락됐다… 일부 환불해 줬다.',rev:1.05,rep:-.08,st:15};}},
+ {id:'hygiene',e:'🧑‍⚕️',t:'위생 점검',d:'구청에서 예고 없이 위생 점검을 나왔다.',
+  r(h,team){if(has(team,'ISTJ')||has(team,'ISFJ'))return{tx:`${has(team,'ISTJ')?'ISTJ의 매뉴얼':'ISFJ의 꼼꼼함'} 덕분에 통과 확정! 모범 업소 스티커까지 받았다.`,rep:.06};
+   const p=L(h,3,'J')?.85:.5;
+   return Math.random()<p?{tx:'무사히 통과했다. 휴…',rep:.02,st:5}:{tx:'냉장고 온도 기록이 비어 있었다. 과태료 부과…',cash:-.5,rep:-.1,st:12};}},
+ {id:'menu',e:'💡',t:'신메뉴 아이디어',d:'새 메뉴를 하나 내 보자는 이야기가 나왔다. 누구에게 맡길까?',
+  r(h){const st=stats(h);
+   if(h.type==='INTP')return{tx:'과몰입 발동! 밤샘 끝에 역대급 신메뉴가 탄생했다.',rev:1.5,rep:.06,st:20};
+   if(L(h,1,'N'))return Math.random()<Math.min(.9,st.기획/12)?{tx:'참신한 메뉴가 SNS에서 화제가 됐다!',rev:1.3,rep:.05,st:5}:{tx:'너무 앞서간 메뉴… 아무도 안 시켰다.',rev:.95,st:8};
+   return{tx:'검증된 메뉴를 살짝 개선했다. 무난하게 잘 팔렸다.',rev:1.1,st:3};}},
+ {id:'broken',e:'🔥',t:'장비 고장',d:'영업 직전 화구(또는 머신)가 멈췄다!',
+  r(h,team){if(has(team,'ISTP'))return{tx:'ISTP의 만능 손! 10분 만에 고쳤다. 수리비 0원.',rep:.02};
+   if(has(team,'ISTJ'))return{tx:'ISTJ의 정기 점검 매뉴얼 덕에 예비 부품이 있었다. 피해 없음.'};
+   if(L(h,1,'S')&&L(h,2,'T'))return{tx:'직접 뜯어서 고쳤다. 부품값만 들었다.',cash:-.1,st:6};
+   return{tx:'수리 기사를 불렀다. 반나절 장사를 못 했다.',cash:-.3,rev:.8,st:10};}},
+ {id:'rain',e:'🌧',t:'갑작스런 소나기',d:'맑던 하늘에서 갑자기 폭우가 쏟아진다.',
+  r(h){if(h.type==='ESTP')return{tx:'즉흥 돌파! 우산 + 따뜻한 국물 세트를 즉석 출시. 오히려 대박.',rev:1.3,st:-3};
+   if(L(h,3,'P'))return{tx:'"비 오는 날엔 이거지!" 즉흥 메뉴로 손님을 붙잡았다.',rev:1.1};
+   return{tx:'계획대로 영업했지만 손님이 줄었다. 일정이 꼬여서 짜증 난다.',rev:.85,st:8};}},
+ {id:'price',e:'📈',t:'재료 시세 폭등',d:'주재료 가격이 하루 만에 2배로 뛰었다.',
+  r(h){if(h.type==='INTJ')return{tx:'마스터플랜: 이미 지난주에 재고를 확보해 뒀다. 피해 0.',rep:.02};
+   if(h.type==='ESTP')return{tx:'대체 메뉴를 즉석 출시해서 위기를 기회로 만들었다.',rev:1.1};
+   if(h.type==='ENTP')return{tx:'말빨 발동! 납품처와 협상 대성공, 오히려 단가를 깎았다.',cash:.1};
+   if(L(h,2,'T'))return Math.random()<.5?{tx:'원가 협상으로 피해를 꽤 줄였다.',cash:-.12,st:5}:{tx:'협상이 결렬됐다. 그래도 계산은 정확히 했다.',cash:-.25,st:5};
+   return{tx:'그냥 감수했다… 손님들한테 가격은 못 올리겠어.',cash:-.4,rep:.03,st:8};}},
+ {id:'peak',e:'🏃',t:'피크타임 손님 폭주',d:'갑자기 손님이 몰려 줄이 가게 밖까지 섰다. 누구를 전면에?',
+  r(h){if(L(h,0,'E'))return{tx:'에너지 넘치게 응대! 회전율 신기록.',rev:1.3,st:6};
+   return{tx:'해냈다… 하지만 기가 다 빨렸다.',rev:1.15,st:22};}},
+ {id:'sns',e:'✨',t:'SNS 바이럴 기회',d:'우리 가게 사진이 커뮤니티에서 퍼지기 시작했다. 홍보를 누구에게?',
+  r(h){if(h.type==='ENFP')return{tx:'텐션 점화! 하루 손님 +50%.',rev:1.5,rep:.08};
+   if(h.type==='ENTP')return Math.random()<.5?{tx:'논란 마케팅 대성공. 다들 우리 얘기만 한다.',rev:1.7,rep:.02}:{tx:'논란이… 진짜 논란이 됐다.',rev:.9,rep:-.2,st:10};
+   if(L(h,0,'E'))return{tx:'센스 있는 홍보 게시물로 손님이 늘었다.',rev:1.15};
+   return{tx:'게시물 하나 올렸다. 좋아요 12개.',rev:1.03};}},
+ {id:'grandma',e:'🎂',t:'단골 할머니 생신',d:'매일 오시는 단골 할머니의 생신이라고 한다.',
+  r(h){if(h.type==='ESFJ')return{tx:'단골 모으기 발동! 생신 파티를 열어 드렸다. 할머니 친구분들까지 단골 확정!',rep:.15,rev:1.15,st:-5};
+   if(L(h,2,'F'))return{tx:'깜짝 미역국 서비스! 할머니가 동네방네 소문을 내주셨다.',rep:.12,cash:-.02,st:-3};
+   return{tx:'"생신 축하드려요." …그걸로 끝.',rep:0};}},
+ {id:'conflict',e:'⚡',t:'동료 갈등',d:'직원끼리 언성이 높아졌다. 누가 나서서 정리할까?',need:2,
+  r(h,team){if(h.type==='ENFJ'){team.forEach(m=>addStress(m,-20,true));return{tx:'리더의 한마디! 팀 전원의 스트레스가 회복됐다.'}}
+   if(L(h,2,'F')){team.forEach(m=>m!==h&&addStress(m,-10,true));return{tx:'양쪽 이야기를 차분히 들어 주고 화해시켰다.',st:10}}
+   if(L(h,2,'T')&&L(h,3,'J')){team.forEach(m=>m!==h&&L(m,2,'F')&&addStress(m,8));return{tx:'원칙대로 정리했다. 갈등은 끝났지만 F 동료들 마음엔 서운함이 남았다.'}}
+   team.forEach(m=>addStress(m,10));return{tx:'못 본 척했다… 분위기가 더 나빠졌다.'}}},
+ {id:'romance',e:'💘',t:'직원 연애',d:'',need:2,auto:1,
+  r(h,team){const [a,b]=team.slice().sort(()=>Math.random()-.5);const p=pairInfo(a.type,b.type);
+   if(p.v>=5){addStress(a,-15,true);addStress(b,-15,true);return{tx:`${a.name}(${a.type})와 ${b.name}(${b.type})가 사귀기 시작했다! 궁합 ${p.v>0?'+':''}${p.v} — 둘 다 신나서 일한다.`,rev:1.1}}
+   addStress(a,20);addStress(b,20);return{tx:`${a.name}(${a.type})와 ${b.name}(${b.type})가 사귀었다가… 일주일 만에 헤어졌다. 궁합 ${p.v}. 공기가 무겁다.`}}},
+ {id:'poach',e:'🕴',t:'라이벌 스카우트',d:'',need:1,opts:1},
+];
+function rollNextEvents(){
+  const out=[];
+  const n=Math.random()<.55?2:1;
+  const used=new Set();
+  for(let i=0;i<n;i++){
+    const ev=R(EVENTS);
+    if(used.has(ev.id)){continue}
+    used.add(ev.id);out.push({id:ev.id,storeIdx:Math.floor(Math.random()*99)});
+  }
+  S.nextEvents=out;
+}
+function pickEventStore(ev,storeIdx){
+  const ok=S.stores.filter(st=>{const team=teamOf(st);const need=ev.need||1;
+    if(ev.id==='poach')return team.some(m=>!m.boss);
+    if(ev.id==='romance')return team.filter(m=>!m.boss).length>=2;
+    return team.length>=need});
+  if(!ok.length)return null;
+  return ok[storeIdx%ok.length];
+}
+
+/* ═══════════════ 하루 진행 ═══════════════ */
+let dayFx={};
+function runDay(){
+  if(!S)return;
+  if(!S.staff.some(s=>s.storeId))return toast('매장에 직원을 1명 이상 배치하세요');
+  dayFx={};S.stores.forEach(st=>dayFx[st.id]={rev:1,cash:0,rep:0,notes:[]});
+  const queue=(S.nextEvents||[]).map(x=>{const ev=EVENTS.find(e=>e.id===x.id);const st=pickEventStore(ev,x.storeIdx);return st?{ev,st}:null}).filter(Boolean);
+  modalLock=true;
+  const next=()=>{if(!queue.length)return settle();const {ev,st}=queue.shift();showEvent(ev,st,next)};
+  next();
+}
+function applyResult(res,h,st){
+  const fx=dayFx[st.id],B=KINDS[st.kind].base;
+  if(res.rev)fx.rev*=res.rev;
+  if(res.cash)fx.cash+=Math.round(res.cash*B);
+  if(res.rep)fx.rep+=res.rep;
+  if(res.st&&h)addStress(h,res.st,res.st<0);
+  const chips=[];
+  if(res.rev&&res.rev!==1)chips.push(`<span class="chip ${res.rev>1?'good':'bad'}">오늘 매출 ×${res.rev.toFixed(2)}</span>`);
+  if(res.cash)chips.push(`<span class="chip ${res.cash>0?'good':'bad'}">현금 ${res.cash>0?'+':''}${fmt(Math.round(res.cash*B))}</span>`);
+  if(res.rep)chips.push(`<span class="chip ${res.rep>0?'good':'bad'}">평판 ${res.rep>0?'+':''}${res.rep.toFixed(2)}</span>`);
+  if(res.st&&h)chips.push(`<span class="chip ${res.st<0?'good':'bad'}">${esc(h.name)} 스트레스 ${res.st>0?'+':''}${res.st}</span>`);
+  return chips.join('');
+}
+function showEvent(ev,st,done){
+  const team=teamOf(st),k=KINDS[st.kind];
+  const head=`<div class="small muted">${k.e} ${k.n} · ${DISTRICTS[st.district].n}</div><div class="ev-ic">${ev.e}</div><h2>${ev.t}</h2>`;
+  const finish=(h,res)=>{
+    const chips=applyResult(res,h,st);
+    dayFx[st.id].notes.push(`${ev.e} ${ev.t}: ${res.tx}`);
+    openModal(`${head}<div class="result">${h&&!ev.auto?`<b>${esc(h.name)} (${h.type})</b> → `:''}${res.tx}<div class="fx">${chips}</div></div><button class="btn primary" id="evOk">계속</button>`);
+    $('evOk').onclick=done;
+  };
+  if(ev.auto){finish(null,ev.r(null,team));return}
+  if(ev.opts){ // 라이벌 스카우트
+    const target=R(team.filter(m=>!m.boss));const rv=R(RIVALS);
+    const raise=wage(target)*5;
+    openModal(`${head}<p class="lead"><b>${rv.n}</b>(${rv.t})가 <b>${esc(target.name)}</b>(${target.type} ${target.grade})에게 연봉 2배를 제안했다!</p>
+      <button class="opt" data-o="pay"><b>💰 특별 보너스로 붙잡기</b>${fmt(raise)} 지급 · 확실하지만 비싸다</button>
+      <button class="opt" data-o="loyal"><b>🤝 의리에 호소하기</b>F 성향이면 잘 통한다…아마도</button>
+      <button class="opt" data-o="let"><b>👋 보내 주기</b>앞길을 응원한다</button>`);
+    document.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{
+      const o=b.dataset.o;let res;
+      if(o==='pay'){if(S.cash<raise){toast('현금이 부족해요');return}S.cash-=raise;res={tx:`${target.name}: "역시 사장님!" 남기로 했다.`,st:-15}}
+      else if(o==='loyal'){const p=L(target,2,'F')?.85:.3;res=Math.random()<p?{tx:`${target.name}: "${L(target,2,'F')?'사장님을 두고 어떻게 가요…':'…계산해 보니 여기도 나쁘진 않네요.'}" 남기로 했다.`,st:-5}:(quit(target),{tx:`${target.name}: "${L(target,2,'T')?'감정 말고 숫자로 얘기해요. 죄송합니다.':'정말 죄송해요…'}" ${rv.n}의 회사로 떠났다.`})}
+      else{quit(target);res={tx:`${target.name}이(가) ${rv.n}의 회사로 떠났다. 언젠가 라이벌로 만날지도.`}}
+      finish(o==='let'||!S.staff.includes(target)?null:target,res);
+    });
+    return;
+  }
+  openModal(`${head}<p class="lead">${ev.d}</p>`+team.map(m=>`<button class="emp" data-h="${m.id}">${avatar(m.type)}<div class="mid"><div class="nm">${esc(m.name)} ${typeBadge(m.type)}</div><div class="sub">${T[m.type].nick} · 스트레스 ${m.stress}</div></div></button>`).join(''));
+  document.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{const h=staffById(+b.dataset.h);finish(h,ev.r(h,team))});
+}
+function quit(s){S.staff=S.staff.filter(x=>x!==s)}
+
+function storeRevenue(st,fx){
+  const k=KINDS[st.kind],team=teamOf(st);
+  if(!team.length)return {rev:0,team,comp:0,eff:0,notes:[]};
+  const notes=[];
+  let power=0;
+  for(const m of team){const s=stats(m);let p=s[k.keys[0]]+s[k.keys[1]];
+    if(QUIRKS[m.quirk].k==='night'&&['pub','bar','club'].includes(st.kind))p*=1.15;
+    if(m.stress>=70&&Math.random()<.3){p*=.6;notes.push(`😵 ${m.name} 실수 연발 (스트레스 ${m.stress})`)}
+    power+=p}
+  let eff=clamp(power/(k.slots*14),.15,2.5);
+  if(has(team,'ENTJ')){eff*=1.2;notes.push('👑 ENTJ 지휘: 효율 +20%')}
+  const comp=teamCompat(team).pct;
+  let m=DISTRICTS[st.district].m[st.kind]*(isWeekend(S.day)?k.wk[1]:k.wk[0]);
+  if(DISTRICTS[st.district].weekendDead&&isWeekend(S.day))m*=.5;
+  if(S.news&&S.news.until>=S.day&&S.news.district===st.district)m*=.85;
+  m*=.6+S.rep*.12;
+  m*=1+st.interior*.08*(has(team,'ISFP')?2:1);
+  if(has(team,'ESTJ')){m*=1.1;notes.push('📊 ESTJ 일정 통제: +10%')}
+  if(has(team,'ESFJ'))m*=1.08;
+  if(has(team,'ENFP')&&Math.random()<.15){m*=1.5;notes.push('🎉 ENFP 텐션 점화! 손님 +50%')}
+  if(has(team,'ESFP'))m*=['bar','club'].includes(st.kind)?1.5:1.1;
+  if(st.kind==='conv')m*=1+.06*team.filter(x=>x.type[3]==='J').length;
+  if(st.kind==='club')m*=1+.06*team.filter(x=>x.type[0]==='E').length;
+  const noise=has(team,'INTJ')?1.05:.9+Math.random()*.2;
+  const rev=Math.round(k.base*eff*(1+comp/100)*m*fx.rev*noise);
+  return {rev,team,comp,eff,notes};
+}
+function settle(){
+  const day=S.day;
+  const rows=[];let totRev=0,totProfit=0;
+  const msgs=[];
+  for(const st of S.stores){
+    const fx=dayFx[st.id],k=KINDS[st.kind];
+    const r=storeRevenue(st,fx);
+    const nT=r.team.filter(m=>m.type[2]==='T').length;
+    const cogs=Math.round(r.rev*Math.max(.2,k.cr-.01*nT));
+    const wages=r.team.reduce((a,m)=>a+wage(m),0);
+    const rent=rentOf(st);
+    const profit=r.rev-cogs-wages-rent+fx.cash;
+    totRev+=r.rev;totProfit+=profit;
+    rows.push({st,r,cogs,wages,rent,profit,fx});
+    // 평판 변화
+    if(r.team.length){
+      const svc=r.team.reduce((a,m)=>a+stats(m).서비스,0)/r.team.length;
+      let dr=(svc-10)*.004+fx.rep-(S.rep-3)*.015;
+      if(has(r.team,'INFP'))dr+=.03;
+      S.rep=clamp(S.rep+dr/Math.max(1,S.stores.length*.6),1,5);
+    }
+  }
+  const idle=S.staff.filter(s=>!s.storeId);
+  const idleW=idle.reduce((a,s)=>a+wage(s),0);
+  totProfit-=idleW;
+  S.cash+=totProfit;S.totalProfit+=Math.max(0,totProfit);
+  S.bestDayRev=Math.max(S.bestDayRev,totRev);
+
+  // 스트레스·성장
+  for(const st of S.stores){
+    const team=teamOf(st);
+    for(const m of team){
+      let d=6;
+      if(m.type[0]==='E'&&team.length===1){d+=8;}
+      if(m.type[0]==='I'&&['pub','bar','club'].includes(st.kind))d+=6;
+      if(m.type[1]==='N'&&['conv','pojang'].includes(st.kind))d+=3;
+      if(m.type[1]==='S'&&S.day-st.opened<7&&st.opened>1)d+=3;
+      for(const o of team){if(o===m)continue;const p=pairInfo(m.type,o.type);if(p.v<=-4)d+=p.v<=-15?10:5;if(p.v>=8)d-=3}
+      if(has(team,'ENFJ')&&m.type!=='ENFJ')d-=6;
+      if(has(team,'ISFJ')&&m.type!=='ISFJ')d-=3;
+      const q=QUIRKS[m.quirk].k;
+      if(q==='coffee')d+=st.kind==='cafe'?-4:3;
+      if(q==='perfect')d+=2;
+      if(m.boss)d=Math.round(d*.5);
+      addStress(m,d,d<0);
+      m.xp+=10;
+      if(m.xp>=m.lv*20&&m.lv<50){m.xp-=m.lv*20;m.lv++;msgs.push(`⬆️ ${m.name}(${m.type}) Lv.${m.lv} 달성`)}
+    }
+    // 히든 조합 발견
+    for(const p of teamCompat(team).pairs){
+      const key=pairKey(p.a.type,p.b.type);
+      if(SPECIAL[key]&&!S.found.combos.includes(key)){S.found.combos.push(key);
+        msgs.push(SPECIAL[key].k==='hidden'?`✨ <b style="color:var(--gold)">히든 조합 발견! ${p.a.type}+${p.b.type} '${SPECIAL[key].n}'</b> (궁합 +${SPECIAL[key].v}%)`:`📖 조합 확인: ${p.a.type}+${p.b.type} '${SPECIAL[key].n}' (${SPECIAL[key].v>0?'+':''}${SPECIAL[key].v}%)`)}
+    }
+  }
+  for(const m of idle){
+    let d=m.type[0]==='I'?-30:-15;
+    if(QUIRKS[m.quirk].k==='home')d*=1.5;
+    addStress(m,d,true);
+  }
+  // 퇴사
+  for(const m of S.staff.slice()){
+    if(m.boss||m.stress<100)continue;
+    const st=m.storeId?storeById(m.storeId):null;
+    if(st&&has(teamOf(st),'ISFJ')&&!m.savedOnce&&m.type!=='ISFJ'){m.savedOnce=true;m.stress=80;msgs.push(`🍱 ISFJ의 도시락: ${m.name}이(가) 그만두려다 마음을 돌렸다`);continue}
+    quit(m);
+    msgs.push(`🚪 <span class="dn">${m.name}(${m.type})${m.type[0]==='E'?' 돌발 퇴사! "더는 못 하겠어요!"':' 잠수… 연락이 끊겼다.'}</span>`);
+  }
+  if(S.cash<0)msgs.push('<span class="dn">⚠️ 현금이 마이너스예요! 인건비·임대료를 점검하세요.</span>');
+
+  S.stats.days++;
+  S.day++;
+  // 주간 처리
+  let weekly='';
+  if(weekday(S.day)===0){
+    rollCandidates();
+    const rv=R(RIVALS),dkeys=Object.keys(DISTRICTS);
+    const myD=S.stores.map(s=>s.district);
+    const d=Math.random()<.6&&myD.length?R(myD):R(dkeys);
+    S.news={...rv,district:d,until:S.day+6};
+    weekly=`<div class="notes">📅 <b>새로운 한 주</b> — 채용 후보 3명 도착!<br>📰 ${rv.n}(${rv.t})이(가) ${DISTRICTS[d].n}에서 ${rv.a}.</div>`;
+  }
+  rollNextEvents();
+  const infj=S.staff.some(s=>s.type==='INFJ');
+  let forecast='';
+  if(infj&&S.nextEvents.length){forecast=`<div class="notes">🔮 <b>INFJ 예지몽</b> — 내일: ${S.nextEvents.map(x=>{const e=EVENTS.find(v=>v.id===x.id);return e.e+' '+e.t}).join(', ')}</div>`}
+
+  save();
+  modalLock=false;
+  openModal(`<div class="small muted">${day}일차 · ${WD[weekday(day)]}요일 정산</div><h2 style="margin-bottom:12px">${totProfit>=0?'💰':'📉'} 순이익 <span class="${totProfit>=0?'up':'dn'}">${totProfit>=0?'+':''}${fmt(totProfit)}</span></h2>
+    ${rows.map(({st,r,cogs,wages,rent,profit,fx})=>`<div class="settle-store"><div class="between"><b>${KINDS[st.kind].e} ${KINDS[st.kind].n}</b><b class="${profit>=0?'up':'dn'}">${profit>=0?'+':''}${fmt(profit)}</b></div>
+      <table class="tbl"><tr><td>매출 ${r.team.length?`<span class="muted small">(효율 ${Math.round(r.eff*100)}% · 궁합 ${r.comp>0?'+':''}${r.comp}%${fx.rev!==1?` · 이벤트 ×${fx.rev.toFixed(2)}`:''})</span>`:'<span class="dn small">직원 없음</span>'}</td><td>${fmt(r.rev)}</td></tr>
+      <tr><td>원가</td><td>-${fmt(cogs)}</td></tr><tr><td>인건비</td><td>-${fmt(wages)}</td></tr><tr><td>임대료</td><td>-${fmt(rent)}</td></tr>${fx.cash?`<tr><td>이벤트</td><td>${fx.cash>0?'+':''}${fmt(fx.cash)}</td></tr>`:''}</table>
+      ${r.notes.length?`<div class="small muted" style="margin-top:6px">${r.notes.join('<br>')}</div>`:''}</div>`).join('')}
+    ${idleW?`<div class="between small" style="margin:0 2px 10px"><span class="muted">휴무 직원 급여</span><span>-${fmt(idleW)}</span></div>`:''}
+    ${msgs.length?`<div class="notes">${msgs.join('<br>')}</div>`:''}
+    ${weekly}${forecast}
+    <button class="btn primary" id="nextDay">다음 날로</button>`);
+  $('nextDay').onclick=()=>{closeModal();render();checkChapter()};
+}
+function checkChapter(){
+  if(!chapterDone())return;
+  const c=CHAPTERS[S.chapter];
+  S.chapter++;
+  c.unlock.forEach(u=>{if(!S.unlocked.includes(u))S.unlocked.push(u)});
+  const nx=CHAPTERS[S.chapter];
+  save();render();
+  if(!nx){ending();return}
+  openModal(`<div class="ev-ic">🎊</div><h2>${c.t} 클리어!</h2><p class="lead">보상: ${c.reward}</p>
+    <div class="notes"><b>${nx.t}</b><br>${nx.story}</div><button class="btn primary" onclick="closeModal()">계속</button>`);
+}
+function ending(){
+  const hid=S.found.combos.filter(k=>SPECIAL[k]&&SPECIAL[k].k==='hidden').length;
+  openModal(`<div class="ev-ic">🌃</div><h2>네온시티의 주인</h2>
+    <p class="lead">${S.day-1}일 만에 포장마차 하나에서 나이트클럽까지. 삼촌이 사라진 이유는… 정식 버전에서 계속됩니다.</p>
+    <div class="notes">매장 ${S.stores.length}개 · 직원 ${S.staff.length}명 · 평판 ★${S.rep.toFixed(1)}<br>도감 ${S.found.types.length}/16 · 히든 조합 ${hid}/${HIDDEN_TOTAL}</div>
+    <div class="stack"><button class="btn primary" id="endOrg">📸 조직도 카드 보기</button><button class="btn ghost" onclick="closeModal()">계속 운영하기</button></div>`);
+  $('endOrg').onclick=orgCard;
+}
+function orgCard(){
+  const boss=S.staff.find(s=>s.boss);
+  const top=S.staff.filter(s=>!s.boss).sort((a,b)=>({SSR:4,SR:3,R:2,N:1}[b.grade]-{SSR:4,SR:3,R:2,N:1}[a.grade])||b.lv-a.lv).slice(0,6);
+  const person=s=>`<div class="org-p">${avatar(s.type)}<b>${s.type}</b><div class="muted">${esc(s.name)}</div></div>`;
+  const hid=S.found.combos.filter(k=>SPECIAL[k]&&SPECIAL[k].k==='hidden');
+  openModal(`<div class="orgcard"><div class="o-t">ORGANIZATION CHART</div><h3>${esc(S.company)}</h3>
+    <div class="org-row">${boss?person(boss):''}</div>
+    <div class="org-row">${top.map(person).join('')}</div>
+    <div class="small muted" style="line-height:1.7">${S.day-1}일차 · 매장 ${S.stores.length}개 · ★${S.rep.toFixed(1)}<br>${hid.length?'✨ '+hid.map(k=>SPECIAL[k].n).join(' · '):'아직 히든 조합 없음'}</div>
+    <div style="margin-top:12px;font-weight:900;font-size:13px;color:var(--orange)">MBTI 시티 타이쿤</div></div>
+    <p class="small muted" style="text-align:center">스크린샷으로 저장해 공유해 보세요</p>
+    <button class="btn ghost" onclick="closeModal()">닫기</button>`);
+}
+
+/* 시작 */
+renderIntro();
+</script>
+</body>
+</html>
