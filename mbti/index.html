@@ -47,7 +47,7 @@ canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-acti
 .rs.off{opacity:.35}
 .av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid var(--line);flex:none}
 .tools{display:flex;gap:6px;margin-top:4px}
-.tb{flex:1;padding:10px 4px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:800}
+.tb{flex:1;min-width:0;padding:10px 2px;white-space:nowrap;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:800}
 .tb.on{background:var(--fire);color:#1a0a00;border:0}
 .info{margin-top:8px}
 .ih{display:flex;gap:10px;align-items:center}
@@ -62,6 +62,7 @@ canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-acti
 .chip.good{background:rgba(67,209,122,.14);color:#7dffb0}
 .chip.bad{background:rgba(255,59,92,.14);color:#ff8fa3}
 .chip.love{background:rgba(255,105,180,.16);color:#ff9bd0}
+.row{display:flex;gap:6px;align-items:center}
 .btn{display:block;width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:800;background:var(--card-2);border:1px solid var(--line)}
 .btn.primary{background:var(--fire);color:#1a0a00;border:0}
 .btn.sm{display:inline-block;width:auto;padding:7px 11px;font-size:12px;border-radius:9px;flex:none}
@@ -118,6 +119,7 @@ canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-acti
       <button class="tb on" data-tool="live">👥 라이프</button>
       <button class="tb" data-tool="build">🛠 건축</button>
       <button class="tb" data-tool="hire">📇 채용</button>
+      <button class="tb" data-tool="map">🗺 지도</button>
       <button class="tb" data-tool="shop">🏮 가게</button>
     </div>
     <div class="info" id="info"></div>
@@ -239,6 +241,44 @@ const TEACH={
   stress:{t:'스트레스',b:'스트레스 <b>70</b>부터 실수가 잦아지고, <b>90</b>이면 흑화해서 일을 놔 버려요. 흑화가 3일 넘거나 <b>100</b>이 되면 떠나요. 휴식 보내기, 취향 가구, 칭찬·위로로 낮춰 주세요.'},
   reg:{t:'단골 카드',b:'5번 이상 온 손님은 이름과 MBTI가 공개돼요. 요청을 잘 맞춰 주면 호감이 쌓이고, 호감이 가득 차면 <b>"여기서 일해 보고 싶어요"</b>라며 무료로 입사하기도 해요.'},
 };
+/* ── 실제 동네 (핫플 지수: 파티맵 동네별 핫플 수, 2026-10 기준) ── */
+const AREAS={
+  hongdae:{n:'홍대',city:'서울',hot:64,rent:1.1,mb:{E:.68,N:.55,F:.55,P:.7},d:'인디 공연·클럽·버스킹, 20대가 많아요'},
+  gangnam:{n:'강남',city:'서울',hot:65,rent:1.6,mb:{E:.6,N:.4,F:.4,P:.35},d:'직장인 회식·고급 술자리, 임대료가 비싸요'},
+  seongsu:{n:'성수',city:'서울',hot:58,rent:1.4,mb:{E:.5,N:.65,F:.6,P:.55},d:'팝업스토어·카페·디자이너 손님'},
+  itaewon:{n:'이태원',city:'서울',hot:46,rent:1.25,mb:{E:.7,N:.55,F:.45,P:.65},d:'외국인 손님·다국적 바'},
+  kondae:{n:'건대',city:'서울',hot:31,rent:.95,mb:{E:.62,N:.45,F:.55,P:.6},d:'대학가·가성비 술집'},
+  euljiro:{n:'을지로',city:'서울',hot:28,rent:.9,mb:{E:.45,N:.45,F:.5,P:.45},d:'노포·힙지로·퇴근 후 한잔'},
+  jamsil:{n:'잠실',city:'서울',hot:23,rent:1.2,mb:{E:.55,N:.4,F:.5,P:.45},d:'올림픽공원 공연·야구 관객'},
+  yeonnam:{n:'연남',city:'서울',hot:20,rent:1.0,mb:{E:.45,N:.65,F:.65,P:.6},d:'연트럴파크·작은 바·감성 손님'},
+  gwangalli:{n:'광안리',city:'부산',hot:41,rent:1.1,mb:{E:.65,N:.5,F:.55,P:.6},d:'광안대교 뷰·매주 토요일 드론쇼'},
+  seomyeon:{n:'서면',city:'부산',hot:40,rent:1.0,mb:{E:.6,N:.45,F:.5,P:.55},d:'부산 최대 번화가·2030 술자리'},
+  haeundae:{n:'해운대',city:'부산',hot:39,rent:1.3,mb:{E:.6,N:.45,F:.5,P:.55},d:'관광객·리조트 손님'},
+  jeonpo:{n:'전포',city:'부산',hot:32,rent:.85,mb:{E:.5,N:.6,F:.6,P:.55},d:'카페거리·감성 술집'},
+  dongseongro:{n:'동성로',city:'대구',hot:51,rent:.9,mb:{E:.62,N:.45,F:.5,P:.55},d:'대구 중심 번화가'},
+  dongmyeong:{n:'동명동',city:'광주',hot:27,rent:.8,mb:{E:.5,N:.55,F:.6,P:.5},d:'광주 카페·술집 골목'},
+};
+/* ── 실제 행사 (날짜는 실제 일정 기준) ── */
+const REAL_EVENTS=[
+  {n:'제23회 자라섬재즈페스티벌',from:'2026-10-09',to:'2026-10-11',place:'가평 자라섬',areas:{hongdae:1.15,yeonnam:1.15},why:'재즈 팬들이 공연 전후로 들러요',src:'파티맵'},
+  {n:'광주 사운드파크 X 피크뮤직 페스티벌',from:'2026-10-09',to:'2026-10-10',place:'광주 사직공원·양림동',areas:{dongmyeong:1.7},why:'공연 끝나고 뒤풀이 손님',src:'파티맵'},
+  {n:'그랜드 민트 페스티벌 2026',from:'2026-10-17',to:'2026-10-18',place:'올림픽공원',areas:{jamsil:1.9,kondae:1.15},why:'페스티벌 관객이 몰려와요',src:'파티맵'},
+  {n:'광안리 M 드론라이트쇼',weekly:6,from:'2026-01-01',to:'2026-12-31',place:'광안리해수욕장 (19:00·21:00)',areas:{gwangalli:1.4,jeonpo:1.1},why:'매주 토요일 밤 드론쇼 관람객',src:'부산시'},
+  {n:'제21회 부산불꽃축제',from:'2026-11-07',to:'2026-11-07',place:'광안리해수욕장 일원',areas:{gwangalli:2.6,haeundae:1.5,seomyeon:1.3,jeonpo:1.3},why:'1년 중 광안리가 가장 붐비는 날',src:'예매처 공지'},
+  {n:'크리스마스',from:'2026-12-24',to:'2026-12-25',areas:'*',mul:1.4,why:'커플·모임 손님이 늘어요',src:'달력'},
+  {n:'연말 송년회 시즌',from:'2026-12-18',to:'2026-12-31',areas:'*',mul:1.2,why:'회식·송년 모임',src:'달력'},
+  {n:'월드 DJ 페스티벌 2027',from:'2027-06-11',to:'2027-06-13',place:'서울종합운동장 (미확정)',areas:{jamsil:1.8},why:'EDM 관객',src:'파티맵 (제3자 기재, 미확정)'},
+];
+const WD=['일','월','화','수','목','금','토'];
+const WEEK_MUL=[1.05,.85,.85,.9,1,1.2,1.35];
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+function dateOf(day){const d=new Date((S&&S.date0?S.date0:ymd(new Date()))+'T00:00:00');d.setDate(d.getDate()+(day||S.day)-1);return d}
+const dlabel=d=>`${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]})`;
+function eventsOn(d){const k=ymd(d);return REAL_EVENTS.filter(e=>k>=e.from&&k<=e.to&&(e.weekly==null||d.getDay()===e.weekly))}
+function eventMul(area,d){let m=1;for(const e of eventsOn(d)){m*=e.areas==='*'?e.mul:(e.areas[area]||1)}return m}
+const area=()=>AREAS[S.area]||AREAS.hongdae;
+function trafficMul(){const d=dateOf();return (.55+area().hot/80)*WEEK_MUL[d.getDay()]*eventMul(S.area,d)}
+function areaType(){const m=area().mb,r=Math.random;return (r()<m.E?'E':'I')+(r()<m.N?'N':'S')+(r()<m.F?'F':'T')+(r()<m.P?'P':'J')}
 const W=12,H=10,DOOR={x:4,y:9};
 const OPEN=11*60,CLOSE=22*60,END=23*60;
 
@@ -270,7 +310,9 @@ function defaultLayout(){
 }
 
 /* ════════════════ 시작 ════════════════ */
-let pickType=null;
+let pickType=null,pickArea='gwangalli';
+function areaDescHTML(k){const a=AREAS[k],m=a.mb;const up=REAL_EVENTS.filter(e=>e.areas!=='*'&&e.areas[k]&&e.to>=ymd(new Date()));
+  return `<b>${a.city} ${a.n}</b> — ${a.d}. 손님 성향 E ${Math.round(m.E*100)}% · N ${Math.round(m.N*100)}% · F ${Math.round(m.F*100)}% · P ${Math.round(m.P*100)}% · 임대료 ×${a.rent}${up.length?`<br>📅 ${up.map(e=>e.n).join(', ')}`:''}`}
 function intro(){
   const saved=load();
   openModal(`<div class="small muted" style="font-weight:800;letter-spacing:.15em">LIFE SIM</div>
@@ -281,14 +323,18 @@ function intro(){
     <input class="field" id="coName" maxlength="12" value="네온포차">
     <div class="small" style="font-weight:800;margin:12px 0 6px">내 MBTI = 사장 캐릭터</div>
     <div class="tgrid">${TYPES.map(t=>`<button class="tcell" data-t="${t}"><span class="e">${T[t].em}</span><span style="color:${GROUP_COLOR(t)}">${t}</span></button>`).join('')}</div>
+    <div class="small" style="font-weight:800;margin:12px 0 6px">어느 동네에 열까요? <span class="muted" style="font-weight:600">· 실제 핫플 기준</span></div>
+    <div class="tgrid" id="areas">${Object.entries(AREAS).map(([k,a])=>`<button class="tcell acell ${k===pickArea?'on':''}" data-a="${k}"><span style="font-size:10px" class="muted">${a.city}</span><br>${a.n}<br><span style="font-size:10px;color:var(--gold)">🔥${a.hot}</span></button>`).join('')}</div>
+    <p class="small muted" id="areaDesc" style="margin:6px 2px 0">${areaDescHTML(pickArea)}</p>
     <button class="btn primary" id="go" style="margin-top:14px" disabled>개업하기</button>`);
-  document.querySelectorAll('.tcell').forEach(b=>b.onclick=()=>{pickType=b.dataset.t;document.querySelectorAll('.tcell').forEach(x=>x.classList.toggle('on',x===b));$('go').disabled=false});
-  $('go').onclick=()=>startNew($('coName').value.trim()||'네온포차',pickType);
+  document.querySelectorAll('.tcell[data-t]').forEach(b=>b.onclick=()=>{pickType=b.dataset.t;document.querySelectorAll('.tcell[data-t]').forEach(x=>x.classList.toggle('on',x===b));$('go').disabled=false});
+  document.querySelectorAll('.acell').forEach(b=>b.onclick=()=>{pickArea=b.dataset.a;document.querySelectorAll('.acell').forEach(x=>x.classList.toggle('on',x===b));$('areaDesc').innerHTML=areaDescHTML(pickArea)});
+  $('go').onclick=()=>startNew($('coName').value.trim()||'네온포차',pickType,pickArea);
   if(saved)$('cont').onclick=()=>loadGame(saved);
 }
-function startNew(company,bossType){
+function startNew(company,bossType,areaKey){
   seq=1;
-  S={company,day:1,min:0,money:600000,rep:2.5,objs:defaultLayout(),staff:[],rel:{},cands:null,regs:[],alumni:[],taught:{},negDays:0,debt:0,titles:[]};
+  S={company,area:areaKey||'gwangalli',date0:ymd(new Date()),day:1,min:0,money:600000,rep:2.5,objs:defaultLayout(),staff:[],rel:{},cands:null,regs:[],alumni:[],taught:{},negDays:0,debt:0,titles:[]};
   const boss=newSim(bossType,true,'사장님');
   const others=TYPES.filter(t=>t!==bossType).sort(()=>Math.random()-.5);
   const good=others.slice().sort((a,b)=>compat(bossType,b)-compat(bossType,a))[0];
@@ -304,12 +350,14 @@ function save(){
 }
 function load(){try{return JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){return null}}
 function loadGame(d){S=d;seq=d.seq||1000;
-  const def={regs:[],alumni:[],taught:{},negDays:0,debt:0,titles:[]};for(const k in def)if(S[k]===undefined)S[k]=def[k];
+  const def={regs:[],alumni:[],taught:{},negDays:0,debt:0,titles:[],area:'hongdae',date0:ymd(new Date())};for(const k in def)if(S[k]===undefined)S[k]=def[k];
   S.staff.forEach(s=>{if(s.stress===undefined)s.stress=10;s.dark=s.dark||0;s.served=s.served||0;s.hired=s.hired||1});
   resetDay();closeModal();sel=S.staff[0].id;renderPanel()}
 
 /* ════════════════ 하루 흐름 ════════════════ */
 function resetDay(){
+  if(S.moveTo){S.area=S.moveTo;S.moveTo=null;S.regs=S.regs.filter(()=>Math.random()<.25);setTimeout(()=>toast(`🚚 ${area().city} ${area().n}(으)로 이전 완료!`),300)}
+  {const ev=eventsOn(dateOf()).filter(e=>e.areas==='*'||e.areas[S.area]);if(ev.length)setTimeout(()=>toast(`📅 오늘 ${ev.map(e=>e.n).join(', ')} · 손님 ×${eventMul(S.area,dateOf()).toFixed(1)}`),900)}
   S.min=9*60+20;custs=[];tasks=[];summaryShown=false;custTimer=0;
   S.today={served:0,angry:0,revenue:0,tips:0,events:[],match:0,miss:0,pred:null,rushDone:false,darkStarted:false,maxCombo:0};S.rush=null;
   S.objs.forEach(o=>{o.busy=null;o.ready=[];o.dirty=false});
@@ -566,7 +614,7 @@ function spawnCust(){
   const {ch,tb}=R(seats);
   const away=S.regs.filter(r=>!custs.some(c=>c.reg===r));
   const reg=away.length&&Math.random()<.5?R(away):null;
-  const type=reg?reg.type:R(TYPES),r=Math.random(),axis=r<.45?0:r<.8?1:2;
+  const type=reg?reg.type:areaType(),r=Math.random(),axis=r<.45?0:r<.8?1:2;
   const c={id:seq++,em:reg?reg.em:R(CUST_EM),type,reg,req:{axis,want:type[axis]},x:DOOR.x,y:DOOR.y,path:[],seat:ch,table:tb,x0:ch.x,y0:ch.y,state:'toSeat',wait:0,dir:1,walkT:0,rush:S.rush?(S.rush.auto?'auto':'manual'):null,
     body:reg?reg.body:R(['#7d8597','#9c6644','#6c757d','#577590','#b56576','#4d908e'])};
   const p=bfs(c,(x,y)=>x===ch.x&&y===ch.y,true);if(!p)return;
@@ -625,7 +673,7 @@ function update(dtReal){
   S.min+=dm;
   for(const s of S.staff){if(!s.present&&S.min>=s.arrive&&S.min<END-30&&!s.done){s.present=true;s.done=true;s.x=DOOR.x;s.y=DOOR.y;
     if(s.arrive>10*60+5){addML(s,'late');say(s,'헉 늦었다…!')}else say(s,R(['좋은 아침!',MEME[s.type]]))}}
-  if(S.min>=OPEN&&S.min<CLOSE){custTimer-=dm;if(custTimer<=0){spawnCust();custTimer=S.rush?2+Math.random()*3:(26+Math.random()*22)/(.45+S.rep/5*1.2)}}
+  if(S.min>=OPEN&&S.min<CLOSE){custTimer-=dm;if(custTimer<=0){spawnCust();custTimer=S.rush?2+Math.random()*3:(26+Math.random()*22)/((.45+S.rep/5*1.2)*trafficMul())}}
   // 예상 매출 (오픈 직전)
   if(!S.today.pred&&S.min>=10*60+50)predict();
   // 피크타임 러시 (2일차부터)
@@ -663,7 +711,7 @@ function stressTick(s,dm,work){
 }
 function predict(){
   const ws=S.staff.filter(s=>s.present&&s.working);
-  const spawn=660/(37/(.45+S.rep/5*1.2)),cap=ws.length*7.5,seats=freeSeats().length*8;
+  const spawn=660/(37/((.45+S.rep/5*1.2)*trafficMul())),cap=ws.length*7.5,seats=freeSeats().length*8;
   let pairs=0,n=0;for(let i=0;i<ws.length;i++)for(let j=i+1;j<ws.length;j++){pairs+=compat(ws[i].type,ws[j].type);n++}
   const est=Math.min(spawn,cap,seats)*14000*(1+(n?pairs/n:0)/100)*(diversity()?1.1:1);
   S.today.pred=[Math.round(est*.8/10000)*10000,Math.round(est*1.15/10000)*10000];
@@ -740,7 +788,7 @@ function draw(){
   const w1=iso(0,6),w2=iso(0,8);poly([{x:w1.x,y:w1.y-WH*.25},{x:w2.x,y:w2.y-WH*.25},{x:w2.x,y:w2.y-WH*.8},{x:w1.x,y:w1.y-WH*.8}],nightTint()>.15?'#1b2440':'#7fb2d6');
   const sg=iso(4,0);
   ctx.save();ctx.translate(sg.x,sg.y-WH*.8);ctx.transform(1,.5,0,1,0,0);ctx.font=`900 ${TW*.32}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='#ff7a1a';ctx.shadowColor='#ff4d00';ctx.shadowBlur=12;ctx.fillText('🏮 '+S.company,0,0);ctx.restore();
+  ctx.fillStyle='#ff7a1a';ctx.shadowColor='#ff4d00';ctx.shadowBlur=12;ctx.fillText('🏮 '+S.company+' · '+area().n,0,0);ctx.restore();
   const lg=iso(10.5,0);ctx.save();ctx.translate(lg.x,lg.y-WH*.6);ctx.transform(1,.5,0,1,0,0);ctx.font=`800 ${TW*.2}px sans-serif`;ctx.textAlign='center';ctx.fillStyle='#b9a6d9';ctx.fillText('STAFF ONLY',0,0);ctx.restore();
   const ents=[];
   for(const o of S.objs)ents.push({d:o.x+o.y+1,f:()=>drawObj(o)});
@@ -955,6 +1003,21 @@ function renderPanel(){
       `<button class="btn" data-reroll>🔄 다른 지원자 보기 (₩20,000)</button>`+
       `<div class="small muted" style="margin:12px 0 6px">현재 직원</div>`+S.staff.filter(s=>!s.boss).map(s=>`<div class="cand">${avatar(s.type,34)}<div class="mid"><b>${esc(s.name)}</b> ${typeBadge(s.type)}</div><button class="btn sm" data-fire="${s.id}">해고</button></div>`).join('');
   }
+  if(tool==='map'){
+    const a=area(),today=dateOf(),m=a.mb,tm=trafficMul();
+    const bar=(l,v,r)=>`<div class="small" style="display:flex;align-items:center;gap:6px"><span style="width:14px">${l}</span><div class="nb" style="flex:1;height:6px;background:var(--card-3);border-radius:6px;overflow:hidden"><span style="display:block;height:100%;width:${v*100}%;background:var(--orange)"></span></div><span style="width:14px">${r}</span><span class="muted" style="width:30px;text-align:right">${Math.round(v*100)}%</span></div>`;
+    const upc=[];for(let i=0;i<60;i++){const d=dateOf(S.day+i);for(const e of eventsOn(d)){if(upc.some(u=>u.e===e))continue;const mul=e.areas==='*'?e.mul:(e.areas[S.area]||0);upc.push({e,d,i,mul})}}
+    const far=REAL_EVENTS.filter(e=>e.weekly==null&&!upc.some(u=>u.e===e)&&e.from>ymd(today));
+    h=`<div class="notes"><b>📍 ${a.city} ${a.n}</b> · 🔥 핫플 지수 ${a.hot} · 임대료 ×${a.rent}<br><span class="muted">${a.d}</span>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">${bar('E',m.E,'I')}${bar('N',m.N,'S')}${bar('F',m.F,'T')}${bar('P',m.P,'J')}</div>
+      <div class="small" style="margin-top:8px">오늘 ${dlabel(today)} 손님 흐름 <b style="color:${tm>=1.2?'#7dffb0':tm<.9?'#ff8fa3':'var(--txt)'}">×${tm.toFixed(2)}</b> <span class="muted">(동네 × 요일 × 행사)</span></div></div>
+      <div class="small muted" style="margin:10px 0 6px">📅 다가오는 실제 행사</div>
+      ${upc.slice(0,8).map(({e,d,i,mul})=>`<div class="cand" style="padding:8px 10px"><div class="mid"><b>${esc(e.n)}</b> <span class="muted">${i===0?'오늘':'D-'+i} · ${dlabel(d)}${e.weekly!=null?' · 매주 '+WD[e.weekly]+'요일':e.to!==e.from?' ~ '+e.to.slice(5).replace('-','/'):''}</span><br>${esc(e.place||'전국')} · ${esc(e.why)}<br><span class="muted" style="font-size:10px">출처: ${esc(e.src)}</span></div><span class="chip ${mul>1?'good':''}">${mul>1?'우리 동네 ×'+mul.toFixed(1):'다른 동네'}</span></div>`).join('')||'<p class="small muted">60일 안에 예정된 행사가 없어요</p>'}
+      ${far.length?`<div class="small muted" style="margin:6px 0">그 이후: ${far.map(e=>esc(e.n)+' ('+e.from.slice(5).replace('-','/')+')').join(' · ')}</div>`:''}
+      <div class="small muted" style="margin:12px 0 6px">🚚 가게 이전 (₩300,000 · 다음 날 아침 적용 · 단골 대부분과 작별)</div>
+      <div class="tgrid">${Object.entries(AREAS).map(([k,x])=>`<button class="tcell" data-move="${k}" ${k===S.area?'disabled style="opacity:.4"':''} ${S.moveTo===k?'style="border-color:var(--gold)"':''}><span style="font-size:10px" class="muted">${x.city}</span><br>${x.n}<br><span style="font-size:10px;color:var(--gold)">🔥${x.hot}</span></button>`).join('')}</div>
+      <p class="small muted" style="margin:6px 0 0">동네 정보·핫플 지수는 파티맵(partymap.kr) 동네별 핫플 수를, 행사 날짜는 실제 공지를 참고했어요. 실제 일정은 방문 전에 공식 안내를 확인하세요.</p>`;
+  }
   if(tool==='shop'){
     const t=S.today;
     h=`<table class="tbl"><tr><td>오늘 손님</td><td>${t.served}명 응대 · <span class="dn">${t.angry}명 화나서 떠남</span></td></tr>
@@ -975,6 +1038,8 @@ function renderPanel(){
   $('info').innerHTML=h;
   const wb=document.querySelector('[data-work]');if(wb)wb.onclick=()=>{const s=S.staff.find(x=>x.id===sel);s.working=!s.working;releaseJob(s);say(s,s.working?'일하러 갑니다!':'쉬어도 돼요? 야호!');renderPanel()};
   document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{buildPick=b.dataset.b;renderPanel()});
+  document.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>{const k=b.dataset.move;if(k===S.area)return;
+    askYes(`${AREAS[k].city} ${AREAS[k].n}(으)로 이전할까요?`,'₩300,000 내고 이전',()=>{if(S.money<300000)return toast('돈이 부족해요');S.money-=300000;S.moveTo=k;toast(`내일 아침 ${AREAS[k].n}에서 문을 열어요`);renderPanel()})});
   document.querySelectorAll('[data-hire]').forEach(b=>b.onclick=()=>hire(+b.dataset.hire));
   document.querySelectorAll('[data-fire]').forEach(b=>b.onclick=()=>{const s=S.staff.find(x=>x.id===+b.dataset.fire);askYes(`${esc(s.name)}(${s.type})을(를) 해고할까요?`,'해고하기',()=>{releaseJob(s);S.staff=S.staff.filter(x=>x!==s);if(sel===s.id)sel=S.staff[0].id;toast(`${s.name}: "${s.type[2]==='F'?'그동안 감사했어요…ㅠ':'네, 알겠습니다.'}"`);renderPanel()});});
   const rb=document.querySelector('[data-reroll]');if(rb)rb.onclick=()=>{if(S.money<20000)return toast('돈이 부족해요');S.money-=20000;S.cands=rollCands();renderPanel()};
@@ -992,15 +1057,16 @@ function hud(){
   if(!S)return;
   $('hMoney').textContent=won(S.money);
   const m=Math.floor(S.min),hh=Math.floor(m/60)%24,mm=m%60;
-  $('hClock').textContent=`${S.day}일차 ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+  $('hClock').textContent=`${dlabel(dateOf())} ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
   $('hStars').textContent='★'+S.rep.toFixed(1);
   const open=S.min>=OPEN&&S.min<CLOSE;
-  $('banner').textContent=S.rush?`🔥 피크타임 러시 ${Math.ceil(S.rush.left)}초 · ${S.rush.auto?'자동 처리':'콤보 '+S.rush.combo}`:S.min<OPEN?`🌅 출근 시간 · 11:00 오픈`:open?`🏮 영업 중 · 손님 ${custs.filter(c=>c.state!=='leave').length}명 · 밀린 업무 ${tasks.filter(t=>!t.done).length}`:S.min<END?'🌙 마감 · 남은 손님 응대 중':'🌃 퇴근 중…';
+  const evN=eventsOn(dateOf()).filter(e=>e.areas==='*'||e.areas[S.area]).map(e=>e.n)[0];
+  $('banner').textContent=S.rush?`🔥 피크타임 러시 ${Math.ceil(S.rush.left)}초 · ${S.rush.auto?'자동 처리':'콤보 '+S.rush.combo}`:S.min<OPEN?`🌅 출근 시간 · 11:00 오픈`:open?`${evN?'📅 '+evN+' · ':'🏮 '}손님 ${custs.filter(c=>c.state!=='leave').length}명 · 밀린 업무 ${tasks.filter(t=>!t.done).length}`:S.min<END?'🌙 마감 · 남은 손님 응대 중':'🌃 퇴근 중…';
 }
 
 /* ════════════════ 하루 정산 ════════════════ */
 function daySummary(){
-  const t=S.today,wages=S.staff.filter(s=>!s.boss).length*60000,rent=50000;
+  const t=S.today,wages=S.staff.filter(s=>!s.boss).length*60000,rent=Math.round(50000*area().rent/1000)*1000;
   const debtPay=Math.min(S.debt,100000);S.debt-=debtPay;
   S.money-=wages+rent+debtPay;
   // 흑화 여파
