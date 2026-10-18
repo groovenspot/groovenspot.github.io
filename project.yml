@@ -18,7 +18,10 @@ targets:
     type: application
     platform: watchOS
     sources:
-      - CardioPacer
+      - path: CardioPacer
+        excludes: [PrivacyInfo.xcprivacy]
+      - path: CardioPacer/PrivacyInfo.xcprivacy
+        buildPhase: resources
       - Shared
     info:
       path: CardioPacer/Info.plist
@@ -28,6 +31,7 @@ targets:
         WKWatchOnly: true
         WKRunsIndependentlyOfCompanionApp: true
         WKBackgroundModes: [workout-processing]
+        ITSAppUsesNonExemptEncryption: false
         NSHealthShareUsageDescription: 실시간 심박수로 Zone 2 유지 여부를 안내하고, 나이와 안정 시 심박수로 목표 구간을 계산합니다.
         NSHealthUpdateUsageDescription: 운동 기록을 건강 앱에 저장합니다.
     entitlements:
@@ -50,12 +54,16 @@ targets:
     type: app-extension
     platform: watchOS
     sources:
-      - CardioPacerComplications
+      - path: CardioPacerComplications
+        excludes: [PrivacyInfo.xcprivacy]
+      - path: CardioPacerComplications/PrivacyInfo.xcprivacy
+        buildPhase: resources
       - Shared
     info:
       path: CardioPacerComplications/Info.plist
       properties:
         CFBundleDisplayName: Cardio Pacer
+        ITSAppUsesNonExemptEncryption: false
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:

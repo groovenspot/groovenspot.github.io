@@ -86,6 +86,8 @@ struct ZoneSettingsView: View {
                 }
                 .foregroundStyle(HeartRateZone.target.color)
                 .font(.headline)
+            } footer: {
+                Text("Cardio Pacer는 의료기기가 아니며, 계산된 구간은 일반적인 공식에 따른 참고값입니다. 심장 질환이 있거나 약을 복용 중이라면 운동 전 의사와 상담하세요.")
             }
         }
         .navigationTitle(isOnboarding ? "존 2 설정" : "설정")

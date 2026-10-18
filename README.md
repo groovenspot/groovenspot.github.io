@@ -48,6 +48,14 @@ CardioPacerTests/           존 계산 로직 단위 테스트
 
 달성률은 일시정지 시간을 제외하고, 첫 심박수 측정 이후 추적된 시간 중 Zone 2 비율입니다.
 
+## 출시
+
+- App Store 등록 정보·심사 메모: [`store/APP_STORE.md`](store/APP_STORE.md)
+- 출시 체크리스트: [`store/RELEASE_CHECKLIST.md`](store/RELEASE_CHECKLIST.md)
+- Google Play (Wear OS 별도 개발 필요): [`store/GOOGLE_PLAY.md`](store/GOOGLE_PLAY.md)
+- 지원 페이지 `index.html`, 개인정보 처리방침 `privacy.html` (GitHub Pages)
+- 시뮬레이터에서는 가짜 심박수가 세 존을 오가므로 스크린샷을 찍을 수 있습니다
+
 ## 다음 단계 (미구현)
 
 - iPhone 컴패니언 앱에서 존 설정 (WatchConnectivity) — 현재는 워치에서 직접 설정
