@@ -1,11 +1,11 @@
 # Builds Google Play graphics from the app icon and the Paparazzi renders:
-#   cd cardio-pacer/wearos && ./gradlew recordPaparazziDebug && cd .. && python3 Tools/make_play_assets.py
+#   cd cardio-pacer/android && ./gradlew recordPaparazziDebug && cd .. && python3 Tools/make_play_assets.py <font>
 # Needs Noto Sans CJK for Korean text (pass its path as the first argument).
 import glob, os, sys
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SNAPS = os.path.join(ROOT, "wearos/app/src/test/snapshots/images")
+SNAPS = os.path.join(ROOT, "android/wear/src/test/snapshots/images")
 OUT = os.path.join(ROOT, "store/google-play")
 CJK = sys.argv[1]
 
@@ -21,6 +21,11 @@ def snap(name):
 os.makedirs(os.path.join(OUT, "screenshots"), exist_ok=True)
 for i, name in enumerate(ORDER, 1):
     snap(name).save(os.path.join(OUT, "screenshots", f"{i}-{name}.png"))
+
+# Phone screenshot from the companion app, cropped to Play's 2:1 maximum aspect ratio
+PHONE = glob.glob(os.path.join(ROOT, "android/mobile/src/test/snapshots/images/*_companion.png"))[0]
+phone = Image.open(PHONE).convert("RGB")
+phone.crop((0, 0, phone.width, phone.width * 2)).save(os.path.join(OUT, "screenshots", "phone-1-companion.png"))
 
 # 512×512 store icon
 icon = Image.open(os.path.join(ROOT, "CardioPacer/Assets.xcassets/AppIcon.appiconset/AppIcon.png")).convert("RGB")
