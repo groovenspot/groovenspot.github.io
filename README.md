@@ -1,7 +1,14 @@
 # Cardio Pacer — 존 2 심박수 심플 가이드 (watchOS · Wear OS)
 
 달리는 중에도 한눈에: 화면 전체 색으로 지금 Zone 2에 있는지 알려주는 스마트워치 앱.
-Apple Watch 버전(이 폴더, Swift)과 Wear OS 버전([`wearos/`](wearos), Kotlin)이 같은 존 계산 로직과 화면 설계를 공유합니다.
+Apple Watch + iPhone 버전(이 폴더, Swift)과 Wear OS + Android 폰 버전([`android/`](android), Kotlin)이 같은 존 계산 로직과 화면 설계를 공유합니다.
+
+| | 워치 앱 | 폰 앱 |
+|---|---|---|
+| Apple | `CardioPacer/` (watchOS 10+) | `CardioPacerPhone/` (iOS 17+): 존 설정 → 워치로 전송, 건강 앱의 운동 기록과 Zone 2 달성률 |
+| Google | `android/wear` (Wear OS 3+) | `android/mobile` (Android 8+): 존 설정 → 워치로 전송, 운동 기록, Health Connect 저장 |
+
+워치 앱은 폰 앱 없이도 단독으로 동작합니다. 존 설정은 어느 쪽에서 바꿔도 반대쪽에 반영됩니다.
 
 | 색 | 구간 | 안내 |
 |---|---|---|
@@ -13,24 +20,25 @@ Apple Watch 버전(이 폴더, Swift)과 Wear OS 버전([`wearos/`](wearos), Kot
 
 1. `brew install xcodegen`
 2. `cd cardio-pacer && xcodegen generate`
-3. `CardioPacer.xcodeproj`를 열고 Signing & Capabilities에서 팀 선택
+3. `CardioPacer.xcodeproj`를 열고 Signing & Capabilities에서 팀 선택 (타깃 3개)
    (번들 ID `com.groovenspot.cardiopacer.*`, App Group `group.com.groovenspot.cardiopacer`는 필요하면 변경)
-4. 실제 Apple Watch에서 실행 (시뮬레이터는 심박수 데이터가 없음)
+4. `CardioPacerPhone` 스킴으로 iPhone에 설치하면 워치 앱도 함께 설치됩니다. 워치만 테스트하려면 `CardioPacer` 스킴
 
 요구사항: Xcode 15+, watchOS 10+
 
 ## 빌드 — Wear OS
 
-1. Android Studio로 `wearos/` 폴더 열기 (또는 `cd wearos && ./gradlew assembleDebug`)
-2. Wear OS 에뮬레이터나 워치에 실행. 에뮬레이터 가짜 심박 데이터는 `store/GOOGLE_PLAY.md` 참고
-3. 테스트: `./gradlew testDebugUnitTest` (존 로직 14개 + 화면 렌더링 6개)
+1. Android Studio로 `android/` 폴더 열기 (또는 `cd android && ./gradlew assembleDebug`)
+2. `wear` 를 Wear OS 에뮬레이터/워치에, `mobile` 을 폰에 실행. 에뮬레이터 가짜 심박 데이터는 `store/GOOGLE_PLAY.md` 참고
+3. 테스트: `./gradlew test` (존 로직 14개 + 동기화 형식 4개 + 화면 렌더링 7개)
 
-요구사항: JDK 17+, Android SDK 36, Wear OS 3 이상 (API 30+)
+요구사항: JDK 17+, Android SDK 36. 워치 Wear OS 3+ (API 30+), 폰 Android 8+ (API 26+)
+워치와 폰 앱은 같은 패키지 이름과 같은 서명 키를 써야 서로 연결됩니다.
 
 Wear OS 버전은 플랫폼 관례를 따릅니다.
 - 운동 화면에서 **왼쪽** 스와이프(또는 길게 누르기)로 정지/종료. 오른쪽 스와이프는 워치페이스로 나가며 운동은 계속됩니다
 - 안정 시 심박수 자동 불러오기 없음 (직접 입력)
-- 운동 기록을 Health Connect에 저장하지 않음
+- 운동 기록은 폰 앱이 받아서 Health Connect에 저장 (폰 앱에서 권한 허용 시)
 
 ## 구조
 
@@ -48,11 +56,14 @@ CardioPacer/                워치 앱
   Views/ZoneSettingsView    온보딩/설정: 나이·안정 시 심박수(건강 앱에서 불러오기) 또는 직접 입력
 CardioPacerComplications/   워치페이스 컴플리케이션 & 스마트 스택 위젯 (탭 → 앱 실행)
 CardioPacerTests/           존 계산 로직 단위 테스트
-wearos/                     Wear OS 앱 (Kotlin, Compose for Wear OS, Health Services)
-  zone/ZoneModels.kt        Shared/ZoneModels.swift 를 옮긴 것 (같은 테스트)
-  exercise/ExerciseService  포그라운드 서비스: ExerciseClient 심박 → 존 → 진동, Ongoing Activity
-  ui/                       시작 · 운동(색 화면/컨트롤) · 요약 · 설정 화면
-  complication/             워치페이스 컴플리케이션 (탭 → 앱 실행)
+SharedApp/                  워치 앱 + iPhone 앱 공용 (위젯 제외)
+  ZoneSync.swift            WatchConnectivity로 존 설정 양방향 동기화
+  WorkoutActivity.swift     운동 종류, 운동 기록에 붙이는 Zone 2 메타데이터 키
+CardioPacerPhone/           iPhone 컴패니언 (존 설정, 워치로 전송, 건강 앱 운동 기록 + 달성률)
+android/                    Google 버전 (Kotlin)
+  shared/                   ZoneModels.kt (Swift와 같은 로직·테스트), 워치↔폰 동기화 형식
+  wear/                     Wear OS 앱: ExerciseService(심박 → 존 → 진동), 화면, 컴플리케이션, 폰 동기화
+  mobile/                   Android 폰 앱: 존 설정, 운동 기록, Health Connect 저장
 store/                      App Store / Google Play 등록 문구, 체크리스트, Play 그래픽
 Tools/                      아이콘·Play 그래픽 생성 스크립트
 ```
@@ -79,4 +90,4 @@ Tools/                      아이콘·Play 그래픽 생성 스크립트
 
 ## 다음 단계 (미구현)
 
-- iPhone 컴패니언 앱에서 존 설정 (WatchConnectivity) — 현재는 워치에서 직접 설정
+- 실제 기기 테스트 (Apple 쪽은 아직 Xcode 빌드도 안 해봄)

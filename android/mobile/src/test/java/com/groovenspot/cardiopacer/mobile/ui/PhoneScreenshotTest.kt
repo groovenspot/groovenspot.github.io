@@ -58,4 +58,18 @@ class PhoneScreenshotTest {
             )
         }
     }
+
+    @Test
+    fun manualSetup() = paparazzi.snapshot {
+        PhoneTheme {
+            CompanionContent(
+                profile = ZoneProfile(age = 35, method = ZoneProfile.Method.MANUAL, manualRange = ZoneRange(130, 145)),
+                history = emptyList(),
+                healthConnectAvailable = true,
+                healthConnectGranted = false,
+                onSaveProfile = {},
+                onRequestHealthConnect = {},
+            )
+        }
+    }
 }

@@ -7,8 +7,8 @@ App Store Connect → 나의 앱 → Cardio Pacer 에 아래 값을 그대로 �
 
 | 항목 | 값 |
 |---|---|
-| 플랫폼 | watchOS (Apple Watch 전용 앱) |
-| 번들 ID | `com.groovenspot.cardiopacer.watchkitapp` |
+| 플랫폼 | iOS (iPhone 앱 + 포함된 Apple Watch 앱) |
+| 번들 ID | `com.groovenspot.cardiopacer` (워치 앱 `…cardiopacer.watchkitapp` 은 같은 빌드에 포함) |
 | SKU | `cardiopacer-watch-001` |
 | 기본 언어 | 한국어 |
 | 1차 카테고리 | 건강 및 피트니스 (Health & Fitness) |
@@ -66,6 +66,9 @@ Zone 2를 넘어 빨간색에 들어서는 순간 손목에 두 번 진동이 �
 
 ■ 워치페이스에서 바로 시작
 컴플리케이션과 스마트 스택 위젯을 지원해 탭 한 번으로 실행할 수 있습니다.
+
+■ iPhone 앱
+큰 화면에서 Zone 2를 설정하면 워치로 바로 전송됩니다. 지난 운동의 Zone 2 달성률도 한눈에 볼 수 있습니다. 워치 앱은 iPhone 앱 없이도 단독으로 동작합니다.
 
 러닝, 사이클, 빠르게 걷기(런데이) 모두 지원합니다.
 다이어트와 체력 향상을 위해 저강도 유산소를 꾸준히 하고 싶은 분께 추천합니다.
@@ -131,6 +134,9 @@ When you finish, see how much of your workout you spent in Zone 2, plus time in 
 ■ START FROM YOUR WATCH FACE
 Complications and a Smart Stack widget launch the app in one tap.
 
+■ IPHONE APP
+Set up Zone 2 on the big screen and send it straight to your watch. See the Zone 2 score of past workouts at a glance. The watch app also works on its own.
+
 Supports running, cycling and brisk walking.
 
 ■ PRIVACY
@@ -183,7 +189,7 @@ Apple 기준에서 "수집"은 기기 밖으로 전송되어 개발자나 제3�
 - 메모 (그대로 복사):
 
 ```
-Cardio Pacer is a watch-only app. It shows the user's live heart rate zone as a full-screen color (blue / green / red) during a workout and plays a double haptic when the heart rate goes above Zone 2.
+Cardio Pacer is an Apple Watch app with an iPhone companion. The watch app shows the user's live heart rate zone as a full-screen color (blue / green / red) during a workout and plays a double haptic when the heart rate goes above Zone 2.
 
 How to test:
 1. Launch the app on Apple Watch and allow Health access.
@@ -191,7 +197,9 @@ How to test:
 3. Choose an activity and tap "시작" (Start). Heart rate appears within a few seconds while wearing the watch.
 4. Swipe right (or long-press) on the workout screen to pause or end. The summary shows the percentage of time in Zone 2.
 
-HealthKit usage: reads heart rate, resting heart rate and date of birth to compute and display heart rate zones; writes the workout to Health. All processing is on-device; no data leaves the device, and there are no accounts, ads or analytics.
+iPhone app: set the Zone 2 range (age / resting heart rate, or manual) and tap "저장하고 워치로 보내기" to send it to the watch via WatchConnectivity. Finished watch workouts appear under "운동 기록" with their Zone 2 percentage (read from HealthKit workout metadata).
+
+HealthKit usage: the watch reads heart rate, resting heart rate and date of birth to compute and display heart rate zones; writes the workout to Health. All processing is on-device; no data leaves the device, and there are no accounts, ads or analytics.
 
 The app is not a medical device; a disclaimer is shown on the settings screen and in the description.
 In the Simulator (no heart rate sensor), a simulated heart rate sweeps through all three zones so every screen can be reviewed.
@@ -199,7 +207,18 @@ In the Simulator (no heart rate sensor), a simulated heart rate sweeps through a
 
 ## 스크린샷
 
-watchOS 앱은 **Apple Watch 스크린샷만** 필요합니다(iPhone 스크린샷 불필요). 아래 크기 중 하나로 1~10장, 모두 같은 크기여야 합니다.
+iPhone 앱이 생겼으므로 **iPhone 스크린샷과 Apple Watch 스크린샷이 모두** 필요합니다.
+
+**iPhone** (1~10장, 6.9형 하나만 올리면 작은 화면에는 자동 적용):
+
+| 기기 | 픽셀 |
+|---|---|
+| 6.9형 (iPhone 16/17 Pro Max 등) | 1320 × 2868 |
+| 6.5형 (대체 가능) | 1284 × 2778 |
+
+iPhone 추천 순서: ① 존 설정 화면(목표 범위) ② 운동 기록(달성률 목록)
+
+**Apple Watch** (아래 크기 중 하나, 모두 같은 크기):
 
 | 기기 | 픽셀 |
 |---|---|
@@ -211,7 +230,7 @@ watchOS 앱은 **Apple Watch 스크린샷만** 필요합니다(iPhone 스크린�
 
 > 위 크기는 작성 시점 기준입니다. 업로드 전에 App Store Connect의 스크린샷 화면에서 요구 크기를 한 번 확인하세요.
 
-**찍는 방법 (Mac):** Xcode에서 해당 워치 시뮬레이터로 실행 → 시뮬레이터 메뉴 File → Save Screen (⌘S).
+**찍는 방법 (Mac):** Xcode에서 해당 시뮬레이터로 실행 → 시뮬레이터 메뉴 File → Save Screen (⌘S).
 시뮬레이터에서는 가짜 심박수가 약 1분 주기로 세 가지 존을 오가므로 모든 색을 찍을 수 있습니다.
 
 추천 순서 (5장):

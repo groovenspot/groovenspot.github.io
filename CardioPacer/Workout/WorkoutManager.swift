@@ -196,18 +196,26 @@ final class WorkoutManager: NSObject, ObservableObject {
             .averageQuantity()?
             .doubleValue(for: .beatsPerMinute)
 
+        let summary = WorkoutSummary(duration: builder.elapsedTime(at: endDate),
+                                     zoneSeconds: ledger.seconds,
+                                     averageHeartRate: average,
+                                     range: range)
+
         do {
             try await builder.endCollection(at: endDate)
+            // Lets the iPhone app show this workout's Zone 2 result.
+            try await builder.addMetadata([
+                WorkoutMetadataKey.zone2Percent: NSNumber(value: summary.zone2Percent),
+                WorkoutMetadataKey.zone2Lower: NSNumber(value: range.lower),
+                WorkoutMetadataKey.zone2Upper: NSNumber(value: range.upper),
+            ])
             _ = try await builder.finishWorkout()
         } catch {
             errorMessage = "운동 기록 저장에 실패했습니다.\n\(error.localizedDescription)"
         }
 
         Haptics.stopped()
-        summary = WorkoutSummary(duration: builder.elapsedTime(at: endDate),
-                                 zoneSeconds: ledger.seconds,
-                                 averageHeartRate: average,
-                                 range: range)
+        self.summary = summary
         phase = .ended
     }
 }

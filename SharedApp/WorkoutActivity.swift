@@ -7,6 +7,15 @@ enum WorkoutActivity: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    init?(healthKitType: HKWorkoutActivityType) {
+        switch healthKitType {
+        case .running: self = .running
+        case .cycling: self = .cycling
+        case .walking: self = .walking
+        default: return nil
+        }
+    }
+
     var title: String {
         switch self {
         case .running: "러닝"
@@ -30,4 +39,12 @@ enum WorkoutActivity: String, CaseIterable, Identifiable {
         case .walking: .walking
         }
     }
+}
+
+/// Custom metadata the watch adds to each saved HKWorkout, so the iPhone app can
+/// list Cardio Pacer workouts with their Zone 2 result.
+enum WorkoutMetadataKey {
+    static let zone2Percent = "CardioPacerZone2Percent"
+    static let zone2Lower = "CardioPacerZone2Lower"
+    static let zone2Upper = "CardioPacerZone2Upper"
 }

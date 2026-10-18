@@ -3,7 +3,14 @@ import SwiftUI
 @main
 struct CardioPacerApp: App {
     @StateObject private var workoutManager = WorkoutManager()
-    @StateObject private var settings = ZoneSettingsStore()
+    @StateObject private var settings: ZoneSettingsStore
+
+    init() {
+        let settings = ZoneSettingsStore()
+        _settings = StateObject(wrappedValue: settings)
+        // Receives zone settings edited in the iPhone app.
+        ZoneSync.shared.activate(store: settings)
+    }
 
     var body: some Scene {
         WindowGroup {

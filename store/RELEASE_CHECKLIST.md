@@ -31,6 +31,7 @@
 
 Xcode의 자동 서명이 대부분 만들어 주지만, 안 되면 직접 등록하세요.
 - ☐ App Group: `group.com.groovenspot.cardiopacer`
+- ☐ App ID `com.groovenspot.cardiopacer` (iPhone) — HealthKit, App Groups 켜기
 - ☐ App ID `com.groovenspot.cardiopacer.watchkitapp` — HealthKit, App Groups 켜기
 - ☐ App ID `com.groovenspot.cardiopacer.watchkitapp.complications` — App Groups 켜기
 
@@ -42,21 +43,23 @@ cd cardio-pacer
 xcodegen generate
 open CardioPacer.xcodeproj
 ```
-- ☐ 타깃 2개(CardioPacer, CardioPacerComplications) → Signing & Capabilities → Team 선택
+- ☐ 타깃 3개(CardioPacerPhone, CardioPacer, CardioPacerComplications) → Signing & Capabilities → Team 선택
 - ☐ ⌘U 로 단위 테스트 통과 확인
 - ☐ 실제 Apple Watch에서 운동 1회 (색 전환, 진동, 일시정지/종료, 요약, 건강 앱 저장 확인)
 - ☐ 워치페이스에 컴플리케이션 추가해서 탭으로 실행되는지 확인
+- ☐ iPhone에서 존 설정 → 워치에 반영되는지, 워치에서 바꾼 설정이 iPhone에 반영되는지
+- ☐ 워치 운동 종료 후 iPhone 운동 기록에 달성률이 뜨는지
 
 ## 5. 업로드
 
-- ☐ App Store Connect → 앱 → **+ 신규 앱** → 플랫폼 **watchOS**, 번들 ID `com.groovenspot.cardiopacer.watchkitapp`
-- ☐ Xcode → 대상 기기 "Any watchOS Device" → Product → **Archive** → Distribute App → App Store Connect
+- ☐ App Store Connect → 앱 → **+ 신규 앱** → 플랫폼 **iOS**, 번들 ID `com.groovenspot.cardiopacer`
+- ☐ Xcode → 스킴 `CardioPacerPhone`, 대상 기기 "Any iOS Device" → Product → **Archive** → Distribute App → App Store Connect (워치 앱이 함께 포함됨)
 - ☐ TestFlight 로 본인 워치에 설치해서 최종 확인
 
 ## 6. 스토어 정보 입력
 
 - ☐ `store/APP_STORE.md` 의 값을 복사해 붙여넣기 (한국어 + 영어)
-- ☐ 스크린샷 5장 (APP_STORE.md 의 "스크린샷" 참고)
+- ☐ 스크린샷: iPhone 2장 + Apple Watch 5장 (APP_STORE.md 의 "스크린샷" 참고)
 - ☐ 앱 개인정보 보호 → "데이터를 수집하지 않음"
 - ☐ 연령 등급 → 4+
 - ☐ 심사 정보 메모 붙여넣기

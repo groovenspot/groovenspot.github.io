@@ -45,8 +45,10 @@
     <ul>
       <li><strong>심박수</strong> — 운동 중 현재 심박 구간(Zone)을 화면 색과 진동으로 안내하기 위해</li>
       <li><strong>안정 시 심박수, 생년월일</strong> — 목표 Zone 2 범위를 계산하기 위해 (선택, Apple Watch)</li>
-      <li><strong>운동 기록</strong> — 운동 종료 시 건강 앱에 운동(Workout)을 저장하기 위해 (Apple Watch)</li>
+      <li><strong>운동 기록</strong> — 운동 종료 시 건강 앱에 운동(Workout)과 Zone 2 달성률을 저장하고, iPhone 앱에서 지난 운동을 보여주기 위해 (Apple)</li>
+      <li><strong>Health Connect 쓰기</strong> — Android 폰 앱에서 허용한 경우, 워치에서 마친 운동을 Health Connect에 운동 세션으로 저장하기 위해 (Android). Health Connect의 데이터는 읽지 않습니다.</li>
     </ul>
+    <p>워치와 휴대폰 앱 사이의 설정·운동 기록 동기화는 Apple(WatchConnectivity) 또는 Google(Wearable Data Layer)의 기기 간 직접 연결로만 이루어지며, 개발자 서버를 거치지 않습니다.</p>
     <p>사용자가 입력한 나이, 안정 시 심박수, 목표 범위 설정은 기기 내부 저장소에만 보관됩니다.</p>
 
     <h2>2. 수집·전송·공유</h2>
@@ -57,13 +59,14 @@
     </ul>
 
     <h2>3. 보관 및 삭제</h2>
-    <p>설정값은 앱을 삭제하면 함께 삭제됩니다. 건강 앱에 저장된 운동 기록은 건강 앱에서 언제든 삭제할 수 있습니다.</p>
+    <p>설정값과 Android 폰 앱의 운동 기록은 앱을 삭제하면 함께 삭제됩니다. 건강 앱·Health Connect에 저장된 운동 기록은 해당 앱에서 언제든 삭제할 수 있습니다.</p>
 
     <h2>4. 권한 관리</h2>
     <p>건강 데이터 접근 권한은 언제든 변경하거나 철회할 수 있습니다. 권한을 허용하지 않으면 실시간 심박 안내 기능을 사용할 수 없습니다.</p>
     <ul>
       <li><strong>Apple Watch:</strong> iPhone의 설정 → 건강 → 데이터 접근 및 기기 → Cardio Pacer</li>
       <li><strong>Wear OS:</strong> 워치의 설정 → 앱 → Cardio Pacer → 권한</li>
+      <li><strong>Health Connect:</strong> 폰의 Health Connect 앱 → 앱 권한 → Cardio Pacer</li>
     </ul>
 
     <h2>5. 아동</h2>
@@ -91,8 +94,10 @@
     <ul>
       <li><strong>Heart rate</strong> — to show your current heart rate zone with screen color and haptics during a workout</li>
       <li><strong>Resting heart rate and date of birth</strong> — to calculate your Zone 2 target range (optional, Apple Watch)</li>
-      <li><strong>Workouts</strong> — to save the finished workout to the Health app (Apple Watch)</li>
+      <li><strong>Workouts</strong> — to save the finished workout and its Zone 2 result to the Health app, and to list past workouts in the iPhone app (Apple)</li>
+      <li><strong>Health Connect write access</strong> — if you allow it in the Android phone app, to save finished watch workouts to Health Connect as exercise sessions (Android). The app never reads Health Connect data.</li>
     </ul>
+    <p>Settings and workouts sync between your watch and phone only over Apple's (WatchConnectivity) or Google's (Wearable Data Layer) direct device connection, never through a developer server.</p>
     <p>The age, resting heart rate and target range you enter are stored only on your device.</p>
 
     <h2>2. Collection, transfer and sharing</h2>
@@ -103,13 +108,14 @@
     </ul>
 
     <h2>3. Retention and deletion</h2>
-    <p>Settings are removed when you delete the app. Workouts saved to Health can be deleted in the Health app at any time.</p>
+    <p>Settings, and workout history in the Android phone app, are removed when you delete the app. Workouts saved to Health or Health Connect can be deleted there at any time.</p>
 
     <h2>4. Managing permissions</h2>
     <p>You can change or revoke access at any time. Live heart rate guidance requires it.</p>
     <ul>
       <li><strong>Apple Watch:</strong> on iPhone, Settings → Health → Data Access &amp; Devices → Cardio Pacer</li>
       <li><strong>Wear OS:</strong> on the watch, Settings → Apps → Cardio Pacer → Permissions</li>
+      <li><strong>Health Connect:</strong> on the phone, Health Connect app → App permissions → Cardio Pacer</li>
     </ul>
 
     <h2>5. Children</h2>
