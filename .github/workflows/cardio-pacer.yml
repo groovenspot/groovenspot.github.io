@@ -98,12 +98,14 @@ jobs:
         run: |
           mkdir -p shots
           for screen in companion history; do
-            xcrun simctl launch --terminate-running-process "$IPHONE" com.groovenspot.cardiopacer -screenshot $screen
+            xcrun simctl launch --terminate-running-process "$IPHONE" com.groovenspot.cardiopacer \\
+              -screenshot $screen -AppleLanguages "(ko)" -AppleLocale ko_KR
             sleep 6
             xcrun simctl io "$IPHONE" screenshot "shots/iphone-$screen.png"
           done
           for screen in zone2 zone3 zone1 summary start; do
-            xcrun simctl launch --terminate-running-process "$WATCH" com.groovenspot.cardiopacer.watchkitapp -screenshot $screen
+            xcrun simctl launch --terminate-running-process "$WATCH" com.groovenspot.cardiopacer.watchkitapp \\
+              -screenshot $screen -AppleLanguages "(ko)" -AppleLocale ko_KR
             sleep 6
             xcrun simctl io "$WATCH" screenshot "shots/watch-$screen.png"
           done
