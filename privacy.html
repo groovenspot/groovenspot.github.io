@@ -38,14 +38,14 @@
   <nav><a href="#ko">한국어</a><a href="#en">English</a><a href="./">지원 / Support</a></nav>
 
   <section id="ko">
-    <div class="card"><strong>요약:</strong> Cardio Pacer는 개인정보를 수집하지 않습니다. 모든 건강 데이터는 사용자의 Apple Watch 안에서만 처리되며, 개발자의 서버나 제3자에게 전송되지 않습니다.</div>
+    <div class="card"><strong>요약:</strong> Cardio Pacer는 개인정보를 수집하지 않습니다. 모든 건강 데이터는 사용자의 워치 안에서만 처리되며, 개발자의 서버나 제3자에게 전송되지 않습니다.</div>
 
     <h2>1. 처리하는 정보</h2>
-    <p>앱은 사용자가 건강(HealthKit) 접근을 허용한 경우에 한해 다음 정보를 기기 안에서 읽고 사용합니다.</p>
+    <p>앱은 사용자가 건강 데이터 접근(Apple Watch의 HealthKit, Wear OS의 심박수 센서 권한)을 허용한 경우에 한해 다음 정보를 기기 안에서 읽고 사용합니다.</p>
     <ul>
       <li><strong>심박수</strong> — 운동 중 현재 심박 구간(Zone)을 화면 색과 진동으로 안내하기 위해</li>
-      <li><strong>안정 시 심박수, 생년월일</strong> — 목표 Zone 2 범위를 계산하기 위해 (선택)</li>
-      <li><strong>운동 기록</strong> — 운동 종료 시 건강 앱에 운동(Workout)을 저장하기 위해</li>
+      <li><strong>안정 시 심박수, 생년월일</strong> — 목표 Zone 2 범위를 계산하기 위해 (선택, Apple Watch)</li>
+      <li><strong>운동 기록</strong> — 운동 종료 시 건강 앱에 운동(Workout)을 저장하기 위해 (Apple Watch)</li>
     </ul>
     <p>사용자가 입력한 나이, 안정 시 심박수, 목표 범위 설정은 기기 내부 저장소에만 보관됩니다.</p>
 
@@ -60,7 +60,11 @@
     <p>설정값은 앱을 삭제하면 함께 삭제됩니다. 건강 앱에 저장된 운동 기록은 건강 앱에서 언제든 삭제할 수 있습니다.</p>
 
     <h2>4. 권한 관리</h2>
-    <p>건강 데이터 접근 권한은 iPhone의 <strong>설정 → 건강 → 데이터 접근 및 기기 → Cardio Pacer</strong>에서 언제든 변경하거나 철회할 수 있습니다. 권한을 허용하지 않으면 실시간 심박 안내 기능을 사용할 수 없습니다.</p>
+    <p>건강 데이터 접근 권한은 언제든 변경하거나 철회할 수 있습니다. 권한을 허용하지 않으면 실시간 심박 안내 기능을 사용할 수 없습니다.</p>
+    <ul>
+      <li><strong>Apple Watch:</strong> iPhone의 설정 → 건강 → 데이터 접근 및 기기 → Cardio Pacer</li>
+      <li><strong>Wear OS:</strong> 워치의 설정 → 앱 → Cardio Pacer → 권한</li>
+    </ul>
 
     <h2>5. 아동</h2>
     <p>앱은 아동을 대상으로 하지 않으며, 아동의 정보를 의도적으로 수집하지 않습니다.</p>
@@ -80,14 +84,14 @@
   <section id="en" lang="en">
     <h1 style="font-size:22px">Privacy Policy</h1>
     <p class="muted">Effective: October 18, 2026</p>
-    <div class="card"><strong>Summary:</strong> Cardio Pacer does not collect personal data. All health data is processed only on your Apple Watch and is never sent to the developer or any third party.</div>
+    <div class="card"><strong>Summary:</strong> Cardio Pacer does not collect personal data. All health data is processed only on your watch and is never sent to the developer or any third party.</div>
 
     <h2>1. Information we process</h2>
-    <p>Only if you grant Health (HealthKit) access, the app reads and uses the following on your device:</p>
+    <p>Only if you grant health data access (HealthKit on Apple Watch, the heart rate sensor permission on Wear OS), the app reads and uses the following on your device:</p>
     <ul>
       <li><strong>Heart rate</strong> — to show your current heart rate zone with screen color and haptics during a workout</li>
-      <li><strong>Resting heart rate and date of birth</strong> — to calculate your Zone 2 target range (optional)</li>
-      <li><strong>Workouts</strong> — to save the finished workout to the Health app</li>
+      <li><strong>Resting heart rate and date of birth</strong> — to calculate your Zone 2 target range (optional, Apple Watch)</li>
+      <li><strong>Workouts</strong> — to save the finished workout to the Health app (Apple Watch)</li>
     </ul>
     <p>The age, resting heart rate and target range you enter are stored only on your device.</p>
 
@@ -102,7 +106,11 @@
     <p>Settings are removed when you delete the app. Workouts saved to Health can be deleted in the Health app at any time.</p>
 
     <h2>4. Managing permissions</h2>
-    <p>You can change or revoke Health access at any time in <strong>Settings → Health → Data Access &amp; Devices → Cardio Pacer</strong> on your iPhone. Live heart rate guidance requires this access.</p>
+    <p>You can change or revoke access at any time. Live heart rate guidance requires it.</p>
+    <ul>
+      <li><strong>Apple Watch:</strong> on iPhone, Settings → Health → Data Access &amp; Devices → Cardio Pacer</li>
+      <li><strong>Wear OS:</strong> on the watch, Settings → Apps → Cardio Pacer → Permissions</li>
+    </ul>
 
     <h2>5. Children</h2>
     <p>The app is not directed to children and does not knowingly collect children's information.</p>

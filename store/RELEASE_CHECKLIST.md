@@ -1,5 +1,7 @@
 # App Store 출시 체크리스트
 
+> Google Play(Wear OS) 출시 순서는 [`GOOGLE_PLAY.md`](GOOGLE_PLAY.md) 의 "출시 순서"를 보세요.
+
 ✅ = 코드/문서에 이미 반영됨 · ☐ = 직접 해야 함
 
 ## 0. 코드에 반영된 심사 필수 항목
