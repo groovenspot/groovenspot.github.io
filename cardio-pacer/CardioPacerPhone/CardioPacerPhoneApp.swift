@@ -12,9 +12,17 @@ struct CardioPacerPhoneApp: App {
         ZoneSync.shared.activate(store: settings)
     }
 
+    private static var screenshot: String? {
+        #if DEBUG
+        return ScreenshotMode.requested
+        #else
+        return nil
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
-            CompanionView()
+            CompanionView(screenshot: Self.screenshot)
                 .environmentObject(settings)
                 .environmentObject(health)
                 .environmentObject(ZoneSync.shared)

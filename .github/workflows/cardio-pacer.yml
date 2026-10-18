@@ -53,7 +53,63 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       - name: Test, lint and build
         run: ./gradlew test lintDebug assembleDebug bundleRelease
+
+  # App Store screenshots from the Simulator (Debug builds' -screenshot mode).
+  # Runs on manual dispatch, or when the commit message contains [screenshots].
+  app-store-screenshots:
+    name: App Store screenshots
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[screenshots]')
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: cardio-pacer
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Boot simulators
+        run: |
+          IPHONE=$(xcrun simctl list devices available | grep -m1 "iPhone 16 Pro Max" | grep -oE '[0-9A-F-]{36}')
+          WATCH=$(xcrun simctl list devices available | grep -m1 "Apple Watch Series 10 (46mm)" | grep -oE '[0-9A-F-]{36}')
+          echo "IPHONE=$IPHONE" >> "$GITHUB_ENV"
+          echo "WATCH=$WATCH" >> "$GITHUB_ENV"
+          xcrun simctl boot "$IPHONE"
+          xcrun simctl boot "$WATCH"
+          xcrun simctl status_bar "$IPHONE" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
+
+      - name: Build and install
+        run: |
+          xcodebuild build -project CardioPacer.xcodeproj -scheme CardioPacerPhone \
+            -destination "id=$IPHONE" -derivedDataPath build CODE_SIGNING_ALLOWED=NO -quiet
+          xcodebuild build -project CardioPacer.xcodeproj -scheme CardioPacer \
+            -destination "id=$WATCH" -derivedDataPath build CODE_SIGNING_ALLOWED=NO -quiet
+          xcrun simctl install "$IPHONE" build/Build/Products/Debug-iphonesimulator/CardioPacerPhone.app
+          xcrun simctl install "$WATCH" build/Build/Products/Debug-watchsimulator/CardioPacer.app
+
+      - name: Capture
+        run: |
+          mkdir -p shots
+          for screen in companion history; do
+            xcrun simctl launch --terminate-running-process "$IPHONE" com.groovenspot.cardiopacer -screenshot $screen
+            sleep 6
+            xcrun simctl io "$IPHONE" screenshot "shots/iphone-$screen.png"
+          done
+          for screen in zone2 zone3 zone1 summary start; do
+            xcrun simctl launch --terminate-running-process "$WATCH" com.groovenspot.cardiopacer.watchkitapp -screenshot $screen
+            sleep 6
+            xcrun simctl io "$WATCH" screenshot "shots/watch-$screen.png"
+          done
+          ls -la shots
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-store-screenshots
+          path: cardio-pacer/shots

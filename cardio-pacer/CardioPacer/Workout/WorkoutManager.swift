@@ -35,6 +35,9 @@ final class WorkoutManager: NSObject, ObservableObject {
     #if targetEnvironment(simulator)
     private var demoTask: Task<Void, Never>?
     #endif
+    #if DEBUG
+    private var screenshotElapsed: TimeInterval?
+    #endif
 
     var isSessionActive: Bool { phase != .idle }
 
@@ -145,8 +148,21 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     /// Active (non-paused) workout time, for the on-screen clock.
     func elapsedTime(at date: Date) -> TimeInterval {
-        builder?.elapsedTime(at: date) ?? 0
+        #if DEBUG
+        if let screenshotElapsed { return screenshotElapsed }
+        #endif
+        return builder?.elapsedTime(at: date) ?? 0
     }
+
+    #if DEBUG
+    /// Fixed live-workout state for App Store screenshots (see ScreenshotMode).
+    func showScreenshotSample(bpm: Double, zone: HeartRateZone, elapsed: TimeInterval) {
+        heartRate = bpm
+        self.zone = zone
+        screenshotElapsed = elapsed
+        phase = .running
+    }
+    #endif
 
     // MARK: - Live data
 

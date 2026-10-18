@@ -73,4 +73,27 @@ final class PhoneHealthModel: ObservableObject {
                                 range: range)
         }
     }
+
+    #if DEBUG
+    /// Sample history for App Store screenshots.
+    func showScreenshotSamples() {
+        let range = ZoneRange(lower: 134, upper: 147)
+        let now = Date()
+        let samples: [(Double, WorkoutActivity, TimeInterval, Int)] = [
+            (0.1, .running, 2_712, 82),
+            (2, .walking, 2_280, 68),
+            (3, .cycling, 3_720, 87),
+            (5, .running, 1_980, 74),
+            (6, .walking, 2_640, 79),
+        ]
+        workouts = samples.map { daysAgo, activity, duration, percent in
+            PacerWorkout(id: UUID(),
+                         start: now.addingTimeInterval(-daysAgo * 86_400 - 3_600 * 2),
+                         duration: duration,
+                         activity: activity,
+                         zone2Percent: percent,
+                         range: range)
+        }
+    }
+    #endif
 }
