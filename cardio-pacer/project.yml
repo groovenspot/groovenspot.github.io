@@ -1,0 +1,92 @@
+# Generate the Xcode project with XcodeGen:  brew install xcodegen && xcodegen generate
+name: CardioPacer
+options:
+  bundleIdPrefix: com.groovenspot
+  deploymentTarget:
+    watchOS: "10.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""   # set your Team ID (or pick it in Signing & Capabilities)
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  CardioPacer:
+    type: application
+    platform: watchOS
+    sources:
+      - CardioPacer
+      - Shared
+    info:
+      path: CardioPacer/Info.plist
+      properties:
+        CFBundleDisplayName: Cardio Pacer
+        WKApplication: true
+        WKWatchOnly: true
+        WKRunsIndependentlyOfCompanionApp: true
+        WKBackgroundModes: [workout-processing]
+        NSHealthShareUsageDescription: 실시간 심박수로 Zone 2 유지 여부를 안내하고, 나이와 안정 시 심박수로 목표 구간을 계산합니다.
+        NSHealthUpdateUsageDescription: 운동 기록을 건강 앱에 저장합니다.
+    entitlements:
+      path: CardioPacer/CardioPacer.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+        com.apple.security.application-groups:
+          - group.com.groovenspot.cardiopacer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.groovenspot.cardiopacer.watchkitapp
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    dependencies:
+      - target: CardioPacerComplications
+      - sdk: HealthKit.framework
+
+  CardioPacerComplications:
+    type: app-extension
+    platform: watchOS
+    sources:
+      - CardioPacerComplications
+      - Shared
+    info:
+      path: CardioPacerComplications/Info.plist
+      properties:
+        CFBundleDisplayName: Cardio Pacer
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: CardioPacerComplications/CardioPacerComplications.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.groovenspot.cardiopacer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.groovenspot.cardiopacer.watchkitapp.complications
+
+  CardioPacerTests:
+    type: bundle.unit-test
+    platform: watchOS
+    sources:
+      - CardioPacerTests
+    dependencies:
+      - target: CardioPacer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.groovenspot.cardiopacer.tests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  CardioPacer:
+    build:
+      targets:
+        CardioPacer: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - CardioPacerTests
