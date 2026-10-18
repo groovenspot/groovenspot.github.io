@@ -2,6 +2,9 @@
 name: CardioPacer
 options:
   bundleIdPrefix: com.groovenspot
+  # The UI is written in Korean; without this iOS treats the app as English-only and
+  # shows dates and system prompts in English even on Korean devices.
+  developmentLanguage: ko
   deploymentTarget:
     watchOS: "10.0"
     iOS: "17.0"
@@ -30,6 +33,7 @@ targets:
       path: CardioPacerPhone/Info.plist
       properties:
         CFBundleDisplayName: Cardio Pacer
+        CFBundleDevelopmentRegion: ko
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
@@ -66,6 +70,7 @@ targets:
       path: CardioPacer/Info.plist
       properties:
         CFBundleDisplayName: Cardio Pacer
+        CFBundleDevelopmentRegion: ko
         WKApplication: true
         # Installs from the watch App Store on its own, or alongside the iPhone app.
         WKCompanionAppBundleIdentifier: com.groovenspot.cardiopacer
