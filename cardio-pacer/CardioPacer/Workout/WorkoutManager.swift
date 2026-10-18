@@ -32,6 +32,9 @@ final class WorkoutManager: NSObject, ObservableObject {
     private var tracker = ZoneTracker(range: ZoneProfile.default.zone2Range)
     private var ledger = ZoneTimeLedger()
     private var lastAlert: Date?
+    #if targetEnvironment(simulator)
+    private var demoTask: Task<Void, Never>?
+    #endif
 
     var isSessionActive: Bool { phase != .idle }
 
@@ -105,6 +108,9 @@ final class WorkoutManager: NSObject, ObservableObject {
             session.startActivity(with: startDate)
             try await builder.beginCollection(at: startDate)
             Haptics.started()
+            #if targetEnvironment(simulator)
+            startDemoHeartRate()
+            #endif
         } catch {
             errorMessage = "운동을 시작할 수 없습니다.\n\(error.localizedDescription)"
             session?.end()
@@ -128,6 +134,7 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     /// Dismisses the summary and returns to the start screen.
     func reset() {
+        stopDemoHeartRate()
         session = nil
         builder = nil
         heartRate = nil
@@ -182,6 +189,7 @@ final class WorkoutManager: NSObject, ObservableObject {
     private func finish(at endDate: Date) async {
         guard let builder else { reset(); return }
         phase = .ending
+        stopDemoHeartRate()
         ledger.mark(zone: nil, at: builder.elapsedTime(at: endDate))
 
         let average = builder.statistics(for: HealthTypes.heartRate)?
@@ -201,6 +209,36 @@ final class WorkoutManager: NSObject, ObservableObject {
                                  averageHeartRate: average,
                                  range: range)
         phase = .ended
+    }
+}
+
+// MARK: - Simulator demo
+
+extension WorkoutManager {
+    /// The simulator has no heart rate sensor. Feed a slow sine wave that sweeps
+    /// through all three zones (about once a minute) so every screen can be
+    /// exercised and captured for App Store screenshots.
+    private func startDemoHeartRate() {
+        #if targetEnvironment(simulator)
+        let mid = Double(range.lower + range.upper) / 2
+        let amplitude = Double(range.upper - range.lower) / 2 + 8
+        demoTask = Task { [weak self] in
+            var t = 0.0
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(2))
+                guard let self else { return }
+                t += 2
+                self.handle(heartRate: (mid + amplitude * sin(t / 10)).rounded(), at: Date())
+            }
+        }
+        #endif
+    }
+
+    private func stopDemoHeartRate() {
+        #if targetEnvironment(simulator)
+        demoTask?.cancel()
+        demoTask = nil
+        #endif
     }
 }
 
