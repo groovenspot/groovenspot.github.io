@@ -47,6 +47,15 @@ final class ZoneSync: NSObject, ObservableObject {
         }
     }
 
+    #if DEBUG
+    private var screenshotOverride = false
+
+    func showScreenshotCounterpart() {
+        screenshotOverride = true
+        isCounterpartInstalled = true
+    }
+    #endif
+
     private func apply(_ context: [String: Any]) {
         guard let data = context[Self.profileKey] as? Data,
               let profile = try? JSONDecoder().decode(ZoneProfile.self, from: data) else { return }
@@ -62,7 +71,12 @@ final class ZoneSync: NSObject, ObservableObject {
         #else
         let installed = session.isCompanionAppInstalled
         #endif
-        DispatchQueue.main.async { self.isCounterpartInstalled = installed }
+        DispatchQueue.main.async {
+            #if DEBUG
+            if self.screenshotOverride { return }
+            #endif
+            self.isCounterpartInstalled = installed
+        }
     }
 }
 

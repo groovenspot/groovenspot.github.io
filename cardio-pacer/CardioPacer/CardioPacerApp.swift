@@ -14,9 +14,19 @@ struct CardioPacerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environmentObject(workoutManager)
-                .environmentObject(settings)
+            Group {
+                #if DEBUG
+                if let screen = ScreenshotMode.requested {
+                    WatchScreenshotView(screen: screen)
+                } else {
+                    RootView()
+                }
+                #else
+                RootView()
+                #endif
+            }
+            .environmentObject(workoutManager)
+            .environmentObject(settings)
         }
     }
 }
