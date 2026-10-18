@@ -1,0 +1,59 @@
+name: Cardio Pacer
+
+on:
+  push:
+    paths: ["cardio-pacer/**", ".github/workflows/cardio-pacer.yml"]
+  pull_request:
+    paths: ["cardio-pacer/**", ".github/workflows/cardio-pacer.yml"]
+  workflow_dispatch:
+
+jobs:
+  apple:
+    name: Apple (iPhone + Watch)
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: cardio-pacer
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build iPhone app (embeds the watch app and complication)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project CardioPacer.xcodeproj -scheme CardioPacerPhone \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO | tee build.log | grep -E "error:|warning:|BUILD" || true
+          grep -q "BUILD SUCCEEDED" build.log
+
+      - name: Watch unit tests
+        run: |
+          set -o pipefail
+          WATCH=$(xcrun simctl list devices available | grep -m1 "Apple Watch" | grep -oE '[0-9A-F-]{36}')
+          echo "Simulator: $WATCH"
+          xcodebuild test \
+            -project CardioPacer.xcodeproj -scheme CardioPacer \
+            -destination "id=$WATCH" \
+            CODE_SIGNING_ALLOWED=NO | tee test.log | grep -E "error:|Test Case|Executed|TEST" || true
+          grep -q "TEST SUCCEEDED" test.log
+
+  android:
+    name: Android (Wear OS + phone)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cardio-pacer/android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Test, lint and build
+        run: ./gradlew test lintDebug assembleDebug bundleRelease
