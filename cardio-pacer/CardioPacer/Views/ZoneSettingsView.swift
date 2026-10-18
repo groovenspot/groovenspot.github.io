@@ -82,6 +82,7 @@ struct ZoneSettingsView: View {
             Section {
                 Button(isOnboarding ? "시작하기" : "저장") {
                     settings.save(profile)
+                    ZoneSync.shared.send(profile)
                     if !isOnboarding { dismiss() }
                 }
                 .foregroundStyle(HeartRateZone.target.color)

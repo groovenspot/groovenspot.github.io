@@ -16,7 +16,8 @@ android {
         applicationId = "com.groovenspot.cardiopacer"
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
+        // Distinct from :mobile (1, 2, …) because both bundles ship under the same package.
+        versionCode = 1_000_001
         versionName = "1.0.0"
     }
 

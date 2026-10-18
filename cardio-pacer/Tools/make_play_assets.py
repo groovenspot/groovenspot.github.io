@@ -23,9 +23,10 @@ for i, name in enumerate(ORDER, 1):
     snap(name).save(os.path.join(OUT, "screenshots", f"{i}-{name}.png"))
 
 # Phone screenshot from the companion app, cropped to Play's 2:1 maximum aspect ratio
-PHONE = glob.glob(os.path.join(ROOT, "android/mobile/src/test/snapshots/images/*_companion.png"))[0]
-phone = Image.open(PHONE).convert("RGB")
-phone.crop((0, 0, phone.width, phone.width * 2)).save(os.path.join(OUT, "screenshots", "phone-1-companion.png"))
+for i, name in enumerate(["companion", "manualSetup"], 1):
+    path = glob.glob(os.path.join(ROOT, f"android/mobile/src/test/snapshots/images/*_{name}.png"))[0]
+    phone = Image.open(path).convert("RGB")
+    phone.crop((0, 0, phone.width, phone.width * 2)).save(os.path.join(OUT, "screenshots", f"phone-{i}-{name}.png"))
 
 # 512×512 store icon
 icon = Image.open(os.path.join(ROOT, "CardioPacer/Assets.xcassets/AppIcon.appiconset/AppIcon.png")).convert("RGB")

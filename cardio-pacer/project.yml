@@ -4,6 +4,7 @@ options:
   bundleIdPrefix: com.groovenspot
   deploymentTarget:
     watchOS: "10.0"
+    iOS: "17.0"
   createIntermediateGroups: true
 settings:
   base:
@@ -14,6 +15,43 @@ settings:
     CODE_SIGN_STYLE: Automatic
 
 targets:
+  # iPhone companion: zone setup, sync to the watch, workout history. Embeds the watch app.
+  CardioPacerPhone:
+    type: application
+    platform: iOS
+    sources:
+      - path: CardioPacerPhone
+        excludes: [PrivacyInfo.xcprivacy]
+      - path: CardioPacerPhone/PrivacyInfo.xcprivacy
+        buildPhase: resources
+      - Shared
+      - SharedApp
+    info:
+      path: CardioPacerPhone/Info.plist
+      properties:
+        CFBundleDisplayName: Cardio Pacer
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        ITSAppUsesNonExemptEncryption: false
+        NSHealthShareUsageDescription: 나이와 안정 시 심박수로 Zone 2 범위를 계산하고, Apple Watch에서 마친 운동의 Zone 2 달성률을 보여줍니다.
+        NSHealthUpdateUsageDescription: Cardio Pacer는 iPhone에서 건강 데이터를 쓰지 않습니다. 운동 기록은 Apple Watch 앱이 저장합니다.
+    entitlements:
+      path: CardioPacerPhone/CardioPacerPhone.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+        com.apple.security.application-groups:
+          - group.com.groovenspot.cardiopacer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.groovenspot.cardiopacer
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    dependencies:
+      - target: CardioPacer
+      - sdk: HealthKit.framework
+
   CardioPacer:
     type: application
     platform: watchOS
@@ -23,12 +61,14 @@ targets:
       - path: CardioPacer/PrivacyInfo.xcprivacy
         buildPhase: resources
       - Shared
+      - SharedApp
     info:
       path: CardioPacer/Info.plist
       properties:
         CFBundleDisplayName: Cardio Pacer
         WKApplication: true
-        WKWatchOnly: true
+        # Installs from the watch App Store on its own, or alongside the iPhone app.
+        WKCompanionAppBundleIdentifier: com.groovenspot.cardiopacer
         WKRunsIndependentlyOfCompanionApp: true
         WKBackgroundModes: [workout-processing]
         ITSAppUsesNonExemptEncryption: false
@@ -88,6 +128,12 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
+  CardioPacerPhone:
+    build:
+      targets:
+        CardioPacerPhone: all
+    run:
+      config: Debug
   CardioPacer:
     build:
       targets:

@@ -1,6 +1,7 @@
-# Google Play Console 입력값 (Wear OS)
+# Google Play Console 입력값 (Wear OS 앱 + Android 폰 앱)
 
-Wear OS 앱 소스: [`wearos/`](../wearos) (Kotlin + Compose for Wear OS + Health Services)
+소스: [`android/`](../android) — `wear` (Wear OS 앱), `mobile` (폰 컴패니언), `shared` (공용 로직)
+두 앱은 같은 패키지 이름 `com.groovenspot.cardiopacer` 로 **하나의 Play 등록정보**에 함께 올라갑니다.
 글자 수 제한은 `python3 store/check_lengths.py` 로 확인할 수 있습니다.
 
 ## 앱 정보
@@ -11,7 +12,7 @@ Wear OS 앱 소스: [`wearos/`](../wearos) (Kotlin + Compose for Wear OS + Healt
 | 앱 또는 게임 | 앱 |
 | 무료/유료 | 무료 |
 | 카테고리 | 건강/운동 (Health & Fitness) |
-| 기기 | **Wear OS** (고급 설정 → 폼 팩터 → Wear OS 추가) |
+| 기기 | 휴대전화 + **Wear OS** (고급 설정 → 폼 팩터 → Wear OS 추가) |
 | 지원 웹사이트 | `https://groovenspot.github.io/cardio-pacer/` |
 | 개인정보 처리방침 | `https://groovenspot.github.io/cardio-pacer/privacy.html` |
 | 이메일 | 문의 이메일 (공개됨) |
@@ -23,10 +24,11 @@ Wear OS 앱 소스: [`wearos/`](../wearos) (Kotlin + Compose for Wear OS + Healt
 | 앱 아이콘 512×512 | `icon-512.png` |
 | 기능 그래픽 1024×500 | `feature-graphic-1024x500.png` |
 | Wear OS 스크린샷 (384×384, 1:1) | `screenshots/1-zone2.png` … `6-settings.png` |
+| 휴대전화 스크린샷 (1080×2160) | `screenshots/phone-1-companion.png`, `phone-2-manualSetup.png` |
 
 스크린샷은 실제 앱 화면 코드를 렌더링한 것입니다. 화면을 바꾼 뒤에는 다시 만드세요:
 ```bash
-cd wearos && ./gradlew recordPaparazziDebug && cd .. && python3 Tools/make_play_assets.py <NotoSansCJK 폰트 경로>
+cd android && ./gradlew recordPaparazziDebug && cd .. && python3 Tools/make_play_assets.py <NotoSansCJK 폰트 경로>
 ```
 
 ---
@@ -69,8 +71,11 @@ Zone 2를 넘어 빨간색에 들어서는 순간 손목에 두 번 진동이 �
 ■ 워치페이스에서 바로 시작
 컴플리케이션을 지원해 탭 한 번으로 실행할 수 있습니다. 운동 중에는 화면을 꺼도 계속 측정하고 진동으로 알려줍니다.
 
+■ 휴대폰 앱
+큰 화면에서 Zone 2를 설정하면 워치로 바로 전송됩니다. 지난 운동의 Zone 2 달성률을 모아 보고, Health Connect에 운동 기록을 저장할 수도 있습니다.
+
 러닝, 사이클, 빠르게 걷기(런데이) 모두 지원합니다.
-휴대폰 없이 워치만으로 동작합니다.
+휴대폰 없이 워치만으로도 동작합니다.
 
 ■ 개인정보
 모든 건강 데이터는 워치 안에서만 처리됩니다. 계정, 광고, 분석 도구가 없으며 어떤 데이터도 외부로 전송하지 않습니다.
@@ -118,7 +123,10 @@ When you finish, see how much of your workout you spent in Zone 2, plus time in 
 ■ START FROM YOUR WATCH FACE
 A complication launches the app in one tap. Tracking and haptic alerts keep running with the screen off.
 
-Supports running, cycling and brisk walking. Works standalone, no phone needed.
+■ PHONE APP
+Set up Zone 2 on the big screen and send it to your watch. Review the Zone 2 score of past workouts and save them to Health Connect.
+
+Supports running, cycling and brisk walking. The watch app also works on its own.
 
 ■ PRIVACY
 All health data stays on your watch. No accounts, no ads, no analytics, nothing is ever sent off your device.
@@ -140,12 +148,13 @@ Cardio Pacer is not a medical device and is not intended to diagnose or treat an
 | 뉴스 앱 | 아니요 |
 | 정부 앱 / 금융 기능 | 아니요 |
 | **건강 앱** | "피트니스 및 운동" 선택. 의료 기능 없음 |
+| **Health Connect 권한 신고** | 폰 앱이 `WRITE_EXERCISE` 를 씁니다. 용도: "워치에서 측정한 운동 세션(시간, 종류, Zone 2 달성률)을 Health Connect에 저장". 읽기 권한 없음 |
 
 ### 데이터 보안 (Data safety)
 
 - 앱이 필수 사용자 데이터 유형을 수집하거나 공유합니까? → **아니요**
 
-근거: 심박수는 기기 안에서만 처리되고 외부로 전송되지 않습니다. Google 기준에서 "수집"은 기기 밖으로 전송하는 경우를 말합니다.
+근거: 심박수와 운동 기록은 사용자의 워치·폰 안에서만 처리되고(워치↔폰 직접 연결, Health Connect는 기기 내 저장소) 개발자 서버로 전송되지 않습니다. Google 기준에서 "수집"은 기기 밖(개발자·제3자)으로 전송하는 경우를 말합니다.
 
 ### 포그라운드 서비스 권한 (필수)
 
@@ -165,28 +174,28 @@ target API 34 이상이고 `FOREGROUND_SERVICE_HEALTH` 를 쓰므로 신고가 �
 | `FOREGROUND_SERVICE_HEALTH` | 화면이 꺼져도 운동 추적 |
 | `POST_NOTIFICATIONS` | 운동 중 진행 표시(Ongoing Activity) |
 | `VIBRATE` | Zone 2 이탈 진동 |
+| `health.WRITE_EXERCISE` (폰) | 운동 기록을 Health Connect에 저장 (선택) |
 
 ---
 
 ## 출시 순서
 
 1. **개발자 계정**: [Google Play Console](https://play.google.com/console) 가입 (1회 US$25), 본인 인증
-2. **업로드 키 만들기** (한 번만, 파일은 절대 저장소에 올리지 마세요. `.gitignore` 처리됨):
-   ```bash
-   keytool -genkeypair -v -keystore cardiopacer-upload.jks -alias upload \
-     -keyalg RSA -keysize 2048 -validity 10000
+2. **업로드 키**: 이미 만들어 드린 `cardiopacer-upload.jks` 를 쓰세요 (분실 주의, 저장소에 올리지 마세요).
+   `android/keystore.properties` 를 만들고 (`.gitignore` 처리됨)
    ```
-3. **서명된 번들 빌드**: `wearos/keystore.properties` 를 만들고 (`.gitignore` 처리됨)
-   ```
-   storeFile=../cardiopacer-upload.jks
+   storeFile=../cardiopacer-upload.jks   # android/ 폴더 기준 경로
    storePassword=비밀번호
    keyAlias=upload
    keyPassword=비밀번호
    ```
-   `cd wearos && ./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab` 업로드
-   (Android Studio의 Build → Generate Signed App Bundle 도 가능)
+3. **서명된 번들 빌드**: `cd android && ./gradlew bundleRelease`
+   - 폰: `mobile/build/outputs/bundle/release/mobile-release.aab`
+   - 워치: `wear/build/outputs/bundle/release/wear-release.aab`
+   - 두 번들의 versionCode 가 겹치면 안 됩니다 (폰 1, 2, … / 워치 1000001, 1000002, …)
 4. **앱 만들기** → 위 앱 정보·설명·그래픽·앱 콘텐츠 입력
-5. **고급 설정 → 폼 팩터 → Wear OS 추가** 후 Wear OS 스크린샷 업로드
+5. **고급 설정 → 폼 팩터 → Wear OS 추가** 후 Wear OS 스크린샷 업로드.
+   폰 번들은 기본(휴대전화) 트랙에, 워치 번들은 **Wear OS 전용 트랙**에 올립니다
 6. **비공개 테스트**: 개인 계정이면 테스터 12명이 14일 이상 테스트해야 프로덕션 신청 가능
    (작성 시점 기준 정책. 출시 전 Play Console 안내를 확인하세요)
 7. **프로덕션 출시 신청** → Wear OS 품질 검토 포함, 보통 며칠 걸림
