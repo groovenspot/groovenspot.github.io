@@ -80,6 +80,13 @@ Tools/                      아이콘·Play 그래픽 생성 스크립트
 
 달성률은 일시정지 시간을 제외하고, 첫 심박수 측정 이후 추적된 시간 중 Zone 2 비율입니다.
 
+## CI
+
+`.github/workflows/cardio-pacer.yml` — `cardio-pacer/` 가 바뀌면 GitHub Actions가 자동으로:
+- **Apple**: macOS에서 XcodeGen → iPhone 앱(워치 앱·컴플리케이션 포함) 빌드 → 워치 시뮬레이터 단위 테스트
+- **Android**: 테스트 · Lint · 디버그/릴리스 빌드
+- **App Store 스크린샷**: 커밋 메시지에 `[screenshots]` 가 있거나 수동 실행 시 시뮬레이터에서 촬영
+
 ## 출시
 
 - App Store 등록 정보·심사 메모: [`store/APP_STORE.md`](store/APP_STORE.md)

@@ -59,7 +59,7 @@ open CardioPacer.xcodeproj
 ## 6. 스토어 정보 입력
 
 - ☐ `store/APP_STORE.md` 의 값을 복사해 붙여넣기 (한국어 + 영어)
-- ☐ 스크린샷: iPhone 2장 + Apple Watch 5장 (APP_STORE.md 의 "스크린샷" 참고)
+- ☐ 스크린샷 업로드: `store/app-store/` 의 iPhone 2장 + Apple Watch 5장 (준비됨)
 - ☐ 앱 개인정보 보호 → "데이터를 수집하지 않음"
 - ☐ 연령 등급 → 4+
 - ☐ 심사 정보 메모 붙여넣기

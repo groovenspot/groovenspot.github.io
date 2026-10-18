@@ -209,6 +209,13 @@ In the Simulator (no heart rate sensor), a simulated heart rate sweeps through a
 
 iPhone 앱이 생겼으므로 **iPhone 스크린샷과 Apple Watch 스크린샷이 모두** 필요합니다.
 
+**준비된 파일 (`store/app-store/`)** — CI의 Xcode 시뮬레이터에서 실제 앱을 실행해 찍은 것입니다:
+- iPhone 6.9형 1320×2868: `iphone-1-companion.png`, `iphone-2-history.png`
+- Apple Watch Series 10 46mm 416×496: `watch-1-zone2.png` … `watch-5-start.png`
+
+다시 찍으려면 커밋 메시지에 `[screenshots]` 를 넣어 푸시하거나 GitHub Actions에서 "Cardio Pacer" 워크플로를 수동 실행하세요. 결과는 실행 페이지의 `app-store-screenshots` 아티팩트로 받습니다.
+
+
 **iPhone** (1~10장, 6.9형 하나만 올리면 작은 화면에는 자동 적용):
 
 | 기기 | 픽셀 |
@@ -230,8 +237,8 @@ iPhone 추천 순서: ① 존 설정 화면(목표 범위) ② 운동 기록(달
 
 > 위 크기는 작성 시점 기준입니다. 업로드 전에 App Store Connect의 스크린샷 화면에서 요구 크기를 한 번 확인하세요.
 
-**찍는 방법 (Mac):** Xcode에서 해당 시뮬레이터로 실행 → 시뮬레이터 메뉴 File → Save Screen (⌘S).
-시뮬레이터에서는 가짜 심박수가 약 1분 주기로 세 가지 존을 오가므로 모든 색을 찍을 수 있습니다.
+**Mac에서 직접 찍기:** Debug 빌드를 `-screenshot <화면>` 인자로 실행하면 예시 데이터로 그 화면을 띄웁니다
+(워치: `zone1` `zone2` `zone3` `summary` `start`, iPhone: `companion` `history`). 시뮬레이터 File → Save Screen (⌘S).
 
 추천 순서 (5장):
 1. 초록 화면 (Zone 2, 예: 138 BPM) — "초록이면 유지"
