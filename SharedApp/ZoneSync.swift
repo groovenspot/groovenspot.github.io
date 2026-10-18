@@ -47,6 +47,12 @@ final class ZoneSync: NSObject, ObservableObject {
         }
     }
 
+    #if DEBUG
+    func showScreenshotCounterpart() {
+        isCounterpartInstalled = true
+    }
+    #endif
+
     private func apply(_ context: [String: Any]) {
         guard let data = context[Self.profileKey] as? Data,
               let profile = try? JSONDecoder().decode(ZoneProfile.self, from: data) else { return }

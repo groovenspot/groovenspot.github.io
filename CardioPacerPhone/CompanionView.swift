@@ -2,6 +2,9 @@ import SwiftUI
 
 /// iPhone companion: set up Zone 2 comfortably, send it to the watch, and review past workouts.
 struct CompanionView: View {
+    /// Debug-only: render with sample data for App Store screenshots ("companion" or "history").
+    var screenshot: String?
+
     @EnvironmentObject private var settings: ZoneSettingsStore
     @EnvironmentObject private var health: PhoneHealthModel
     @EnvironmentObject private var sync: ZoneSync
@@ -23,57 +26,73 @@ struct CompanionView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("목표 ZONE 2")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                        Text("\(profile.zone2Range.label) BPM")
-                            .font(.system(size: 40, weight: .heavy, design: .rounded))
-                            .monospacedDigit()
-                            .foregroundStyle(HeartRateZone.target.color)
-                        Label(sync.isCounterpartInstalled ? "Apple Watch에 설치됨" : "Apple Watch에 앱을 설치하세요",
-                              systemImage: sync.isCounterpartInstalled ? "applewatch" : "applewatch.slash")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+            ScrollViewReader { proxy in
+                List {
+                    Section {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("목표 ZONE 2")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                            Text("\(profile.zone2Range.label) BPM")
+                                .font(.system(size: 40, weight: .heavy, design: .rounded))
+                                .monospacedDigit()
+                                .foregroundStyle(HeartRateZone.target.color)
+                            Label(sync.isCounterpartInstalled ? "Apple Watch에 설치됨" : "Apple Watch에 앱을 설치하세요",
+                                  systemImage: sync.isCounterpartInstalled ? "applewatch" : "applewatch.slash")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 6)
                     }
-                    .padding(.vertical, 6)
-                }
 
-                settingsSection
+                    settingsSection
 
-                Section {
-                    Button {
-                        settings.save(profile)
-                        ZoneSync.shared.send(profile)
-                        justSent = true
-                    } label: {
-                        Label(justSent && profile == settings.profile ? "워치로 보냈어요" : "저장하고 워치로 보내기",
-                              systemImage: "paperplane.fill")
-                            .frame(maxWidth: .infinity)
-                            .font(.headline)
+                    Section {
+                        Button {
+                            settings.save(profile)
+                            ZoneSync.shared.send(profile)
+                            justSent = true
+                        } label: {
+                            Label(justSent && profile == settings.profile ? "워치로 보냈어요" : "저장하고 워치로 보내기",
+                                  systemImage: "paperplane.fill")
+                                .frame(maxWidth: .infinity)
+                                .font(.headline)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
                     }
-                    .buttonStyle(.borderedProminent)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
-                }
 
-                historySection
-            }
-            .navigationTitle("Cardio Pacer")
-            .refreshable { await health.loadWorkouts() }
-            .task {
-                load(settings.profile ?? .default)
-                await health.requestAuthorization()
-                await health.loadWorkouts()
-            }
-            .onChange(of: settings.profile) {
-                // Edited on the watch while this screen is open.
-                if let updated = settings.profile, updated != profile { load(updated) }
-            }
-            .onChange(of: manualLower) {
-                if manualUpper <= manualLower { manualUpper = manualLower + 1 }
+                    historySection
+                }
+                .navigationTitle("Cardio Pacer")
+                .refreshable { await health.loadWorkouts() }
+                .task {
+                    #if DEBUG
+                    if let screenshot {
+                        let sample = ZoneProfile(age: 35, restingHeartRate: 60)
+                        settings.save(sample)
+                        load(sample)
+                        health.showScreenshotSamples()
+                        sync.showScreenshotCounterpart()
+                        if screenshot == "history" {
+                            try? await Task.sleep(for: .milliseconds(300))
+                            proxy.scrollTo("history", anchor: .top)
+                        }
+                        return
+                    }
+                    #endif
+                    load(settings.profile ?? .default)
+                    await health.requestAuthorization()
+                    await health.loadWorkouts()
+                }
+                .onChange(of: settings.profile) {
+                    // Edited on the watch while this screen is open.
+                    if let updated = settings.profile, updated != profile { load(updated) }
+                }
+                .onChange(of: manualLower) {
+                    if manualUpper <= manualLower { manualUpper = manualLower + 1 }
+                }
             }
         }
     }
@@ -141,6 +160,7 @@ struct CompanionView: View {
             }
         } header: {
             Text("운동 기록")
+                .id("history")
         } footer: {
             Text("Cardio Pacer는 의료기기가 아니며, 계산된 구간은 일반적인 공식에 따른 참고값입니다. 심장 질환이 있거나 약을 복용 중이라면 운동 전 의사와 상담하세요.")
         }
