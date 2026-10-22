@@ -1,0 +1,5 @@
+config.toml
+*token*.json
+client_secret*.json
+data/
+__pycache__/
