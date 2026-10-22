@@ -45,6 +45,13 @@ query = "from:(facebookmail.com OR meta.com) (\"App Review\" OR 앱 검수 OR �
 name = "유튜브 API 감사"
 query = "from:(google.com OR youtube.com) (\"API Services\" OR audit OR 감사) YouTube"
 
+[kakao]
+# 보고를 카카오톡 '나에게 보내기'로 받는다. REST API 키는 secrets.env 의 KAKAO_REST_API_KEY
+# 카카오 개발자 앱에 이 주소를 Redirect URI 로 등록해야 한다
+redirect_uri = "http://localhost:8765/kakao"
+# 메시지를 눌렀을 때 열 주소 (앱 설정 > 플랫폼 > Web 에 도메인 등록 필요). 비워 두면 링크 없음
+link_url = ""
+
 [telegram]
-# 봇 토큰은 환경변수 TELEGRAM_BOT_TOKEN. 비워 두면 보고는 터미널·로그에만 남는다
+# 카톡 대신 또는 함께 쓰려면. 봇 토큰은 환경변수 TELEGRAM_BOT_TOKEN
 chat_id = ""

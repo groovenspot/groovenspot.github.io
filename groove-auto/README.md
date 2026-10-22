@@ -31,8 +31,20 @@ cp config.example.toml config.toml        # 채널명·DJ 재생목록 ID·금�
 
 ```
 ANTHROPIC_API_KEY=sk-ant-...
-TELEGRAM_BOT_TOKEN=123456:ABC...
+KAKAO_REST_API_KEY=카카오 앱의 REST API 키
 ```
+
+### 카카오톡으로 보고 받기 (나에게 보내기)
+
+1. developers.kakao.com → 내 애플리케이션 → 애플리케이션 추가 (이름 예: 그루브 자동화)
+2. 앱 키의 **REST API 키**를 `secrets.env` 의 `KAKAO_REST_API_KEY` 에 넣는다
+3. 제품 설정 → 카카오 로그인 → **활성화 ON**, Redirect URI 에 `http://localhost:8765/kakao` 등록
+4. 제품 설정 → 카카오 로그인 → 동의항목 → **카카오톡 메시지 전송(talk_message)** 을 '선택 동의'로 설정
+5. (보안 → Client Secret 을 켰다면 그 값을 `KAKAO_CLIENT_SECRET` 으로 `secrets.env` 에 추가)
+6. 맥미니에서 `python -m groove_auto auth kakao` → 브라우저에서 카카오 로그인·동의 → 카톡 '나와의 채팅'에 "카카오톡 보고 연결 완료"가 오면 끝
+
+카톡 한 건은 200자까지라 긴 보고는 최대 5건으로 나눠 보내고, 넘치면 현황 페이지를 보라고 붙인다.
+로그인은 2개월 유지되며 보고를 보낼 때마다 자동 연장된다. 두 달 넘게 한 번도 안 보내면 `auth kakao` 를 다시 한다.
 
 구글 인증 — 브라우저가 열리면 **그루브 채널 계정**을 고른다. 기존 `yt_upload/token.json` 은 건드리지 않고 새 토큰을 만든다.
 구글 클라우드 콘솔에서 해당 프로젝트에 YouTube Analytics API 와 Gmail API 를 켜 둬야 한다.
@@ -65,8 +77,8 @@ python -m groove_auto shorts list
 ## 현황 페이지·보고
 
 - 작업이 끝날 때마다 `data_dir/dashboard.html` 이 갱신된다 (마지막 실행·성공 여부, 숏츠 큐, 최근 댓글 처리, 일별 수치).
-- 보고는 `config.toml` 의 `[telegram] chat_id` 와 `TELEGRAM_BOT_TOKEN` 이 있으면 텔레그램으로, 없으면 `data_dir/logs/` 에만 남는다.
-- 실패한 작업도 보고된다.
+- 보고는 카카오톡 '나와의 채팅'으로 온다. 텔레그램도 설정하면(`[telegram] chat_id` + `TELEGRAM_BOT_TOKEN`) 양쪽으로 간다.
+- 실패한 작업도 보고된다. 카톡 전송이 실패해도 작업은 계속되고 `data_dir/logs/` 에 남는다.
 
 ## 참고
 
@@ -75,5 +87,5 @@ python -m groove_auto shorts list
 - 댓글 분류는 Claude API (`claude-opus-5-5`)를 쓰고, 거절되면 서버가 다른 모델로 자동 재시도한다(`fallbacks: "default"`).
 
 ```bash
-python3 -m unittest discover -s tests   # 예약 규칙·금지어·DB·현황 페이지 테스트 (외부 의존성 없음)
+python3 -m unittest discover -s tests   # 예약 규칙·금지어·DB·현황 페이지·카톡 전송 테스트 (외부 의존성 없음)
 ```

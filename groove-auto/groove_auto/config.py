@@ -32,6 +32,8 @@ class Config:
     dj_playlists: dict[str, str] = field(default_factory=dict)
     gmail_watches: list[dict] = field(default_factory=list)
     telegram_chat_id: str = ""
+    kakao_redirect_uri: str = "http://localhost:8765/kakao"
+    kakao_link_url: str = ""
 
     @property
     def db_path(self) -> Path:
@@ -65,6 +67,8 @@ def load(path: Path | None = None) -> Config:
         dj_playlists=dict(shorts.get("dj_playlists", {})),
         gmail_watches=list(raw.get("gmail", {}).get("watch", [])),
         telegram_chat_id=str(raw.get("telegram", {}).get("chat_id", "")),
+        kakao_redirect_uri=raw.get("kakao", {}).get("redirect_uri", "http://localhost:8765/kakao"),
+        kakao_link_url=raw.get("kakao", {}).get("link_url", ""),
     )
     cfg.data_dir.mkdir(parents=True, exist_ok=True)
     return cfg

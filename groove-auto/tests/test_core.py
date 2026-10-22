@@ -1,10 +1,13 @@
+import json
+import os
 import tempfile
 import unittest
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from unittest import mock
 from zoneinfo import ZoneInfo
 
-from groove_auto import dashboard
+from groove_auto import dashboard, kakao, notify
 from groove_auto.claude import reply_is_safe
 from groove_auto.config import Config
 from groove_auto.db import DB
@@ -77,6 +80,48 @@ class DbAndDashboardTest(unittest.TestCase):
             self.assertIn("Song &lt;1&gt;", html)
             self.assertIn("유튜브 일일 결산", html)
             db.close()
+
+
+class KakaoTest(unittest.TestCase):
+    def test_chunks_fit_limit_and_cap(self):
+        text = "\n".join(f"line {i} " + "가" * 50 for i in range(30))
+        parts = kakao.chunks(text)
+        self.assertEqual(len(parts), kakao.MAX_MESSAGES)
+        self.assertTrue(all(len(p) <= kakao.TEXT_LIMIT for p in parts))
+        self.assertTrue(parts[-1].endswith("현황 페이지)"))
+        self.assertEqual(kakao.chunks("짧은 보고"), ["짧은 보고"])
+        self.assertTrue(all(len(p) <= 200 for p in kakao.chunks("x" * 450)))
+
+    def test_send_refreshes_token_and_posts_memo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = Config(tz=ZoneInfo("Asia/Seoul"), data_dir=Path(tmp), client_secret=Path(tmp),
+                         youtube_token=Path(tmp), gmail_token=Path(tmp), channel_title="G")
+            (Path(tmp) / "kakao_token.json").write_text(json.dumps({"access_token": "old", "refresh_token": "r1"}))
+            calls = []
+
+            def fake_post(url, data, headers=None):
+                calls.append((url, data, headers))
+                return {"access_token": "new", "refresh_token": None} if url == kakao.TOKEN_URL else {"result_code": 0}
+
+            with mock.patch.dict(os.environ, {"KAKAO_REST_API_KEY": "key"}), \
+                    mock.patch.object(kakao, "_post", side_effect=fake_post):
+                self.assertTrue(kakao.configured(cfg))
+                notify.send(cfg, "테스트", "본문")
+            self.assertEqual(calls[0][1]["refresh_token"], "r1")
+            self.assertEqual(calls[1][0], kakao.MEMO_URL)
+            self.assertEqual(calls[1][2]["Authorization"], "Bearer new")
+            self.assertEqual(json.loads(calls[1][1]["template_object"])["text"], "[테스트]\n본문")
+            stored = json.loads((Path(tmp) / "kakao_token.json").read_text())
+            self.assertEqual(stored, {"access_token": "new", "refresh_token": "r1"})  # 없는 refresh token 은 유지
+
+    def test_send_failure_does_not_raise(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = Config(tz=ZoneInfo("Asia/Seoul"), data_dir=Path(tmp), client_secret=Path(tmp),
+                         youtube_token=Path(tmp), gmail_token=Path(tmp), channel_title="G")
+            (Path(tmp) / "kakao_token.json").write_text("{}")
+            with mock.patch.dict(os.environ, {"KAKAO_REST_API_KEY": "key"}), \
+                    mock.patch("sys.stderr"):
+                notify.send(cfg, "t", "b")  # 토큰이 깨져 있어도 작업은 계속
 
 
 if __name__ == "__main__":

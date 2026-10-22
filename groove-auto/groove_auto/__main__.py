@@ -83,8 +83,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--dry-run", action="store_true", help="읽기만 하고 답글·예약·기록은 하지 않음")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    a = sub.add_parser("auth", help="구글 계정 인증 (맥미니에서 한 번)")
-    a.add_argument("which", choices=["youtube", "gmail"])
+    a = sub.add_parser("auth", help="구글·카카오 계정 인증 (맥미니에서 한 번)")
+    a.add_argument("which", choices=["youtube", "gmail", "kakao"])
     sub.add_parser("yt-daily", help="유튜브 일일 결산")
     sub.add_parser("comments", help="유튜브 댓글 확인·답글")
     sub.add_parser("gmail-watch", help="심사·감사 결과 메일 확인")
@@ -111,6 +111,11 @@ def main(argv: list[str] | None = None) -> int:
     cfg = config_mod.load(args.config)
     load_secrets(cfg)
 
+    if args.cmd == "auth" and args.which == "kakao":
+        from . import kakao
+        print(f"저장됨: {kakao.authorize(cfg)}")
+        notify.send(cfg, "그루브 자동화", "카카오톡 보고 연결 완료")
+        return 0
     if args.cmd == "auth":
         from . import google_api
         print(f"저장됨: {google_api.authorize(cfg, args.which)}")
