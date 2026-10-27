@@ -74,6 +74,11 @@ struct RootView: View {
         model.agree(analytics: false)
         if screen == "goal" { return }
         if model.profile == nil {
+            // 지난 2주 미션 기록 (주 5일 정도 완료) — 주간 리포트와 미션 달력용.
+            let today = DemoHealth.now.date
+            model.store.missionLogs = (1...14).map { ago in
+                MissionLog(date: today.minusDays(ago), missionId: ["S-01", "S-04", "S-03", "S-02"][ago % 4], completed: ago % 7 != 3 && ago % 7 != 5, auto: ago % 3 == 0)
+            }
             let guardian = screen == "guardian"
             await model.start(goal: guardian ? .parent : .sleep, seniorMode: screen == "easy", guardianOnly: guardian,
                               signupDate: DemoHealth.now.date.minusDays(40))

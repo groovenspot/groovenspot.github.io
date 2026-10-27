@@ -36,7 +36,7 @@ struct DemoHealth: HealthSource {
             let mid = bed.addingTimeInterval(3 * 3600)
             let raised = LocalDate.daysBetween(day, to) < 3
             raw.hrv.append(Sample(mid, 46 + noise() * 6 - (raised ? 6 : 0)))
-            raw.restingHr.append(Sample(zone.instant(day.atTime(9, 0)), 57 + noise() * 2 + (raised ? 11 : 0)))
+            raw.restingHr.append(Sample(zone.instant(day.atTime(9, 0)), 57 + noise() * 2 + (raised ? 15 : 0)))
             raw.respiratoryRate.append(Sample(mid, 14.5 + noise() * 0.6))
             raw.spo2.append(Sample(mid, 96 + noise()))
             raw.steps[day] = 7400 + Int(noise() * 1800)

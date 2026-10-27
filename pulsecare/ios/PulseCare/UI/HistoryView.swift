@@ -51,7 +51,7 @@ struct HistoryView: View {
             Chart {
                 ForEach(Array(h.days.enumerated()), id: \.offset) { i, d in
                     if let s = d.score {
-                        BarMark(x: .value("날", Double(i)), y: .value("점수", s), width: .ratio(0.7))
+                        BarMark(x: .value("날", Double(i)), y: .value("점수", s), width: .fixed(barWidth(h.days.count)))
                             .foregroundStyle((d.band?.color ?? Palette.muted).opacity(d.learning || d.estimated ? 0.4 : 1))
                     }
                 }
@@ -67,7 +67,7 @@ struct HistoryView: View {
                 rangeMark(h.sleep.map { UsualRange(low: $0.low / 60, mid: $0.mid / 60, high: $0.high / 60) }, h.days.count)
                 ForEach(Array(h.days.enumerated()), id: \.offset) { i, d in
                     if let m = d.sleepMinutes {
-                        BarMark(x: .value("날", Double(i)), y: .value("시간", Double(m) / 60), width: .ratio(0.7)).foregroundStyle(Palette.navy)
+                        BarMark(x: .value("날", Double(i)), y: .value("시간", Double(m) / 60), width: .fixed(barWidth(h.days.count))).foregroundStyle(Palette.navy)
                     }
                 }
             }
@@ -93,6 +93,9 @@ struct HistoryView: View {
         }
         legend([(Palette.teal, "직접 완료"), (Palette.mint, "워치로 확인"), (Palette.line, "못 한 날")])
     }
+
+    /// 연속 축이라 비율 대신 고정 폭 (주간은 굵게, 월간은 가늘게).
+    private func barWidth(_ count: Int) -> CGFloat { count <= 7 ? 22 : 6 }
 
     private func chartCard<C: View>(_ title: String, _ note: String?, @ViewBuilder _ chart: () -> C) -> some View {
         SectionCard {
