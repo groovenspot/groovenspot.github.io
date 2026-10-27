@@ -67,7 +67,8 @@ class ConditionScoreEngineTest {
     fun usualDayScoresAroundSeventy() {
         val result = ConditionScoreEngine.score(usualNight(), history(), settled)
         assertEquals(ScoreResult.Kind.FULL, result.kind)
-        assertTrue("got ${result.score}", result.score!! in 65..85)
+        // 평소 = 70점 (내 기준 대비 계산)
+        assertTrue("got ${result.score}", result.score!! in 68..72)
         assertEquals(8, result.subScores.size)
         assertTrue(result.badges.isEmpty())
     }
@@ -93,17 +94,46 @@ class ConditionScoreEngineTest {
 
     @Test
     fun shortSleepNamesTheShortfall() {
-        // 활동 부하·취침 시각 기록이 없는 사람: 수면 부족이 가장 큰 마이너스 요인이 됩니다.
-        val plain = history { _, r -> r.copy(activityLoad = null, sleep = r.sleep!!.copy(bedtime = null)) }
         val result = ConditionScoreEngine.score(
-            usualNight { it.copy(sleep = it.sleep!!.copy(mainSleepMinutes = 360, efficiency = 0.85, bedtime = null)) },
-            plain,
+            usualNight { it.copy(sleep = it.sleep!!.copy(mainSleepMinutes = 380)) },
+            history(),
             settled,
         )
         assertTrue("got ${result.score}", result.score!! < 70)
         assertEquals(Metric.SLEEP_DURATION, result.reasonMetric)
-        // 필요량 = 좋았던 날 수면 중앙값 450분, 360분이면 90분 부족
-        assertEquals("어젯밤 수면이 필요량보다 1시간 30분 짧았어요", result.reason)
+        // 필요량 = 좋았던 날 수면 중앙값 450분, 380분이면 70분 부족
+        assertEquals("어젯밤 수면이 필요량보다 1시간 10분 짧았어요", result.reason)
+    }
+
+    @Test
+    fun betterThanUsualNightScoresHigh() {
+        val result = ConditionScoreEngine.score(
+            usualNight { it.copy(hrvMs = 58.0, restingHr = 52.0, sleep = it.sleep!!.copy(mainSleepMinutes = 510)) },
+            history(),
+            settled,
+        )
+        assertTrue("got ${result.score}", result.score!! >= 80)
+        assertEquals(Metric.HRV, result.reasonMetric)
+        assertEquals("자율신경이 평소보다 잘 회복됐어요", result.reason)
+    }
+
+    @Test
+    fun goodHabitsAloneDoNotInflateTheScore() {
+        // 효율 90%·규칙적 취침이 늘 그런 사람에게는 그게 평소입니다.
+        val result = ConditionScoreEngine.score(usualNight(), history(), settled)
+        assertEquals(70.0, result.subScores[Metric.SLEEP_QUALITY]!!, 1.0)
+        assertEquals(70.0, result.subScores[Metric.REGULARITY]!!, 4.0)
+        assertEquals(70.0, result.subScores[Metric.ACTIVITY_LOAD]!!, 1e-9)
+    }
+
+    @Test
+    fun irregularWeekLowersRegularity() {
+        val result = ConditionScoreEngine.score(
+            usualNight { it.copy(sleep = it.sleep!!.copy(bedtime = LocalTime.of(2, 30))) },
+            history { ago, r -> if (ago in 1..3) r.copy(sleep = r.sleep!!.copy(bedtime = LocalTime.of(1, 45))) else r },
+            settled,
+        )
+        assertTrue(result.subScores[Metric.REGULARITY]!! < 50)
     }
 
     @Test
@@ -141,7 +171,7 @@ class ConditionScoreEngineTest {
         val result = ConditionScoreEngine.score(usualNight { it.copy(hrvMs = null) }, history(), settled)
         assertTrue(Metric.HRV !in result.subScores)
         assertTrue(Badge.ESTIMATED in result.badges)
-        assertTrue("got ${result.score}", result.score!! in 60..90)
+        assertTrue("got ${result.score}", result.score!! in 65..75)
     }
 
     @Test

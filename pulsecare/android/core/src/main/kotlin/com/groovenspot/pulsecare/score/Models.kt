@@ -48,6 +48,10 @@ data class DailyRecord(
     val respiratoryRate: Double? = null,
     /** 그날 하루 활동 부하 (기기별 단위, 같은 기기 안에서만 비교). */
     val activityLoad: Double? = null,
+    /** 그날 걸음 수. 알림 신호 "활동량 급감"에 씁니다. */
+    val steps: Int? = null,
+    /** 지난밤 SpO2 90% 미만 구간이 반복됐는지. 측정하지 않는 기기는 null. */
+    val lowSpo2Repeated: Boolean? = null,
     val tags: Set<DayTag> = emptySet(),
     /** 그날 아침 보여준 점수. 수면 필요량(컨디션 좋았던 날의 수면 중앙값)을 구할 때 씁니다. */
     val score: Int? = null,

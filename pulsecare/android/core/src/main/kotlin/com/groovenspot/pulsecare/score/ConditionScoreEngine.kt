@@ -28,15 +28,24 @@ object ConditionScoreEngine {
     private const val MAD_SCALE = 1.4826
     private const val Z_LIMIT = 4.0
 
-    private val SLEEP_DURATION_POINTS = listOf(0.60 to 10.0, 0.70 to 40.0, 0.85 to 70.0, 1.00 to 100.0)
-    private val SLEEP_EFFICIENCY_POINTS = listOf(0.70 to 10.0, 0.78 to 40.0, 0.85 to 70.0, 0.90 to 100.0)
-    private val REGULARITY_POINTS = listOf(30.0 to 100.0, 60.0 to 70.0, 90.0 to 40.0, 120.0 to 10.0)
-
-    // 0.8~1.3이 가장 좋고 양쪽으로 멀어질수록 낮아집니다. 0.6 아래(활동이 크게 준 경우)는 70점에서 멈춥니다:
-    // 쉬는 것 자체는 회복에 나쁘지 않기 때문입니다.
-    private val LOAD_POINTS = listOf(
-        0.6 to 70.0, 0.8 to 100.0, 1.3 to 100.0, 1.5 to 70.0, 1.8 to 40.0, 2.0 to 10.0,
+    // 행동 지표도 "평소 = 70점"이 되도록 내 기준 대비로 잽니다 (2026-10-27 결정, 기획서 13번 구간표를 대체).
+    // 수면 시간: 필요량을 채우면 70, 필요량보다 더 자면 회복으로 보고 120%에서 100.
+    private val SLEEP_DURATION_POINTS = listOf(
+        0.60 to 10.0, 0.70 to 25.0, 0.85 to 45.0, 1.00 to 70.0, 1.10 to 85.0, 1.20 to 100.0,
     )
+
+    // 기준선이 없는 가입 1~3일차 수면 점수에만 쓰는 절대 구간표 (효율 85%가 70점).
+    private val SLEEP_EFFICIENCY_POINTS = listOf(0.70 to 10.0, 0.78 to 40.0, 0.85 to 70.0, 0.90 to 100.0)
+
+    // 활동 부하: 7일/28일이 0.8~1.3이면 평소대로 70. 갑자기 늘면 크게, 크게 줄면 조금 낮아집니다.
+    // 부하는 위험 요인이라 70을 넘지 않습니다.
+    private val LOAD_POINTS = listOf(
+        0.6 to 60.0, 0.8 to 70.0, 1.3 to 70.0, 1.5 to 55.0, 1.8 to 30.0, 2.0 to 10.0,
+    )
+
+    // 기준선 편차가 아주 작은 사람도 사소한 차이로 점수가 튀지 않게 두는 MAD 하한.
+    private const val EFFICIENCY_MAD_FLOOR = 0.01
+    private const val REGULARITY_MAD_FLOOR_MINUTES = 5.0
 
     fun score(today: DailyRecord, history: List<DailyRecord>, context: ScoreContext): ScoreResult {
         val sleep = today.sleep ?: return ScoreResult(
@@ -86,7 +95,7 @@ object ConditionScoreEngine {
         val sub = linkedMapOf<Metric, Double>()
         sub[Metric.SLEEP_DURATION] = sleepDurationScore(sleep, sleepNeed)
         sleepQualityScore(sleep, clean)?.let { sub[Metric.SLEEP_QUALITY] = it }
-        if (!jetLag) regularityScore(today, window)?.let { sub[Metric.REGULARITY] = it }
+        if (!jetLag) regularityScore(today, window, clean)?.let { sub[Metric.REGULARITY] = it }
 
         physioScore(today.hrvMs, recoveryBaseline.mapNotNull { it.hrvMs }, direction = +1, context, Metric.HRV)
             ?.let { sub[Metric.HRV] = it }
@@ -168,28 +177,47 @@ object ConditionScoreEngine {
     private fun sleepDurationScore(sleep: SleepSummary, needMinutes: Double): Double =
         Stats.interpolate(totalSleepMinutes(sleep) / needMinutes, SLEEP_DURATION_POINTS)
 
-    /** 수면 효율 구간 점수에서, 깊은 잠 비율이 기준선보다 낮으면 최대 10점을 뺍니다 (z −2에서 10점). */
+    /**
+     * 수면 효율을 내 기준선과 비교한 점수 (평소 = 70). 기준선이 아직 없으면 절대 구간표를 씁니다.
+     * 깊은 잠 비율이 기준선보다 낮으면 최대 10점을 뺍니다 (z −2에서 10점).
+     */
     private fun sleepQualityScore(sleep: SleepSummary, clean: List<DailyRecord>): Double? {
         val efficiency = sleep.efficiency ?: return null
-        var s = Stats.interpolate(efficiency, SLEEP_EFFICIENCY_POINTS)
+        val history = clean.mapNotNull { it.sleep?.efficiency }
+        var s = if (history.size >= MIN_BASELINE_VALUES) {
+            Stats.logisticScore(robustZ(efficiency, history, EFFICIENCY_MAD_FLOOR))
+        } else {
+            Stats.interpolate(efficiency, SLEEP_EFFICIENCY_POINTS)
+        }
         val deep = sleep.deepRatio
-        val history = clean.mapNotNull { it.sleep?.deepRatio }
-        if (deep != null && history.size >= MIN_BASELINE_VALUES) {
-            val z = robustZ(deep, history)
+        val deepHistory = clean.mapNotNull { it.sleep?.deepRatio }
+        if (deep != null && deepHistory.size >= MIN_BASELINE_VALUES) {
+            val z = robustZ(deep, deepHistory)
             if (z < 0) s -= min(10.0, -z * 5.0)
         }
         return max(s, 0.0)
     }
 
-    /** 오늘 포함 최근 7일 취침 시각의 표준편차(분). 정오 기준으로 재서 자정을 넘나드는 취침도 연속으로 다룹니다. */
-    private fun regularityScore(today: DailyRecord, window: List<DailyRecord>): Double? {
-        val bedtimes = (window + today)
-            .filter { ChronoUnit.DAYS.between(it.date, today.date) < 7 }
+    /**
+     * 최근 7일 취침 시각 표준편차를, 지난 날들의 같은 값(각 날까지의 7일 편차)과 비교합니다.
+     * 평소보다 들쭉날쭉하면 낮고, 평소보다 일정하면 높습니다 (평소 = 70).
+     */
+    private fun regularityScore(today: DailyRecord, window: List<DailyRecord>, clean: List<DailyRecord>): Double? {
+        val all = window + today
+        val todaySpread = bedtimeSpread(today, all) ?: return null
+        val history = clean.mapNotNull { bedtimeSpread(it, all) }
+        if (history.size < MIN_BASELINE_VALUES) return null
+        return Stats.logisticScore(-robustZ(todaySpread, history, REGULARITY_MAD_FLOOR_MINUTES))
+    }
+
+    /** [day]까지 7일간 취침 시각의 표준편차(분). 정오 기준으로 재서 자정을 넘나드는 취침도 연속으로 다룹니다. */
+    private fun bedtimeSpread(day: DailyRecord, records: List<DailyRecord>): Double? {
+        val bedtimes = records
+            .filter { it.date <= day.date && ChronoUnit.DAYS.between(it.date, day.date) < 7 }
             .mapNotNull { it.sleep?.bedtime }
-            .map { ((it.hour * 60 + it.minute) - 12 * 60 + 24 * 60) % (24 * 60) }
-            .map { it.toDouble() }
+            .map { (((it.hour * 60 + it.minute) - 12 * 60 + 24 * 60) % (24 * 60)).toDouble() }
         if (bedtimes.size < 4) return null
-        return Stats.interpolate(Stats.standardDeviation(bedtimes), REGULARITY_POINTS)
+        return Stats.standardDeviation(bedtimes)
     }
 
     // --- 활동 부하 ---
@@ -252,8 +280,9 @@ object ConditionScoreEngine {
     /** 매일 값이 같으면 MAD가 0이 됩니다. 아주 작은 차이로 점수가 튀지 않게 중앙값의 2%를 하한으로 둡니다. */
     private fun madFloor(mad: Double, median: Double): Double = max(mad, max(abs(median) * 0.02, 1e-6))
 
-    private fun robustZ(value: Double, history: List<Double>): Double {
+    private fun robustZ(value: Double, history: List<Double>, absoluteFloor: Double = 0.0): Double {
         val m = Stats.median(history)
-        return (value - m) / (MAD_SCALE * madFloor(Stats.mad(history, m), m))
+        val mad = max(madFloor(Stats.mad(history, m), m), absoluteFloor)
+        return ((value - m) / (MAD_SCALE * mad)).coerceIn(-Z_LIMIT, Z_LIMIT)
     }
 }
