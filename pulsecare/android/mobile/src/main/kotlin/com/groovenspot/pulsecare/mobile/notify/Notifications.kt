@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.groovenspot.pulsecare.mobile.R
 import com.groovenspot.pulsecare.mobile.ui.MainActivity
 import com.groovenspot.pulsecare.report.EveningSummary
@@ -24,11 +25,13 @@ object Notifications {
     const val CAUTION = "caution"
     const val EVENING = "evening_summary"
     const val WEEKLY = "weekly_report"
+    const val EMERGENCY = "emergency"
 
     private const val MORNING_ID = 1
     const val EVENING_ID = 2
     private const val WEEKLY_ID = 3
     private const val CAUTION_ID_BASE = 100
+    private const val SOS_ID = 900
 
     fun createChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java)
@@ -53,6 +56,11 @@ object Notifications {
         manager.createNotificationChannel(
             NotificationChannel(CAUTION, "주의 알림", NotificationManager.IMPORTANCE_HIGH).apply {
                 description = "며칠째 평소와 다른 패턴이 이어질 때"
+            },
+        )
+        manager.createNotificationChannel(
+            NotificationChannel(EMERGENCY, "긴급", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "워치에서 SOS를 눌렀을 때"
             },
         )
     }
@@ -80,6 +88,29 @@ object Notifications {
 
     fun weekly(context: Context, title: String, body: String) =
         post(context, WEEKLY, WEEKLY_ID, title, body, "이번 주 리포트가 준비됐어요", NotificationCompat.PRIORITY_DEFAULT)
+
+    /**
+     * 워치 SOS. 보호자 연결(서버) 전이라 보호자에게는 아직 가지 않습니다. 그렇게 말하고, 119 전화 화면을 바로 열 수 있게 합니다.
+     * 앱은 119에 자동 신고하지 않습니다 (기획서 12번).
+     */
+    fun sos(context: Context) {
+        val dial = PendingIntent.getActivity(
+            context,
+            3,
+            Intent(Intent.ACTION_DIAL, "tel:119".toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        post(
+            context,
+            EMERGENCY,
+            SOS_ID,
+            "워치에서 SOS를 눌렀어요",
+            "보호자 연결은 아직 준비 중이라 보호자에게는 알리지 않았어요.\n위급하면 119에 전화하세요.",
+            "긴급 알림이 있어요",
+            NotificationCompat.PRIORITY_MAX,
+            listOf("119 연결" to dial),
+        )
+    }
 
     private fun action(context: Context, action: String, missionId: String, request: Int): PendingIntent =
         PendingIntent.getBroadcast(

@@ -42,6 +42,19 @@
             android:name=".notify.EveningActionReceiver"
             android:exported="false" />
 
+        <!-- 워치 앱에서 미션 완료, SOS -->
+        <service
+            android:name=".wear.PhoneListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/pulsecare"
+                    android:scheme="wear" />
+            </intent-filter>
+        </service>
+
         <!-- Health Connect shows this when the user asks why the app needs access. -->
         <activity
             android:name=".ui.PermissionsRationaleActivity"

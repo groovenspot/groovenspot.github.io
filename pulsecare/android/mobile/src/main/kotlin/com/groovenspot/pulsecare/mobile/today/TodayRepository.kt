@@ -5,6 +5,7 @@ import com.groovenspot.pulsecare.alert.AlertText
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
 import com.groovenspot.pulsecare.mobile.health.NightMapper
+import com.groovenspot.pulsecare.mobile.wear.WearSync
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -44,5 +45,6 @@ object TodayRepository {
         val settings = store.settings
         val shown = plan.home.alertDetections.filter { settings.allows(it.signal) }
         return plan.home.copy(alerts = shown.map { AlertText.forSelf(it) }, alertDetections = shown)
+            .also { WearSync.publish(context, it) }
     }
 }

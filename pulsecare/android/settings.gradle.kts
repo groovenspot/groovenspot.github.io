@@ -14,4 +14,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "PulseCare"
-include(":core", ":mobile")
+include(":core", ":mobile", ":wear")

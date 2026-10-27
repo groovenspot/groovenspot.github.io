@@ -9,7 +9,7 @@ on:
 
 jobs:
   android:
-    name: Core logic + phone app
+    name: Core logic + phone and watch apps
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,10 +22,12 @@ jobs:
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       - name: Test and build
-        run: ./gradlew :core:test :mobile:testDebugUnitTest :mobile:lintDebug :mobile:assembleDebug
+        run: ./gradlew :core:test :mobile:testDebugUnitTest :mobile:lintDebug :mobile:assembleDebug :wear:testDebugUnitTest :wear:lintDebug :wear:assembleDebug
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
           name: pulsecare-debug-apk
-          path: pulsecare/android/mobile/build/outputs/apk/debug/mobile-debug.apk
+          path: |
+            pulsecare/android/mobile/build/outputs/apk/debug/mobile-debug.apk
+            pulsecare/android/wear/build/outputs/apk/debug/wear-debug.apk
           retention-days: 14

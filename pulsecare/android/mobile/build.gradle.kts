@@ -58,6 +58,9 @@ dependencies {
 
     implementation(libs.health.connect.client)
     implementation(libs.androidx.work.runtime)
+    // 워치 앱과 오늘 요약·미션 완료·SOS를 주고받습니다.
+    implementation(libs.play.services.wearable)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     testImplementation(libs.junit)
     // android.jar's org.json is a stub in local unit tests.
