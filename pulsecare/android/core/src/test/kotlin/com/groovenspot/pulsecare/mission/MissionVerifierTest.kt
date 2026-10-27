@@ -30,6 +30,13 @@ class MissionVerifierTest {
     }
 
     @Test
+    fun allDayWalkWaitsUntilMidnight() {
+        val quiet = DayActivity(wed, stepsByHour = mapOf(9 to 800L))
+        assertEquals(Check.NOT_YET, MissionVerifier.check("C-03", quiet, at(23, 59)))
+        assertEquals(Check.MISSED, MissionVerifier.check("C-03", quiet, nextMorning))
+    }
+
+    @Test
     fun exercises() {
         val run = Exercise(at(18), at(18, 25), ExerciseKind.VIGOROUS)
         val stretch = Exercise(at(21), at(21, 12), ExerciseKind.STRETCH)

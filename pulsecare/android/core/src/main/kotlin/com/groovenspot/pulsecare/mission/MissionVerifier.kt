@@ -81,7 +81,7 @@ object MissionVerifier {
             val walked = (fromHour until toHour).any { (a.stepsByHour[it] ?: 0) >= steps }
             return when {
                 walked -> Check.DONE
-                now >= a.date.atTime(toHour, 0) -> Check.MISSED
+                now >= a.date.atStartOfDay().plusHours(toHour.toLong()) -> Check.MISSED
                 else -> Check.NOT_YET
             }
         }

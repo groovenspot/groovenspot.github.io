@@ -44,6 +44,19 @@ jobs:
             pulsecare/android/wear/build/outputs/apk/debug/wear-debug.apk
           retention-days: 14
 
+  # 아이폰·애플워치. 맥 없이 GitHub의 macOS 러너에서 빌드하고 테스트합니다.
+  ios:
+    name: iPhone and Apple Watch
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: pulsecare/ios
+    steps:
+      - uses: actions/checkout@v4
+      - name: Core logic (same results as Android)
+        working-directory: pulsecare/ios/PulseCore
+        run: swift test
+
   # 스토어 업로드용 AAB. Actions에서 "Run workflow"로만 돌고, 업로드 키와 서버·Firebase 값은 저장소 비밀값에서 읽습니다.
   release:
     name: Signed release bundles
