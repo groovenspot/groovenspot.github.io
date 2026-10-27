@@ -35,12 +35,20 @@ class FamilyService(
     fun signUp(name: String): SignUpResponse {
         val token = ByteArray(32).also(random::nextBytes).let { Base64.getUrlEncoder().withoutPadding().encodeToString(it) }
         val id = UUID.randomUUID().toString()
-        db.tx { exec("insert into users (id, token_hash, name, created_at) values (?, ?, ?, ?)", id, hash(token), cleanName(name), now()) }
+        db.tx {
+            exec("insert into users (id, token_hash, name, created_at, last_seen) values (?, ?, ?, ?, ?)", id, hash(token), cleanName(name), now(), now())
+        }
         return SignUpResponse(id, token)
     }
 
-    fun auth(token: String): String? =
-        db.tx { query("select id from users where token_hash = ?", hash(token)) { it.getString("id") } }.firstOrNull()
+    /** 토큰으로 사용자를 찾고, 하루에 한 번 마지막 사용 시각을 남깁니다 (1년 미사용 계정 삭제용). */
+    fun auth(token: String): String? = db.tx {
+        val (id, seen) = query("select id, last_seen from users where token_hash = ?", hash(token)) {
+            it.getString("id") to it.getLong("last_seen")
+        }.firstOrNull() ?: return@tx null
+        if (now() - seen > Duration.ofDays(1).toMillis()) exec("update users set last_seen = ? where id = ?", now(), id)
+        id
+    }
 
     fun me(userId: String): Me = db.tx { person(userId) }.let { Me(it.userId, it.name, it.phone) }
 
@@ -174,6 +182,25 @@ class FamilyService(
         }
     }
 
+    /**
+     * 보관 기간 (개인정보 처리방침 6번과 같아야 합니다): 하루 요약 90일, 발송 기록 30일,
+     * 만료된 초대 코드 30일, 끝난 긴급 기록 180일. 계정과 연결은 탈퇴할 때 바로, 1년 동안 쓰지 않으면 자동으로 지웁니다.
+     */
+    fun cleanup() {
+        val today = today()
+        val now = now()
+        db.tx {
+            exec("delete from summaries where day < ?", today.minusDays(SUMMARY_DAYS).toString())
+            exec("delete from sent where day < ?", today.minusDays(SENT_DAYS).toString())
+            exec("delete from invites where expires_at < ?", now - Duration.ofDays(INVITE_KEEP_DAYS).toMillis())
+            exec(
+                "delete from emergencies where status <> ? and closed_at < ?",
+                EmergencyService.ACTIVE, now - Duration.ofDays(EMERGENCY_DAYS).toMillis(),
+            )
+            exec("delete from users where coalesce(last_seen, created_at) < ?", now - Duration.ofDays(INACTIVE_DAYS).toMillis())
+        }
+    }
+
     // --- 내부 ---
 
     private fun digestMessage(name: String, s: DaySummary, wearerId: String): PushMessage {
@@ -229,6 +256,11 @@ class FamilyService(
         private const val CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
         private val INVITE_DAYS = Duration.ofDays(7)
         private val DIGEST_AT = LocalTime.of(20, 0)
+        const val SUMMARY_DAYS = 90L
+        const val SENT_DAYS = 30L
+        const val INVITE_KEEP_DAYS = 30L
+        const val EMERGENCY_DAYS = 180L
+        const val INACTIVE_DAYS = 365L
 
         /** 정보 등급 중 보호자에게도 보여줄 것. */
         private val GUARDIAN_INFO = setOf(Signal.WATCH_NOT_WORN, Signal.MEDICATION_MISSED)

@@ -32,6 +32,7 @@ fun main() {
             runCatching {
                 services.emergencies.tick()
                 services.family.digest()
+                services.family.cleanup()
             }.onFailure { log.warn("tick failed", it) }
         }
     }

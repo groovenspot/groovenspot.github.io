@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,14 +17,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.groovenspot.pulsecare.mission.Goal
+import com.groovenspot.pulsecare.mobile.data.Legal
 
 private val GOAL_HINTS = mapOf(
     Goal.SLEEP to "잠드는 시간과 수면의 질을 챙겨요",
@@ -31,6 +40,52 @@ private val GOAL_HINTS = mapOf(
     Goal.STRESS to "호흡과 쉬는 시간으로 회복을 도와요",
     Goal.PARENT to "멀리 계신 부모님의 하루를 함께 챙겨요",
 )
+
+/**
+ * 첫 실행 동의 (개인정보 보호법 제22·23조): 항목별로 따로 체크하고, 건강정보는 무엇을 하는지 요약을 함께 보여줍니다.
+ * 만 14세 미만은 쓸 수 없습니다 (법정대리인 동의 절차를 두지 않음).
+ */
+@Composable
+fun ConsentScreen(onOpen: (String) -> Unit, onAgree: () -> Unit) {
+    var checked by remember { mutableStateOf(emptySet<Legal.Item>()) }
+    val all = checked.size == Legal.Item.entries.size
+    OnboardingFrame(
+        step = "시작하기 전에",
+        title = "펄스케어 이용 동의",
+        subtitle = "펄스케어는 진단이나 치료가 아닌 생활 습관 코칭 서비스예요. 아래 항목에 모두 동의해야 시작할 수 있어요.",
+        primary = "동의하고 시작",
+        primaryEnabled = all,
+        onPrimary = onAgree,
+    ) {
+        ConsentRow("전체 동의", all, bold = true) { checked = if (all) emptySet() else Legal.Item.entries.toSet() }
+        Legal.Item.entries.forEach { item ->
+            ConsentRow("[필수] ${item.label}", item in checked, onView = item.url?.let { url -> { onOpen(url) } }) {
+                checked = if (item in checked) checked - item else checked + item
+            }
+            if (item == Legal.Item.HEALTH) {
+                Text(Legal.HEALTH_SUMMARY, color = Palette.Muted, fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.padding(start = 36.dp))
+            }
+        }
+        if (Legal.Item.AGE !in checked) {
+            Text("만 14세 미만은 펄스케어를 쓸 수 없어요.", color = Palette.Muted, fontSize = 13.sp)
+        }
+    }
+}
+
+@Composable
+private fun ConsentRow(label: String, checked: Boolean, bold: Boolean = false, onView: (() -> Unit)? = null, onToggle: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable(onClick = onToggle)) {
+        Checkbox(checked = checked, onCheckedChange = { onToggle() }, colors = CheckboxDefaults.colors(checkedColor = Palette.Teal))
+        Text(
+            label,
+            color = Palette.Navy,
+            fontSize = if (bold) 17.sp else 15.sp,
+            fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
+            modifier = Modifier.weight(1f),
+        )
+        onView?.let { TextButton(onClick = it) { Text("보기", color = Palette.Teal) } }
+    }
+}
 
 /** 온보딩 1단계: 목표 1개 고르기 (기획서 14번: 목표는 1개만). */
 @Composable
@@ -79,7 +134,7 @@ fun ConnectScreen(available: Boolean, onConnect: () -> Unit, onInstall: () -> Un
         secondary = onLater?.let { "나중에" to it },
     ) {
         listOf(
-            "건강 수치는 이 휴대폰에서만 계산하고, 회사·보험사에 보내지 않아요",
+            "수면 시간·심박 같은 건강 수치는 이 휴대폰에서만 계산하고 서버에 보내지 않아요",
             "읽기만 하고, Health Connect에 아무것도 쓰지 않아요",
             "진단이나 치료가 아닌 생활 습관 코칭이에요",
         ).forEach { Text("· $it", color = Palette.Body, fontSize = 15.sp, lineHeight = 22.sp) }

@@ -273,4 +273,44 @@ class ServerTest {
         assertTrue(c.family(gs[0]).wearers.isEmpty())
         assertEquals(HttpStatusCode.Unauthorized, c.get("/v1/me") { auth(mom.token) }.status)
     }
+
+    @Test
+    fun oldRecordsAreDeletedAfterRetention() = run { c ->
+        val (mom, gs) = c.linked("민지")
+        c.post("/v1/summaries") { auth(mom.token); json(SummaryUpload("2027-06-16", 70, "GOOD", "걷기", true)) }
+        val e: EmergencyCreated = c.post("/v1/emergencies") { auth(mom.token); json(EmergencyRequest("SOS")) }.body()
+        c.post("/v1/emergencies/${e.id}/cancel") { auth(mom.token) }
+        val stale: InviteResponse = c.post("/v1/invites") { auth(mom.token); json(InviteRequest(Role.WEARER)) }.body()
+
+        clock.advance(89 * 24 * 3600)
+        services.family.cleanup()
+        assertEquals(HttpStatusCode.OK, c.get("/v1/emergencies/${e.id}") { auth(mom.token) }.status)
+
+        clock.advance(2 * 24 * 3600) // 91일
+        services.family.cleanup()
+        assertEquals(0, countRows("summaries"))
+        assertEquals("INVITE_INVALID", c.get("/v1/invites/${stale.code}") { auth(gs[0].token) }.error())
+        assertEquals(0, countRows("invites"))
+        assertEquals(HttpStatusCode.OK, c.get("/v1/emergencies/${e.id}") { auth(mom.token) }.status)
+
+        clock.advance(90 * 24 * 3600) // 181일
+        services.family.cleanup()
+        assertEquals("NO_EMERGENCY", c.get("/v1/emergencies/${e.id}") { auth(mom.token) }.error())
+        // 연결은 그대로입니다.
+        assertEquals(listOf(gs[0].id), c.family(mom).guardians.map { it.person.userId })
+
+        // 1년 동안 쓰지 않은 계정은 지웁니다. 엄마는 계속 쓰고, 민지는 앱을 지운 경우.
+        repeat(4) {
+            clock.advance(100 * 24 * 3600)
+            c.get("/v1/me") { auth(mom.token) }
+        }
+        services.family.cleanup()
+        assertEquals(HttpStatusCode.OK, c.get("/v1/me") { auth(mom.token) }.status)
+        assertTrue(c.family(mom).guardians.isEmpty())
+    }
+
+    private fun countRows(table: String): Int {
+        val ds = PGSimpleDataSource().apply { setURL(dbUrl) }
+        return Db(ds).tx { query("select count(*) as n from $table") { it.getInt("n") }.first() }
+    }
 }

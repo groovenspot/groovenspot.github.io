@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.groovenspot.pulsecare.alert.Signal
+import com.groovenspot.pulsecare.mobile.data.Legal
 import com.groovenspot.pulsecare.mobile.data.NotificationSettings
 import com.groovenspot.pulsecare.mobile.data.Profile
 import java.time.LocalTime
@@ -66,6 +67,10 @@ fun SettingsContent(
     onBack: () -> Unit,
     /** 디버그 빌드에서만 넘깁니다. */
     onOpenTestTools: (() -> Unit)? = null,
+    /** 약관·처리방침을 브라우저로. */
+    onOpenUrl: (String) -> Unit = {},
+    /** 동의한 날짜 (예: "2027-06-16"). */
+    consentDate: String? = null,
 ) {
     var editing by remember { mutableStateOf<TimeField?>(null) }
     var confirmClear by remember { mutableStateOf(false) }
@@ -132,12 +137,19 @@ fun SettingsContent(
 
         Section("데이터") {
             Text(
-                "건강 수치는 이 휴대폰에서만 계산하고 저장하지 않아요. 저장하는 건 점수 숫자, 미션 기록, 설정뿐이에요.",
+                "건강 수치는 이 휴대폰에서만 계산하고 저장하지 않아요. 저장하는 건 점수 숫자, 미션 기록, 설정뿐이에요. " +
+                    "가족 연결을 쓰면 이름과 하루 요약(점수·미션·주의 알림)이 서버에 있어요.",
                 color = Palette.Body,
                 fontSize = 14.sp,
                 lineHeight = 20.sp,
             )
-            TextButton(onClick = { confirmClear = true }) { Text("이 휴대폰의 펄스케어 기록 지우기", color = Palette.Coral) }
+            TextButton(onClick = { confirmClear = true }) { Text("기록 지우기 · 동의 철회 · 탈퇴", color = Palette.Coral) }
+        }
+
+        Section("약관 · 개인정보") {
+            LinkRow("서비스 이용약관", "펄스케어는 진단·치료가 아닌 웰니스 서비스예요", { onOpenUrl(Legal.TERMS_URL) })
+            Divider()
+            LinkRow("개인정보 처리방침", consentDate?.let { "$it 동의 · 수집 항목, 보관 기간, 삭제 방법" } ?: "수집 항목, 보관 기간, 삭제 방법", { onOpenUrl(Legal.PRIVACY_URL) })
         }
         Spacer(Modifier.height(8.dp))
     }
@@ -165,8 +177,14 @@ fun SettingsContent(
     if (confirmClear) {
         AlertDialog(
             onDismissRequest = { confirmClear = false },
-            title = { Text("기록을 지울까요?") },
-            text = { Text("목표, 레벨, 미션 기록, 점수 기록, 설정이 지워지고 처음 화면으로 돌아가요. 가족 계정이 있으면 서버의 가족 연결과 하루 요약도 지워요. Health Connect의 건강 데이터는 그대로예요.") },
+            title = { Text("기록을 지우고 탈퇴할까요?") },
+            text = {
+                Text(
+                    "목표, 레벨, 미션 기록, 점수 기록, 설정, 동의 기록이 지워지고 처음 화면으로 돌아가요. " +
+                        "가족 계정이 있으면 서버의 계정, 가족 연결, 하루 요약, 긴급 기록도 바로 지워요. " +
+                        "Health Connect의 건강 데이터는 그대로예요. 앱을 다시 쓰려면 처음부터 동의해야 해요.",
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
                     confirmClear = false

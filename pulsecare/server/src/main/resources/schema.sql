@@ -62,3 +62,7 @@ create table if not exists emergencies (
     closed_at bigint
 );
 create index if not exists emergencies_active on emergencies (status);
+;
+
+-- 1년 동안 쓰지 않은 계정은 지웁니다 (앱만 지우고 탈퇴하지 않은 경우).
+alter table users add column if not exists last_seen bigint

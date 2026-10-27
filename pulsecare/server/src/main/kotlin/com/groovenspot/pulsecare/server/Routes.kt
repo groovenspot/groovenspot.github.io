@@ -97,13 +97,14 @@ fun Application.pulsecare(s: Services) {
             }
         }
 
-        // Cloud Scheduler가 1분마다 부릅니다: 긴급 단계 진행 + 저녁 8시 보호자 요약.
+        // Cloud Scheduler가 1분마다 부릅니다: 긴급 단계 진행, 저녁 8시 보호자 요약, 보관 기간 지난 기록 삭제.
         post("/internal/tick") {
             if (s.tickSecret.isNullOrEmpty() || call.request.headers["X-Tick-Secret"] != s.tickSecret) {
                 throw ApiError(404, "NOT_FOUND", "없는 주소예요")
             }
             s.emergencies.tick()
             s.family.digest()
+            s.family.cleanup()
             call.respond(HttpStatusCode.NoContent)
         }
     }

@@ -34,6 +34,7 @@ import com.groovenspot.pulsecare.history.Period
 import com.groovenspot.pulsecare.mission.Goal
 import com.groovenspot.pulsecare.mobile.BuildConfig
 import com.groovenspot.pulsecare.mobile.data.AppStore
+import com.groovenspot.pulsecare.mobile.data.Legal
 import com.groovenspot.pulsecare.mobile.data.Profile
 import com.groovenspot.pulsecare.mobile.PulseApp
 import com.groovenspot.pulsecare.mobile.family.FamilyRepository
@@ -60,7 +61,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Stage { GOAL, CONNECT, HOME, HISTORY, FAMILY, SETTINGS, TEST_TOOLS }
+private enum class Stage { CONSENT, GOAL, CONNECT, HOME, HISTORY, FAMILY, SETTINGS, TEST_TOOLS }
 
 @Composable
 private fun App() {
@@ -68,7 +69,17 @@ private fun App() {
     val store = remember { AppStore.get(context) }
     var profile by remember { mutableStateOf(store.profile) }
     var goal by remember { mutableStateOf(profile?.goal) }
-    var stage by remember { mutableStateOf(if (profile == null) Stage.GOAL else Stage.HOME) }
+    // 동의 버전이 바뀌면 기존 사용자도 한 번 다시 동의합니다.
+    var stage by remember {
+        mutableStateOf(
+            when {
+                store.consentVersion < Legal.CONSENT_VERSION -> Stage.CONSENT
+                profile == null -> Stage.GOAL
+                else -> Stage.HOME
+            },
+        )
+    }
+    val openUrl: (String) -> Unit = { url -> context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri())) }
     var granted by remember { mutableStateOf<Set<String>?>(null) }
     // 권한이 바뀌거나 미션을 체크하면 다시 계산합니다.
     var refresh by remember { mutableIntStateOf(0) }
@@ -92,6 +103,10 @@ private fun App() {
     val canScore = granted?.containsAll(HealthConnectSource.required) == true
 
     when {
+        stage == Stage.CONSENT -> ConsentScreen(onOpen = openUrl, onAgree = {
+            store.consentVersion = Legal.CONSENT_VERSION
+            stage = if (profile == null) Stage.GOAL else Stage.HOME
+        })
         stage == Stage.GOAL -> GoalScreen(goal, onSelect = { goal = it }, onNext = {
             val current = profile
             if (current == null) {
@@ -138,13 +153,17 @@ private fun App() {
                     store.clear()
                     profile = null
                     goal = null
-                    stage = Stage.GOAL
+                    stage = Stage.CONSENT
                 },
                 onBack = {
                     stage = returnTo
                     refresh++
                 },
                 onOpenTestTools = if (BuildConfig.DEBUG) ({ stage = Stage.TEST_TOOLS }) else null,
+                onOpenUrl = openUrl,
+                consentDate = store.consentAt.takeIf { it > 0 }?.let {
+                    java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()
+                },
             )
         }
         stage == Stage.TEST_TOOLS -> TestTools(onBack = { stage = Stage.SETTINGS })

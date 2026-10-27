@@ -16,12 +16,28 @@ android {
         applicationId = "com.groovenspot.pulsecare"
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
+        // 스토어에 올릴 때마다 올립니다: -Ppulsecare.versionCode=2 (CI는 실행 번호)
+        versionCode = providers.gradleProperty("pulsecare.versionCode").orNull?.toInt() ?: 1
         versionName = "0.1.0"
+    }
+
+    // 업로드 키: 키 파일과 비밀번호는 저장소에 넣지 않고 ~/.gradle/gradle.properties 또는 CI 비밀값으로.
+    // pulsecare.signing.storeFile, storePassword, keyAlias, keyPassword. 없으면 서명하지 않은 릴리스가 나옵니다.
+    val signing = providers.gradleProperty("pulsecare.signing.storeFile").orNull?.let { file(it) }?.takeIf { it.exists() }
+    signingConfigs {
+        if (signing != null) {
+            create("upload") {
+                storeFile = signing
+                storePassword = providers.gradleProperty("pulsecare.signing.storePassword").get()
+                keyAlias = providers.gradleProperty("pulsecare.signing.keyAlias").get()
+                keyPassword = providers.gradleProperty("pulsecare.signing.keyPassword").get()
+            }
+        }
     }
 
     buildTypes {
         release {
+            if (signing != null) signingConfig = signingConfigs.getByName("upload")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))

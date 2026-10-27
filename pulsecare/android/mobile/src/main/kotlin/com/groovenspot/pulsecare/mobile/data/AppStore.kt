@@ -136,7 +136,16 @@ class AppStore(private val prefs: SharedPreferences) {
         get() = prefs.getString(KEY_PUSH, null)
         set(value) = prefs.edit().putString(KEY_PUSH, value).apply()
 
+    /** 동의한 약관 버전과 시각 (동의 기록). 0이면 아직 동의하지 않음. */
+    var consentVersion: Int
+        get() = prefs.getInt(KEY_CONSENT_VERSION, 0)
+        set(value) = prefs.edit().putInt(KEY_CONSENT_VERSION, value).putLong(KEY_CONSENT_AT, System.currentTimeMillis()).apply()
+
+    val consentAt: Long get() = prefs.getLong(KEY_CONSENT_AT, 0)
+
     companion object {
+        private const val KEY_CONSENT_VERSION = "consent_version"
+        private const val KEY_CONSENT_AT = "consent_at"
         private const val KEY_ACCOUNT = "family_account"
         private const val KEY_GUARDIANS = "family_guardians"
         private const val KEY_PUSH = "push_token"
