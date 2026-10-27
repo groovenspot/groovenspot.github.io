@@ -9,8 +9,18 @@ on:
 
 jobs:
   android:
-    name: Core logic + phone and watch apps
+    name: Core logic, server, phone and watch apps
     runs-on: ubuntu-latest
+    # 서버 테스트는 실제 Postgres로 돕니다.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pulsecare_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     defaults:
       run:
         working-directory: pulsecare/android
@@ -22,7 +32,9 @@ jobs:
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       - name: Test and build
-        run: ./gradlew :core:test :mobile:testDebugUnitTest :mobile:lintDebug :mobile:assembleDebug :wear:testDebugUnitTest :wear:lintDebug :wear:assembleDebug
+        env:
+          PULSECARE_TEST_DB: jdbc:postgresql://localhost:5432/pulsecare_test?user=postgres&password=postgres
+        run: ./gradlew :server:test :server:installDist :core:test :mobile:testDebugUnitTest :mobile:lintDebug :mobile:assembleDebug :wear:testDebugUnitTest :wear:lintDebug :wear:assembleDebug
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:

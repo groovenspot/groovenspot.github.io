@@ -166,7 +166,7 @@ fun SettingsContent(
         AlertDialog(
             onDismissRequest = { confirmClear = false },
             title = { Text("기록을 지울까요?") },
-            text = { Text("목표, 레벨, 미션 기록, 점수 기록, 설정이 지워지고 처음 화면으로 돌아가요. Health Connect의 건강 데이터는 그대로예요.") },
+            text = { Text("목표, 레벨, 미션 기록, 점수 기록, 설정이 지워지고 처음 화면으로 돌아가요. 가족 계정이 있으면 서버의 가족 연결과 하루 요약도 지워요. Health Connect의 건강 데이터는 그대로예요.") },
             confirmButton = {
                 TextButton(onClick = {
                     confirmClear = false

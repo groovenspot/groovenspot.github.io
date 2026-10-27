@@ -17,6 +17,15 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
+
+        // 가족 서버와 FCM. 비워 두면 가족 탭이 "서버 설정 전"으로 보이고 푸시를 쓰지 않습니다.
+        // ~/.gradle/gradle.properties 또는 -P로: pulsecare.serverUrl, pulsecare.firebase.{appId,apiKey,projectId,senderId}
+        fun prop(name: String) = "\"" + (providers.gradleProperty("pulsecare.$name").orNull ?: "") + "\""
+        buildConfigField("String", "SERVER_URL", prop("serverUrl"))
+        buildConfigField("String", "FIREBASE_APP_ID", prop("firebase.appId"))
+        buildConfigField("String", "FIREBASE_API_KEY", prop("firebase.apiKey"))
+        buildConfigField("String", "FIREBASE_PROJECT_ID", prop("firebase.projectId"))
+        buildConfigField("String", "FIREBASE_SENDER_ID", prop("firebase.senderId"))
     }
 
     buildTypes {
@@ -61,6 +70,8 @@ dependencies {
     // 워치 앱과 오늘 요약·미션 완료·SOS를 주고받습니다.
     implementation(libs.play.services.wearable)
     implementation(libs.kotlinx.coroutines.play.services)
+    // 가족 알림 (긴급·보호자 요약)
+    implementation(libs.firebase.messaging)
 
     testImplementation(libs.junit)
     // android.jar's org.json is a stub in local unit tests.

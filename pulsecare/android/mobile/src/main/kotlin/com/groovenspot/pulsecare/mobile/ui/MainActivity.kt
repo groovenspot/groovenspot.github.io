@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,9 @@ import com.groovenspot.pulsecare.mission.Goal
 import com.groovenspot.pulsecare.mobile.BuildConfig
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.data.Profile
+import com.groovenspot.pulsecare.mobile.PulseApp
+import com.groovenspot.pulsecare.mobile.family.FamilyRepository
+import com.groovenspot.pulsecare.mobile.family.ServerError
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
 import com.groovenspot.pulsecare.mobile.history.HistoryRepository
 import com.groovenspot.pulsecare.mobile.notify.EveningSchedule
@@ -43,7 +47,9 @@ import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.mobile.today.TodayPlanner
 import com.groovenspot.pulsecare.mobile.today.TodayRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Instant
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
@@ -54,7 +60,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Stage { GOAL, CONNECT, HOME, HISTORY, SETTINGS, TEST_TOOLS }
+private enum class Stage { GOAL, CONNECT, HOME, HISTORY, FAMILY, SETTINGS, TEST_TOOLS }
 
 @Composable
 private fun App() {
@@ -68,6 +74,7 @@ private fun App() {
     var refresh by remember { mutableIntStateOf(0) }
     // 내 정보를 닫으면 연 탭으로 돌아갑니다.
     var returnTo by remember { mutableStateOf(Stage.HOME) }
+    val appScope = rememberCoroutineScope()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         PermissionController.createRequestPermissionResultContract(),
@@ -124,6 +131,8 @@ private fun App() {
                 onChangeGoal = { stage = Stage.GOAL },
                 onPermissions = { permissionLauncher.launch(HealthConnectSource.requestable(context)) },
                 onClearData = {
+                    // 가족 계정이 있으면 서버 기록도 지웁니다 (연결이 남아 보호자에게 빈 요약이 가지 않도록).
+                    store.account?.let { account -> appScope.launch { FamilyRepository.deleteAccount(account.second) } }
                     MorningSchedule.cancel(context)
                     EveningSchedule.cancel(context)
                     store.clear()
@@ -141,8 +150,18 @@ private fun App() {
         stage == Stage.TEST_TOOLS -> TestTools(onBack = { stage = Stage.SETTINGS })
         else -> EasyMode(profile!!.seniorMode) {
             MainTabs(
-                current = if (stage == Stage.HISTORY) Tab.HISTORY else Tab.TODAY,
-                onTab = { stage = if (it == Tab.HISTORY) Stage.HISTORY else Stage.HOME },
+                current = when (stage) {
+                    Stage.HISTORY -> Tab.HISTORY
+                    Stage.FAMILY -> Tab.FAMILY
+                    else -> Tab.TODAY
+                },
+                onTab = {
+                    stage = when (it) {
+                        Tab.HISTORY -> Stage.HISTORY
+                        Tab.FAMILY -> Stage.FAMILY
+                        Tab.TODAY -> Stage.HOME
+                    }
+                },
             ) {
                 val openSettings = {
                     returnTo = stage
@@ -150,6 +169,8 @@ private fun App() {
                 }
                 if (stage == Stage.HISTORY) {
                     HistoryTab(refresh, onOpenSettings = openSettings)
+                } else if (stage == Stage.FAMILY) {
+                    FamilyTab(onOpenSettings = openSettings)
                 } else {
                     Home(
                         store,
@@ -249,6 +270,83 @@ private fun EasyMode(on: Boolean, content: @Composable () -> Unit) {
 }
 
 @Composable
+private fun FamilyTab(onOpenSettings: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var ui by remember {
+        mutableStateOf(FamilyUi(FamilyRepository.configured, PulseApp.pushConfigured, me = null, busy = FamilyRepository.hasAccount(context)))
+    }
+    var reload by remember { mutableIntStateOf(0) }
+
+    // 서버 오류는 그대로 보여 주고(한국어 문장), 연결 오류는 한 줄로.
+    fun call(block: suspend () -> FamilyUi) {
+        ui = ui.copy(busy = true, error = null)
+        scope.launch {
+            ui = try {
+                block().copy(busy = false, now = Instant.now())
+            } catch (e: ServerError) {
+                ui.copy(busy = false, error = e.message)
+            } catch (e: Exception) {
+                ui.copy(busy = false, error = "서버에 연결하지 못했어요. 인터넷을 확인해 주세요.")
+            }
+        }
+    }
+
+    LaunchedEffect(reload) {
+        if (FamilyRepository.hasAccount(context)) {
+            call {
+                val me = FamilyRepository.me(context)
+                ui.copy(me = me, family = FamilyRepository.family(context))
+            }
+        }
+    }
+
+    FamilyContent(
+        ui = ui,
+        onStart = { name, phone ->
+            call {
+                val me = FamilyRepository.start(context, name, phone)
+                ui.copy(me = me, family = FamilyRepository.family(context))
+            }
+        },
+        onInvite = { role -> call { ui.copy(invite = role to FamilyRepository.invite(context, role)) } },
+        onShareInvite = { invite, role ->
+            val who = ui.me?.name.orEmpty()
+            val text = if (role == "WEARER") {
+                "${who}님이 펄스케어 보호자로 초대했어요. 펄스케어 > 가족 탭에서 초대 코드 ${invite.code}를 입력해 주세요. (7일 동안 유효)"
+            } else {
+                "${who}님이 펄스케어로 함께 건강을 챙기자고 초대했어요. 펄스케어 > 가족 탭에서 초대 코드 ${invite.code}를 입력해 주세요. (7일 동안 유효)"
+            }
+            context.startActivity(
+                Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text), "초대 코드 보내기"),
+            )
+        },
+        onCheckCode = { code -> call { FamilyRepository.preview(context, code).let { (name, role) -> ui.copy(pendingAccept = Triple(code, name, role)) } } },
+        onAccept = { code -> call { ui.copy(pendingAccept = null, family = FamilyRepository.accept(context, code)) } },
+        onDismissAccept = { ui = ui.copy(pendingAccept = null) },
+        onUnlink = { p -> call { ui.copy(family = FamilyRepository.unlink(context, p.userId)) } },
+        onMove = { g, up ->
+            val ids = ui.family?.guardians?.map { it.person.userId }?.toMutableList() ?: return@FamilyContent
+            val i = ids.indexOf(g.person.userId)
+            val j = if (up) i - 1 else i + 1
+            if (i < 0 || j !in ids.indices) return@FamilyContent
+            ids[i] = ids[j].also { ids[j] = ids[i] }
+            call { ui.copy(family = FamilyRepository.order(context, ids)) }
+        },
+        onAck = { e ->
+            call {
+                FamilyRepository.ack(context, e.id)
+                Notifications.emergencyClosed(context, e.id, "확인했다고 알렸어요", "다른 보호자에게 가는 연락은 멈췄어요.")
+                ui.copy(family = FamilyRepository.family(context))
+            }
+        },
+        onCall = { number -> context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$number".toUri())) },
+        onReload = { reload++ },
+        onOpenSettings = onOpenSettings,
+    )
+}
+
+@Composable
 private fun HistoryTab(refreshKey: Int, onOpenSettings: () -> Unit) {
     val context = LocalContext.current
     var period by remember { mutableStateOf(Period.WEEK) }
@@ -280,6 +378,11 @@ private fun TestTools(onBack: () -> Unit) {
                 home = runCatching { TodayRepository.refresh(context) }.getOrNull(),
                 nextMorning = MorningSchedule.nextRunMillis(context),
                 nextEvening = EveningSchedule.nextRunMillis(context),
+                serverUrl = BuildConfig.SERVER_URL,
+                familyAccount = FamilyRepository.hasAccount(context),
+                guardianCount = AppStore.get(context).guardianCount,
+                pushConfigured = PulseApp.pushConfigured,
+                pushToken = AppStore.get(context).pushToken != null,
             )
         }
     }

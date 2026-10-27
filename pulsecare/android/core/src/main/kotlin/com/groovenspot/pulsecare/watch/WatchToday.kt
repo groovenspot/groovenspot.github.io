@@ -35,6 +35,24 @@ object WatchContract {
     const val PATH_TODAY = "/pulsecare/today"
     const val PATH_MISSION_DONE = "/pulsecare/mission-done"
     const val PATH_SOS = "/pulsecare/sos"
+    const val PATH_SOS_RESULT = "/pulsecare/sos-result"
+
+    /** 폰이 워치에 돌려주는 SOS 결과: "SENT:2", "NO_ACCOUNT", "FAILED". */
+    const val SOS_NO_ACCOUNT = "NO_ACCOUNT"
+    const val SOS_FAILED = "FAILED"
+    fun sosSent(guardians: Int) = "SENT:$guardians"
+
+    /** 워치 SOS 화면 문구 (제목, 설명). 보호자에게 가지 않았으면 그렇게 말합니다. */
+    fun sosText(result: String?): Pair<String, String> {
+        val sent = result?.removePrefix("SENT:")?.takeIf { result.startsWith("SENT:") }?.toIntOrNull()
+        return when {
+            result == null -> "휴대폰에 알렸어요" to "보호자에게 보내는 중이에요."
+            sent != null && sent > 0 -> "보호자 ${sent}명에게 알렸어요" to "괜찮으면 휴대폰 알림에서 취소해 주세요."
+            sent == 0 -> "연결된 보호자가 없어요" to "위급하면 워치 긴급 SOS(홈 버튼 5번)나 119를 쓰세요."
+            result == SOS_FAILED -> "보호자에게 보내지 못했어요" to "위급하면 워치 긴급 SOS(홈 버튼 5번)나 119를 쓰세요."
+            else -> "휴대폰에 알렸어요" to "보호자 연결 전이에요. 위급하면 워치 긴급 SOS나 119를 쓰세요."
+        }
+    }
 
     /** 데이터 레이어 DataMap에 문자열로 넣습니다. 없는 값은 키를 빼 둡니다. */
     fun encode(w: WatchToday): Map<String, String> = buildMap {

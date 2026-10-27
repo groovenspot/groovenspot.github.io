@@ -41,4 +41,13 @@ class WatchTest {
         assertTrue(none.stale)
         assertEquals("휴대폰에서 펄스케어를 열어 주세요", none.reason)
     }
+
+    @Test
+    fun sosTextSaysWhetherGuardiansGotIt() {
+        assertEquals("보호자 2명에게 알렸어요", WatchContract.sosText(WatchContract.sosSent(2)).first)
+        assertEquals("연결된 보호자가 없어요", WatchContract.sosText(WatchContract.sosSent(0)).first)
+        assertEquals("보호자에게 보내지 못했어요", WatchContract.sosText(WatchContract.SOS_FAILED).first)
+        assertTrue(WatchContract.sosText(WatchContract.SOS_NO_ACCOUNT).second.startsWith("보호자 연결 전이에요"))
+        assertEquals("보호자에게 보내는 중이에요.", WatchContract.sosText(null).second)
+    }
 }

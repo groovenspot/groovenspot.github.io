@@ -121,7 +121,25 @@ class AppStore(private val prefs: SharedPreferences) {
         get() = prefs.getString(KEY_WEEKLY, null)?.let(::decodeWeekly)
         set(value) = prefs.edit().putString(KEY_WEEKLY, value?.let(::encodeWeekly)).apply()
 
+    /** 가족 서버 계정 (사용자 ID, 토큰). 가족 탭에서 처음 시작할 때 만듭니다. */
+    var account: Pair<String, String>?
+        get() = prefs.getString(KEY_ACCOUNT, null)?.split("|")?.let { it[0] to it[1] }
+        set(value) = prefs.edit().putString(KEY_ACCOUNT, value?.let { "${it.first}|${it.second}" }).apply()
+
+    /** 마지막으로 본 내 보호자 수. 0이면 하루 요약을 올리지 않습니다. */
+    var guardianCount: Int
+        get() = prefs.getInt(KEY_GUARDIANS, 0)
+        set(value) = prefs.edit().putInt(KEY_GUARDIANS, value).apply()
+
+    /** FCM 토큰. 계정을 만들기 전에 받으면 여기 두었다가 올립니다. */
+    var pushToken: String?
+        get() = prefs.getString(KEY_PUSH, null)
+        set(value) = prefs.edit().putString(KEY_PUSH, value).apply()
+
     companion object {
+        private const val KEY_ACCOUNT = "family_account"
+        private const val KEY_GUARDIANS = "family_guardians"
+        private const val KEY_PUSH = "push_token"
         private const val KEY_SETTINGS = "notification_settings"
         private const val KEY_EVENING = "evening_sent_on"
         private const val KEY_RETRY = "retry_mission"

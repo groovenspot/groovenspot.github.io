@@ -24,6 +24,7 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
+import com.groovenspot.pulsecare.watch.WatchContract
 import com.groovenspot.pulsecare.watch.WatchDisplay
 import com.groovenspot.pulsecare.watch.WatchToday
 
@@ -83,11 +84,18 @@ fun WatchHomeContent(
 }
 
 /**
- * SOS: 잘못 누른 경우를 위해 5초 동안 취소할 수 있고, 그다음 휴대폰에 알립니다.
- * 보호자 연결(서버) 전이라 보호자에게는 가지 않는다는 걸 숨기지 않습니다.
+ * SOS: 잘못 누른 경우를 위해 5초 동안 취소할 수 있고, 그다음 휴대폰이 보호자에게 알립니다.
+ * 보호자에게 갔는지(몇 명에게), 못 갔는지를 폰의 답을 받아 그대로 보여줍니다.
  */
 @Composable
-fun SosContent(state: SosState, seconds: Int, onCancel: () -> Unit, onClose: () -> Unit) {
+fun SosContent(
+    state: SosState,
+    seconds: Int,
+    onCancel: () -> Unit,
+    onClose: () -> Unit,
+    /** 폰이 돌려준 결과 ([WatchContract.sosText]). 아직 없으면 null. */
+    result: String? = null,
+) {
     MaterialTheme {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -104,19 +112,20 @@ fun SosContent(state: SosState, seconds: Int, onCancel: () -> Unit, onClose: () 
                     ) { Text("취소") }
                 }
                 SosState.SENT, SosState.NO_PHONE -> {
+                    val (title, detail) = if (state == SosState.SENT) {
+                        WatchContract.sosText(result)
+                    } else {
+                        "휴대폰과 연결되지 않았어요" to "위급하면 워치 긴급 SOS(홈 버튼 5번)나 119를 쓰세요."
+                    }
+                    val reached = state == SosState.SENT && result?.startsWith("SENT:") == true && result != WatchContract.sosSent(0)
                     Text(
-                        if (state == SosState.SENT) "휴대폰에 알렸어요" else "휴대폰과 연결되지 않았어요",
-                        color = if (state == SosState.SENT) Color.White else WatchColors.Coral,
-                        fontSize = 15.sp,
+                        title,
+                        color = if (reached || (state == SosState.SENT && result == null)) Color.White else WatchColors.Coral,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                     )
-                    Text(
-                        "보호자 알림은 준비 중이에요. 위급하면 워치의 긴급 SOS(홈 버튼 5번)나 119를 이용하세요.",
-                        color = WatchColors.Muted,
-                        fontSize = 12.sp,
-                        textAlign = TextAlign.Center,
-                    )
+                    Text(detail, color = WatchColors.Muted, fontSize = 12.sp, textAlign = TextAlign.Center)
                     Button(onClick = onClose, colors = ButtonDefaults.secondaryButtonColors()) { Text("닫기") }
                 }
             }

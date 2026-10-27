@@ -62,9 +62,9 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-enum class Tab(val label: String) { TODAY("오늘"), HISTORY("기록") }
+enum class Tab(val label: String) { TODAY("오늘"), HISTORY("기록"), FAMILY("가족") }
 
-/** 홈과 기록 아래 탭. */
+/** 오늘·기록·가족 아래 탭. */
 @Composable
 fun MainTabs(current: Tab, onTab: (Tab) -> Unit, content: @Composable () -> Unit) {
     Column(Modifier.fillMaxSize().background(Palette.Paper)) {

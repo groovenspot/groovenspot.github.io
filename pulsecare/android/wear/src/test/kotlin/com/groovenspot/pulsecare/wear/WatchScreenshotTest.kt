@@ -43,5 +43,8 @@ class WatchScreenshotTest {
     fun sosCountdown() = paparazzi.snapshot { SosContent(SosState.COUNTDOWN, 4, onCancel = {}, onClose = {}) }
 
     @Test
-    fun sosSent() = paparazzi.snapshot { SosContent(SosState.SENT, 0, onCancel = {}, onClose = {}) }
+    fun sosSent() = paparazzi.snapshot { SosContent(SosState.SENT, 0, onCancel = {}, onClose = {}, result = WatchContract.sosSent(2)) }
+
+    @Test
+    fun sosNoGuardian() = paparazzi.snapshot { SosContent(SosState.SENT, 0, onCancel = {}, onClose = {}, result = WatchContract.sosSent(0)) }
 }

@@ -42,6 +42,12 @@ data class Diagnostics(
     val home: HomeState?,
     val nextMorning: Long?,
     val nextEvening: Long?,
+    /** 가족 서버 주소 (빈 값이면 설정 전). */
+    val serverUrl: String = "",
+    val familyAccount: Boolean = false,
+    val guardianCount: Int = 0,
+    val pushConfigured: Boolean = false,
+    val pushToken: Boolean = false,
 )
 
 private val METRIC_LABELS = mapOf(
@@ -98,6 +104,13 @@ fun DiagnosticsContent(
             Line("알림 권한", if (d.notificationsAllowed) "허용" else "꺼짐 · 알림이 오지 않아요", d.notificationsAllowed)
             Line("다음 아침 리포트", d.nextMorning?.let { Instant.ofEpochMilli(it).local() } ?: "예약 없음", d.nextMorning != null)
             Line("다음 저녁 요약", d.nextEvening?.let { Instant.ofEpochMilli(it).local() } ?: "예약 없음", d.nextEvening != null)
+        }
+
+        Box("가족 서버") {
+            Line("서버", d.serverUrl.ifEmpty { "설정 전 · 가족 기능 꺼짐" }, d.serverUrl.isNotEmpty())
+            Line("가족 계정", if (d.familyAccount) "있음 · 보호자 ${d.guardianCount}명" else "없음 · 가족 탭에서 시작", d.familyAccount)
+            Line("푸시 설정", if (d.pushConfigured) "있음" else "없음 · 긴급 알림을 받을 수 없어요", d.pushConfigured)
+            Line("푸시 토큰", if (d.pushToken) "받음" else "없음", d.pushToken)
         }
 
         Box("지난 30일 Health Connect 기록") {
