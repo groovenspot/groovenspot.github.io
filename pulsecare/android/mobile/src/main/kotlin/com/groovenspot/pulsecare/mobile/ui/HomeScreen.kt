@@ -35,7 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.groovenspot.pulsecare.alert.AlertMessage
+import com.groovenspot.pulsecare.mission.Check
 import com.groovenspot.pulsecare.mission.Mission
+import com.groovenspot.pulsecare.mission.MissionVerifier
 import com.groovenspot.pulsecare.mission.Verification
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.score.ScoreResult
@@ -67,7 +69,7 @@ fun HomeContent(
         }
         if (state.missingPermissions) PermissionBanner(onOpenPermissions)
         ScoreCard(state, onFeeling)
-        MissionCard(state.mission, state.missionDone, state.canSwap, onCompleteMission, onSwapMission)
+        MissionCard(state.mission, state.missionDone, state.missionCheck, state.canSwap, onCompleteMission, onSwapMission)
         state.alerts.forEach { AlertCard(it) }
         Spacer(Modifier.height(8.dp))
     }
@@ -161,22 +163,22 @@ private fun NoDataScore(result: ScoreResult, onFeeling: (Int) -> Unit) {
 }
 
 @Composable
-private fun MissionCard(mission: Mission, done: Boolean, canSwap: Boolean, onComplete: () -> Unit, onSwap: () -> Unit) {
+private fun MissionCard(mission: Mission, done: Boolean, check: Check, canSwap: Boolean, onComplete: () -> Unit, onSwap: () -> Unit) {
     SectionCard {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text("오늘의 미션", color = Palette.Teal, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
             Text("레벨 ${mission.level} · ${mission.points}점", color = Palette.Muted, fontSize = 13.sp)
         }
         Text(mission.title, color = Palette.Navy, fontSize = 22.sp, fontWeight = FontWeight.Bold, lineHeight = 30.sp)
-        Text(
-            if (mission.verification == Verification.AUTO) "워치 기록으로 확인해요. 했다면 직접 체크해도 돼요" else "하고 나서 직접 체크해 주세요",
-            color = Palette.Muted,
-            fontSize = 13.sp,
-        )
+        if (!done) Text(missionHint(mission, check), color = Palette.Muted, fontSize = 13.sp, lineHeight = 18.sp)
         if (done) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(Modifier.size(10.dp).clip(CircleShape).background(Palette.Teal))
-                Text("완료했어요. 내일 또 만나요", color = Palette.Teal, fontWeight = FontWeight.SemiBold)
+                Text(
+                    if (check == Check.DONE) "워치 기록으로 완료를 확인했어요" else "완료했어요. 내일 또 만나요",
+                    color = Palette.Teal,
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -190,6 +192,14 @@ private fun MissionCard(mission: Mission, done: Boolean, canSwap: Boolean, onCom
             }
         }
     }
+}
+
+/** 미션을 어떻게 확인하는지 한 줄로. */
+internal fun missionHint(mission: Mission, check: Check): String = when {
+    check == Check.MANUAL || mission.verification == Verification.MANUAL -> "하고 나서 직접 체크해 주세요"
+    mission.id in MissionVerifier.NIGHT_MISSIONS -> "오늘 밤 수면 기록으로 내일 아침 자동으로 확인해요"
+    check == Check.MISSED -> "기록에서 아직 확인되지 않았어요. 했다면 직접 체크해 주세요"
+    else -> "워치 기록으로 자동 확인해요. 워치가 없을 땐 직접 체크해도 돼요"
 }
 
 @Composable

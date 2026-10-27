@@ -73,6 +73,25 @@ class NightMapperTest {
     }
 
     @Test
+    fun dayActivityForMissions() {
+        val raw = RawHealth(
+            sleep = listOf(
+                RawSleep(at(yesterday, 23, 40), at(date, 7, 0)),
+                RawSleep(at(date, 13, 30), at(date, 13, 55)), // 낮잠
+                RawSleep(at(date, 22, 50), at(date.plusDays(1), 6, 50)), // 그날 밤
+            ),
+            stepsByHour = mapOf(date.atTime(12, 0) to 1_300L, yesterday.atTime(12, 0) to 9_000L),
+            exercises = listOf(RawExercise(at(date, 19), at(date, 19, 30), com.groovenspot.pulsecare.mission.ExerciseKind.CARDIO)),
+        )
+        val a = NightMapper.activity(raw, date, zone)
+        assertEquals(mapOf(12 to 1_300L), a.stepsByHour)
+        assertEquals(1, a.naps.size)
+        assertEquals(date.atTime(22, 50), a.nightBedtime)
+        assertEquals(date.atTime(7, 0), a.morningWake)
+        assertEquals(30L, a.exercises.single().minutes)
+    }
+
+    @Test
     fun mapsEveryDay() {
         assertEquals(30, NightMapper.map(RawHealth(), date.minusDays(29), date, zone).size)
     }

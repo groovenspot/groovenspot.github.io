@@ -1,5 +1,7 @@
 package com.groovenspot.pulsecare.mobile.today
 
+import com.groovenspot.pulsecare.mission.Check
+import com.groovenspot.pulsecare.mission.DayActivity
 import com.groovenspot.pulsecare.mission.Goal
 import com.groovenspot.pulsecare.mission.MissionLog
 import com.groovenspot.pulsecare.mobile.data.AppStore
@@ -97,6 +99,35 @@ class TodayPlannerTest {
         val home = planner.plan(today, raised, profile, null, emptyList(), emptyMap()).home
         assertEquals("안정시 심박 상승", home.alerts.single().title)
         assertTrue(home.score.score!! <= 60)
+    }
+
+    @Test
+    fun stepMissionCompletesFromWatchData() {
+        val weight = profile.copy(goal = Goal.WEIGHT)
+        val stored = TodayMission(today, "W-02")
+        val walked = DayActivity(today, stepsByHour = mapOf(9 to 4_000L, 13 to 3_500L))
+        val plan = planner.plan(
+            today, records(), weight, stored, emptyList(), emptyMap(),
+            activities = mapOf(today to walked), now = today.atTime(15, 0),
+        )
+        assertTrue(plan.today.completed)
+        assertEquals(Check.DONE, plan.home.missionCheck)
+    }
+
+    @Test
+    fun lastNightFinishesYesterdaysBedtimeMission() {
+        val yesterday = today.minusDays(1)
+        val stored = TodayMission(yesterday, "S-06")
+        val early = DayActivity(
+            yesterday,
+            usualBedtime = LocalTime.of(23, 30),
+            nightBedtime = yesterday.atTime(22, 45),
+        )
+        val plan = planner.plan(
+            today, records(), profile, stored, emptyList(), emptyMap(),
+            activities = mapOf(yesterday to early), now = today.atTime(7, 30),
+        )
+        assertEquals(listOf(MissionLog(yesterday, "S-06", true)), plan.logs)
     }
 
     @Test

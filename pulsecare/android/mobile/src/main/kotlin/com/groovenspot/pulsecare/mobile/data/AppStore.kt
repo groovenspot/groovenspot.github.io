@@ -68,7 +68,23 @@ class AppStore(private val prefs: SharedPreferences) {
             prefs.edit().putString(KEY_SCORES, o.toString()).apply()
         }
 
+    /** 아침 리포트를 보낸 날. 같은 날 두 번 보내지 않습니다. */
+    var morningSentOn: LocalDate?
+        get() = prefs.getString(KEY_MORNING, null)?.let(LocalDate::parse)
+        set(value) = prefs.edit().putString(KEY_MORNING, value?.toString()).apply()
+
+    /** 오늘 보낸 알림 신호 이름. 날짜가 바뀌면 비웁니다. */
+    fun sentAlerts(today: LocalDate): Set<String> =
+        if (prefs.getString(KEY_ALERT_DAY, null) == today.toString()) prefs.getStringSet(KEY_ALERTS, emptySet())!! else emptySet()
+
+    fun markAlertSent(today: LocalDate, signal: String) {
+        prefs.edit().putString(KEY_ALERT_DAY, today.toString()).putStringSet(KEY_ALERTS, sentAlerts(today) + signal).apply()
+    }
+
     companion object {
+        private const val KEY_MORNING = "morning_sent_on"
+        private const val KEY_ALERT_DAY = "alerts_day"
+        private const val KEY_ALERTS = "alerts_sent"
         private const val KEY_PROFILE = "profile"
         private const val KEY_TODAY = "today_mission"
         private const val KEY_LOGS = "mission_logs"

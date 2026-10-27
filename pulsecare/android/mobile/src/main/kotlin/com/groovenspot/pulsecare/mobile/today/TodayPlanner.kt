@@ -3,11 +3,15 @@ package com.groovenspot.pulsecare.mobile.today
 import com.groovenspot.pulsecare.alert.AlertMessage
 import com.groovenspot.pulsecare.alert.AlertText
 import com.groovenspot.pulsecare.alert.DailySignals
+import com.groovenspot.pulsecare.alert.Detection
 import com.groovenspot.pulsecare.alert.Grade
+import com.groovenspot.pulsecare.mission.Check
+import com.groovenspot.pulsecare.mission.DayActivity
 import com.groovenspot.pulsecare.mission.Mission
 import com.groovenspot.pulsecare.mission.MissionLibrary
 import com.groovenspot.pulsecare.mission.MissionLog
 import com.groovenspot.pulsecare.mission.MissionPicker
+import com.groovenspot.pulsecare.mission.MissionVerifier
 import com.groovenspot.pulsecare.mission.PickInput
 import com.groovenspot.pulsecare.mobile.data.Profile
 import com.groovenspot.pulsecare.mobile.data.TodayMission
@@ -16,6 +20,7 @@ import com.groovenspot.pulsecare.score.DailyRecord
 import com.groovenspot.pulsecare.score.ScoreContext
 import com.groovenspot.pulsecare.score.ScoreResult
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 /** 홈 화면 한 장 (기획서 16번: 점수 → 미션 → 알림 순서). */
@@ -26,9 +31,13 @@ data class HomeState(
     val score: ScoreResult,
     val mission: Mission,
     val missionDone: Boolean,
+    /** 워치 기록으로 본 미션 상태. [Check.MANUAL]이면 직접 체크. */
+    val missionCheck: Check = Check.MANUAL,
     val canSwap: Boolean,
     /** 본인에게 보여줄 알림 카드. 오늘 감지된 신호만. */
     val alerts: List<AlertMessage>,
+    /** [alerts]의 원래 신호 (알림 발송 규칙에 씁니다). */
+    val alertDetections: List<Detection> = emptyList(),
     /** 수면 외 권한 일부가 꺼져 있음 (SYS-03). */
     val missingPermissions: Boolean = false,
 ) {
@@ -62,6 +71,9 @@ class TodayPlanner(private val picker: MissionPicker = MissionPicker()) {
         scores: Map<LocalDate, Int>,
         feeling: Int? = null,
         missingPermissions: Boolean = false,
+        /** 미션 날짜별 워치 활동 (어제·오늘). 없으면 자동 확인을 하지 않습니다. */
+        activities: Map<LocalDate, DayActivity> = emptyMap(),
+        now: LocalDateTime = today.atTime(12, 0),
     ): Plan {
         val dayIndex = (ChronoUnit.DAYS.between(profile.signupDate, today) + 1).toInt().coerceAtLeast(1)
         val withScores = records.map { it.copy(score = scores[it.date]) }
@@ -72,17 +84,20 @@ class TodayPlanner(private val picker: MissionPicker = MissionPicker()) {
         val caution = signals.any { it.signal.grade == Grade.CAUTION }
         val score = ConditionScoreEngine.score(todayRecord, history, ScoreContext(dayIndex, cautionSignalActive = caution))
 
-        // 어제까지의 오늘 미션을 기록으로 옮깁니다.
+        // 어제까지의 오늘 미션을 기록으로 옮깁니다. 직접 체크하지 않았어도 워치 기록(어젯밤 취침 포함)으로 완료를 확인합니다.
         val allLogs = if (stored != null && stored.date < today && logs.none { it.date == stored.date }) {
-            logs + MissionLog(stored.date, stored.missionId, stored.completed)
+            val verified = check(stored.missionId, activities[stored.date], now) == Check.DONE
+            logs + MissionLog(stored.date, stored.missionId, stored.completed || verified)
         } else {
             logs
         }
 
-        val todayMission = stored?.takeIf { it.date == today } ?: TodayMission(
+        val picked = stored?.takeIf { it.date == today } ?: TodayMission(
             date = today,
             missionId = picker.pick(pickInput(today, score, feeling, profile, allLogs)).id,
         )
+        val missionCheck = check(picked.missionId, activities[today], now)
+        val todayMission = if (missionCheck == Check.DONE) picked.copy(completed = true) else picked
 
         val newScores = score.score?.let { scores + (today to it) } ?: scores
         return Plan(
@@ -92,8 +107,10 @@ class TodayPlanner(private val picker: MissionPicker = MissionPicker()) {
                 score = score,
                 mission = MissionLibrary[todayMission.missionId],
                 missionDone = todayMission.completed,
+                missionCheck = missionCheck,
                 canSwap = !todayMission.swapped && !todayMission.completed,
                 alerts = signals.map { AlertText.forSelf(it) },
+                alertDetections = signals,
                 missingPermissions = missingPermissions,
             ),
             today = todayMission,
@@ -101,6 +118,9 @@ class TodayPlanner(private val picker: MissionPicker = MissionPicker()) {
             scores = newScores,
         )
     }
+
+    private fun check(missionId: String, activity: DayActivity?, now: LocalDateTime): Check =
+        if (activity == null) Check.MANUAL else MissionVerifier.check(missionId, activity, now)
 
     /** "다른 미션": 하루 1번, 지금 미션을 빼고 다음 후보로. */
     fun swap(home: HomeState, today: TodayMission, profile: Profile, logs: List<MissionLog>): TodayMission {

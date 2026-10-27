@@ -1,11 +1,14 @@
 package com.groovenspot.pulsecare.mobile.ui
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,11 +29,12 @@ import com.groovenspot.pulsecare.mission.Goal
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.data.Profile
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
-import com.groovenspot.pulsecare.mobile.health.NightMapper
+import com.groovenspot.pulsecare.mobile.notify.MorningSchedule
+import com.groovenspot.pulsecare.mobile.notify.Notifications
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.mobile.today.TodayPlanner
+import com.groovenspot.pulsecare.mobile.today.TodayRepository
 import java.time.LocalDate
-import java.time.ZoneId
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,7 +76,7 @@ private fun App() {
         stage == Stage.GOAL -> GoalScreen(goal, onSelect = { goal = it }, onNext = { stage = Stage.CONNECT })
         stage == Stage.CONNECT || (granted != null && !canScore) -> ConnectScreen(
             available = available,
-            onConnect = { permissionLauncher.launch(HealthConnectSource.all) },
+            onConnect = { permissionLauncher.launch(HealthConnectSource.requestable(context)) },
             onInstall = {
                 context.startActivity(
                     Intent(Intent.ACTION_VIEW, "market://details?id=com.google.android.apps.healthdata".toUri()),
@@ -81,37 +85,29 @@ private fun App() {
             onLater = null,
         )
         granted == null -> Loading()
-        else -> Home(store, profile!!, granted!!, refresh, onPermissions = { permissionLauncher.launch(HealthConnectSource.all) })
+        else -> Home(store, profile!!, refresh, onPermissions = { permissionLauncher.launch(HealthConnectSource.requestable(context)) })
     }
 }
 
 @Composable
-private fun Home(store: AppStore, profile: Profile, granted: Set<String>, refreshKey: Int, onPermissions: () -> Unit) {
+private fun Home(store: AppStore, profile: Profile, refreshKey: Int, onPermissions: () -> Unit) {
     val context = LocalContext.current
     val planner = remember { TodayPlanner() }
     var home by remember { mutableStateOf<HomeState?>(null) }
     var feeling by remember { mutableStateOf<Int?>(null) }
     var reload by remember { mutableIntStateOf(0) }
 
+    // 아침 7:30 리포트 (Android 13+는 알림 권한을 먼저 물어봅니다).
+    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(Unit) {
+        MorningSchedule.ensure(context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !Notifications.canPost(context)) {
+            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     LaunchedEffect(refreshKey, reload, feeling) {
-        val zone = ZoneId.systemDefault()
-        val today = LocalDate.now(zone)
-        val from = today.minusDays(29)
-        val records = NightMapper.map(HealthConnectSource.read(context, from, today, zone), from, today, zone)
-        val plan = planner.plan(
-            today = today,
-            records = records,
-            profile = profile,
-            stored = store.today,
-            logs = store.missionLogs,
-            scores = store.scores,
-            feeling = feeling,
-            missingPermissions = !granted.containsAll(HealthConnectSource.all),
-        )
-        store.today = plan.today
-        store.missionLogs = plan.logs
-        store.scores = plan.scores
-        home = plan.home
+        home = TodayRepository.refresh(context, feeling)
     }
 
     val state = home ?: return Loading()

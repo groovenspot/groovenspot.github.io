@@ -1,10 +1,15 @@
 package com.groovenspot.pulsecare.mobile.health
 
+import com.groovenspot.pulsecare.mission.DayActivity
+import com.groovenspot.pulsecare.mission.Exercise
+import com.groovenspot.pulsecare.mission.ExerciseKind
+import com.groovenspot.pulsecare.mission.MissionVerifier
 import com.groovenspot.pulsecare.score.DailyRecord
 import com.groovenspot.pulsecare.score.SleepSummary
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -18,7 +23,13 @@ data class RawHealth(
     /** 날짜별 하루 합계. */
     val steps: Map<LocalDate, Long> = emptyMap(),
     val activeCalories: Map<LocalDate, Double> = emptyMap(),
+    /** 시간대 시작 시각(현지)별 걸음 수. 미션 확인용이라 최근 이틀만 읽습니다. */
+    val stepsByHour: Map<LocalDateTime, Long> = emptyMap(),
+    val floors: Map<LocalDate, Double> = emptyMap(),
+    val exercises: List<RawExercise> = emptyList(),
 )
+
+data class RawExercise(val start: Instant, val end: Instant, val kind: ExerciseKind)
 
 data class Sample(val time: Instant, val value: Double)
 
@@ -46,12 +57,48 @@ object NightMapper {
     fun map(raw: RawHealth, from: LocalDate, to: LocalDate, zone: ZoneId): List<DailyRecord> =
         generateSequence(from) { it.plusDays(1) }.takeWhile { it <= to }.map { day(raw, it, zone) }.toList()
 
-    fun day(raw: RawHealth, date: LocalDate, zone: ZoneId): DailyRecord {
+    /** [date] 아침에 끝난 본 수면. */
+    fun mainSleep(raw: RawHealth, date: LocalDate, zone: ZoneId): RawSleep? {
         val nightStart = date.minusDays(1).atTime(NIGHT_END_FROM).atZone(zone).toInstant()
         val nightEnd = date.atTime(NIGHT_END_UNTIL).atZone(zone).toInstant()
-        val main = raw.sleep
+        return raw.sleep
             .filter { it.end > nightStart && it.end <= nightEnd }
             .maxByOrNull { Duration.between(it.start, it.end) }
+    }
+
+    /**
+     * 미션 확인용 하루 활동 (기획서 14번). 그날 걸음·계단·운동·낮잠과,
+     * 그날 밤 잠든 시각(다음 날 아침 기록), 평소 취침·기상 시각을 모읍니다.
+     */
+    fun activity(raw: RawHealth, date: LocalDate, zone: ZoneId): DayActivity {
+        fun local(i: Instant) = i.atZone(zone).toLocalDateTime()
+        val today = mainSleep(raw, date, zone)
+        val tonight = mainSleep(raw, date.plusDays(1), zone)
+        val past = (1L..28L).mapNotNull { mainSleep(raw, date.minusDays(it), zone) }
+        val week = (0L..5L).mapNotNull { mainSleep(raw, date.minusDays(it), zone) } + listOfNotNull(tonight)
+        val dayFrom = date.atTime(NAP_END_FROM).atZone(zone).toInstant()
+        val dayUntil = date.atTime(NAP_END_UNTIL).atZone(zone).toInstant()
+        return DayActivity(
+            date = date,
+            stepsByHour = raw.stepsByHour.filterKeys { it.toLocalDate() == date }.mapKeys { it.key.hour },
+            floors = raw.floors[date],
+            exercises = raw.exercises
+                .filter { local(it.start).toLocalDate() == date }
+                .map { Exercise(local(it.start), local(it.end), it.kind) },
+            naps = raw.sleep
+                .filter { it != today && it != tonight && it.end > dayFrom && it.end <= dayUntil && Duration.between(it.start, it.end) < NAP_MAX }
+                .map { local(it.start) to local(it.end) },
+            nightBedtime = tonight?.let { local(it.start) },
+            nextWake = tonight?.let { local(it.end) },
+            morningWake = today?.let { local(it.end) },
+            usualBedtime = past.takeIf { it.size >= 3 }?.let { s -> MissionVerifier.median(s.map { local(it.start).toLocalTime() }) },
+            usualWake = past.takeIf { it.size >= 3 }?.let { s -> MissionVerifier.median(s.map { local(it.end).toLocalTime() }) },
+            recentBedtimes = week.map { local(it.start).toLocalTime() },
+        )
+    }
+
+    fun day(raw: RawHealth, date: LocalDate, zone: ZoneId): DailyRecord {
+        val main = mainSleep(raw, date, zone)
 
         val napFrom = date.minusDays(1).atTime(NAP_END_FROM).atZone(zone).toInstant()
         val napUntil = date.minusDays(1).atTime(NAP_END_UNTIL).atZone(zone).toInstant()

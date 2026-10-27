@@ -55,6 +55,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     implementation(libs.health.connect.client)
+    implementation(libs.androidx.work.runtime)
 
     testImplementation(libs.junit)
     // android.jar's org.json is a stub in local unit tests.

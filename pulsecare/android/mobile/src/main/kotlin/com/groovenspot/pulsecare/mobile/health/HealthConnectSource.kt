@@ -4,7 +4,10 @@ import android.content.Context
 import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
@@ -12,9 +15,12 @@ import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import com.groovenspot.pulsecare.mission.ExerciseKind
+import java.time.Duration
 import java.time.LocalDate
 import java.time.Period
 import java.time.ZoneId
@@ -38,7 +44,22 @@ object HealthConnectSource {
         ActiveCaloriesBurnedRecord::class,
         RespiratoryRateRecord::class,
         OxygenSaturationRecord::class,
+        // 미션 자동 확인 (기획서 14번): 계단, 운동 기록
+        FloorsClimbedRecord::class,
+        ExerciseSessionRecord::class,
     ).map { HealthPermission.getReadPermission(it) }.toSet()
+
+    /** 아침 7:30 알림을 앱을 열지 않고 계산하려면 백그라운드 읽기 권한이 필요합니다. */
+    const val BACKGROUND = HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
+
+    /** 이 휴대폰의 Health Connect가 백그라운드 읽기를 지원하면 함께 요청합니다. */
+    fun requestable(context: Context): Set<String> =
+        if (backgroundSupported(context)) all + BACKGROUND else all
+
+    fun backgroundSupported(context: Context): Boolean = isAvailable(context) &&
+        HealthConnectClient.getOrCreate(context).features
+            .getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND) ==
+        HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
 
     fun isAvailable(context: Context): Boolean =
         HealthConnectClient.getSdkStatus(context) == HealthConnectClient.SDK_AVAILABLE
@@ -77,6 +98,14 @@ object HealthConnectSource {
             return runCatching { read() }.onFailure { Log.w(TAG, "Couldn't aggregate", it) }.getOrDefault(emptyMap())
         }
 
+        // 시간별 걸음은 미션 확인에만 쓰니 어제·오늘만.
+        val recent = TimeRangeFilter.between(to.minusDays(1).atStartOfDay(zone).toInstant(), to.plusDays(1).atStartOfDay(zone).toInstant())
+        val hourly = if (HealthPermission.getReadPermission(StepsRecord::class) !in granted) emptyMap() else runCatching {
+            client.aggregateGroupByDuration(
+                AggregateGroupByDurationRequest(setOf(StepsRecord.COUNT_TOTAL), recent, Duration.ofHours(1)),
+            ).associate { it.startTime.atZone(zone).toLocalDateTime() to (it.result[StepsRecord.COUNT_TOTAL] ?: 0L) }
+        }.onFailure { Log.w(TAG, "Couldn't aggregate hourly steps", it) }.getOrDefault(emptyMap())
+
         return RawHealth(
             sleep = records(SleepSessionRecord::class).map { s ->
                 RawSleep(s.startTime, s.endTime, s.stages.map { RawStage(it.startTime, it.endTime, stageType(it.stage)) })
@@ -97,7 +126,46 @@ object HealthConnectSource {
                     it.startTime.toLocalDate() to (it.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0)
                 }
             },
+            stepsByHour = hourly,
+            floors = daily(FloorsClimbedRecord::class) {
+                client.aggregateGroupByPeriod(
+                    AggregateGroupByPeriodRequest(setOf(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL), dayRange, Period.ofDays(1)),
+                ).associate { it.startTime.toLocalDate() to (it.result[FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL] ?: 0.0) }
+            },
+            exercises = records(ExerciseSessionRecord::class).map { RawExercise(it.startTime, it.endTime, exerciseKind(it.exerciseType)) },
         )
+    }
+
+    private fun exerciseKind(type: Int): ExerciseKind = when (type) {
+        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
+        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,
+        ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING,
+        ExerciseSessionRecord.EXERCISE_TYPE_BOXING,
+        ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS,
+        ExerciseSessionRecord.EXERCISE_TYPE_SQUASH,
+        ExerciseSessionRecord.EXERCISE_TYPE_SOCCER,
+        ExerciseSessionRecord.EXERCISE_TYPE_BASKETBALL,
+        -> ExerciseKind.VIGOROUS
+        ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
+        ExerciseSessionRecord.EXERCISE_TYPE_HIKING,
+        ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
+        ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
+        ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL,
+        ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_OPEN_WATER,
+        ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL,
+        ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE,
+        ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING,
+        ExerciseSessionRecord.EXERCISE_TYPE_DANCING,
+        -> ExerciseKind.CARDIO
+        ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
+        ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING,
+        ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS,
+        -> ExerciseKind.STRENGTH
+        ExerciseSessionRecord.EXERCISE_TYPE_STRETCHING,
+        ExerciseSessionRecord.EXERCISE_TYPE_YOGA,
+        ExerciseSessionRecord.EXERCISE_TYPE_PILATES,
+        -> ExerciseKind.STRETCH
+        else -> ExerciseKind.OTHER
     }
 
     private fun stageType(stage: Int): StageType = when (stage) {

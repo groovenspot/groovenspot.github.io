@@ -5,6 +5,7 @@ import app.cash.paparazzi.Paparazzi
 import com.groovenspot.pulsecare.alert.AlertText
 import com.groovenspot.pulsecare.alert.Detection
 import com.groovenspot.pulsecare.alert.Signal
+import com.groovenspot.pulsecare.mission.Check
 import com.groovenspot.pulsecare.mission.MissionLibrary
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.score.Badge
@@ -44,6 +45,7 @@ class HomeScreenshotTest {
             ),
             mission = MissionLibrary["S-03"],
             missionDone = false,
+            missionCheck = Check.NOT_YET,
             canSwap = true,
             alerts = emptyList(),
         ),
@@ -64,6 +66,7 @@ class HomeScreenshotTest {
             ),
             mission = MissionLibrary["C-05"],
             missionDone = false,
+            missionCheck = Check.NOT_YET,
             canSwap = false,
             alerts = listOf(AlertText.forSelf(Detection(Signal.SLEEP_DEBT, usual = 450.0, current = 385.0, days = 4))),
             missingPermissions = true,

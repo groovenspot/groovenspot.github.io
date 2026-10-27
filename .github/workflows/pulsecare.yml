@@ -22,4 +22,4 @@ jobs:
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       - name: Test and build
-        run: ./gradlew :core:test :mobile:testDebugUnitTest :mobile:assembleDebug
+        run: ./gradlew :core:test :mobile:testDebugUnitTest :mobile:lintDebug :mobile:assembleDebug
