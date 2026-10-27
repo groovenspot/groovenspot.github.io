@@ -1,6 +1,7 @@
 package com.groovenspot.pulsecare.mobile.today
 
 import android.content.Context
+import com.groovenspot.pulsecare.alert.AlertText
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
 import com.groovenspot.pulsecare.mobile.health.NightMapper
@@ -39,6 +40,9 @@ object TodayRepository {
         store.today = plan.today
         store.missionLogs = plan.logs
         store.scores = plan.scores
-        return plan.home
+        // 사용자가 끈 신호는 홈 카드와 알림에서 뺍니다. 점수 상한(주의 신호)은 건강 판단이라 그대로 둡니다.
+        val settings = store.settings
+        val shown = plan.home.alertDetections.filter { settings.allows(it.signal) }
+        return plan.home.copy(alerts = shown.map { AlertText.forSelf(it) }, alertDetections = shown)
     }
 }

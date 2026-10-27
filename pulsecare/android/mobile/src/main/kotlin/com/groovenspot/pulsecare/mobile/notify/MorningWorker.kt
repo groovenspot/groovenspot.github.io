@@ -31,6 +31,7 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         val store = AppStore.get(context)
         val now = LocalDateTime.now()
         val today = now.toLocalDate()
+        if (!store.settings.morningEnabled) return Result.success()
         if (store.profile == null || store.morningSentOn == today) {
             MorningSchedule.scheduleTomorrow(context, now)
             return Result.success()
@@ -55,7 +56,7 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
             return Result.success()
         }
         // 워치가 아직 동기화 전일 수 있으니 10:30까지는 1시간마다 다시 봅니다.
-        if (home.score.kind == ScoreResult.Kind.NO_DATA && now.toLocalTime() < MORNING_LAST_RETRY) {
+        if (home.score.kind == ScoreResult.Kind.NO_DATA && now.toLocalTime() < morningLastRetry(store.settings)) {
             MorningSchedule.retryLater(context)
             return Result.success()
         }
@@ -73,7 +74,8 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
     /** 주의 신호는 빈도 제한(하루 2건, 같은 신호 하루 1번)을 지켜 따로 보냅니다. */
     private fun sendCautions(context: Context, store: AppStore, detections: List<Detection>, now: LocalDateTime) {
         val today = now.toLocalDate()
-        val scheduler = AlertScheduler()
+        val settings = store.settings
+        val scheduler = AlertScheduler(AlertScheduler.Settings(quietStart = settings.quietStart, quietEnd = settings.quietEnd))
         detections.forEachIndexed { i, d ->
             val sent = store.sentAlerts(today).map { PendingAlert(Detection(Signal.valueOf(it)), Recipient.SELF, now) }
             val decision = scheduler.decide(PendingAlert(d, Recipient.SELF, now), now, DeliveryState(sentToday = sent))

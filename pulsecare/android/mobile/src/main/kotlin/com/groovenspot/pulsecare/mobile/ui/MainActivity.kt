@@ -22,7 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.core.net.toUri
 import androidx.health.connect.client.PermissionController
 import com.groovenspot.pulsecare.mission.Goal
@@ -45,7 +48,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Stage { GOAL, CONNECT, HOME }
+private enum class Stage { GOAL, CONNECT, HOME, SETTINGS }
 
 @Composable
 private fun App() {
@@ -98,6 +101,34 @@ private fun App() {
             onLater = null,
         )
         granted == null -> Loading()
+        stage == Stage.SETTINGS -> {
+            var settings by remember { mutableStateOf(store.settings) }
+            SettingsContent(
+                profile = profile!!,
+                settings = settings,
+                onSettings = { updated ->
+                    settings = updated
+                    store.settings = updated
+                    MorningSchedule.reschedule(context)
+                    EveningSchedule.reschedule(context)
+                },
+                onSeniorMode = { on -> profile = profile!!.copy(seniorMode = on).also { store.profile = it } },
+                onChangeGoal = { stage = Stage.GOAL },
+                onPermissions = { permissionLauncher.launch(HealthConnectSource.requestable(context)) },
+                onClearData = {
+                    MorningSchedule.cancel(context)
+                    EveningSchedule.cancel(context)
+                    store.clear()
+                    profile = null
+                    goal = null
+                    stage = Stage.GOAL
+                },
+                onBack = {
+                    stage = Stage.HOME
+                    refresh++
+                },
+            )
+        }
         else -> Home(
             store,
             profile!!,
@@ -108,6 +139,7 @@ private fun App() {
                 stage = Stage.GOAL
             },
             onProfileChanged = { profile = it },
+            onOpenSettings = { stage = Stage.SETTINGS },
         )
     }
 }
@@ -120,6 +152,7 @@ private fun Home(
     onPermissions: () -> Unit,
     onChangeGoal: () -> Unit,
     onProfileChanged: (Profile) -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val context = LocalContext.current
     val planner = remember { TodayPlanner() }
@@ -144,7 +177,11 @@ private fun Home(
     }
 
     val state = home ?: return Loading()
-    HomeContent(
+    // 쉽게 보기: 글자를 1.25배로.
+    val density = LocalDensity.current
+    CompositionLocalProvider(
+        LocalDensity provides if (profile.seniorMode) Density(density.density, density.fontScale * 1.25f) else density,
+    ) { HomeContent(
         state = state,
         onCompleteMission = {
             store.today = store.today?.copy(completed = true)
@@ -175,7 +212,9 @@ private fun Home(
             weekly = null
         },
         onChangeGoal = onChangeGoal,
-    )
+        onOpenSettings = onOpenSettings,
+        easyMode = profile.seniorMode,
+    ) }
 }
 
 @Composable

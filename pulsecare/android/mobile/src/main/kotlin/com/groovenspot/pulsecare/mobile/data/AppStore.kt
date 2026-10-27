@@ -85,6 +85,13 @@ class AppStore(private val prefs: SharedPreferences) {
         prefs.edit().putString(KEY_ALERT_DAY, today.toString()).putStringSet(KEY_ALERTS, sentAlerts(today) + signal).apply()
     }
 
+    var settings: NotificationSettings
+        get() = prefs.getString(KEY_SETTINGS, null)?.let(NotificationSettings::decode) ?: NotificationSettings()
+        set(value) = prefs.edit().putString(KEY_SETTINGS, NotificationSettings.encode(value)).apply()
+
+    /** "기록 지우기": 이 휴대폰에 저장한 펄스케어 기록을 모두 지웁니다 (Health Connect 데이터는 그대로). */
+    fun clear() = prefs.edit().clear().apply()
+
     var eveningSentOn: LocalDate?
         get() = prefs.getString(KEY_EVENING, null)?.let(LocalDate::parse)
         set(value) = prefs.edit().putString(KEY_EVENING, value?.toString()).apply()
@@ -102,6 +109,7 @@ class AppStore(private val prefs: SharedPreferences) {
         set(value) = prefs.edit().putString(KEY_WEEKLY, value?.let(::encodeWeekly)).apply()
 
     companion object {
+        private const val KEY_SETTINGS = "notification_settings"
         private const val KEY_EVENING = "evening_sent_on"
         private const val KEY_RETRY = "retry_mission"
         private const val KEY_WEEKLY = "weekly_summary"

@@ -59,6 +59,9 @@ fun HomeContent(
     onWeeklyAccept: () -> Unit = {},
     onWeeklyClose: () -> Unit = {},
     onChangeGoal: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
+    /** 시니어 "쉽게 보기": 버튼은 꼭 필요한 것만 (기획서 14번). 큰 글씨는 바깥에서 글자 배율로. */
+    easyMode: Boolean = false,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -69,14 +72,17 @@ fun HomeContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(dateLabel(state), color = Palette.Muted, fontSize = 14.sp)
-            Text("오늘의 컨디션", color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.weight(1f)) {
+                Text(dateLabel(state), color = Palette.Muted, fontSize = 14.sp)
+                Text("오늘의 컨디션", color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            }
+            TextButton(onClick = onOpenSettings) { Text("내 정보", color = Palette.Teal, fontWeight = FontWeight.SemiBold) }
         }
         if (state.missingPermissions) PermissionBanner(onOpenPermissions)
         ScoreCard(state, onFeeling)
         weekly?.let { WeeklyCard(it, onWeeklyAccept, onWeeklyClose, onChangeGoal) }
-        MissionCard(state.mission, state.missionDone, state.missionCheck, state.canSwap, onCompleteMission, onSwapMission)
+        MissionCard(state.mission, state.missionDone, state.missionCheck, state.canSwap && !easyMode, onCompleteMission, onSwapMission)
         state.alerts.forEach { AlertCard(it) }
         Spacer(Modifier.height(8.dp))
     }

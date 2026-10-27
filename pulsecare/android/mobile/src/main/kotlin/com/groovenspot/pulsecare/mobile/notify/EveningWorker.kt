@@ -44,7 +44,8 @@ class EveningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
             null
         }
 
-        store.today?.takeIf { it.date == today }?.let { mission ->
+        val settings = store.settings
+        store.today?.takeIf { it.date == today && settings.eveningEnabled }?.let { mission ->
             val info = home?.alertDetections.orEmpty().filter { it.signal.grade == Grade.INFO }.map { AlertText.forSelf(it).body }
             EveningSummary.of(MissionLibrary[mission.missionId], mission.completed, info)?.let {
                 Notifications.evening(context, it.title, it.body, if (it.askRetry) mission.missionId else null)
@@ -52,7 +53,7 @@ class EveningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         }
         store.eveningSentOn = today
 
-        if (today.dayOfWeek == DayOfWeek.SUNDAY) weekly(context, store, today, zone, background)
+        if (today.dayOfWeek == DayOfWeek.SUNDAY && settings.weeklyEnabled) weekly(context, store, today, zone, background)
 
         EveningSchedule.scheduleTomorrow(context, now)
         return Result.success()
