@@ -33,6 +33,7 @@ fun main() {
 
     // 서버가 떠 있는 동안은 15초마다도 진행합니다 (Cloud Scheduler 1분 간격 사이를 메움).
     val log = LoggerFactory.getLogger("tick")
+    // 보관 기간 정리는 각 서비스가 한 시간에 한 번으로 스스로 제한합니다.
     CoroutineScope(Dispatchers.IO).launch {
         while (true) {
             delay(15_000)

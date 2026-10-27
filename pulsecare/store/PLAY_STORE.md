@@ -102,13 +102,14 @@ Play Console > 앱 콘텐츠 > Health Connect에서 권한마다 이유를 적�
 | READ_SLEEP | 지난밤 수면 시간·효율·깊은 잠·취침 시각으로 컨디션 점수(수면 35%)를 계산하고 취침 미션을 확인 |
 | READ_HEART_RATE_VARIABILITY | 수면 중 HRV를 내 평소와 비교해 회복 점수(25%) 계산 |
 | READ_RESTING_HEART_RATE | 안정시 심박을 평소와 비교해 회복 점수(15%)와 "안정시 심박 상승" 알림 |
+| READ_HEART_RATE | 15분마다 지난 1시간 심박을 보고 쉬는 중 120 bpm 이상 또는 깨어 있을 때 40 bpm 미만이 10분 이어지면 본인에게 주의 알림 |
 | READ_STEPS | 걸음 미션 자동 확인, "활동량 급감" 알림 |
 | READ_ACTIVE_CALORIES_BURNED | 7일/28일 활동 부하 비율로 과부하 판단 (점수 15%) |
 | READ_RESPIRATORY_RATE | 수면 중 호흡수 보조 지표 (5%) |
 | READ_OXYGEN_SATURATION | 수면 중 산소포화도 90% 미만 반복 시 상담 권유 알림 |
 | READ_FLOORS_CLIMBED | 계단 오르기 미션 자동 확인 |
 | READ_EXERCISE | 운동 미션(걷기·자전거 등 20분) 자동 확인 |
-| READ_HEALTH_DATA_IN_BACKGROUND | 앱을 열지 않아도 아침 7:30에 점수를 계산해 리포트를 보내고, 저녁 9시에 미션 완료를 확인 |
+| READ_HEALTH_DATA_IN_BACKGROUND | 앱을 열지 않아도 아침 7:30에 점수를 계산해 리포트를 보내고, 저녁 9시에 미션 완료를 확인하고, 15분마다 실시간 심박 주의 신호를 확인 |
 
 공통: 읽기만 하며 쓰기 권한 없음, 기기 안에서만 계산, 광고·판매·보험 심사에 쓰지 않음. 권한 안내 화면(`PermissionsRationaleActivity`)에 같은 내용과 처리방침 링크가 있습니다.
 

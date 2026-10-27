@@ -4,6 +4,7 @@ import com.groovenspot.pulsecare.alert.DailySignals
 import com.groovenspot.pulsecare.alert.Detection
 import com.groovenspot.pulsecare.alert.Signal
 import com.groovenspot.pulsecare.mission.MissionLog
+import com.groovenspot.pulsecare.mission.MissionVerifier
 import com.groovenspot.pulsecare.score.DailyRecord
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -89,8 +90,10 @@ object ClinicReport {
         val stepsByDate = dates.map { d -> byDate[d.plusDays(1)]?.steps?.toDouble() }
         val respByDate = dates.map { byDate[it]?.respiratoryRate }
 
+        // 수면 부족 판정의 필요량은 컨디션 좋았던 날의 수면이라, 홈 화면처럼 앱이 보여준 점수를 붙여 판정합니다.
+        val withScores = records.map { it.copy(score = scores[it.date] ?: it.score) }
         val signals = dates.flatMap { d ->
-            val history = records.filter { !it.date.isAfter(d) && ChronoUnit.DAYS.between(it.date, d) <= 35 }
+            val history = withScores.filter { !it.date.isAfter(d) && ChronoUnit.DAYS.between(it.date, d) <= 35 }
             DailySignals.evaluate(history, dayIndexOf(d)).map { SignalDay(d, it) }
         }
         // 같은 신호가 며칠 이어지면 첫날만 (다시 시작되면 다시).
@@ -106,7 +109,7 @@ object ClinicReport {
             to = to,
             days = dates.size,
             sleep = stat(sleepByDate),
-            bedtime = inRange.mapNotNull { it.sleep?.bedtime }.takeIf { it.isNotEmpty() }?.let(::medianTime),
+            bedtime = inRange.mapNotNull { it.sleep?.bedtime }.takeIf { it.isNotEmpty() }?.let(MissionVerifier::median),
             shortNights = sleepByDate.count { it != null && it < 360 },
             restingHr = stat(rhrByDate),
             hrv = stat(hrvByDate),
@@ -165,11 +168,4 @@ object ClinicReport {
     }
 
     private fun mean(values: List<Double?>): Double? = values.filterNotNull().takeIf { it.isNotEmpty() }?.average()
-
-    /** 자정을 넘는 취침 시각도 가깝게: 정오 기준으로 돌려 중앙값. */
-    private fun medianTime(times: List<LocalTime>): LocalTime {
-        val shifted = times.map { (it.toSecondOfDay() / 60 + 720) % 1440 }.sorted()
-        val m = shifted[shifted.size / 2]
-        return LocalTime.of(((m + 720) % 1440) / 60, ((m + 720) % 1440) % 60)
-    }
 }

@@ -81,7 +81,7 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         Notifications.morning(context, text.title, MorningReport.infoLines(home, info), MorningReport.PUBLIC)
         store.morningSentOn = today
 
-        sendCautions(context, store, home.alertDetections.filter { it.signal.grade == Grade.CAUTION }, now)
+        CautionAlerts.deliver(context, home.alertDetections.filter { it.signal.grade == Grade.CAUTION }, now)
         next()
         return Result.success()
     }
@@ -96,26 +96,6 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         val mission = home?.mission?.title?.let { "오늘의 미션: $it" } ?: "앱에서 오늘의 미션을 확인해 보세요"
         val text = MorningReport.guardian(mission, parents)
         Notifications.morning(context, text.title, text.body, MorningReport.GUARDIAN_PUBLIC)
-    }
-
-    /** 주의 신호는 빈도 제한(하루 2건, 같은 신호 하루 1번)을 지켜 따로 보냅니다. */
-    private fun sendCautions(context: Context, store: AppStore, detections: List<Detection>, now: LocalDateTime) {
-        val today = now.toLocalDate()
-        val settings = store.settings
-        val scheduler = AlertScheduler(AlertScheduler.Settings(quietStart = settings.quietStart, quietEnd = settings.quietEnd))
-        // 응답한 신호는 24시간 다시 알리지 않고(더 나빠지면 예외), 쉬는 중인 신호는 보내지 않습니다.
-        val acknowledged = AlertFeedback.acknowledged(store.alertFeedback)
-        val snoozed = store.snoozedSignals
-        detections.filterNot { AlertFeedback.isSnoozed(it.signal, snoozed, today) }.forEachIndexed { i, d ->
-            val sent = store.sentAlerts(today).map { PendingAlert(Detection(Signal.valueOf(it)), Recipient.SELF, now) }
-            val decision = scheduler.decide(PendingAlert(d, Recipient.SELF, now), now, DeliveryState(sentToday = sent, acknowledged = acknowledged))
-            if (decision == Decision.SendNow) {
-                val message = AlertText.forSelf(d)
-                Notifications.caution(context, i, d, message.title, message.body, MorningReport.CAUTION_PUBLIC)
-                store.markAlertSent(today, d.signal.name)
-                Metrics.track(context, EventName.ALERT_SENT, mapOf("signal" to d.signal.name, "recipient" to "self"))
-            }
-        }
     }
 
     private companion object {

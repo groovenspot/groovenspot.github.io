@@ -31,6 +31,8 @@ data class NotificationSettings(
             Signal.LOW_SPO2,
             Signal.SLEEP_DEBT,
             Signal.STRESS,
+            Signal.HIGH_HR_AT_REST,
+            Signal.LOW_HR_AWAKE,
         )
 
         fun encode(s: NotificationSettings): String = JSONObject()

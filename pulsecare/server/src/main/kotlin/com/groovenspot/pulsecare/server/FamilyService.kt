@@ -129,7 +129,9 @@ class FamilyService(
             userId, otherId, otherId, userId,
         )
         if (n == 0) throw ApiError(404, "NOT_LINKED", "연결된 가족이 아니에요")
+        // 보호자가 끊었으면 착용자 쪽 순서가 비므로 양쪽 모두 다시 매깁니다.
         renumber(userId)
+        renumber(otherId)
     }
 
     /** 착용자가 보호자 연락 순서를 정합니다. */
@@ -188,7 +190,13 @@ class FamilyService(
      * 보관 기간 (개인정보 처리방침 6번과 같아야 합니다): 하루 요약 90일, 발송 기록 30일,
      * 만료된 초대 코드 30일, 끝난 긴급 기록 180일. 계정과 연결은 탈퇴할 때 바로, 1년 동안 쓰지 않으면 자동으로 지웁니다.
      */
+    @Volatile private var lastCleanup = Long.MIN_VALUE / 2
+
     fun cleanup() {
+        // tick은 1분마다 오지만 보관 기간은 날 단위라 한 시간에 한 번만 지웁니다.
+        val nowMs = clock.millis()
+        if (nowMs - lastCleanup < Duration.ofHours(1).toMillis()) return
+        lastCleanup = nowMs
         val today = today()
         val now = now()
         db.tx {
@@ -223,8 +231,9 @@ class FamilyService(
             ) { it.getString("guardian_id") to it.getString("push_token") }
         }
         targets.forEach { (guardian, token) ->
-            db.tx { exec("insert into sent (wearer_id, guardian_id, day, kind) values (?, ?, ?, ?) on conflict do nothing", wearerId, guardian, day, kind) }
-            token?.let { push.send(it, message()) }
+            // 동시에 도는 tick(서버 안 15초 + Cloud Scheduler)이 같은 대상을 골라도 기록을 먼저 남긴 쪽만 보냅니다.
+            val claimed = db.tx { exec("insert into sent (wearer_id, guardian_id, day, kind) values (?, ?, ?, ?) on conflict do nothing", wearerId, guardian, day, kind) } == 1
+            if (claimed) token?.let { push.send(it, message()) }
         }
     }
 

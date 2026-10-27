@@ -81,9 +81,20 @@ object FamilyRepository {
      * 점수·구간·미션과 주의 신호만 보냅니다. 문구는 서버가 보호자용으로 만듭니다.
      */
     suspend fun uploadSummary(context: Context, home: HomeState) {
-        if (!hasAccount(context) || AppStore.get(context).guardianCount == 0) return
+        if (!hasAccount(context)) return
         val body = summaryJson(home)
-        io { runCatching { api(context)?.uploadSummary(body) }.onFailure { Log.w(TAG, "summary upload", it) } }
+        io {
+            runCatching {
+                val api = api(context) ?: return@runCatching
+                val store = AppStore.get(context)
+                // 내가 만든 초대를 보호자가 자기 폰에서 수락하면 이 폰의 보호자 수는 아직 0이라 서버에 한 번 더 묻습니다.
+                if (store.guardianCount == 0) {
+                    store.guardianCount = api.family().guardians.size
+                    if (store.guardianCount == 0) return@runCatching
+                }
+                api.uploadSummary(body)
+            }.onFailure { Log.w(TAG, "summary upload", it) }
+        }
     }
 
     fun summaryJson(home: HomeState): JSONObject = JSONObject()

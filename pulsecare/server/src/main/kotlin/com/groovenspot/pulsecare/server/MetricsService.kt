@@ -125,7 +125,13 @@ class MetricsService(private val db: Db, private val clock: Clock, private val z
     }
 
     /** 13개월 지난 통계는 지웁니다 (처리방침 6번). */
+    @Volatile private var lastCleanup = Long.MIN_VALUE / 2
+
     fun cleanup() {
+        // tick은 1분마다 오지만 보관 기간은 날 단위라 한 시간에 한 번만 지웁니다.
+        val nowMs = clock.millis()
+        if (nowMs - lastCleanup < Duration.ofHours(1).toMillis()) return
+        lastCleanup = nowMs
         val cutoff = today().minusMonths(RETENTION_MONTHS)
         db.tx {
             exec("delete from events where day < ?", cutoff)

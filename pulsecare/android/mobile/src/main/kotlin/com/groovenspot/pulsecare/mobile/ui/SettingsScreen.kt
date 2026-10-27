@@ -50,6 +50,8 @@ internal val SIGNAL_LABELS = mapOf(
     Signal.LOW_SPO2 to ("수면 중 산소포화도" to "7일 중 3일, 90% 미만 구간이 반복될 때"),
     Signal.SLEEP_DEBT to ("수면 부족 누적" to "5일 중 4일, 필요량보다 1시간 이상 짧을 때"),
     Signal.STRESS to ("스트레스 지속" to "3일 연속 HRV가 평소보다 20% 이상 낮을 때"),
+    Signal.HIGH_HR_AT_REST to ("쉬는 중 높은 심박" to "움직임 없이 120 bpm 이상이 10분 이어질 때"),
+    Signal.LOW_HR_AWAKE to ("깨어 있을 때 낮은 심박" to "깨어 있는데 40 bpm 미만이 10분 이어질 때"),
 )
 
 private enum class TimeField { MORNING, EVENING, QUIET_START, QUIET_END }

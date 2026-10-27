@@ -8,6 +8,7 @@ import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
@@ -47,6 +48,8 @@ object HealthConnectSource {
         // 미션 자동 확인 (기획서 14번): 계단, 운동 기록
         FloorsClimbedRecord::class,
         ExerciseSessionRecord::class,
+        // 실시간 심박 주의 알림 (12번: 쉬는 중 고심박, 깨어 있을 때 저심박)
+        HeartRateRecord::class,
     ).map { HealthPermission.getReadPermission(it) }.toSet()
 
     /** 아침 7:30 알림을 앱을 열지 않고 계산하려면 백그라운드 읽기 권한이 필요합니다. */
@@ -155,6 +158,7 @@ object HealthConnectSource {
             "수면" to SleepSessionRecord::class,
             "HRV" to HeartRateVariabilityRmssdRecord::class,
             "안정시 심박" to RestingHeartRateRecord::class,
+            "심박 (실시간)" to HeartRateRecord::class,
             "걸음" to StepsRecord::class,
             "활동 칼로리" to ActiveCaloriesBurnedRecord::class,
             "호흡수" to RespiratoryRateRecord::class,

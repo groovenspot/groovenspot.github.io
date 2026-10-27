@@ -49,6 +49,7 @@ import com.groovenspot.pulsecare.mobile.family.ServerError
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
 import com.groovenspot.pulsecare.mobile.history.HistoryRepository
 import com.groovenspot.pulsecare.mobile.notify.EveningSchedule
+import com.groovenspot.pulsecare.mobile.notify.HeartRateWorker
 import com.groovenspot.pulsecare.mobile.notify.AlertFeedbackReceiver
 import com.groovenspot.pulsecare.mobile.notify.MorningSchedule
 import com.groovenspot.pulsecare.mobile.notify.Notifications
@@ -199,6 +200,8 @@ private fun App() {
                 onClearData = {
                     // 이용 통계도 서버에서 지웁니다 (지운 수만 남음).
                     if (store.analyticsConsent) Metrics.forgetAsync(store.installId)
+                    // 아직 보내지 않은 이벤트도 버립니다 (다시 동의하면 새 설치 ID로 옛 기록이 올라가지 않게).
+                    Metrics.clearQueue(context)
                     // 가족 계정이 있으면 서버 기록도 지웁니다 (연결이 남아 보호자에게 빈 요약이 가지 않도록).
                     store.account?.let { account -> appScope.launch { FamilyRepository.deleteAccount(account.second) } }
                     MorningSchedule.cancel(context)
@@ -299,6 +302,7 @@ private fun Home(
     LaunchedEffect(Unit) {
         MorningSchedule.ensure(context)
         EveningSchedule.ensure(context)
+        HeartRateWorker.ensure(context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !Notifications.canPost(context)) {
             notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }

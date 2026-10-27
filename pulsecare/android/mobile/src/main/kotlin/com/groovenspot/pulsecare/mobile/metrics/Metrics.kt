@@ -26,7 +26,16 @@ import kotlin.concurrent.thread
  */
 object Metrics {
 
-    private fun queue(context: Context) = EventQueue(File(context.filesDir, "events.jsonl"))
+    // 리시버·작업·화면이 서로 다른 스레드에서 쓰므로 한 인스턴스를 같이 써야 @Synchronized가 의미가 있습니다.
+    @Volatile private var sharedQueue: EventQueue? = null
+
+    private fun queue(context: Context): EventQueue =
+        sharedQueue ?: synchronized(this) {
+            sharedQueue ?: EventQueue(File(context.applicationContext.filesDir, "events.jsonl")).also { sharedQueue = it }
+        }
+
+    /** "기록 지우기": 아직 보내지 않은 이벤트도 버립니다. */
+    fun clearQueue(context: Context) = queue(context).clear()
 
     val configured: Boolean get() = BuildConfig.SERVER_URL.isNotEmpty()
 
