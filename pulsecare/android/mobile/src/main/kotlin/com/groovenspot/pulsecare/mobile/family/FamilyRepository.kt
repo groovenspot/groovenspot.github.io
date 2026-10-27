@@ -123,6 +123,13 @@ object FamilyRepository {
             .getOrElse { SosResult.Failed(it.message ?: "연결 오류") }
     }
 
+    /** 워치·폰 SOS 화면 문구용 결과 코드 ([com.groovenspot.pulsecare.watch.WatchContract.sosText]). */
+    fun sosCode(result: SosResult): String = when (result) {
+        is SosResult.Sent -> com.groovenspot.pulsecare.watch.WatchContract.sosSent(result.guardians)
+        SosResult.NoAccount -> com.groovenspot.pulsecare.watch.WatchContract.SOS_NO_ACCOUNT
+        is SosResult.Failed -> com.groovenspot.pulsecare.watch.WatchContract.SOS_FAILED
+    }
+
     /** 알림 버튼용 (블로킹). */
     fun ackBlocking(context: Context, id: String) = runCatching { api(context)?.ack(id) }.isSuccess
     fun cancelBlocking(context: Context, id: String) = runCatching { api(context)?.cancel(id) }.isSuccess

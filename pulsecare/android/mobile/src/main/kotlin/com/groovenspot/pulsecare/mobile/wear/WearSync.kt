@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
+import com.groovenspot.pulsecare.mobile.family.FamilyRepository
 import com.groovenspot.pulsecare.mobile.family.SosResult
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.score.ScoreResult
@@ -45,11 +46,7 @@ object WearSync {
 
     /** 워치 SOS 화면에 결과를 알려 줍니다 (보호자에게 갔는지 사실대로). */
     suspend fun sosResult(context: Context, nodeId: String, result: SosResult) {
-        val text = when (result) {
-            is SosResult.Sent -> WatchContract.sosSent(result.guardians)
-            SosResult.NoAccount -> WatchContract.SOS_NO_ACCOUNT
-            is SosResult.Failed -> WatchContract.SOS_FAILED
-        }
+        val text = FamilyRepository.sosCode(result)
         runCatching { Wearable.getMessageClient(context).sendMessage(nodeId, WatchContract.PATH_SOS_RESULT, text.toByteArray()).await() }
             .onFailure { Log.i(TAG, "SOS result not delivered: ${it.message}") }
     }

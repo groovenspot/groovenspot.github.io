@@ -46,6 +46,7 @@ import com.groovenspot.pulsecare.mobile.data.Profile
 import com.groovenspot.pulsecare.mobile.PulseApp
 import com.groovenspot.pulsecare.mobile.family.FamilyRepository
 import com.groovenspot.pulsecare.mobile.family.ServerError
+import com.groovenspot.pulsecare.mobile.family.SosResult
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
 import com.groovenspot.pulsecare.mobile.history.HistoryRepository
 import com.groovenspot.pulsecare.mobile.notify.EveningSchedule
@@ -57,6 +58,7 @@ import com.groovenspot.pulsecare.mobile.report.ClinicExport
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.mobile.today.TodayPlanner
 import com.groovenspot.pulsecare.mobile.today.TodayRepository
+import com.groovenspot.pulsecare.watch.WatchContract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -332,6 +334,23 @@ private fun Home(
     LaunchedEffect(weekly?.weekEnd) {
         weekly?.let { Metrics.trackDaily(context, EventName.WEEKLY_REPORT_VIEWED, it.weekEnd.toString(), mapOf("surface" to "app", "badge" to it.badge.toString())) }
     }
+    if (profile.seniorMode) {
+        EasyHome(store, state, onComplete = {
+            store.today?.takeIf { !it.completed }?.let {
+                Metrics.track(context, EventName.MISSION_COMPLETED, mapOf("mission_id" to it.missionId, "auto" to "false", "surface" to "app"))
+            }
+            store.today = store.today?.copy(completed = true)
+            reload++
+        }, onFeeling = { value ->
+            store.today?.takeIf { !it.swapped && !it.completed }?.let { store.today = null }
+            Metrics.track(context, EventName.CONDITION_CHECKIN_ANSWERED, mapOf("answered" to "true"))
+            feeling = value
+        }, feedback = feedback, onAlertFeedback = { d, r ->
+            AlertFeedbackReceiver.record(context, d, r, guardian = false)
+            feedbackVersion++
+        }, onOpenSettings = onOpenSettings)
+        return
+    }
     HomeContent(
         state = state,
         onCompleteMission = {
@@ -580,6 +599,65 @@ private fun GuardianTab(store: AppStore, refreshKey: Int, onOpenFamily: () -> Un
         },
         onOpenSettings = onOpenSettings,
     )
+}
+
+/** 쉽게 보기 홈: 보호자 전화와 폰 SOS를 함께 둡니다. */
+@Composable
+private fun EasyHome(
+    store: AppStore,
+    state: HomeState,
+    onComplete: () -> Unit,
+    onFeeling: (Int) -> Unit,
+    feedback: Map<Signal, FeedbackResponse>,
+    onAlertFeedback: (Detection, FeedbackResponse) -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var guardian by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var sos by remember { mutableStateOf<PhoneSos?>(null) }
+    LaunchedEffect(Unit) {
+        // 1순위 보호자 중 전화번호가 있는 사람.
+        guardian = runCatching { FamilyRepository.family(context) }.getOrNull()
+            ?.guardians?.sortedBy { it.priority }?.firstNotNullOfOrNull { g -> g.person.phone?.let { g.person.name to it } }
+    }
+    EasyHomeContent(
+        state = state,
+        onCompleteMission = onComplete,
+        onFeeling = onFeeling,
+        guardian = guardian,
+        onCall = { number -> context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$number".toUri())) },
+        onSos = { sos = PhoneSos.Countdown },
+        alertFeedback = feedback,
+        onAlertFeedback = onAlertFeedback,
+        onOpenSettings = onOpenSettings,
+    )
+    sos?.let { current ->
+        PhoneSosDialog(
+            state = current,
+            onSend = {
+                sos = PhoneSos.Sending
+                scope.launch {
+                    val result = withContext(Dispatchers.IO) { FamilyRepository.sos(context) }
+                    Metrics.track(context, EventName.ALERT_SENT, mapOf("signal" to "SOS", "recipient" to "guardian"))
+                    Notifications.sos(context, result)
+                    val (title, detail) = WatchContract.sosText(FamilyRepository.sosCode(result))
+                    val sentId = (result as? SosResult.Sent)?.takeIf { it.guardians > 0 }?.emergencyId
+                    // 폰에서는 이 창에 취소 버튼이 있으니 그걸 안내합니다.
+                    sos = PhoneSos.Done(title, if (sentId != null) "괜찮으면 \"괜찮아요, 취소\"를 눌러 주세요. 위급하면 119에 전화하세요." else detail, sentId)
+                }
+            },
+            onCancel = { sos = null },
+            onCancelSent = { id ->
+                scope.launch {
+                    runCatching { FamilyRepository.cancel(context, id) }
+                    Notifications.cancelSos(context)
+                    sos = null
+                }
+            },
+            onCall119 = { context.startActivity(Intent(Intent.ACTION_DIAL, "tel:119".toUri())) },
+        )
+    }
 }
 
 @Composable
