@@ -89,7 +89,7 @@ class TodayPlanner(private val picker: MissionPicker = MissionPicker()) {
         // 어제까지의 오늘 미션을 기록으로 옮깁니다. 직접 체크하지 않았어도 워치 기록(어젯밤 취침 포함)으로 완료를 확인합니다.
         val allLogs = if (stored != null && stored.date < today && logs.none { it.date == stored.date }) {
             val verified = check(stored.missionId, activities[stored.date], now) == Check.DONE
-            logs + MissionLog(stored.date, stored.missionId, stored.completed || verified)
+            logs + MissionLog(stored.date, stored.missionId, stored.completed || verified, auto = stored.auto || (!stored.completed && verified))
         } else {
             logs
         }
@@ -100,7 +100,7 @@ class TodayPlanner(private val picker: MissionPicker = MissionPicker()) {
                 ?: picker.pick(pickInput(today, score, feeling, profile, allLogs)).id,
         )
         val missionCheck = check(picked.missionId, activities[today], now)
-        val todayMission = if (missionCheck == Check.DONE) picked.copy(completed = true) else picked
+        val todayMission = if (missionCheck == Check.DONE && !picked.completed) picked.copy(completed = true, auto = true) else picked
 
         val newScores = score.score?.let { scores + (today to it) } ?: scores
         return Plan(

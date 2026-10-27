@@ -6,8 +6,8 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.random.Random
 
-/** 지난 미션 기록 한 줄. */
-data class MissionLog(val date: LocalDate, val missionId: String, val completed: Boolean)
+/** 지난 미션 기록 한 줄. [auto]는 직접 체크하지 않고 워치 기록으로 완료를 확인한 날. */
+data class MissionLog(val date: LocalDate, val missionId: String, val completed: Boolean, val auto: Boolean = false)
 
 data class PickInput(
     val date: LocalDate,

@@ -24,7 +24,14 @@ data class Profile(
 }
 
 /** 오늘 고른 미션. 하루 동안 바뀌지 않고, "다른 미션"은 하루 1번. */
-data class TodayMission(val date: LocalDate, val missionId: String, val swapped: Boolean = false, val completed: Boolean = false)
+data class TodayMission(
+    val date: LocalDate,
+    val missionId: String,
+    val swapped: Boolean = false,
+    val completed: Boolean = false,
+    /** 직접 체크하지 않고 워치 기록으로 완료를 확인함. */
+    val auto: Boolean = false,
+)
 
 /** 기기 안에만 저장합니다. 건강 수치는 저장하지 않고 Health Connect에서 매번 읽습니다 (점수 숫자와 미션 기록만). */
 class AppStore(private val prefs: SharedPreferences) {
@@ -35,13 +42,19 @@ class AppStore(private val prefs: SharedPreferences) {
 
     var today: TodayMission?
         get() = prefs.getString(KEY_TODAY, null)?.let { JSONObject(it) }?.let {
-            TodayMission(LocalDate.parse(it.getString("date")), it.getString("id"), it.optBoolean("swapped"), it.optBoolean("done"))
+            TodayMission(
+                LocalDate.parse(it.getString("date")),
+                it.getString("id"),
+                it.optBoolean("swapped"),
+                it.optBoolean("done"),
+                it.optBoolean("auto"),
+            )
         }
         set(value) = prefs.edit().putString(
             KEY_TODAY,
             value?.let {
                 JSONObject().put("date", it.date.toString()).put("id", it.missionId)
-                    .put("swapped", it.swapped).put("done", it.completed).toString()
+                    .put("swapped", it.swapped).put("done", it.completed).put("auto", it.auto).toString()
             },
         ).apply()
 
@@ -50,12 +63,12 @@ class AppStore(private val prefs: SharedPreferences) {
         get() = prefs.getString(KEY_LOGS, null)?.let { s ->
             val a = JSONArray(s)
             (0 until a.length()).map { a.getJSONObject(it) }
-                .map { MissionLog(LocalDate.parse(it.getString("date")), it.getString("id"), it.getBoolean("done")) }
+                .map { MissionLog(LocalDate.parse(it.getString("date")), it.getString("id"), it.getBoolean("done"), it.optBoolean("auto")) }
         } ?: emptyList()
         set(value) {
             val a = JSONArray()
             value.sortedBy { it.date }.takeLast(60).forEach {
-                a.put(JSONObject().put("date", it.date.toString()).put("id", it.missionId).put("done", it.completed))
+                a.put(JSONObject().put("date", it.date.toString()).put("id", it.missionId).put("done", it.completed).put("auto", it.auto))
             }
             prefs.edit().putString(KEY_LOGS, a.toString()).apply()
         }

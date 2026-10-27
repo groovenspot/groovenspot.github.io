@@ -111,6 +111,7 @@ class TodayPlannerTest {
             activities = mapOf(today to walked), now = today.atTime(15, 0),
         )
         assertTrue(plan.today.completed)
+        assertTrue(plan.today.auto)
         assertEquals(Check.DONE, plan.home.missionCheck)
     }
 
@@ -127,7 +128,7 @@ class TodayPlannerTest {
             today, records(), profile, stored, emptyList(), emptyMap(),
             activities = mapOf(yesterday to early), now = today.atTime(7, 30),
         )
-        assertEquals(listOf(MissionLog(yesterday, "S-06", true)), plan.logs)
+        assertEquals(listOf(MissionLog(yesterday, "S-06", true, auto = true)), plan.logs)
     }
 
     @Test

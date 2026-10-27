@@ -70,7 +70,7 @@ class EveningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         } else {
             emptyList()
         }
-        val logs = store.missionLogs + listOfNotNull(store.today?.let { MissionLog(it.date, it.missionId, it.completed) })
+        val logs = store.missionLogs + listOfNotNull(store.today?.let { MissionLog(it.date, it.missionId, it.completed, it.auto) })
         val summary = WeeklyReport.build(today, profile.goal, profile.level, profile.goalSince, logs, records)
         store.weekly = summary
         // 레벨을 내리는 건 바로 적용하고, 올리는 건 홈에서 사용자가 수락할 때 적용합니다.

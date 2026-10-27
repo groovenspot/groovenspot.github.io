@@ -28,11 +28,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.core.net.toUri
 import androidx.health.connect.client.PermissionController
+import com.groovenspot.pulsecare.history.History
+import com.groovenspot.pulsecare.history.Period
 import com.groovenspot.pulsecare.mission.Goal
 import com.groovenspot.pulsecare.mobile.BuildConfig
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.data.Profile
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
+import com.groovenspot.pulsecare.mobile.history.HistoryRepository
 import com.groovenspot.pulsecare.mobile.notify.EveningSchedule
 import com.groovenspot.pulsecare.mobile.notify.MorningSchedule
 import com.groovenspot.pulsecare.mobile.notify.Notifications
@@ -51,7 +54,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Stage { GOAL, CONNECT, HOME, SETTINGS, TEST_TOOLS }
+private enum class Stage { GOAL, CONNECT, HOME, HISTORY, SETTINGS, TEST_TOOLS }
 
 @Composable
 private fun App() {
@@ -63,6 +66,8 @@ private fun App() {
     var granted by remember { mutableStateOf<Set<String>?>(null) }
     // 권한이 바뀌거나 미션을 체크하면 다시 계산합니다.
     var refresh by remember { mutableIntStateOf(0) }
+    // 내 정보를 닫으면 연 탭으로 돌아갑니다.
+    var returnTo by remember { mutableStateOf(Stage.HOME) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         PermissionController.createRequestPermissionResultContract(),
@@ -127,25 +132,40 @@ private fun App() {
                     stage = Stage.GOAL
                 },
                 onBack = {
-                    stage = Stage.HOME
+                    stage = returnTo
                     refresh++
                 },
                 onOpenTestTools = if (BuildConfig.DEBUG) ({ stage = Stage.TEST_TOOLS }) else null,
             )
         }
         stage == Stage.TEST_TOOLS -> TestTools(onBack = { stage = Stage.SETTINGS })
-        else -> Home(
-            store,
-            profile!!,
-            refresh,
-            onPermissions = { permissionLauncher.launch(HealthConnectSource.requestable(context)) },
-            onChangeGoal = {
-                store.weekly = null
-                stage = Stage.GOAL
-            },
-            onProfileChanged = { profile = it },
-            onOpenSettings = { stage = Stage.SETTINGS },
-        )
+        else -> EasyMode(profile!!.seniorMode) {
+            MainTabs(
+                current = if (stage == Stage.HISTORY) Tab.HISTORY else Tab.TODAY,
+                onTab = { stage = if (it == Tab.HISTORY) Stage.HISTORY else Stage.HOME },
+            ) {
+                val openSettings = {
+                    returnTo = stage
+                    stage = Stage.SETTINGS
+                }
+                if (stage == Stage.HISTORY) {
+                    HistoryTab(refresh, onOpenSettings = openSettings)
+                } else {
+                    Home(
+                        store,
+                        profile!!,
+                        refresh,
+                        onPermissions = { permissionLauncher.launch(HealthConnectSource.requestable(context)) },
+                        onChangeGoal = {
+                            store.weekly = null
+                            stage = Stage.GOAL
+                        },
+                        onProfileChanged = { profile = it },
+                        onOpenSettings = openSettings,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -182,11 +202,7 @@ private fun Home(
     }
 
     val state = home ?: return Loading()
-    // 쉽게 보기: 글자를 1.25배로.
-    val density = LocalDensity.current
-    CompositionLocalProvider(
-        LocalDensity provides if (profile.seniorMode) Density(density.density, density.fontScale * 1.25f) else density,
-    ) { HomeContent(
+    HomeContent(
         state = state,
         onCompleteMission = {
             store.today = store.today?.copy(completed = true)
@@ -219,7 +235,31 @@ private fun Home(
         onChangeGoal = onChangeGoal,
         onOpenSettings = onOpenSettings,
         easyMode = profile.seniorMode,
-    ) }
+    )
+}
+
+/** 쉽게 보기: 글자를 1.25배로. */
+@Composable
+private fun EasyMode(on: Boolean, content: @Composable () -> Unit) {
+    val density = LocalDensity.current
+    CompositionLocalProvider(
+        LocalDensity provides if (on) Density(density.density, density.fontScale * 1.25f) else density,
+        content = content,
+    )
+}
+
+@Composable
+private fun HistoryTab(refreshKey: Int, onOpenSettings: () -> Unit) {
+    val context = LocalContext.current
+    var period by remember { mutableStateOf(Period.WEEK) }
+    var history by remember { mutableStateOf<History?>(null) }
+    var selected by remember { mutableStateOf<LocalDate?>(null) }
+    LaunchedEffect(refreshKey, period) {
+        history = null
+        history = withContext(Dispatchers.IO) { runCatching { HistoryRepository.load(context, period) }.getOrNull() }
+        if (history?.days?.none { it.date == selected } != false) selected = history?.days?.lastOrNull()?.date
+    }
+    HistoryContent(history, period, onPeriod = { period = it }, selected = selected, onSelect = { selected = it }, onOpenSettings = onOpenSettings)
 }
 
 @Composable
