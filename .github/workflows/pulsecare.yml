@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  core:
-    name: Core logic tests
+  android:
+    name: Core logic + phone app
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -21,5 +21,5 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Test
-        run: ./gradlew :core:test
+      - name: Test and build
+        run: ./gradlew :core:test :mobile:testDebugUnitTest :mobile:assembleDebug

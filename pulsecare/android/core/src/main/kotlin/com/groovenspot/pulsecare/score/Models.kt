@@ -33,7 +33,7 @@ data class SleepSummary(
 )
 
 /**
- * 하루치 기록. [date]는 아침(기상) 날짜이고, 수면·생체 신호는 그 전날 밤 값입니다.
+ * 하루치 기록. [date]는 아침(기상) 날짜이고, 수면·생체 신호는 그 전날 밤, 활동은 그 전날 하루 값입니다.
  * 기기가 주지 않는 값은 null로 둡니다.
  */
 data class DailyRecord(
@@ -46,9 +46,9 @@ data class DailyRecord(
     val restingHr: Double? = null,
     val skinTempC: Double? = null,
     val respiratoryRate: Double? = null,
-    /** 그날 하루 활동 부하 (기기별 단위, 같은 기기 안에서만 비교). */
+    /** 전날 하루(이 아침 직전에 끝난 하루) 활동 부하. 기기별 단위라 같은 기기 안에서만 비교합니다. */
     val activityLoad: Double? = null,
-    /** 그날 걸음 수. 알림 신호 "활동량 급감"에 씁니다. */
+    /** 전날 하루 걸음 수. 알림 신호 "활동량 급감"에 씁니다. */
     val steps: Int? = null,
     /** 지난밤 SpO2 90% 미만 구간이 반복됐는지. 측정하지 않는 기기는 null. */
     val lowSpo2Repeated: Boolean? = null,

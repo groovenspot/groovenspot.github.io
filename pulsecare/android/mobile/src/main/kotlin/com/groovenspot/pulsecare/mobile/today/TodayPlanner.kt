@@ -1,0 +1,127 @@
+package com.groovenspot.pulsecare.mobile.today
+
+import com.groovenspot.pulsecare.alert.AlertMessage
+import com.groovenspot.pulsecare.alert.AlertText
+import com.groovenspot.pulsecare.alert.DailySignals
+import com.groovenspot.pulsecare.alert.Grade
+import com.groovenspot.pulsecare.mission.Mission
+import com.groovenspot.pulsecare.mission.MissionLibrary
+import com.groovenspot.pulsecare.mission.MissionLog
+import com.groovenspot.pulsecare.mission.MissionPicker
+import com.groovenspot.pulsecare.mission.PickInput
+import com.groovenspot.pulsecare.mobile.data.Profile
+import com.groovenspot.pulsecare.mobile.data.TodayMission
+import com.groovenspot.pulsecare.score.ConditionScoreEngine
+import com.groovenspot.pulsecare.score.DailyRecord
+import com.groovenspot.pulsecare.score.ScoreContext
+import com.groovenspot.pulsecare.score.ScoreResult
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
+
+/** 홈 화면 한 장 (기획서 16번: 점수 → 미션 → 알림 순서). */
+data class HomeState(
+    val date: LocalDate,
+    /** 가입일 = 1일차. */
+    val dayIndex: Int,
+    val score: ScoreResult,
+    val mission: Mission,
+    val missionDone: Boolean,
+    val canSwap: Boolean,
+    /** 본인에게 보여줄 알림 카드. 오늘 감지된 신호만. */
+    val alerts: List<AlertMessage>,
+    /** 수면 외 권한 일부가 꺼져 있음 (SYS-03). */
+    val missingPermissions: Boolean = false,
+) {
+    /** 첫 7일은 기준선 학습 중 (SYS-01). */
+    val learning: Boolean get() = dayIndex <= 7
+}
+
+/** 저장할 것: 오늘 점수와 오늘 미션, 어제까지 미션 기록. */
+data class Plan(
+    val home: HomeState,
+    val today: TodayMission,
+    val logs: List<MissionLog>,
+    val scores: Map<LocalDate, Int>,
+)
+
+/**
+ * 하루 계획을 만듭니다. 화면과 저장소에서 분리해 기기 없이 테스트합니다.
+ * 같은 날 다시 열면 같은 점수와 같은 미션이 나옵니다.
+ */
+class TodayPlanner(private val picker: MissionPicker = MissionPicker()) {
+
+    /**
+     * [records]는 기상일 기준 최근 29일 이상 (오늘 포함). [feeling]은 워치 기록이 없는 날의 자가 입력 1~5 (SYS-02).
+     */
+    fun plan(
+        today: LocalDate,
+        records: List<DailyRecord>,
+        profile: Profile,
+        stored: TodayMission?,
+        logs: List<MissionLog>,
+        scores: Map<LocalDate, Int>,
+        feeling: Int? = null,
+        missingPermissions: Boolean = false,
+    ): Plan {
+        val dayIndex = (ChronoUnit.DAYS.between(profile.signupDate, today) + 1).toInt().coerceAtLeast(1)
+        val withScores = records.map { it.copy(score = scores[it.date]) }
+        val todayRecord = withScores.firstOrNull { it.date == today } ?: DailyRecord(today, sleep = null)
+        val history = withScores.filter { it.date < today }
+
+        val signals = DailySignals.evaluate(withScores.filter { it.date <= today }, dayIndex)
+        val caution = signals.any { it.signal.grade == Grade.CAUTION }
+        val score = ConditionScoreEngine.score(todayRecord, history, ScoreContext(dayIndex, cautionSignalActive = caution))
+
+        // 어제까지의 오늘 미션을 기록으로 옮깁니다.
+        val allLogs = if (stored != null && stored.date < today && logs.none { it.date == stored.date }) {
+            logs + MissionLog(stored.date, stored.missionId, stored.completed)
+        } else {
+            logs
+        }
+
+        val todayMission = stored?.takeIf { it.date == today } ?: TodayMission(
+            date = today,
+            missionId = picker.pick(pickInput(today, score, feeling, profile, allLogs)).id,
+        )
+
+        val newScores = score.score?.let { scores + (today to it) } ?: scores
+        return Plan(
+            home = HomeState(
+                date = today,
+                dayIndex = dayIndex,
+                score = score,
+                mission = MissionLibrary[todayMission.missionId],
+                missionDone = todayMission.completed,
+                canSwap = !todayMission.swapped && !todayMission.completed,
+                alerts = signals.map { AlertText.forSelf(it) },
+                missingPermissions = missingPermissions,
+            ),
+            today = todayMission,
+            logs = allLogs.filter { it.date < today },
+            scores = newScores,
+        )
+    }
+
+    /** "다른 미션": 하루 1번, 지금 미션을 빼고 다음 후보로. */
+    fun swap(home: HomeState, today: TodayMission, profile: Profile, logs: List<MissionLog>): TodayMission {
+        if (today.swapped || today.completed) return today
+        val input = pickInput(home.date, home.score, null, profile, logs).copy(exclude = setOf(today.missionId))
+        return today.copy(missionId = picker.pick(input).id, swapped = true)
+    }
+
+    private fun pickInput(today: LocalDate, score: ScoreResult, feeling: Int?, profile: Profile, logs: List<MissionLog>) =
+        PickInput(
+            date = today,
+            score = score.score ?: feeling?.let { FEELING_TO_SCORE[it] },
+            reasonMetric = score.reasonMetric,
+            goal = profile.goal,
+            level = profile.level,
+            history = logs,
+            seniorMode = profile.seniorMode,
+        )
+
+    companion object {
+        /** 자가 입력 1~5를 미션 고르기용 점수 구간으로: 1·2는 컨디션 낮은 날, 3은 한 레벨 낮춤. */
+        val FEELING_TO_SCORE = mapOf(1 to 20, 2 to 40, 3 to 60, 4 to 75, 5 to 90)
+    }
+}

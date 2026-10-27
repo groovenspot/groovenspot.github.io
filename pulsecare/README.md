@@ -13,15 +13,20 @@
 | `core/score` | 컨디션 점수 (13번): 28일 기준선(중앙값·MAD) → 하위 점수 → 가중합 → 상한 보정, 이유 한 줄, 예외 처리(학습 중·추정·재학습·시차) |
 | `core/mission` | 미션 40개 라이브러리와 오늘의 미션 고르기 (14번): 구간·레벨 필터, 이유 연결 가산, 반복 방지, 주말·날씨, 시니어 모드, "다른 미션", 주간 레벨 조정 |
 | `core/alert` | 알림 신호 (12번): 하루 단위 신호 5개, 실시간 고·저심박, 빈도 제한·방해 금지·보호자 요약, 낙상·SOS 연락 흐름, 알림 문구와 잠금화면 문구 |
+| `mobile` | 폰 앱 (Compose). Health Connect에서 지난 30일 수면·HRV·안정시 심박·걸음·활동 칼로리·호흡수·SpO2를 읽어 홈(점수 → 미션 → 알림)을 그립니다. 온보딩(목표, Health Connect 연결), 학습 중 홈(SYS-01), 워치 미착용 시 느낌 입력(SYS-02), 권한 일부 거부 배너(SYS-03) |
 
 ## 빌드와 테스트
 
 ```
 cd android
-./gradlew :core:test
+./gradlew :core:test                    # 로직만 (Android SDK 불필요)
+./gradlew :mobile:testDebugUnitTest     # 폰 앱 로직 + 화면 렌더링
+./gradlew :mobile:assembleDebug         # APK
+./gradlew :mobile:recordPaparazziDebug  # 화면 이미지 → mobile/src/test/snapshots/images
 ```
 
-요구사항: JDK 17+. `core`는 Android SDK 없이 빌드됩니다.
+요구사항: JDK 17+, 폰 앱은 Android SDK 36. 휴대폰 Android 8+ (Health Connect 필요: Android 14+는 기본 내장, 13 이하는 앱 설치).
+갤럭시 워치는 삼성 헬스 설정에서 Health Connect 동기화를 켜야 기록이 들어옵니다.
 
 ## 컨디션 점수 요약
 
@@ -41,6 +46,6 @@ cd android
 
 ## 다음 순서
 
-1. `mobile`: Health Connect에서 수면·심박·HRV·걸음 읽기 → 아침 점수·미션 화면 (16번 HOME-01)
+1. `mobile`: 미션 자동 확인(걸음·취침 시각), 아침 7:30 알림, 주간 리포트, 내 정보·알림 설정
 2. `wear`: 점수 타일, 미션 알림, 낙상·SOS 연결
 3. 서버: 가족 연결, 보호자 알림 발송, 이벤트 수집 (22번)

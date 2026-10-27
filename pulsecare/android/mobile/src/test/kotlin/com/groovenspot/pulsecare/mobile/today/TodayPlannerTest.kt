@@ -1,0 +1,108 @@
+package com.groovenspot.pulsecare.mobile.today
+
+import com.groovenspot.pulsecare.mission.Goal
+import com.groovenspot.pulsecare.mission.MissionLog
+import com.groovenspot.pulsecare.mobile.data.AppStore
+import com.groovenspot.pulsecare.mobile.data.Profile
+import com.groovenspot.pulsecare.mobile.data.TodayMission
+import com.groovenspot.pulsecare.score.DailyRecord
+import com.groovenspot.pulsecare.score.ScoreResult
+import com.groovenspot.pulsecare.score.SleepSummary
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.time.LocalDate
+import java.time.LocalTime
+
+class TodayPlannerTest {
+    private val today = LocalDate.of(2027, 4, 30)
+    private val profile = Profile(Goal.SLEEP, signupDate = today.minusDays(40))
+    private val planner = TodayPlanner()
+
+    private fun records(todaySleep: Int? = 450) = (0..29).map { ago ->
+        val w = ago % 3 - 1
+        DailyRecord(
+            date = today.minusDays(ago.toLong()),
+            sleep = if (ago == 0 && todaySleep == null) null else SleepSummary(
+                mainSleepMinutes = if (ago == 0) todaySleep!! else 450 + w * 10,
+                efficiency = 0.9,
+                bedtime = LocalTime.of(23, 30).plusMinutes(w * 10L),
+            ),
+            hrvMs = 50.0 + w * 2,
+            restingHr = 58.0 + w,
+            steps = 8000 + w * 400,
+        )
+    }
+
+    @Test
+    fun ordinaryMorning() {
+        val plan = planner.plan(today, records(), profile, stored = null, logs = emptyList(), scores = emptyMap())
+        val home = plan.home
+        assertEquals(ScoreResult.Kind.FULL, home.score.kind)
+        assertTrue(home.score.score!! in 60..80)
+        assertEquals(41, home.dayIndex)
+        assertFalse(home.learning)
+        assertTrue(home.canSwap)
+        assertEquals(home.score.score, plan.scores[today])
+        assertTrue(home.alerts.isEmpty())
+    }
+
+    @Test
+    fun sameDaySameMission() {
+        val first = planner.plan(today, records(), profile, null, emptyList(), emptyMap())
+        val again = planner.plan(today, records(), profile, first.today, emptyList(), first.scores)
+        assertEquals(first.today.missionId, again.home.mission.id)
+    }
+
+    @Test
+    fun yesterdaysMissionMovesToHistory() {
+        val yesterday = TodayMission(today.minusDays(1), "S-02", completed = true)
+        val plan = planner.plan(today, records(), profile, yesterday, emptyList(), emptyMap())
+        assertEquals(listOf(MissionLog(today.minusDays(1), "S-02", true)), plan.logs)
+        assertEquals(today, plan.today.date)
+    }
+
+    @Test
+    fun swapOnlyOnce() {
+        val plan = planner.plan(today, records(), profile, null, emptyList(), emptyMap())
+        val swapped = planner.swap(plan.home, plan.today, profile, plan.logs)
+        assertNotEquals(plan.today.missionId, swapped.missionId)
+        assertTrue(swapped.swapped)
+        assertEquals(swapped, planner.swap(plan.home, swapped, profile, plan.logs))
+    }
+
+    @Test
+    fun noWatchUsesFeeling() {
+        val plan = planner.plan(today, records(todaySleep = null), profile, null, emptyList(), emptyMap(), feeling = 1)
+        assertEquals(ScoreResult.Kind.NO_DATA, plan.home.score.kind)
+        assertEquals(Goal.LOW_DAY, plan.home.mission.goal)
+        assertFalse(plan.scores.containsKey(today))
+    }
+
+    @Test
+    fun firstDaysAreLearning() {
+        val newcomer = profile.copy(signupDate = today.minusDays(1))
+        val home = planner.plan(today, records().take(2), newcomer, null, emptyList(), emptyMap()).home
+        assertEquals(2, home.dayIndex)
+        assertTrue(home.learning)
+        assertEquals(ScoreResult.Kind.SLEEP_ONLY, home.score.kind)
+    }
+
+    @Test
+    fun raisedRestingHeartRateShowsAlertAndCapsScore() {
+        val raised = records().map { if (it.date >= today.minusDays(2)) it.copy(restingHr = 72.0) else it }
+        val home = planner.plan(today, raised, profile, null, emptyList(), emptyMap()).home
+        assertEquals("안정시 심박 상승", home.alerts.single().title)
+        assertTrue(home.score.score!! <= 60)
+    }
+
+    @Test
+    fun profileRoundTrip() {
+        val p = Profile(Goal.STRESS, today, levels = mapOf(Goal.STRESS to 2, Goal.SLEEP to 3), seniorMode = true)
+        assertEquals(p, AppStore.decodeProfile(AppStore.encodeProfile(p)))
+        assertNotNull(p.level)
+    }
+}
