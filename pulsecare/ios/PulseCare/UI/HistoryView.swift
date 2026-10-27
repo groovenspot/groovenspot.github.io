@@ -164,7 +164,7 @@ struct HistoryView: View {
     }
 }
 
-extension HistoryDay: Identifiable {
+extension HistoryDay: @retroactive Identifiable {
     public var id: LocalDate { date }
 }
 

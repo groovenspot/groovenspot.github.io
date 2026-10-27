@@ -7,6 +7,12 @@ public enum EveningSummary {
         public var title: String
         public var body: String
         public var askRetry: Bool
+
+        public init(title: String, body: String, askRetry: Bool) {
+            self.title = title
+            self.body = body
+            self.askRetry = askRetry
+        }
     }
 
     public static let retry = "내일 다시"

@@ -168,6 +168,11 @@ public enum MorningReport {
     public struct Text: Hashable, Sendable {
         public var title: String
         public var body: String
+
+        public init(title: String, body: String) {
+            self.title = title
+            self.body = body
+        }
     }
 
     public static let publicText = "오늘의 컨디션이 준비됐어요"
