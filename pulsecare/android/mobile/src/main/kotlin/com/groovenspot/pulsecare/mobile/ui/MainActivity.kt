@@ -31,7 +31,10 @@ import androidx.core.net.toUri
 import androidx.health.connect.client.PermissionController
 import com.groovenspot.pulsecare.history.History
 import com.groovenspot.pulsecare.history.Period
+import com.groovenspot.pulsecare.metrics.EventName
+import com.groovenspot.pulsecare.metrics.EventRules
 import com.groovenspot.pulsecare.mission.Goal
+import com.groovenspot.pulsecare.mobile.metrics.Metrics
 import com.groovenspot.pulsecare.mobile.BuildConfig
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.data.Legal
@@ -57,7 +60,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // 화면 회전으로 다시 만들어질 때는 세지 않습니다.
+        if (savedInstanceState == null) trackOpen(intent)
         setContent { PulseTheme { App() } }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        trackOpen(intent)
+    }
+
+    private fun trackOpen(intent: Intent?) {
+        val source = intent?.getStringExtra(Notifications.EXTRA_OPENED_FROM) ?: "icon"
+        Metrics.track(this, EventName.APP_OPENED, mapOf("source" to source))
     }
 }
 
@@ -91,8 +106,21 @@ private fun App() {
         PermissionController.createRequestPermissionResultContract(),
     ) { result ->
         granted = result
+        Metrics.track(
+            context,
+            EventName.WATCH_LINK_ATTEMPTED,
+            mapOf(
+                "result" to when {
+                    result.containsAll(HealthConnectSource.all) -> "all"
+                    result.containsAll(HealthConnectSource.required) -> "required"
+                    result.isEmpty() -> "none"
+                    else -> "partial"
+                },
+            ),
+        )
         if (profile == null) {
             profile = Profile(goal = goal ?: Goal.SLEEP, signupDate = LocalDate.now()).also { store.profile = it }
+            Metrics.track(context, EventName.SIGNUP_COMPLETED, mapOf("via" to "organic", "goal" to profile!!.goal.name))
         }
         stage = Stage.HOME
         refresh++
@@ -103,8 +131,9 @@ private fun App() {
     val canScore = granted?.containsAll(HealthConnectSource.required) == true
 
     when {
-        stage == Stage.CONSENT -> ConsentScreen(onOpen = openUrl, onAgree = {
+        stage == Stage.CONSENT -> ConsentScreen(onOpen = openUrl, onAgree = { analytics ->
             store.consentVersion = Legal.CONSENT_VERSION
+            if (analytics != store.analyticsConsent) Metrics.setConsent(context, analytics)
             stage = if (profile == null) Stage.GOAL else Stage.HOME
         })
         stage == Stage.GOAL -> GoalScreen(goal, onSelect = { goal = it }, onNext = {
@@ -146,6 +175,8 @@ private fun App() {
                 onChangeGoal = { stage = Stage.GOAL },
                 onPermissions = { permissionLauncher.launch(HealthConnectSource.requestable(context)) },
                 onClearData = {
+                    // 이용 통계도 서버에서 지웁니다 (지운 수만 남음).
+                    if (store.analyticsConsent) Metrics.forgetAsync(store.installId)
                     // 가족 계정이 있으면 서버 기록도 지웁니다 (연결이 남아 보호자에게 빈 요약이 가지 않도록).
                     store.account?.let { account -> appScope.launch { FamilyRepository.deleteAccount(account.second) } }
                     MorningSchedule.cancel(context)
@@ -161,6 +192,8 @@ private fun App() {
                 },
                 onOpenTestTools = if (BuildConfig.DEBUG) ({ stage = Stage.TEST_TOOLS }) else null,
                 onOpenUrl = openUrl,
+                analytics = store.analyticsConsent,
+                onAnalytics = { on -> Metrics.setConsent(context, on) },
                 consentDate = store.consentAt.takeIf { it > 0 }?.let {
                     java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()
                 },
@@ -228,7 +261,9 @@ private fun Home(
     var weekly by remember { mutableStateOf(store.weekly?.takeIf { !LocalDate.now().isAfter(it.weekEnd.plusDays(1)) }) }
 
     // 아침 7:30 리포트, 저녁 9시 요약 (Android 13+는 알림 권한을 먼저 물어봅니다).
-    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        Metrics.track(context, EventName.PUSH_PERMISSION_CHANGED, mapOf("granted" to granted.toString()))
+    }
     LaunchedEffect(Unit) {
         MorningSchedule.ensure(context)
         EveningSchedule.ensure(context)
@@ -242,19 +277,33 @@ private fun Home(
     }
 
     val state = home ?: return Loading()
+    LaunchedEffect(state.date, state.score.kind) {
+        Metrics.trackDaily(
+            context, EventName.SCORE_VIEWED, "app",
+            mapOf("surface" to "app", "kind" to state.score.kind.name, "day" to EventRules.dayBucket(state.dayIndex)),
+        )
+    }
+    LaunchedEffect(weekly?.weekEnd) {
+        weekly?.let { Metrics.trackDaily(context, EventName.WEEKLY_REPORT_VIEWED, it.weekEnd.toString(), mapOf("surface" to "app", "badge" to it.badge.toString())) }
+    }
     HomeContent(
         state = state,
         onCompleteMission = {
+            store.today?.takeIf { !it.completed }?.let {
+                Metrics.track(context, EventName.MISSION_COMPLETED, mapOf("mission_id" to it.missionId, "auto" to "false", "surface" to "app"))
+            }
             store.today = store.today?.copy(completed = true)
             reload++
         },
         onSwapMission = {
+            store.today?.let { Metrics.track(context, EventName.MISSION_SKIPPED, mapOf("mission_id" to it.missionId, "reason" to "swap")) }
             store.today?.let { store.today = planner.swap(state, it, profile, store.missionLogs) }
             reload++
         },
         onFeeling = { value ->
             // 자가 입력으로 오늘 미션을 다시 고릅니다 (아직 바꾸거나 끝내지 않았을 때만).
             store.today?.takeIf { !it.swapped && !it.completed }?.let { store.today = null }
+            Metrics.track(context, EventName.CONDITION_CHECKIN_ANSWERED, mapOf("answered" to "true"))
             feeling = value
         },
         onOpenPermissions = onPermissions,
@@ -315,7 +364,14 @@ private fun FamilyTab(onOpenSettings: () -> Unit) {
         if (FamilyRepository.hasAccount(context)) {
             call {
                 val me = FamilyRepository.me(context)
-                ui.copy(me = me, family = FamilyRepository.family(context))
+                val family = FamilyRepository.family(context)
+                family?.let {
+                    Metrics.trackDaily(
+                        context, EventName.FAMILY_VIEW_OPENED, "tab",
+                        mapOf("wearers" to it.wearers.size.toString(), "guardians" to it.guardians.size.toString()),
+                    )
+                }
+                ui.copy(me = me, family = family)
             }
         }
     }
@@ -328,7 +384,13 @@ private fun FamilyTab(onOpenSettings: () -> Unit) {
                 ui.copy(me = me, family = FamilyRepository.family(context))
             }
         },
-        onInvite = { role -> call { ui.copy(invite = role to FamilyRepository.invite(context, role)) } },
+        onInvite = { role ->
+            call {
+                val invite = FamilyRepository.invite(context, role)
+                Metrics.track(context, EventName.FAMILY_INVITE_SENT, mapOf("role" to role))
+                ui.copy(invite = role to invite)
+            }
+        },
         onShareInvite = { invite, role ->
             val who = ui.me?.name.orEmpty()
             val text = if (role == "WEARER") {
@@ -341,9 +403,24 @@ private fun FamilyTab(onOpenSettings: () -> Unit) {
             )
         },
         onCheckCode = { code -> call { FamilyRepository.preview(context, code).let { (name, role) -> ui.copy(pendingAccept = Triple(code, name, role)) } } },
-        onAccept = { code -> call { ui.copy(pendingAccept = null, family = FamilyRepository.accept(context, code)) } },
+        onAccept = { code ->
+            // 초대한 사람이 보호자면 나는 착용자.
+            val myRole = if (ui.pendingAccept?.third == "GUARDIAN") "WEARER" else "GUARDIAN"
+            call {
+                val family = FamilyRepository.accept(context, code)
+                Metrics.track(context, EventName.FAMILY_INVITE_ACCEPTED, mapOf("role" to myRole))
+                ui.copy(pendingAccept = null, family = family)
+            }
+        },
         onDismissAccept = { ui = ui.copy(pendingAccept = null) },
-        onUnlink = { p -> call { ui.copy(family = FamilyRepository.unlink(context, p.userId)) } },
+        onUnlink = { p ->
+            val role = if (ui.family?.guardians?.any { it.person.userId == p.userId } == true) "GUARDIAN" else "WEARER"
+            call {
+                val family = FamilyRepository.unlink(context, p.userId)
+                Metrics.track(context, EventName.FAMILY_MEMBER_REMOVED, mapOf("role" to role))
+                ui.copy(family = family)
+            }
+        },
         onMove = { g, up ->
             val ids = ui.family?.guardians?.map { it.person.userId }?.toMutableList() ?: return@FamilyContent
             val i = ids.indexOf(g.person.userId)
@@ -382,6 +459,7 @@ private fun HistoryTab(refreshKey: Int, onOpenSettings: () -> Unit) {
 @Composable
 private fun TestTools(onBack: () -> Unit) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var diagnostics by remember { mutableStateOf<Diagnostics?>(null) }
     var reload by remember { mutableIntStateOf(0) }
     LaunchedEffect(reload) {
@@ -402,6 +480,9 @@ private fun TestTools(onBack: () -> Unit) {
                 guardianCount = AppStore.get(context).guardianCount,
                 pushConfigured = PulseApp.pushConfigured,
                 pushToken = AppStore.get(context).pushToken != null,
+                analytics = Metrics.enabled(context),
+                queuedEvents = Metrics.queued(context),
+                installId = AppStore.get(context).installId,
             )
         }
     }
@@ -412,6 +493,12 @@ private fun TestTools(onBack: () -> Unit) {
         onRunWeekly = { EveningSchedule.runNow(context, weekly = true) },
         onReload = { reload++ },
         onBack = onBack,
+        onFlushEvents = {
+            scope.launch {
+                withContext(Dispatchers.IO) { Metrics.flush(context) }
+                reload++
+            }
+        },
     )
 }
 

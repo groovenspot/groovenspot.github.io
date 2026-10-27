@@ -48,6 +48,10 @@ data class Diagnostics(
     val guardianCount: Int = 0,
     val pushConfigured: Boolean = false,
     val pushToken: Boolean = false,
+    /** 이용 통계: 동의, 보내기 전 쌓인 개수, 설치 ID 앞자리. */
+    val analytics: Boolean = false,
+    val queuedEvents: Int = 0,
+    val installId: String = "",
 )
 
 private val METRIC_LABELS = mapOf(
@@ -77,6 +81,7 @@ fun DiagnosticsContent(
     onRunWeekly: () -> Unit,
     onReload: () -> Unit,
     onBack: () -> Unit,
+    onFlushEvents: () -> Unit = {},
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -111,6 +116,8 @@ fun DiagnosticsContent(
             Line("가족 계정", if (d.familyAccount) "있음 · 보호자 ${d.guardianCount}명" else "없음 · 가족 탭에서 시작", d.familyAccount)
             Line("푸시 설정", if (d.pushConfigured) "있음" else "없음 · 긴급 알림을 받을 수 없어요", d.pushConfigured)
             Line("푸시 토큰", if (d.pushToken) "받음" else "없음", d.pushToken)
+            Line("이용 통계", if (d.analytics) "동의 · 보낼 것 ${d.queuedEvents}개 · ${d.installId.take(8)}" else "동의 안 함", d.analytics)
+            if (d.analytics && d.serverUrl.isNotEmpty()) RunButton("통계 지금 보내기", onFlushEvents)
         }
 
         Box("지난 30일 Health Connect 기록") {

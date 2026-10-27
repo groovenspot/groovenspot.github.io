@@ -143,7 +143,25 @@ class AppStore(private val prefs: SharedPreferences) {
 
     val consentAt: Long get() = prefs.getLong(KEY_CONSENT_AT, 0)
 
+    /** 이용 통계 선택 동의. */
+    var analyticsConsent: Boolean
+        get() = prefs.getBoolean(KEY_ANALYTICS, false)
+        set(value) = prefs.edit().putBoolean(KEY_ANALYTICS, value).apply()
+
+    /** 계정과 분리된 무작위 설치 ID. "기록 지우기" 후에는 새로 만듭니다. */
+    val installId: String
+        get() = prefs.getString(KEY_INSTALL, null) ?: java.util.UUID.randomUUID().toString().also {
+            prefs.edit().putString(KEY_INSTALL, it).apply()
+        }
+
+    fun lastDailyEvent(name: String, key: String): String? = prefs.getString("ev_daily_${name}_$key", null)
+    fun setLastDailyEvent(name: String, key: String, mark: String) = prefs.edit().putString("ev_daily_${name}_$key", mark).apply()
+    fun onceSent(name: String): Boolean = prefs.getBoolean("ev_once_$name", false)
+    fun markOnce(name: String) = prefs.edit().putBoolean("ev_once_$name", true).apply()
+
     companion object {
+        private const val KEY_ANALYTICS = "analytics_consent"
+        private const val KEY_INSTALL = "install_id"
         private const val KEY_CONSENT_VERSION = "consent_version"
         private const val KEY_CONSENT_AT = "consent_at"
         private const val KEY_ACCOUNT = "family_account"

@@ -13,6 +13,8 @@
 | summaries | 날짜별 점수·구간·미션 완료·보호자용 주의 알림 문구 | 점수·주의 알림 (착용자 동의 후) |
 | sent | 같은 날 같은 알림을 두 번 보내지 않기 위한 기록 | 없음 |
 | emergencies | SOS·낙상, 연락 단계, 확인·취소 | 긴급 여부 |
+| events, active_days, signups | 이용 통계 (선택 동의): 무작위 설치 ID, 이벤트 이름·시각·속성 (이벤트 사전 `core/metrics/Events.kt`에 있는 것만) | 없음 (점수·수치 제외) |
+| forgotten | 날짜별 통계 삭제 건수 (ID 없음) | 없음 |
 
 수면 시간·심박·HRV 같은 원수치는 서버로 오지 않습니다. "기록 지우기"(앱) 또는 `DELETE /v1/me`로 모든 행이 지워집니다.
 
@@ -39,7 +41,28 @@
 | POST | /v1/emergencies | 긴급 `{signal: SOS|FALL}` → `{id, guardians}` |
 | GET | /v1/emergencies/{id} | 상태 |
 | POST | /v1/emergencies/{id}/ack · /cancel | 보호자 확인 · 본인 취소 |
+| POST | /v1/events | 이용 통계 묶음 `{installId, appVersion, events:[{name, at, props}]}` (로그인 없음, 사전에 없는 이벤트·속성은 버림) |
+| POST | /v1/events/forget | 이 설치의 통계 삭제 |
+| GET | /admin · /admin/metrics.json | 운영자 지표 (Basic 인증, `ADMIN_PASSWORD`) · `?day=YYYY-MM-DD` |
 | POST | /internal/tick | 헤더 `X-Tick-Secret` |
+
+## 지표 (기획서 22번)
+
+`/admin`에서 브라우저로 봅니다 (KST 기준, 이용 통계에 동의한 설치만).
+
+| 지표 | 정의 | 목표(가설) |
+|---|---|---|
+| DAU · WAU · MAU | 그 기간에 활성인 설치 수. 활성 = 앱 열기, 점수 보기(앱·워치·타일), 직접 한 미션 완료, 알림 응답, 가족 화면 보기 (`EventRules.isActive`) | MAU 10만 (2028년 2분기) |
+| 북극성: 주간 코칭 실천 | 지난주(월~일) 미션을 3번 이상 완료한 설치 / MAU | 30% |
+| 워치 연동률 | 가입 7일 안에 첫 워치 기록 / 가입 (7~36일 전 가입자) | 80% |
+| 첫 점수 도달률 | 가입 10일 안에 정식 점수를 봄 / 가입 | 60% |
+| 30일 리텐션 | 가입 주 코호트 중 29~35일째 활성 (1·7일째도 표시) | 30% |
+| 가족 연결률 | MAU 중 가족 연결이 있는 설치 | 25% |
+| 초대로 들어온 신규 | 가입 7일 안에 초대 수락 / 가입 | 50% |
+| 미션 완료율 · 알림으로 연 비율 | 최근 7일 | - |
+| 유료 전환 조건 | MAU 10만 이상 또는 월별 30일 리텐션 30% 이상 3개월 연속 | - |
+
+통계 원본은 13개월 뒤 자동 삭제합니다.
 
 ## 로컬 실행과 테스트
 
@@ -61,6 +84,7 @@ DATABASE_URL="jdbc:postgresql://localhost:5432/pulsecare?user=postgres" TICK_SEC
    cd pulsecare/android && ./gradlew :server:installDist
    cd ../server && gcloud run deploy pulsecare-server --source . --region asia-northeast3 \
      --set-env-vars DATABASE_URL=...,DATABASE_USER=...,FCM_PROJECT_ID=<firebase 프로젝트 ID>,TICK_SECRET=<임의 문자열> \
+     --set-secrets ADMIN_PASSWORD=pulsecare-admin:latest \
      --allow-unauthenticated --min-instances 0
    ```
    DB 비밀번호는 `--set-secrets DATABASE_PASSWORD=...:latest`로 Secret Manager에서. Cloud Run 서비스 계정에 "Firebase Cloud Messaging API 관리자" 역할을 줍니다.
@@ -80,4 +104,5 @@ DATABASE_URL="jdbc:postgresql://localhost:5432/pulsecare?user=postgres" TICK_SEC
 
 - 전화번호·카카오 로그인 (지금은 기기별 토큰 계정, 폰을 바꾸면 다시 초대)
 - 긴급 알림의 위치 (위치 권한·동의 화면과 함께)
-- 초대 코드 입력 시도 제한, 관리자 화면, 이벤트 수집(22번)
+- 초대 코드 입력 시도 제한
+- 알림 피드백 화면(`alert_feedback`, 오탐 신고율), AI 챗·결제 이벤트 (기능이 생길 때)

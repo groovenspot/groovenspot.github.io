@@ -66,3 +66,33 @@ create index if not exists emergencies_active on emergencies (status);
 
 -- 1년 동안 쓰지 않은 계정은 지웁니다 (앱만 지우고 탈퇴하지 않은 경우).
 alter table users add column if not exists last_seen bigint
+;
+
+-- 이용 통계 (선택 동의). 계정과 분리된 무작위 설치 ID로만 모읍니다. 13개월 보관.
+create table if not exists events (
+    install_id text not null,
+    name text not null,
+    at bigint not null,
+    day date not null,
+    props jsonb not null,
+    received_at bigint not null
+);
+create index if not exists events_day on events (day, name);
+create index if not exists events_install on events (install_id, day);
+
+-- 지표 계산용 요약: 활성인 날, 가입한 날.
+create table if not exists active_days (
+    install_id text not null,
+    day date not null,
+    primary key (install_id, day)
+);
+create table if not exists signups (
+    install_id text primary key,
+    day date not null
+);
+
+-- 기록 지우기로 통계를 지운 수 (ID 없이 날짜별 개수만).
+create table if not exists forgotten (
+    day date primary key,
+    count int not null
+)

@@ -53,6 +53,7 @@ private fun PreparedStatement.bind(args: Array<out Any?>): PreparedStatement {
             is Int -> setInt(i + 1, a)
             is Long -> setLong(i + 1, a)
             is Boolean -> setBoolean(i + 1, a)
+            is java.time.LocalDate -> setObject(i + 1, a)
             else -> error("Unsupported parameter ${a::class}")
         }
     }

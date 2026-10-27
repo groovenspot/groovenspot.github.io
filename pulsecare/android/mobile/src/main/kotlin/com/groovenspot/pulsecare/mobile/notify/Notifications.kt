@@ -32,6 +32,9 @@ object Notifications {
     const val EMERGENCY = "emergency"
     const val FAMILY = "family"
 
+    /** 알림을 눌러 앱을 열었을 때 어느 알림인지 (이용 통계 app_opened source). */
+    const val EXTRA_OPENED_FROM = "opened_from"
+
     private const val MORNING_ID = 1
     const val EVENING_ID = 2
     private const val WEEKLY_ID = 3
@@ -194,8 +197,10 @@ object Notifications {
         createChannels(context)
         val open = PendingIntent.getActivity(
             context,
-            0,
-            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            id,
+            Intent(context, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .putExtra(EXTRA_OPENED_FROM, "notification_$channel"),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val publicVersion = NotificationCompat.Builder(context, channel)

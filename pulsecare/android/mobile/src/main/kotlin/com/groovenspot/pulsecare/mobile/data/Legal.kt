@@ -5,19 +5,25 @@ package com.groovenspot.pulsecare.mobile.data
  * 문서는 이 저장소의 GitHub Pages(pulsecare/privacy, terms, delete-account)에 있습니다.
  */
 object Legal {
-    const val CONSENT_VERSION = 1
+    /** 2: 이용 통계(선택) 추가. */
+    const val CONSENT_VERSION = 2
     private const val BASE = "https://groovenspot.github.io/pulsecare"
     const val PRIVACY_URL = "$BASE/privacy/"
     const val TERMS_URL = "$BASE/terms/"
     const val DELETE_URL = "$BASE/delete-account/"
 
-    /** 첫 실행 동의 항목 (모두 필수). 개인정보 보호법 제22조: 항목별로 구분해 동의, 민감정보(제23조)는 따로. */
-    enum class Item(val label: String, val url: String?) {
+    /** 첫 실행 동의 항목. 개인정보 보호법 제22조: 항목별로 구분해 동의, 민감정보(제23조)는 따로, 선택 항목은 거부해도 이용 가능. */
+    enum class Item(val label: String, val url: String?, val required: Boolean = true) {
         AGE("만 14세 이상이에요", null),
         TERMS("서비스 이용약관 동의", TERMS_URL),
         PRIVACY("개인정보 수집·이용 동의", PRIVACY_URL),
         HEALTH("건강정보(민감정보) 처리 동의", PRIVACY_URL),
+        ANALYTICS("이용 통계 수집 동의", PRIVACY_URL, required = false),
     }
+
+    const val ANALYTICS_SUMMARY =
+        "앱을 연 횟수, 미션 완료처럼 어떤 기능을 썼는지를 무작위 기기 ID로 모아 서비스를 개선해요. " +
+            "점수·건강 수치·이름은 보내지 않고, 내 정보에서 언제든 끌 수 있어요."
 
     /** 건강정보 동의 화면에 그대로 보여주는 요약 (처리방침 3번과 같은 내용). */
     const val HEALTH_SUMMARY =

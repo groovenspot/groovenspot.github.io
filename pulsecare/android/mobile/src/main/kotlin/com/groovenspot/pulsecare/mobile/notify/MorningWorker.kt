@@ -1,6 +1,8 @@
 package com.groovenspot.pulsecare.mobile.notify
 
 import android.content.Context
+import com.groovenspot.pulsecare.metrics.EventName
+import com.groovenspot.pulsecare.mobile.metrics.Metrics
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -86,6 +88,7 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
                 val message = AlertText.forSelf(d)
                 Notifications.caution(context, i, message.title, message.body, MorningReport.CAUTION_PUBLIC)
                 store.markAlertSent(today, d.signal.name)
+                Metrics.track(context, EventName.ALERT_SENT, mapOf("signal" to d.signal.name, "recipient" to "self"))
             }
         }
     }

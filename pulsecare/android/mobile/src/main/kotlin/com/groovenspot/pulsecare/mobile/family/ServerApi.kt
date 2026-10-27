@@ -96,6 +96,15 @@ class ServerApi(private val baseUrl: String, private val token: String? = null) 
 
     fun cancel(id: String): EmergencyView = emergency(call("POST", "/v1/emergencies/$id/cancel")!!)
 
+    /** 이용 통계 (로그인 없이 설치 ID로). */
+    fun sendEvents(body: JSONObject) {
+        call("POST", "/v1/events", body)
+    }
+
+    fun forgetEvents(installId: String) {
+        call("POST", "/v1/events/forget", JSONObject().put("installId", installId))
+    }
+
     private fun call(method: String, path: String, body: JSONObject? = null): JSONObject? {
         val c = URL(baseUrl.trimEnd('/') + path).openConnection() as HttpURLConnection
         try {

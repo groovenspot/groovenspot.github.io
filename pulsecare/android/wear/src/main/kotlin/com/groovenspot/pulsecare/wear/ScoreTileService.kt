@@ -10,6 +10,7 @@ import androidx.wear.protolayout.LayoutElementBuilders
 import androidx.wear.protolayout.ModifiersBuilders
 import androidx.wear.protolayout.ResourceBuilders
 import androidx.wear.protolayout.TimelineBuilders
+import androidx.wear.tiles.EventBuilders
 import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.TileBuilders
 import androidx.wear.tiles.TileService
@@ -17,6 +18,9 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.groovenspot.pulsecare.watch.WatchContract
 import com.groovenspot.pulsecare.watch.WatchDisplay
 import java.time.LocalDate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /** 점수 타일 (기획서 15번): 점수, 구간, 오늘의 미션. 누르면 앱을 엽니다. */
 class ScoreTileService : TileService() {
@@ -31,6 +35,13 @@ class ScoreTileService : TileService() {
                 .setTileTimeline(TimelineBuilders.Timeline.fromLayoutElement(layout(d, packageName)))
                 .build()
         }
+
+    /** 타일을 화면에 띄웠을 때: 점수를 본 것으로 폰에 알립니다. */
+    @Deprecated("Tiles 1.x 이벤트")
+    override fun onTileEnterEvent(requestParams: EventBuilders.TileEnterEvent) {
+        val today = WatchStore.load(this)
+        CoroutineScope(Dispatchers.IO).launch { PhoneLink.scoreViewed(this@ScoreTileService, "tile", kindOf(today)) }
+    }
 
     override fun onTileResourcesRequest(requestParams: RequestBuilders.ResourcesRequest): ListenableFuture<ResourceBuilders.Resources> =
         SuspendToFutureAdapter.launchFuture {

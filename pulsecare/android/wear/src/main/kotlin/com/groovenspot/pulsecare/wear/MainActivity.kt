@@ -53,6 +53,7 @@ private fun WatchApp() {
             WatchStore.save(context, it)
             today = it
         }
+        PhoneLink.scoreViewed(context, "watch", kindOf(today))
     }
 
     // 카운트다운이 끝나면 폰으로 보냅니다. 취소하면 아무것도 보내지 않습니다.
@@ -87,3 +88,11 @@ private fun WatchApp() {
 }
 
 const val SOS_COUNTDOWN = 5
+
+/** 이용 통계용 점수 종류 (값은 보내지 않음). */
+fun kindOf(w: WatchToday?): String = when {
+    w == null || w.date != LocalDate.now() -> "NONE"
+    w.score == null -> "NO_DATA"
+    w.learningDay != null -> "LEARNING"
+    else -> "FULL"
+}

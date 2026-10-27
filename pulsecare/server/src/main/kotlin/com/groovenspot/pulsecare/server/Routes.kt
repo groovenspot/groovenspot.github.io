@@ -1,5 +1,6 @@
 package com.groovenspot.pulsecare.server
 
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -10,6 +11,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
@@ -19,8 +21,17 @@ import io.ktor.server.routing.routing
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
+import java.security.MessageDigest
+import java.util.Base64
 
-class Services(val family: FamilyService, val emergencies: EmergencyService, val tickSecret: String?)
+class Services(
+    val family: FamilyService,
+    val emergencies: EmergencyService,
+    val tickSecret: String?,
+    val metrics: MetricsService? = null,
+    /** 지표 페이지 비밀번호 (Basic 인증, 사용자 이름은 아무거나). 비우면 페이지가 없습니다. */
+    val adminPassword: String? = null,
+)
 
 fun Application.pulsecare(s: Services) {
     val log = LoggerFactory.getLogger("pulsecare")
@@ -41,6 +52,21 @@ fun Application.pulsecare(s: Services) {
     suspend fun ApplicationCall.user(): String {
         val token = request.headers["Authorization"]?.removePrefix("Bearer ")?.trim()
         return token?.let { s.family.auth(it) } ?: throw ApiError(401, "UNAUTHORIZED", "다시 로그인해 주세요")
+    }
+
+    /** 지표 페이지: Basic 인증 (브라우저가 비밀번호를 물어봅니다). */
+    fun admin(call: ApplicationCall): MetricsReport {
+        val metrics = s.metrics
+        if (metrics == null || s.adminPassword.isNullOrEmpty()) throw ApiError(404, "NOT_FOUND", "없는 주소예요")
+        val given = call.request.headers["Authorization"]?.removePrefix("Basic ")?.let {
+            runCatching { String(Base64.getDecoder().decode(it)).substringAfter(":") }.getOrNull()
+        }
+        if (given == null || !MessageDigest.isEqual(given.toByteArray(), s.adminPassword.toByteArray())) {
+            call.response.headers.append("WWW-Authenticate", "Basic realm=\"pulsecare\", charset=\"UTF-8\"")
+            throw ApiError(401, "UNAUTHORIZED", "비밀번호가 필요해요")
+        }
+        val day = call.request.queryParameters["day"]?.let { runCatching { java.time.LocalDate.parse(it) }.getOrNull() }
+        return day?.let(metrics::report) ?: metrics.report()
     }
 
     routing {
@@ -83,6 +109,16 @@ fun Application.pulsecare(s: Services) {
                 call.respond(HttpStatusCode.NoContent)
             }
 
+            // 이용 통계: 계정과 무관한 설치 ID로 받습니다 (로그인 불필요).
+            post("/events") {
+                s.metrics?.receive(call.receive()) ?: throw ApiError(404, "NOT_FOUND", "없는 주소예요")
+                call.respond(HttpStatusCode.NoContent)
+            }
+            post("/events/forget") {
+                s.metrics?.forget(call.receive<ForgetRequest>().installId) ?: throw ApiError(404, "NOT_FOUND", "없는 주소예요")
+                call.respond(HttpStatusCode.NoContent)
+            }
+
             post("/emergencies") { call.respond(s.emergencies.create(call.user(), call.receive<EmergencyRequest>().signal)) }
             get("/emergencies/{id}") { call.respond(s.emergencies.view(call.user(), call.parameters["id"]!!)) }
             post("/emergencies/{id}/ack") {
@@ -97,6 +133,11 @@ fun Application.pulsecare(s: Services) {
             }
         }
 
+        get("/admin") {
+            call.respondText(Dashboard.html(admin(call)), ContentType.Text.Html)
+        }
+        get("/admin/metrics.json") { call.respond(admin(call)) }
+
         // Cloud Scheduler가 1분마다 부릅니다: 긴급 단계 진행, 저녁 8시 보호자 요약, 보관 기간 지난 기록 삭제.
         post("/internal/tick") {
             if (s.tickSecret.isNullOrEmpty() || call.request.headers["X-Tick-Secret"] != s.tickSecret) {
@@ -105,6 +146,7 @@ fun Application.pulsecare(s: Services) {
             s.emergencies.tick()
             s.family.digest()
             s.family.cleanup()
+            s.metrics?.cleanup()
             call.respond(HttpStatusCode.NoContent)
         }
     }

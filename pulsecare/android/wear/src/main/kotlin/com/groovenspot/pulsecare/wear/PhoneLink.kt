@@ -15,6 +15,11 @@ object PhoneLink {
 
     suspend fun sendSos(context: Context): Boolean = send(context, WatchContract.PATH_SOS, ByteArray(0))
 
+    /** 점수를 봤다고 폰에 알립니다 (폰이 이용 통계 동의를 보고 모읍니다). */
+    suspend fun scoreViewed(context: Context, surface: String, kind: String) {
+        send(context, WatchContract.PATH_EVENT, "score_viewed|$surface|$kind".toByteArray(Charsets.UTF_8))
+    }
+
     /** 앱을 열 때: 리스너가 놓친 최신 요약을 직접 가져옵니다. */
     suspend fun fetchToday(context: Context): WatchToday? = runCatching {
         Wearable.getDataClient(context).dataItems.await().use { items ->

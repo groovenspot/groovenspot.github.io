@@ -36,6 +36,8 @@ object WatchContract {
     const val PATH_MISSION_DONE = "/pulsecare/mission-done"
     const val PATH_SOS = "/pulsecare/sos"
     const val PATH_SOS_RESULT = "/pulsecare/sos-result"
+    /** 워치에서 일어난 일을 폰의 이용 통계로 ("score_viewed|tile|FULL"). 폰이 동의 여부를 보고 버리거나 모읍니다. */
+    const val PATH_EVENT = "/pulsecare/event"
 
     /** 폰이 워치에 돌려주는 SOS 결과: "SENT:2", "NO_ACCOUNT", "FAILED". */
     const val SOS_NO_ACCOUNT = "NO_ACCOUNT"

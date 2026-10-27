@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -46,25 +48,29 @@ private val GOAL_HINTS = mapOf(
  * 만 14세 미만은 쓸 수 없습니다 (법정대리인 동의 절차를 두지 않음).
  */
 @Composable
-fun ConsentScreen(onOpen: (String) -> Unit, onAgree: () -> Unit) {
+fun ConsentScreen(onOpen: (String) -> Unit, onAgree: (analytics: Boolean) -> Unit) {
     var checked by remember { mutableStateOf(emptySet<Legal.Item>()) }
     val all = checked.size == Legal.Item.entries.size
+    val required = Legal.Item.entries.filter { it.required }.all { it in checked }
     OnboardingFrame(
         step = "시작하기 전에",
         title = "펄스케어 이용 동의",
-        subtitle = "펄스케어는 진단이나 치료가 아닌 생활 습관 코칭 서비스예요. 아래 항목에 모두 동의해야 시작할 수 있어요.",
+        subtitle = "펄스케어는 진단이나 치료가 아닌 생활 습관 코칭 서비스예요. 필수 항목에 동의해야 시작할 수 있어요.",
         primary = "동의하고 시작",
-        primaryEnabled = all,
-        onPrimary = onAgree,
+        primaryEnabled = required,
+        onPrimary = { onAgree(Legal.Item.ANALYTICS in checked) },
     ) {
         ConsentRow("전체 동의", all, bold = true) { checked = if (all) emptySet() else Legal.Item.entries.toSet() }
         Legal.Item.entries.forEach { item ->
-            ConsentRow("[필수] ${item.label}", item in checked, onView = item.url?.let { url -> { onOpen(url) } }) {
+            ConsentRow("[${if (item.required) "필수" else "선택"}] ${item.label}", item in checked, onView = item.url?.let { url -> { onOpen(url) } }) {
                 checked = if (item in checked) checked - item else checked + item
             }
-            if (item == Legal.Item.HEALTH) {
-                Text(Legal.HEALTH_SUMMARY, color = Palette.Muted, fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.padding(start = 36.dp))
+            val summary = when (item) {
+                Legal.Item.HEALTH -> Legal.HEALTH_SUMMARY
+                Legal.Item.ANALYTICS -> Legal.ANALYTICS_SUMMARY
+                else -> null
             }
+            summary?.let { Text(it, color = Palette.Muted, fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.padding(start = 36.dp)) }
         }
         if (Legal.Item.AGE !in checked) {
             Text("만 14세 미만은 펄스케어를 쓸 수 없어요.", color = Palette.Muted, fontSize = 13.sp)
@@ -156,12 +162,17 @@ private fun OnboardingFrame(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize().background(Palette.Paper).safeDrawingPadding().padding(24.dp),
     ) {
-        Text(step, color = Palette.Teal, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-        Text(title, color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
-        Text(subtitle, color = Palette.Muted, fontSize = 15.sp, lineHeight = 22.sp)
-        Spacer(Modifier.height(8.dp))
-        content()
-        Spacer(Modifier.weight(1f))
+        // 작은 화면·큰 글씨에서도 버튼이 밀려나지 않게 내용만 스크롤합니다.
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+        ) {
+            Text(step, color = Palette.Teal, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(title, color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
+            Text(subtitle, color = Palette.Muted, fontSize = 15.sp, lineHeight = 22.sp)
+            Spacer(Modifier.height(8.dp))
+            content()
+        }
         Button(
             onClick = onPrimary,
             enabled = primaryEnabled,

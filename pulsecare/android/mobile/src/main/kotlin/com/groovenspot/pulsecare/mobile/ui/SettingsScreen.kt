@@ -71,6 +71,9 @@ fun SettingsContent(
     onOpenUrl: (String) -> Unit = {},
     /** 동의한 날짜 (예: "2027-06-16"). */
     consentDate: String? = null,
+    /** 이용 통계 (선택 동의). */
+    analytics: Boolean = false,
+    onAnalytics: (Boolean) -> Unit = {},
 ) {
     var editing by remember { mutableStateOf<TimeField?>(null) }
     var confirmClear by remember { mutableStateOf(false) }
@@ -147,6 +150,8 @@ fun SettingsContent(
         }
 
         Section("약관 · 개인정보") {
+            SwitchRow("이용 통계 보내기 (선택)", "어떤 기능을 썼는지만, 점수·수치·이름 없이. 끄면 모은 통계도 지워요", analytics, onAnalytics)
+            Divider()
             LinkRow("서비스 이용약관", "펄스케어는 진단·치료가 아닌 웰니스 서비스예요", { onOpenUrl(Legal.TERMS_URL) })
             Divider()
             LinkRow("개인정보 처리방침", consentDate?.let { "$it 동의 · 수집 항목, 보관 기간, 삭제 방법" } ?: "수집 항목, 보관 기간, 삭제 방법", { onOpenUrl(Legal.PRIVACY_URL) })
