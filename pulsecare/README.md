@@ -16,6 +16,7 @@
 | `core/report` | 저녁 요약(미션을 못 했으면 "내일 다시 해볼까요?", 정보 알림 묶음)과 일요일 주간 리포트(완료 일수·주간 배지·포인트, 레벨 올리기 제안/내리기, 같은 목표 4주부터 "평균 수면이 22분 늘었어요" 같은 변화 한 줄, 7일 연속 미완료 시 목표 바꾸기 제안) |
 | `core/alert` | 알림 신호 (12번): 하루 단위 신호 5개, 실시간 고·저심박, 빈도 제한·방해 금지·보호자 요약, 낙상·SOS 연락 흐름, 알림 문구와 잠금화면 문구 |
 | `mobile` | 폰 앱 (Compose). Health Connect에서 지난 30일 수면·HRV·안정시 심박·걸음·활동 칼로리·호흡수·SpO2를 읽어 홈(점수 → 미션 → 알림)을 그립니다. 온보딩(목표, Health Connect 연결), 학습 중 홈(SYS-01), 워치 미착용 시 느낌 입력(SYS-02), 권한 일부 거부 배너(SYS-03). 매일 07:30 아침 리포트 알림(WorkManager): 백그라운드에서 점수를 계산해 보내고, 워치 기록이 늦으면 10:30까지 1시간마다 다시 확인. 잠금화면에는 점수 없이 "오늘의 컨디션이 준비됐어요"만. 매일 21:00 저녁 요약(알림에서 바로 "내일 다시"/"다른 미션으로"), 일요일 주간 리포트 알림과 홈 카드(레벨 도전 수락, 목표 바꾸기). 내 정보: 목표 바꾸기, 쉽게 보기(글자 1.25배, "다른 미션" 숨김, 걷기·수면 미션), 건강 데이터 권한, 아침·저녁·주간 알림 켜고 끄기와 시각, 방해 금지 시간, 건강 알림 신호별 켜고 끄기(긴급은 끌 수 없음), 기록 지우기 |
+| `mobile` 테스트 도구 | 테스트 빌드에만: Health Connect 연결·권한·데이터 출처와 개수, 오늘 점수 계산 내역, 다음 알림 예약 시각, 아침·저녁·주간 알림 지금 보내기. 실기기 테스트 순서는 [TESTING.md](TESTING.md) |
 
 ## 빌드와 테스트
 
@@ -23,7 +24,7 @@
 cd android
 ./gradlew :core:test                    # 로직만 (Android SDK 불필요)
 ./gradlew :mobile:testDebugUnitTest     # 폰 앱 로직 + 화면 렌더링
-./gradlew :mobile:assembleDebug         # APK
+./gradlew :mobile:assembleDebug         # 테스트 APK (CI Artifacts에도 pulsecare-debug-apk로 올라감)
 ./gradlew :mobile:recordPaparazziDebug  # 화면 이미지 → mobile/src/test/snapshots/images
 ```
 

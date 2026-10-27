@@ -64,6 +64,8 @@ fun SettingsContent(
     onPermissions: () -> Unit,
     onClearData: () -> Unit,
     onBack: () -> Unit,
+    /** 디버그 빌드에서만 넘깁니다. */
+    onOpenTestTools: (() -> Unit)? = null,
 ) {
     var editing by remember { mutableStateOf<TimeField?>(null) }
     var confirmClear by remember { mutableStateOf(false) }
@@ -120,6 +122,12 @@ fun SettingsContent(
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
             )
+        }
+
+        onOpenTestTools?.let { open ->
+            Section("테스트 도구 (테스트 빌드)") {
+                LinkRow("데이터·알림 점검", "Health Connect 기록 확인, 알림 지금 보내기", open)
+            }
         }
 
         Section("데이터") {

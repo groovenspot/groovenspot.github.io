@@ -136,6 +136,63 @@ object HealthConnectSource {
         )
     }
 
+    /** 테스트 도구: 항목별로 지난 [days]일 기록이 몇 개, 어느 앱에서 들어왔는지. */
+    data class DiagnosticRow(
+        val label: String,
+        val granted: Boolean,
+        val count: Int,
+        val latest: java.time.Instant?,
+        val sources: Set<String>,
+    )
+
+    suspend fun diagnose(context: Context, days: Long = 30): List<DiagnosticRow> {
+        if (!isAvailable(context)) return emptyList()
+        val client = HealthConnectClient.getOrCreate(context)
+        val granted = client.permissionController.getGrantedPermissions()
+        val end = java.time.Instant.now()
+        val range = TimeRangeFilter.between(end.minus(Duration.ofDays(days)), end)
+        val types: List<Pair<String, KClass<out Record>>> = listOf(
+            "수면" to SleepSessionRecord::class,
+            "HRV" to HeartRateVariabilityRmssdRecord::class,
+            "안정시 심박" to RestingHeartRateRecord::class,
+            "걸음" to StepsRecord::class,
+            "활동 칼로리" to ActiveCaloriesBurnedRecord::class,
+            "호흡수" to RespiratoryRateRecord::class,
+            "산소포화도" to OxygenSaturationRecord::class,
+            "계단" to FloorsClimbedRecord::class,
+            "운동" to ExerciseSessionRecord::class,
+        )
+        return types.map { (label, type) ->
+            val ok = HealthPermission.getReadPermission(type) in granted
+            val records = if (!ok) emptyList() else runCatching {
+                buildList {
+                    var token: String? = null
+                    do {
+                        val response = client.readRecords(ReadRecordsRequest(type, range, pageToken = token))
+                        addAll(response.records)
+                        token = response.pageToken
+                    } while (token != null && size < 5_000)
+                }
+            }.getOrDefault(emptyList())
+            DiagnosticRow(
+                label = label,
+                granted = ok,
+                count = records.size,
+                latest = records.maxOfOrNull { it.metadata.lastModifiedTime },
+                sources = records.map { appName(it.metadata.dataOrigin.packageName) }.toSet(),
+            )
+        }
+    }
+
+    private fun appName(pkg: String): String = when (pkg) {
+        "com.sec.android.app.shealth" -> "삼성 헬스"
+        "com.google.android.apps.fitness" -> "Google Fit"
+        "com.fitbit.FitbitMobile" -> "Fitbit"
+        "com.garmin.android.apps.connectmobile" -> "Garmin Connect"
+        "com.google.android.apps.healthdata", "com.android.healthconnect.controller" -> "Health Connect"
+        else -> pkg
+    }
+
     private fun exerciseKind(type: Int): ExerciseKind = when (type) {
         ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
         ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,

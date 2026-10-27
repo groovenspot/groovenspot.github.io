@@ -5,6 +5,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import androidx.work.workDataOf
+import kotlinx.coroutines.flow.first
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.data.NotificationSettings
 import java.time.Duration
@@ -52,6 +54,19 @@ class DailyJob(
 
     fun retryLater(context: Context) = enqueue(context, Duration.ofHours(1), ExistingWorkPolicy.APPEND_OR_REPLACE)
 
+    /** 테스트 도구: 정해진 시각을 기다리지 않고 지금 한 번 실행합니다. 정기 예약은 그대로 둡니다. */
+    fun runNow(context: Context, weekly: Boolean = false) {
+        val request = OneTimeWorkRequest.Builder(worker.java)
+            .setInputData(workDataOf(FORCE to true, FORCE_WEEKLY to weekly))
+            .build()
+        WorkManager.getInstance(context).enqueueUniqueWork("$name-now", ExistingWorkPolicy.REPLACE, request)
+    }
+
+    /** 다음 정기 실행 예정 시각 (테스트 도구 표시용). 없으면 null. */
+    suspend fun nextRunMillis(context: Context): Long? =
+        WorkManager.getInstance(context).getWorkInfosForUniqueWorkFlow(name).first()
+            .firstOrNull { !it.state.isFinished }?.nextScheduleTimeMillis?.takeIf { it != Long.MAX_VALUE }
+
     private fun enqueue(context: Context, delay: Duration, policy: ExistingWorkPolicy) {
         val request = OneTimeWorkRequest.Builder(worker.java)
             .setInitialDelay(delay.toMillis(), TimeUnit.MILLISECONDS)
@@ -60,6 +75,9 @@ class DailyJob(
     }
 
     companion object {
+        const val FORCE = "force"
+        const val FORCE_WEEKLY = "force_weekly"
+
         /** [now] 이후 처음 오는 [at]까지 (지금이 정확히 그 시각이면 내일). */
         fun delayUntilNext(now: LocalDateTime, at: LocalTime): Duration {
             var next = now.toLocalDate().atTime(at)

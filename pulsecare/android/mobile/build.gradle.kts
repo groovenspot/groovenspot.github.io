@@ -33,6 +33,8 @@ android {
     }
     buildFeatures {
         compose = true
+        // 테스트 도구(디버그 빌드에서만 보임)
+        buildConfig = true
     }
 }
 

@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.Density
 import androidx.core.net.toUri
 import androidx.health.connect.client.PermissionController
 import com.groovenspot.pulsecare.mission.Goal
+import com.groovenspot.pulsecare.mobile.BuildConfig
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.data.Profile
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
@@ -38,6 +39,8 @@ import com.groovenspot.pulsecare.mobile.notify.Notifications
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.mobile.today.TodayPlanner
 import com.groovenspot.pulsecare.mobile.today.TodayRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
@@ -48,7 +51,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Stage { GOAL, CONNECT, HOME, SETTINGS }
+private enum class Stage { GOAL, CONNECT, HOME, SETTINGS, TEST_TOOLS }
 
 @Composable
 private fun App() {
@@ -127,8 +130,10 @@ private fun App() {
                     stage = Stage.HOME
                     refresh++
                 },
+                onOpenTestTools = if (BuildConfig.DEBUG) ({ stage = Stage.TEST_TOOLS }) else null,
             )
         }
+        stage == Stage.TEST_TOOLS -> TestTools(onBack = { stage = Stage.SETTINGS })
         else -> Home(
             store,
             profile!!,
@@ -215,6 +220,37 @@ private fun Home(
         onOpenSettings = onOpenSettings,
         easyMode = profile.seniorMode,
     ) }
+}
+
+@Composable
+private fun TestTools(onBack: () -> Unit) {
+    val context = LocalContext.current
+    var diagnostics by remember { mutableStateOf<Diagnostics?>(null) }
+    var reload by remember { mutableIntStateOf(0) }
+    LaunchedEffect(reload) {
+        diagnostics = null
+        diagnostics = withContext(Dispatchers.IO) {
+            val granted = HealthConnectSource.granted(context)
+            Diagnostics(
+                healthConnectAvailable = HealthConnectSource.isAvailable(context),
+                backgroundSupported = runCatching { HealthConnectSource.backgroundSupported(context) }.getOrDefault(false),
+                backgroundGranted = HealthConnectSource.BACKGROUND in granted,
+                notificationsAllowed = Notifications.canPost(context),
+                rows = HealthConnectSource.diagnose(context),
+                home = runCatching { TodayRepository.refresh(context) }.getOrNull(),
+                nextMorning = MorningSchedule.nextRunMillis(context),
+                nextEvening = EveningSchedule.nextRunMillis(context),
+            )
+        }
+    }
+    DiagnosticsContent(
+        d = diagnostics,
+        onRunMorning = { MorningSchedule.runNow(context) },
+        onRunEvening = { EveningSchedule.runNow(context) },
+        onRunWeekly = { EveningSchedule.runNow(context, weekly = true) },
+        onReload = { reload++ },
+        onBack = onBack,
+    )
 }
 
 @Composable

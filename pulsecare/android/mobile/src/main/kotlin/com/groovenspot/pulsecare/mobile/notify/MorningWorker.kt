@@ -31,9 +31,12 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         val store = AppStore.get(context)
         val now = LocalDateTime.now()
         val today = now.toLocalDate()
-        if (!store.settings.morningEnabled) return Result.success()
-        if (store.profile == null || store.morningSentOn == today) {
-            MorningSchedule.scheduleTomorrow(context, now)
+        // 테스트 도구의 "지금 보내기": 보낸 기록·재시도·다음 예약을 건너뜁니다.
+        val force = inputData.getBoolean(DailyJob.FORCE, false)
+        fun next() { if (!force) MorningSchedule.scheduleTomorrow(context, now) }
+        if (!force && !store.settings.morningEnabled) return Result.success()
+        if (store.profile == null || (!force && store.morningSentOn == today)) {
+            next()
             return Result.success()
         }
 
@@ -41,7 +44,7 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         if (!granted.containsAll(HealthConnectSource.required) || HealthConnectSource.BACKGROUND !in granted) {
             Notifications.morning(context, "오늘의 컨디션을 확인해 보세요", "앱을 열면 어젯밤 기록으로 점수를 계산해요", MorningReport.PUBLIC)
             store.morningSentOn = today
-            MorningSchedule.scheduleTomorrow(context, now)
+            next()
             return Result.success()
         }
 
@@ -52,11 +55,11 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
             null
         }
         if (home == null) {
-            MorningSchedule.retryLater(context)
+            if (!force) MorningSchedule.retryLater(context)
             return Result.success()
         }
         // 워치가 아직 동기화 전일 수 있으니 10:30까지는 1시간마다 다시 봅니다.
-        if (home.score.kind == ScoreResult.Kind.NO_DATA && now.toLocalTime() < morningLastRetry(store.settings)) {
+        if (!force && home.score.kind == ScoreResult.Kind.NO_DATA && now.toLocalTime() < morningLastRetry(store.settings)) {
             MorningSchedule.retryLater(context)
             return Result.success()
         }
@@ -67,7 +70,7 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         store.morningSentOn = today
 
         sendCautions(context, store, home.alertDetections.filter { it.signal.grade == Grade.CAUTION }, now)
-        MorningSchedule.scheduleTomorrow(context, now)
+        next()
         return Result.success()
     }
 

@@ -30,8 +30,10 @@ class EveningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         val zone = ZoneId.systemDefault()
         val now = LocalDateTime.now(zone)
         val today = now.toLocalDate()
-        if (store.profile == null || store.eveningSentOn == today) {
-            EveningSchedule.scheduleTomorrow(context, now)
+        val force = inputData.getBoolean(DailyJob.FORCE, false)
+        val forceWeekly = inputData.getBoolean(DailyJob.FORCE_WEEKLY, false)
+        if (store.profile == null || (!force && store.eveningSentOn == today)) {
+            if (!force) EveningSchedule.scheduleTomorrow(context, now)
             return Result.success()
         }
 
@@ -45,7 +47,7 @@ class EveningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         }
 
         val settings = store.settings
-        store.today?.takeIf { it.date == today && settings.eveningEnabled }?.let { mission ->
+        store.today?.takeIf { it.date == today && (settings.eveningEnabled || force) && !forceWeekly }?.let { mission ->
             val info = home?.alertDetections.orEmpty().filter { it.signal.grade == Grade.INFO }.map { AlertText.forSelf(it).body }
             EveningSummary.of(MissionLibrary[mission.missionId], mission.completed, info)?.let {
                 Notifications.evening(context, it.title, it.body, if (it.askRetry) mission.missionId else null)
@@ -53,9 +55,9 @@ class EveningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         }
         store.eveningSentOn = today
 
-        if (today.dayOfWeek == DayOfWeek.SUNDAY && settings.weeklyEnabled) weekly(context, store, today, zone, background)
+        if (forceWeekly || (today.dayOfWeek == DayOfWeek.SUNDAY && settings.weeklyEnabled)) weekly(context, store, today, zone, background)
 
-        EveningSchedule.scheduleTomorrow(context, now)
+        if (!force) EveningSchedule.scheduleTomorrow(context, now)
         return Result.success()
     }
 
