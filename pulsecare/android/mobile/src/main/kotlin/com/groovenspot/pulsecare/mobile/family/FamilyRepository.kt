@@ -41,6 +41,17 @@ object FamilyRepository {
         ServerApi(BuildConfig.SERVER_URL, token).updateMe(phone = phone?.takeIf { it.isNotBlank() }, pushToken = store.pushToken)
     }
 
+    /** 옛 폰에서 새 폰으로 옮길 코드. */
+    suspend fun transferCode(context: Context): Invite = io { api(context)!!.transferCode() }
+
+    /** 새 폰에서 코드로 기존 가족 계정을 불러옵니다. 옛 폰은 바로 로그아웃돼요. */
+    suspend fun restore(context: Context, code: String): Person = io {
+        val store = AppStore.get(context)
+        val (id, token) = ServerApi(BuildConfig.SERVER_URL).redeemTransfer(code)
+        store.account = id to token
+        ServerApi(BuildConfig.SERVER_URL, token).updateMe(pushToken = store.pushToken)
+    }
+
     suspend fun me(context: Context): Person? = io { api(context)?.me() }
 
     suspend fun family(context: Context): Family? = io {

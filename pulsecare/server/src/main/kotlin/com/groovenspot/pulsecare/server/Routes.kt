@@ -86,6 +86,10 @@ fun Application.pulsecare(s: Services) {
                 call.respond(HttpStatusCode.NoContent)
             }
 
+            // 새 폰으로 옮기기: 옛 폰이 코드를 만들고, 새 폰이 로그인 없이 코드로 받습니다.
+            post("/me/transfer") { call.respond(s.family.transferCode(call.user())) }
+            post("/transfer") { call.respond(s.family.redeemTransfer(call.receive<AcceptRequest>().code)) }
+
             post("/invites") { call.respond(s.family.invite(call.user(), call.receive<InviteRequest>().role)) }
             get("/invites/{code}") {
                 call.user()

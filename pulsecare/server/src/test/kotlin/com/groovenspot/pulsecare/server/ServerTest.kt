@@ -52,7 +52,7 @@ class ServerTest {
         assumeTrue("PULSECARE_TEST_DB not set", dbUrl.isNotEmpty())
         val ds = PGSimpleDataSource().apply { setURL(dbUrl) }
         val db = Db(ds)
-        db.tx { exec("drop table if exists emergencies, sent, summaries, links, invites, users cascade") }
+        db.tx { exec("drop table if exists transfers, emergencies, sent, summaries, links, invites, users cascade") }
         db.migrate()
         val push = Push { token, m -> pushes += Sent(token, m); true }
         services = Services(FamilyService(db, push, clock), EmergencyService(db, push, clock), "secret")
@@ -274,6 +274,26 @@ class ServerTest {
         assertEquals(HttpStatusCode.NoContent, c.delete("/v1/me") { auth(mom.token) }.status)
         assertTrue(c.family(gs[0]).wearers.isEmpty())
         assertEquals(HttpStatusCode.Unauthorized, c.get("/v1/me") { auth(mom.token) }.status)
+    }
+
+    @Test
+    fun transferMovesAccountAndRetiresOldPhone() = run { c ->
+        val (mom, gs) = c.linked("민지")
+        val t: TransferResponse = c.post("/v1/me/transfer") { auth(mom.token) }.body()
+        assertEquals(10, t.code.length)
+        assertEquals("TRANSFER_INVALID", c.post("/v1/transfer") { json(AcceptRequest("WRONGCODE1")) }.error())
+
+        val moved: SignUpResponse = c.post("/v1/transfer") { json(AcceptRequest(t.code.lowercase())) }.body()
+        assertEquals(mom.id, moved.userId)
+        // 옛 폰은 더 이상 안 되고, 새 폰은 같은 가족을 봅니다.
+        assertEquals(HttpStatusCode.Unauthorized, c.get("/v1/me") { auth(mom.token) }.status)
+        val f: Family = c.get("/v1/family") { auth(moved.token) }.body()
+        assertEquals(listOf(gs[0].id), f.guardians.map { it.person.userId })
+        // 한 번만, 10분.
+        assertEquals("TRANSFER_INVALID", c.post("/v1/transfer") { json(AcceptRequest(t.code)) }.error())
+        val late: TransferResponse = c.post("/v1/me/transfer") { auth(moved.token) }.body()
+        clock.advance(11 * 60)
+        assertEquals("TRANSFER_INVALID", c.post("/v1/transfer") { json(AcceptRequest(late.code)) }.error())
     }
 
     @Test

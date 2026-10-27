@@ -61,6 +61,34 @@ class FamilyService(
     /** 탈퇴: 이 사람의 모든 기록과 연결을 지웁니다 (on delete cascade). */
     fun deleteMe(userId: String) = db.tx { exec("delete from users where id = ?", userId) }
 
+    /** 옛 폰에서: 새 폰에 입력할 코드. 이전 코드는 지웁니다. */
+    fun transferCode(userId: String): TransferResponse {
+        val code = (1..TRANSFER_LENGTH).map { CODE_ALPHABET[random.nextInt(CODE_ALPHABET.length)] }.joinToString("")
+        val expires = now() + TRANSFER_TTL.toMillis()
+        db.tx {
+            exec("delete from transfers where user_id = ?", userId)
+            exec("insert into transfers (code, user_id, expires_at) values (?, ?, ?)", code, userId, expires)
+        }
+        return TransferResponse(code, expires)
+    }
+
+    /**
+     * 새 폰에서: 코드로 같은 계정의 새 토큰을 받습니다. 옛 폰 토큰은 바로 무효가 되고 푸시 토큰도 비웁니다
+     * (긴급 알림이 옛 폰으로 가지 않도록, 새 폰이 곧 올립니다). 코드를 틀리면 같은 결과로 실패합니다.
+     */
+    fun redeemTransfer(rawCode: String): SignUpResponse {
+        val code = normalize(rawCode)
+        val token = ByteArray(32).also(random::nextBytes).let { Base64.getUrlEncoder().withoutPadding().encodeToString(it) }
+        val userId = db.tx {
+            val id = query("select user_id from transfers where code = ? and expires_at > ? for update", code, now()) { it.getString(1) }.firstOrNull()
+                ?: throw ApiError(404, "TRANSFER_INVALID", "코드가 맞지 않거나 10분이 지났어요. 옛 폰에서 새 코드를 만들어 주세요")
+            exec("delete from transfers where code = ?", code)
+            exec("update users set token_hash = ?, push_token = null, last_seen = ? where id = ?", hash(token), now(), id)
+            id
+        }
+        return SignUpResponse(userId, token)
+    }
+
     // --- 초대와 연결 ---
 
     fun invite(userId: String, role: Role): InviteResponse {
@@ -203,6 +231,7 @@ class FamilyService(
             exec("delete from summaries where day < ?", today.minusDays(SUMMARY_DAYS).toString())
             exec("delete from sent where day < ?", today.minusDays(SENT_DAYS).toString())
             exec("delete from invites where expires_at < ?", now - Duration.ofDays(INVITE_KEEP_DAYS).toMillis())
+            exec("delete from transfers where expires_at < ?", now)
             exec(
                 "delete from emergencies where status <> ? and closed_at < ?",
                 EmergencyService.ACTIVE, now - Duration.ofDays(EMERGENCY_DAYS).toMillis(),
@@ -267,6 +296,8 @@ class FamilyService(
         private const val CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
         private val INVITE_DAYS = Duration.ofDays(7)
         private val DIGEST_AT = LocalTime.of(20, 0)
+        private const val TRANSFER_LENGTH = 10
+        private val TRANSFER_TTL = Duration.ofMinutes(10)
         const val SUMMARY_DAYS = 90L
         const val SENT_DAYS = 30L
         const val INVITE_KEEP_DAYS = 30L

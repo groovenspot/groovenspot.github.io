@@ -31,6 +31,7 @@
 |---|---|---|
 | POST | /v1/users | 계정 만들기 `{name}` → `{userId, token}` (이후 `Authorization: Bearer <token>`) |
 | GET·PUT·DELETE | /v1/me | 내 이름·전화번호·푸시 토큰, 탈퇴 |
+| POST | /v1/me/transfer · /v1/transfer | 새 폰으로 옮기기: 옛 폰이 10자리 코드(10분, 한 번)를 만들고 새 폰이 로그인 없이 `{code}`로 같은 계정의 새 토큰을 받음. 옛 폰 토큰·푸시 토큰은 즉시 무효 |
 | POST | /v1/invites | 초대 코드 `{role}` |
 | GET | /v1/invites/{code} | 수락 전 미리보기 |
 | POST | /v1/invites/accept | 수락 `{code}` |
@@ -113,7 +114,7 @@ DATABASE_URL="jdbc:postgresql://localhost:5432/pulsecare?user=postgres" TICK_SEC
 
 ## 아직 없는 것
 
-- 전화번호·카카오 로그인 (지금은 기기별 토큰 계정, 폰을 바꾸면 다시 초대)
+- 전화번호·카카오 로그인 (지금은 기기별 토큰 계정. 폰을 바꿀 때는 옮기기 코드, 옛 폰을 잃어버리면 다시 초대)
 - 긴급 알림의 위치 (위치 권한·동의 화면과 함께)
 - 초대 코드 입력 시도 제한
 - AI 챗·결제 이벤트 (기능이 생길 때)

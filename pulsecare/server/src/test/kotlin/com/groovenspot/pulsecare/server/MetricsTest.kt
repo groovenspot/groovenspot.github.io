@@ -40,7 +40,7 @@ class MetricsTest {
     fun setUp() {
         assumeTrue("PULSECARE_TEST_DB not set", dbUrl.isNotEmpty())
         db = Db(PGSimpleDataSource().apply { setURL(dbUrl) })
-        db.tx { exec("drop table if exists events, active_days, signups, forgotten, emergencies, sent, summaries, links, invites, users cascade") }
+        db.tx { exec("drop table if exists events, active_days, signups, forgotten, transfers, emergencies, sent, summaries, links, invites, users cascade") }
         db.migrate()
         metrics = MetricsService(db, clock)
         val push = Push { _, _ -> true }

@@ -16,6 +16,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable data class InviteResponse(val code: String, val expiresAt: Long)
 
+/** 새 폰으로 옮기기 코드 (10분, 한 번만). */
+@Serializable data class TransferResponse(val code: String, val expiresAt: Long)
+
 @Serializable data class AcceptRequest(val code: String)
 
 /** 수락 전에 보여줄 것: 누가, 어떤 역할로 초대했는지 (받는 사람이 무엇에 동의하는지 알 수 있게). */

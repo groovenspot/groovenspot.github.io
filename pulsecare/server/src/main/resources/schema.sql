@@ -109,3 +109,11 @@ create table if not exists chat_usage (
     count int not null,
     primary key (install_id, day)
 )
+;
+
+-- 새 폰으로 계정 옮기기: 10분, 한 번만. 쓰면 옛 폰 토큰은 더 이상 통하지 않습니다.
+create table if not exists transfers (
+    code text primary key,
+    user_id text not null references users(id) on delete cascade,
+    expires_at bigint not null
+)

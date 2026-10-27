@@ -472,7 +472,13 @@ private fun FamilyTab(onOpenSettings: () -> Unit, guardianMode: Boolean = false)
             ui = try {
                 block().copy(busy = false, now = Instant.now())
             } catch (e: ServerError) {
-                ui.copy(busy = false, error = e.message)
+                if (e.code == "UNAUTHORIZED") {
+                    // 다른 폰으로 옮겼거나 탈퇴한 계정: 이 폰의 계정 정보를 지웁니다.
+                    AppStore.get(context).account = null
+                    ui.copy(busy = false, me = null, family = null, error = "가족 계정이 다른 폰으로 옮겨져 이 폰에서는 로그아웃됐어요.")
+                } else {
+                    ui.copy(busy = false, error = e.message)
+                }
             } catch (e: Exception) {
                 ui.copy(busy = false, error = "서버에 연결하지 못했어요. 인터넷을 확인해 주세요.")
             }
@@ -565,6 +571,14 @@ private fun FamilyTab(onOpenSettings: () -> Unit, guardianMode: Boolean = false)
         onReload = { reload++ },
         onOpenSettings = onOpenSettings,
         guardianMode = guardianMode,
+        onRestore = { code ->
+            call {
+                val me = FamilyRepository.restore(context, code)
+                ui.copy(me = me, family = FamilyRepository.family(context))
+            }
+        },
+        onTransfer = { call { ui.copy(transfer = FamilyRepository.transferCode(context)) } },
+        onDismissTransfer = { ui = ui.copy(transfer = null) },
     )
 }
 

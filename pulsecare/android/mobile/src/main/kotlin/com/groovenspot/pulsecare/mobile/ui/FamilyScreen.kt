@@ -67,6 +67,8 @@ data class FamilyUi(
     val pendingAccept: Triple<String, String, String>? = null,
     val busy: Boolean = false,
     val error: String? = null,
+    /** 방금 만든 새 폰 옮기기 코드. */
+    val transfer: Invite? = null,
     val now: Instant = Instant.now(),
 )
 
@@ -94,6 +96,11 @@ fun FamilyContent(
     onAlertFeedback: (String, FeedbackResponse) -> Unit = { _, _ -> },
     /** 워치 없는 보호자: "나를 챙기는 보호자"와 "보호자 초대"를 숨깁니다. */
     guardianMode: Boolean = false,
+    /** 새 폰에서 기존 계정 불러오기 (코드). */
+    onRestore: (String) -> Unit = {},
+    /** 옛 폰에서 옮기기 코드 만들기. */
+    onTransfer: () -> Unit = {},
+    onDismissTransfer: () -> Unit = {},
 ) {
     var consentInvite by remember { mutableStateOf(false) }
     var confirmUnlink by remember { mutableStateOf<Person?>(null) }
@@ -124,7 +131,10 @@ fun FamilyContent(
                     lineHeight = 20.sp,
                 )
             }
-            ui.me == null -> StartPanel(ui.busy, onStart)
+            ui.me == null -> {
+                StartPanel(ui.busy, onStart)
+                RestorePanel(ui.busy, onRestore)
+            }
             else -> {
                 val family = ui.family
                 family?.wearers?.flatMap { w -> w.emergencies.map { w to it } }?.forEach { (w, e) -> EmergencyCard(w, e, ui, onAck, onCall) }
@@ -155,6 +165,7 @@ fun FamilyContent(
                     )
                 }
                 Text("내 이름: ${ui.me.name}" + (ui.me.phone?.let { " · $it" } ?: ""), color = Palette.Muted, fontSize = 13.sp)
+                TextButton(onClick = onTransfer, enabled = !ui.busy) { Text("새 폰으로 옮기기", color = Palette.Teal, fontSize = 13.sp) }
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -189,6 +200,23 @@ fun FamilyContent(
             },
             confirmButton = { TextButton(onClick = { onAccept(code) }) { Text(if (wearer) "동의하고 연결" else "연결하기") } },
             dismissButton = { TextButton(onClick = onDismissAccept) { Text("취소") } },
+        )
+    }
+    ui.transfer?.let { t ->
+        AlertDialog(
+            onDismissRequest = onDismissTransfer,
+            title = { Text("새 폰에 이 코드를 입력하세요") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(t.code.chunked(5).joinToString(" "), color = Palette.Navy, fontSize = 28.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Text(
+                        "새 폰의 펄스케어 > 가족 탭 > \"폰을 바꿨어요\"에 입력하면 이름, 가족 연결, 연락 순서가 그대로 옮겨져요. " +
+                            "10분 동안 한 번만 쓸 수 있고, 옮기면 이 폰은 가족 계정에서 로그아웃돼요. 다른 사람에게 보여 주지 마세요.",
+                        lineHeight = 21.sp,
+                    )
+                }
+            },
+            confirmButton = { TextButton(onClick = onDismissTransfer) { Text("닫기") } },
         )
     }
     confirmUnlink?.let { p ->
@@ -259,6 +287,32 @@ private fun StartPanel(busy: Boolean, onStart: (String, String) -> Unit) {
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth(),
         ) { Text(if (busy) "만드는 중…" else "시작하기") }
+    }
+}
+
+/** 폰을 바꾼 사람: 옛 폰에서 만든 코드로 기존 계정을 불러옵니다. */
+@Composable
+private fun RestorePanel(busy: Boolean, onRestore: (String) -> Unit) {
+    var code by remember { mutableStateOf("") }
+    FamilyPanel {
+        Text("폰을 바꿨어요", color = Palette.Navy, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text("옛 폰의 가족 탭 > \"새 폰으로 옮기기\"에서 받은 10자리 코드를 넣으면 가족 연결을 그대로 가져와요.", color = Palette.Muted, fontSize = 13.sp, lineHeight = 18.sp)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = code,
+                onValueChange = { code = it.uppercase().filter { c -> c.isLetterOrDigit() }.take(10) },
+                label = { Text("옮기기 코드 10자리") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
+                modifier = Modifier.weight(1f),
+            )
+            Button(
+                onClick = { onRestore(code) },
+                enabled = code.length == 10 && !busy,
+                colors = ButtonDefaults.buttonColors(containerColor = Palette.Navy),
+                shape = RoundedCornerShape(12.dp),
+            ) { Text("불러오기") }
+        }
     }
 }
 

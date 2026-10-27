@@ -114,5 +114,10 @@ class FamilyScreenshotTest {
     }
 
     @Test
+    fun transferCode() = render(
+        FamilyUi(configured = true, pushConfigured = true, me = mom, now = now, family = Family(emptyList(), emptyList()), transfer = Invite("K7Q2M9XAB4", now.toEpochMilli())),
+    )
+
+    @Test
     fun start() = render(FamilyUi(configured = true, pushConfigured = true, me = null))
 }

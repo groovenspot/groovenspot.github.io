@@ -67,6 +67,13 @@ class ServerApi(private val baseUrl: String, private val token: String? = null) 
         call("DELETE", "/v1/me")
     }
 
+    /** 옛 폰: 새 폰에 입력할 코드 (10분). */
+    fun transferCode(): Invite = call("POST", "/v1/me/transfer")!!.let { Invite(it.getString("code"), it.getLong("expiresAt")) }
+
+    /** 새 폰: 코드로 같은 계정을 받습니다 (사용자 ID, 새 토큰). */
+    fun redeemTransfer(code: String): Pair<String, String> =
+        call("POST", "/v1/transfer", JSONObject().put("code", code))!!.let { it.getString("userId") to it.getString("token") }
+
     /** [role]: 내가 맡을 역할. "GUARDIAN"(부모님 초대) 또는 "WEARER"(보호자 초대). */
     fun invite(role: String): Invite =
         call("POST", "/v1/invites", JSONObject().put("role", role))!!.let { Invite(it.getString("code"), it.getLong("expiresAt")) }
