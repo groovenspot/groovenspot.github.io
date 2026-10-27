@@ -44,6 +44,7 @@
 | POST | /v1/events | 이용 통계 묶음 `{installId, appVersion, events:[{name, at, props}]}` (로그인 없음, 사전에 없는 이벤트·속성은 버림) |
 | POST | /v1/events/forget | 이 설치의 통계 삭제 |
 | GET | /admin · /admin/metrics.json | 운영자 지표 (Basic 인증, `ADMIN_PASSWORD`) · `?day=YYYY-MM-DD` |
+| POST | /v1/chat | AI 건강 상담 `{installId, messages:[{role, text}], context?}` → `{reply, crisis, remainingToday}` (하루 30번, 위기·응급 표현은 모델 없이 고정 안내) |
 | POST | /internal/tick | 헤더 `X-Tick-Secret` |
 
 ## 지표 (기획서 22번)
@@ -64,6 +65,15 @@
 | 유료 전환 조건 | MAU 10만 이상 또는 월별 30일 리텐션 30% 이상 3개월 연속 | - |
 
 통계 원본은 13개월 뒤 자동 삭제합니다.
+
+## AI 건강 상담
+
+`ANTHROPIC_API_KEY`가 있으면 켜지고, 모델은 `CHAT_MODEL`(기본 `claude-opus-5-5`)입니다. 고정 지침은 캐시(cache_control)하고 오늘 화면 정보만 뒤에 붙입니다.
+Opus·Fable·Sonnet 5.5 모델은 거절 시 서버가 다른 모델로 다시 시도합니다(`fallbacks: "default"`).
+
+- 기획서 비용 가정(질문 1건 약 0.7원)은 `CHAT_MODEL=claude-haiku-5-5` 기준입니다. 기본값 Opus 5.5는 답이 더 낫지만 1건당 수십 원이 들 수 있어, 운영 전에 실제 질문으로 비교해 정하세요.
+- 자해·자살·응급 증상 표현은 모델에 보내기 전에 서버가 109·1577-0199·119 안내로 답합니다 (`Safety`).
+- 대화 내용은 저장하지 않고, 설치 ID별 하루 질문 수만 7일 보관합니다.
 
 ## 로컬 실행과 테스트
 

@@ -100,3 +100,12 @@ create table if not exists forgotten (
 
 -- 가입 방식: watch(워치 연결) / guardian(워치 없는 보호자). 워치 연동률·첫 점수 도달률에서 보호자 전용은 뺍니다.
 alter table signups add column if not exists mode text
+;
+
+-- AI 상담 사용량 (설치 ID별 하루 질문 수). 대화 내용은 저장하지 않습니다.
+create table if not exists chat_usage (
+    install_id text not null,
+    day date not null,
+    count int not null,
+    primary key (install_id, day)
+)

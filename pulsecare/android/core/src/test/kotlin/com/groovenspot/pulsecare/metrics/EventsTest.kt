@@ -13,7 +13,7 @@ class EventsTest {
         assertEquals(keys.size, keys.toSet().size)
         assertTrue(keys.all { Regex("[a-z_]+").matches(it) })
         assertEquals(EventName.MISSION_COMPLETED, EventName.of("mission_completed"))
-        assertNull(EventName.of("chat_message_sent"))
+        assertNull(EventName.of("paywall_viewed"))
     }
 
     @Test

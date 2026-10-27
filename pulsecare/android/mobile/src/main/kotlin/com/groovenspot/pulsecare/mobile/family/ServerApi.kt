@@ -96,6 +96,17 @@ class ServerApi(private val baseUrl: String, private val token: String? = null) 
 
     fun cancel(id: String): EmergencyView = emergency(call("POST", "/v1/emergencies/$id/cancel")!!)
 
+    /** AI 건강 상담. 돌려주는 값: (답, 위기 안내인지, 오늘 남은 질문 수). */
+    fun chat(installId: String, turns: List<Pair<String, String>>, context: JSONObject?): Triple<String, Boolean, Int> =
+        call(
+            "POST",
+            "/v1/chat",
+            JSONObject()
+                .put("installId", installId)
+                .put("messages", JSONArray(turns.map { (role, text) -> JSONObject().put("role", role).put("text", text) }))
+                .apply { context?.let { put("context", it) } },
+        )!!.let { Triple(it.getString("reply"), it.optBoolean("crisis"), it.optInt("remainingToday", -1)) }
+
     /** 이용 통계 (로그인 없이 설치 ID로). */
     fun sendEvents(body: JSONObject) {
         call("POST", "/v1/events", body)

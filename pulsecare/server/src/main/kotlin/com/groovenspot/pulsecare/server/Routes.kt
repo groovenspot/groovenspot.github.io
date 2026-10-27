@@ -31,6 +31,7 @@ class Services(
     val metrics: MetricsService? = null,
     /** 지표 페이지 비밀번호 (Basic 인증, 사용자 이름은 아무거나). 비우면 페이지가 없습니다. */
     val adminPassword: String? = null,
+    val chat: ChatService? = null,
 )
 
 fun Application.pulsecare(s: Services) {
@@ -119,6 +120,12 @@ fun Application.pulsecare(s: Services) {
                 call.respond(HttpStatusCode.NoContent)
             }
 
+            // AI 건강 상담: 계정 없이 설치 ID로 (하루 횟수 제한).
+            post("/chat") {
+                val chat = s.chat ?: throw ApiError(503, "CHAT_OFF", "AI 상담이 아직 켜지지 않았어요")
+                call.respond(chat.chat(call.receive()))
+            }
+
             post("/emergencies") { call.respond(s.emergencies.create(call.user(), call.receive<EmergencyRequest>().signal)) }
             get("/emergencies/{id}") { call.respond(s.emergencies.view(call.user(), call.parameters["id"]!!)) }
             post("/emergencies/{id}/ack") {
@@ -147,6 +154,7 @@ fun Application.pulsecare(s: Services) {
             s.family.digest()
             s.family.cleanup()
             s.metrics?.cleanup()
+            s.chat?.cleanup()
             call.respond(HttpStatusCode.NoContent)
         }
     }

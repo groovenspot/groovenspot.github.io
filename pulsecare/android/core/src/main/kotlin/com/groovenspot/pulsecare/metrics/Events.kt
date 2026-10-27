@@ -3,7 +3,7 @@ package com.groovenspot.pulsecare.metrics
 /**
  * 이벤트 사전 (기획서 22번). 여기 없는 이벤트·속성은 앱이 보내지 않고 서버도 받지 않습니다.
  * 담지 않는 것: 점수 값, 걸음·심박 등 수치, 체크인 응답 값, 이름·연락처, 대화 원문.
- * AI 챗·결제 이벤트는 그 기능이 생길 때 추가합니다.
+ * 결제 이벤트는 유료 전환 때 추가합니다.
  */
 enum class EventName(val key: String, val props: Set<String>) {
     // 가입
@@ -25,6 +25,10 @@ enum class EventName(val key: String, val props: Set<String>) {
 
     /** 진료용 요약 PDF를 만들어 공유 시트를 엶 (기간만). */
     REPORT_EXPORTED("report_exported", setOf("days")),
+
+    // AI 챗 (대화 원문은 담지 않음)
+    CHAT_MESSAGE_SENT("chat_message_sent", setOf("topic")),
+    CHAT_CRISIS_ROUTED("chat_crisis_routed", emptySet()),
 
     // 가족
     FAMILY_INVITE_SENT("family_invite_sent", setOf("role")),

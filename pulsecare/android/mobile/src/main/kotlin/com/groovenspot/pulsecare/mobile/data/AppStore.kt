@@ -150,6 +150,11 @@ class AppStore(private val prefs: SharedPreferences) {
 
     val consentAt: Long get() = prefs.getLong(KEY_CONSENT_AT, 0)
 
+    /** AI 상담 안내(국외 전송)에 동의함. */
+    var chatConsent: Boolean
+        get() = prefs.getBoolean("chat_consent", false)
+        set(value) = prefs.edit().putBoolean("chat_consent", value).apply()
+
     /** 이용 통계 선택 동의. */
     var analyticsConsent: Boolean
         get() = prefs.getBoolean(KEY_ANALYTICS, false)

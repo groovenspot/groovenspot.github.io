@@ -33,6 +33,8 @@ dependencies {
     implementation(libs.hikari)
     implementation(libs.google.auth)
     implementation(libs.logback)
+    // AI 건강 상담 (Claude API)
+    implementation(libs.anthropic.java)
 
     testImplementation(libs.junit)
     testImplementation(libs.ktor.server.test.host)

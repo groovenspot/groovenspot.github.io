@@ -70,7 +70,7 @@ class MetricsTest {
             id, "0.1.0",
             listOf(
                 EventUpload("score_viewed", now, mapOf("surface" to "app", "kind" to "FULL", "score" to "72")),
-                EventUpload("chat_message_sent", now),
+                EventUpload("paywall_viewed", now),
                 EventUpload("app_opened", now - 40L * 24 * 3600 * 1000),
                 EventUpload("app_opened", now + 3L * 24 * 3600 * 1000),
             ),

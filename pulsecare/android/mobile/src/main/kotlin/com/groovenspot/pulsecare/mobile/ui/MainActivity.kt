@@ -40,6 +40,8 @@ import com.groovenspot.pulsecare.metrics.EventRules
 import com.groovenspot.pulsecare.mission.Goal
 import com.groovenspot.pulsecare.mobile.metrics.Metrics
 import com.groovenspot.pulsecare.mobile.BuildConfig
+import com.groovenspot.pulsecare.mobile.chat.ChatMessage
+import com.groovenspot.pulsecare.mobile.chat.ChatRepository
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.data.Legal
 import com.groovenspot.pulsecare.mobile.data.Profile
@@ -85,7 +87,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Stage { CONSENT, GOAL, CONNECT, HOME, HISTORY, FAMILY, SETTINGS, TEST_TOOLS }
+private enum class Stage { CONSENT, GOAL, CONNECT, HOME, HISTORY, FAMILY, SETTINGS, TEST_TOOLS, CHAT }
 
 @Composable
 private fun App() {
@@ -109,6 +111,9 @@ private fun App() {
     var refresh by remember { mutableIntStateOf(0) }
     // 내 정보를 닫으면 연 탭으로 돌아갑니다.
     var returnTo by remember { mutableStateOf(Stage.HOME) }
+    // AI 상담에 넘길 오늘 홈 (화면을 닫으면 대화와 함께 버립니다).
+    var lastHome by remember { mutableStateOf<HomeState?>(null) }
+    var chat by remember { mutableStateOf(ChatUi(ChatRepository.configured, store.chatConsent)) }
     val appScope = rememberCoroutineScope()
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -232,6 +237,34 @@ private fun App() {
             )
         }
         stage == Stage.TEST_TOOLS -> TestTools(onBack = { stage = Stage.SETTINGS })
+        stage == Stage.CHAT -> ChatContent(
+            ui = chat,
+            suggestions = ChatRepository.SUGGESTIONS,
+            onAgree = {
+                store.chatConsent = true
+                chat = chat.copy(consented = true)
+            },
+            onSend = { text ->
+                if (text.isBlank() || chat.sending) return@ChatContent
+                val history = chat.messages + ChatMessage(fromUser = true, text = text)
+                chat = chat.copy(messages = history, sending = true, error = null)
+                appScope.launch {
+                    chat = try {
+                        val (reply, remaining) = ChatRepository.send(context, history, lastHome)
+                        chat.copy(messages = history + reply, sending = false, remaining = remaining.takeIf { it >= 0 })
+                    } catch (e: ServerError) {
+                        chat.copy(sending = false, error = e.message)
+                    } catch (e: Exception) {
+                        chat.copy(sending = false, error = "서버에 연결하지 못했어요. 인터넷을 확인해 주세요.")
+                    }
+                }
+            },
+            onBack = {
+                // 대화는 저장하지 않습니다.
+                chat = ChatUi(ChatRepository.configured, store.chatConsent)
+                stage = Stage.HOME
+            },
+        )
         else -> EasyMode(profile!!.seniorMode) {
             val guardianOnly = profile!!.guardianOnly
             MainTabs(
@@ -272,6 +305,8 @@ private fun App() {
                         },
                         onProfileChanged = { profile = it },
                         onOpenSettings = openSettings,
+                        onOpenChat = if (ChatRepository.configured) ({ stage = Stage.CHAT }) else null,
+                        onHomeLoaded = { lastHome = it },
                     )
                 }
             }
@@ -288,6 +323,8 @@ private fun Home(
     onChangeGoal: () -> Unit,
     onProfileChanged: (Profile) -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenChat: (() -> Unit)? = null,
+    onHomeLoaded: (HomeState) -> Unit = {},
 ) {
     val context = LocalContext.current
     val planner = remember { TodayPlanner() }
@@ -315,6 +352,7 @@ private fun Home(
     }
 
     val state = home ?: return Loading()
+    LaunchedEffect(state) { onHomeLoaded(state) }
     // 알림 응답은 화면에서 바로 바뀌도록 따로 다시 읽습니다.
     var feedbackVersion by remember { mutableIntStateOf(0) }
     val today = state.date
@@ -404,6 +442,7 @@ private fun Home(
             AlertFeedbackReceiver.unsnooze(context, signal)
             feedbackVersion++
         },
+        onOpenChat = onOpenChat,
     )
 }
 

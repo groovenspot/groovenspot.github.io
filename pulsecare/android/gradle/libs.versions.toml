@@ -24,6 +24,7 @@ googleAuth = "1.33.1"
 logback = "1.5.18"
 serializationJson = "1.8.1"
 firebaseMessaging = "24.1.1"
+anthropic = "3.2.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -57,6 +58,7 @@ hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 google-auth = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleAuth" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serializationJson" }
+anthropic-java = { module = "com.anthropic:anthropic-java", version.ref = "anthropic" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging" }
 junit = { module = "junit:junit", version.ref = "junit" }
 org-json = { module = "org.json:json", version.ref = "orgJson" }

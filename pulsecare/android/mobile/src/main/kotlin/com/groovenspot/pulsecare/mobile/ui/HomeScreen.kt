@@ -76,6 +76,8 @@ fun HomeContent(
     onAlertFeedback: (Detection, FeedbackResponse) -> Unit = { _, _ -> },
     onSnooze: (Signal, Boolean) -> Unit = { _, _ -> },
     onUnsnooze: (Signal) -> Unit = {},
+    /** AI 건강 상담 열기 (서버가 없는 빌드에서는 null). */
+    onOpenChat: (() -> Unit)? = null,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -91,6 +93,7 @@ fun HomeContent(
                 Text(dateLabel(state), color = Palette.Muted, fontSize = 14.sp)
                 Text("오늘의 컨디션", color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold)
             }
+            onOpenChat?.let { TextButton(onClick = it) { Text("AI 상담", color = Palette.Teal, fontWeight = FontWeight.SemiBold) } }
             TextButton(onClick = onOpenSettings) { Text("내 정보", color = Palette.Teal, fontWeight = FontWeight.SemiBold) }
         }
         if (state.missingPermissions) PermissionBanner(onOpenPermissions)

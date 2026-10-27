@@ -15,6 +15,7 @@ import java.time.Clock
  * - FCM_PROJECT_ID: 비우면 푸시를 로그로만 남깁니다 (로컬 실행)
  * - TICK_SECRET: /internal/tick 호출용 (Cloud Scheduler 헤더 X-Tick-Secret)
  * - ADMIN_PASSWORD: /admin 지표 페이지 비밀번호 (비우면 페이지 없음)
+ * - ANTHROPIC_API_KEY: AI 건강 상담 (비우면 상담 꺼짐), CHAT_MODEL: 상담 모델 (기본 claude-opus-5-5)
  * - PORT (기본 8080)
  */
 fun main() {
@@ -29,6 +30,11 @@ fun main() {
         env["TICK_SECRET"],
         MetricsService(db, clock),
         env["ADMIN_PASSWORD"],
+        ChatService(
+            db,
+            env["ANTHROPIC_API_KEY"]?.takeIf { it.isNotBlank() }?.let { ClaudeChat(env["CHAT_MODEL"]?.takeIf { m -> m.isNotBlank() } ?: "claude-opus-5-5") },
+            clock,
+        ),
     )
 
     // 서버가 떠 있는 동안은 15초마다도 진행합니다 (Cloud Scheduler 1분 간격 사이를 메움).
