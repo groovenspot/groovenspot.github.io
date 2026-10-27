@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.groovenspot.pulsecare.mission.Goal
 import com.groovenspot.pulsecare.mission.MissionLog
+import com.groovenspot.pulsecare.mission.MissionProgress
+import com.groovenspot.pulsecare.report.WeeklySummary
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
@@ -15,6 +17,8 @@ data class Profile(
     /** 목표별 레벨 (기획서 14번: 레벨은 목표별로 따로). */
     val levels: Map<Goal, Int> = emptyMap(),
     val seniorMode: Boolean = false,
+    /** 지금 목표를 고른 날. 4주가 지나면 주간 리포트에 변화 한 줄이 붙습니다. */
+    val goalSince: LocalDate = signupDate,
 ) {
     val level: Int get() = levels[goal] ?: 1
 }
@@ -81,7 +85,26 @@ class AppStore(private val prefs: SharedPreferences) {
         prefs.edit().putString(KEY_ALERT_DAY, today.toString()).putStringSet(KEY_ALERTS, sentAlerts(today) + signal).apply()
     }
 
+    var eveningSentOn: LocalDate?
+        get() = prefs.getString(KEY_EVENING, null)?.let(LocalDate::parse)
+        set(value) = prefs.edit().putString(KEY_EVENING, value?.toString()).apply()
+
+    /** 저녁 요약에서 "내일 다시"를 고르면 다음 날 같은 미션을 줍니다. */
+    var retry: Pair<LocalDate, String>?
+        get() = prefs.getString(KEY_RETRY, null)?.split("|")?.let { LocalDate.parse(it[0]) to it[1] }
+        set(value) = prefs.edit().putString(KEY_RETRY, value?.let { "${it.first}|${it.second}" }).apply()
+
+    fun retryFor(date: LocalDate): String? = retry?.takeIf { it.first == date }?.second
+
+    /** 아직 홈에서 확인하지 않은 주간 리포트. */
+    var weekly: WeeklySummary?
+        get() = prefs.getString(KEY_WEEKLY, null)?.let(::decodeWeekly)
+        set(value) = prefs.edit().putString(KEY_WEEKLY, value?.let(::encodeWeekly)).apply()
+
     companion object {
+        private const val KEY_EVENING = "evening_sent_on"
+        private const val KEY_RETRY = "retry_mission"
+        private const val KEY_WEEKLY = "weekly_summary"
         private const val KEY_MORNING = "morning_sent_on"
         private const val KEY_ALERT_DAY = "alerts_day"
         private const val KEY_ALERTS = "alerts_sent"
@@ -96,15 +119,45 @@ class AppStore(private val prefs: SharedPreferences) {
             .put("goal", p.goal.name)
             .put("signup", p.signupDate.toString())
             .put("senior", p.seniorMode)
+            .put("goalSince", p.goalSince.toString())
             .put("levels", JSONObject().apply { p.levels.forEach { (g, l) -> put(g.name, l) } })
             .toString()
+
+        internal fun encodeWeekly(w: WeeklySummary): String = JSONObject()
+            .put("weekEnd", w.weekEnd.toString())
+            .put("goal", w.goal.name)
+            .put("daysDone", w.daysDone)
+            .put("badge", w.badge)
+            .put("points", w.points)
+            .put("level", w.levelChange.name)
+            .put("nextLevel", w.nextLevel)
+            .put("change", w.change ?: "")
+            .put("goalChange", w.suggestGoalChange)
+            .toString()
+
+        internal fun decodeWeekly(s: String): WeeklySummary {
+            val o = JSONObject(s)
+            return WeeklySummary(
+                weekEnd = LocalDate.parse(o.getString("weekEnd")),
+                goal = Goal.valueOf(o.getString("goal")),
+                daysDone = o.getInt("daysDone"),
+                badge = o.getBoolean("badge"),
+                points = o.getInt("points"),
+                levelChange = MissionProgress.LevelChange.valueOf(o.getString("level")),
+                nextLevel = o.getInt("nextLevel"),
+                change = o.optString("change").takeIf { it.isNotEmpty() },
+                suggestGoalChange = o.getBoolean("goalChange"),
+            )
+        }
 
         internal fun decodeProfile(s: String): Profile {
             val o = JSONObject(s)
             val levels = o.optJSONObject("levels")?.let { l -> l.keys().asSequence().associate { Goal.valueOf(it) to l.getInt(it) } }
+            val signup = LocalDate.parse(o.getString("signup"))
             return Profile(
                 goal = Goal.valueOf(o.getString("goal")),
-                signupDate = LocalDate.parse(o.getString("signup")),
+                signupDate = signup,
+                goalSince = o.optString("goalSince").takeIf { it.isNotEmpty() }?.let(LocalDate::parse) ?: signup,
                 levels = levels ?: emptyMap(),
                 seniorMode = o.optBoolean("senior"),
             )

@@ -50,8 +50,8 @@ class MorningTest {
     @Test
     fun nextSevenThirty() {
         val at = LocalTime.of(7, 30)
-        assertEquals(Duration.ofMinutes(30), MorningSchedule.delayUntilNext(LocalDateTime.of(2027, 6, 16, 7, 0), at))
-        assertEquals(Duration.ofHours(24), MorningSchedule.delayUntilNext(LocalDateTime.of(2027, 6, 16, 7, 30), at))
-        assertEquals(Duration.ofHours(23), MorningSchedule.delayUntilNext(LocalDateTime.of(2027, 6, 16, 8, 30), at))
+        assertEquals(Duration.ofMinutes(30), DailyJob.delayUntilNext(LocalDateTime.of(2027, 6, 16, 7, 0), at))
+        assertEquals(Duration.ofHours(24), DailyJob.delayUntilNext(LocalDateTime.of(2027, 6, 16, 7, 30), at))
+        assertEquals(Duration.ofHours(23), DailyJob.delayUntilNext(LocalDateTime.of(2027, 6, 16, 8, 30), at))
     }
 }

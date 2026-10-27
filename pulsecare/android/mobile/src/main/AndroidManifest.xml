@@ -37,6 +37,11 @@
             </intent-filter>
         </activity>
 
+        <!-- 저녁 요약 알림의 "내일 다시" / "다른 미션으로" 버튼 -->
+        <receiver
+            android:name=".notify.EveningActionReceiver"
+            android:exported="false" />
+
         <!-- Health Connect shows this when the user asks why the app needs access. -->
         <activity
             android:name=".ui.PermissionsRationaleActivity"

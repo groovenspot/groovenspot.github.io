@@ -74,6 +74,8 @@ class TodayPlanner(private val picker: MissionPicker = MissionPicker()) {
         /** 미션 날짜별 워치 활동 (어제·오늘). 없으면 자동 확인을 하지 않습니다. */
         activities: Map<LocalDate, DayActivity> = emptyMap(),
         now: LocalDateTime = today.atTime(12, 0),
+        /** 어제 저녁 "내일 다시"를 고른 미션. */
+        retryMissionId: String? = null,
     ): Plan {
         val dayIndex = (ChronoUnit.DAYS.between(profile.signupDate, today) + 1).toInt().coerceAtLeast(1)
         val withScores = records.map { it.copy(score = scores[it.date]) }
@@ -94,7 +96,8 @@ class TodayPlanner(private val picker: MissionPicker = MissionPicker()) {
 
         val picked = stored?.takeIf { it.date == today } ?: TodayMission(
             date = today,
-            missionId = picker.pick(pickInput(today, score, feeling, profile, allLogs)).id,
+            missionId = retryMissionId?.takeIf { retryFits(it, score, feeling) }
+                ?: picker.pick(pickInput(today, score, feeling, profile, allLogs)).id,
         )
         val missionCheck = check(picked.missionId, activities[today], now)
         val todayMission = if (missionCheck == Check.DONE) picked.copy(completed = true) else picked
@@ -117,6 +120,12 @@ class TodayPlanner(private val picker: MissionPicker = MissionPicker()) {
             logs = allLogs.filter { it.date < today },
             scores = newScores,
         )
+    }
+
+    /** 컨디션이 낮은 날(50 미만)에는 어제 미션 대신 회복 미션을 줍니다. */
+    private fun retryFits(missionId: String, score: ScoreResult, feeling: Int?): Boolean {
+        val s = score.score ?: feeling?.let { FEELING_TO_SCORE[it] } ?: return true
+        return s >= 50 || MissionLibrary[missionId].goal == com.groovenspot.pulsecare.mission.Goal.LOW_DAY
     }
 
     private fun check(missionId: String, activity: DayActivity?, now: LocalDateTime): Check =

@@ -6,7 +6,10 @@ import com.groovenspot.pulsecare.alert.AlertText
 import com.groovenspot.pulsecare.alert.Detection
 import com.groovenspot.pulsecare.alert.Signal
 import com.groovenspot.pulsecare.mission.Check
+import com.groovenspot.pulsecare.mission.Goal
 import com.groovenspot.pulsecare.mission.MissionLibrary
+import com.groovenspot.pulsecare.mission.MissionProgress
+import com.groovenspot.pulsecare.report.WeeklySummary
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.score.Badge
 import com.groovenspot.pulsecare.score.Band
@@ -27,9 +30,33 @@ class HomeScreenshotTest {
 
     private val date = LocalDate.of(2027, 6, 16)
 
-    private fun render(state: HomeState) = paparazzi.snapshot {
-        PulseTheme { HomeContent(state, onCompleteMission = {}, onSwapMission = {}, onFeeling = {}, onOpenPermissions = {}) }
+    private fun render(state: HomeState, weekly: WeeklySummary? = null) = paparazzi.snapshot {
+        PulseTheme { HomeContent(state, onCompleteMission = {}, onSwapMission = {}, onFeeling = {}, onOpenPermissions = {}, weekly = weekly) }
     }
+
+    @Test
+    fun sundayWeeklyReport() = render(
+        HomeState(
+            date = date,
+            dayIndex = 40,
+            score = ScoreResult(kind = ScoreResult.Kind.FULL, score = 74, band = Band.GOOD, reason = "요즘 일정한 시간에 잠들고 있어요"),
+            mission = MissionLibrary["S-05"],
+            missionDone = true,
+            canSwap = false,
+            alerts = emptyList(),
+        ),
+        weekly = WeeklySummary(
+            weekEnd = date,
+            goal = Goal.SLEEP,
+            daysDone = 5,
+            badge = true,
+            points = 70,
+            levelChange = MissionProgress.LevelChange.SUGGEST_UP,
+            nextLevel = 2,
+            change = "4주 전보다 평균 수면이 22분 늘었어요",
+            suggestGoalChange = false,
+        ),
+    )
 
     @Test
     fun goodMorning() = render(

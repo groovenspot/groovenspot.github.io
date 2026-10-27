@@ -34,6 +34,7 @@ object TodayRepository {
             missingPermissions = !granted.containsAll(HealthConnectSource.all),
             activities = listOf(today.minusDays(1), today).associateWith { NightMapper.activity(raw, it, zone) },
             now = now,
+            retryMissionId = store.retryFor(today),
         )
         store.today = plan.today
         store.missionLogs = plan.logs

@@ -29,6 +29,7 @@ import com.groovenspot.pulsecare.mission.Goal
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.data.Profile
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
+import com.groovenspot.pulsecare.mobile.notify.EveningSchedule
 import com.groovenspot.pulsecare.mobile.notify.MorningSchedule
 import com.groovenspot.pulsecare.mobile.notify.Notifications
 import com.groovenspot.pulsecare.mobile.today.HomeState
@@ -73,7 +74,19 @@ private fun App() {
     val canScore = granted?.containsAll(HealthConnectSource.required) == true
 
     when {
-        stage == Stage.GOAL -> GoalScreen(goal, onSelect = { goal = it }, onNext = { stage = Stage.CONNECT })
+        stage == Stage.GOAL -> GoalScreen(goal, onSelect = { goal = it }, onNext = {
+            val current = profile
+            if (current == null) {
+                stage = Stage.CONNECT
+            } else {
+                // 목표 바꾸기: 레벨은 목표별로 따로 두고, 변화 리포트는 새 목표 기준으로 다시 셉니다.
+                val chosen = goal ?: current.goal
+                profile = current.copy(goal = chosen, goalSince = LocalDate.now()).also { store.profile = it }
+                store.today?.takeIf { !it.completed }?.let { store.today = null }
+                stage = Stage.HOME
+                refresh++
+            }
+        }, changing = profile != null)
         stage == Stage.CONNECT || (granted != null && !canScore) -> ConnectScreen(
             available = available,
             onConnect = { permissionLauncher.launch(HealthConnectSource.requestable(context)) },
@@ -85,22 +98,42 @@ private fun App() {
             onLater = null,
         )
         granted == null -> Loading()
-        else -> Home(store, profile!!, refresh, onPermissions = { permissionLauncher.launch(HealthConnectSource.requestable(context)) })
+        else -> Home(
+            store,
+            profile!!,
+            refresh,
+            onPermissions = { permissionLauncher.launch(HealthConnectSource.requestable(context)) },
+            onChangeGoal = {
+                store.weekly = null
+                stage = Stage.GOAL
+            },
+            onProfileChanged = { profile = it },
+        )
     }
 }
 
 @Composable
-private fun Home(store: AppStore, profile: Profile, refreshKey: Int, onPermissions: () -> Unit) {
+private fun Home(
+    store: AppStore,
+    profile: Profile,
+    refreshKey: Int,
+    onPermissions: () -> Unit,
+    onChangeGoal: () -> Unit,
+    onProfileChanged: (Profile) -> Unit,
+) {
     val context = LocalContext.current
     val planner = remember { TodayPlanner() }
     var home by remember { mutableStateOf<HomeState?>(null) }
     var feeling by remember { mutableStateOf<Int?>(null) }
     var reload by remember { mutableIntStateOf(0) }
+    // 일요일 리포트는 이번 주 월요일까지만 띄웁니다.
+    var weekly by remember { mutableStateOf(store.weekly?.takeIf { !LocalDate.now().isAfter(it.weekEnd.plusDays(1)) }) }
 
-    // 아침 7:30 리포트 (Android 13+는 알림 권한을 먼저 물어봅니다).
+    // 아침 7:30 리포트, 저녁 9시 요약 (Android 13+는 알림 권한을 먼저 물어봅니다).
     val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     LaunchedEffect(Unit) {
         MorningSchedule.ensure(context)
+        EveningSchedule.ensure(context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !Notifications.canPost(context)) {
             notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -127,6 +160,21 @@ private fun Home(store: AppStore, profile: Profile, refreshKey: Int, onPermissio
             feeling = value
         },
         onOpenPermissions = onPermissions,
+        weekly = weekly,
+        onWeeklyAccept = {
+            weekly?.let { w ->
+                val updated = profile.copy(levels = profile.levels + (w.goal to w.nextLevel))
+                store.profile = updated
+                onProfileChanged(updated)
+            }
+            store.weekly = null
+            weekly = null
+        },
+        onWeeklyClose = {
+            store.weekly = null
+            weekly = null
+        },
+        onChangeGoal = onChangeGoal,
     )
 }
 

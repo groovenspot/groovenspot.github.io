@@ -34,12 +34,13 @@ private val GOAL_HINTS = mapOf(
 
 /** 온보딩 1단계: 목표 1개 고르기 (기획서 14번: 목표는 1개만). */
 @Composable
-fun GoalScreen(selected: Goal?, onSelect: (Goal) -> Unit, onNext: () -> Unit) {
+fun GoalScreen(selected: Goal?, onSelect: (Goal) -> Unit, onNext: () -> Unit, changing: Boolean = false) {
     OnboardingFrame(
-        step = "1 / 2",
+        step = if (changing) "목표 바꾸기" else "1 / 2",
         title = "어떤 걸 가장 챙기고 싶으세요?",
-        subtitle = "매일 이 목표에 맞는 미션을 하나씩 드려요. 나중에 바꿀 수 있어요.",
-        primary = "다음",
+        subtitle = if (changing) "새 목표로 내일부터 미션을 드려요. 목표별 레벨은 그대로 기억해요."
+        else "매일 이 목표에 맞는 미션을 하나씩 드려요. 나중에 바꿀 수 있어요.",
+        primary = if (changing) "바꾸기" else "다음",
         primaryEnabled = selected != null,
         onPrimary = onNext,
     ) {

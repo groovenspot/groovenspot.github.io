@@ -37,7 +37,9 @@ import androidx.compose.ui.unit.sp
 import com.groovenspot.pulsecare.alert.AlertMessage
 import com.groovenspot.pulsecare.mission.Check
 import com.groovenspot.pulsecare.mission.Mission
+import com.groovenspot.pulsecare.mission.MissionProgress
 import com.groovenspot.pulsecare.mission.MissionVerifier
+import com.groovenspot.pulsecare.report.WeeklySummary
 import com.groovenspot.pulsecare.mission.Verification
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.score.ScoreResult
@@ -53,6 +55,10 @@ fun HomeContent(
     onSwapMission: () -> Unit,
     onFeeling: (Int) -> Unit,
     onOpenPermissions: () -> Unit,
+    weekly: WeeklySummary? = null,
+    onWeeklyAccept: () -> Unit = {},
+    onWeeklyClose: () -> Unit = {},
+    onChangeGoal: () -> Unit = {},
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -69,6 +75,7 @@ fun HomeContent(
         }
         if (state.missingPermissions) PermissionBanner(onOpenPermissions)
         ScoreCard(state, onFeeling)
+        weekly?.let { WeeklyCard(it, onWeeklyAccept, onWeeklyClose, onChangeGoal) }
         MissionCard(state.mission, state.missionDone, state.missionCheck, state.canSwap, onCompleteMission, onSwapMission)
         state.alerts.forEach { AlertCard(it) }
         Spacer(Modifier.height(8.dp))
@@ -200,6 +207,50 @@ internal fun missionHint(mission: Mission, check: Check): String = when {
     mission.id in MissionVerifier.NIGHT_MISSIONS -> "오늘 밤 수면 기록으로 내일 아침 자동으로 확인해요"
     check == Check.MISSED -> "기록에서 아직 확인되지 않았어요. 했다면 직접 체크해 주세요"
     else -> "워치 기록으로 자동 확인해요. 워치가 없을 땐 직접 체크해도 돼요"
+}
+
+/** 일요일 저녁 주간 리포트 (기획서 14번). 올리기는 묻고, 내리기는 이미 적용된 걸 부드럽게 알립니다. */
+@Composable
+private fun WeeklyCard(summary: WeeklySummary, onAccept: () -> Unit, onClose: () -> Unit, onChangeGoal: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Palette.Navy),
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(20.dp)) {
+            Text("이번 주 리포트", color = Palette.Mint, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(summary.title, color = Palette.Paper, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            WeekDots(summary.daysDone)
+            summary.lines.forEach { Text(it, color = Palette.Line, fontSize = 15.sp, lineHeight = 22.sp) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                when {
+                    summary.suggestGoalChange -> {
+                        Button(onClick = onChangeGoal, colors = ButtonDefaults.buttonColors(containerColor = Palette.Mint), shape = RoundedCornerShape(12.dp)) {
+                            Text("목표 바꾸기", color = Palette.Navy)
+                        }
+                        TextButton(onClick = onClose) { Text("이대로 할게요", color = Palette.Line) }
+                    }
+                    summary.levelChange == MissionProgress.LevelChange.SUGGEST_UP -> {
+                        Button(onClick = onAccept, colors = ButtonDefaults.buttonColors(containerColor = Palette.Mint), shape = RoundedCornerShape(12.dp)) {
+                            Text("레벨 ${summary.nextLevel} 도전", color = Palette.Navy)
+                        }
+                        TextButton(onClick = onClose) { Text("지금이 좋아요", color = Palette.Line) }
+                    }
+                    else -> TextButton(onClick = onClose) { Text("확인", color = Palette.Mint, fontWeight = FontWeight.Bold) }
+                }
+            }
+        }
+    }
+}
+
+/** 이번 주 완료한 날 수를 점 7개로. 5개부터 배지. */
+@Composable
+private fun WeekDots(done: Int) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        repeat(7) { i ->
+            Box(Modifier.size(12.dp).clip(CircleShape).background(if (i < done) Palette.Mint else Palette.Body))
+        }
+    }
 }
 
 @Composable

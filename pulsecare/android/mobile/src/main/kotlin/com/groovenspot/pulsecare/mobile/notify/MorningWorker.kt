@@ -55,7 +55,7 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
             return Result.success()
         }
         // 워치가 아직 동기화 전일 수 있으니 10:30까지는 1시간마다 다시 봅니다.
-        if (home.score.kind == ScoreResult.Kind.NO_DATA && now.toLocalTime() < MorningSchedule.LAST_RETRY) {
+        if (home.score.kind == ScoreResult.Kind.NO_DATA && now.toLocalTime() < MORNING_LAST_RETRY) {
             MorningSchedule.retryLater(context)
             return Result.success()
         }

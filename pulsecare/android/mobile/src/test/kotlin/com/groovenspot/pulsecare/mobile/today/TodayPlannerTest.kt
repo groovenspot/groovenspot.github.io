@@ -131,8 +131,30 @@ class TodayPlannerTest {
     }
 
     @Test
+    fun retryTomorrowKeepsTheSameMission() {
+        val plan = planner.plan(today, records(), profile, null, emptyList(), emptyMap(), retryMissionId = "S-05")
+        assertEquals("S-05", plan.today.missionId)
+    }
+
+    @Test
+    fun lowDayOverridesRetry() {
+        val plan = planner.plan(today, records(todaySleep = null), profile, null, emptyList(), emptyMap(), feeling = 1, retryMissionId = "S-05")
+        assertEquals(Goal.LOW_DAY, plan.home.mission.goal)
+    }
+
+    @Test
+    fun weeklyRoundTrip() {
+        val w = com.groovenspot.pulsecare.report.WeeklySummary(
+            today, Goal.SLEEP, 5, true, 60, com.groovenspot.pulsecare.mission.MissionProgress.LevelChange.SUGGEST_UP, 2,
+            "4주 전보다 평균 수면이 22분 늘었어요", false,
+        )
+        assertEquals(w, AppStore.decodeWeekly(AppStore.encodeWeekly(w)))
+        assertEquals(null, AppStore.decodeWeekly(AppStore.encodeWeekly(w.copy(change = null))).change)
+    }
+
+    @Test
     fun profileRoundTrip() {
-        val p = Profile(Goal.STRESS, today, levels = mapOf(Goal.STRESS to 2, Goal.SLEEP to 3), seniorMode = true)
+        val p = Profile(Goal.STRESS, today, levels = mapOf(Goal.STRESS to 2, Goal.SLEEP to 3), seniorMode = true, goalSince = today.plusDays(3))
         assertEquals(p, AppStore.decodeProfile(AppStore.encodeProfile(p)))
         assertNotNull(p.level)
     }
