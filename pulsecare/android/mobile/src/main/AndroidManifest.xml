@@ -45,6 +45,17 @@
             android:name=".notify.EveningActionReceiver"
             android:exported="false" />
 
+        <!-- 진료용 요약 PDF 공유 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.reports"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/report_paths" />
+        </provider>
+
         <!-- 주의 알림의 "괜찮아요" / "잘못된 알림이에요" / "연락했어요" -->
         <receiver
             android:name=".notify.AlertFeedbackReceiver"

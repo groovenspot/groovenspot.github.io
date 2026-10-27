@@ -235,6 +235,7 @@ private fun MissionCard(mission: Mission, done: Boolean, check: Check, canSwap: 
 
 /** 미션을 어떻게 확인하는지 한 줄로. */
 internal fun missionHint(mission: Mission, check: Check): String = when {
+    mission.id == "P-08" -> "기록 탭 > 진료용 요약 PDF를 만들어 보내면 완료돼요. 부모님 폰에서 만들어 받았다면 직접 체크해 주세요"
     check == Check.MANUAL || mission.verification == Verification.MANUAL -> "하고 나서 직접 체크해 주세요"
     mission.id in MissionVerifier.NIGHT_MISSIONS -> "오늘 밤 수면 기록으로 내일 아침 자동으로 확인해요"
     check == Check.MISSED -> "기록에서 아직 확인되지 않았어요. 했다면 직접 체크해 주세요"

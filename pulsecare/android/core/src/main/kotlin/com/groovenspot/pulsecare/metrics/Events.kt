@@ -23,6 +23,9 @@ enum class EventName(val key: String, val props: Set<String>) {
     MISSION_COMPLETED("mission_completed", setOf("mission_id", "auto", "surface")),
     MISSION_SKIPPED("mission_skipped", setOf("mission_id", "reason")),
 
+    /** 진료용 요약 PDF를 만들어 공유 시트를 엶 (기간만). */
+    REPORT_EXPORTED("report_exported", setOf("days")),
+
     // 가족
     FAMILY_INVITE_SENT("family_invite_sent", setOf("role")),
     FAMILY_INVITE_ACCEPTED("family_invite_accepted", setOf("role")),

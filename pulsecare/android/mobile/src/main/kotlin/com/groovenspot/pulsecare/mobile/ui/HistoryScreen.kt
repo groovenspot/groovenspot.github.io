@@ -25,14 +25,22 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -99,6 +107,8 @@ fun HistoryContent(
     selected: LocalDate?,
     onSelect: (LocalDate) -> Unit,
     onOpenSettings: () -> Unit = {},
+    /** 진료용 요약 PDF 만들기. */
+    onExport: () -> Unit = {},
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -113,7 +123,10 @@ fun HistoryContent(
             Text("기록", color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
             TextButton(onClick = onOpenSettings) { Text("내 정보", color = Palette.Teal, fontWeight = FontWeight.SemiBold) }
         }
-        PeriodToggle(period, onPeriod)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f)) { PeriodToggle(period, onPeriod) }
+            OutlinedButton(onClick = onExport) { Text("진료용 요약 PDF", color = Palette.Navy, fontSize = 13.sp) }
+        }
         if (history == null) {
             Text("기록을 불러오는 중이에요", color = Palette.Muted)
             return@Column
@@ -362,6 +375,55 @@ private fun DateAxis(days: List<HistoryDay>, period: Period) {
             }
         }
     }
+}
+
+/**
+ * 진료용 요약 만들기: 기간과 (선택) 이름. 만드는 동안은 [busy].
+ * 수치가 담긴 파일이라 받는 사람을 고르는 건 사용자 몫이고, 서버로는 보내지 않는다고 알려 줍니다.
+ */
+@Composable
+fun ExportDialog(busy: Boolean, error: String?, onDismiss: () -> Unit, onCreate: (days: Int, name: String) -> Unit) {
+    var days by remember { mutableIntStateOf(30) }
+    var name by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = { if (!busy) onDismiss() },
+        title = { Text("진료용 건강 요약") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    "수면·심박·HRV·걸음 기록을 A4 두 장으로 정리해요. 이 휴대폰에서 만들고, 고른 곳으로만 보내요.",
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(30, 90).forEach { d ->
+                        val on = d == days
+                        Text(
+                            "최근 ${d}일",
+                            color = if (on) Palette.Card else Palette.Navy,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (on) Palette.Teal else Palette.Line.copy(alpha = 0.6f))
+                                .clickable { days = d }
+                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                        )
+                    }
+                }
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it.take(20) },
+                    label = { Text("이름 (선택, PDF에 표시)") },
+                    singleLine = true,
+                )
+                error?.let { Text(it, color = Palette.Coral, fontSize = 13.sp) }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onCreate(days, name.trim()) }, enabled = !busy) { Text(if (busy) "만드는 중…" else "PDF 만들고 보내기") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text("취소") } },
+    )
 }
 
 /** 월요일부터 한 줄에 한 주. 주 5일 이상 완료한 주에는 배지. */

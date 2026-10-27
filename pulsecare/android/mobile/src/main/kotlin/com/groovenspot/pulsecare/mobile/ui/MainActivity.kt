@@ -52,6 +52,7 @@ import com.groovenspot.pulsecare.mobile.notify.EveningSchedule
 import com.groovenspot.pulsecare.mobile.notify.AlertFeedbackReceiver
 import com.groovenspot.pulsecare.mobile.notify.MorningSchedule
 import com.groovenspot.pulsecare.mobile.notify.Notifications
+import com.groovenspot.pulsecare.mobile.report.ClinicExport
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.mobile.today.TodayPlanner
 import com.groovenspot.pulsecare.mobile.today.TodayRepository
@@ -489,7 +490,31 @@ private fun HistoryTab(refreshKey: Int, onOpenSettings: () -> Unit) {
         history = withContext(Dispatchers.IO) { runCatching { HistoryRepository.load(context, period) }.getOrNull() }
         if (history?.days?.none { it.date == selected } != false) selected = history?.days?.lastOrNull()?.date
     }
-    HistoryContent(history, period, onPeriod = { period = it }, selected = selected, onSelect = { selected = it }, onOpenSettings = onOpenSettings)
+    var exporting by remember { mutableStateOf(false) }
+    var exportBusy by remember { mutableStateOf(false) }
+    var exportError by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    HistoryContent(
+        history, period, onPeriod = { period = it }, selected = selected, onSelect = { selected = it }, onOpenSettings = onOpenSettings,
+        onExport = {
+            exportError = null
+            exporting = true
+        },
+    )
+    if (exporting) {
+        ExportDialog(exportBusy, exportError, onDismiss = { exporting = false }) { days, name ->
+            exportBusy = true
+            scope.launch {
+                runCatching { ClinicExport.create(context, days, name.ifEmpty { null }) }
+                    .onSuccess {
+                        ClinicExport.share(context, it, days)
+                        exporting = false
+                    }
+                    .onFailure { exportError = "만들지 못했어요. Health Connect 권한을 확인해 주세요." }
+                exportBusy = false
+            }
+        }
+    }
 }
 
 @Composable
