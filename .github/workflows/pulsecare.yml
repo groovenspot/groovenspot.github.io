@@ -56,6 +56,31 @@ jobs:
       - name: Core logic (same results as Android)
         working-directory: pulsecare/ios/PulseCore
         run: swift test
+      - name: Generate Xcode project
+        run: |
+          which xcodegen || brew install xcodegen
+          xcodegen generate
+      - name: Build iPhone app (simulator)
+        run: |
+          set -o pipefail
+          xcodebuild -project PulseCare.xcodeproj -scheme PulseCare -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO build -quiet
+      - name: Build Apple Watch app (simulator)
+        run: |
+          set -o pipefail
+          xcodebuild -project PulseCare.xcodeproj -scheme PulseCareWatch -sdk watchsimulator \
+            -destination 'generic/platform=watchOS Simulator' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO build -quiet
+      - name: Screenshots (demo data)
+        run: ./screenshots.sh build shots
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulsecare-ios-screenshots
+          path: pulsecare/ios/shots
+          retention-days: 14
 
   # 스토어 업로드용 AAB. Actions에서 "Run workflow"로만 돌고, 업로드 키와 서버·Firebase 값은 저장소 비밀값에서 읽습니다.
   release:

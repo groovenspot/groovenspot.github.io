@@ -36,6 +36,12 @@ public struct UsualRange: Hashable, Sendable {
     public var mid: Double
     public var high: Double
 
+    public init(low: Double, mid: Double, high: Double) {
+        self.low = low
+        self.mid = mid
+        self.high = high
+    }
+
     public func contains(_ v: Double) -> Bool { v >= low && v <= high }
 }
 

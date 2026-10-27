@@ -87,6 +87,10 @@ DATABASE_URL="jdbc:postgresql://localhost:5432/pulsecare?user=postgres" TICK_SEC
 
 `FCM_PROJECT_ID`가 없으면 푸시는 로그로만 남습니다.
 
+아이폰 푸시는 FCM을 거치지 않고 APNs로 바로 보냅니다. Apple Developer > Keys에서 APNs 키(.p8)를 만들고
+`APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_KEY`(.p8 파일 내용, 비밀값으로), `APNS_SANDBOX=true`(TestFlight 전 개발 빌드)를 넣습니다.
+아이폰 앱은 푸시 토큰을 `apns:<기기 토큰>`으로 올리고, 서버는 이 접두어로 FCM과 APNs를 나눕니다.
+
 ## 배포 (서울 리전, 쓴 만큼 내는 구성)
 
 1. **Firebase 프로젝트** 만들기 → Android 앱 추가(패키지 `com.groovenspot.pulsecare`) → 앱 ID·API 키·프로젝트 ID·발신자 ID를 확인합니다.

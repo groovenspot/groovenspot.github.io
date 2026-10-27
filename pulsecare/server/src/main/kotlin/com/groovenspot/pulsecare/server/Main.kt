@@ -13,6 +13,8 @@ import java.time.Clock
  * 환경 변수:
  * - DATABASE_URL (jdbc:postgresql://…), DATABASE_USER, DATABASE_PASSWORD
  * - FCM_PROJECT_ID: 비우면 푸시를 로그로만 남깁니다 (로컬 실행)
+ * - APNS_KEY_ID, APNS_TEAM_ID, APNS_KEY(.p8 내용), APNS_TOPIC(기본 com.groovenspot.pulsecare), APNS_SANDBOX(true면 개발용):
+ *   아이폰 푸시. 비우면 아이폰 토큰("apns:")으로는 보내지 않습니다.
  * - TICK_SECRET: /internal/tick 호출용 (Cloud Scheduler 헤더 X-Tick-Secret)
  * - ADMIN_PASSWORD: /admin 지표 페이지 비밀번호 (비우면 페이지 없음)
  * - ANTHROPIC_API_KEY: AI 건강 상담 (비우면 상담 꺼짐), CHAT_MODEL: 상담 모델 (기본 claude-opus-5-5)
@@ -22,7 +24,17 @@ fun main() {
     val env = System.getenv()
     val db = Db.connect(env.getValue("DATABASE_URL"), env["DATABASE_USER"], env["DATABASE_PASSWORD"])
     db.migrate()
-    val push = env["FCM_PROJECT_ID"]?.takeIf { it.isNotBlank() }?.let(::FcmPush) ?: LogPush()
+    val fcm = env["FCM_PROJECT_ID"]?.takeIf { it.isNotBlank() }?.let(::FcmPush) ?: LogPush()
+    val apns = env["APNS_KEY"]?.takeIf { it.isNotBlank() }?.let { key ->
+        ApnsPush(
+            keyId = env.getValue("APNS_KEY_ID"),
+            teamId = env.getValue("APNS_TEAM_ID"),
+            privateKeyPem = key,
+            topic = env["APNS_TOPIC"]?.takeIf { it.isNotBlank() } ?: "com.groovenspot.pulsecare",
+            sandbox = env["APNS_SANDBOX"] == "true",
+        )
+    }
+    val push = RoutingPush(fcm, apns)
     val clock = Clock.systemUTC()
     val services = Services(
         FamilyService(db, push, clock),
