@@ -249,14 +249,16 @@ private fun App() {
                 val history = chat.messages + ChatMessage(fromUser = true, text = text)
                 chat = chat.copy(messages = history, sending = true, error = null)
                 appScope.launch {
-                    chat = try {
-                        val (reply, remaining) = ChatRepository.send(context, history, lastHome)
-                        chat.copy(messages = history + reply, sending = false, remaining = remaining.takeIf { it >= 0 })
-                    } catch (e: ServerError) {
-                        chat.copy(sending = false, error = e.message)
-                    } catch (e: Exception) {
-                        chat.copy(sending = false, error = "서버에 연결하지 못했어요. 인터넷을 확인해 주세요.")
-                    }
+                    val result = runCatching { ChatRepository.send(context, history, lastHome) }
+                    // 기다리는 사이 화면을 닫았으면(대화를 버렸으면) 답을 되살리지 않습니다.
+                    if (!chat.sending || chat.messages != history) return@launch
+                    chat = result.fold(
+                        onSuccess = { (reply, remaining) -> chat.copy(messages = history + reply, sending = false, remaining = remaining.takeIf { it >= 0 }) },
+                        onFailure = { e ->
+                            if (e is kotlinx.coroutines.CancellationException) throw e
+                            chat.copy(sending = false, error = (e as? ServerError)?.message ?: "서버에 연결하지 못했어요. 인터넷을 확인해 주세요.")
+                        },
+                    )
                 }
             },
             onBack = {
@@ -372,43 +374,36 @@ private fun Home(
     LaunchedEffect(weekly?.weekEnd) {
         weekly?.let { Metrics.trackDaily(context, EventName.WEEKLY_REPORT_VIEWED, it.weekEnd.toString(), mapOf("surface" to "app", "badge" to it.badge.toString())) }
     }
+    val onCompleteMission: () -> Unit = {
+        store.today?.takeIf { !it.completed }?.let {
+            Metrics.track(context, EventName.MISSION_COMPLETED, mapOf("mission_id" to it.missionId, "auto" to "false", "surface" to "app"))
+        }
+        store.today = store.today?.copy(completed = true)
+        reload++
+    }
+    val onFeeling: (Int) -> Unit = { value ->
+        // 자가 입력으로 오늘 미션을 다시 고릅니다 (아직 바꾸거나 끝내지 않았을 때만).
+        store.today?.takeIf { !it.swapped && !it.completed }?.let { store.today = null }
+        Metrics.track(context, EventName.CONDITION_CHECKIN_ANSWERED, mapOf("answered" to "true"))
+        feeling = value
+    }
+    val onAlertFeedback: (Detection, FeedbackResponse) -> Unit = { d, r ->
+        AlertFeedbackReceiver.record(context, d, r, guardian = false)
+        feedbackVersion++
+    }
     if (profile.seniorMode) {
-        EasyHome(store, state, onComplete = {
-            store.today?.takeIf { !it.completed }?.let {
-                Metrics.track(context, EventName.MISSION_COMPLETED, mapOf("mission_id" to it.missionId, "auto" to "false", "surface" to "app"))
-            }
-            store.today = store.today?.copy(completed = true)
-            reload++
-        }, onFeeling = { value ->
-            store.today?.takeIf { !it.swapped && !it.completed }?.let { store.today = null }
-            Metrics.track(context, EventName.CONDITION_CHECKIN_ANSWERED, mapOf("answered" to "true"))
-            feeling = value
-        }, feedback = feedback, onAlertFeedback = { d, r ->
-            AlertFeedbackReceiver.record(context, d, r, guardian = false)
-            feedbackVersion++
-        }, onOpenSettings = onOpenSettings)
+        EasyHome(store, state, onComplete = onCompleteMission, onFeeling = onFeeling, feedback = feedback, onAlertFeedback = onAlertFeedback, onOpenSettings = onOpenSettings)
         return
     }
     HomeContent(
         state = state,
-        onCompleteMission = {
-            store.today?.takeIf { !it.completed }?.let {
-                Metrics.track(context, EventName.MISSION_COMPLETED, mapOf("mission_id" to it.missionId, "auto" to "false", "surface" to "app"))
-            }
-            store.today = store.today?.copy(completed = true)
-            reload++
-        },
+        onCompleteMission = onCompleteMission,
         onSwapMission = {
             store.today?.let { Metrics.track(context, EventName.MISSION_SKIPPED, mapOf("mission_id" to it.missionId, "reason" to "swap")) }
             store.today?.let { store.today = planner.swap(state, it, profile, store.missionLogs) }
             reload++
         },
-        onFeeling = { value ->
-            // 자가 입력으로 오늘 미션을 다시 고릅니다 (아직 바꾸거나 끝내지 않았을 때만).
-            store.today?.takeIf { !it.swapped && !it.completed }?.let { store.today = null }
-            Metrics.track(context, EventName.CONDITION_CHECKIN_ANSWERED, mapOf("answered" to "true"))
-            feeling = value
-        },
+        onFeeling = onFeeling,
         onOpenPermissions = onPermissions,
         weekly = weekly,
         onWeeklyAccept = {
@@ -430,10 +425,7 @@ private fun Home(
         alertFeedback = feedback,
         snoozeSuggestions = suggestions,
         snoozedUntil = snoozed,
-        onAlertFeedback = { d, r ->
-            AlertFeedbackReceiver.record(context, d, r, guardian = false)
-            feedbackVersion++
-        },
+        onAlertFeedback = onAlertFeedback,
         onSnooze = { signal, accept ->
             AlertFeedbackReceiver.snooze(context, signal, accept)
             feedbackVersion++
@@ -703,9 +695,13 @@ private fun EasyHome(
             onCancel = { sos = null },
             onCancelSent = { id ->
                 scope.launch {
-                    runCatching { FamilyRepository.cancel(context, id) }
-                    Notifications.cancelSos(context)
-                    sos = null
+                    if (runCatching { FamilyRepository.cancel(context, id) }.isSuccess) {
+                        Notifications.cancelSos(context)
+                        sos = null
+                    } else {
+                        // 취소가 안 됐으면 보호자는 아직 긴급 알림을 받고 있으니 창을 닫지 않고 알립니다.
+                        (sos as? PhoneSos.Done)?.let { sos = it.copy(detail = "취소하지 못했어요. 인터넷을 확인하고 다시 눌러 주시거나 보호자에게 직접 전화해 주세요.") }
+                    }
                 }
             },
             onCall119 = { context.startActivity(Intent(Intent.ACTION_DIAL, "tel:119".toUri())) },

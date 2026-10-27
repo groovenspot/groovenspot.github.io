@@ -76,12 +76,21 @@ class ChatTest {
         assertEquals("CHAT_OFF", (runCatching { service(null).chat(ChatRequest(id, listOf(ChatTurn("user", "안녕")))) }.exceptionOrNull() as ApiError).code)
         assertEquals("BAD_INSTALL", (runCatching { service().chat(ChatRequest("x", listOf(ChatTurn("user", "안녕")))) }.exceptionOrNull() as ApiError).code)
         assertEquals("EMPTY", (runCatching { service().chat(ChatRequest(id, listOf(ChatTurn("assistant", "안녕")))) }.exceptionOrNull() as ApiError).code)
-        // 긴 대화는 최근 10개만, 긴 글은 잘라서.
+        // 긴 대화는 최근 10개만(첫 턴은 user가 되도록 앞의 답은 버림), 긴 글은 잘라서.
         val history = (1..20).map { ChatTurn(if (it % 2 == 0) "assistant" else "user", "x".repeat(3000)) }
         ask("마지막", history = history)
         val turns = calls.single().second
-        assertEquals(10, turns.size)
+        assertEquals(9, turns.size)
         assertTrue(turns.all { it.text.length <= 1000 })
-        assertFalse(turns.first().role.isEmpty())
+        assertEquals("user", turns.first().role)
+    }
+
+    @Test
+    fun consecutiveUserTurnsMergedAndCrisisOnlyOnLatest() {
+        // 위기 안내(앱이 대화에서 뺌) 뒤의 평범한 질문은 다시 위기로 잡지 않고, 이어진 user 턴은 합칩니다.
+        val r = ask("잠이 안 와요", history = listOf(ChatTurn("user", "죽고 싶어요")))
+        assertFalse(r.crisis)
+        val turns = calls.single().second
+        assertEquals(listOf("user"), turns.map { it.role })
     }
 }

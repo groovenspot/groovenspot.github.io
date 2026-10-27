@@ -11,6 +11,7 @@ import com.anthropic.models.messages.TextBlockParam
 import kotlinx.serialization.Serializable
 import org.slf4j.LoggerFactory
 import java.time.Clock
+import java.time.Duration
 import java.time.ZoneId
 
 @Serializable data class ChatTurn(val role: String, val text: String)
@@ -47,26 +48,26 @@ class ChatService(
     fun chat(req: ChatRequest): ChatReply {
         if (model == null) throw ApiError(503, "CHAT_OFF", "AI 상담이 아직 켜지지 않았어요")
         if (!INSTALL_ID.matches(req.installId)) throw ApiError(400, "BAD_INSTALL", "설치 ID 형식이 맞지 않아요")
-        val turns = req.messages.takeLast(MAX_TURNS).map { ChatTurn(if (it.role == "assistant") "assistant" else "user", it.text.take(MAX_CHARS)) }
-        val last = turns.lastOrNull()?.takeIf { it.role == "user" && it.text.isNotBlank() }
+        val last = req.messages.lastOrNull()?.takeIf { it.role != "assistant" && it.text.isNotBlank() }
             ?: throw ApiError(400, "EMPTY", "질문을 적어 주세요")
+        val turns = normalize(req.messages)
 
-        // 위기·응급은 횟수와 상관없이, 모델보다 먼저.
-        Safety.crisis(last.text)?.let { return ChatReply(it, crisis = true, remainingToday = DAILY_LIMIT - usedToday(req.installId)) }
+        // 위기·응급은 횟수와 상관없이, 모델보다 먼저 (합치기 전의 이번 질문만 봅니다).
+        Safety.crisis(last.text.take(MAX_CHARS))?.let { return ChatReply(it, crisis = true, remainingToday = DAILY_LIMIT - usedToday(req.installId)) }
 
+        val day = today()
         val used = db.tx {
-            val day = today()
+            // 같은 설치에서 첫 질문 두 개가 동시에 와도 기본 키 충돌이 나지 않게 0으로 먼저 만들어 둡니다.
+            exec("insert into chat_usage (install_id, day, count) values (?, ?, 0) on conflict do nothing", req.installId, day)
             if (exec("update chat_usage set count = count + 1 where install_id = ? and day = ? and count < ?", req.installId, day, DAILY_LIMIT) == 0) {
-                val existing = query("select count from chat_usage where install_id = ? and day = ?", req.installId, day) { it.getInt(1) }.firstOrNull()
-                if (existing != null) throw ApiError(429, "CHAT_LIMIT", "오늘 질문은 ${DAILY_LIMIT}번까지예요. 내일 다시 물어봐 주세요")
-                exec("insert into chat_usage (install_id, day, count) values (?, ?, 1)", req.installId, day)
+                throw ApiError(429, "CHAT_LIMIT", "오늘 질문은 ${DAILY_LIMIT}번까지예요. 내일 다시 물어봐 주세요")
             }
             query("select count from chat_usage where install_id = ? and day = ?", req.installId, day) { it.getInt(1) }.first()
         }
         val answer = model.reply(Prompt.system(req.context), turns)
         if (answer == null) {
-            // 답을 못 만들었으면 횟수를 돌려줍니다.
-            db.tx { exec("update chat_usage set count = count - 1 where install_id = ? and day = ? and count > 0", req.installId, today()) }
+            // 답을 못 만들었으면 센 날에 횟수를 돌려줍니다 (자정을 넘겨도).
+            db.tx { exec("update chat_usage set count = count - 1 where install_id = ? and day = ? and count > 0", req.installId, day) }
             throw ApiError(502, "CHAT_FAILED", "답을 만들지 못했어요. 잠시 후 다시 물어봐 주세요")
         }
         return ChatReply(answer, remainingToday = DAILY_LIMIT - used)
@@ -77,8 +78,29 @@ class ChatService(
 
     private fun today() = clock.instant().atZone(zone).toLocalDate()
 
-    /** 하루 사용량 기록은 7일만 둡니다. */
-    fun cleanup() = db.tx { exec("delete from chat_usage where day < ?", today().minusDays(7)) }
+    /**
+     * 모델에 보낼 대화: 최근 [MAX_TURNS]개, 첫 턴은 user, 같은 역할이 이어지면 합칩니다
+     * (위기 안내를 뺐거나 답을 못 받은 질문이 남아 있을 때).
+     */
+    private fun normalize(messages: List<ChatTurn>): List<ChatTurn> =
+        messages.takeLast(MAX_TURNS)
+            .map { ChatTurn(if (it.role == "assistant") "assistant" else "user", it.text.take(MAX_CHARS)) }
+            .dropWhile { it.role == "assistant" }
+            .fold(mutableListOf<ChatTurn>()) { acc, t ->
+                val prev = acc.lastOrNull()
+                if (prev != null && prev.role == t.role) acc[acc.lastIndex] = ChatTurn(t.role, prev.text + "\n" + t.text) else acc += t
+                acc
+            }
+
+    @Volatile private var lastCleanup = Long.MIN_VALUE / 2
+
+    /** 하루 사용량 기록은 7일만 둡니다 (tick마다 오지만 한 시간에 한 번만). */
+    fun cleanup() {
+        val nowMs = clock.millis()
+        if (nowMs - lastCleanup < Duration.ofHours(1).toMillis()) return
+        lastCleanup = nowMs
+        db.tx { exec("delete from chat_usage where day < ?", today().minusDays(7)) }
+    }
 
     companion object {
         const val DAILY_LIMIT = 30

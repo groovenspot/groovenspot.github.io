@@ -100,6 +100,10 @@ object FamilyRepository {
                 val store = AppStore.get(context)
                 // 내가 만든 초대를 보호자가 자기 폰에서 수락하면 이 폰의 보호자 수는 아직 0이라 서버에 한 번 더 묻습니다.
                 if (store.guardianCount == 0) {
+                    // 보호자가 없는 사람에게 매번 묻지 않도록 하루 한 번만 확인합니다.
+                    val today = java.time.LocalDate.now()
+                    if (store.guardianCheckedOn == today) return@runCatching
+                    store.guardianCheckedOn = today
                     store.guardianCount = api.family().guardians.size
                     if (store.guardianCount == 0) return@runCatching
                 }

@@ -138,6 +138,11 @@ class AppStore(private val prefs: SharedPreferences) {
         get() = prefs.getInt(KEY_GUARDIANS, 0)
         set(value) = prefs.edit().putInt(KEY_GUARDIANS, value).apply()
 
+    /** 보호자 수를 서버에 마지막으로 확인한 날 (보호자가 0명일 때 하루 한 번). */
+    var guardianCheckedOn: LocalDate?
+        get() = prefs.getString("guardian_checked_on", null)?.let(LocalDate::parse)
+        set(value) = prefs.edit().putString("guardian_checked_on", value?.toString()).apply()
+
     /** FCM 토큰. 계정을 만들기 전에 받으면 여기 두었다가 올립니다. */
     var pushToken: String?
         get() = prefs.getString(KEY_PUSH, null)
