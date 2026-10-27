@@ -35,6 +35,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.groovenspot.pulsecare.alert.AlertMessage
+import com.groovenspot.pulsecare.alert.Detection
+import com.groovenspot.pulsecare.alert.FeedbackResponse
+import com.groovenspot.pulsecare.alert.Grade
+import com.groovenspot.pulsecare.alert.Signal
 import com.groovenspot.pulsecare.mission.Check
 import com.groovenspot.pulsecare.mission.Mission
 import com.groovenspot.pulsecare.mission.MissionProgress
@@ -43,6 +47,7 @@ import com.groovenspot.pulsecare.report.WeeklySummary
 import com.groovenspot.pulsecare.mission.Verification
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.score.ScoreResult
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -62,6 +67,15 @@ fun HomeContent(
     onOpenSettings: () -> Unit = {},
     /** 시니어 "쉽게 보기": 버튼은 꼭 필요한 것만 (기획서 14번). 큰 글씨는 바깥에서 글자 배율로. */
     easyMode: Boolean = false,
+    /** 오늘 알림에 한 응답 (신호별). */
+    alertFeedback: Map<Signal, FeedbackResponse> = emptyMap(),
+    /** 같은 신호를 2번 "잘못된 알림"이라고 해서 7일 쉬자고 물을 신호. */
+    snoozeSuggestions: Set<Signal> = emptySet(),
+    /** 쉬는 중인 신호와 끝나는 날. */
+    snoozedUntil: Map<Signal, LocalDate> = emptyMap(),
+    onAlertFeedback: (Detection, FeedbackResponse) -> Unit = { _, _ -> },
+    onSnooze: (Signal, Boolean) -> Unit = { _, _ -> },
+    onUnsnooze: (Signal) -> Unit = {},
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -83,7 +97,19 @@ fun HomeContent(
         ScoreCard(state, onFeeling)
         weekly?.let { WeeklyCard(it, onWeeklyAccept, onWeeklyClose, onChangeGoal) }
         MissionCard(state.mission, state.missionDone, state.missionCheck, state.canSwap && !easyMode, onCompleteMission, onSwapMission)
-        state.alerts.forEach { AlertCard(it) }
+        state.alerts.forEachIndexed { i, alert ->
+            val d = state.alertDetections.getOrNull(i)
+            AlertCard(
+                alert,
+                d,
+                response = d?.let { alertFeedback[it.signal] },
+                suggestSnooze = d != null && d.signal in snoozeSuggestions,
+                snoozedUntil = d?.let { snoozedUntil[it.signal] },
+                onFeedback = onAlertFeedback,
+                onSnooze = onSnooze,
+                onUnsnooze = onUnsnooze,
+            )
+        }
         Spacer(Modifier.height(8.dp))
     }
 }
@@ -260,10 +286,51 @@ private fun WeekDots(done: Int) {
 }
 
 @Composable
-private fun AlertCard(alert: AlertMessage) {
+private fun AlertCard(
+    alert: AlertMessage,
+    detection: Detection?,
+    response: FeedbackResponse?,
+    suggestSnooze: Boolean,
+    snoozedUntil: LocalDate?,
+    onFeedback: (Detection, FeedbackResponse) -> Unit,
+    onSnooze: (Signal, Boolean) -> Unit,
+    onUnsnooze: (Signal) -> Unit,
+) {
     SectionCard {
         Text(alert.title, color = Palette.Navy, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Text(alert.body, color = Palette.Body, fontSize = 15.sp, lineHeight = 22.sp)
+        // 정보 등급(수면 부족 등)은 코칭이라 응답을 받지 않고, 주의 신호만 맞는지 묻습니다.
+        if (detection == null || detection.signal.grade != Grade.CAUTION) return@SectionCard
+        when {
+            snoozedUntil != null -> Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "${snoozedUntil.monthValue}/${snoozedUntil.dayOfMonth}까지 이 알림은 쉬는 중이에요",
+                    color = Palette.Muted,
+                    fontSize = 13.sp,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = { onUnsnooze(detection.signal) }) { Text("다시 받기", color = Palette.Teal) }
+            }
+            suggestSnooze -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("최근 이 알림이 두 번 틀렸다고 하셨어요. 7일 동안 쉴까요?", color = Palette.Navy, fontSize = 14.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = { onSnooze(detection.signal, true) }) { Text("7일 쉬기", color = Palette.Navy) }
+                    TextButton(onClick = { onSnooze(detection.signal, false) }) { Text("계속 받기", color = Palette.Muted) }
+                }
+            }
+            response != null -> Text(
+                if (response == FeedbackResponse.FALSE_ALARM) "알려 주셔서 고마워요. 알림 기준을 고치는 데 써요."
+                else "답해 주셔서 고마워요. 더 나빠지지 않으면 24시간 동안 다시 알리지 않아요.",
+                color = Palette.Teal,
+                fontSize = 13.sp,
+            )
+            else -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { onFeedback(detection, FeedbackResponse.OK) }) { Text(FeedbackResponse.OK.label, color = Palette.Navy) }
+                TextButton(onClick = { onFeedback(detection, FeedbackResponse.FALSE_ALARM) }) {
+                    Text(FeedbackResponse.FALSE_ALARM.label, color = Palette.Muted)
+                }
+            }
+        }
     }
 }
 

@@ -1,11 +1,10 @@
 package com.groovenspot.pulsecare.mobile.notify
 
 import android.content.Context
-import com.groovenspot.pulsecare.metrics.EventName
-import com.groovenspot.pulsecare.mobile.metrics.Metrics
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.groovenspot.pulsecare.alert.AlertFeedback
 import com.groovenspot.pulsecare.alert.AlertScheduler
 import com.groovenspot.pulsecare.alert.AlertText
 import com.groovenspot.pulsecare.alert.Decision
@@ -15,8 +14,10 @@ import com.groovenspot.pulsecare.alert.Grade
 import com.groovenspot.pulsecare.alert.PendingAlert
 import com.groovenspot.pulsecare.alert.Recipient
 import com.groovenspot.pulsecare.alert.Signal
+import com.groovenspot.pulsecare.metrics.EventName
 import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
+import com.groovenspot.pulsecare.mobile.metrics.Metrics
 import com.groovenspot.pulsecare.mobile.today.MorningReport
 import com.groovenspot.pulsecare.mobile.today.TodayRepository
 import com.groovenspot.pulsecare.score.ScoreResult
@@ -81,12 +82,15 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         val today = now.toLocalDate()
         val settings = store.settings
         val scheduler = AlertScheduler(AlertScheduler.Settings(quietStart = settings.quietStart, quietEnd = settings.quietEnd))
-        detections.forEachIndexed { i, d ->
+        // 응답한 신호는 24시간 다시 알리지 않고(더 나빠지면 예외), 쉬는 중인 신호는 보내지 않습니다.
+        val acknowledged = AlertFeedback.acknowledged(store.alertFeedback)
+        val snoozed = store.snoozedSignals
+        detections.filterNot { AlertFeedback.isSnoozed(it.signal, snoozed, today) }.forEachIndexed { i, d ->
             val sent = store.sentAlerts(today).map { PendingAlert(Detection(Signal.valueOf(it)), Recipient.SELF, now) }
-            val decision = scheduler.decide(PendingAlert(d, Recipient.SELF, now), now, DeliveryState(sentToday = sent))
+            val decision = scheduler.decide(PendingAlert(d, Recipient.SELF, now), now, DeliveryState(sentToday = sent, acknowledged = acknowledged))
             if (decision == Decision.SendNow) {
                 val message = AlertText.forSelf(d)
-                Notifications.caution(context, i, message.title, message.body, MorningReport.CAUTION_PUBLIC)
+                Notifications.caution(context, i, d, message.title, message.body, MorningReport.CAUTION_PUBLIC)
                 store.markAlertSent(today, d.signal.name)
                 Metrics.track(context, EventName.ALERT_SENT, mapOf("signal" to d.signal.name, "recipient" to "self"))
             }

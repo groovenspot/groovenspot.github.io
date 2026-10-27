@@ -39,6 +39,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.groovenspot.pulsecare.alert.FeedbackResponse
 import com.groovenspot.pulsecare.mobile.family.EmergencyView
 import com.groovenspot.pulsecare.mobile.family.Family
 import com.groovenspot.pulsecare.mobile.family.GuardianView
@@ -89,6 +90,8 @@ fun FamilyContent(
     onCall: (String) -> Unit,
     onReload: () -> Unit,
     onOpenSettings: () -> Unit = {},
+    /** 보호자가 주의 알림에 답함 (신호 이름, 응답). */
+    onAlertFeedback: (String, FeedbackResponse) -> Unit = { _, _ -> },
 ) {
     var consentInvite by remember { mutableStateOf(false) }
     var confirmUnlink by remember { mutableStateOf<Person?>(null) }
@@ -128,7 +131,7 @@ fun FamilyContent(
                 } else {
                     if (family.wearers.isNotEmpty()) {
                         SectionTitle("내가 챙기는 가족")
-                        family.wearers.forEach { WearerCard(it, onCall) }
+                        family.wearers.forEach { WearerCard(it, onCall, onAlertFeedback) }
                     }
                     SectionTitle("나를 챙기는 보호자")
                     GuardiansPanel(family.guardians, onMove, onUnlink = { confirmUnlink = it })
@@ -299,7 +302,7 @@ private fun EmergencyCard(w: WearerView, e: EmergencyView, ui: FamilyUi, onAck: 
 }
 
 @Composable
-private fun WearerCard(w: WearerView, onCall: (String) -> Unit) {
+private fun WearerCard(w: WearerView, onCall: (String) -> Unit, onAlertFeedback: (String, FeedbackResponse) -> Unit) {
     FamilyPanel {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(w.person.name, color = Palette.Navy, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
@@ -326,9 +329,24 @@ private fun WearerCard(w: WearerView, onCall: (String) -> Unit) {
                 fontSize = 14.sp,
             )
             t.alerts.forEach { a ->
+                // 오늘 이 화면에서 답했는지만 기억합니다 (응답은 이용 통계로만 셉니다).
+                var answered by remember(t.day, a.signal) { mutableStateOf<FeedbackResponse?>(null) }
                 Column(Modifier.padding(top = 4.dp)) {
                     Text(a.title, color = Palette.Amber, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                     Text(a.body, color = Palette.Body, fontSize = 13.sp, lineHeight = 18.sp)
+                    val r = answered
+                    if (r == null) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            listOf(FeedbackResponse.CONTACTED, FeedbackResponse.FALSE_ALARM).forEach { response ->
+                                TextButton(onClick = {
+                                    answered = response
+                                    onAlertFeedback(a.signal, response)
+                                }) { Text(response.label, color = if (response == FeedbackResponse.CONTACTED) Palette.Teal else Palette.Muted, fontSize = 13.sp) }
+                            }
+                        }
+                    } else {
+                        Text(if (r == FeedbackResponse.CONTACTED) "연락했다고 남겼어요" else "알려 주셔서 고마워요", color = Palette.Teal, fontSize = 13.sp)
+                    }
                 }
             }
         }

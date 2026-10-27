@@ -171,6 +171,29 @@ class MetricsTest {
     }
 
     @Test
+    fun falseAlarmRatePerSignal() {
+        val today = LocalDate.of(2027, 3, 17)
+        val a = UUID.randomUUID().toString()
+        val g = UUID.randomUUID().toString()
+        repeat(4) { send(a, today.minusDays(it.toLong()), "alert_sent", mapOf("signal" to "RESTING_HR_RISE", "recipient" to "self")) }
+        send(a, today.minusDays(3), "alert_feedback", mapOf("signal" to "RESTING_HR_RISE", "response" to "false_alarm", "recipient" to "self"))
+        send(a, today.minusDays(2), "alert_feedback", mapOf("signal" to "RESTING_HR_RISE", "response" to "ok", "recipient" to "self"))
+        send(a, today.minusDays(1), "alert_sent", mapOf("signal" to "LOW_SPO2", "recipient" to "self"))
+        send(g, today, "alert_feedback", mapOf("signal" to "ACTIVITY_DROP", "response" to "contacted", "recipient" to "guardian"))
+        // 30일보다 오래된 것은 빠집니다.
+        send(a, today.minusDays(40), "alert_feedback", mapOf("signal" to "LOW_SPO2", "response" to "false_alarm", "recipient" to "self"))
+
+        val r = metrics.report(today)
+        assertEquals(Rate(1, 5, 0.1), r.falseAlarm)
+        val rhr = r.alertStats.single { it.signal == "RESTING_HR_RISE" }
+        assertEquals(4, rhr.sent)
+        assertEquals(1, rhr.ok)
+        assertEquals(Rate(1, 4, 0.1), rhr.rate)
+        assertEquals(1, r.alertStats.single { it.signal == "ACTIVITY_DROP" }.guardianContacted)
+        assertEquals(0, r.alertStats.single { it.signal == "LOW_SPO2" }.falseAlarm)
+    }
+
+    @Test
     fun dashboardNeedsPassword() = run { c ->
         assertEquals(HttpStatusCode.Unauthorized, c.get("/admin").status)
         assertEquals(HttpStatusCode.Unauthorized, c.get("/admin") { basicAuth("admin", "nope") }.status)

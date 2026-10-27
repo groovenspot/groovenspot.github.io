@@ -31,6 +31,10 @@ import androidx.core.net.toUri
 import androidx.health.connect.client.PermissionController
 import com.groovenspot.pulsecare.history.History
 import com.groovenspot.pulsecare.history.Period
+import com.groovenspot.pulsecare.alert.AlertFeedback
+import com.groovenspot.pulsecare.alert.Detection
+import com.groovenspot.pulsecare.alert.FeedbackResponse
+import com.groovenspot.pulsecare.alert.Signal
 import com.groovenspot.pulsecare.metrics.EventName
 import com.groovenspot.pulsecare.metrics.EventRules
 import com.groovenspot.pulsecare.mission.Goal
@@ -45,6 +49,7 @@ import com.groovenspot.pulsecare.mobile.family.ServerError
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
 import com.groovenspot.pulsecare.mobile.history.HistoryRepository
 import com.groovenspot.pulsecare.mobile.notify.EveningSchedule
+import com.groovenspot.pulsecare.mobile.notify.AlertFeedbackReceiver
 import com.groovenspot.pulsecare.mobile.notify.MorningSchedule
 import com.groovenspot.pulsecare.mobile.notify.Notifications
 import com.groovenspot.pulsecare.mobile.today.HomeState
@@ -277,6 +282,16 @@ private fun Home(
     }
 
     val state = home ?: return Loading()
+    // 알림 응답은 화면에서 바로 바뀌도록 따로 다시 읽습니다.
+    var feedbackVersion by remember { mutableIntStateOf(0) }
+    val today = state.date
+    val feedback = remember(feedbackVersion, today) {
+        store.alertFeedback.filter { it.at.toLocalDate() == today }.groupBy { it.detection.signal }.mapValues { (_, l) -> l.maxBy { it.at }.response }
+    }
+    val snoozed = remember(feedbackVersion) { store.snoozedSignals.filterValues { !today.isAfter(it) } }
+    val suggestions = remember(feedbackVersion) {
+        AlertFeedback.suggestSnooze(store.alertFeedback, today, store.snoozedSignals, store.snoozeDeclined)
+    }
     LaunchedEffect(state.date, state.score.kind) {
         Metrics.trackDaily(
             context, EventName.SCORE_VIEWED, "app",
@@ -324,6 +339,21 @@ private fun Home(
         onChangeGoal = onChangeGoal,
         onOpenSettings = onOpenSettings,
         easyMode = profile.seniorMode,
+        alertFeedback = feedback,
+        snoozeSuggestions = suggestions,
+        snoozedUntil = snoozed,
+        onAlertFeedback = { d, r ->
+            AlertFeedbackReceiver.record(context, d, r, guardian = false)
+            feedbackVersion++
+        },
+        onSnooze = { signal, accept ->
+            AlertFeedbackReceiver.snooze(context, signal, accept)
+            feedbackVersion++
+        },
+        onUnsnooze = { signal ->
+            AlertFeedbackReceiver.unsnooze(context, signal)
+            feedbackVersion++
+        },
     )
 }
 
@@ -432,9 +462,15 @@ private fun FamilyTab(onOpenSettings: () -> Unit) {
         onAck = { e ->
             call {
                 FamilyRepository.ack(context, e.id)
+                runCatching { Signal.valueOf(e.signal) }.getOrNull()?.let {
+                    AlertFeedbackReceiver.record(context, Detection(it), FeedbackResponse.CONTACTED, guardian = true)
+                }
                 Notifications.emergencyClosed(context, e.id, "확인했다고 알렸어요", "다른 보호자에게 가는 연락은 멈췄어요.")
                 ui.copy(family = FamilyRepository.family(context))
             }
+        },
+        onAlertFeedback = { signal, response ->
+            runCatching { Signal.valueOf(signal) }.getOrNull()?.let { AlertFeedbackReceiver.record(context, Detection(it), response, guardian = true) }
         },
         onCall = { number -> context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$number".toUri())) },
         onReload = { reload++ },

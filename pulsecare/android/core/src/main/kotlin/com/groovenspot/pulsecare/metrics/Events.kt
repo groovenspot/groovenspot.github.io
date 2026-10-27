@@ -31,7 +31,7 @@ enum class EventName(val key: String, val props: Set<String>) {
 
     // 알림
     ALERT_SENT("alert_sent", setOf("signal", "recipient")),
-    ALERT_FEEDBACK("alert_feedback", setOf("signal", "response")),
+    ALERT_FEEDBACK("alert_feedback", setOf("signal", "response", "recipient")),
 
     // 앱
     APP_OPENED("app_opened", setOf("source")),

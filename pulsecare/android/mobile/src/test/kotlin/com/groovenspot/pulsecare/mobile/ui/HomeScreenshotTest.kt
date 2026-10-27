@@ -13,6 +13,7 @@ import com.groovenspot.pulsecare.report.WeeklySummary
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.score.Badge
 import com.groovenspot.pulsecare.score.Band
+import com.groovenspot.pulsecare.score.Cap
 import com.groovenspot.pulsecare.score.Metric
 import com.groovenspot.pulsecare.score.ScoreResult
 import org.junit.Rule
@@ -99,6 +100,32 @@ class HomeScreenshotTest {
             missingPermissions = true,
         ),
     )
+
+    /** 주의 알림 두 개: 하나는 응답 버튼, 하나는 두 번 틀렸다고 해서 7일 쉬기 제안. */
+    @Test
+    fun cautionAlertsWithFeedback() {
+        val rhr = Detection(Signal.RESTING_HR_RISE, usual = 62.0, current = 70.0, days = 3)
+        val steps = Detection(Signal.ACTIVITY_DROP, usual = 8000.0, current = 3600.0, days = 3)
+        val state = HomeState(
+            date = date,
+            dayIndex = 40,
+            score = ScoreResult(ScoreResult.Kind.FULL, 58, Band.FAIR, "자율신경 회복이 평소보다 더뎌요", cap = Cap.CAUTION_SIGNAL),
+            mission = MissionLibrary["C-03"],
+            missionDone = false,
+            missionCheck = Check.NOT_YET,
+            canSwap = true,
+            alerts = listOf(AlertText.forSelf(rhr), AlertText.forSelf(steps)),
+            alertDetections = listOf(rhr, steps),
+        )
+        paparazzi.snapshot {
+            PulseTheme {
+                HomeContent(
+                    state, onCompleteMission = {}, onSwapMission = {}, onFeeling = {}, onOpenPermissions = {},
+                    snoozeSuggestions = setOf(Signal.ACTIVITY_DROP),
+                )
+            }
+        }
+    }
 
     @Test
     fun learningDayTwo() = render(

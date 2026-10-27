@@ -179,6 +179,7 @@ class ServerTest {
 
         // 걸음 급감만 바로, 같은 날 다시 올려도 한 번.
         assertEquals(listOf(PushMessage.GUARDIAN_ALERT), pushes.map { it.message.type })
+        assertEquals("ACTIVITY_DROP", pushes.single().message.extra["signal"])
         c.post("/v1/summaries") { auth(mom.token); json(upload.copy(missionDone = true)) }
         assertEquals(1, pushes.size)
         assertTrue(c.family(gs[0]).wearers.single().today!!.missionDone)
@@ -205,6 +206,7 @@ class ServerTest {
         assertEquals(listOf("push-민지"), pushes.map { it.token })
         assertEquals("[긴급] 엄마 SOS", pushes[0].message.title)
         assertEquals("01012345678", pushes[0].message.extra["phone"])
+        assertEquals("SOS", pushes[0].message.extra["signal"])
 
         // 연달아 누르면 같은 건.
         val again: EmergencyCreated = c.post("/v1/emergencies") { auth(mom.token); json(EmergencyRequest("SOS")) }.body()

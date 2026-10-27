@@ -32,6 +32,17 @@ import kotlin.math.roundToInt
 
 @Serializable data class MonthRetention(val month: String, val rate: Rate)
 
+/** 신호별 알림과 응답 (최근 30일). [rate] = 본인이 "잘못된 알림"이라고 한 수 / 본인에게 보낸 수. */
+@Serializable data class AlertStat(
+    val signal: String,
+    val sent: Int,
+    val ok: Int,
+    val falseAlarm: Int,
+    val guardianContacted: Int,
+    val guardianFalseAlarm: Int,
+    val rate: Rate,
+)
+
 @Serializable data class MetricsReport(
     val day: String,
     val dau: Int,
@@ -52,7 +63,12 @@ import kotlin.math.roundToInt
     /** 유료 전환 조건 (무료 출시 결정): MAU 10만 이상 또는 30일 리텐션 30% 이상이 3개월 연속. */
     val monthlyRetention: List<MonthRetention>,
     val paidSwitchReady: Boolean,
+    /** 알림 오탐 신고율 (22번, 목표 10% 이하): 전체와 신호별. */
+    val falseAlarm: Rate = Rate(0, 0, FALSE_ALARM_TARGET),
+    val alertStats: List<AlertStat> = emptyList(),
 )
+
+const val FALSE_ALARM_TARGET = 0.1
 
 /**
  * 이용 통계 받기와 지표 계산 (기획서 22번). 앱이 이벤트 사전에 맞춰 보내도 서버가 다시 거릅니다.
@@ -191,6 +207,22 @@ class MetricsService(private val db: Db, private val clock: Clock, private val z
         }
         val retentionReady = monthly.size == 3 && monthly.all { (it.rate.rate ?: 0.0) >= 0.3 }
 
+        val alertStats = query(
+            """select props->>'signal' as signal,
+                 count(*) filter (where name = 'alert_sent' and props->>'recipient' = 'self') as sent,
+                 count(*) filter (where name = 'alert_feedback' and props->>'recipient' = 'self' and props->>'response' = 'ok') as ok,
+                 count(*) filter (where name = 'alert_feedback' and props->>'recipient' = 'self' and props->>'response' = 'false_alarm') as fa,
+                 count(*) filter (where name = 'alert_feedback' and props->>'recipient' = 'guardian' and props->>'response' = 'contacted') as gc,
+                 count(*) filter (where name = 'alert_feedback' and props->>'recipient' = 'guardian' and props->>'response' = 'false_alarm') as gfa
+               from events where name in ('alert_sent', 'alert_feedback') and day between ? and ? and props->>'signal' is not null
+               group by 1 order by 1""",
+            mauFrom, day,
+        ) {
+            val sent = it.getInt("sent")
+            val fa = it.getInt("fa")
+            AlertStat(it.getString("signal"), sent, it.getInt("ok"), fa, it.getInt("gc"), it.getInt("gfa"), Rate(fa, sent, FALSE_ALARM_TARGET))
+        }
+
         MetricsReport(
             day = day.toString(),
             dau = active(day, day),
@@ -209,6 +241,8 @@ class MetricsService(private val db: Db, private val clock: Clock, private val z
             cohorts = cohorts,
             monthlyRetention = monthly,
             paidSwitchReady = mau >= PAID_MAU || retentionReady,
+            falseAlarm = Rate(alertStats.sumOf { it.falseAlarm }, alertStats.sumOf { it.sent }, FALSE_ALARM_TARGET),
+            alertStats = alertStats,
         )
     }
 

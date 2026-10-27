@@ -165,7 +165,9 @@ class FamilyService(
             }
         }
         alerts.filter { it.signal == Signal.ACTIVITY_DROP.name }.forEach { a ->
-            sendOnce(userId, day.toString(), a.signal) { PushMessage(PushMessage.GUARDIAN_ALERT, a.title, a.body, mapOf("wearerId" to userId)) }
+            sendOnce(userId, day.toString(), a.signal) {
+                PushMessage(PushMessage.GUARDIAN_ALERT, a.title, a.body, mapOf("wearerId" to userId, "signal" to a.signal))
+            }
         }
     }
 

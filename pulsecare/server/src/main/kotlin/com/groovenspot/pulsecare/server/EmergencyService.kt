@@ -128,6 +128,7 @@ class EmergencyService(private val db: Db, private val push: Push, private val c
         fun extras() = buildMap {
             put("emergencyId", id)
             put("wearerId", wearerId)
+            put("signal", signal.name)
             wearerPhone?.let { put("phone", it) }
         }
     }

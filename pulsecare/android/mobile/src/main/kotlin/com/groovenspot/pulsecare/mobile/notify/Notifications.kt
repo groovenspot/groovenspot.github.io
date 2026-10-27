@@ -13,6 +13,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.groovenspot.pulsecare.alert.AlertText
+import com.groovenspot.pulsecare.alert.Detection
+import com.groovenspot.pulsecare.alert.FeedbackResponse
+import com.groovenspot.pulsecare.alert.Signal
 import com.groovenspot.pulsecare.alert.Grade
 import com.groovenspot.pulsecare.mobile.R
 import com.groovenspot.pulsecare.mobile.family.EmergencyActionReceiver
@@ -87,8 +90,41 @@ object Notifications {
     fun morning(context: Context, title: String, body: String, publicText: String) =
         post(context, MORNING, MORNING_ID, title, body, publicText, NotificationCompat.PRIORITY_DEFAULT)
 
-    fun caution(context: Context, index: Int, title: String, body: String, publicText: String) =
-        post(context, CAUTION, CAUTION_ID_BASE + index, title, body, publicText, NotificationCompat.PRIORITY_HIGH)
+    /** 주의 알림. "괜찮아요" / "잘못된 알림이에요"로 바로 답할 수 있습니다. */
+    fun caution(context: Context, index: Int, detection: Detection, title: String, body: String, publicText: String) {
+        val id = CAUTION_ID_BASE + index
+        val actions = listOf(FeedbackResponse.OK, FeedbackResponse.FALSE_ALARM).map { r ->
+            r.label to feedbackAction(context, id, detection, r, guardian = false)
+        }
+        post(context, CAUTION, id, title, body, publicText, NotificationCompat.PRIORITY_HIGH, actions)
+    }
+
+    /** 보호자에게 온 주의 알림 (걸음 수 감소 등). */
+    fun guardianAlert(context: Context, signal: Signal?, title: String, body: String) {
+        val id = FAMILY_ID_BASE + (title.hashCode() and 0xFFF)
+        val actions = signal?.let { sig ->
+            listOf(FeedbackResponse.CONTACTED, FeedbackResponse.FALSE_ALARM).map { r -> r.label to feedbackAction(context, id, Detection(sig), r, guardian = true) }
+        }.orEmpty()
+        post(context, FAMILY, id, title, body, "가족 소식이 있어요", NotificationCompat.PRIORITY_DEFAULT, actions)
+    }
+
+    private fun feedbackAction(context: Context, notificationId: Int, d: Detection, response: FeedbackResponse, guardian: Boolean): PendingIntent =
+        PendingIntent.getBroadcast(
+            context,
+            (notificationId.toString() + response.name).hashCode(),
+            Intent(context, AlertFeedbackReceiver::class.java)
+                .setAction(AlertFeedbackReceiver.ACTION)
+                .putExtra(AlertFeedbackReceiver.EXTRA_SIGNAL, d.signal.name)
+                .putExtra(AlertFeedbackReceiver.EXTRA_RESPONSE, response.name)
+                .putExtra(AlertFeedbackReceiver.EXTRA_GUARDIAN, guardian)
+                .putExtra(AlertFeedbackReceiver.EXTRA_NOTIFICATION, notificationId)
+                .apply {
+                    d.usual?.let { putExtra(AlertFeedbackReceiver.EXTRA_USUAL, it) }
+                    d.current?.let { putExtra(AlertFeedbackReceiver.EXTRA_CURRENT, it) }
+                    d.days?.let { putExtra(AlertFeedbackReceiver.EXTRA_DAYS, it) }
+                },
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
 
     /** [retryMissionId]가 있으면 "내일 다시" / "다른 미션으로" 버튼을 붙입니다. */
     fun evening(context: Context, title: String, body: String, retryMissionId: String?) {
@@ -140,10 +176,10 @@ object Notifications {
     }
 
     /** 보호자에게: 가족이 도움을 요청했어요. "확인했어요"를 누르면 다음 보호자에게 가는 연락이 멈춥니다. */
-    fun familyEmergency(context: Context, emergencyId: String, title: String, body: String, phone: String?) {
+    fun familyEmergency(context: Context, emergencyId: String, title: String, body: String, phone: String?, signal: String? = null) {
         val id = EMERGENCY_ID_BASE + (emergencyId.hashCode() and 0xFFFF)
         val actions = listOfNotNull(
-            "확인했어요" to familyAction(context, EmergencyActionReceiver.ACTION_ACK, emergencyId),
+            "확인했어요" to familyAction(context, EmergencyActionReceiver.ACTION_ACK, emergencyId, signal),
             phone?.let { "전화하기" to dial(context, it, id) },
             "119 연결" to dial(context, "119", id + 1),
         )
@@ -168,10 +204,12 @@ object Notifications {
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
     )
 
-    private fun familyAction(context: Context, action: String, emergencyId: String): PendingIntent = PendingIntent.getBroadcast(
+    private fun familyAction(context: Context, action: String, emergencyId: String, signal: String? = null): PendingIntent = PendingIntent.getBroadcast(
         context,
         (action + emergencyId).hashCode(),
-        Intent(context, EmergencyActionReceiver::class.java).setAction(action).putExtra(EmergencyActionReceiver.EXTRA_ID, emergencyId),
+        Intent(context, EmergencyActionReceiver::class.java).setAction(action)
+            .putExtra(EmergencyActionReceiver.EXTRA_ID, emergencyId)
+            .putExtra(EmergencyActionReceiver.EXTRA_SIGNAL, signal),
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
     )
 

@@ -21,6 +21,9 @@ object Dashboard {
         val cohortRows = r.cohorts.joinToString("") { c ->
             "<tr><td>${c.week}</td><td>${c.size}</td><td>${percent(c.d1)}</td><td>${percent(c.d7)}</td><td>${percent(c.d30)}</td></tr>"
         }
+        val alertRows = r.alertStats.joinToString("") { a ->
+            "<tr><td>${a.signal}</td><td>${a.sent}</td><td>${a.ok}</td><td>${a.falseAlarm}</td><td>${percent(a.rate)}</td><td>${a.guardianContacted}</td><td>${a.guardianFalseAlarm}</td></tr>"
+        }.ifEmpty { "<tr><td colspan=\"7\">최근 30일 알림이 없어요</td></tr>" }
         val months = r.monthlyRetention.joinToString(" · ") { m ->
             "${m.month} " + if (m.rate.denominator == 0) "(가입 없음)" else "${percent(m.rate)} (${m.rate.numerator}/${m.rate.denominator})"
         }.ifEmpty { "아직 다 익은 달이 없어요" }
@@ -56,6 +59,9 @@ ${rate("초대로 들어온 신규", r.inviteSignups, "가입 7일 안 초대 �
 ${rate("미션 완료율", r.missionCompletion, "최근 7일 완료 / 제시")}
 ${rate("알림으로 연 비율", r.notificationOpens, "최근 7일 앱 열기 중")}
 </div>
+<h2>알림 응답 (최근 30일)</h2>
+<div class="grid">${rate("알림 오탐 신고율", r.falseAlarm, "본인 \"잘못된 알림\" / 본인에게 보낸 주의 알림")}</div>
+<table style="margin-top:10px"><tr><th>신호</th><th>보냄(본인)</th><th>괜찮아요</th><th>잘못된 알림</th><th>오탐 신고율</th><th>보호자 연락함</th><th>보호자 잘못된 알림</th></tr>$alertRows</table>
 <h2>주간 가입 코호트 리텐션</h2>
 <table><tr><th>가입 주 (월요일)</th><th>가입</th><th>1일째</th><th>7일째</th><th>30일 (29~35일째)</th></tr>$cohortRows</table>
 <h2>유료 전환 조건</h2>

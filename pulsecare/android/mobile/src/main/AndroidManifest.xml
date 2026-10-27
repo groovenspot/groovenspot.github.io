@@ -45,6 +45,11 @@
             android:name=".notify.EveningActionReceiver"
             android:exported="false" />
 
+        <!-- 주의 알림의 "괜찮아요" / "잘못된 알림이에요" / "연락했어요" -->
+        <receiver
+            android:name=".notify.AlertFeedbackReceiver"
+            android:exported="false" />
+
         <!-- 긴급 알림의 "확인했어요" / "취소하기" -->
         <receiver
             android:name=".family.EmergencyActionReceiver"

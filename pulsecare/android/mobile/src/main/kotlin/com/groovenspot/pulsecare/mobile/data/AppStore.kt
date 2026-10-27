@@ -2,6 +2,10 @@ package com.groovenspot.pulsecare.mobile.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.groovenspot.pulsecare.alert.Detection
+import com.groovenspot.pulsecare.alert.FeedbackEntry
+import com.groovenspot.pulsecare.alert.FeedbackResponse
+import com.groovenspot.pulsecare.alert.Signal
 import com.groovenspot.pulsecare.mission.Goal
 import com.groovenspot.pulsecare.mission.MissionLog
 import com.groovenspot.pulsecare.mission.MissionProgress
@@ -9,6 +13,7 @@ import com.groovenspot.pulsecare.report.WeeklySummary
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 /** 사용자가 정한 것. */
 data class Profile(
@@ -159,7 +164,63 @@ class AppStore(private val prefs: SharedPreferences) {
     fun onceSent(name: String): Boolean = prefs.getBoolean("ev_once_$name", false)
     fun markOnce(name: String) = prefs.edit().putBoolean("ev_once_$name", true).apply()
 
+    /** 내가 한 알림 응답 (최근 30일). 같은 신호를 24시간 다시 알리지 않기, 7일 쉬기 제안에 씁니다. */
+    var alertFeedback: List<FeedbackEntry>
+        get() = prefs.getString(KEY_FEEDBACK, null)?.let { s ->
+            val a = JSONArray(s)
+            (0 until a.length()).mapNotNull { i ->
+                runCatching {
+                    val o = a.getJSONObject(i)
+                    FeedbackEntry(
+                        LocalDateTime.parse(o.getString("at")),
+                        Detection(
+                            Signal.valueOf(o.getString("signal")),
+                            o.optDouble("usual").takeUnless { it.isNaN() },
+                            o.optDouble("current").takeUnless { it.isNaN() },
+                            o.optInt("days", -1).takeIf { it >= 0 },
+                        ),
+                        FeedbackResponse.valueOf(o.getString("response")),
+                    )
+                }.getOrNull()
+            }
+        } ?: emptyList()
+        set(value) {
+            val cutoff = LocalDateTime.now().minusDays(30)
+            val a = JSONArray()
+            value.filter { it.at.isAfter(cutoff) }.forEach { e ->
+                a.put(
+                    JSONObject().put("at", e.at.toString()).put("signal", e.detection.signal.name).put("response", e.response.name).apply {
+                        e.detection.usual?.let { put("usual", it) }
+                        e.detection.current?.let { put("current", it) }
+                        e.detection.days?.let { put("days", it) }
+                    },
+                )
+            }
+            prefs.edit().putString(KEY_FEEDBACK, a.toString()).apply()
+        }
+
+    /** 쉬는 중인 신호와 끝나는 날. */
+    var snoozedSignals: Map<Signal, LocalDate>
+        get() = signalMap(KEY_SNOOZED, LocalDate::parse)
+        set(value) = putSignalMap(KEY_SNOOZED, value)
+
+    /** "계속 받기"를 고른 시각 (그 뒤 새 오탐이 없으면 다시 묻지 않음). */
+    var snoozeDeclined: Map<Signal, LocalDateTime>
+        get() = signalMap(KEY_DECLINED, LocalDateTime::parse)
+        set(value) = putSignalMap(KEY_DECLINED, value)
+
+    private fun <T> signalMap(key: String, parse: (String) -> T): Map<Signal, T> = prefs.getString(key, null)?.let { s ->
+        val o = JSONObject(s)
+        o.keys().asSequence().mapNotNull { k -> runCatching { Signal.valueOf(k) to parse(o.getString(k)) }.getOrNull() }.toMap()
+    } ?: emptyMap()
+
+    private fun putSignalMap(key: String, value: Map<Signal, Any>) =
+        prefs.edit().putString(key, JSONObject().apply { value.forEach { (k, v) -> put(k.name, v.toString()) } }.toString()).apply()
+
     companion object {
+        private const val KEY_FEEDBACK = "alert_feedback"
+        private const val KEY_SNOOZED = "alert_snoozed"
+        private const val KEY_DECLINED = "alert_snooze_declined"
         private const val KEY_ANALYTICS = "analytics_consent"
         private const val KEY_INSTALL = "install_id"
         private const val KEY_CONSENT_VERSION = "consent_version"
