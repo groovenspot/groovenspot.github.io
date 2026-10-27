@@ -3,7 +3,7 @@
 어떤 워치든 그 데이터를 매일 아침 한국어 컨디션 점수와 "오늘 할 일 하나"로 바꾸고, 멀리 사는 가족이 함께 챙길 수 있게 하는 앱입니다.
 기획서: 펄스케어 기획서 (Claude Docs). 섹션 번호(13번 등)는 기획서 번호입니다.
 
-국내 스마트폰의 81%가 갤럭시라 **Android + Wear OS를 먼저** 만들고, iPhone + Apple Watch는 같은 로직으로 뒤따릅니다.
+국내 스마트폰의 81%가 갤럭시라 **Android + Wear OS를 먼저** 만들었고, iPhone + Apple Watch는 같은 로직을 Swift로 옮긴 `ios/`에 있습니다 (맥 없이 GitHub Actions에서 빌드, [ios/README.md](ios/README.md)).
 
 ## 지금 있는 것
 
