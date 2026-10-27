@@ -126,7 +126,7 @@ private fun App() {
         )
         if (profile == null) {
             profile = Profile(goal = goal ?: Goal.SLEEP, signupDate = LocalDate.now()).also { store.profile = it }
-            Metrics.track(context, EventName.SIGNUP_COMPLETED, mapOf("via" to "organic", "goal" to profile!!.goal.name))
+            Metrics.track(context, EventName.SIGNUP_COMPLETED, mapOf("via" to "organic", "goal" to profile!!.goal.name, "mode" to "watch"))
         }
         stage = Stage.HOME
         refresh++
@@ -155,7 +155,7 @@ private fun App() {
                 refresh++
             }
         }, changing = profile != null)
-        stage == Stage.CONNECT || (granted != null && !canScore) -> ConnectScreen(
+        stage == Stage.CONNECT || (granted != null && !canScore && profile?.guardianOnly != true) -> ConnectScreen(
             available = available,
             onConnect = { permissionLauncher.launch(HealthConnectSource.requestable(context)) },
             onInstall = {
@@ -163,7 +163,23 @@ private fun App() {
                     Intent(Intent.ACTION_VIEW, "market://details?id=com.google.android.apps.healthdata".toUri()),
                 )
             },
-            onLater = null,
+            // 부모님을 챙기려는 사람은 워치가 없어도 보호자로 시작할 수 있습니다.
+            onLater = if ((goal ?: profile?.goal) == Goal.PARENT) {
+                {
+                    val current = profile
+                    if (current == null) {
+                        profile = Profile(goal = Goal.PARENT, signupDate = LocalDate.now(), guardianOnly = true).also { store.profile = it }
+                        Metrics.track(context, EventName.SIGNUP_COMPLETED, mapOf("via" to "organic", "goal" to Goal.PARENT.name, "mode" to "guardian"))
+                    } else {
+                        profile = current.copy(guardianOnly = true).also { store.profile = it }
+                    }
+                    stage = Stage.HOME
+                    refresh++
+                }
+            } else {
+                null
+            },
+            laterLabel = "워치가 없어요 · 보호자로만 쓸게요",
         )
         granted == null -> Loading()
         stage == Stage.SETTINGS -> {
@@ -198,6 +214,11 @@ private fun App() {
                 },
                 onOpenTestTools = if (BuildConfig.DEBUG) ({ stage = Stage.TEST_TOOLS }) else null,
                 onOpenUrl = openUrl,
+                onConnectWatch = if (profile!!.guardianOnly) ({
+                    profile = profile!!.copy(guardianOnly = false).also { store.profile = it }
+                    returnTo = Stage.HOME
+                    permissionLauncher.launch(HealthConnectSource.requestable(context))
+                }) else null,
                 analytics = store.analyticsConsent,
                 onAnalytics = { on -> Metrics.setConsent(context, on) },
                 consentDate = store.consentAt.takeIf { it > 0 }?.let {
@@ -207,7 +228,10 @@ private fun App() {
         }
         stage == Stage.TEST_TOOLS -> TestTools(onBack = { stage = Stage.SETTINGS })
         else -> EasyMode(profile!!.seniorMode) {
+            val guardianOnly = profile!!.guardianOnly
             MainTabs(
+                tabs = if (guardianOnly) listOf(Tab.TODAY, Tab.FAMILY) else Tab.entries,
+                label = { if (guardianOnly && it == Tab.TODAY) "부모님" else it.label },
                 current = when (stage) {
                     Stage.HISTORY -> Tab.HISTORY
                     Stage.FAMILY -> Tab.FAMILY
@@ -228,7 +252,9 @@ private fun App() {
                 if (stage == Stage.HISTORY) {
                     HistoryTab(refresh, onOpenSettings = openSettings)
                 } else if (stage == Stage.FAMILY) {
-                    FamilyTab(onOpenSettings = openSettings)
+                    FamilyTab(onOpenSettings = openSettings, guardianMode = guardianOnly)
+                } else if (guardianOnly) {
+                    GuardianTab(store, refresh, onOpenFamily = { stage = Stage.FAMILY }, onOpenSettings = openSettings)
                 } else {
                     Home(
                         store,
@@ -369,7 +395,7 @@ private fun EasyMode(on: Boolean, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun FamilyTab(onOpenSettings: () -> Unit) {
+private fun FamilyTab(onOpenSettings: () -> Unit, guardianMode: Boolean = false) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var ui by remember {
@@ -475,6 +501,79 @@ private fun FamilyTab(onOpenSettings: () -> Unit) {
         },
         onCall = { number -> context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$number".toUri())) },
         onReload = { reload++ },
+        onOpenSettings = onOpenSettings,
+        guardianMode = guardianMode,
+    )
+}
+
+/** 워치 없는 보호자의 "부모님" 탭: 부모님 오늘 카드와 오늘의 보호자 미션. */
+@Composable
+private fun GuardianTab(store: AppStore, refreshKey: Int, onOpenFamily: () -> Unit, onOpenSettings: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var home by remember { mutableStateOf<HomeState?>(null) }
+    var ui by remember { mutableStateOf(FamilyUi(FamilyRepository.configured, PulseApp.pushConfigured, me = null)) }
+    var reload by remember { mutableIntStateOf(0) }
+
+    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        Metrics.track(context, EventName.PUSH_PERMISSION_CHANGED, mapOf("granted" to granted.toString()))
+    }
+    LaunchedEffect(Unit) {
+        MorningSchedule.ensure(context)
+        EveningSchedule.ensure(context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !Notifications.canPost(context)) {
+            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+    LaunchedEffect(refreshKey, reload) {
+        home = runCatching { TodayRepository.refresh(context) }.getOrNull()
+        if (!FamilyRepository.hasAccount(context)) return@LaunchedEffect
+        ui = try {
+            val me = FamilyRepository.me(context)
+            val family = FamilyRepository.family(context)
+            family?.let {
+                Metrics.trackDaily(
+                    context, EventName.FAMILY_VIEW_OPENED, "guardian_home",
+                    mapOf("wearers" to it.wearers.size.toString(), "guardians" to it.guardians.size.toString()),
+                )
+            }
+            ui.copy(me = me, family = family, error = null, now = Instant.now())
+        } catch (e: ServerError) {
+            ui.copy(error = e.message)
+        } catch (e: Exception) {
+            ui.copy(error = "서버에 연결하지 못했어요. 인터넷을 확인해 주세요.")
+        }
+    }
+
+    GuardianHomeContent(
+        date = home?.date ?: LocalDate.now(),
+        ui = ui,
+        mission = home?.mission,
+        missionDone = home?.missionDone == true,
+        onCompleteMission = {
+            store.today?.takeIf { !it.completed }?.let {
+                Metrics.track(context, EventName.MISSION_COMPLETED, mapOf("mission_id" to it.missionId, "auto" to "false", "surface" to "app"))
+                store.today = it.copy(completed = true)
+            }
+            reload++
+        },
+        onOpenFamily = onOpenFamily,
+        onAck = { e ->
+            scope.launch {
+                runCatching {
+                    FamilyRepository.ack(context, e.id)
+                    runCatching { Signal.valueOf(e.signal) }.getOrNull()?.let {
+                        AlertFeedbackReceiver.record(context, Detection(it), FeedbackResponse.CONTACTED, guardian = true)
+                    }
+                    Notifications.emergencyClosed(context, e.id, "확인했다고 알렸어요", "다른 보호자에게 가는 연락은 멈췄어요.")
+                }.onFailure { ui = ui.copy(error = "확인을 보내지 못했어요. 인터넷을 확인해 주세요.") }
+                reload++
+            }
+        },
+        onCall = { number -> context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$number".toUri())) },
+        onAlertFeedback = { signal, response ->
+            runCatching { Signal.valueOf(signal) }.getOrNull()?.let { AlertFeedbackReceiver.record(context, Detection(it), response, guardian = true) }
+        },
         onOpenSettings = onOpenSettings,
     )
 }

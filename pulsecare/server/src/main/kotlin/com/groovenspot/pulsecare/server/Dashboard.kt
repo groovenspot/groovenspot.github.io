@@ -47,12 +47,12 @@ table{width:100%;border-collapse:collapse;background:var(--card);font-size:14px}
 <h1>펄스케어 지표</h1><div class="n">${r.day} 기준 (KST) · 이용 통계에 동의한 설치만 · 활성 = 앱 열기·점수 보기·직접 미션 완료·알림 응답·가족 화면</div>
 <h2>사용자</h2><div class="grid">
 ${card("일간 활성 (DAU)", "${r.dau}")}${card("주간 활성 (WAU)", "${r.wau}")}${card("월간 활성 (MAU)", "${r.mau}", "유료 전환 기준 10만 명")}
-${card("최근 30일 가입", "${r.signups30}", "기록 지우기 ${r.deletions30}건")}
+${card("최근 30일 가입", "${r.signups30}", "워치 없는 보호자 ${r.guardianSignups30} · 기록 지우기 ${r.deletions30}건")}
 </div>
 <h2>최근 30일 일간 활성</h2><div class="bars">$bars</div>
 <h2>핵심 지표</h2><div class="grid">
 ${rate("북극성: 주간 코칭 실천", r.northStar, "지난주 미션 3번 이상 / MAU")}
-${rate("워치 연동률", r.watchLink, "가입 7일 안 첫 기록")}
+${rate("워치 연동률", r.watchLink, "가입 7일 안 첫 기록 (보호자 전용 제외)")}
 ${rate("첫 점수 도달률", r.firstScore, "가입 10일 안 정식 점수")}
 ${rate("가족 연결률", r.familyLink, "MAU 중 가족 연결")}
 ${rate("초대로 들어온 신규", r.inviteSignups, "가입 7일 안 초대 수락")}

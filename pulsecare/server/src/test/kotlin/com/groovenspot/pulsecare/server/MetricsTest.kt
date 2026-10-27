@@ -128,27 +128,32 @@ class MetricsTest {
         // 가족: 3은 가입 3일째 초대 수락.
         send(users[3], signupDay.plusDays(3), "family_invite_accepted", mapOf("role" to "WEARER"))
 
+        // 워치 없는 보호자는 워치 연동률 분모에서 뺍니다.
+        val guardian = UUID.randomUUID().toString()
+        send(guardian, signupDay, "signup_completed", mapOf("via" to "organic", "mode" to "guardian"))
+
         // 가입 10일 뒤: 7일 안 워치 연동, 10일 안 첫 점수, 7일 안 초대 수락.
         val early = metrics.report(signupDay.plusDays(10))
         assertEquals(Rate(2, 4, 0.8), early.watchLink)
+        assertEquals(1, metrics.report(signupDay.plusDays(1)).guardianSignups30)
         assertEquals(Rate(1, 4, 0.6), early.firstScore)
-        assertEquals(Rate(1, 4, 0.5), early.inviteSignups)
+        assertEquals(Rate(1, 5, 0.5), early.inviteSignups)
 
         // 주간 코호트는 가입 주 일요일 + 35일이 지나야 30일 리텐션을 냅니다.
         val notYet = metrics.report(signupDay.plusDays(40)).cohorts.single { it.week == signupDay.toString() }
         assertNull(notYet.d30.rate)
         val cohort = metrics.report(signupDay.plusDays(42)).cohorts.single { it.week == signupDay.toString() }
-        assertEquals(4, cohort.size)
-        assertEquals(Rate(2, 4), cohort.d1)
-        assertEquals(Rate(1, 4), cohort.d7)
-        assertEquals(Rate(2, 4, 0.3), cohort.d30)
+        assertEquals(5, cohort.size)
+        assertEquals(Rate(2, 5), cohort.d1)
+        assertEquals(Rate(1, 5), cohort.d7)
+        assertEquals(Rate(2, 5, 0.3), cohort.d30)
 
         // 월별: 3월 가입자는 5월 5일 이후에 익습니다. 3개월이 차지 않아 유료 전환 조건은 아직 아님.
         val later = metrics.report(LocalDate.of(2027, 5, 10))
         // 최근 다 익은 3개월. 가입자가 없던 달은 비율 없이 보여 줍니다.
         assertEquals(listOf("2027-01", "2027-02", "2027-03"), later.monthlyRetention.map { it.month })
         assertNull(later.monthlyRetention[0].rate.rate)
-        assertEquals(0.5, later.monthlyRetention.last().rate.rate!!, 0.001)
+        assertEquals(0.4, later.monthlyRetention.last().rate.rate!!, 0.001)
         assertFalse(later.paidSwitchReady)
     }
 

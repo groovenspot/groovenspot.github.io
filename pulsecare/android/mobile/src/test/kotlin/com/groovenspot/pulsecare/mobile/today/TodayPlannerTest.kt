@@ -158,5 +158,17 @@ class TodayPlannerTest {
         val p = Profile(Goal.STRESS, today, levels = mapOf(Goal.STRESS to 2, Goal.SLEEP to 3), seniorMode = true, goalSince = today.plusDays(3))
         assertEquals(p, AppStore.decodeProfile(AppStore.encodeProfile(p)))
         assertNotNull(p.level)
+        val guardian = Profile(Goal.PARENT, today, guardianOnly = true)
+        assertEquals(guardian, AppStore.decodeProfile(AppStore.encodeProfile(guardian)))
+    }
+
+    /** 워치 없는 보호자: 기록이 없어도 보호자 미션(P-)을 고르고 점수는 없습니다. */
+    @Test
+    fun guardianOnlyGetsParentMissionWithoutRecords() {
+        val guardian = Profile(Goal.PARENT, today.minusDays(20), guardianOnly = true)
+        val plan = planner.plan(today, emptyList(), guardian, null, emptyList(), emptyMap())
+        assertTrue(plan.home.mission.id.startsWith("P-"))
+        assertEquals(ScoreResult.Kind.NO_DATA, plan.home.score.kind)
+        assertTrue(plan.home.alerts.isEmpty())
     }
 }

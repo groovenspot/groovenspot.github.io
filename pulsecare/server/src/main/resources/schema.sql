@@ -96,3 +96,7 @@ create table if not exists forgotten (
     day date primary key,
     count int not null
 )
+;
+
+-- 가입 방식: watch(워치 연결) / guardian(워치 없는 보호자). 워치 연동률·첫 점수 도달률에서 보호자 전용은 뺍니다.
+alter table signups add column if not exists mode text

@@ -92,6 +92,8 @@ fun FamilyContent(
     onOpenSettings: () -> Unit = {},
     /** 보호자가 주의 알림에 답함 (신호 이름, 응답). */
     onAlertFeedback: (String, FeedbackResponse) -> Unit = { _, _ -> },
+    /** 워치 없는 보호자: "나를 챙기는 보호자"와 "보호자 초대"를 숨깁니다. */
+    guardianMode: Boolean = false,
 ) {
     var consentInvite by remember { mutableStateOf(false) }
     var confirmUnlink by remember { mutableStateOf<Person?>(null) }
@@ -133,10 +135,12 @@ fun FamilyContent(
                         SectionTitle("내가 챙기는 가족")
                         family.wearers.forEach { WearerCard(it, onCall, onAlertFeedback) }
                     }
-                    SectionTitle("나를 챙기는 보호자")
-                    GuardiansPanel(family.guardians, onMove, onUnlink = { confirmUnlink = it })
+                    if (!guardianMode || family.guardians.isNotEmpty()) {
+                        SectionTitle("나를 챙기는 보호자")
+                        GuardiansPanel(family.guardians, onMove, onUnlink = { confirmUnlink = it })
+                    }
                 }
-                InvitePanel(ui, onInvite = { role -> if (role == "WEARER") consentInvite = true else onInvite(role) }, onShareInvite, onCheckCode)
+                InvitePanel(ui, onInvite = { role -> if (role == "WEARER") consentInvite = true else onInvite(role) }, onShareInvite, onCheckCode, guardianMode)
                 if (family != null && family.wearers.isNotEmpty()) {
                     family.wearers.forEach { w ->
                         TextButton(onClick = { confirmUnlink = w.person }) { Text("${w.person.name}님과 연결 끊기", color = Palette.Muted, fontSize = 13.sp) }
@@ -204,7 +208,7 @@ fun FamilyContent(
 }
 
 @Composable
-private fun FamilyPanel(border: Color = Palette.Line, content: @Composable () -> Unit) {
+internal fun FamilyPanel(border: Color = Palette.Line, content: @Composable () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Palette.Card),
         border = BorderStroke(if (border == Palette.Line) 1.dp else 2.dp, border),
@@ -270,7 +274,7 @@ private fun ago(at: Long, now: Instant): String {
 }
 
 @Composable
-private fun EmergencyCard(w: WearerView, e: EmergencyView, ui: FamilyUi, onAck: (EmergencyView) -> Unit, onCall: (String) -> Unit) {
+internal fun EmergencyCard(w: WearerView, e: EmergencyView, ui: FamilyUi, onAck: (EmergencyView) -> Unit, onCall: (String) -> Unit) {
     FamilyPanel(border = if (e.active) Palette.Coral else Palette.Line) {
         Text(ago(e.createdAt, ui.now), color = Palette.Muted, fontSize = 13.sp)
         Text(e.title, color = if (e.active) Palette.Coral else Palette.Navy, fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -302,7 +306,7 @@ private fun EmergencyCard(w: WearerView, e: EmergencyView, ui: FamilyUi, onAck: 
 }
 
 @Composable
-private fun WearerCard(w: WearerView, onCall: (String) -> Unit, onAlertFeedback: (String, FeedbackResponse) -> Unit) {
+internal fun WearerCard(w: WearerView, onCall: (String) -> Unit, onAlertFeedback: (String, FeedbackResponse) -> Unit) {
     FamilyPanel {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(w.person.name, color = Palette.Navy, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
@@ -374,7 +378,13 @@ private fun GuardiansPanel(guardians: List<GuardianView>, onMove: (GuardianView,
 }
 
 @Composable
-private fun InvitePanel(ui: FamilyUi, onInvite: (String) -> Unit, onShareInvite: (Invite, String) -> Unit, onCheckCode: (String) -> Unit) {
+private fun InvitePanel(
+    ui: FamilyUi,
+    onInvite: (String) -> Unit,
+    onShareInvite: (Invite, String) -> Unit,
+    onCheckCode: (String) -> Unit,
+    guardianMode: Boolean = false,
+) {
     var code by remember { mutableStateOf("") }
     FamilyPanel {
         Text("초대하기", color = Palette.Navy, fontSize = 17.sp, fontWeight = FontWeight.Bold)
@@ -390,7 +400,9 @@ private fun InvitePanel(ui: FamilyUi, onInvite: (String) -> Unit, onShareInvite:
             ) { Text("메시지로 보내기") }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { onInvite("WEARER") }, enabled = !ui.busy, modifier = Modifier.weight(1f)) { Text("보호자 초대", color = Palette.Navy) }
+            if (!guardianMode) {
+                OutlinedButton(onClick = { onInvite("WEARER") }, enabled = !ui.busy, modifier = Modifier.weight(1f)) { Text("보호자 초대", color = Palette.Navy) }
+            }
             OutlinedButton(onClick = { onInvite("GUARDIAN") }, enabled = !ui.busy, modifier = Modifier.weight(1f)) { Text("부모님 초대", color = Palette.Navy) }
         }
         Text("받은 코드가 있나요?", color = Palette.Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 6.dp))

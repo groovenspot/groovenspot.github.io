@@ -124,7 +124,13 @@ fun GoalScreen(selected: Goal?, onSelect: (Goal) -> Unit, onNext: () -> Unit, ch
 
 /** 온보딩 2단계: Health Connect 연결. 워치 앱(삼성 헬스 등)이 Health Connect에 쓴 기록을 읽습니다. */
 @Composable
-fun ConnectScreen(available: Boolean, onConnect: () -> Unit, onInstall: () -> Unit, onLater: (() -> Unit)?) {
+fun ConnectScreen(
+    available: Boolean,
+    onConnect: () -> Unit,
+    onInstall: () -> Unit,
+    onLater: (() -> Unit)?,
+    laterLabel: String = "나중에",
+) {
     OnboardingFrame(
         step = "2 / 2",
         title = "워치 기록을 연결해 주세요",
@@ -137,7 +143,7 @@ fun ConnectScreen(available: Boolean, onConnect: () -> Unit, onInstall: () -> Un
         primary = if (available) "Health Connect 연결" else "Health Connect 설치",
         primaryEnabled = true,
         onPrimary = if (available) onConnect else onInstall,
-        secondary = onLater?.let { "나중에" to it },
+        secondary = onLater?.let { laterLabel to it },
     ) {
         listOf(
             "수면 시간·심박 같은 건강 수치는 이 휴대폰에서만 계산하고 서버에 보내지 않아요",

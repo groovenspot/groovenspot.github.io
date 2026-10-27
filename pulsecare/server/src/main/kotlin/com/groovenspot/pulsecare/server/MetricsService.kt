@@ -58,6 +58,8 @@ import kotlin.math.roundToInt
     val missionCompletion: Rate,
     val notificationOpens: Rate,
     val signups30: Int,
+    /** 최근 30일 가입 중 워치 없는 보호자로 시작한 수. */
+    val guardianSignups30: Int = 0,
     val deletions30: Int,
     val cohorts: List<Cohort>,
     /** 유료 전환 조건 (무료 출시 결정): MAU 10만 이상 또는 30일 리텐션 30% 이상이 3개월 연속. */
@@ -99,7 +101,10 @@ class MetricsService(private val db: Db, private val clock: Clock, private val z
                     exec("insert into active_days (install_id, day) values (?, ?) on conflict do nothing", batch.installId, day)
                 }
                 if (name == EventName.SIGNUP_COMPLETED) {
-                    exec("insert into signups (install_id, day) values (?, ?) on conflict do nothing", batch.installId, day)
+                    exec(
+                        "insert into signups (install_id, day, mode) values (?, ?, ?) on conflict do nothing",
+                        batch.installId, day, props["mode"] ?: "watch",
+                    )
                 }
             }
         }
@@ -146,9 +151,10 @@ class MetricsService(private val db: Db, private val clock: Clock, private val z
         )
 
         // 코호트 비율: 가입 [from, to]인 사람 중 조건을 만족한 사람.
-        fun cohortRate(from: LocalDate, to: LocalDate, condition: String, target: Double?): Rate {
-            val size = count("select count(*) from signups where day between ? and ?", from, to)
-            val hit = count("select count(*) from signups s where s.day between ? and ? and $condition", from, to)
+        fun cohortRate(from: LocalDate, to: LocalDate, condition: String, target: Double?, watchOnly: Boolean = false): Rate {
+            val mode = if (watchOnly) " and s.mode is distinct from 'guardian'" else ""
+            val size = count("select count(*) from signups s where s.day between ? and ?$mode", from, to)
+            val hit = count("select count(*) from signups s where s.day between ? and ?$mode and $condition", from, to)
             return Rate(hit, size, target)
         }
         val activeBetween = { a: Int, b: Int ->
@@ -158,10 +164,12 @@ class MetricsService(private val db: Db, private val clock: Clock, private val z
         val watchLink = cohortRate(
             day.minusDays(36), day.minusDays(7),
             "exists (select 1 from events e where e.install_id = s.install_id and e.name = 'data_first_received' and e.day <= s.day + 7)", 0.8,
+            watchOnly = true,
         )
         val firstScore = cohortRate(
             day.minusDays(39), day.minusDays(10),
             "exists (select 1 from events e where e.install_id = s.install_id and e.name = 'score_viewed' and e.props->>'kind' = 'FULL' and e.day <= s.day + 10)", 0.6,
+            watchOnly = true,
         )
         val inviteSignups = cohortRate(
             day.minusDays(36), day.minusDays(7),
@@ -237,6 +245,7 @@ class MetricsService(private val db: Db, private val clock: Clock, private val z
             missionCompletion = Rate(completed, shown),
             notificationOpens = Rate(fromNotification, opens),
             signups30 = count("select count(*) from signups where day between ? and ?", mauFrom, day),
+            guardianSignups30 = count("select count(*) from signups where day between ? and ? and mode = 'guardian'", mauFrom, day),
             deletions30 = count("select coalesce(sum(count), 0) from forgotten where day between ? and ?", mauFrom, day),
             cohorts = cohorts,
             monthlyRetention = monthly,

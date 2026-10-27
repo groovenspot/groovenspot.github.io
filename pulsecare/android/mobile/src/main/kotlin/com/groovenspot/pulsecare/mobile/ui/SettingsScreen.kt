@@ -71,6 +71,8 @@ fun SettingsContent(
     onOpenUrl: (String) -> Unit = {},
     /** 동의한 날짜 (예: "2027-06-16"). */
     consentDate: String? = null,
+    /** 워치 없는 보호자만: 내 워치도 연결해 내 점수를 받기. */
+    onConnectWatch: (() -> Unit)? = null,
     /** 이용 통계 (선택 동의). */
     analytics: Boolean = false,
     onAnalytics: (Boolean) -> Unit = {},
@@ -97,7 +99,11 @@ fun SettingsContent(
             Divider()
             SwitchRow("쉽게 보기", "큰 글씨, 버튼은 꼭 필요한 것만. 미션은 걷기·수면 위주로", profile.seniorMode, onSeniorMode)
             Divider()
-            LinkRow("건강 데이터 권한", "Health Connect에서 읽을 항목 고르기", onPermissions)
+            if (onConnectWatch != null) {
+                LinkRow("내 워치도 연결하기", "보호자로만 쓰는 중이에요. 연결하면 내 컨디션 점수와 기록도 받아요", onConnectWatch)
+            } else {
+                LinkRow("건강 데이터 권한", "Health Connect에서 읽을 항목 고르기", onPermissions)
+            }
         }
 
         Section("알림") {

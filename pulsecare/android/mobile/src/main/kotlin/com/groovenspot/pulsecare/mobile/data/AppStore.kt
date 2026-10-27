@@ -24,6 +24,8 @@ data class Profile(
     val seniorMode: Boolean = false,
     /** 지금 목표를 고른 날. 4주가 지나면 주간 리포트에 변화 한 줄이 붙습니다. */
     val goalSince: LocalDate = signupDate,
+    /** 워치 없이 보호자로만 쓰는 사람: Health Connect를 읽지 않고, 홈은 부모님 카드입니다. */
+    val guardianOnly: Boolean = false,
 ) {
     val level: Int get() = levels[goal] ?: 1
 }
@@ -247,6 +249,7 @@ class AppStore(private val prefs: SharedPreferences) {
             .put("signup", p.signupDate.toString())
             .put("senior", p.seniorMode)
             .put("goalSince", p.goalSince.toString())
+            .put("guardianOnly", p.guardianOnly)
             .put("levels", JSONObject().apply { p.levels.forEach { (g, l) -> put(g.name, l) } })
             .toString()
 
@@ -287,6 +290,7 @@ class AppStore(private val prefs: SharedPreferences) {
                 goalSince = o.optString("goalSince").takeIf { it.isNotEmpty() }?.let(LocalDate::parse) ?: signup,
                 levels = levels ?: emptyMap(),
                 seniorMode = o.optBoolean("senior"),
+                guardianOnly = o.optBoolean("guardianOnly"),
             )
         }
     }

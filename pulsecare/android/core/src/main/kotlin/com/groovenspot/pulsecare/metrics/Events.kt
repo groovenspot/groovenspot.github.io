@@ -7,7 +7,7 @@ package com.groovenspot.pulsecare.metrics
  */
 enum class EventName(val key: String, val props: Set<String>) {
     // 가입
-    SIGNUP_COMPLETED("signup_completed", setOf("via", "goal")),
+    SIGNUP_COMPLETED("signup_completed", setOf("via", "goal", "mode")),
     CONSENT_UPDATED("consent_updated", setOf("item", "granted")),
     WATCH_LINK_ATTEMPTED("watch_link_attempted", setOf("result")),
     WATCH_LINKED("watch_linked", setOf("platform")),

@@ -28,6 +28,17 @@ object MorningReport {
     fun infoLines(home: HomeState, infoBodies: List<String>): String =
         (listOf(of(home).body) + infoBodies).joinToString("\n")
 
+    /**
+     * 보호자 전용 아침 알림: 오늘의 보호자 미션과, 부모님이 벌써 올린 오늘 요약.
+     * [parents]는 (이름, 점수 줄 또는 null = 아직 기록 없음).
+     */
+    fun guardian(mission: String, parents: List<Pair<String, String?>>): Text {
+        val lines = parents.map { (name, line) -> "$name: ${line ?: "아직 오늘 기록이 없어요"}" }
+        return Text("오늘의 보호자 미션", (listOf(mission) + lines).joinToString("\n"))
+    }
+
+    const val GUARDIAN_PUBLIC = "오늘의 보호자 미션이 있어요"
+
     /** 잠금화면용 주의 알림 문구. */
     val CAUTION_PUBLIC: String = AlertText.lockScreen(Grade.CAUTION)
 }

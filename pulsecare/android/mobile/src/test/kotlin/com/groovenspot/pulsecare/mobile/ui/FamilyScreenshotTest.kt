@@ -75,6 +75,44 @@ class FamilyScreenshotTest {
         ),
     )
 
+    /** 워치 없는 보호자의 "부모님" 탭. */
+    @Test
+    fun guardianHome() = paparazzi.snapshot {
+        PulseTheme {
+            MainTabs(Tab.TODAY, onTab = {}, tabs = listOf(Tab.TODAY, Tab.FAMILY), label = { if (it == Tab.TODAY) "부모님" else it.label }) {
+                GuardianHomeContent(
+                    date = java.time.LocalDate.of(2027, 6, 16),
+                    ui = FamilyUi(
+                        configured = true, pushConfigured = true, me = me, now = now,
+                        family = Family(
+                            emptyList(),
+                            listOf(
+                                WearerView(mom, DaySummary("2027-06-16", 74, "GOOD", "가벼운 산책 15분", missionDone = true, alerts = emptyList()), emptyList()),
+                                WearerView(Person("dad", "아빠", null), null, emptyList()),
+                            ),
+                        ),
+                    ),
+                    mission = com.groovenspot.pulsecare.mission.MissionLibrary["P-02"],
+                    missionDone = false,
+                    onCompleteMission = {}, onOpenFamily = {}, onAck = {}, onCall = {}, onAlertFeedback = { _, _ -> }, onOpenSettings = {},
+                )
+            }
+        }
+    }
+
+    @Test
+    fun guardianHomeEmpty() = paparazzi.snapshot {
+        PulseTheme {
+            GuardianHomeContent(
+                date = java.time.LocalDate.of(2027, 6, 16),
+                ui = FamilyUi(configured = true, pushConfigured = true, me = null),
+                mission = com.groovenspot.pulsecare.mission.MissionLibrary["P-01"],
+                missionDone = false,
+                onCompleteMission = {}, onOpenFamily = {}, onAck = {}, onCall = {}, onAlertFeedback = { _, _ -> }, onOpenSettings = {},
+            )
+        }
+    }
+
     @Test
     fun start() = render(FamilyUi(configured = true, pushConfigured = true, me = null))
 }

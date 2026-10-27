@@ -72,18 +72,24 @@ import kotlin.math.roundToInt
 
 enum class Tab(val label: String) { TODAY("오늘"), HISTORY("기록"), FAMILY("가족") }
 
-/** 오늘·기록·가족 아래 탭. */
+/** 오늘·기록·가족 아래 탭. 워치 없는 보호자는 [tabs]에서 기록을 빼고 "오늘"을 "부모님"으로 부릅니다. */
 @Composable
-fun MainTabs(current: Tab, onTab: (Tab) -> Unit, content: @Composable () -> Unit) {
+fun MainTabs(
+    current: Tab,
+    onTab: (Tab) -> Unit,
+    tabs: List<Tab> = Tab.entries,
+    label: (Tab) -> String = { it.label },
+    content: @Composable () -> Unit,
+) {
     Column(Modifier.fillMaxSize().background(Palette.Paper)) {
         Box(Modifier.weight(1f).consumeWindowInsets(WindowInsets.navigationBars)) { content() }
         NavigationBar(containerColor = Palette.Card, tonalElevation = 0.dp) {
-            Tab.entries.forEach { tab ->
+            tabs.forEach { tab ->
                 NavigationBarItem(
                     selected = tab == current,
                     onClick = { onTab(tab) },
                     icon = { Box(Modifier.size(8.dp).clip(CircleShape).background(if (tab == current) Palette.Teal else Palette.Line)) },
-                    label = { Text(tab.label, fontSize = 14.sp, fontWeight = if (tab == current) FontWeight.Bold else FontWeight.Normal) },
+                    label = { Text(label(tab), fontSize = 14.sp, fontWeight = if (tab == current) FontWeight.Bold else FontWeight.Normal) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedTextColor = Palette.Teal,
                         unselectedTextColor = Palette.Muted,

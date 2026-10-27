@@ -12,6 +12,7 @@ import com.groovenspot.pulsecare.mobile.data.AppStore
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
 import com.groovenspot.pulsecare.mobile.family.FamilyRepository
 import com.groovenspot.pulsecare.mobile.health.NightMapper
+import com.groovenspot.pulsecare.mobile.health.RawHealth
 import com.groovenspot.pulsecare.mobile.wear.WearSync
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -39,7 +40,7 @@ object TodayRepository {
         plan.logs.filter { log -> log.auto && logsBefore.none { it.date == log.date } }.forEach {
             Metrics.track(context, EventName.MISSION_COMPLETED, mapOf("mission_id" to it.missionId, "auto" to "true", "surface" to "watch_data"))
         }
-        if (hasSleep) Metrics.trackOnce(context, EventName.DATA_FIRST_RECEIVED, mapOf("day" to EventRules.dayBucket(plan.home.dayIndex)))
+        if (hasSleep && !profile.guardianOnly) Metrics.trackOnce(context, EventName.DATA_FIRST_RECEIVED, mapOf("day" to EventRules.dayBucket(plan.home.dayIndex)))
     }
 
     suspend fun refresh(
@@ -53,8 +54,9 @@ object TodayRepository {
         val today = now.toLocalDate()
         // 점수 기준선 28일 + 미션용 평소 취침 시각 28일을 위해 하루 더 앞에서부터.
         val from = today.minusDays(29)
-        val raw = HealthConnectSource.read(context, from, today, zone)
-        val granted = HealthConnectSource.granted(context)
+        // 보호자 전용: 워치 기록 없이 보호자 미션만 고릅니다 (점수 없음).
+        val raw = if (profile.guardianOnly) RawHealth() else HealthConnectSource.read(context, from, today, zone)
+        val granted = if (profile.guardianOnly) HealthConnectSource.all else HealthConnectSource.granted(context)
         val plan = TodayPlanner().plan(
             today = today,
             records = NightMapper.map(raw, from, today, zone),

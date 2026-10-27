@@ -16,6 +16,8 @@ import com.groovenspot.pulsecare.alert.Recipient
 import com.groovenspot.pulsecare.alert.Signal
 import com.groovenspot.pulsecare.metrics.EventName
 import com.groovenspot.pulsecare.mobile.data.AppStore
+import com.groovenspot.pulsecare.mobile.family.FamilyRepository
+import com.groovenspot.pulsecare.mobile.family.GuardianText
 import com.groovenspot.pulsecare.mobile.health.HealthConnectSource
 import com.groovenspot.pulsecare.mobile.metrics.Metrics
 import com.groovenspot.pulsecare.mobile.today.MorningReport
@@ -39,6 +41,13 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         fun next() { if (!force) MorningSchedule.scheduleTomorrow(context, now) }
         if (!force && !store.settings.morningEnabled) return Result.success()
         if (store.profile == null || (!force && store.morningSentOn == today)) {
+            next()
+            return Result.success()
+        }
+
+        if (store.profile?.guardianOnly == true) {
+            guardianMorning(context, store, now)
+            store.morningSentOn = today
             next()
             return Result.success()
         }
@@ -75,6 +84,18 @@ class MorningWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         sendCautions(context, store, home.alertDetections.filter { it.signal.grade == Grade.CAUTION }, now)
         next()
         return Result.success()
+    }
+
+    /** 보호자 전용: 오늘의 보호자 미션 + 부모님이 이미 올린 오늘 요약 (서버가 없거나 실패해도 미션은 보냄). */
+    private suspend fun guardianMorning(context: Context, store: AppStore, now: LocalDateTime) {
+        val home = runCatching { TodayRepository.refresh(context, now = now) }.getOrNull()
+        val family = runCatching { FamilyRepository.family(context) }.getOrNull()
+        val parents = family?.wearers.orEmpty().map { w ->
+            w.person.name to w.today?.takeIf { it.day == now.toLocalDate().toString() }?.let { GuardianText.line(it) }
+        }
+        val mission = home?.mission?.title?.let { "오늘의 미션: $it" } ?: "앱에서 오늘의 미션을 확인해 보세요"
+        val text = MorningReport.guardian(mission, parents)
+        Notifications.morning(context, text.title, text.body, MorningReport.GUARDIAN_PUBLIC)
     }
 
     /** 주의 신호는 빈도 제한(하루 2건, 같은 신호 하루 1번)을 지켜 따로 보냅니다. */
