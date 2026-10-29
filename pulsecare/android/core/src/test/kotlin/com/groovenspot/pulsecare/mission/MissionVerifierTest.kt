@@ -87,7 +87,7 @@ class MissionVerifierTest {
 
     @Test
     fun manualMissions() {
-        listOf("S-02", "S-04", "R-01", "R-04", "P-02", "C-07").forEach {
+        listOf("S-02", "R-04", "R-05", "P-02", "W-04").forEach {
             assertEquals(it, Check.MANUAL, MissionVerifier.check(it, DayActivity(wed), at(12)))
         }
     }

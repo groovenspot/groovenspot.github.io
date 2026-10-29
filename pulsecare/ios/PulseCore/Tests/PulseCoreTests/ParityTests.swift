@@ -139,6 +139,9 @@ final class ParityTests: XCTestCase {
             var usualBedtime: LocalTime?
             var usualWake: LocalTime?
             var recentBedtimes: [LocalTime]
+            var breathing: [LocalDateTime]
+            var waterCups: Int
+            var tagged: Bool
         }
         var activity: Activity
         var now: LocalDateTime
@@ -154,12 +157,47 @@ final class ParityTests: XCTestCase {
                 stepsByHour: Dictionary(uniqueKeysWithValues: a.stepsByHour.map { (Int($0.key)!, $0.value) }),
                 floors: a.floors, exercises: a.exercises, naps: a.naps,
                 nightBedtime: a.nightBedtime, nextWake: a.nextWake, morningWake: a.morningWake,
-                usualBedtime: a.usualBedtime, usualWake: a.usualWake, recentBedtimes: a.recentBedtimes
+                usualBedtime: a.usualBedtime, usualWake: a.usualWake, recentBedtimes: a.recentBedtimes,
+                breathing: a.breathing, waterCups: a.waterCups, tagged: a.tagged
             )
             XCTAssertEqual(c.expected.count, MissionLibrary.all.count)
             for (id, check) in c.expected {
                 XCTAssertEqual(MissionVerifier.check(id, activity, now: c.now).rawValue, check, "사례 \(i) \(id)")
             }
+        }
+    }
+
+    // MARK: 복약·취침
+
+    struct CareCase: Decodable {
+        struct ExpectedDose: Decodable {
+            var medicationId: String
+            var time: LocalTime
+            var taken: Bool
+            var missed: Bool
+        }
+        var plans: [Medication]
+        var logs: [DoseLog]
+        var now: LocalDateTime
+        var doses: [ExpectedDose]
+        var missed: Detection?
+        var next: LocalDateTime?
+        var usualBedtime: LocalTime?
+        var fixedBedtime: LocalTime?
+        var bedtimeReminder: LocalTime
+    }
+
+    func testCareMatchesAndroid() throws {
+        let cases: [CareCase] = try load("care")
+        for (i, c) in cases.enumerated() {
+            let doses = Medications.today(c.plans, c.logs, now: c.now)
+            XCTAssertEqual(doses.map(\.medication.id), c.doses.map(\.medicationId), "사례 \(i)")
+            XCTAssertEqual(doses.map(\.time), c.doses.map(\.time), "사례 \(i)")
+            XCTAssertEqual(doses.map(\.taken), c.doses.map(\.taken), "사례 \(i)")
+            XCTAssertEqual(doses.map(\.missed), c.doses.map(\.missed), "사례 \(i)")
+            XCTAssertEqual(Medications.missed(doses), c.missed, "사례 \(i)")
+            XCTAssertEqual(Medications.nextEvent(c.plans, after: c.now), c.next, "사례 \(i)")
+            XCTAssertEqual(Bedtime.reminderAt(usual: c.usualBedtime, fixed: c.fixedBedtime), c.bedtimeReminder, "사례 \(i)")
         }
     }
 

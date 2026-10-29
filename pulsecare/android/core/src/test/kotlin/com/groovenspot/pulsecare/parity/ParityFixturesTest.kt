@@ -1,6 +1,10 @@
 package com.groovenspot.pulsecare.parity
 
 import com.groovenspot.pulsecare.alert.AlertFeedback
+import com.groovenspot.pulsecare.care.Bedtime
+import com.groovenspot.pulsecare.care.DoseLog
+import com.groovenspot.pulsecare.care.Medication
+import com.groovenspot.pulsecare.care.Medications
 import com.groovenspot.pulsecare.alert.AlertMessage
 import com.groovenspot.pulsecare.alert.AlertScheduler
 import com.groovenspot.pulsecare.alert.AlertText
@@ -75,6 +79,7 @@ class ParityFixturesTest {
             "weekly.json" to weeklyCases(users),
             "history.json" to historyCases(users),
             "clinic.json" to clinicCases(users),
+            "care.json" to careCases(),
         )
         val stale = mutableListOf<String>()
         for ((name, cases) in files) {
@@ -273,6 +278,9 @@ class ParityFixturesTest {
                 usualBedtime = if (r.nextDouble() < 0.85) usualBed else null,
                 usualWake = if (r.nextDouble() < 0.85) LocalTime.of(7, r.nextInt(60)) else null,
                 recentBedtimes = if (r.nextDouble() < 0.5) (0 until 6 + r.nextInt(3)).map { usualBed.plusMinutes(r.nextInt(80) - 40L) } else emptyList(),
+                breathing = (0 until r.nextInt(4)).map { t(6 + r.nextInt(17)) },
+                waterCups = r.nextInt(9),
+                tagged = r.nextDouble() < 0.3,
             )
             val now = date.atStartOfDay().plusMinutes(r.nextInt(48 * 60).toLong())
             obj(
@@ -288,9 +296,40 @@ class ParityFixturesTest {
                     "usualBedtime" to a.usualBedtime?.let(::time),
                     "usualWake" to a.usualWake?.let(::time),
                     "recentBedtimes" to a.recentBedtimes.map(::time),
+                    "breathing" to a.breathing.map(::dt),
+                    "waterCups" to a.waterCups,
+                    "tagged" to a.tagged,
                 ),
                 "now" to dt(now),
                 "expected" to MissionLibrary.all.associate { it.id to MissionVerifier.check(it.id, a, now).name },
+            )
+        }
+    }
+
+    // --- 복약·취침 ---
+
+    private fun careCases(): List<Any?> {
+        val r = java.util.Random(29)
+        val day = LocalDate.of(2027, 6, 16)
+        return (0 until 80).map {
+            val plans = (0 until 1 + r.nextInt(3)).map { i ->
+                Medication("m$i", "약$i", (0 until 1 + r.nextInt(3)).map { LocalTime.of(6 + r.nextInt(16), listOf(0, 30)[r.nextInt(2)]) }.distinct())
+            }
+            val logs = plans.flatMap { m -> m.times.filter { r.nextDouble() < 0.5 }.map { t -> DoseLog(day, m.id, t, day.atTime(t).plusMinutes(r.nextInt(90).toLong())) } }
+            val now = day.atStartOfDay().plusMinutes(r.nextInt(24 * 60).toLong())
+            val doses = Medications.today(plans, logs, now)
+            val usual = if (r.nextBoolean()) LocalTime.of(listOf(22, 23, 0, 1)[r.nextInt(4)], r.nextInt(60)) else null
+            val fixed = if (r.nextDouble() < 0.3) LocalTime.of(21 + r.nextInt(3), 0) else null
+            obj(
+                "plans" to plans.map { m -> obj("id" to m.id, "name" to m.name, "times" to m.times.map(::time)) },
+                "logs" to logs.map { obj("date" to it.date.toString(), "medicationId" to it.medicationId, "time" to time(it.time), "takenAt" to dt(it.takenAt)) },
+                "now" to dt(now),
+                "doses" to doses.map { obj("medicationId" to it.medication.id, "time" to time(it.time), "taken" to it.taken, "missed" to it.missed) },
+                "missed" to Medications.missed(doses)?.let(::det),
+                "next" to Medications.nextEvent(plans, now)?.let(::dt),
+                "usualBedtime" to usual?.let(::time),
+                "fixedBedtime" to fixed?.let(::time),
+                "bedtimeReminder" to time(Bedtime.reminderAt(usual, fixed)),
             )
         }
     }

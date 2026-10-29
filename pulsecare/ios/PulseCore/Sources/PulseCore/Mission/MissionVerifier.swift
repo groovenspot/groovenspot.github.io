@@ -52,10 +52,17 @@ public struct DayActivity: Hashable, Sendable, Codable {
     public var usualWake: LocalTime?
     /// 그날 밤 포함 최근 7일 취침 시각 (7일 연속 미션용).
     public var recentBedtimes: [LocalTime]
+    /// 앱 호흡 가이드를 끝까지 한 시각들.
+    public var breathing: [LocalDateTime]
+    /// 앱에 기록한 물 잔 수.
+    public var waterCups: Int
+    /// 몸 상태 태그를 남겼는지 (태그 없음도 남긴 것).
+    public var tagged: Bool
 
     public init(date: LocalDate, stepsByHour: [Int: Int] = [:], floors: Double? = nil, exercises: [Exercise] = [], naps: [Nap] = [],
                 nightBedtime: LocalDateTime? = nil, nextWake: LocalDateTime? = nil, morningWake: LocalDateTime? = nil,
-                usualBedtime: LocalTime? = nil, usualWake: LocalTime? = nil, recentBedtimes: [LocalTime] = []) {
+                usualBedtime: LocalTime? = nil, usualWake: LocalTime? = nil, recentBedtimes: [LocalTime] = [],
+                breathing: [LocalDateTime] = [], waterCups: Int = 0, tagged: Bool = false) {
         self.date = date
         self.stepsByHour = stepsByHour
         self.floors = floors
@@ -67,6 +74,9 @@ public struct DayActivity: Hashable, Sendable, Codable {
         self.usualBedtime = usualBedtime
         self.usualWake = usualWake
         self.recentBedtimes = recentBedtimes
+        self.breathing = breathing
+        self.waterCups = waterCups
+        self.tagged = tagged
     }
 
     public var totalSteps: Int { stepsByHour.values.reduce(0, +) }
@@ -88,6 +98,12 @@ public enum Check: String, Sendable, Codable {
 public enum MissionVerifier {
     /// 그날 밤 취침 기록으로 다음 날 아침에 확인하는 미션.
     public static let nightMissions: Set<String> = ["S-01", "S-06", "S-08", "C-05"]
+
+    /// 물 마시기 미션(C-07)의 잔 수.
+    public static let waterCups = 6
+
+    /// 앱 호흡 가이드로 확인하는 미션 (홈 미션 카드에 "호흡 시작" 버튼).
+    public static let breathingMissions: Set<String> = ["R-01", "C-04", "S-04", "R-08", "R-05"]
 
     private static let walk10MinSteps = 1_000
     private static let walk15MinSteps = 1_500
@@ -136,6 +152,16 @@ public enum MissionVerifier {
                 a.recentBedtimes.count >= 7 && a.recentBedtimes.allSatisfy { Swift.abs(minutesAfter($0, median(a.recentBedtimes))) <= 30 }
             }
         case "S-07": return weekendWake(a, now)
+
+        // 앱 기록: 호흡 가이드, 물, 몸 상태 태그
+        case "R-01": return byEndOfDay(!a.breathing.isEmpty)
+        case "C-04": return byEndOfDay(a.breathing.count >= 2)
+        case "S-04": return byEndOfDay(a.breathing.contains { $0.time >= LocalTime(20, 0) })
+        case "R-08":
+            return byEndOfDay(a.breathing.contains { $0.time.hour < 11 } && a.breathing.contains { (11...16).contains($0.time.hour) }
+                && a.breathing.contains { $0.time.hour >= 17 })
+        case "C-07": return byEndOfDay(a.waterCups >= waterCups)
+        case "C-08": return byEndOfDay(a.tagged)
 
         default: return .manual
         }

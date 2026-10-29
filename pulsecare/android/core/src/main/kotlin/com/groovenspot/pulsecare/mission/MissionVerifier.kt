@@ -39,6 +39,12 @@ data class DayActivity(
     val usualWake: LocalTime? = null,
     /** 그날 밤 포함 최근 7일 취침 시각 (7일 연속 미션용). */
     val recentBedtimes: List<LocalTime> = emptyList(),
+    /** 앱 호흡 가이드를 끝까지 한 시각들. */
+    val breathing: List<LocalDateTime> = emptyList(),
+    /** 앱에 기록한 물 잔 수. */
+    val waterCups: Int = 0,
+    /** 몸 상태 태그를 남겼는지 (태그 없음도 남긴 것). */
+    val tagged: Boolean = false,
 ) {
     val totalSteps: Long get() = stepsByHour.values.sum()
 }
@@ -59,13 +65,19 @@ enum class Check {
 
 /**
  * 미션 자동 확인 (기획서 14번 "확인 방식"). 걸음·운동·수면 기록으로 판단하고,
- * 호흡 가이드·가족 기능처럼 아직 앱 기록이 없는 미션은 [Check.MANUAL]로 둡니다.
+ * 호흡 가이드·물·몸 상태 태그는 앱 기록으로, 가족 기능처럼 기록이 없는 미션은 [Check.MANUAL]로 둡니다.
  * 기준값(10분 걷기 = 1,000보 등)은 베타에서 조정할 초안입니다.
  */
 object MissionVerifier {
 
     /** 그날 밤 취침 기록으로 다음 날 아침에 확인하는 미션. */
     val NIGHT_MISSIONS = setOf("S-01", "S-06", "S-08", "C-05")
+
+    /** 물 마시기 미션(C-07)의 잔 수. */
+    const val WATER_CUPS = 6
+
+    /** 앱 호흡 가이드로 확인하는 미션 (홈 미션 카드에 "호흡 시작" 버튼). */
+    val BREATHING_MISSIONS = setOf("R-01", "C-04", "S-04", "R-08", "R-05")
 
     private const val WALK_10_MIN_STEPS = 1_000L
     private const val WALK_15_MIN_STEPS = 1_500L
@@ -124,6 +136,16 @@ object MissionVerifier {
                 a.recentBedtimes.size >= 7 && a.recentBedtimes.all { abs(minutesAfter(it, median(a.recentBedtimes))) <= 30 }
             }
             "S-07" -> weekendWake(a, now)
+
+            // 앱 기록: 호흡 가이드, 물, 몸 상태 태그
+            "R-01" -> byEndOfDay(a.breathing.isNotEmpty())
+            "C-04" -> byEndOfDay(a.breathing.size >= 2)
+            "S-04" -> byEndOfDay(a.breathing.any { it.toLocalTime() >= LocalTime.of(20, 0) })
+            "R-08" -> byEndOfDay(
+                a.breathing.any { it.hour < 11 } && a.breathing.any { it.hour in 11..16 } && a.breathing.any { it.hour >= 17 },
+            )
+            "C-07" -> byEndOfDay(a.waterCups >= WATER_CUPS)
+            "C-08" -> byEndOfDay(a.tagged)
 
             else -> Check.MANUAL
         }
