@@ -134,6 +134,8 @@ struct SettingsView: View {
                         .font(.system(size: 12)).foregroundStyle(Palette.muted)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Palette.paper)
             .navigationTitle("내 정보")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("닫기") { dismiss() } } }

@@ -12,10 +12,12 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 ScreenHeader(caption: model.home.map { koreanDate($0.date) } ?? "", title: "오늘의 컨디션") {
-                    if AppConfig.serverConfigured || AppConfig.demo {
-                        Button("AI 상담", action: onOpenChat).font(.system(size: 15, weight: .semibold))
+                    HStack(spacing: 10) {
+                        if AppConfig.serverConfigured || AppConfig.demo {
+                            HeaderIconButton(systemName: "bubble.left.and.text.bubble.right.fill", label: "AI 상담", action: onOpenChat)
+                        }
+                        HeaderIconButton(systemName: "person.fill", label: "내 정보", action: onOpenSettings)
                     }
-                    Button("내 정보", action: onOpenSettings).font(.system(size: 15, weight: .semibold))
                 }
                 if let home = model.home {
                     if home.missingPermissions { PermissionBanner() }
@@ -34,6 +36,7 @@ struct HomeView: View {
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
+            .animation(.easeOut(duration: 0.25), value: model.careVersion)
         }
         .background(Palette.paper)
         .refreshable { await model.refresh() }
@@ -55,19 +58,17 @@ struct ScoreCard: View {
             if result.kind == .noData {
                 NoDataScore(reason: result.reason, onFeeling: onFeeling)
             } else {
-                HStack(alignment: .bottom, spacing: 12) {
-                    Text(result.score.map(String.init) ?? "-")
-                        .font(.system(size: 64, weight: .bold))
-                        .foregroundStyle(Palette.navy)
-                    if let band = result.band {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Chip(text: result.kind == .sleepOnly ? "수면 점수" : band.label, color: band.color)
-                            Text(band.advice).font(.system(size: 13)).foregroundStyle(Palette.muted)
+                HStack(spacing: 20) {
+                    ScoreRing(score: result.score, band: result.band, caption: result.kind == .sleepOnly ? "수면 점수" : "컨디션")
+                    VStack(alignment: .leading, spacing: 8) {
+                        if let band = result.band {
+                            Text(band.label).font(.system(size: 24, weight: .bold)).foregroundStyle(band.color)
+                            Text(band.advice).font(.system(size: 15)).foregroundStyle(Palette.body).fixedSize(horizontal: false, vertical: true)
                         }
-                        .padding(.bottom, 10)
                     }
                 }
-                Text(result.reason).font(.system(size: 17)).foregroundStyle(Palette.body).fixedSize(horizontal: false, vertical: true)
+                Divider().overlay(Palette.line)
+                Text(result.reason).font(.system(size: 17, weight: .medium)).foregroundStyle(Palette.navy).fixedSize(horizontal: false, vertical: true)
                 if !result.badges.isEmpty {
                     HStack(spacing: 6) {
                         ForEach(Badge.allCases.filter { result.badges.contains($0) }, id: \.self) { Chip(text: $0.label, color: Palette.muted) }
@@ -98,7 +99,8 @@ struct NoDataScore: View {
     var onFeeling: (Int) -> Void
 
     var body: some View {
-        Text(reason).font(.system(size: 20, weight: .semibold)).foregroundStyle(Palette.navy)
+        CardHeader(icon: "applewatch", title: "어젯밤 기록 없음", tint: Palette.muted)
+        Text(reason).font(.system(size: 20, weight: .bold)).foregroundStyle(Palette.navy)
         HStack(spacing: 8) {
             ForEach([(1, "아주 나쁨"), (2, "나쁨"), (3, "보통"), (4, "좋음"), (5, "아주 좋음")], id: \.0) { value, label in
                 Button {
@@ -108,8 +110,8 @@ struct NoDataScore: View {
                         Text("\(value)").font(.system(size: 17, weight: .bold)).foregroundStyle(Palette.navy)
                         Text(label).font(.system(size: 10)).foregroundStyle(Palette.muted)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 56)
-                    .background(RoundedRectangle(cornerRadius: 12).stroke(Palette.line, lineWidth: 1))
+                    .frame(maxWidth: .infinity, minHeight: 60)
+                    .background(Palette.fill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
@@ -126,29 +128,39 @@ struct MissionCard: View {
     var body: some View {
         let mission = home.mission
         SectionCard {
-            HStack {
-                Text("오늘의 미션").font(.system(size: 14, weight: .bold)).foregroundStyle(Palette.teal)
-                Spacer()
-                Text("레벨 \(mission.level) · \(mission.points)점").font(.system(size: 13)).foregroundStyle(Palette.muted)
+            CardHeader(icon: mission.goal.icon, title: "오늘의 미션") {
+                Text("Lv.\(mission.level) · \(mission.points)P").font(.system(size: 13, weight: .semibold)).foregroundStyle(Palette.muted)
             }
-            Text(mission.title).font(.system(size: 22, weight: .bold)).foregroundStyle(Palette.navy)
+            Text(mission.title).font(.system(size: 22, weight: .bold)).foregroundStyle(Palette.navy).fixedSize(horizontal: false, vertical: true)
             if home.missionDone {
                 HStack(spacing: 8) {
-                    Circle().fill(Palette.teal).frame(width: 10, height: 10)
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(Palette.teal)
                     Text(home.missionCheck == .done ? "워치 기록으로 완료를 확인했어요" : "완료했어요. 내일 또 만나요")
                         .font(.system(size: 15, weight: .semibold)).foregroundStyle(Palette.teal)
                 }
+                .padding(.horizontal, 14).padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Palette.teal.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             } else {
-                Text(missionHint(mission, home.missionCheck)).font(.system(size: 13)).foregroundStyle(Palette.muted)
+                Text(missionHint(mission, home.missionCheck)).font(.system(size: 14)).foregroundStyle(Palette.muted).fixedSize(horizontal: false, vertical: true)
+                let breathing = MissionVerifier.breathingMissions.contains(mission.id)
                 HStack(spacing: 8) {
-                    let breathing = MissionVerifier.breathingMissions.contains(mission.id)
-                    Button(breathing ? "직접 했어요" : "완료했어요") { Task { await model.completeMission() } }.buttonStyle(PrimaryButtonStyle())
                     if breathing {
-                        Button("호흡 시작") { model.openRequest = "breathing" }.buttonStyle(OutlineButtonStyle())
+                        Button { model.openRequest = "breathing" } label: { Label("호흡 시작", systemImage: "wind").frame(maxWidth: .infinity) }
+                            .buttonStyle(PrimaryButtonStyle())
+                        Button { Task { await model.completeMission() } } label: { Text("직접 했어요").frame(maxWidth: .infinity) }
+                            .buttonStyle(OutlineButtonStyle())
+                    } else {
+                        Button { Task { await model.completeMission() } } label: { Text("완료했어요").frame(maxWidth: .infinity) }
+                            .buttonStyle(PrimaryButtonStyle())
                     }
-                    if canSwap {
-                        Button("다른 미션") { Task { await model.swapMission() } }.foregroundStyle(Palette.muted)
+                }
+                if canSwap {
+                    Button { Task { await model.swapMission() } } label: {
+                        Label("다른 미션으로 바꾸기", systemImage: "arrow.triangle.2.circlepath").font(.system(size: 14, weight: .medium))
                     }
+                    .foregroundStyle(Palette.muted)
+                    .frame(maxWidth: .infinity)
                 }
             }
         }
@@ -174,31 +186,34 @@ struct WeeklyCard: View {
     @State private var changingGoal = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("이번 주 리포트").font(.system(size: 14, weight: .bold)).foregroundStyle(Palette.mint)
-            Text(summary.title).font(.system(size: 22, weight: .bold)).foregroundStyle(Palette.paper)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: summary.badge ? "rosette" : "calendar").foregroundStyle(Palette.mint)
+                Text("이번 주 리포트").font(.system(size: 14, weight: .bold)).foregroundStyle(Palette.mint)
+            }
+            Text(summary.title).font(.system(size: 24, weight: .bold)).foregroundStyle(.white)
             HStack(spacing: 6) {
                 ForEach(0..<7, id: \.self) { i in
-                    Circle().fill(i < summary.daysDone ? Palette.mint : Palette.body).frame(width: 12, height: 12)
+                    Capsule().fill(i < summary.daysDone ? Palette.mint : .white.opacity(0.18)).frame(height: 8)
                 }
             }
-            ForEach(summary.lines, id: \.self) { Text($0).font(.system(size: 15)).foregroundStyle(Palette.line) }
+            ForEach(summary.lines, id: \.self) { Text($0).font(.system(size: 15)).foregroundStyle(.white.opacity(0.85)) }
             HStack {
                 if summary.suggestGoalChange {
                     Button("목표 바꾸기") { changingGoal = true }.buttonStyle(PrimaryButtonStyle(color: Palette.mint, textColor: Palette.navy))
-                    Button("이대로 할게요") { model.closeWeekly(acceptLevel: false) }.foregroundStyle(Palette.line)
+                    Button("이대로 할게요") { model.closeWeekly(acceptLevel: false) }.foregroundStyle(.white.opacity(0.8))
                 } else if summary.levelChange == .suggestUp {
                     Button("레벨 \(summary.nextLevel) 도전") { model.closeWeekly(acceptLevel: true) }
                         .buttonStyle(PrimaryButtonStyle(color: Palette.mint, textColor: Palette.navy))
-                    Button("지금이 좋아요") { model.closeWeekly(acceptLevel: false) }.foregroundStyle(Palette.line)
+                    Button("지금이 좋아요") { model.closeWeekly(acceptLevel: false) }.foregroundStyle(.white.opacity(0.8))
                 } else {
                     Button("확인") { model.closeWeekly(acceptLevel: false) }.font(.system(size: 15, weight: .bold)).foregroundStyle(Palette.mint)
                 }
             }
         }
-        .padding(20)
+        .padding(22)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.navy, in: RoundedRectangle(cornerRadius: 20))
+        .background(Palette.deep, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .sheet(isPresented: $changingGoal) {
             GoalView(changing: true) { goal in
                 model.changeGoal(goal)
@@ -217,7 +232,10 @@ struct AlertCard: View {
 
     var body: some View {
         SectionCard {
-            Text(alert.title).font(.system(size: 16, weight: .bold)).foregroundStyle(Palette.navy)
+            CardHeader(icon: detection?.signal.grade == .caution ? "exclamationmark.triangle.fill" : "info.circle.fill",
+                       title: detection?.signal.grade == .caution ? "평소와 다른 패턴" : "알아 두세요",
+                       tint: detection?.signal.grade == .caution ? Palette.amber : Palette.teal)
+            Text(alert.title).font(.system(size: 18, weight: .bold)).foregroundStyle(Palette.navy)
             Text(alert.body).font(.system(size: 15)).foregroundStyle(Palette.body).fixedSize(horizontal: false, vertical: true)
             if let s = detection?.signal, s == .stress || s == .highHrAtRest {
                 Button("1분 호흡 시작") { model.openRequest = "breathing" }.buttonStyle(OutlineButtonStyle())
@@ -256,7 +274,8 @@ struct AlertCard: View {
 struct PermissionBanner: View {
     var body: some View {
         HStack {
-            Text("일부 건강 데이터 권한이 꺼져 있어 수면 위주로 계산했어요").font(.system(size: 13)).foregroundStyle(Palette.paper)
+            Image(systemName: "lock.shield.fill").foregroundStyle(Palette.mint)
+            Text("일부 건강 데이터 권한이 꺼져 있어 수면 위주로 계산했어요").font(.system(size: 13)).foregroundStyle(.white)
             Spacer()
             Button("켜기") {
                 if let url = URL(string: "x-apple-health://") { UIApplication.shared.open(url) }
@@ -265,6 +284,6 @@ struct PermissionBanner: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(Palette.navy, in: RoundedRectangle(cornerRadius: 16))
+        .background(Palette.deep, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }

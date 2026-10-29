@@ -28,12 +28,15 @@ struct BreathingView: View {
                     : phase == .inhale ? 0.55 + 0.45 * progress : 1.0 - 0.45 * progress
                 VStack(spacing: 18) {
                     ZStack {
-                        Circle().fill(Palette.mint.opacity(0.35)).frame(width: 280, height: 280).scaleEffect(scale)
-                        Circle().fill(Palette.mint.opacity(0.6)).frame(width: 200, height: 200).scaleEffect(scale)
-                        Text(finished ? Breathing.Phase.done.label : start == nil ? "준비되면 시작" : phase.label)
-                            .font(.system(size: 22, weight: .bold)).foregroundStyle(Palette.navy)
+                        Circle().fill(Palette.mint.opacity(0.18)).frame(width: 300, height: 300).scaleEffect(scale).blur(radius: 6)
+                        Circle().fill(Palette.mint.opacity(0.35)).frame(width: 240, height: 240).scaleEffect(scale)
+                        Circle().fill(LinearGradient(colors: [Palette.mint, Color(hex: 0x3CC8A0)], startPoint: .top, endPoint: .bottom))
+                            .frame(width: 170, height: 170).scaleEffect(scale)
+                            .shadow(color: Palette.mint.opacity(0.5), radius: 24)
+                        Text(finished ? Breathing.Phase.done.label : start == nil ? "준비" : phase.label)
+                            .font(.system(size: 20, weight: .bold)).foregroundStyle(Palette.navy)
                     }
-                    .frame(width: 280, height: 280)
+                    .frame(width: 300, height: 300)
                     if start != nil && !finished {
                         Text("\(max(Int((Breathing.totalSeconds - elapsed).rounded()), 0))초 남았어요")
                             .font(.system(size: 16)).foregroundStyle(Palette.line)
@@ -58,7 +61,7 @@ struct BreathingView: View {
             }
         }
         .padding(24)
-        .background(Palette.navy)
+        .background(Palette.deep.ignoresSafeArea())
     }
 
     private func complete() {
@@ -80,7 +83,8 @@ struct TagCard: View {
         let saved = model.care.tags[model.today]
         SectionCard {
             if let saved, !editing {
-                HStack {
+                HStack(spacing: 10) {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(Palette.teal)
                     Text(saved.isEmpty ? "어제는 특별한 일 없었어요" : "어제: " + DayTag.allCases.filter(saved.contains).map(DayTags.label).joined(separator: " · "))
                         .font(.system(size: 14)).foregroundStyle(Palette.body)
                     Spacer()
@@ -91,7 +95,8 @@ struct TagCard: View {
                     .font(.system(size: 13))
                 }
             } else {
-                Text("어제는 어땠나요?").font(.system(size: 16, weight: .bold)).foregroundStyle(Palette.navy)
+                CardHeader(icon: "sun.horizon.fill", title: "아침 체크", tint: Palette.amber)
+                Text("어제는 어땠나요?").font(.system(size: 18, weight: .bold)).foregroundStyle(Palette.navy)
                 Text("남겨 두면 오늘 점수에 반영하고, 내 평소 기준에서는 빼요").font(.system(size: 13)).foregroundStyle(Palette.muted)
                 HStack(spacing: 8) {
                     ForEach([DayTag.alcohol, .overtime, .sick], id: \.self) { tag in
@@ -101,8 +106,8 @@ struct TagCard: View {
                         } label: {
                             Text(DayTags.label(tag)).font(.system(size: 13))
                                 .foregroundStyle(on ? Palette.paper : Palette.navy)
-                                .padding(.horizontal, 12).padding(.vertical, 8)
-                                .background(on ? Palette.teal : Palette.paper, in: Capsule())
+                                .padding(.horizontal, 14).padding(.vertical, 10)
+                                .background(on ? Palette.teal : Palette.fill, in: Capsule())
                         }
                         .buttonStyle(.plain)
                     }
@@ -124,15 +129,17 @@ struct WaterCard: View {
     var body: some View {
         let cups = model.care.water[model.today] ?? 0
         SectionCard {
-            HStack {
-                Text("물 \(cups)/\(MissionVerifier.waterCups)잔").font(.system(size: 16, weight: .bold)).foregroundStyle(Palette.navy)
-                Spacer()
+            CardHeader(icon: "drop.fill", title: "물 마시기", tint: Color(hex: 0x3B82F6)) {
                 if cups > 0 { Button("하나 빼기") { Task { await model.setWater(cups - 1) } }.font(.system(size: 13)).foregroundStyle(Palette.muted) }
             }
+            Text("\(cups) / \(MissionVerifier.waterCups)잔").font(.system(size: 22, weight: .bold)).foregroundStyle(Palette.navy)
             HStack(spacing: 8) {
                 ForEach(0..<MissionVerifier.waterCups, id: \.self) { i in
-                    RoundedRectangle(cornerRadius: 10).fill(i < cups ? Palette.teal : Palette.paper)
-                        .frame(width: 36, height: 36)
+                    Image(systemName: i < cups ? "drop.fill" : "drop")
+                        .font(.system(size: 22))
+                        .foregroundStyle(i < cups ? Color(hex: 0x3B82F6) : Palette.line)
+                        .frame(maxWidth: .infinity, minHeight: 40)
+                        .background((i < cups ? Color(hex: 0x3B82F6).opacity(0.1) : Palette.fill), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                         .onTapGesture { Task { await model.setWater(i < cups ? i : i + 1) } }
                 }
             }
@@ -151,10 +158,8 @@ struct MedicationCard: View {
         let doses = model.todayDoses
         if !doses.isEmpty {
             SectionCard {
-                HStack {
-                    Text("오늘 먹을 약").font(.system(size: large ? 18 : 14, weight: .bold)).foregroundStyle(Palette.teal)
-                    Spacer()
-                    Button("관리", action: onManage).font(.system(size: 13)).foregroundStyle(Palette.muted)
+                CardHeader(icon: "pills.fill", title: "오늘 먹을 약", tint: Color(hex: 0x8B5CF6)) {
+                    Button("관리", action: onManage).font(.system(size: large ? 16 : 13)).foregroundStyle(Palette.muted)
                 }
                 ForEach(doses, id: \.self) { d in
                     HStack {

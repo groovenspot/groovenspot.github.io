@@ -1,18 +1,36 @@
 import PulseCore
 import SwiftUI
 
-/// 기획서·피치 덱·안드로이드 앱과 같은 팔레트.
+/// 색. 밝은 회색 바탕에 흰 카드, 진한 글자와 회색 단계로 위계를 두고, 강조는 청록 하나만 씁니다.
+/// (토스·애플 건강처럼 군더더기 없는 금융·건강 앱 화면을 참고)
 enum Palette {
-    static let navy = Color(red: 0x12 / 255, green: 0x23 / 255, blue: 0x3A / 255)
-    static let teal = Color(red: 0x0F / 255, green: 0x7B / 255, blue: 0x66 / 255)
-    static let mint = Color(red: 0x7F / 255, green: 0xD1 / 255, blue: 0xBC / 255)
-    static let paper = Color(red: 0xF5 / 255, green: 0xF6 / 255, blue: 0xF1 / 255)
-    static let card = Color(red: 0xFD / 255, green: 0xFD / 255, blue: 0xFB / 255)
-    static let body = Color(red: 0x3D / 255, green: 0x4A / 255, blue: 0x5C / 255)
-    static let muted = Color(red: 0x6B / 255, green: 0x77 / 255, blue: 0x87 / 255)
-    static let line = Color(red: 0xDD / 255, green: 0xE1 / 255, blue: 0xD9 / 255)
-    static let coral = Color(red: 0xD9 / 255, green: 0x65 / 255, blue: 0x3B / 255)
-    static let amber = Color(red: 0xB7 / 255, green: 0x79 / 255, blue: 0x1F / 255)
+    /// 제목·숫자 (거의 검정).
+    static let navy = Color(hex: 0x191F28)
+    /// 강조: 버튼, 좋은 구간, 링크.
+    static let teal = Color(hex: 0x0E9F7A)
+    /// 어두운 바탕 위 강조.
+    static let mint = Color(hex: 0x7FE3C6)
+    /// 화면 바탕.
+    static let paper = Color(hex: 0xF2F4F6)
+    static let card = Color.white
+    /// 본문.
+    static let body = Color(hex: 0x4E5968)
+    /// 보조 글자.
+    static let muted = Color(hex: 0x8B95A1)
+    /// 구분선·빈 칸.
+    static let line = Color(hex: 0xE5E8EB)
+    static let coral = Color(hex: 0xF0603A)
+    static let amber = Color(hex: 0xE08A00)
+    /// 보조 버튼 바탕 (카드 위 연한 회색).
+    static let fill = Color(hex: 0xF2F4F6)
+    /// 진한 카드 (주간 리포트, 호흡) 그라데이션.
+    static let deep = LinearGradient(colors: [Color(hex: 0x14213D), Color(hex: 0x0B5A4E)], startPoint: .topLeading, endPoint: .bottomTrailing)
+}
+
+extension Color {
+    init(hex: UInt32) {
+        self.init(red: Double((hex >> 16) & 0xFF) / 255, green: Double((hex >> 8) & 0xFF) / 255, blue: Double(hex & 0xFF) / 255)
+    }
 }
 
 extension Band {
@@ -24,18 +42,54 @@ extension Band {
         case .low, .veryLow: Palette.coral
         }
     }
+
+    /// 점수 링의 그라데이션 (밝은 쪽 → 구간 색).
+    var ringColors: [Color] {
+        switch self {
+        case .peak, .good: [Color(hex: 0x7FE3C6), Palette.teal]
+        case .fair: [Color(hex: 0xFFD27A), Palette.amber]
+        case .low, .veryLow: [Color(hex: 0xFFB199), Palette.coral]
+        }
+    }
 }
 
-/// 흰 카드 한 장.
+/// 흰 카드 한 장. 테두리 없이 아주 옅은 그림자로 바탕과 나눕니다.
 struct SectionCard<Content: View>: View {
     @ViewBuilder var content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) { content }
-            .padding(20)
+        VStack(alignment: .leading, spacing: 14) { content }
+            .padding(22)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Palette.card, in: RoundedRectangle(cornerRadius: 20))
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Palette.line, lineWidth: 1))
+            .background(Palette.card, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .shadow(color: .black.opacity(0.04), radius: 14, x: 0, y: 4)
+    }
+}
+
+/// 카드 머리: 색 원 안의 아이콘 + 작은 제목 + 오른쪽 보조.
+struct CardHeader<Trailing: View>: View {
+    var icon: String
+    var title: String
+    var tint: Color = Palette.teal
+    @ViewBuilder var trailing: Trailing
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: 30, height: 30)
+                .background(tint.opacity(0.12), in: Circle())
+            Text(title).font(.system(size: 15, weight: .semibold)).foregroundStyle(Palette.body)
+            Spacer()
+            trailing
+        }
+    }
+}
+
+extension CardHeader where Trailing == EmptyView {
+    init(icon: String, title: String, tint: Color = Palette.teal) {
+        self.init(icon: icon, title: title, tint: tint) { EmptyView() }
     }
 }
 
@@ -48,11 +102,12 @@ struct Chip: View {
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(color)
             .padding(.horizontal, 10)
-            .padding(.vertical, 3)
+            .padding(.vertical, 4)
             .background(color.opacity(0.12), in: Capsule())
     }
 }
 
+/// 꽉 찬 주 버튼.
 struct PrimaryButtonStyle: ButtonStyle {
     var color: Color = Palette.teal
     var textColor: Color = .white
@@ -61,21 +116,54 @@ struct PrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.system(size: 16, weight: .semibold))
             .foregroundStyle(textColor)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 12)
-            .background(color.opacity(configuration.isPressed ? 0.8 : 1), in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
+            .background(color, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 
+/// 보조 버튼: 연한 회색 바탕 (테두리 없음).
 struct OutlineButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 15, weight: .medium))
-            .foregroundStyle(Palette.navy)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(RoundedRectangle(cornerRadius: 12).stroke(Palette.line, lineWidth: 1))
-            .opacity(configuration.isPressed ? 0.7 : 1)
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(Palette.body)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Palette.fill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+/// 점수 링 (구간 색 그라데이션, 0~100).
+struct ScoreRing: View {
+    var score: Int?
+    var band: Band?
+    var size: CGFloat = 132
+    var lineWidth: CGFloat = 12
+    var caption: String? = nil
+
+    @State private var shown = 0.0
+
+    var body: some View {
+        ZStack {
+            Circle().stroke(Palette.line, lineWidth: lineWidth)
+            Circle()
+                .trim(from: 0, to: shown)
+                .stroke(AngularGradient(colors: band?.ringColors ?? [Palette.line, Palette.muted], center: .center, startAngle: .degrees(0), endAngle: .degrees(360 * max(shown, 0.01))),
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            VStack(spacing: 0) {
+                Text(score.map(String.init) ?? "-").font(.system(size: size * 0.36, weight: .bold, design: .rounded)).foregroundStyle(Palette.navy)
+                if let caption { Text(caption).font(.system(size: 12, weight: .medium)).foregroundStyle(Palette.muted) }
+            }
+        }
+        .frame(width: size, height: size)
+        .onAppear { withAnimation(.easeOut(duration: 0.9)) { shown = Double(score ?? 0) / 100 } }
+        .onChange(of: score) { _, s in withAnimation(.easeOut(duration: 0.6)) { shown = Double(s ?? 0) / 100 } }
     }
 }
 
@@ -92,13 +180,46 @@ struct ScreenHeader<Trailing: View>: View {
     @ViewBuilder var trailing: Trailing
 
     var body: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(caption).font(.system(size: 14)).foregroundStyle(Palette.muted)
-                Text(title).font(.system(size: 26, weight: .bold)).foregroundStyle(Palette.navy)
+        HStack(alignment: .bottom) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(caption).font(.system(size: 15, weight: .medium)).foregroundStyle(Palette.muted)
+                Text(title).font(.system(size: 28, weight: .bold)).foregroundStyle(Palette.navy)
             }
             Spacer()
             trailing
+        }
+        .padding(.top, 8)
+    }
+}
+
+/// 제목 줄 오른쪽 원형 아이콘 버튼.
+struct HeaderIconButton: View {
+    var systemName: String
+    var label: String
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(Palette.body)
+                .frame(width: 40, height: 40)
+                .background(Palette.card, in: Circle())
+                .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
+        }
+        .accessibilityLabel(label)
+    }
+}
+
+extension Goal {
+    /// 미션 카드 아이콘.
+    var icon: String {
+        switch self {
+        case .sleep: "moon.stars.fill"
+        case .weight: "figure.walk"
+        case .stress: "wind"
+        case .parent: "heart.circle.fill"
+        case .lowDay: "leaf.fill"
         }
     }
 }

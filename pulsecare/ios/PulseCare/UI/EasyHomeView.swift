@@ -86,10 +86,10 @@ struct EasyHomeView: View {
                 }
             } else {
                 Text("오늘 컨디션").font(.system(size: 18)).foregroundStyle(Palette.muted)
-                HStack(alignment: .bottom, spacing: 12) {
-                    Text(home.score.score.map(String.init) ?? "-").font(.system(size: 72, weight: .bold)).foregroundStyle(Palette.navy)
+                HStack(spacing: 20) {
+                    ScoreRing(score: home.score.score, band: home.score.band, size: 150, lineWidth: 14)
                     if let band = home.score.band {
-                        Text(band.label).font(.system(size: 28, weight: .bold)).foregroundStyle(band.color).padding(.bottom, 12)
+                        Text(band.label).font(.system(size: 32, weight: .bold)).foregroundStyle(band.color)
                     }
                 }
                 Text(home.score.reason).font(.system(size: 20)).foregroundStyle(Palette.body)
