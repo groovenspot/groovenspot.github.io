@@ -65,34 +65,53 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
+import com.groovenspot.pulsecare.care.Dose
+import com.groovenspot.pulsecare.care.Medications
+import com.groovenspot.pulsecare.mobile.care.CareSchedule
+import com.groovenspot.pulsecare.mobile.data.CareStore
+import com.groovenspot.pulsecare.mobile.widget.ScoreWidget
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
+    /** 앱 아이콘 바로가기로 열 화면 ("breathing", "medication"). */
+    private val openRequest = mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         // 화면 회전으로 다시 만들어질 때는 세지 않습니다.
-        if (savedInstanceState == null) trackOpen(intent)
-        setContent { PulseTheme { App() } }
+        if (savedInstanceState == null) {
+            trackOpen(intent)
+            openRequest.value = intent?.getStringExtra(EXTRA_OPEN)
+        }
+        setContent { PulseTheme { App(openRequest.value) { openRequest.value = null } } }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         trackOpen(intent)
+        openRequest.value = intent.getStringExtra(EXTRA_OPEN)
     }
 
     private fun trackOpen(intent: Intent?) {
-        val source = intent?.getStringExtra(Notifications.EXTRA_OPENED_FROM) ?: "icon"
+        val source = intent?.getStringExtra(Notifications.EXTRA_OPENED_FROM)
+            ?: intent?.getStringExtra(EXTRA_OPEN)?.let { "shortcut_$it" }
+            ?: "icon"
         Metrics.track(this, EventName.APP_OPENED, mapOf("source" to source))
+    }
+
+    companion object {
+        const val EXTRA_OPEN = "open"
     }
 }
 
-private enum class Stage { CONSENT, GOAL, CONNECT, HOME, HISTORY, FAMILY, SETTINGS, TEST_TOOLS, CHAT }
+private enum class Stage { CONSENT, GOAL, CONNECT, HOME, HISTORY, FAMILY, SETTINGS, TEST_TOOLS, CHAT, BREATHING, MEDICATIONS }
 
 @Composable
-private fun App() {
+private fun App(open: String? = null, onOpened: () -> Unit = {}) {
     val context = LocalContext.current
     val store = remember { AppStore.get(context) }
+    val care = remember { CareStore.get(context) }
     var profile by remember { mutableStateOf(store.profile) }
     var goal by remember { mutableStateOf(profile?.goal) }
     // 동의 버전이 바뀌면 기존 사용자도 한 번 다시 동의합니다.
@@ -140,6 +159,15 @@ private fun App() {
         refresh++
     }
     LaunchedEffect(refresh) { granted = HealthConnectSource.granted(context) }
+    LaunchedEffect(Unit) { CareSchedule.reschedule(context) }
+    // 생활 도우미 화면에서 닫으면 돌아갈 곳.
+    var careReturn by remember { mutableStateOf(Stage.HOME) }
+    LaunchedEffect(open, profile) {
+        if (open == null || profile == null || store.consentVersion < Legal.CONSENT_VERSION) return@LaunchedEffect
+        careReturn = Stage.HOME
+        stage = if (open == "medication") Stage.MEDICATIONS else Stage.BREATHING
+        onOpened()
+    }
 
     val available = remember { HealthConnectSource.isAvailable(context) }
     val canScore = granted?.containsAll(HealthConnectSource.required) == true
@@ -192,6 +220,16 @@ private fun App() {
         granted == null -> Loading()
         stage == Stage.SETTINGS -> {
             var settings by remember { mutableStateOf(store.settings) }
+            var careVersion by remember { mutableIntStateOf(0) }
+            val careSettings = remember(careVersion) {
+                CareSettings(
+                    bedtimeOn = care.bedtimeEnabled,
+                    reminderAt = CareSchedule.bedtimeReminder(care),
+                    usual = care.usualBedtime ?: com.groovenspot.pulsecare.care.Bedtime.DEFAULT_BEDTIME,
+                    fixed = care.bedtimeFixed,
+                    medications = care.medications.size,
+                )
+            }
             SettingsContent(
                 profile = profile!!,
                 settings = settings,
@@ -213,6 +251,8 @@ private fun App() {
                     store.account?.let { account -> appScope.launch { FamilyRepository.deleteAccount(account.second) } }
                     MorningSchedule.cancel(context)
                     EveningSchedule.cancel(context)
+                    CareSchedule.cancel(context)
+                    ScoreWidget.clear(context)
                     store.clear()
                     profile = null
                     goal = null
@@ -231,12 +271,50 @@ private fun App() {
                 }) else null,
                 analytics = store.analyticsConsent,
                 onAnalytics = { on -> Metrics.setConsent(context, on) },
+                care = careSettings.takeIf { !profile!!.guardianOnly },
+                onBedtime = { on ->
+                    care.bedtimeEnabled = on
+                    CareSchedule.reschedule(context)
+                    careVersion++
+                },
+                onBedtimeFixed = { t ->
+                    care.bedtimeFixed = t
+                    CareSchedule.reschedule(context)
+                    careVersion++
+                },
+                onOpenMedications = {
+                    careReturn = Stage.SETTINGS
+                    stage = Stage.MEDICATIONS
+                },
                 consentDate = store.consentAt.takeIf { it > 0 }?.let {
                     java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()
                 },
             )
         }
         stage == Stage.TEST_TOOLS -> TestTools(onBack = { stage = Stage.SETTINGS })
+        stage == Stage.BREATHING -> BreathingScreen(
+            todayCount = remember { care.breathingOn(LocalDate.now()).size },
+            onComplete = { care.breathing = care.breathing + java.time.LocalDateTime.now() },
+            onClose = {
+                stage = careReturn
+                refresh++
+            },
+        )
+        stage == Stage.MEDICATIONS -> {
+            var meds by remember { mutableStateOf(care.medications) }
+            MedicationsScreen(
+                medications = meds,
+                onSave = {
+                    meds = it
+                    care.medications = it
+                    CareSchedule.reschedule(context)
+                },
+                onBack = {
+                    stage = careReturn
+                    refresh++
+                },
+            )
+        }
         stage == Stage.CHAT -> ChatContent(
             ui = chat,
             suggestions = ChatRepository.SUGGESTIONS,
@@ -309,6 +387,14 @@ private fun App() {
                         onOpenSettings = openSettings,
                         onOpenChat = if (ChatRepository.configured) ({ stage = Stage.CHAT }) else null,
                         onHomeLoaded = { lastHome = it },
+                        onBreathing = {
+                            careReturn = Stage.HOME
+                            stage = Stage.BREATHING
+                        },
+                        onManageMedications = {
+                            careReturn = Stage.HOME
+                            stage = Stage.MEDICATIONS
+                        },
                     )
                 }
             }
@@ -327,8 +413,12 @@ private fun Home(
     onOpenSettings: () -> Unit,
     onOpenChat: (() -> Unit)? = null,
     onHomeLoaded: (HomeState) -> Unit = {},
+    onBreathing: () -> Unit = {},
+    onManageMedications: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val care = remember { CareStore.get(context) }
+    var careVersion by remember { mutableIntStateOf(0) }
     val planner = remember { TodayPlanner() }
     var home by remember { mutableStateOf<HomeState?>(null) }
     var feeling by remember { mutableStateOf<Int?>(null) }
@@ -391,8 +481,26 @@ private fun Home(
         AlertFeedbackReceiver.record(context, d, r, guardian = false)
         feedbackVersion++
     }
+    val homeCare = remember(careVersion, state) {
+        val now = java.time.LocalDateTime.now()
+        HomeCare(
+            tags = care.tags[state.date],
+            water = care.water[state.date] ?: 0,
+            doses = Medications.today(care.medications, care.doseLogs, now),
+            now = now.toLocalTime(),
+        )
+    }
+    val onDoseTaken: (Dose) -> Unit = { d ->
+        care.markTaken(d.medication.id, d.time, java.time.LocalDateTime.now())
+        careVersion++
+        // 놓친 약 알림이 보호자 요약에서 빠지도록 다시 계산·업로드합니다.
+        if (d.missed) reload++
+    }
     if (profile.seniorMode) {
-        EasyHome(store, state, onComplete = onCompleteMission, onFeeling = onFeeling, feedback = feedback, onAlertFeedback = onAlertFeedback, onOpenSettings = onOpenSettings)
+        EasyHome(
+            store, state, onComplete = onCompleteMission, onFeeling = onFeeling, feedback = feedback, onAlertFeedback = onAlertFeedback,
+            onOpenSettings = onOpenSettings, doses = homeCare.doses, onDoseTaken = onDoseTaken, onManageMedications = onManageMedications,
+        )
         return
     }
     HomeContent(
@@ -435,6 +543,21 @@ private fun Home(
             feedbackVersion++
         },
         onOpenChat = onOpenChat,
+        care = homeCare,
+        onTags = { tags ->
+            care.setTags(state.date, tags)
+            careVersion++
+            // 태그는 오늘 점수와 이유를 바꾸고, 몸 상태 태그 미션(C-08)을 확인합니다.
+            reload++
+        },
+        onWater = { cups ->
+            care.water = care.water + (state.date to cups.coerceIn(0, 20))
+            careVersion++
+            if (state.mission.id == "C-07") reload++
+        },
+        onDoseTaken = onDoseTaken,
+        onManageMedications = onManageMedications,
+        onBreathing = onBreathing,
     )
 }
 
@@ -656,6 +779,9 @@ private fun EasyHome(
     feedback: Map<Signal, FeedbackResponse>,
     onAlertFeedback: (Detection, FeedbackResponse) -> Unit,
     onOpenSettings: () -> Unit,
+    doses: List<Dose> = emptyList(),
+    onDoseTaken: (Dose) -> Unit = {},
+    onManageMedications: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -676,6 +802,9 @@ private fun EasyHome(
         alertFeedback = feedback,
         onAlertFeedback = onAlertFeedback,
         onOpenSettings = onOpenSettings,
+        doses = doses,
+        onDoseTaken = onDoseTaken,
+        onManageMedications = onManageMedications,
     )
     sos?.let { current ->
         PhoneSosDialog(

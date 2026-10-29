@@ -10,6 +10,8 @@ final class Notifier: @unchecked Sendable {
         static let morning = "MORNING"
         static let evening = "EVENING"
         static let caution = "CAUTION"
+        static let medication = "MEDICATION"
+        static let bedtime = "BEDTIME"
         // 서버 푸시 종류 (서버 PushMessage.type).
         static let emergency = "EMERGENCY"
         static let emergencyClosed = "EMERGENCY_CLOSED"
@@ -27,6 +29,7 @@ final class Notifier: @unchecked Sendable {
         static let falseAlarm = "ALERT_FALSE"
         static let ack = "EMERGENCY_ACK_ACTION"
         static let cancel = "EMERGENCY_CANCEL"
+        static let doseTaken = "DOSE_TAKEN"
     }
 
     private let store: AppStore
@@ -54,6 +57,8 @@ final class Notifier: @unchecked Sendable {
                 UNNotificationAction(identifier: Action.ack, title: "확인했어요", options: [.foreground]),
             ], urgent),
             category(Category.emergencyAck, [UNNotificationAction(identifier: Action.cancel, title: "취소하기", options: [.destructive])], urgent),
+            category(Category.medication, [UNNotificationAction(identifier: Action.doseTaken, title: "먹었어요")], quiet),
+            category(Category.bedtime, [], "잘 준비할 시간이에요"),
             category(Category.emergencyClosed, [], quiet),
             category(Category.guardianAlert, [], quiet),
             category(Category.digest, [], quiet),
@@ -126,6 +131,52 @@ final class Notifier: @unchecked Sendable {
                 break
             }
         }
+    }
+
+    /// 약 알림(매일 같은 시각)과 3시간 뒤 확인(오늘 아직 안 먹은 것만), 취침 30분 전 알림. 바뀔 때마다 다시 겁니다.
+    func planCare(_ care: CareStore, now: LocalDateTime, guardianOnly: Bool) async {
+        let pending = await center.pendingNotificationRequests()
+        center.removePendingNotificationRequests(withIdentifiers: pending.map(\.identifier).filter { $0.hasPrefix("med-") || $0 == "bedtime" })
+        let doses = Medications.today(care.medications, care.doseLogs, now: now)
+        for m in care.medications {
+            for t in m.times {
+                let clock = String(format: "%02d:%02d", t.hour, t.minute)
+                let info: [String: Any] = ["medicationId": m.id, "time": t.description]
+                await repeating(id: "med-\(m.id)-\(t)", title: "약 드실 시간이에요", body: "\(clock) \(m.name)",
+                                category: Category.medication, at: t, userInfo: info)
+                let taken = doses.contains { $0.medication.id == m.id && $0.time == t && $0.taken }
+                let missedAt = now.date.atTime(t).plusMinutes(Medications.missedAfterHours * 60)
+                if !taken && missedAt > now {
+                    await schedule(id: "med-missed-\(m.id)-\(t)-\(now.date)", title: "약 드셨나요?",
+                                   body: "\(clock) \(m.name) 체크가 아직 없어요. 드셨으면 체크해 주세요.",
+                                   category: Category.medication, at: missedAt, userInfo: info)
+                }
+            }
+        }
+        if care.bedtimeEnabled && !guardianOnly {
+            await repeating(id: "bedtime", title: "잘 준비할 시간이에요",
+                            body: "30분 안에 누우면 평소 리듬을 지킬 수 있어요. 화면은 줄이고 조명을 낮춰 보세요.",
+                            category: Category.bedtime, at: care.bedtimeReminder, userInfo: [:])
+        }
+    }
+
+    /// "먹었어요": 오늘 3시간 뒤 확인 알림을 지우고, 알림 센터의 약 알림도 치웁니다.
+    func doseTaken(_ medicationId: String, _ time: LocalTime, on date: LocalDate) {
+        center.removePendingNotificationRequests(withIdentifiers: ["med-missed-\(medicationId)-\(time)-\(date)"])
+        center.removeDeliveredNotifications(withIdentifiers: ["med-\(medicationId)-\(time)", "med-missed-\(medicationId)-\(time)-\(date)"])
+    }
+
+    private func repeating(id: String, title: String, body: String, category: String, at time: LocalTime, userInfo: [String: Any]) async {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.categoryIdentifier = category
+        content.sound = .default
+        content.userInfo = userInfo
+        var c = DateComponents()
+        c.hour = time.hour
+        c.minute = time.minute
+        try? await center.add(UNNotificationRequest(identifier: id, content: content, trigger: UNCalendarNotificationTrigger(dateMatching: c, repeats: true)))
     }
 
     /// 알림 버튼으로 받은 응답을 신호로 되돌리기 위한 값.

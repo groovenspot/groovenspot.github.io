@@ -22,6 +22,9 @@ struct HomeView: View {
                     ScoreCard(home: home) { feeling in Task { await model.refresh(feeling: feeling) } }
                     if let weekly = model.weekly { WeeklyCard(summary: weekly) }
                     MissionCard(home: home, canSwap: home.canSwap)
+                    if home.mission.id == "C-07" || (model.care.water[model.today] ?? 0) > 0 { WaterCard() }
+                    MedicationCard { model.openRequest = "medication" }
+                    TagCard()
                     ForEach(Array(home.alerts.enumerated()), id: \.offset) { i, alert in
                         AlertCard(alert: alert, detection: i < home.alertDetections.count ? home.alertDetections[i] : nil)
                     }
@@ -138,7 +141,11 @@ struct MissionCard: View {
             } else {
                 Text(missionHint(mission, home.missionCheck)).font(.system(size: 13)).foregroundStyle(Palette.muted)
                 HStack(spacing: 8) {
-                    Button("완료했어요") { Task { await model.completeMission() } }.buttonStyle(PrimaryButtonStyle())
+                    let breathing = MissionVerifier.breathingMissions.contains(mission.id)
+                    Button(breathing ? "직접 했어요" : "완료했어요") { Task { await model.completeMission() } }.buttonStyle(PrimaryButtonStyle())
+                    if breathing {
+                        Button("호흡 시작") { model.openRequest = "breathing" }.buttonStyle(OutlineButtonStyle())
+                    }
                     if canSwap {
                         Button("다른 미션") { Task { await model.swapMission() } }.foregroundStyle(Palette.muted)
                     }
@@ -151,6 +158,9 @@ struct MissionCard: View {
 /// 미션을 어떻게 확인하는지 한 줄로.
 func missionHint(_ mission: Mission, _ check: Check) -> String {
     if mission.id == "P-08" { return "기록 탭 > 진료용 요약 PDF를 만들어 보내면 완료돼요. 부모님 폰에서 만들어 받았다면 직접 체크해 주세요" }
+    if MissionVerifier.breathingMissions.contains(mission.id) && mission.id != "R-05" { return "앱 호흡 가이드를 끝까지 하면 자동으로 확인해요" }
+    if mission.id == "C-07" { return "아래에서 마실 때마다 한 잔씩 눌러 주세요. 6잔이면 완료돼요" }
+    if mission.id == "C-08" { return "아래 \"어제는 어땠나요?\"를 남기면 완료돼요" }
     if check == .manual || mission.verification == .manual { return "하고 나서 직접 체크해 주세요" }
     if MissionVerifier.nightMissions.contains(mission.id) { return "오늘 밤 수면 기록으로 내일 아침 자동으로 확인해요" }
     if check == .missed { return "기록에서 아직 확인되지 않았어요. 했다면 직접 체크해 주세요" }
@@ -209,6 +219,9 @@ struct AlertCard: View {
         SectionCard {
             Text(alert.title).font(.system(size: 16, weight: .bold)).foregroundStyle(Palette.navy)
             Text(alert.body).font(.system(size: 15)).foregroundStyle(Palette.body).fixedSize(horizontal: false, vertical: true)
+            if let s = detection?.signal, s == .stress || s == .highHrAtRest {
+                Button("1분 호흡 시작") { model.openRequest = "breathing" }.buttonStyle(OutlineButtonStyle())
+            }
             // 정보 등급(수면 부족 등)은 코칭이라 응답을 받지 않고, 주의 신호만 맞는지 묻습니다.
             if let d = detection, d.signal.grade == .caution { feedback(d) }
         }

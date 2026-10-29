@@ -1,6 +1,7 @@
 import Foundation
 import PulseCore
 import SwiftUI
+import WidgetKit
 
 /// 앱 전체 상태. 건강 앱을 읽어 오늘 계획을 만들고 저장합니다. 홈 화면, 아침 알림, 워치가 같이 씁니다.
 @MainActor
@@ -11,8 +12,13 @@ final class AppModel: ObservableObject {
     @Published private(set) var loading = false
     @Published var consented: Bool
     @Published var settings: NotificationSettings
+    /// 생활 도우미 화면이 다시 그리도록 바뀔 때마다 올립니다.
+    @Published private(set) var careVersion = 0
+    /// 단축어·위젯에서 열 화면 ("breathing", "medication").
+    @Published var openRequest: String?
 
     let store: AppStore
+    let care: CareStore
     let health: HealthSource
     let planner = TodayPlanner()
     lazy var metrics = Metrics(store: store)
@@ -22,8 +28,9 @@ final class AppModel: ObservableObject {
     private let clock: () -> LocalDateTime
     private var zone: Zone { Zone(.current) }
 
-    init(store: AppStore = AppStore(), health: HealthSource? = nil, clock: (() -> LocalDateTime)? = nil) {
+    init(store: AppStore = AppStore(), care: CareStore = CareStore(), health: HealthSource? = nil, clock: (() -> LocalDateTime)? = nil) {
         self.store = store
+        self.care = care
         self.health = health ?? (AppConfig.demo ? DemoHealth() : HealthKitSource())
         self.clock = clock ?? (AppConfig.demo ? { DemoHealth.now } : { LocalDateTime.now() })
         profile = store.profile
@@ -80,7 +87,12 @@ final class AppModel: ObservableObject {
         // 점수 기준선 28일 + 미션용 평소 취침 시각 28일, 주간 리포트의 4주 전 평균까지 읽습니다.
         let from = today.minusDays(36)
         let raw = profile.guardianOnly ? RawHealth() : await health.read(from: from, to: today, zone: zone)
-        let records = NightMapper.map(raw, from: from, to: today, zone: zone)
+        // 아침에 남긴 몸 상태 태그(아픔·음주·야근)는 그날 점수에 반영하고 기준선에서는 뺍니다.
+        let records = DayTags.apply(NightMapper.map(raw, from: from, to: today, zone: zone), care.tags)
+        let activities = [today.minusDays(1), today].reduce(into: [LocalDate: DayActivity]()) { out, d in
+            out[d] = care.withCare(NightMapper.activity(raw, d, zone: zone))
+        }
+        if let usual = activities[today]?.usualBedtime { care.usualBedtime = usual }
         let before = store.today
         let logsBefore = store.missionLogs
         let plan = planner.plan(
@@ -91,7 +103,7 @@ final class AppModel: ObservableObject {
             logs: store.missionLogs,
             scores: store.scores,
             feeling: feeling,
-            activities: [today.minusDays(1): NightMapper.activity(raw, today.minusDays(1), zone: zone), today: NightMapper.activity(raw, today, zone: zone)],
+            activities: activities,
             now: now,
             retryMissionId: store.retryFor(today)
         )
@@ -102,14 +114,20 @@ final class AppModel: ObservableObject {
 
         // 사용자가 끈 신호는 홈 카드와 알림에서 뺍니다. 점수 상한(주의 신호)은 건강 판단이라 그대로 둡니다.
         var shown = plan.home
-        let allowed = shown.alertDetections.filter { settings.allows($0.signal) }
+        // 복약을 3시간 넘게 체크하지 않았으면 정보 알림 하나 (보호자 하루 요약에도 실립니다).
+        let medication = Medications.missed(Medications.today(care.medications, care.doseLogs, now: now))
+        let allowed = (shown.alertDetections + [medication].compactMap { $0 }).filter { settings.allows($0.signal) }
         shown.alertDetections = allowed
         shown.alerts = allowed.map(AlertText.forSelf)
         home = shown
         weekly = weeklyIfDue(profile, records)
 
         PhoneSession.shared.publish(shown)
+        SharedToday.save(shown.watchToday)
+        WidgetCenter.shared.reloadAllTimelines()
+        careVersion += 1
         await notifier.planDay(home: shown, now: now, settings: settings)
+        await notifier.planCare(care, now: now, guardianOnly: profile.guardianOnly)
         await family.uploadSummary(shown, today: today)
     }
 
@@ -223,11 +241,57 @@ final class AppModel: ObservableObject {
         metrics.forget()
         notifier.cancelAll()
         store.clear()
+        SharedToday.save(nil)
+        WidgetCenter.shared.reloadAllTimelines()
         profile = nil
         home = nil
         weekly = nil
         consented = false
         settings = NotificationSettings()
+    }
+
+    // MARK: 생활 도우미
+
+    var todayDoses: [Dose] { Medications.today(care.medications, care.doseLogs, now: now) }
+
+    func saveTags(_ tags: Set<DayTag>) async {
+        care.tags[today] = tags
+        careVersion += 1
+        // 태그는 오늘 점수와 이유를 바꾸고, 몸 상태 태그 미션(C-08)을 확인합니다.
+        await refresh()
+    }
+
+    func setWater(_ cups: Int) async {
+        care.water[today] = min(max(cups, 0), 20)
+        careVersion += 1
+        if home?.mission.id == "C-07" { await refresh() }
+    }
+
+    func recordBreathing() async {
+        care.breathing.append(now)
+        careVersion += 1
+        await refresh()
+    }
+
+    func markTaken(_ dose: Dose) async {
+        care.markTaken(dose.medication.id, dose.time, now: now)
+        careVersion += 1
+        notifier.doseTaken(dose.medication.id, dose.time, on: today)
+        // 놓친 약 알림이 보호자 요약에서 빠지도록 다시 계산·업로드합니다.
+        if dose.missed { await refresh() }
+    }
+
+    func saveMedications(_ meds: [Medication]) async {
+        care.medications = meds
+        careVersion += 1
+        await notifier.planCare(care, now: now, guardianOnly: profile?.guardianOnly == true)
+    }
+
+    func setBedtime(enabled: Bool? = nil, fixed: LocalTime?? = nil) async {
+        if let enabled { care.bedtimeEnabled = enabled }
+        if let fixed { care.bedtimeFixed = fixed }
+        careVersion += 1
+        await notifier.planCare(care, now: now, guardianOnly: profile?.guardianOnly == true)
     }
 
     // MARK: 기록 탭·진료 요약

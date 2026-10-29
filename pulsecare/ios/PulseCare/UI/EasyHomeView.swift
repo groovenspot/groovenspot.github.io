@@ -40,6 +40,7 @@ struct EasyHomeView: View {
                 if let home = model.home {
                     scoreCard(home)
                     missionCard(home)
+                    MedicationCard(large: true) { model.openRequest = "medication" }
                     ForEach(Array(zip(home.alerts, home.alertDetections).enumerated()), id: \.offset) { _, pair in
                         alertCard(pair.0, pair.1)
                     }

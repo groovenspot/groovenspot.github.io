@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">펄스케어</string>
+    <string name="widget_description">오늘 컨디션 점수와 미션</string>
+    <string name="shortcut_breathing_short">1분 호흡</string>
+    <string name="shortcut_breathing_long">1분 호흡 가이드 시작</string>
+    <string name="shortcut_medication_short">약 체크</string>
+    <string name="shortcut_medication_long">오늘 먹을 약 체크하기</string>
 </resources>

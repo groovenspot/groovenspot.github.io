@@ -30,7 +30,7 @@ xcrun simctl bootstatus "$PHONE" -b
 xcrun simctl status_bar "$PHONE" override --time "08:00" --batteryState charged --batteryLevel 100 --cellularBars 4 || true
 xcrun simctl install "$PHONE" "$APP"
 
-for screen in consent goal home history family chat settings easy guardian; do
+for screen in consent goal home history family chat settings easy guardian breathing medication; do
   xcrun simctl terminate "$PHONE" com.groovenspot.pulsecare 2>/dev/null || true
   # 화면마다 처음 상태에서 시작합니다.
   xcrun simctl uninstall "$PHONE" com.groovenspot.pulsecare

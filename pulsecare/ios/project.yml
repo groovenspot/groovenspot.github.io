@@ -30,6 +30,7 @@ targets:
       - path: PulseCare
     dependencies:
       - package: PulseCore
+      - target: PulseCareWidget
     info:
       path: PulseCare/Info.plist
       properties:
@@ -46,6 +47,9 @@ targets:
         BGTaskSchedulerPermittedIdentifiers: [com.groovenspot.pulsecare.refresh]
         PulseCareServerURL: $(PULSECARE_SERVER_URL)
         ITSAppUsesNonExemptEncryption: false
+        CFBundleURLTypes:
+          - CFBundleURLName: com.groovenspot.pulsecare
+            CFBundleURLSchemes: [pulsecare]
     entitlements:
       path: PulseCare/PulseCare.entitlements
       properties:
@@ -53,12 +57,36 @@ targets:
         com.apple.developer.healthkit.access: []
         com.apple.developer.healthkit.background-delivery: true
         aps-environment: development
+        com.apple.security.application-groups: [group.com.groovenspot.pulsecare]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.groovenspot.pulsecare
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_PREVIEWS: true
+
+  PulseCareWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PulseCareWidget
+    dependencies:
+      - package: PulseCore
+    info:
+      path: PulseCareWidget/Info.plist
+      properties:
+        CFBundleDisplayName: 펄스케어
+        CFBundleDevelopmentRegion: ko
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: PulseCareWidget/PulseCareWidget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.groovenspot.pulsecare]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.groovenspot.pulsecare.widget
+        TARGETED_DEVICE_FAMILY: "1"
 
   PulseCareWatch:
     type: application

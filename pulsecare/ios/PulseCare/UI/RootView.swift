@@ -9,6 +9,11 @@ struct RootView: View {
 
     enum Tab: Hashable { case today, history, family }
 
+    enum CareSheet: String, Identifiable {
+        case breathing, medication
+        var id: String { rawValue }
+    }
+
     enum Sheet: String, Identifiable {
         case chat, settings
         var id: String { rawValue }
@@ -55,6 +60,15 @@ struct RootView: View {
                 .tabItem { Label("가족", systemImage: "person.2") }
                 .tag(Tab.family)
         }
+        .sheet(item: Binding(get: { model.openRequest.flatMap(CareSheet.init(rawValue:)) }, set: { model.openRequest = $0?.rawValue })) { s in
+            Group {
+                switch s {
+                case .breathing: BreathingView()
+                case .medication: MedicationsView()
+                }
+            }
+            .environmentObject(model)
+        }
         .sheet(item: $sheet) { s in
             Group {
                 switch s {
@@ -79,6 +93,10 @@ struct RootView: View {
             model.store.missionLogs = (1...14).map { ago in
                 MissionLog(date: today.minusDays(ago), missionId: ["S-01", "S-04", "S-03", "S-02"][ago % 4], completed: ago % 7 != 3 && ago % 7 != 5, auto: ago % 3 == 0)
             }
+            // 생활 도우미 예시: 아침 약은 먹었고 저녁 약이 남음, 물 3잔.
+            model.care.medications = [Medication(id: "demo", name: "혈압약", times: [LocalTime(8, 0), LocalTime(20, 0)])]
+            model.care.doseLogs = [DoseLog(date: today, medicationId: "demo", time: LocalTime(8, 0), takenAt: today.atTime(8, 5))]
+            model.care.water[today] = 3
             let guardian = screen == "guardian"
             await model.start(goal: guardian ? .parent : .sleep, seniorMode: screen == "easy", guardianOnly: guardian,
                               signupDate: DemoHealth.now.date.minusDays(40))
@@ -88,6 +106,8 @@ struct RootView: View {
         case "family": tab = .family
         case "chat": sheet = .chat
         case "settings": sheet = .settings
+        case "breathing": model.openRequest = "breathing"
+        case "medication": model.openRequest = "medication"
         default: tab = .today
         }
     }

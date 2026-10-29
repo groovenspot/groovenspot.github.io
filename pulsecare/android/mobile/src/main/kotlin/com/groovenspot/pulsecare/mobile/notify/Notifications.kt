@@ -34,6 +34,7 @@ object Notifications {
     const val WEEKLY = "weekly_report"
     const val EMERGENCY = "emergency"
     const val FAMILY = "family"
+    const val CARE = "care"
 
     /** 알림을 눌러 앱을 열었을 때 어느 알림인지 (이용 통계 app_opened source). */
     const val EXTRA_OPENED_FROM = "opened_from"
@@ -45,6 +46,8 @@ object Notifications {
     private const val SOS_ID = 900
     private const val EMERGENCY_ID_BASE = 10_000
     private const val FAMILY_ID_BASE = 200
+    private const val BEDTIME_ID = 4
+    private const val MEDICATION_ID_BASE = 300
 
     fun createChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java)
@@ -79,6 +82,11 @@ object Notifications {
         manager.createNotificationChannel(
             NotificationChannel(FAMILY, "가족 소식", NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = "보호자 하루 요약, 걸음 수 감소, 가족 연결"
+            },
+        )
+        manager.createNotificationChannel(
+            NotificationChannel(CARE, "약·취침 알림", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "약 먹을 시간, 잘 준비할 시간"
             },
         )
     }
@@ -194,6 +202,35 @@ object Notifications {
 
     fun family(context: Context, title: String, body: String) =
         post(context, FAMILY, FAMILY_ID_BASE + (title.hashCode() and 0xFFF), title, body, "가족 소식이 있어요", NotificationCompat.PRIORITY_DEFAULT)
+
+    /** 약 먹을 시간 (또는 3시간째 체크가 없을 때). 잠금화면에는 약 이름 없이. */
+    fun medication(context: Context, medicationId: String, name: String, time: java.time.LocalTime, missed: Boolean) {
+        val id = MEDICATION_ID_BASE + ((medicationId + time).hashCode() and 0xFF)
+        val taken = PendingIntent.getBroadcast(
+            context,
+            id,
+            Intent(context, com.groovenspot.pulsecare.mobile.care.CareActionReceiver::class.java)
+                .setAction(com.groovenspot.pulsecare.mobile.care.CareActionReceiver.ACTION_TAKEN)
+                .putExtra(com.groovenspot.pulsecare.mobile.care.CareActionReceiver.EXTRA_MEDICATION, medicationId)
+                .putExtra(com.groovenspot.pulsecare.mobile.care.CareActionReceiver.EXTRA_TIME, time.toString())
+                .putExtra(com.groovenspot.pulsecare.mobile.care.CareActionReceiver.EXTRA_NOTIFICATION, id),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        val clock = "%02d:%02d".format(java.util.Locale.ROOT, time.hour, time.minute)
+        val (title, body) = if (missed) {
+            "약 드셨나요?" to "$clock $name 체크가 아직 없어요. 드셨으면 체크해 주세요."
+        } else {
+            "약 드실 시간이에요" to "$clock $name"
+        }
+        post(context, CARE, id, title, body, "확인할 알림이 있어요", NotificationCompat.PRIORITY_HIGH, listOf("먹었어요" to taken))
+    }
+
+    /** 취침 30분 전 (미션 S-01). */
+    fun bedtime(context: Context) = post(
+        context, CARE, BEDTIME_ID, "잘 준비할 시간이에요",
+        "30분 안에 누우면 평소 리듬을 지킬 수 있어요. 화면은 줄이고 조명을 낮춰 보세요.",
+        "잘 준비할 시간이에요", NotificationCompat.PRIORITY_DEFAULT,
+    )
 
     fun cancelSos(context: Context) = NotificationManagerCompat.from(context).cancel(SOS_ID)
 

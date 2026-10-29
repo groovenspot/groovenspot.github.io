@@ -43,6 +43,39 @@ struct SettingsView: View {
                         }
                     }
                 }
+                if model.profile?.guardianOnly == false {
+                    let _ = model.careVersion
+                    Section {
+                        Toggle(isOn: Binding(get: { model.care.bedtimeEnabled }, set: { on in Task { await model.setBedtime(enabled: on) } })) {
+                            row("취침 알림", "잘 시간 30분 전에 알려요 (\(timeLabel(model.care.bedtimeReminder))). 미션 \"취침 알림 받고 30분 안에 눕기\"와 함께 써요")
+                        }
+                        if model.care.bedtimeEnabled {
+                            DatePicker(model.care.bedtimeFixed == nil ? "취침 시각 (평소 기록에 맞춤)" : "취침 시각", selection: Binding(
+                                get: { Zone(.current).instant(LocalDate.today().atTime(model.care.bedtimeFixed ?? model.care.usualBedtime ?? Bedtime.defaultBedtime)) },
+                                set: { d in
+                                    let t = Zone(.current).local(d).time
+                                    Task { await model.setBedtime(fixed: .some(LocalTime(t.hour, t.minute))) }
+                                }
+                            ), displayedComponents: .hourAndMinute)
+                            if model.care.bedtimeFixed != nil {
+                                Button("평소 기록에 맞추기") { Task { await model.setBedtime(fixed: .some(nil)) } }
+                            }
+                        }
+                        Button {
+                            dismiss()
+                            // 이 시트가 닫힌 뒤에 약 관리 시트를 엽니다 (시트는 한 번에 하나).
+                            Task {
+                                try? await Task.sleep(nanoseconds: 700_000_000)
+                                model.openRequest = "medication"
+                            }
+                        } label: {
+                            let n = model.care.medications.count
+                            row("약 알림", n == 0 ? "먹는 약과 시각을 넣으면 시간마다 알리고 체크해요" : "약 \(n)개 · 시간마다 알리고 체크해요")
+                        }
+                    } header: {
+                        Text("생활 도우미")
+                    }
+                }
                 Section("알림") {
                     Toggle(isOn: binding(\.morningEnabled)) { row("아침 리포트", "컨디션 점수와 오늘의 미션") }
                     if model.settings.morningEnabled { DatePicker("받는 시각", selection: time(\.morningTime), displayedComponents: .hourAndMinute) }

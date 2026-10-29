@@ -63,6 +63,10 @@ fun EasyHomeContent(
     alertFeedback: Map<com.groovenspot.pulsecare.alert.Signal, FeedbackResponse> = emptyMap(),
     onAlertFeedback: (Detection, FeedbackResponse) -> Unit = { _, _ -> },
     onOpenSettings: () -> Unit = {},
+    /** 오늘 먹을 약 (어르신이 가장 자주 쓰는 도우미라 쉽게 보기에도 둡니다). */
+    doses: List<com.groovenspot.pulsecare.care.Dose> = emptyList(),
+    onDoseTaken: (com.groovenspot.pulsecare.care.Dose) -> Unit = {},
+    onManageMedications: () -> Unit = {},
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(18.dp),
@@ -121,6 +125,8 @@ fun EasyHomeContent(
                 ) { Text("했어요", fontSize = 22.sp, fontWeight = FontWeight.Bold) }
             }
         }
+
+        if (doses.isNotEmpty()) MedicationCard(doses, java.time.LocalTime.now(), onDoseTaken, onManageMedications)
 
         // 주의 알림만 크게. 정보 알림(수면 부족 등)은 아침 리포트로 충분합니다.
         state.alerts.forEachIndexed { i, alert ->

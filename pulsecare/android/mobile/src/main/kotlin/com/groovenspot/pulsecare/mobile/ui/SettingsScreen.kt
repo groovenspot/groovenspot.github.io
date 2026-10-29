@@ -54,7 +54,10 @@ internal val SIGNAL_LABELS = mapOf(
     Signal.LOW_HR_AWAKE to ("깨어 있을 때 낮은 심박" to "깨어 있는데 40 bpm 미만이 10분 이어질 때"),
 )
 
-private enum class TimeField { MORNING, EVENING, QUIET_START, QUIET_END }
+private enum class TimeField { MORNING, EVENING, QUIET_START, QUIET_END, BEDTIME }
+
+/** 생활 도우미 설정 줄. [usual]은 평소 취침 시각(없으면 23:00), [reminderAt]은 실제 알림 시각. */
+data class CareSettings(val bedtimeOn: Boolean, val reminderAt: LocalTime, val usual: LocalTime, val fixed: LocalTime?, val medications: Int)
 
 /** 내 정보 (기획서 16번 "내 정보") + 알림 설정. 상태만 받아 그립니다. */
 @Composable
@@ -78,6 +81,11 @@ fun SettingsContent(
     /** 이용 통계 (선택 동의). */
     analytics: Boolean = false,
     onAnalytics: (Boolean) -> Unit = {},
+    /** 생활 도우미: 취침 알림(켜짐, 알림 시각, 직접 정한 취침 시각)과 약 개수. 보호자 전용이면 null. */
+    care: CareSettings? = null,
+    onBedtime: (Boolean) -> Unit = {},
+    onBedtimeFixed: (LocalTime?) -> Unit = {},
+    onOpenMedications: () -> Unit = {},
 ) {
     var editing by remember { mutableStateOf<TimeField?>(null) }
     var confirmClear by remember { mutableStateOf(false) }
@@ -121,6 +129,23 @@ fun SettingsContent(
             Text("이 시간에는 주의·정보 알림을 모아 두었다가 아침에 보내요", color = Palette.Muted, fontSize = 13.sp)
             TimeRow("시작", settings.quietStart) { editing = TimeField.QUIET_START }
             TimeRow("끝", settings.quietEnd) { editing = TimeField.QUIET_END }
+        }
+
+        care?.let { c ->
+            Section("생활 도우미") {
+                SwitchRow(
+                    "취침 알림",
+                    "잘 시간 30분 전에 알려요 (오늘 ${timeLabel(c.reminderAt)}). 미션 \"취침 알림 받고 30분 안에 눕기\"와 함께 써요",
+                    c.bedtimeOn,
+                    onBedtime,
+                )
+                if (c.bedtimeOn) {
+                    TimeRow(if (c.fixed == null) "취침 시각 (평소 기록에 맞춤)" else "취침 시각", c.fixed ?: c.usual) { editing = TimeField.BEDTIME }
+                    if (c.fixed != null) TextButton(onClick = { onBedtimeFixed(null) }) { Text("평소 기록에 맞추기", color = Palette.Teal, fontSize = 13.sp) }
+                }
+                Divider()
+                LinkRow("약 알림", if (c.medications == 0) "먹는 약과 시각을 넣으면 시간마다 알리고 체크해요" else "약 ${c.medications}개 · 시간마다 알리고 체크해요", onOpenMedications)
+            }
         }
 
         Section("건강 알림") {
@@ -173,14 +198,21 @@ fun SettingsContent(
             TimeField.EVENING -> settings.eveningTime
             TimeField.QUIET_START -> settings.quietStart
             TimeField.QUIET_END -> settings.quietEnd
+            TimeField.BEDTIME -> care?.let { it.fixed ?: it.usual } ?: LocalTime.of(23, 0)
         }
         TimeDialog(initial, onDismiss = { editing = null }) { t ->
+            if (field == TimeField.BEDTIME) {
+                onBedtimeFixed(t)
+                editing = null
+                return@TimeDialog
+            }
             onSettings(
                 when (field) {
                     TimeField.MORNING -> settings.copy(morningTime = t)
                     TimeField.EVENING -> settings.copy(eveningTime = t)
                     TimeField.QUIET_START -> settings.copy(quietStart = t)
                     TimeField.QUIET_END -> settings.copy(quietEnd = t)
+                    TimeField.BEDTIME -> settings
                 },
             )
             editing = null
@@ -270,7 +302,7 @@ internal fun timeLabel(t: LocalTime): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TimeDialog(initial: LocalTime, onDismiss: () -> Unit, onConfirm: (LocalTime) -> Unit) {
+internal fun TimeDialog(initial: LocalTime, onDismiss: () -> Unit, onConfirm: (LocalTime) -> Unit) {
     val state = rememberTimePickerState(initialHour = initial.hour, initialMinute = initial.minute, is24Hour = false)
     AlertDialog(
         onDismissRequest = onDismiss,

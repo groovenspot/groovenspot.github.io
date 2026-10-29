@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="breathing"
+        android:shortcutLongLabel="@string/shortcut_breathing_long"
+        android:shortcutShortLabel="@string/shortcut_breathing_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.groovenspot.pulsecare.mobile.ui.MainActivity"
+            android:targetPackage="com.groovenspot.pulsecare">
+            <extra android:name="open" android:value="breathing" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="medication"
+        android:shortcutLongLabel="@string/shortcut_medication_long"
+        android:shortcutShortLabel="@string/shortcut_medication_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.groovenspot.pulsecare.mobile.ui.MainActivity"
+            android:targetPackage="com.groovenspot.pulsecare">
+            <extra android:name="open" android:value="medication" />
+        </intent>
+    </shortcut>
+</shortcuts>

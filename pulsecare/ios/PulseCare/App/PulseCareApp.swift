@@ -35,7 +35,8 @@ struct PulseCareApp: App {
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     nonisolated static let refreshTask = "com.groovenspot.pulsecare.refresh"
 
-    lazy var model = AppModel()
+    /// 단축어(App Intents)와 같은 모델을 씁니다.
+    lazy var model: AppModel = AppHolder.current
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
@@ -109,6 +110,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             if let id = info["emergencyId"] as? String { _ = await model.family.ack(id) }
         case Notifier.Action.cancel:
             if let id = info["emergencyId"] as? String { _ = await model.family.cancel(id) }
+        case Notifier.Action.doseTaken:
+            if let id = info["medicationId"] as? String, let t = (info["time"] as? String).flatMap(LocalTime.init(iso:)) {
+                await MainActor.run {
+                    model.care.markTaken(id, t, now: model.now)
+                    model.notifier.doseTaken(id, t, on: model.today)
+                }
+            }
         default:
             break
         }

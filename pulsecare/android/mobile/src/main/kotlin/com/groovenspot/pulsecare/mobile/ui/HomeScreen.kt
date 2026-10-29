@@ -48,9 +48,15 @@ import com.groovenspot.pulsecare.mission.Verification
 import com.groovenspot.pulsecare.mobile.today.HomeState
 import com.groovenspot.pulsecare.score.ScoreResult
 import java.time.LocalDate
+import java.time.LocalTime
+import com.groovenspot.pulsecare.care.Dose
+import com.groovenspot.pulsecare.score.DayTag
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+
+/** 홈의 생활 도우미 카드에 쓰는 값. [tags]가 null이면 오늘 아직 안 남김. */
+data class HomeCare(val tags: Set<DayTag>?, val water: Int, val doses: List<Dose>, val now: LocalTime)
 
 /** 상태만 받아 그리는 홈. 스크린샷 테스트에서도 그대로 씁니다. */
 @Composable
@@ -78,6 +84,14 @@ fun HomeContent(
     onUnsnooze: (Signal) -> Unit = {},
     /** AI 건강 상담 열기 (서버가 없는 빌드에서는 null). */
     onOpenChat: (() -> Unit)? = null,
+    /** 생활 도우미: 몸 상태 태그, 물, 오늘 약. 보호자 전용이면 null. */
+    care: HomeCare? = null,
+    onTags: (Set<DayTag>) -> Unit = {},
+    onWater: (Int) -> Unit = {},
+    onDoseTaken: (Dose) -> Unit = {},
+    onManageMedications: () -> Unit = {},
+    /** 1분 호흡 가이드 열기. */
+    onBreathing: (() -> Unit)? = null,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -99,7 +113,15 @@ fun HomeContent(
         if (state.missingPermissions) PermissionBanner(onOpenPermissions)
         ScoreCard(state, onFeeling)
         weekly?.let { WeeklyCard(it, onWeeklyAccept, onWeeklyClose, onChangeGoal) }
-        MissionCard(state.mission, state.missionDone, state.missionCheck, state.canSwap && !easyMode, onCompleteMission, onSwapMission)
+        MissionCard(
+            state.mission, state.missionDone, state.missionCheck, state.canSwap && !easyMode, onCompleteMission, onSwapMission,
+            onBreathing = onBreathing?.takeIf { state.mission.id in MissionVerifier.BREATHING_MISSIONS },
+        )
+        care?.let { c ->
+            if (state.mission.id == "C-07" || c.water > 0) WaterCard(c.water, onWater)
+            if (c.doses.isNotEmpty()) MedicationCard(c.doses, c.now, onDoseTaken, onManageMedications)
+            TagCard(c.tags, onTags)
+        }
         state.alerts.forEachIndexed { i, alert ->
             val d = state.alertDetections.getOrNull(i)
             AlertCard(
@@ -111,6 +133,7 @@ fun HomeContent(
                 onFeedback = onAlertFeedback,
                 onSnooze = onSnooze,
                 onUnsnooze = onUnsnooze,
+                onBreathing = onBreathing?.takeIf { d?.signal == Signal.STRESS || d?.signal == Signal.HIGH_HR_AT_REST },
             )
         }
         Spacer(Modifier.height(8.dp))
@@ -205,7 +228,15 @@ private fun NoDataScore(result: ScoreResult, onFeeling: (Int) -> Unit) {
 }
 
 @Composable
-private fun MissionCard(mission: Mission, done: Boolean, check: Check, canSwap: Boolean, onComplete: () -> Unit, onSwap: () -> Unit) {
+private fun MissionCard(
+    mission: Mission,
+    done: Boolean,
+    check: Check,
+    canSwap: Boolean,
+    onComplete: () -> Unit,
+    onSwap: () -> Unit,
+    onBreathing: (() -> Unit)? = null,
+) {
     SectionCard {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text("오늘의 미션", color = Palette.Teal, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
@@ -228,8 +259,14 @@ private fun MissionCard(mission: Mission, done: Boolean, check: Check, canSwap: 
                     onClick = onComplete,
                     colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
                     shape = RoundedCornerShape(12.dp),
-                ) { Text("완료했어요") }
+                ) { Text(if (onBreathing != null) "직접 했어요" else "완료했어요") }
                 Spacer(Modifier.width(8.dp))
+                onBreathing?.let {
+                    OutlinedButton(onClick = it, border = BorderStroke(1.dp, Palette.Teal), shape = RoundedCornerShape(12.dp)) {
+                        Text("호흡 시작", color = Palette.Teal)
+                    }
+                    Spacer(Modifier.width(8.dp))
+                }
                 if (canSwap) TextButton(onClick = onSwap) { Text("다른 미션", color = Palette.Muted) }
             }
         }
@@ -239,6 +276,9 @@ private fun MissionCard(mission: Mission, done: Boolean, check: Check, canSwap: 
 /** 미션을 어떻게 확인하는지 한 줄로. */
 internal fun missionHint(mission: Mission, check: Check): String = when {
     mission.id == "P-08" -> "기록 탭 > 진료용 요약 PDF를 만들어 보내면 완료돼요. 부모님 폰에서 만들어 받았다면 직접 체크해 주세요"
+    mission.id in MissionVerifier.BREATHING_MISSIONS && mission.id != "R-05" -> "앱 호흡 가이드를 끝까지 하면 자동으로 확인해요"
+    mission.id == "C-07" -> "아래에서 마실 때마다 한 잔씩 눌러 주세요. 6잔이면 완료돼요"
+    mission.id == "C-08" -> "아래 \"어제는 어땠나요?\"를 남기면 완료돼요"
     check == Check.MANUAL || mission.verification == Verification.MANUAL -> "하고 나서 직접 체크해 주세요"
     mission.id in MissionVerifier.NIGHT_MISSIONS -> "오늘 밤 수면 기록으로 내일 아침 자동으로 확인해요"
     check == Check.MISSED -> "기록에서 아직 확인되지 않았어요. 했다면 직접 체크해 주세요"
@@ -299,10 +339,14 @@ private fun AlertCard(
     onFeedback: (Detection, FeedbackResponse) -> Unit,
     onSnooze: (Signal, Boolean) -> Unit,
     onUnsnooze: (Signal) -> Unit,
+    onBreathing: (() -> Unit)? = null,
 ) {
     SectionCard {
         Text(alert.title, color = Palette.Navy, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Text(alert.body, color = Palette.Body, fontSize = 15.sp, lineHeight = 22.sp)
+        onBreathing?.let {
+            OutlinedButton(onClick = it, border = BorderStroke(1.dp, Palette.Teal)) { Text("1분 호흡 시작", color = Palette.Teal) }
+        }
         // 정보 등급(수면 부족 등)은 코칭이라 응답을 받지 않고, 주의 신호만 맞는지 묻습니다.
         if (detection == null || detection.signal.grade != Grade.CAUTION) return@SectionCard
         when {

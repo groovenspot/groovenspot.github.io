@@ -40,7 +40,28 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- 아이콘 길게 누르기: 1분 호흡, 약 체크 -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+
+        <!-- 홈 화면 위젯: 오늘 점수와 미션 -->
+        <receiver
+            android:name=".widget.ScoreWidget"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/score_widget" />
+        </receiver>
+
+        <!-- 복약 알림의 "먹었어요" -->
+        <receiver
+            android:name=".care.CareActionReceiver"
+            android:exported="false" />
 
         <!-- 저녁 요약 알림의 "내일 다시" / "다른 미션으로" 버튼 -->
         <receiver

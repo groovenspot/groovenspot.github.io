@@ -27,3 +27,14 @@ final class CareTests: XCTestCase {
         XCTAssertTrue(r[1].tags.isEmpty)
     }
 }
+
+final class SharedTodayTests: XCTestCase {
+    func testRoundTrip() {
+        let d = UserDefaults(suiteName: "pulsecare-test-\(UUID().uuidString)")!
+        let t = WatchToday(date: LocalDate(2027, 6, 16), score: 72, band: .good, reason: "r", missionId: "R-01", missionTitle: "1분 호흡 가이드 1회", missionDone: false)
+        SharedToday.save(t, defaults: d)
+        XCTAssertEqual(SharedToday.load(defaults: d), t)
+        SharedToday.save(nil, defaults: d)
+        XCTAssertNil(SharedToday.load(defaults: d))
+    }
+}
