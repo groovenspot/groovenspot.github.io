@@ -1,6 +1,5 @@
 package com.groovenspot.pulsecare.mobile.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -234,8 +233,7 @@ private fun PeriodToggle(period: Period, onPeriod: (Period) -> Unit) {
 private fun Panel(content: @Composable () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Palette.Card),
-        border = BorderStroke(1.dp, Palette.Line),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(18.dp)) { content() }

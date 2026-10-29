@@ -103,9 +103,9 @@ fun EasyHomeContent(
                 }
             } else {
                 Text("오늘 컨디션", color = Palette.Muted, fontSize = 18.sp)
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text("${score.score}", color = Palette.Navy, fontSize = 72.sp, fontWeight = FontWeight.Bold, lineHeight = 72.sp)
-                    score.band?.let { Text(it.label, color = it.color, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 10.dp)) }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    ScoreRing(score.score, score.band, size = 150.dp, stroke = 14.dp)
+                    score.band?.let { Text(it.label, color = it.color, fontSize = 30.sp, fontWeight = FontWeight.Bold) }
                 }
                 Text(score.reason, color = Palette.Body, fontSize = 20.sp, lineHeight = 28.sp)
             }
@@ -172,7 +172,6 @@ fun EasyHomeContent(
 private fun BigCard(content: @Composable () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Palette.Card),
-        border = BorderStroke(1.dp, Palette.Line),
         shape = RoundedCornerShape(22.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {

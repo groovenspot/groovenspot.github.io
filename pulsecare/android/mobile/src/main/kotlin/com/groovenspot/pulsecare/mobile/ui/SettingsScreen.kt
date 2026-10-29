@@ -1,6 +1,5 @@
 package com.groovenspot.pulsecare.mobile.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -247,8 +246,7 @@ private fun Section(title: String, content: @Composable () -> Unit) {
         Text(title, color = Palette.Teal, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
         Card(
             colors = CardDefaults.cardColors(containerColor = Palette.Card),
-            border = BorderStroke(1.dp, Palette.Line),
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(24.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(16.dp)) { content() }

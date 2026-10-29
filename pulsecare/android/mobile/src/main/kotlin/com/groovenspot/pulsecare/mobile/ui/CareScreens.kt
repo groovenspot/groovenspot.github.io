@@ -104,7 +104,7 @@ fun BreathingContent(elapsed: Double, running: Boolean, finished: Boolean, today
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(18.dp),
-        modifier = Modifier.fillMaxSize().background(Palette.Navy).safeDrawingPadding().padding(24.dp),
+        modifier = Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Palette.DeepStart, Palette.DeepEnd))).safeDrawingPadding().padding(24.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text("1분 호흡", color = Palette.Paper, fontSize = 24.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
@@ -154,8 +154,7 @@ fun BreathingContent(elapsed: Double, running: Boolean, finished: Boolean, today
 private fun CareCard(content: @Composable () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Palette.Card),
-        border = BorderStroke(1.dp, Palette.Line),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth(),
     ) { Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(20.dp)) { content() } }
 }

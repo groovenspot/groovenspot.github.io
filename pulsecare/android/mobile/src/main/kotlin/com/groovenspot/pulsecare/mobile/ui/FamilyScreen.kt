@@ -240,7 +240,7 @@ internal fun FamilyPanel(border: Color = Palette.Line, content: @Composable () -
     Card(
         colors = CardDefaults.cardColors(containerColor = Palette.Card),
         border = BorderStroke(if (border == Palette.Line) 1.dp else 2.dp, border),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(18.dp)) { content() }

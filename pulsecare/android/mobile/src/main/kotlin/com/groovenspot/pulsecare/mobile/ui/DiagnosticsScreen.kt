@@ -1,6 +1,5 @@
 package com.groovenspot.pulsecare.mobile.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -169,7 +168,6 @@ private fun Box(title: String, content: @Composable () -> Unit) {
         Text(title, color = Palette.Teal, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         Card(
             colors = CardDefaults.cardColors(containerColor = Palette.Card),
-            border = BorderStroke(1.dp, Palette.Line),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {

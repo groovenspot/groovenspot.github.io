@@ -105,7 +105,7 @@ fun HomeContent(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.weight(1f)) {
                 Text(dateLabel(state), color = Palette.Muted, fontSize = 14.sp)
-                Text("오늘의 컨디션", color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                Text("오늘의 컨디션", color = Palette.Navy, fontSize = 28.sp, fontWeight = FontWeight.Bold)
             }
             onOpenChat?.let { TextButton(onClick = it) { Text("AI 상담", color = Palette.Teal, fontWeight = FontWeight.SemiBold) } }
             TextButton(onClick = onOpenSettings) { Text("내 정보", color = Palette.Teal, fontWeight = FontWeight.SemiBold) }
@@ -149,11 +149,10 @@ private fun dateLabel(state: HomeState): String {
 private fun SectionCard(content: @Composable () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Palette.Card),
-        border = BorderStroke(1.dp, Palette.Line),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(20.dp)) { content() }
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.padding(22.dp)) { content() }
     }
 }
 
@@ -164,21 +163,17 @@ private fun ScoreCard(state: HomeState, onFeeling: (Int) -> Unit) {
         when (result.kind) {
             ScoreResult.Kind.NO_DATA -> NoDataScore(result, onFeeling)
             else -> {
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        "${result.score}",
-                        color = Palette.Navy,
-                        fontSize = 64.sp,
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = 64.sp,
-                    )
-                    Column(modifier = Modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        val band = result.band!!
-                        Chip(if (result.kind == ScoreResult.Kind.SLEEP_ONLY) "수면 점수" else band.label, band.color)
-                        Text(band.advice, color = Palette.Muted, fontSize = 13.sp)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    ScoreRing(result.score, result.band, caption = if (result.kind == ScoreResult.Kind.SLEEP_ONLY) "수면 점수" else "컨디션")
+                    result.band?.let { band ->
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(band.label, color = band.color, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                            Text(band.advice, color = Palette.Body, fontSize = 15.sp, lineHeight = 21.sp)
+                        }
                     }
                 }
-                Text(result.reason, color = Palette.Body, fontSize = 17.sp, lineHeight = 24.sp)
+                androidx.compose.material3.HorizontalDivider(color = Palette.Line)
+                Text(result.reason, color = Palette.Navy, fontSize = 17.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium)
                 if (result.badges.isNotEmpty()) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         result.badges.forEach { Chip(it.label, Palette.Muted) }
@@ -290,10 +285,15 @@ internal fun missionHint(mission: Mission, check: Check): String = when {
 private fun WeeklyCard(summary: WeeklySummary, onAccept: () -> Unit, onClose: () -> Unit, onChangeGoal: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Palette.Navy),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(20.dp)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Palette.DeepStart, Palette.DeepEnd)))
+                .padding(22.dp),
+        ) {
             Text("이번 주 리포트", color = Palette.Mint, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Text(summary.title, color = Palette.Paper, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             WeekDots(summary.daysDone)
