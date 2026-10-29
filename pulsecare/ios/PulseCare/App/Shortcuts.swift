@@ -73,7 +73,8 @@ struct TakeMedicationIntent: AppIntent {
         let model = AppHolder.current
         let due = model.todayDoses.filter { !$0.taken && $0.time <= model.now.time }
         guard let dose = due.first else {
-            return .result(dialog: model.care.medications.isEmpty ? "등록한 약이 없어요. 앱의 내 정보 > 약 알림에서 넣어 주세요." : "지금 체크할 약이 없어요.")
+            let text = model.care.medications.isEmpty ? "등록한 약이 없어요. 앱의 내 정보 > 약 알림에서 넣어 주세요." : "지금 체크할 약이 없어요."
+            return .result(dialog: IntentDialog(stringLiteral: text))
         }
         await model.markTaken(dose)
         return .result(dialog: IntentDialog(stringLiteral: "\(timeLabel(dose.time)) \(dose.medication.name), 먹었다고 체크했어요."))
