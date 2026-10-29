@@ -27,7 +27,7 @@ PHONE=$(pick iOS "iPhone 16" || true)
 echo "iPhone simulator: $PHONE"
 xcrun simctl boot "$PHONE" || true
 xcrun simctl bootstatus "$PHONE" -b
-xcrun simctl status_bar "$PHONE" override --time "08:00" --batteryState charged --batteryLevel 100 --cellularBars 4 || true
+xcrun simctl status_bar "$PHONE" override --time "2027-06-16T08:00:00+09:00" --batteryState charged --batteryLevel 100 --cellularBars 4 || true
 xcrun simctl install "$PHONE" "$APP"
 
 for screen in consent goal home history family chat settings easy guardian breathing medication; do
@@ -35,7 +35,12 @@ for screen in consent goal home history family chat settings easy guardian breat
   # 화면마다 처음 상태에서 시작합니다.
   xcrun simctl uninstall "$PHONE" com.groovenspot.pulsecare
   xcrun simctl install "$PHONE" "$APP"
-  xcrun simctl launch "$PHONE" com.groovenspot.pulsecare -demo -screen "$screen"
+  # 설치 직후에는 시뮬레이터가 앱을 아직 등록하지 못했을 수 있어 몇 번 다시 시도합니다.
+  for attempt in 1 2 3 4 5; do
+    sleep 2
+    xcrun simctl launch "$PHONE" com.groovenspot.pulsecare -demo -screen "$screen" && break
+    [ "$attempt" = 5 ] && exit 1
+  done
   sleep 6
   xcrun simctl io "$PHONE" screenshot "$OUT/iphone-$screen.png"
 done
@@ -48,7 +53,10 @@ if [ -d "$WATCH_APP" ]; then
     xcrun simctl boot "$WATCH" || true
     xcrun simctl bootstatus "$WATCH" -b
     xcrun simctl install "$WATCH" "$WATCH_APP"
-    xcrun simctl launch "$WATCH" com.groovenspot.pulsecare.watchkitapp -demo
+    for attempt in 1 2 3 4 5; do
+      sleep 2
+      xcrun simctl launch "$WATCH" com.groovenspot.pulsecare.watchkitapp -demo && break
+    done
     sleep 8
     xcrun simctl io "$WATCH" screenshot "$OUT/watch-today.png"
   fi
