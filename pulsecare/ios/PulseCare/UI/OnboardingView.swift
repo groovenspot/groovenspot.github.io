@@ -38,11 +38,13 @@ struct ConsentView: View {
             model.agree(analytics: checked.contains(.analytics))
         } content: {
             let all = checked.count == Item.allCases.count
-            row("전체 동의", all, bold: true, url: nil) { checked = all ? [] : Set(Item.allCases) }
-            Divider()
-            ForEach(Item.allCases, id: \.self) { item in
-                row("[\(item.required ? "필수" : "선택")] \(item.label)", checked.contains(item), bold: false, url: item.url) {
-                    if checked.contains(item) { checked.remove(item) } else { checked.insert(item) }
+            SectionCard {
+                row("전체 동의", all, bold: true, url: nil) { checked = all ? [] : Set(Item.allCases) }
+                Divider().overlay(Palette.line)
+                ForEach(Item.allCases, id: \.self) { item in
+                    row("[\(item.required ? "필수" : "선택")] \(item.label)", checked.contains(item), bold: false, url: item.url) {
+                        if checked.contains(item) { checked.remove(item) } else { checked.insert(item) }
+                    }
                 }
             }
             Text("건강 앱의 수면·심박·HRV·걸음 등 기록을 이 아이폰 안에서 읽어 컨디션 점수와 미션을 계산해요. 수치 자체는 서버로 보내지 않아요. 가족 연결을 켜면 점수·미션·주의 알림만 내가 연결한 보호자에게 전달돼요.")
@@ -57,13 +59,16 @@ struct ConsentView: View {
         HStack {
             Button(action: toggle) {
                 HStack(spacing: 10) {
-                    Image(systemName: on ? "checkmark.circle.fill" : "circle").foregroundStyle(on ? Palette.teal : Palette.line).font(.system(size: 22))
-                    Text(text).font(.system(size: 15, weight: bold ? .bold : .regular)).foregroundStyle(Palette.navy)
+                    Image(systemName: on ? "checkmark.circle.fill" : "circle").foregroundStyle(on ? Palette.teal : Color(hex: 0xC9CED4)).font(.system(size: 24))
+                    Text(text).font(.system(size: bold ? 17 : 15, weight: bold ? .bold : .medium)).foregroundStyle(Palette.navy)
                 }
             }
             .buttonStyle(.plain)
             Spacer()
-            if let url { Button("보기") { openURL(url) }.font(.system(size: 14)) }
+            if let url {
+                Button { openURL(url) } label: { Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(Palette.muted) }
+                    .accessibilityLabel("보기")
+            }
         }
     }
 }
@@ -105,14 +110,25 @@ struct GoalView: View {
                     goal = g
                     if g != .parent { guardianOnly = false }
                 } label: {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(g.label).font(.system(size: 18, weight: .bold)).foregroundStyle(Palette.navy)
-                        Text(Self.descriptions[g] ?? "").font(.system(size: 14)).foregroundStyle(Palette.muted)
+                    HStack(spacing: 14) {
+                        Image(systemName: g.icon)
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(goal == g ? .white : Palette.teal)
+                            .frame(width: 46, height: 46)
+                            .background(goal == g ? Palette.teal : Palette.teal.opacity(0.12), in: Circle())
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(g.label).font(.system(size: 18, weight: .bold)).foregroundStyle(Palette.navy)
+                            Text(Self.descriptions[g] ?? "").font(.system(size: 14)).foregroundStyle(Palette.muted)
+                        }
+                        Spacer()
+                        Image(systemName: goal == g ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 22)).foregroundStyle(goal == g ? Palette.teal : Color(hex: 0xC9CED4))
                     }
-                    .padding(16)
+                    .padding(18)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Palette.card, in: RoundedRectangle(cornerRadius: 16))
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(goal == g ? Palette.teal : Palette.line, lineWidth: goal == g ? 2 : 1))
+                    .background(Palette.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(goal == g ? Palette.teal : .clear, lineWidth: 2))
+                    .shadow(color: .black.opacity(0.04), radius: 10, y: 3)
                 }
                 .buttonStyle(.plain)
             }
@@ -147,17 +163,21 @@ struct OnboardingPage<Content: View>: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    Text(step).font(.system(size: 14, weight: .semibold)).foregroundStyle(Palette.teal)
-                    Text(title).font(.system(size: 26, weight: .bold)).foregroundStyle(Palette.navy)
-                    Text(subtitle).font(.system(size: 15)).foregroundStyle(Palette.body)
+                    Text(step).font(.system(size: 13, weight: .bold)).foregroundStyle(Palette.teal)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .background(Palette.teal.opacity(0.1), in: Capsule())
+                        .padding(.top, 12)
+                    Text(title).font(.system(size: 30, weight: .bold)).foregroundStyle(Palette.navy)
+                    Text(subtitle).font(.system(size: 16)).foregroundStyle(Palette.body).fixedSize(horizontal: false, vertical: true)
+                        .padding(.bottom, 8)
                     content
                 }
                 .padding(24)
             }
             Button(action: onPrimary) {
-                Text(primary).frame(maxWidth: .infinity)
+                Text(primary).font(.system(size: 17, weight: .bold)).frame(maxWidth: .infinity, minHeight: 28)
             }
-            .buttonStyle(PrimaryButtonStyle(color: enabled ? Palette.teal : Palette.line))
+            .buttonStyle(PrimaryButtonStyle(color: enabled ? Palette.teal : Color(hex: 0xC9CED4)))
             .disabled(!enabled)
             .padding(.horizontal, 24)
             .padding(.bottom, 16)

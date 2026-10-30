@@ -253,11 +253,11 @@ private fun MissionCard(
                 Button(
                     onClick = onComplete,
                     colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                 ) { Text(if (onBreathing != null) "직접 했어요" else "완료했어요") }
                 Spacer(Modifier.width(8.dp))
                 onBreathing?.let {
-                    OutlinedButton(onClick = it, border = BorderStroke(1.dp, Palette.Teal), shape = RoundedCornerShape(12.dp)) {
+                    OutlinedButton(onClick = it, border = BorderStroke(1.dp, Palette.Teal), shape = RoundedCornerShape(14.dp)) {
                         Text("호흡 시작", color = Palette.Teal)
                     }
                     Spacer(Modifier.width(8.dp))
@@ -301,13 +301,13 @@ private fun WeeklyCard(summary: WeeklySummary, onAccept: () -> Unit, onClose: ()
             Row(verticalAlignment = Alignment.CenterVertically) {
                 when {
                     summary.suggestGoalChange -> {
-                        Button(onClick = onChangeGoal, colors = ButtonDefaults.buttonColors(containerColor = Palette.Mint), shape = RoundedCornerShape(12.dp)) {
+                        Button(onClick = onChangeGoal, colors = ButtonDefaults.buttonColors(containerColor = Palette.Mint), shape = RoundedCornerShape(14.dp)) {
                             Text("목표 바꾸기", color = Palette.Navy)
                         }
                         TextButton(onClick = onClose) { Text("이대로 할게요", color = Palette.Line) }
                     }
                     summary.levelChange == MissionProgress.LevelChange.SUGGEST_UP -> {
-                        Button(onClick = onAccept, colors = ButtonDefaults.buttonColors(containerColor = Palette.Mint), shape = RoundedCornerShape(12.dp)) {
+                        Button(onClick = onAccept, colors = ButtonDefaults.buttonColors(containerColor = Palette.Mint), shape = RoundedCornerShape(14.dp)) {
                             Text("레벨 ${summary.nextLevel} 도전", color = Palette.Navy)
                         }
                         TextButton(onClick = onClose) { Text("지금이 좋아요", color = Palette.Line) }

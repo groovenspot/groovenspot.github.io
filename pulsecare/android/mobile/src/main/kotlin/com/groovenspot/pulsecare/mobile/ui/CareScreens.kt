@@ -204,7 +204,7 @@ fun TagCard(saved: Set<DayTag>?, onSave: (Set<DayTag>) -> Unit) {
                     editing = false
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
             ) { Text(if (picked.isEmpty()) "특별한 일 없었어요" else "남기기") }
         }
     }
@@ -259,7 +259,7 @@ fun MedicationCard(doses: List<Dose>, now: LocalTime, onTaken: (Dose) -> Unit, o
                     Button(
                         onClick = { onTaken(d) },
                         colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                     ) { Text("먹었어요") }
                 }
             }
@@ -285,7 +285,7 @@ fun MedicationsScreen(medications: List<Medication>, onSave: (List<Medication>) 
             .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("약 알림", color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            Text("약 알림", color = Palette.Navy, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
             TextButton(onClick = onBack) { Text("닫기", color = Palette.Teal) }
         }
         Text(
@@ -327,7 +327,7 @@ fun MedicationsScreen(medications: List<Medication>, onSave: (List<Medication>) 
                 },
                 enabled = name.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
             ) { Text("추가하기") }
         }
         Spacer(Modifier.height(8.dp))

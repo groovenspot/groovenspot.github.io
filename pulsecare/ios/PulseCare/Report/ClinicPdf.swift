@@ -262,6 +262,8 @@ struct ClinicExportView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Palette.paper)
             .navigationTitle("진료용 건강 요약")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("닫기") { dismiss() } } }

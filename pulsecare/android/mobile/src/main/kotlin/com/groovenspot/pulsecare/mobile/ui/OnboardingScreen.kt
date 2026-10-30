@@ -109,8 +109,8 @@ fun GoalScreen(selected: Goal?, onSelect: (Goal) -> Unit, onNext: () -> Unit, ch
             val chosen = goal == selected
             Card(
                 colors = CardDefaults.cardColors(containerColor = if (chosen) Palette.Teal.copy(alpha = 0.08f) else Palette.Card),
-                border = BorderStroke(if (chosen) 2.dp else 1.dp, if (chosen) Palette.Teal else Palette.Line),
-                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(2.dp, if (chosen) Palette.Teal else Palette.Card),
+                shape = RoundedCornerShape(20.dp),
                 modifier = Modifier.fillMaxWidth().clickable { onSelect(goal) },
             ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -174,7 +174,7 @@ private fun OnboardingFrame(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
         ) {
             Text(step, color = Palette.Teal, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Text(title, color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
+            Text(title, color = Palette.Navy, fontSize = 30.sp, fontWeight = FontWeight.Bold, lineHeight = 38.sp)
             Text(subtitle, color = Palette.Muted, fontSize = 15.sp, lineHeight = 22.sp)
             Spacer(Modifier.height(8.dp))
             content()

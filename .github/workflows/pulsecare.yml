@@ -35,6 +35,15 @@ jobs:
         env:
           PULSECARE_TEST_DB: jdbc:postgresql://localhost:5432/pulsecare_test?user=postgres&password=postgres
         run: ./gradlew :server:test :server:installDist :core:test :mobile:testDebugUnitTest :mobile:lintDebug :mobile:assembleDebug :wear:testDebugUnitTest :wear:lintDebug :wear:assembleDebug
+      - name: Upload screen images (Paparazzi)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulsecare-android-screens
+          path: |
+            pulsecare/android/mobile/build/reports/paparazzi
+            pulsecare/android/wear/build/reports/paparazzi
+          retention-days: 14
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:

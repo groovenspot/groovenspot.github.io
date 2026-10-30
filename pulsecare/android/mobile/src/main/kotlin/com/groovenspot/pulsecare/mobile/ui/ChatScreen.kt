@@ -79,7 +79,7 @@ fun ChatContent(
                 Button(
                     onClick = onAgree,
                     colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("알겠어요, 시작할게요") }
             }
@@ -126,8 +126,8 @@ fun ChatContent(
                             input = ""
                         },
                         enabled = input.isNotBlank() && !ui.sending,
-                        colors = ButtonDefaults.buttonColors(containerColor = Palette.Navy),
-                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier.padding(start = 8.dp),
                     ) { Text("보내기") }
                 }
@@ -151,7 +151,7 @@ private fun Bubble(m: ChatMessage) {
             lineHeight = 22.sp,
             modifier = Modifier
                 .widthIn(max = 300.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(20.dp))
                 .background(if (m.fromUser) Palette.Teal else Palette.Card)
                 .padding(horizontal = 14.dp, vertical = 10.dp),
         )

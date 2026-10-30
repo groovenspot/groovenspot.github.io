@@ -52,7 +52,7 @@ struct GuardianHomeView: View {
 
     private func mission(_ home: HomeState) -> some View {
         SectionCard {
-            Text("오늘의 보호자 미션").font(.system(size: 14, weight: .bold)).foregroundStyle(Palette.teal)
+            CardHeader(icon: "heart.circle.fill", title: "오늘의 보호자 미션")
             Text(home.mission.title).font(.system(size: 20, weight: .bold)).foregroundStyle(Palette.navy)
             Text(missionHint(home.mission, .manual)).font(.system(size: 13)).foregroundStyle(Palette.muted)
             if home.missionDone {
@@ -93,20 +93,28 @@ struct WearerCard: View {
                         Button("119") { if let url = URL(string: "tel:119") { openURL(url) } }.foregroundStyle(.white)
                     }
                 }
-                .padding(16)
+                .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(red: 0.75, green: 0.15, blue: 0.15), in: RoundedRectangle(cornerRadius: 16))
+                .background(LinearGradient(colors: [Color(hex: 0xE03131), Color(hex: 0xC92A2A)], startPoint: .top, endPoint: .bottom),
+                            in: RoundedRectangle(cornerRadius: 24, style: .continuous))
             }
             SectionCard {
-                HStack {
-                    Text(wearer.person.name).font(.system(size: 20, weight: .bold)).foregroundStyle(Palette.navy)
+                HStack(spacing: 12) {
+                    Avatar(name: wearer.person.name)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(wearer.person.name).font(.system(size: 20, weight: .bold)).foregroundStyle(Palette.navy)
+                        Text(wearer.today == nil ? "오늘 기록 전" : "오늘").font(.system(size: 13)).foregroundStyle(Palette.muted)
+                    }
                     Spacer()
                     if let phone = wearer.person.phone {
-                        Button("전화") { if let url = URL(string: "tel:\(phone)") { openURL(url) } }.font(.system(size: 15, weight: .semibold))
+                        HeaderIconButton(systemName: "phone.fill", label: "전화하기") { if let url = URL(string: "tel:\(phone)") { openURL(url) } }
                     }
                 }
                 if let t = wearer.today {
-                    Text(t.scoreLine).font(.system(size: 17, weight: .semibold)).foregroundStyle(Palette.body)
+                    HStack(spacing: 16) {
+                        ScoreRing(score: t.score, band: t.band.flatMap(Band.init(rawValue:)), size: 72, lineWidth: 8)
+                        Text(t.scoreLine).font(.system(size: 18, weight: .bold)).foregroundStyle(Palette.navy)
+                    }
                     Text("미션: \(t.missionTitle) · \(t.missionDone ? "완료" : "아직")").font(.system(size: 15)).foregroundStyle(Palette.body)
                     ForEach(t.alerts, id: \.signal) { a in
                         VStack(alignment: .leading, spacing: 6) {

@@ -30,7 +30,7 @@ struct ChatView: View {
         VStack(spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("AI 건강 상담").font(.system(size: 24, weight: .bold)).foregroundStyle(Palette.navy)
+                    Text("AI 건강 상담").font(.system(size: 26, weight: .bold)).foregroundStyle(Palette.navy)
                     if let remaining, remaining >= 0 { Text("오늘 남은 질문 \(remaining)번").font(.system(size: 12)).foregroundStyle(Palette.muted) }
                 }
                 Spacer()
@@ -90,12 +90,13 @@ struct ChatView: View {
             HStack(spacing: 8) {
                 TextField("궁금한 것을 적어 주세요", text: $input, axis: .vertical)
                     .lineLimit(1...4)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(FilledFieldStyle())
                 Button("보내기") { send(input) }
                     .buttonStyle(PrimaryButtonStyle())
                     .disabled(sending || input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
             .padding(16)
+            .background(Palette.card.shadow(.drop(color: .black.opacity(0.05), radius: 10, y: -2)))
         }
     }
 
@@ -106,8 +107,8 @@ struct ChatView: View {
                 .font(.system(size: 15))
                 .foregroundStyle(m.fromUser ? .white : (m.crisis ? Palette.coral : Palette.body))
                 .padding(12)
-                .background(m.fromUser ? Palette.teal : Palette.card, in: RoundedRectangle(cornerRadius: 16))
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(m.fromUser ? .clear : Palette.line, lineWidth: 1))
+                .background(m.fromUser ? Palette.teal : Palette.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .shadow(color: .black.opacity(m.fromUser ? 0 : 0.04), radius: 8, y: 2)
             if !m.fromUser { Spacer(minLength: 40) }
         }
     }

@@ -115,7 +115,7 @@ fun FamilyContent(
             .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("가족", color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            Text("가족", color = Palette.Navy, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
             if (ui.me != null) TextButton(onClick = onReload) { Text("새로고침", color = Palette.Teal) }
             TextButton(onClick = onOpenSettings) { Text("내 정보", color = Palette.Teal, fontWeight = FontWeight.SemiBold) }
         }
@@ -239,7 +239,7 @@ fun FamilyContent(
 internal fun FamilyPanel(border: Color = Palette.Line, content: @Composable () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Palette.Card),
-        border = BorderStroke(if (border == Palette.Line) 1.dp else 2.dp, border),
+        border = BorderStroke(2.dp, if (border == Palette.Line) Palette.Card else border),
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
@@ -283,8 +283,8 @@ private fun StartPanel(busy: Boolean, onStart: (String, String) -> Unit) {
         Button(
             onClick = { onStart(name.trim(), phone.trim()) },
             enabled = name.isNotBlank() && !busy,
-            colors = ButtonDefaults.buttonColors(containerColor = Palette.Navy),
-            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
+            shape = RoundedCornerShape(14.dp),
             modifier = Modifier.fillMaxWidth(),
         ) { Text(if (busy) "만드는 중…" else "시작하기") }
     }
@@ -309,8 +309,8 @@ private fun RestorePanel(busy: Boolean, onRestore: (String) -> Unit) {
             Button(
                 onClick = { onRestore(code) },
                 enabled = code.length == 10 && !busy,
-                colors = ButtonDefaults.buttonColors(containerColor = Palette.Navy),
-                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
+                shape = RoundedCornerShape(14.dp),
             ) { Text("불러오기") }
         }
     }
@@ -338,7 +338,7 @@ internal fun EmergencyCard(w: WearerView, e: EmergencyView, ui: FamilyUi, onAck:
                 onClick = { onAck(e) },
                 enabled = !ui.busy,
                 colors = ButtonDefaults.buttonColors(containerColor = Palette.Coral),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("확인했어요 (다른 보호자 연락 멈춤)") }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -449,7 +449,7 @@ private fun InvitePanel(
             Button(
                 onClick = { onShareInvite(invite, role) },
                 colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("메시지로 보내기") }
         }
@@ -472,8 +472,8 @@ private fun InvitePanel(
             Button(
                 onClick = { onCheckCode(code) },
                 enabled = code.length == 8 && !ui.busy,
-                colors = ButtonDefaults.buttonColors(containerColor = Palette.Navy),
-                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
+                shape = RoundedCornerShape(14.dp),
             ) { Text("확인") }
         }
     }

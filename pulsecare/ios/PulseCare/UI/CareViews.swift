@@ -245,6 +245,8 @@ struct MedicationsView: View {
                     .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Palette.paper)
             .navigationTitle("약 알림")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("닫기") { dismiss() } } }

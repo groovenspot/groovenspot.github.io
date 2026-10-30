@@ -24,7 +24,7 @@ struct FamilyView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
-                    Text("가족").font(.system(size: 26, weight: .bold)).foregroundStyle(Palette.navy)
+                    Text("가족").font(.system(size: 28, weight: .bold)).foregroundStyle(Palette.navy).padding(.top, 8)
                     Spacer()
                     if family.me != nil { Button("새로고침") { Task { await family.load() } } }
                 }
@@ -87,10 +87,11 @@ struct FamilyView: View {
 
     private var startCard: some View {
         SectionCard {
-            Text("가족과 함께 챙기기").font(.system(size: 18, weight: .bold)).foregroundStyle(Palette.navy)
+            CardHeader(icon: "person.2.fill", title: "가족 연결")
+            Text("가족과 함께 챙기기").font(.system(size: 20, weight: .bold)).foregroundStyle(Palette.navy)
             Text("부모님이나 가족을 초대하면 하루 요약을 함께 보고, SOS를 누르면 보호자에게 바로 알려요.").font(.system(size: 14)).foregroundStyle(Palette.body)
-            TextField("가족에게 보일 이름 (예: 엄마, 민지)", text: $name).textFieldStyle(.roundedBorder)
-            TextField("전화번호 (선택, 가족이 '전화하기'에 써요)", text: $phone).textFieldStyle(.roundedBorder).keyboardType(.phonePad)
+            TextField("가족에게 보일 이름 (예: 엄마, 민지)", text: $name).textFieldStyle(FilledFieldStyle())
+            TextField("전화번호 (선택, 가족이 '전화하기'에 써요)", text: $phone).textFieldStyle(FilledFieldStyle()).keyboardType(.phonePad)
             Button(family.busy ? "만드는 중…" : "시작하기") {
                 Task { await family.start(name: name.trimmingCharacters(in: .whitespaces), phone: phone) }
             }
@@ -101,10 +102,10 @@ struct FamilyView: View {
 
     private var restoreCard: some View {
         SectionCard {
-            Text("폰을 바꿨어요").font(.system(size: 16, weight: .bold)).foregroundStyle(Palette.navy)
+            CardHeader(icon: "arrow.triangle.2.circlepath", title: "폰을 바꿨어요", tint: Palette.muted)
             Text("옛 폰의 가족 탭 > \"새 폰으로 옮기기\"에서 받은 10자리 코드를 넣으면 가족 연결을 그대로 가져와요.").font(.system(size: 13)).foregroundStyle(Palette.muted)
             HStack {
-                TextField("옮기기 코드 10자리", text: $transferInput).textFieldStyle(.roundedBorder).textInputAutocapitalization(.characters)
+                TextField("옮기기 코드 10자리", text: $transferInput).textFieldStyle(FilledFieldStyle()).textInputAutocapitalization(.characters)
                 Button("불러오기") { Task { await family.restore(code: transferInput.trimmingCharacters(in: .whitespaces)) } }
                     .disabled(transferInput.count < 6 || family.busy)
             }
@@ -115,14 +116,14 @@ struct FamilyView: View {
     private var linked: some View {
         if let f = family.family {
             if !f.wearers.isEmpty {
-                Text("내가 챙기는 가족").font(.system(size: 14, weight: .bold)).foregroundStyle(Palette.teal)
+                SectionLabel(text: "내가 챙기는 가족")
                 ForEach(f.wearers, id: \.person.userId) { w in
                     WearerCard(wearer: w)
                     Button("\(w.person.name)님과 연결 끊기") { unlinkTarget = (w.person, "WEARER") }.font(.system(size: 13)).foregroundStyle(Palette.muted)
                 }
             }
             if !guardianMode {
-                Text("나를 챙기는 보호자").font(.system(size: 14, weight: .bold)).foregroundStyle(Palette.teal)
+                SectionLabel(text: "나를 챙기는 보호자")
                 guardians(f.guardians.sorted { $0.priority < $1.priority })
             }
             if !AppConfig.demo && AppConfig.serverConfigured && model.store.pushToken == nil {
@@ -150,8 +151,10 @@ struct FamilyView: View {
                 Text("긴급할 때 이 순서로 1분 간격으로 알려요. 3분 안에 아무도 확인하지 않으면 모두에게 다시 알려요.").font(.system(size: 13)).foregroundStyle(Palette.muted)
                 ForEach(Array(list.enumerated()), id: \.element.person.userId) { i, g in
                     HStack {
-                        Text("\(g.priority)").font(.system(size: 16, weight: .bold)).foregroundStyle(Palette.teal).frame(width: 24)
-                        Text(g.person.name).font(.system(size: 16)).foregroundStyle(Palette.navy)
+                        Text("\(g.priority)").font(.system(size: 13, weight: .bold)).foregroundStyle(.white)
+                            .frame(width: 22, height: 22).background(Palette.teal, in: Circle())
+                        Avatar(name: g.person.name, size: 36)
+                        Text(g.person.name).font(.system(size: 16, weight: .semibold)).foregroundStyle(Palette.navy)
                         Spacer()
                         if i > 0 { Button("위로") { move(list, i, -1) }.font(.system(size: 13)) }
                         if i < list.count - 1 { Button("아래로") { move(list, i, 1) }.font(.system(size: 13)) }
@@ -170,10 +173,12 @@ struct FamilyView: View {
 
     private var inviteCard: some View {
         SectionCard {
-            Text("초대하기").font(.system(size: 17, weight: .bold)).foregroundStyle(Palette.navy)
+            CardHeader(icon: "envelope.fill", title: "초대하기")
             if let invite {
                 Text(invite.role == "WEARER" ? "보호자에게 보낼 코드" : "챙길 가족에게 보낼 코드").font(.system(size: 13)).foregroundStyle(Palette.muted)
                 Text(invite.code.code).font(.system(size: 30, weight: .bold, design: .monospaced)).foregroundStyle(Palette.navy)
+                    .frame(maxWidth: .infinity).padding(.vertical, 14)
+                    .background(Palette.fill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 Text("7일 동안 한 번 쓸 수 있어요. 받은 사람이 펄스케어 가족 탭에서 입력해요.").font(.system(size: 13)).foregroundStyle(Palette.muted)
                 ShareLink(item: "펄스케어 가족 초대 코드: \(invite.code.code)\n앱의 가족 탭에서 입력해 주세요.") { Text("메시지로 보내기") }
                     .buttonStyle(PrimaryButtonStyle())
@@ -186,7 +191,7 @@ struct FamilyView: View {
             }
             Text("받은 코드가 있나요?").font(.system(size: 13)).foregroundStyle(Palette.muted).padding(.top, 6)
             HStack {
-                TextField("초대 코드 8자리", text: $inviteCode).textFieldStyle(.roundedBorder).textInputAutocapitalization(.characters)
+                TextField("초대 코드 8자리", text: $inviteCode).textFieldStyle(FilledFieldStyle()).textInputAutocapitalization(.characters)
                 Button("확인") {
                     Task {
                         let code = inviteCode.trimmingCharacters(in: .whitespaces)

@@ -138,6 +138,40 @@ struct OutlineButtonStyle: ButtonStyle {
     }
 }
 
+/// 입력 칸: 테두리 없는 연한 회색 상자.
+struct FilledFieldStyle: TextFieldStyle {
+    func _body(configuration: TextField<Self._Label>) -> some View {
+        configuration
+            .font(.system(size: 16))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 13)
+            .background(Palette.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
+
+/// 카드 묶음 위 작은 제목.
+struct SectionLabel: View {
+    var text: String
+
+    var body: some View {
+        Text(text).font(.system(size: 15, weight: .semibold)).foregroundStyle(Palette.muted).padding(.leading, 4).padding(.top, 6)
+    }
+}
+
+/// 이름 첫 글자 동그라미 (가족 목록).
+struct Avatar: View {
+    var name: String
+    var size: CGFloat = 44
+
+    var body: some View {
+        Text(String(name.prefix(1)))
+            .font(.system(size: size * 0.42, weight: .bold))
+            .foregroundStyle(Palette.teal)
+            .frame(width: size, height: size)
+            .background(Palette.teal.opacity(0.12), in: Circle())
+    }
+}
+
 /// 점수 링 (구간 색 그라데이션, 0~100).
 struct ScoreRing: View {
     var score: Int?

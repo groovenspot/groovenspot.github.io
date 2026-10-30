@@ -64,7 +64,7 @@ fun GuardianHomeContent(
                     color = Palette.Muted,
                     fontSize = 14.sp,
                 )
-                Text("부모님 오늘", color = Palette.Navy, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                Text("부모님 오늘", color = Palette.Navy, fontSize = 28.sp, fontWeight = FontWeight.Bold)
             }
             TextButton(onClick = onOpenSettings) { Text("내 정보", color = Palette.Teal, fontWeight = FontWeight.SemiBold) }
         }
@@ -88,7 +88,7 @@ fun GuardianHomeContent(
                 Button(
                     onClick = onOpenFamily,
                     colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text(if (ui.me == null) "가족 연결 시작하기" else "부모님 초대하기") }
             }
@@ -107,7 +107,7 @@ fun GuardianHomeContent(
                     Button(
                         onClick = onCompleteMission,
                         colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                     ) { Text("완료했어요") }
                 }
             }
