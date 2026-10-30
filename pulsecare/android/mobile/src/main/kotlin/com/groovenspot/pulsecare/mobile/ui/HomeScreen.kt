@@ -291,6 +291,7 @@ private fun WeeklyCard(summary: WeeklySummary, onAccept: () -> Unit, onClose: ()
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
+                .fillMaxWidth()
                 .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Palette.DeepStart, Palette.DeepEnd)))
                 .padding(22.dp),
         ) {
