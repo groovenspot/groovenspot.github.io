@@ -202,19 +202,49 @@
 
   var nowBox = $('[data-now]');
   var floorTT = $$('[data-floor-tt]');
-  if (nowBox || floorTT.length) {
+  // 홈: 영업 중이면 층별 "지금 플레이 중", 아니면 "오늘 밤 라인업"(시작 시각 순). 타임테이블이 없으면 이벤트 라인업, 그것도 없으면 "곧 공개".
+  function renderNow(tt, evs) {
+    var date = IS_OPEN ? BIZ : ymd(NOW.date);
+    var day = tt && tt[date];
+    var ev = normEvents(evs).filter(function (e) { return e.date === date; })[0];
+    var live = false;
+    var cards = ['2F', '3F'].map(function (f) {
+      var list = slots(day, f), i = IS_OPEN ? currentIdx(list) : -1;
+      var head = '<div class="fl">' + f + (f === '2F' ? ' · GROOVE' : ' · SPOT') + '</div>', main = '', subl = '', rest = [];
+      if (i >= 0) {
+        live = true;
+        var nx = list[i + 1];
+        main = list[i].n; subl = fmt(T.since, { t: list[i].t });
+        rest = list.slice(i + 1, i + 4);
+      } else if (list.length) {
+        main = list[0].n; subl = fmt(T.startsAt, { t: list[0].t });
+        rest = list.slice(1, 4);
+      } else {
+        var names = ev && ev.lineup ? (ev.lineup[f] || ev.lineup.GUEST || []) : [];
+        if (names.length) { main = names[0]; subl = names.slice(1, 5).join(' · '); }
+        else { main = T.lineupSoon; subl = ''; }
+      }
+      return '<div class="now-card' + (f === '3F' ? ' s' : '') + (i >= 0 ? ' on' : '') + '">' + head + '<div class="dj">' + esc(main) + '</div>' +
+        (subl ? '<div class="nx">' + esc(subl) + '</div>' : '') +
+        (rest.length ? '<ul class="now-next">' + rest.map(function (s) { return '<li><span>' + esc(s.t) + '</span>' + esc(s.n) + '</li>'; }).join('') + '</ul>' : '') + '</div>';
+    }).join('');
+    $('[data-now-grid]').innerHTML = cards;
+    var h = $('#now-h-txt'); if (h) h.textContent = live ? T.nowPlaying : fmt(T.tonightLineup, { d: dateLabel(date) }) + (ev ? ' · ' + ev.title : '');
+    nowBox.classList.toggle('is-live', live);
+    nowBox.hidden = false;
+  }
+  if (nowBox) {
+    Promise.all([load('timetable'), load('events')]).then(function (r) { renderNow(r[0], r[1]); });
+    setInterval(function () {
+      NOW = kstNow(); nowNight = NOW.h * 60 + NOW.mi + (NOW.h < 12 ? 1440 : 0);
+      BIZ = ymd(NOW.h < 8 ? addDays(NOW.date, -1) : NOW.date); bizHours = hoursFor(dowOf(BIZ));
+      IS_OPEN = nowNight >= nightMins(bizHours.open) && nowNight < nightMins(bizHours.close);
+      Promise.all([load('timetable'), load('events')]).then(function (r) { renderNow(r[0], r[1]); }); }, 60000);
+  }
+  if (floorTT.length) {
     load('timetable').then(function (tt) {
       var day = tt && tt[BIZ];
       if (!day) return;
-      if (nowBox && IS_OPEN) {
-        var html = ['2F', '3F'].map(function (f) {
-          var list = slots(day, f), i = currentIdx(list);
-          if (i < 0) return '';
-          var nx = list[i + 1];
-          return '<div class="now-card' + (f === '3F' ? ' s' : '') + '"><div class="fl">' + f + (f === '2F' ? ' · GROOVE' : ' · SPOT') + '</div><div class="dj">' + esc(list[i].n) + '</div><div class="nx">' + esc(fmt(T.since, { t: list[i].t })) + (nx ? ' · ' + esc(fmt(T.next, { n: nx.n, t: nx.t })) : '') + '</div></div>';
-        }).join('');
-        if (html) { $('[data-now-grid]').innerHTML = html; nowBox.hidden = false; }
-      }
       floorTT.forEach(function (el) {
         var list = slots(day, el.dataset.floorTt);
         if (list.length) el.innerHTML = '<p class="tt-h">' + esc(T.today) + ' · ' + esc(dateLabel(BIZ)) + '</p>' + ttList(list, IS_OPEN);

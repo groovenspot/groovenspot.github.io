@@ -7,6 +7,7 @@ export const HTML_LANG = { ko: 'ko', en: 'en', ja: 'ja', zh: 'zh-CN' };
 
 export const T = {
   ko: {
+    'rt.nowPlaying': '지금 플레이 중', 'rt.tonightLineup': '{d} 오늘 밤 라인업', 'rt.startsAt': '{t} 시작', 'rt.lineupSoon': '라인업 곧 공개',
     'rt.setsOf': '이 날 DJ의 라이브셋',
     'nav.open': '메뉴 열기', 'nav.close': '메뉴 닫기', 'nav.home': '홈',
     'rq.searchPh': '곡 제목이나 가수를 입력하면 검색돼요', 'rt.rqNoResult': '검색 결과가 없어요. 직접 입력해서 보내도 돼요.', 'rt.rqSearching': '검색 중…',
@@ -73,6 +74,7 @@ export const T = {
     '404.t': '페이지를 찾을 수 없어요', '404.home': '홈으로',
   },
   en: {
+    'rt.nowPlaying': 'Now playing', 'rt.tonightLineup': 'Tonight · {d}', 'rt.startsAt': 'from {t}', 'rt.lineupSoon': 'Lineup coming soon',
     'rt.setsOf': 'Live sets by tonight\'s DJs',
     'nav.open': 'Open menu', 'nav.close': 'Close menu', 'nav.home': 'Home',
     'rq.searchPh': 'Type a title or artist to search', 'rt.rqNoResult': 'No matches. You can still send what you typed.', 'rt.rqSearching': 'Searching…',
@@ -136,6 +138,7 @@ export const T = {
     '404.t': 'Page not found', '404.home': 'Back home',
   },
   ja: {
+    'rt.nowPlaying': 'NOW PLAYING', 'rt.tonightLineup': '{d} 今夜のラインナップ', 'rt.startsAt': '{t}スタート', 'rt.lineupSoon': 'ラインナップ近日公開',
     'rt.setsOf': 'この日のDJのライブセット',
     'nav.open': 'メニューを開く', 'nav.close': 'メニューを閉じる', 'nav.home': 'ホーム',
     'rq.searchPh': '曲名やアーティスト名を入力すると検索できます', 'rt.rqNoResult': '見つかりませんでした。入力したまま送れます。', 'rt.rqSearching': '検索中…',
@@ -199,6 +202,7 @@ export const T = {
     '404.t': 'ページが見つかりません', '404.home': 'ホームへ',
   },
   zh: {
+    'rt.nowPlaying': '正在播放', 'rt.tonightLineup': '{d} 今晚阵容', 'rt.startsAt': '{t} 开始', 'rt.lineupSoon': '阵容即将公布',
     'rt.setsOf': '当晚DJ的现场录像',
     'nav.open': '打开菜单', 'nav.close': '关闭菜单', 'nav.home': '首页',
     'rq.searchPh': '输入歌名或歌手即可搜索', 'rt.rqNoResult': '没有找到。也可以直接发送输入的内容。', 'rt.rqSearching': '搜索中…',

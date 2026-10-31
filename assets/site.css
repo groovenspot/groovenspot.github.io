@@ -443,3 +443,12 @@ body.mnav-open { overflow: hidden; }
 .prose b { color: var(--fg, #fff); }
 .guide-quick { grid-template-columns: minmax(5.5em, max-content) 1fr; }
 .guide-quick dd { margin: 0; }
+
+/* now playing / tonight */
+.now:not(.is-live) .live-dot { display: none; }
+.now-card .dj { overflow-wrap: anywhere; }
+.now-card.on { box-shadow: 0 0 0 1px rgba(255, 59, 92, .35), 0 10px 30px rgba(255, 59, 92, .12); }
+.now-next { list-style: none; margin: 10px 0 0; padding: 10px 0 0; border-top: 1px solid var(--line); display: grid; gap: 4px; font-size: 14px; }
+.now-next li { display: flex; gap: 10px; }
+.now-next span { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 3.2em; }
+.now-act { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }

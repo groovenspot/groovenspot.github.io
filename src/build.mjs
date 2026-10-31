@@ -189,9 +189,9 @@ const BODIES = {
   </div>
 </section>
 <section class="now wrap" data-now hidden aria-labelledby="now-h">
-  <h2 class="sec-h" id="now-h"><span class="live-dot" aria-hidden="true"></span>${L('sec.now')}</h2>
+  <h2 class="sec-h" id="now-h"><span class="live-dot" aria-hidden="true"></span><span id="now-h-txt">${L('sec.now')}</span></h2>
   <div class="now-grid" data-now-grid></div>
-  <p class="now-act"><a class="btn" href="${href(lang, 'request/')}">🎵 ${L('cta.request')}</a></p>
+  <p class="now-act"><a class="btn" href="${href(lang, 'request/')}">🎵 ${L('cta.request')}</a><a class="more" href="${href(lang, 'floors/')}">${L('sec.timetable')} →</a></p>
 </section>
 <section class="wrap sec" aria-labelledby="up-h">
   <div class="sec-top"><h2 class="sec-h" id="up-h">${L('sec.upcoming')}</h2><a class="more" href="${href(lang, 'events/')}">${L('more.events')} →</a></div>
