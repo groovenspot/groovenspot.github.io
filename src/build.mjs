@@ -13,13 +13,15 @@ const SITE = 'https://groovenspot.github.io';
 const INSTAGRAM = 'https://www.instagram.com/groovenspot/';
 const SOUNDCLOUD = 'https://on.soundcloud.com/IWtEmqOHfTecbn1cBI';
 const YOUTUBE = 'https://www.youtube.com/@GROOVEBUSAN';
+// 신청곡 전달용 ntfy 토픽 (assets/admin.js 의 TOPIC 과 같아야 함)
+const REQ_TOPIC = 'groovenspot-req-6witbq5hriea';
 const LOGO_WORD = '<img src="/assets/logo-word.png" width="564" height="79" alt="Groove &amp; Spot">';
 const fig = (src, alt, cls = '') => `<figure class="shot ${cls}"><a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="${esc(alt)}" width="1080" height="1920" loading="lazy" decoding="async"></a><figcaption>${esc(alt)}</figcaption></figure>`;
 const PHONE = '0507-1301-5970';
 const ADDR_KO = '부산 부산진구 중앙대로680번가길 52';
 const VERSION = Date.now().toString(36);
 
-const PAGES = ['', 'events/', 'event/', 'floors/', 'artists/', 'reserve/', 'info/'];
+const PAGES = ['', 'events/', 'event/', 'floors/', 'artists/', 'reserve/', 'info/', 'request/'];
 const prefix = (lang) => (lang === 'ko' ? '' : `/${lang}`);
 const href = (lang, page) => `${prefix(lang)}/${page}`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -28,7 +30,7 @@ function layout(lang, page, { title, desc, body, active }) {
   const L = (k) => t(lang, k);
   const runtime = Object.fromEntries(Object.keys(T.ko).filter((k) => k.startsWith('rt.')).map((k) => [k.slice(3), L(k)]));
   const nav = [
-    ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['artists/', 'nav.artists'], ['info/', 'nav.info'],
+    ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['artists/', 'nav.artists'], ['request/', 'nav.request'], ['info/', 'nav.info'],
   ];
   const fullTitle = title ? `${title} · Groove & Spot` : L('site.title');
   const alternates = LANGS.map((l) => `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${SITE}${href(l, page)}">`).join('\n');
@@ -108,7 +110,7 @@ ${body}
   </div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, t: runtime })};</script>
+<script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, topic: REQ_TOPIC, t: runtime })};</script>
 <script src="/assets/site.js?v=${VERSION}" defer></script>
 </body>
 </html>
@@ -155,6 +157,7 @@ const BODIES = {
 <section class="now wrap" data-now hidden aria-labelledby="now-h">
   <h2 class="sec-h" id="now-h"><span class="live-dot" aria-hidden="true"></span>${L('sec.now')}</h2>
   <div class="now-grid" data-now-grid></div>
+  <p class="now-act"><a class="btn" href="${href(lang, 'request/')}">🎵 ${L('cta.request')}</a></p>
 </section>
 <section class="wrap sec" aria-labelledby="up-h">
   <div class="sec-top"><h2 class="sec-h" id="up-h">${L('sec.upcoming')}</h2><a class="more" href="${href(lang, 'events/')}">${L('more.events')} →</a></div>
@@ -204,6 +207,7 @@ const BODIES = {
     <div class="fbig-head"><img class="fbig-img" src="/assets/img/floor-${f.toLowerCase()}.webp" width="1344" height="752" alt="" loading="lazy" decoding="async"><p class="floor-no">${f}</p><h2 class="fbig-name">${L(`floor.${f}.name`)}</h2><p class="floor-genre">${L(`floor.${f}.genre`)}</p></div>
     <div class="fbig-body"><p class="lede">${L(`floor.${f}.long`)}</p>${am(keys)}
       <div class="tt-today" data-floor-tt="${f}"></div>
+      <p><a class="btn" href="${href(lang, 'request/')}?floor=${f}">🎵 ${L('cta.request')}</a></p>
     </div>
   </div>
 </section>`;
@@ -211,6 +215,25 @@ const BODIES = {
 ${block('2F', ['dj', 'bar', 'h', 'stage', 'table', 'dart'])}
 ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
 <section class="wrap sec" aria-labelledby="lay-h"><h2 class="sec-h" id="lay-h">${L('sec.layout')}</h2><div class="shots">${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></section>`;
+  },
+
+  'request/': (lang) => {
+    const L = (k) => t(lang, k);
+    return `${pageHead(lang, 'request')}
+<section class="wrap sec rv">
+  <form class="rv-form" id="rq-form" novalidate>
+    <label>${L('rq.song')}<input name="song" maxlength="80" autocomplete="off" required></label>
+    <label>${L('rq.artist')}<input name="artist" maxlength="60" autocomplete="off"></label>
+    <fieldset class="seg full"><legend>${L('rq.floor')}</legend>
+      <label class="seg-g"><input type="radio" name="floor" value="2F" checked><span>2F · HIPHOP</span></label>
+      <label class="seg-s"><input type="radio" name="floor" value="3F"><span>3F · EDM</span></label>
+    </fieldset>
+    <label>${L('rq.nick')}<input name="nick" maxlength="20" autocomplete="nickname"></label>
+    <label>${L('rq.memo')}<input name="memo" maxlength="60" autocomplete="off"></label>
+    <div class="full rv-act"><button class="btn btn-hot btn-lg" type="submit">${L('rq.btn')}</button></div>
+    <p class="full muted small">${L('rq.note')}</p>
+  </form>
+</section>`;
   },
 
   'artists/': (lang) => `${pageHead(lang, 'artists')}
@@ -282,7 +305,7 @@ ${pageHead(lang, 'reserve')}
   },
 };
 
-const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t' };
+const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t' };
 
 function write(rel, html) {
   const file = join(ROOT, rel);
@@ -310,3 +333,111 @@ write('404.html', layout('ko', '', {
 }).replace(/<link rel="canonical"[^>]*>\n/, ''));
 
 console.log(`built ${LANGS.length * PAGES.length + 1} pages`);
+
+// 관리자 페이지 (한국어만, 검색 제외). 저장은 GitHub API로 data/*.json 을 직접 커밋한다.
+write('admin/index.html', `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0909">
+<title>관리자 · Groove & Spot</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="/assets/site.css?v=${VERSION}">
+<link rel="stylesheet" href="/assets/admin.css?v=${VERSION}">
+</head>
+<body class="adm" data-page="admin">
+<header class="hdr">
+  <a class="brand logo" href="/"><img class="logo-icon" src="/assets/logo-icon.png" width="181" height="150" alt="">${LOGO_WORD}</a>
+  <span class="adm-badge">ADMIN</span>
+  <span class="adm-user" id="adm-user"></span>
+</header>
+<nav class="adm-tabs wrap" role="tablist">
+  <button role="tab" data-tab="requests" aria-selected="true">🎵 신청곡 <b id="rq-count"></b></button>
+  <button role="tab" data-tab="timetable" aria-selected="false">🎧 DJ 타임테이블</button>
+  <button role="tab" data-tab="events" aria-selected="false">📅 이벤트</button>
+</nav>
+<main id="main" class="wrap adm-main">
+
+<section data-panel="requests">
+  <div class="adm-bar">
+    <div class="tabs" id="rq-filter"><button data-f="all" aria-selected="true">전체</button><button data-f="2F" class="tab-g" aria-selected="false">2F</button><button data-f="3F" class="tab-s" aria-selected="false">3F</button></div>
+    <label class="adm-check"><input type="checkbox" id="rq-hide"> 틀은 곡 숨기기</label>
+    <label class="adm-check"><input type="checkbox" id="rq-sound"> 새 신청곡 알림음</label>
+  </div>
+  <p class="muted small" id="rq-status">불러오는 중…</p>
+  <ol class="rq-list" id="rq-list"></ol>
+  <details class="adm-help"><summary>DJ 폰으로 실시간 알림 받기</summary>
+    <p>휴대폰에 <b>ntfy</b> 앱(무료)을 설치하고 토픽 <code>${REQ_TOPIC}</code> 을 구독하면, 신청곡이 들어올 때마다 푸시 알림이 와요. 브라우저에서는 <a href="https://ntfy.sh/${REQ_TOPIC}" target="_blank" rel="noopener">ntfy.sh/${REQ_TOPIC}</a> 에서도 볼 수 있어요.</p>
+    <p>손님용 신청곡 페이지: <a href="/request/" target="_blank">groovenspot.github.io/request/</a> (매장 QR을 이 주소로 만들면 돼요)</p>
+  </details>
+</section>
+
+<section data-panel="timetable" hidden>
+  <div class="adm-login" data-need-login></div>
+  <div data-when-login hidden>
+    <div class="adm-bar">
+      <label>날짜 <input type="date" id="tt-date"></label>
+      <div class="tabs" id="tt-floor"><button data-f="2F" class="tab-g" aria-selected="true">2F · GROOVE</button><button data-f="3F" class="tab-s" aria-selected="false">3F · SPOT</button></div>
+    </div>
+    <p class="muted small">영업일 기준 날짜예요. 새벽 시간(00:00~07:00)도 전날 날짜에 넣으세요.</p>
+    <ul class="tt-edit" id="tt-rows"></ul>
+    <form class="adm-row" id="tt-add"><input name="t" type="time" required aria-label="시작 시간"><input name="n" placeholder="DJ 이름" maxlength="40" required aria-label="DJ 이름"><button class="btn" type="submit">추가</button></form>
+    <div class="adm-act"><button class="btn btn-hot" id="tt-save" type="button">이 날짜 저장</button><button class="btn" id="tt-clear" type="button">이 층 비우기</button></div>
+    <details class="adm-help" open><summary>주간 일정 한 번에 붙여넣기</summary>
+      <p class="muted small">예전 관리자와 같은 형식이에요. 층 줄, 날짜 줄, 시간+이름 줄 순서로 붙여넣으면 돼요. 10:00~11:59는 밤, 12:xx는 자정 이후로 읽어요.</p>
+      <textarea id="tt-bulk" rows="8" placeholder="3층 spot&#10;11월7일 금요일&#10;11:00 N&#10;12:00 EZZY&#10;01:20 DIA&#10;2층 groove&#10;11월7일 금요일&#10;10:00 GROOVE DJ&#10;12:00 ZINO"></textarea>
+      <div class="adm-act"><button class="btn" id="tt-parse" type="button">미리보기</button><button class="btn btn-hot" id="tt-bulk-save" type="button" disabled>불러온 일정 저장</button></div>
+      <div id="tt-preview"></div>
+    </details>
+  </div>
+</section>
+
+<section data-panel="events" hidden>
+  <div class="adm-login" data-need-login></div>
+  <div data-when-login hidden>
+    <form class="rv-form adm-ev" id="ev-form" novalidate>
+      <input type="hidden" name="id">
+      <label>날짜<input name="date" type="date" required></label>
+      <label>이벤트 이름<input name="title" maxlength="60" required placeholder="SATURDAY GUEST NIGHT"></label>
+      <label>층<select name="floor"><option value="2F+3F">2F + 3F</option><option value="2F">2F · GROOVE</option><option value="3F">3F · SPOT</option></select></label>
+      <label>오픈 시간<input name="open" type="time"></label>
+      <label>장르<input name="genre" maxlength="40" placeholder="Hip-hop / R&amp;B"></label>
+      <label>입장 안내<input name="entry" maxlength="80" placeholder="입장료 20,000원 (1드링크 포함)"></label>
+      <label>2F 라인업 (쉼표로 구분)<input name="l2" placeholder="ZINO, ROAD"></label>
+      <label>3F 라인업 (쉼표로 구분)<input name="l3" placeholder="DIA, ZET"></label>
+      <label class="full">소개 (선택)<textarea name="desc" rows="2" maxlength="200"></textarea></label>
+      <label class="full">플라이어 이미지 (선택, 세로 4:5 권장)<input name="flyerFile" type="file" accept="image/*"></label>
+      <div class="full adm-flyer" id="ev-flyer"></div>
+      <div class="full adm-act"><button class="btn btn-hot" type="submit" id="ev-save">이벤트 저장</button><button class="btn" type="button" id="ev-reset">새로 작성</button></div>
+    </form>
+    <h2 class="sec-h adm-h">등록된 이벤트</h2>
+    <ul class="ev-admin" id="ev-list"></ul>
+  </div>
+</section>
+
+<template id="login-tpl">
+  <div class="panel">
+    <h2 class="sec-h">관리자 로그인</h2>
+    <p>일정을 저장하려면 GitHub 관리자 키가 필요해요. 한 번 넣으면 이 기기에 기억돼요.</p>
+    <ol class="small muted">
+      <li><a href="https://github.com/settings/tokens/new?scopes=public_repo&amp;description=Groove%20%26%20Spot%20admin" target="_blank" rel="noopener">GitHub 키 만들기</a>를 눌러 groovenspot 계정으로 로그인</li>
+      <li>Expiration을 고르고 맨 아래 <b>Generate token</b> → 나온 키(ghp_…) 복사</li>
+      <li>아래에 붙여넣기</li>
+    </ol>
+    <form class="adm-row" data-login><input type="password" name="token" placeholder="ghp_…" autocomplete="off" required aria-label="GitHub 키"><button class="btn btn-hot" type="submit">로그인</button></form>
+  </div>
+</template>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>window.GSA=${JSON.stringify({ topic: REQ_TOPIC, owner: 'groovenspot', repo: 'groovenspot.github.io', branch: 'main' })};</script>
+<script src="/assets/admin.js?v=${VERSION}" defer></script>
+</body>
+</html>
+`);

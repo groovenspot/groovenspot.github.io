@@ -75,7 +75,7 @@
   var cache = {};
   function load(name) {
     if (!cache[name]) {
-      cache[name] = fetch('/data/' + name + '.json', { cache: 'no-cache' })
+      cache[name] = fetch('/data/' + name + '.json?v=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' })
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
         .catch(function () { return null; });
     }
@@ -298,6 +298,33 @@
       $$('[data-tab]').forEach(function (b) { b.addEventListener('click', function () { render(b.dataset.tab); }); });
       var q = new URLSearchParams(location.search).get('floor');
       render(q === '3F' ? '3F' : '2F');
+    });
+  }
+
+  /* ---------- 신청곡 (ntfy 토픽으로 전송 → 관리자 페이지·DJ 폰에서 확인) ---------- */
+  var rq = $('#rq-form');
+  if (rq) {
+    var qf0 = new URLSearchParams(location.search).get('floor');
+    if (qf0 === '3F') rq.querySelector('input[name=floor][value="3F"]').checked = true;
+    var lastNick = store('gs_nick'); if (lastNick) rq.nick.value = lastNick;
+    rq.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var song = rq.song.value.trim();
+      if (!song) { rq.song.setAttribute('aria-invalid', 'true'); toast(T.rqNeed); rq.song.focus(); return; }
+      rq.song.setAttribute('aria-invalid', 'false');
+      var wait = 60 - Math.floor((Date.now() - (+store('gs_rq_last') || 0)) / 1000);
+      if (wait > 0) { toast(fmt(T.rqWait, { s: wait })); return; }
+      var floor = rq.querySelector('input[name=floor]:checked').value;
+      var clip = function (s, n) { return String(s).replace(/\s+/g, ' ').trim().slice(0, n); };
+      var msg = clip(song, 80) + (rq.artist.value.trim() ? ' — ' + clip(rq.artist.value, 60) : '');
+      if (rq.nick.value.trim()) { msg += '\n👤 ' + clip(rq.nick.value, 20); store('gs_nick', clip(rq.nick.value, 20)); }
+      if (rq.memo.value.trim()) msg += '\n💬 ' + clip(rq.memo.value, 60);
+      var btn = rq.querySelector('button[type=submit]'); btn.disabled = true;
+      fetch('https://ntfy.sh/', { method: 'POST', body: JSON.stringify({ topic: GS.topic, title: floor + ' 신청곡', message: msg, tags: [floor, 'notes'] }) })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); })
+        .then(function () { store('gs_rq_last', String(Date.now())); toast(T.rqSent); rq.song.value = ''; rq.artist.value = ''; rq.memo.value = ''; })
+        .catch(function () { toast(T.rqFail); })
+        .then(function () { btn.disabled = false; });
     });
   }
 
