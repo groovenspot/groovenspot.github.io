@@ -55,7 +55,7 @@ ${alternates}
 <link rel="apple-touch-icon" href="/assets/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112..125,500..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/assets/site.css?v=${VERSION}">
 </head>
@@ -118,6 +118,7 @@ ${body}
 const floorCard = (lang, f) => {
   const L = (k) => t(lang, k);
   return `<article class="floor floor-${f === '2F' ? 'g' : 's'}">
+      <img class="floor-bg" src="/assets/img/floor-${f.toLowerCase()}.webp" width="1344" height="752" alt="" loading="lazy" decoding="async">
       <p class="floor-no">${f}</p>
       <h3 class="floor-name">${L(`floor.${f}.name`)}</h3>
       <p class="floor-genre">${L(`floor.${f}.genre`)}</p>
@@ -136,7 +137,10 @@ const BODIES = {
   '': (lang) => {
     const L = (k) => t(lang, k);
     return `<section class="hero">
-  <div class="hero-eq" aria-hidden="true"><div class="eq eq-g">${bars(14)}</div><div class="eq eq-s">${bars(14)}</div></div>
+  <picture class="hero-bg" aria-hidden="true">
+    <source media="(max-width: 699px)" srcset="/assets/img/hero-tall.webp" width="752" height="1344">
+    <img src="/assets/img/hero-wide.webp" width="1344" height="752" alt="" fetchpriority="high">
+  </picture>
   <div class="hero-in wrap">
     <p class="kicker">${L('hero.kicker')}</p>
     <h1 class="hero-logo"><img src="/assets/logo.png" width="564" height="229" alt="Groove &amp; Spot"></h1>
@@ -197,7 +201,7 @@ const BODIES = {
     const am = (keys) => `<ul class="tags">${keys.map((k) => `<li>${L(`am.${k}`)}</li>`).join('')}</ul>`;
     const block = (f, keys) => `<section class="fbig fbig-${f === '2F' ? 'g' : 's'}" id="${f.toLowerCase()}">
   <div class="wrap fbig-in">
-    <div class="fbig-head"><p class="floor-no">${f}</p><h2 class="fbig-name">${L(`floor.${f}.name`)}</h2><p class="floor-genre">${L(`floor.${f}.genre`)}</p></div>
+    <div class="fbig-head"><img class="fbig-img" src="/assets/img/floor-${f.toLowerCase()}.webp" width="1344" height="752" alt="" loading="lazy" decoding="async"><p class="floor-no">${f}</p><h2 class="fbig-name">${L(`floor.${f}.name`)}</h2><p class="floor-genre">${L(`floor.${f}.genre`)}</p></div>
     <div class="fbig-body"><p class="lede">${L(`floor.${f}.long`)}</p>${am(keys)}
       <div class="tt-today" data-floor-tt="${f}"></div>
     </div>
@@ -215,7 +219,8 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
   'reserve/': (lang) => {
     const L = (k) => t(lang, k);
     const opt = (v, k) => `<option value="${v}">${k}</option>`;
-    return `${pageHead(lang, 'reserve')}
+    return `<div class="banner wrap"><img src="/assets/img/tables.webp" width="1344" height="752" alt="" fetchpriority="high"></div>
+${pageHead(lang, 'reserve')}
 <section class="wrap sec rv">
   <form class="rv-form" id="rv-form" novalidate>
     <label>${L('rv.name')}<input name="name" autocomplete="name" placeholder="${esc(L('rv.p.name'))}" required></label>
