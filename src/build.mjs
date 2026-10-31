@@ -15,7 +15,7 @@ const SOUNDCLOUD = 'https://on.soundcloud.com/IWtEmqOHfTecbn1cBI';
 const YOUTUBE = 'https://www.youtube.com/@GROOVEBUSAN';
 // 신청곡 전달용 ntfy 토픽 (assets/admin.js 의 TOPIC 과 같아야 함)
 const REQ_TOPIC = 'groovenspot-req-6witbq5hriea';
-// Google Analytics 4 측정 ID (G-XXXXXXXXXX). 비워 두면 통계 코드를 넣지 않는다. 관리자·/floor 에는 넣지 않음.
+// Google Analytics 4 측정 ID (G-XXXXXXXXXX). 비워 두면 통계 코드를 넣지 않는다. 관리자 페이지에는 넣지 않음.
 const GA_ID = 'G-G4Y93LP9PP';
 const GA_TAG = GA_ID ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','${GA_ID}');}</script>` : '';
@@ -111,7 +111,7 @@ ${body}
       <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a></p>
     </div>
   </div>
-  <p class="ftr-small muted"><a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="/floor/">${L('ft.floor')}</a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
+  <p class="ftr-small muted"><a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
 </footer>
 <nav class="dock" aria-label="Quick actions">
   <a href="${href(lang, 'events/')}">${L('cta.tonight')}</a>
@@ -204,7 +204,7 @@ const BODIES = {
 </section>
 <section class="wrap sec" aria-labelledby="sets-h">
   <h2 class="sec-h" id="sets-h">${L('sec.sets')}</h2>
-  <div class="videos" data-videos data-limit="3"></div>
+  <div class="videos" data-videos data-limit="6"></div>
   <a class="sc yt" href="${YOUTUBE}" rel="noopener"><span class="yt-play" aria-hidden="true"></span><span>${L('more.yt')} →</span></a>
   <a class="sc" href="${SOUNDCLOUD}" rel="noopener"><span class="sc-wave" aria-hidden="true">${bars(28)}</span><span>${L('more.sc')} →</span></a>
 </section>
@@ -397,7 +397,7 @@ write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 ${smPages.flatMap((p) => LANGS.map((l) => `  <url><loc>${SITE}${href(l, p)}</loc><lastmod>${today}</lastmod>${LANGS.map((a) => `<xhtml:link rel="alternate" hreflang="${HTML_LANG[a]}" href="${SITE}${href(a, p)}"/>`).join('')}</url>`)).join('\n')}
 </urlset>
 `);
-write('robots.txt', `User-agent: *\nDisallow: /admin/\nDisallow: /floor/\nSitemap: ${SITE}/sitemap.xml\n`);
+write('robots.txt', `User-agent: *\nDisallow: /admin/\nSitemap: ${SITE}/sitemap.xml\n`);
 
 console.log(`built ${LANGS.length * PAGES.length + 1} pages`);
 

@@ -5,11 +5,8 @@
   var T = GS.t;
   var LANG = GS.lang;
 
-  // 예전 사이트의 직원 동기화 링크(#s=…, ?syncbase=…)는 /floor/ 로 넘긴다
-  if (document.body.dataset.page === 'home' && (/^#s=/.test(location.hash) || /syncbase=/.test(location.search))) {
-    location.replace('/floor/' + location.search + location.hash);
-    return;
-  }
+  // 예전 매장 앱의 직원 동기화 링크(#s=…, ?syncbase=…)는 정리된 주소로 바꿔 둔다
+  if (/^#s=/.test(location.hash) || /syncbase=/.test(location.search)) history.replaceState(null, '', location.pathname);
 
   function $(sel, el) { return (el || document).querySelector(sel); }
   function $$(sel, el) { return Array.prototype.slice.call((el || document).querySelectorAll(sel)); }
@@ -264,6 +261,15 @@
         if (navigator.share) { navigator.share({ title: e.title, url: location.href }).catch(function () {}); return; }
         copy(location.href).then(function () { toast(T.linkCopied); });
       });
+      load('videos').then(function (vids) {
+        var names = {};
+        if (e.lineup) Object.keys(e.lineup).forEach(function (f) { (e.lineup[f] || []).forEach(function (n) { names[djKey(n)] = 1; }); });
+        var mine = (Array.isArray(vids) ? vids : []).filter(function (v) { return v.dj && names[djKey(v.dj)]; }).slice(0, 6);
+        if (!mine.length) return;
+        var box = document.createElement('div'); box.className = 'evd-sec';
+        box.innerHTML = '<h2 class="sec-h">' + esc(T.setsOf) + '</h2><div class="videos">' + mine.map(vidCard).join('') + '</div>';
+        var ph = $('[data-evd-photos]', detail); ph.parentNode.insertBefore(box, ph);
+      });
       load('gallery').then(function (raw) {
         var list = [];
         albumsOf(raw).filter(function (a) { return a.event === e.id || (!a.event && a.date === e.date); }).forEach(function (a) { list = list.concat(flat(a)); });
@@ -377,16 +383,21 @@
     });
   }
 
-  /* ---------- 라이브셋 영상 ---------- */
+  /* ---------- 라이브셋 영상 (data/videos.json, 유튜브 GROOVE SESSIONS) ---------- */
+  function vidCard(v) {
+    var vid = esc(v.youtube);
+    var head = v.dj ? esc(v.dj) + (v.session ? ' · GROOVE SESSIONS ' + String(v.session).padStart(3, '0') : '') : esc(pick(v.title));
+    var sub = v.dj ? esc(pick(v.title)) : '';
+    return '<a class="vid" href="https://www.youtube.com/watch?v=' + vid + '" rel="noopener"><div class="vid-thumb" style="background-image:url(\'https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg\')">' +
+      (v.duration ? '<span class="vid-dur">' + esc(v.duration) + '</span>' : '') + '</div><p><b>' + head + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</p></a>';
+  }
+  function djKey(n) { return String(n || '').toUpperCase().replace(/^DJ\s+/, '').replace(/[^A-Z0-9가-힣]/g, ''); }
   var vidEl = $('[data-videos]');
   if (vidEl) {
     load('videos').then(function (list) {
       list = (Array.isArray(list) ? list : []).filter(function (v) { return v && v.youtube; });
       var lim = +vidEl.dataset.limit; if (lim) list = list.slice(0, lim);
-      vidEl.innerHTML = list.map(function (v) {
-        var vid = esc(v.youtube);
-        return '<a class="vid" href="https://www.youtube.com/watch?v=' + vid + '" rel="noopener"><div class="vid-thumb" style="background-image:url(\'https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg\')"></div><p>' + esc(pick(v.title)) + '</p></a>';
-      }).join('');
+      vidEl.innerHTML = list.map(vidCard).join('');
     });
   }
 

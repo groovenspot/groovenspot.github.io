@@ -7,6 +7,7 @@ export const HTML_LANG = { ko: 'ko', en: 'en', ja: 'ja', zh: 'zh-CN' };
 
 export const T = {
   ko: {
+    'rt.setsOf': '이 날 DJ의 라이브셋',
     'nav.open': '메뉴 열기', 'nav.close': '메뉴 닫기', 'nav.home': '홈',
     'rq.searchPh': '곡 제목이나 가수를 입력하면 검색돼요', 'rt.rqNoResult': '검색 결과가 없어요. 직접 입력해서 보내도 돼요.', 'rt.rqSearching': '검색 중…',
     'nav.gallery': '사진첩', 'page.gallery.t': '사진첩', 'page.gallery.s': 'Groove & Spot의 밤들. 파티 사진을 날짜별로 모았어요.', 'sec.photos': '최근 사진', 'more.gallery': '사진첩 전체 보기', 'rt.noPhotos': '아직 올라온 사진이 없어요.', 'rt.photoCount': '{n}장', 'rt.photosOf': '이 날의 사진', 'rt.close': '닫기', 'rt.prev': '이전 사진', 'rt.next': '다음 사진',
@@ -65,6 +66,7 @@ export const T = {
     '404.t': '페이지를 찾을 수 없어요', '404.home': '홈으로',
   },
   en: {
+    'rt.setsOf': 'Live sets by tonight\'s DJs',
     'nav.open': 'Open menu', 'nav.close': 'Close menu', 'nav.home': 'Home',
     'rq.searchPh': 'Type a title or artist to search', 'rt.rqNoResult': 'No matches. You can still send what you typed.', 'rt.rqSearching': 'Searching…',
     'nav.gallery': 'Gallery', 'page.gallery.t': 'Gallery', 'page.gallery.s': 'Nights at Groove & Spot, party photos by date.', 'sec.photos': 'Latest photos', 'more.gallery': 'Open the gallery', 'rt.noPhotos': 'No photos yet.', 'rt.photoCount': '{n} photos', 'rt.photosOf': 'Photos from this night', 'rt.close': 'Close', 'rt.prev': 'Previous photo', 'rt.next': 'Next photo',
@@ -120,6 +122,7 @@ export const T = {
     '404.t': 'Page not found', '404.home': 'Back home',
   },
   ja: {
+    'rt.setsOf': 'この日のDJのライブセット',
     'nav.open': 'メニューを開く', 'nav.close': 'メニューを閉じる', 'nav.home': 'ホーム',
     'rq.searchPh': '曲名やアーティスト名を入力すると検索できます', 'rt.rqNoResult': '見つかりませんでした。入力したまま送れます。', 'rt.rqSearching': '検索中…',
     'nav.gallery': 'ギャラリー', 'page.gallery.t': 'ギャラリー', 'page.gallery.s': 'Groove & Spotの夜。パーティー写真を日付ごとにまとめました。', 'sec.photos': '最新の写真', 'more.gallery': 'ギャラリーを見る', 'rt.noPhotos': 'まだ写真はありません。', 'rt.photoCount': '{n}枚', 'rt.photosOf': 'この日の写真', 'rt.close': '閉じる', 'rt.prev': '前の写真', 'rt.next': '次の写真',
@@ -175,6 +178,7 @@ export const T = {
     '404.t': 'ページが見つかりません', '404.home': 'ホームへ',
   },
   zh: {
+    'rt.setsOf': '当晚DJ的现场录像',
     'nav.open': '打开菜单', 'nav.close': '关闭菜单', 'nav.home': '首页',
     'rq.searchPh': '输入歌名或歌手即可搜索', 'rt.rqNoResult': '没有找到。也可以直接发送输入的内容。', 'rt.rqSearching': '搜索中…',
     'nav.gallery': '相册', 'page.gallery.t': '相册', 'page.gallery.s': 'Groove & Spot的夜晚，按日期整理的派对照片。', 'sec.photos': '最新照片', 'more.gallery': '查看相册', 'rt.noPhotos': '还没有照片。', 'rt.photoCount': '{n}张', 'rt.photosOf': '当晚照片', 'rt.close': '关闭', 'rt.prev': '上一张', 'rt.next': '下一张',
