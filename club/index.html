@@ -182,7 +182,7 @@
   <div class="gate-box wide">
     <div class="gate-head">
       <h1><b>GROOVE</b> &amp; <i>SPOT</i><br>VIRTUAL CLUB</h1>
-      <p>내 캐릭터를 꾸미고 입장하세요. 🎧에서 DJ 공개 녹음을 골라 들을 수 있어요.</p>
+      <p>내 캐릭터를 꾸미고 입장하세요. 같은 시간에 들어온 손님과 함께 놀고 채팅할 수 있어요.</p>
     </div>
     <div class="creator">
       <canvas id="pv" aria-label="내 캐릭터 미리보기"></canvas>
@@ -196,7 +196,7 @@
       <button type="button" class="go" id="enter">🔊 입장하기</button>
       <button type="button" class="quiet" id="enter-quiet">소리 없이 둘러보기</button>
     </div>
-    <small>음악은 브라우저에서 바로 만든 데모 비트예요. 꾸민 캐릭터는 이 기기에만 저장돼요.</small>
+    <small>음악은 브라우저에서 바로 만든 데모 비트예요. 닉네임과 채팅은 지금 접속한 사람에게만 보이고 저장되지 않아요.</small>
   </div>
 </div>
 
@@ -309,12 +309,13 @@
   /* ---------------- BGM (공개 녹음 · 내 파일) ---------------- */
   // src가 비어 있는 곡은 '준비 중'으로 보여요. 파일을 올리면 여기 주소만 채우면 돼요.
   var TRACKS = [
-    { n: '로드', src: '/assets/bgm/01.m4a' }, { n: '무무', src: '/assets/bgm/02.m4a' },
-    { n: '뮤트', src: '/assets/bgm/03.m4a' }, { n: '빌', src: '/assets/bgm/04.m4a' },
-    { n: '에이스', src: '/assets/bgm/05.m4a' }, { n: '엔', src: '/assets/bgm/06.m4a' },
-    { n: '우지', src: '/assets/bgm/07.m4a' }, { n: '이지', src: '/assets/bgm/08.m4a' },
-    { n: '쿠파', src: '/assets/bgm/09.m4a' }, { n: '타로', src: '/assets/bgm/10.m4a' }
+    { n: '로드', a: '/_blob/939d7a7c523f27e93fbb51de911664a5', s: '/assets/bgm/01.m4a' }, { n: '무무', a: '/_blob/e6ab7cf7552c987bbeaf4e0ca01e0e39', s: '/assets/bgm/02.m4a' },
+    { n: '뮤트', a: '/_blob/7f16927eea0f1563b3c846185a257e91', s: '/assets/bgm/03.m4a' }, { n: '빌', a: '/_blob/161a3186a53758cc4bc67fd62ccf7c5a', s: '/assets/bgm/04.m4a' },
+    { n: '에이스', a: '/_blob/13c04e015145d38cffd0deaeb898d7ba', s: '/assets/bgm/05.m4a' }, { n: '엔', a: '/_blob/9cbe3396d12e414b25cbf9988a95bff8', s: '/assets/bgm/06.m4a' },
+    { n: '우지', a: '/_blob/5546eeab24e331c4bb675a23a60ab92d', s: '/assets/bgm/07.m4a' }, { n: '이지', a: '/_blob/9612104f49ee02c4e65d3515e1d38cf7', s: '/assets/bgm/08.m4a' },
+    { n: '쿠파', a: '/_blob/d959950d28b20f2e6d764fee4637a855', s: '/assets/bgm/09.m4a' }, { n: '타로', a: '/_blob/d8cc0b530cd9d7e3c81da6e0b8514396', s: '/assets/bgm/10.m4a' }
   ];
+  TRACKS.forEach(function (tr) { tr.src = window.claude ? tr.a : tr.s; });
   var bgmEl = new Audio(), bgmOn = false, bgmIdx = -1, bgmName = '', bgmSub = '', bgmNode = null, bgmGain = null, analyser = null, freq = null, bassAvg = 0, bassHit = 0;
   bgmEl.preload = 'none'; bgmEl.crossOrigin = 'anonymous';
   function fmt(s) { if (!isFinite(s)) return '--:--'; s = Math.floor(s); var h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = s % 60; return (h ? h + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (x < 10 ? '0' : '') + x; }
@@ -1059,6 +1060,7 @@
   }
   function updateOnline() {
     var el = $('#online'); if (!room) { el.classList.remove('on'); return; }
+    if (room.connected && !room.connected()) { el.textContent = '👥 실시간 연결 중…'; el.classList.add('on'); return; }
     var c = { '2F': 0, '3F': 0 }; Object.keys(peers).forEach(function (id) { c[peers[id].f]++; }); if (entered) c[active]++;
     el.textContent = '👥 ' + (c['2F'] + c['3F']) + '명 접속 중 · 2F ' + c['2F'] + ' · 3F ' + c['3F']; el.classList.add('on');
   }
@@ -1081,11 +1083,82 @@
       floors[f].sparks.emit.push({ p: tb[i], until: clock() + 6 });
       var en = peers[m.peer]; if (f === active) toast('🍾 ' + ((en && en.nick) || '손님') + ' 바틀!', '#ffd27a');
     }, function () {});
-    room.onConnection(function () { updateOnline(); }, function () {});
+    var wasConn = false;
+    room.onConnection(function (c) {
+      updateOnline();
+      if (c && !wasConn && room.isPublic) sys('실시간 연결됐어요. 누구나 보는 공개 채팅이니 전화번호 같은 개인정보는 쓰지 마세요.');
+      else if (!c && wasConn) sys('연결이 끊겼어요. 다시 연결하는 중…');
+      wasConn = c;
+    }, function () {});
     if (entered) room.presence({ l: lookArr(me.look), n: myNick() }).catch(function () {});
     updateOnline();
   }
+  // 사이트(그루브.site)에서는 claude.ai room 대신 공개 MQTT 중계 서버로 실시간 연결해요.
+  // claude.ai room과 같은 모양(presence/emit/on/onPeers/onConnection)으로 감싸서 나머지 코드는 그대로 써요.
+  var BROKERS = ['wss://broker.emqx.io:8084/mqtt', 'wss://broker.hivemq.com:8884/mqtt'];
+  var dbgBroker = ''; try { dbgBroker = new URLSearchParams(location.search).get('broker') || ''; } catch (err) {}
+  if (/^ws:\/\/(127\.0\.0\.1|localhost):\d+(\/[\w\/-]*)?$/.test(dbgBroker)) BROKERS = [dbgBroker]; // 로컬 시험용
+  function mqttRoom() {
+    var BASE = 'groovenspot-busan/vclub/v1/', me = 'p' + Math.random().toString(36).slice(2, 12);
+    var mineP = {}, peerMap = {}, peerObjs = {}, peersCbs = [], topicCbs = {}, connCbs = [], isConn = false, client = null, bi = 0, sendT = 0, sendTimer = null, replyTimer = null;
+    function obj(id) { var p = peerMap[id]; if (!peerObjs[id] || peerObjs[id].presence !== p.presence) peerObjs[id] = { peer: id, by: null, isMe: false, sameTab: false, kind: 'viewer', guest: false, presence: p.presence, updatedAt: p.t }; return peerObjs[id]; }
+    function snap() { var a = [{ peer: me, by: null, isMe: true, sameTab: true, kind: 'viewer', guest: false, presence: mineP, updatedAt: Date.now() }]; Object.keys(peerMap).forEach(function (id) { a.push(obj(id)); }); return a; }
+    function fire(joined, left) { var s = snap(); peersCbs.forEach(function (f) { try { f({ peers: s, joined: joined || [], left: left || [], updated: [] }); } catch (err) {} }); }
+    function setConn(v) { if (isConn === v) return; isConn = v; connCbs.forEach(function (f) { try { f(v); } catch (err) {} }); }
+    function pub(sub, payload) { if (client && isConn) try { client.publish(BASE + sub, JSON.stringify(payload), { qos: 0 }); } catch (err) {} }
+    function sendP() { sendT = Date.now(); sendTimer = null; pub('p', { id: me, s: mineP }); }
+    function queueP(delay) { if (sendTimer) return; var wait = Math.max(delay || 0, 110 - (Date.now() - sendT)); sendTimer = setTimeout(sendP, Math.max(0, wait)); }
+    function connect() {
+      var url = BROKERS[bi % BROKERS.length];
+      client = window.mqtt.connect(url, { clientId: 'gs_' + me + '_' + bi, clean: true, keepalive: 30, reconnectPeriod: 4000, connectTimeout: 8000, protocolVersion: 4, will: { topic: BASE + 'bye', payload: JSON.stringify({ id: me }), qos: 0, retain: false } });
+      var ok = false, failT = setTimeout(function () { if (!ok && BROKERS.length > 1) { client.end(true); bi++; connect(); } }, 9000);
+      client.on('connect', function () { ok = true; clearTimeout(failT); setConn(true); client.subscribe(BASE + '#', { qos: 0 }); pub('hi', { id: me }); sendP(); });
+      client.on('close', function () { setConn(false); });
+      client.on('offline', function () { setConn(false); });
+      client.on('error', function () {});
+      client.on('message', function (topic, buf) {
+        if (!buf || buf.length > 4096 || topic.indexOf(BASE) !== 0) return;
+        var d; try { d = JSON.parse(buf.toString()); } catch (err) { return; }
+        if (!d || typeof d.id !== 'string' || !/^p[a-z0-9]{4,16}$/.test(d.id) || d.id === me) return;
+        var sub = topic.slice(BASE.length);
+        if (sub === 'p') {
+          var s = d.s && typeof d.s === 'object' && !Array.isArray(d.s) ? d.s : {}, isNew = !peerMap[d.id];
+          if (isNew && Object.keys(peerMap).length >= 60) return;
+          peerMap[d.id] = { presence: s, t: Date.now() };
+          if (isNew) { fire([obj(d.id)]); queueP(150 + Math.random() * 400); } else fire();
+        } else if (sub === 'hi') { clearTimeout(replyTimer); replyTimer = setTimeout(sendP, 100 + Math.random() * 500); }
+        else if (sub === 'bye') { if (peerMap[d.id]) { var gone = obj(d.id); delete peerMap[d.id]; delete peerObjs[d.id]; fire([], [gone]); } }
+        else if (topicCbs[sub]) topicCbs[sub].forEach(function (f) { try { f({ topic: sub, data: d.d, peer: d.id, by: null, isMe: false, sameTab: false, kind: 'viewer', guest: false }); } catch (err) {} });
+      });
+    }
+    // 4초마다 내 상태 다시 알리기, 12초 넘게 소식 없는 손님은 정리
+    setInterval(function () {
+      if (isConn && mineP.f) sendP();
+      var now = Date.now(), left = [];
+      Object.keys(peerMap).forEach(function (id) { if (now - peerMap[id].t > 12000) { left.push(obj(id)); delete peerMap[id]; delete peerObjs[id]; } });
+      if (left.length) fire([], left);
+    }, 4000);
+    addEventListener('pagehide', function () { pub('bye', { id: me }); });
+    connect();
+    return {
+      presence: function (patch) { Object.keys(patch).forEach(function (k) { if (patch[k] === null) delete mineP[k]; else mineP[k] = patch[k]; }); mineP = Object.assign({}, mineP); queueP(0); return Promise.resolve(); },
+      emit: function (topic, data) { var s = JSON.stringify(data || null); if (s.length > 3500) return Promise.reject({ code: 'invalid_argument' }); pub(topic, { id: me, d: data }); return Promise.resolve(); },
+      on: function (topic, f) { (topicCbs[topic] = topicCbs[topic] || []).push(f); return function () { topicCbs[topic] = topicCbs[topic].filter(function (x) { return x !== f; }); }; },
+      onPeers: function (f) { peersCbs.push(f); setTimeout(function () { f({ peers: snap(), joined: snap(), left: [], updated: [] }); }, 0); return function () {}; },
+      peers: snap,
+      connected: function () { return isConn; },
+      onConnection: function (f) { connCbs.push(f); setTimeout(function () { f(isConn); }, 0); return function () {}; },
+      isPublic: true
+    };
+  }
+  function loadMqttRoom() {
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.1/mqtt.min.js'; s.async = true;
+    s.onload = function () { if (window.mqtt && window.mqtt.connect) initRoom(mqttRoom()); };
+    document.head.appendChild(s);
+  }
   if (window.claude && typeof window.claude.use === 'function') window.claude.use('room').then(function (r) { if (r) initRoom(r); }).catch(function () {});
+  else loadMqttRoom();
 
   var lastPres = '', presT = 0;
   function sendPresence(now, walking) {
