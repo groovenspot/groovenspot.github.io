@@ -57,3 +57,16 @@
 .adm-row .btn, .tt-edit .btn { flex: 0 0 auto; white-space: nowrap; }
 @media (max-width: 420px) { .tt-edit input[type=time], .adm-row input[type=time] { width: 116px; } }
 .tt-edit, .rq-list, .ev-admin { grid-template-columns: minmax(0, 1fr); }
+
+.al-prev { display: flex; flex-wrap: wrap; gap: 6px; }
+.al-prev:empty { display: none; }
+.al-prev img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; }
+.al-card { display: grid; gap: 10px; margin-bottom: 10px; padding: 14px 16px; }
+.al-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.al-top .adm-act { margin: 0 0 0 auto; }
+.al-top .btn { min-height: 38px; padding: 6px 12px; font-size: 14px; }
+.al-thumbs { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+.al-t { position: relative; aspect-ratio: 1; }
+.al-t img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: block; }
+.al-t button { position: absolute; top: 4px; right: 4px; min-width: 28px; height: 28px; border-radius: 999px; border: 0; background: rgba(0, 0, 0, .7); color: #fff; font: 700 12px/1 var(--body); cursor: pointer; padding: 0 6px; }
+.adm-ev select:disabled, .adm-ev input:disabled { opacity: .6; }

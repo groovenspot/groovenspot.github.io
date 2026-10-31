@@ -12,8 +12,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="/assets/site.css?v=mvvrprtq">
-<link rel="stylesheet" href="/assets/admin.css?v=mvvrprtq">
+<link rel="stylesheet" href="/assets/site.css?v=mvvru23x">
+<link rel="stylesheet" href="/assets/admin.css?v=mvvru23x">
 </head>
 <body class="adm" data-page="admin">
 <header class="hdr">
@@ -25,6 +25,7 @@
   <button role="tab" data-tab="requests" aria-selected="true">🎵 신청곡 <b id="rq-count"></b></button>
   <button role="tab" data-tab="timetable" aria-selected="false">🎧 DJ 타임테이블</button>
   <button role="tab" data-tab="events" aria-selected="false">📅 이벤트</button>
+  <button role="tab" data-tab="gallery" aria-selected="false">📸 사진첩</button>
 </nav>
 <main id="main" class="wrap adm-main">
 
@@ -85,6 +86,24 @@
   </div>
 </section>
 
+<section data-panel="gallery" hidden>
+  <div class="adm-login" data-need-login></div>
+  <div data-when-login hidden>
+    <form class="rv-form adm-ev" id="al-form" novalidate>
+      <label>앨범<select id="al-pick"><option value="">+ 새 앨범 만들기</option></select></label>
+      <label>날짜<input id="al-date" type="date" required></label>
+      <label>앨범 이름<input id="al-title" maxlength="60" placeholder="HALLOWEEN NIGHT" required></label>
+      <label>연결할 이벤트 (선택)<select id="al-event"><option value="">연결 안 함</option></select></label>
+      <label class="full">사진 고르기 (여러 장 가능)<input id="al-files" type="file" accept="image/*" multiple></label>
+      <p class="full muted small">사진은 이 기기에서 긴 변 1600px로 줄여서 올려요. 한 번에 30장 정도까지 권장해요. 원본은 올라가지 않아요.</p>
+      <div class="full al-prev" id="al-prev"></div>
+      <div class="full adm-act"><button class="btn btn-hot" type="submit" id="al-save">사진 올리기</button><span class="muted small" id="al-progress"></span></div>
+    </form>
+    <h2 class="sec-h adm-h">앨범</h2>
+    <div id="al-list"></div>
+  </div>
+</section>
+
 <template id="login-tpl">
   <div class="panel">
     <h2 class="sec-h">관리자 로그인</h2>
@@ -100,6 +119,6 @@
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>window.GSA={"topic":"groovenspot-req-6witbq5hriea","owner":"groovenspot","repo":"groovenspot.github.io","branch":"main"};</script>
-<script src="/assets/admin.js?v=mvvrprtq" defer></script>
+<script src="/assets/admin.js?v=mvvru23x" defer></script>
 </body>
 </html>
