@@ -12,6 +12,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://groovenspot.github.io';
 const INSTAGRAM = 'https://www.instagram.com/groovenspot/';
 const SOUNDCLOUD = 'https://on.soundcloud.com/IWtEmqOHfTecbn1cBI';
+const YOUTUBE = 'https://www.youtube.com/@GROOVEBUSAN';
+const LOGO_WORD = '<img src="/assets/logo-word.png" width="564" height="79" alt="Groove &amp; Spot">';
+const fig = (src, alt, cls = '') => `<figure class="shot ${cls}"><a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="${esc(alt)}" width="1080" height="1920" loading="lazy" decoding="async"></a><figcaption>${esc(alt)}</figcaption></figure>`;
 const PHONE = '0507-1301-5970';
 const ADDR_KO = '부산 부산진구 중앙대로680번가길 52';
 const VERSION = Date.now().toString(36);
@@ -47,7 +50,8 @@ ${alternates}
 <meta property="og:url" content="${SITE}${href(lang, page)}">
 <meta property="og:image" content="${SITE}/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/png" href="/assets/icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/icon.png">
 <link rel="apple-touch-icon" href="/assets/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -58,7 +62,7 @@ ${alternates}
 <body data-page="${page.replace(/\/$/, '') || 'home'}">
 <a class="skip" href="#main">Skip to content</a>
 <header class="hdr">
-  <a class="brand" href="${href(lang, '')}" aria-label="Groove & Spot home"><span class="b-g">GROOVE</span><span class="b-amp">&amp;</span><span class="b-s">SPOT</span></a>
+  <a class="brand logo" href="${href(lang, '')}"><img class="logo-icon" src="/assets/logo-icon.png" width="181" height="150" alt="">${LOGO_WORD}</a>
   <nav class="nav" aria-label="Main">
     ${nav.map(([p, k]) => `<a href="${href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n    ')}
   </nav>
@@ -76,7 +80,7 @@ ${body}
 <footer class="ftr">
   <div class="ftr-grid">
     <div>
-      <a class="brand brand-lg" href="${href(lang, '')}"><span class="b-g">GROOVE</span><span class="b-amp">&amp;</span><span class="b-s">SPOT</span></a>
+      <a class="brand logo logo-lg" href="${href(lang, '')}"><img class="logo-icon" src="/assets/logo-icon.png" width="181" height="150" alt="">${LOGO_WORD}</a>
       <p class="muted">${L('if.addr')}<br>${L('if.near')}</p>
     </div>
     <div>
@@ -85,7 +89,7 @@ ${body}
     </div>
     <div>
       <h2 class="ftr-h">${L('sec.contact')}</h2>
-      <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a></p>
+      <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a></p>
     </div>
   </div>
   <p class="ftr-small muted"><a href="/floor/">${L('ft.floor')}</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
@@ -135,7 +139,7 @@ const BODIES = {
   <div class="hero-eq" aria-hidden="true"><div class="eq eq-g">${bars(14)}</div><div class="eq eq-s">${bars(14)}</div></div>
   <div class="hero-in wrap">
     <p class="kicker">${L('hero.kicker')}</p>
-    <h1 class="hero-title"><span class="b-g">GROOVE</span><span class="b-amp">&amp;</span><span class="b-s">SPOT</span></h1>
+    <h1 class="hero-logo"><img src="/assets/logo.png" width="564" height="229" alt="Groove &amp; Spot"></h1>
     <p class="hero-tag">${L('hero.tag')}</p>
     <p class="status" data-status></p>
     <div class="hero-act">
@@ -162,6 +166,7 @@ const BODIES = {
 <section class="wrap sec" aria-labelledby="sets-h">
   <h2 class="sec-h" id="sets-h">${L('sec.sets')}</h2>
   <div class="videos" data-videos data-limit="3"></div>
+  <a class="sc yt" href="${YOUTUBE}" rel="noopener"><span class="yt-play" aria-hidden="true"></span><span>${L('more.yt')} →</span></a>
   <a class="sc" href="${SOUNDCLOUD}" rel="noopener"><span class="sc-wave" aria-hidden="true">${bars(28)}</span><span>${L('more.sc')} →</span></a>
 </section>
 <section class="wrap sec" aria-labelledby="ig-h" data-ig-sec hidden>
@@ -200,7 +205,8 @@ const BODIES = {
 </section>`;
     return `${pageHead(lang, 'floors')}
 ${block('2F', ['dj', 'bar', 'h', 'stage', 'table', 'dart'])}
-${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}`;
+${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
+<section class="wrap sec" aria-labelledby="lay-h"><h2 class="sec-h" id="lay-h">${L('sec.layout')}</h2><div class="shots">${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></section>`;
   },
 
   'artists/': (lang) => `${pageHead(lang, 'artists')}
@@ -238,7 +244,8 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}`;
   <p class="muted small" data-svc="3F" hidden>${L('bt.svc3')}</p>
   <div data-menu></div>
   <p class="muted small">${L('mn.note')}</p>
-</section>`;
+</section>
+<section class="wrap sec" aria-labelledby="ck-h"><h2 class="sec-h" id="ck-h">${L('sec.cocktail')}</h2><div class="shots">${fig('/assets/img/cocktail-menu.webp', L('img.cocktail'))}${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></section>`;
   },
 
   'info/': (lang) => {
@@ -257,9 +264,10 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}`;
     <ul class="checks"><li>${L('pol.age')}</li><li>${L('pol.dress')}</li><li>${L('pol.respect')}</li></ul>
   </div>
   <div class="panel"><h2 class="sec-h">${L('sec.contact')}</h2>
-    <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a></p>
+    <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a></p>
   </div>
 </section>
+<section class="wrap sec"><div class="shots">${fig(`/assets/img/entry-policy-${lang === 'ko' ? 'ko' : 'en'}.webp`, L('img.policy'))}${fig('/assets/img/location-map.webp', L('img.map'))}</div></section>
 <section class="wrap sec" aria-labelledby="faq-h">
   <h2 class="sec-h" id="faq-h">${L('sec.faq')}</h2>
   <div class="faq">
