@@ -1,1 +1,2434 @@
-[]
+[
+ {
+  "id": "2026-05-14-instagram",
+  "date": "2026-05-14",
+  "title": "GROOVE & SPOT NIGHT",
+  "ig": [
+   "https://www.instagram.com/p/DYUc9dYk9td/",
+   "https://www.instagram.com/p/DYUcvyaE1PG/",
+   "https://www.instagram.com/p/DYUcfsIE1nR/",
+   "https://www.instagram.com/p/DYUcPa9E7XI/",
+   "https://www.instagram.com/p/DYUcGtpEwFQ/"
+  ],
+  "photos": [
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-01.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-02.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-03.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-04.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-05.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-06.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-07.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-08.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-09.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-10.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-11.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-12.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-13.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-14.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUc9dYk9td-15.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUc9dYk9td-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-01.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-02.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-03.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-04.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-05.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-06.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-07.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-08.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-09.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-10.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-11.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-12.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-13.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-14.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcvyaE1PG-15.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcvyaE1PG-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-01.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-02.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-03.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-04.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-05.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-06.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-07.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-08.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-09.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-10.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-11.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcfsIE1nR-12.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcfsIE1nR-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-01.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-02.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-03.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-04.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-05.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-06.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-07.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-08.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-09.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-10.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-11.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-12.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-13.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-14.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-15.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcPa9E7XI-16.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcPa9E7XI-16.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-01.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-02.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-03.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-04.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-05.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-06.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-07.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-08.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-09.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-10.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-05-14-instagram/DYUcGtpEwFQ-11.jpg",
+    "thumb": "/assets/gallery/2026-05-14-instagram/t/DYUcGtpEwFQ-11.jpg",
+    "w": 1080,
+    "h": 1080
+   }
+  ]
+ },
+ {
+  "id": "2026-04-11-instagram",
+  "date": "2026-04-11",
+  "title": "GROOVE & SPOT NIGHT",
+  "ig": [
+   "https://www.instagram.com/p/DW_W-aXk9i6/",
+   "https://www.instagram.com/p/DW_Wu-Uk_As/",
+   "https://www.instagram.com/p/DW_WWa0E51p/",
+   "https://www.instagram.com/p/DW_WCzikxk8/",
+   "https://www.instagram.com/p/DW_V3jPE9SC/"
+  ],
+  "photos": [
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_W-aXk9i6-01.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_W-aXk9i6-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_W-aXk9i6-02.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_W-aXk9i6-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_W-aXk9i6-03.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_W-aXk9i6-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_W-aXk9i6-04.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_W-aXk9i6-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_W-aXk9i6-05.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_W-aXk9i6-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_W-aXk9i6-06.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_W-aXk9i6-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-01.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-02.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-03.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-04.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-05.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-06.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-07.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-08.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-09.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-10.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-11.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-12.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-13.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-14.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-15.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-16.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-16.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-17.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-17.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_Wu-Uk_As-18.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_Wu-Uk_As-18.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-01.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-02.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-03.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-04.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-05.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-06.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-07.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-08.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-09.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-10.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-11.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-12.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-13.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-14.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-15.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-16.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-16.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-17.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-17.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WWa0E51p-18.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WWa0E51p-18.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-01.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-02.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-03.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-04.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-05.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-06.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-07.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-08.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-09.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-10.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-11.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_WCzikxk8-12.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_WCzikxk8-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-01.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-02.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-03.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-04.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-05.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-06.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-07.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-08.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-09.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-10.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-11.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-12.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-13.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-14.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-15.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-16.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-16.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-04-11-instagram/DW_V3jPE9SC-17.jpg",
+    "thumb": "/assets/gallery/2026-04-11-instagram/t/DW_V3jPE9SC-17.jpg",
+    "w": 1080,
+    "h": 1080
+   }
+  ]
+ },
+ {
+  "id": "2026-02-26-instagram",
+  "date": "2026-02-26",
+  "title": "GROOVE & SPOT NIGHT",
+  "ig": [
+   "https://www.instagram.com/p/DVOHfrrk7cn/",
+   "https://www.instagram.com/p/DVOHWN5E2Gs/",
+   "https://www.instagram.com/p/DVOHKjOE58i/",
+   "https://www.instagram.com/p/DVOG70kkz1G/",
+   "https://www.instagram.com/p/DVOGz-iE8Zg/",
+   "https://www.instagram.com/p/DVOGja8k7dt/"
+  ],
+  "photos": [
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHfrrk7cn-01.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHfrrk7cn-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHfrrk7cn-02.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHfrrk7cn-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHfrrk7cn-03.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHfrrk7cn-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHfrrk7cn-04.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHfrrk7cn-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHfrrk7cn-05.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHfrrk7cn-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHfrrk7cn-06.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHfrrk7cn-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHfrrk7cn-07.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHfrrk7cn-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHfrrk7cn-08.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHfrrk7cn-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHfrrk7cn-09.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHfrrk7cn-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHWN5E2Gs-01.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHWN5E2Gs-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHWN5E2Gs-02.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHWN5E2Gs-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHWN5E2Gs-03.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHWN5E2Gs-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHWN5E2Gs-04.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHWN5E2Gs-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHWN5E2Gs-05.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHWN5E2Gs-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHWN5E2Gs-06.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHWN5E2Gs-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHWN5E2Gs-07.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHWN5E2Gs-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHKjOE58i-01.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHKjOE58i-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHKjOE58i-02.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHKjOE58i-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHKjOE58i-03.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHKjOE58i-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHKjOE58i-04.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHKjOE58i-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHKjOE58i-05.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHKjOE58i-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHKjOE58i-06.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHKjOE58i-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHKjOE58i-07.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHKjOE58i-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHKjOE58i-08.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHKjOE58i-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOHKjOE58i-09.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOHKjOE58i-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-01.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-02.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-03.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-04.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-05.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-06.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-07.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-08.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-09.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-10.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-11.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOG70kkz1G-12.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOG70kkz1G-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-01.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-02.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-03.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-04.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-05.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-06.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-07.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-08.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-09.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-10.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-11.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-12.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGz-iE8Zg-13.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGz-iE8Zg-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-01.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-02.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-03.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-04.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-05.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-06.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-07.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-08.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-09.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-10.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-11.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-12.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-13.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-02-26-instagram/DVOGja8k7dt-14.jpg",
+    "thumb": "/assets/gallery/2026-02-26-instagram/t/DVOGja8k7dt-14.jpg",
+    "w": 1080,
+    "h": 1080
+   }
+  ]
+ },
+ {
+  "id": "2026-01-29-instagram",
+  "date": "2026-01-29",
+  "title": "GROOVE & SPOT NIGHT",
+  "ig": [
+   "https://www.instagram.com/p/DUF_-YAk2eW/",
+   "https://www.instagram.com/p/DUF_xabk5t2/",
+   "https://www.instagram.com/p/DUF_ctSEzqU/"
+  ],
+  "photos": [
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-01.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-02.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-03.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-04.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-05.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-06.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-07.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-08.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-09.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-10.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-11.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-12.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_-YAk2eW-13.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_-YAk2eW-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-01.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-02.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-03.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-04.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-05.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-06.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-07.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-08.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-09.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-10.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-11.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-12.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-13.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-14.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_xabk5t2-15.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_xabk5t2-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-01.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-02.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-03.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-04.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-05.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-06.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-07.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-08.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-09.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-10.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-11.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2026-01-29-instagram/DUF_ctSEzqU-12.jpg",
+    "thumb": "/assets/gallery/2026-01-29-instagram/t/DUF_ctSEzqU-12.jpg",
+    "w": 1080,
+    "h": 1080
+   }
+  ]
+ },
+ {
+  "id": "2025-12-30-instagram",
+  "date": "2025-12-30",
+  "title": "GROOVE & SPOT NIGHT",
+  "ig": [
+   "https://www.instagram.com/p/DS4sW9UkztX/",
+   "https://www.instagram.com/p/DS4sMhIk-wQ/",
+   "https://www.instagram.com/p/DS4r5ZuE4Id/",
+   "https://www.instagram.com/p/DS4rko-k1qC/"
+  ],
+  "photos": [
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sW9UkztX-01.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sW9UkztX-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sW9UkztX-02.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sW9UkztX-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sW9UkztX-03.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sW9UkztX-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sW9UkztX-04.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sW9UkztX-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sW9UkztX-05.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sW9UkztX-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sW9UkztX-06.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sW9UkztX-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sW9UkztX-07.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sW9UkztX-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sW9UkztX-08.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sW9UkztX-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sW9UkztX-09.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sW9UkztX-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sW9UkztX-10.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sW9UkztX-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-01.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-02.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-03.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-04.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-05.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-06.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-07.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-08.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-09.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-10.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-11.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-12.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-13.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-14.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-15.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-16.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-16.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4sMhIk-wQ-17.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4sMhIk-wQ-17.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-01.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-02.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-03.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-04.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-05.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-06.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-07.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-08.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-09.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-10.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-11.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-12.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-13.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-14.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-15.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-16.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-16.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-17.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-17.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-18.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-18.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4r5ZuE4Id-19.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4r5ZuE4Id-19.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-01.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-02.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-03.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-04.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-05.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-06.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-07.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-08.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-09.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-10.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-11.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-12.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-13.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-14.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-15.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-12-30-instagram/DS4rko-k1qC-16.jpg",
+    "thumb": "/assets/gallery/2025-12-30-instagram/t/DS4rko-k1qC-16.jpg",
+    "w": 1080,
+    "h": 1080
+   }
+  ]
+ },
+ {
+  "id": "2025-11-12-instagram",
+  "date": "2025-11-12",
+  "title": "GROOVE & SPOT NIGHT",
+  "ig": [
+   "https://www.instagram.com/p/DQ9EyDgE2FH/",
+   "https://www.instagram.com/p/DQ9EhoeE1yL/",
+   "https://www.instagram.com/p/DQ9Dq7nk3KN/"
+  ],
+  "photos": [
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-01.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-01.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-02.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-02.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-03.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-03.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-04.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-04.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-05.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-05.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-06.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-06.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-07.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-07.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-08.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-08.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-09.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-09.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-10.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-10.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-11.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-11.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-12.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-12.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-13.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-13.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-14.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-14.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EyDgE2FH-15.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EyDgE2FH-15.jpg",
+    "w": 1080,
+    "h": 1080
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-01.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-01.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-02.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-02.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-03.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-03.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-04.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-04.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-05.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-05.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-06.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-06.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-07.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-07.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-08.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-08.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-09.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-09.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-10.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-10.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-11.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-11.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-12.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-12.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-13.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-13.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-14.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-14.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-15.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-15.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-16.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-16.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-17.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-17.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-18.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-18.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9EhoeE1yL-19.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9EhoeE1yL-19.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-01.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-01.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-02.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-02.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-03.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-03.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-04.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-04.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-05.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-05.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-06.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-06.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-07.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-07.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-08.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-08.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-09.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-09.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-10.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-10.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-11.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-11.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-12.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-12.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-13.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-13.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-14.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-14.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-12-instagram/DQ9Dq7nk3KN-15.jpg",
+    "thumb": "/assets/gallery/2025-11-12-instagram/t/DQ9Dq7nk3KN-15.jpg",
+    "w": 1079,
+    "h": 809
+   }
+  ]
+ },
+ {
+  "id": "2025-11-11-instagram",
+  "date": "2025-11-11",
+  "title": "GROOVE & SPOT NIGHT",
+  "ig": [
+   "https://www.instagram.com/p/DQ6p3eGE8MX/",
+   "https://www.instagram.com/p/DQ6pldnE-xr/",
+   "https://www.instagram.com/p/DQ6pTy_E9dd/"
+  ],
+  "photos": [
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-01.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-01.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-02.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-02.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-03.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-03.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-04.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-04.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-05.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-05.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-06.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-06.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-07.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-07.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-08.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-08.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-09.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-09.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-10.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-10.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-11.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-11.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6p3eGE8MX-12.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6p3eGE8MX-12.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-01.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-01.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-02.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-02.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-03.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-03.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-04.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-04.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-05.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-05.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-06.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-06.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-07.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-07.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-08.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-08.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-09.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-09.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-10.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-10.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-11.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-11.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-12.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-12.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-13.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-13.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pldnE-xr-14.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pldnE-xr-14.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pTy_E9dd-01.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pTy_E9dd-01.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pTy_E9dd-02.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pTy_E9dd-02.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pTy_E9dd-03.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pTy_E9dd-03.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pTy_E9dd-04.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pTy_E9dd-04.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pTy_E9dd-05.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pTy_E9dd-05.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pTy_E9dd-06.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pTy_E9dd-06.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pTy_E9dd-07.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pTy_E9dd-07.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pTy_E9dd-08.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pTy_E9dd-08.jpg",
+    "w": 1079,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2025-11-11-instagram/DQ6pTy_E9dd-09.jpg",
+    "thumb": "/assets/gallery/2025-11-11-instagram/t/DQ6pTy_E9dd-09.jpg",
+    "w": 1079,
+    "h": 809
+   }
+  ]
+ }
+]
