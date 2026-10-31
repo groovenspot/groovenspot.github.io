@@ -275,7 +275,7 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
   'reserve/': (lang) => {
     const L = (k) => t(lang, k);
     const opt = (v, k) => `<option value="${v}">${k}</option>`;
-    return `<div class="banner wrap"><img src="/assets/img/tables.webp" width="1344" height="752" alt="" fetchpriority="high"></div>
+    return `<div class="banner wrap"><img src="/assets/img/tables.webp" width="1079" height="430" alt="" fetchpriority="high"></div>
 ${pageHead(lang, 'reserve')}
 <section class="wrap sec rv">
   <form class="rv-form" id="rv-form" novalidate>
