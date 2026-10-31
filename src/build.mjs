@@ -15,6 +15,10 @@ const SOUNDCLOUD = 'https://on.soundcloud.com/IWtEmqOHfTecbn1cBI';
 const YOUTUBE = 'https://www.youtube.com/@GROOVEBUSAN';
 // 신청곡 전달용 ntfy 토픽 (assets/admin.js 의 TOPIC 과 같아야 함)
 const REQ_TOPIC = 'groovenspot-req-6witbq5hriea';
+// Google Analytics 4 측정 ID (G-XXXXXXXXXX). 비워 두면 통계 코드를 넣지 않는다. 관리자·/floor 에는 넣지 않음.
+const GA_ID = '';
+const GA_TAG = GA_ID ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','${GA_ID}');}</script>` : '';
 const LOGO_WORD = '<img src="/assets/logo-word.png" width="564" height="79" alt="Groove &amp; Spot">';
 const fig = (src, alt, cls = '') => `<figure class="shot ${cls}"><a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="${esc(alt)}" width="1080" height="1920" loading="lazy" decoding="async"></a><figcaption>${esc(alt)}</figcaption></figure>`;
 const PHONE = '0507-1301-5970';
@@ -65,6 +69,7 @@ ${alternates}
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/assets/site.css?v=${VERSION}">
+${GA_TAG}
 </head>
 <body data-page="${page.replace(/\/$/, '') || 'home'}">
 <a class="skip" href="#main">Skip to content</a>

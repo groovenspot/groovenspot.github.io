@@ -35,6 +35,29 @@
     $('#gate-yes').focus();
   }
 
+  /* ---------- 방문 통계 (Google Analytics, GA_ID 가 있을 때만) ---------- */
+  // 이름·전화번호 같은 개인정보는 보내지 않는다
+  function track(name, params) { try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {} }
+  function where(el) {
+    if (el.closest('.dock')) return 'bottom_bar';
+    if (el.closest('.mnav')) return 'mobile_menu';
+    if (el.closest('.hdr')) return 'header';
+    if (el.closest('.hero')) return 'hero';
+    if (el.closest('.evd')) return 'event_page';
+    if (el.closest('.ftr')) return 'footer';
+    return document.body.dataset.page || 'page';
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[href]'); if (!a) return;
+    var h = a.getAttribute('href') || '', at = where(a);
+    if (/\/reserve\/(\?|$)/.test(h)) track('reserve_click', { location: at });
+    else if (/\/request\/(\?|$)/.test(h)) track('request_click', { location: at });
+    else if (h.indexOf('tel:') === 0) track('call_click', { location: at });
+    else if (/google\.com\/maps|map\.naver|map\.kakao/.test(h)) track('directions_click', { map: /google/.test(h) ? 'google' : /naver/.test(h) ? 'naver' : 'kakao', location: at });
+    else if (/instagram\.com/.test(h)) track('instagram_click', { location: at });
+    else if (/youtube\.com|soundcloud/.test(h)) track('media_click', { site: /youtube/.test(h) ? 'youtube' : 'soundcloud', location: at });
+  });
+
   /* ---------- 휴대폰 메뉴 (☰) ---------- */
   var mbtn = $('.menu-btn'), mnav = $('#mnav');
   function setMenu(open) {
@@ -50,7 +73,7 @@
   }
 
   /* ---------- 언어 선택 기억 ---------- */
-  $$('.lang-menu a').forEach(function (a) { a.addEventListener('click', function () { store('gs_lang', a.dataset.lang); }); });
+  $$('.lang-menu a').forEach(function (a) { a.addEventListener('click', function () { store('gs_lang', a.dataset.lang); track('language_change', { language: a.dataset.lang }); }); });
   $$('.lang').forEach(function (d) {
     document.addEventListener('click', function (e) { if (!d.contains(e.target)) d.open = false; });
   });
@@ -282,7 +305,7 @@
     $('#lb-cap').textContent = (p.cap ? p.cap + ' · ' : '') + (lbIdx + 1) + ' / ' + lbList.length;
     var nx = lbList[(lbIdx + 1) % lbList.length]; if (nx) { var pre = new Image(); pre.src = nx.src; }
   }
-  function lbOpen(list, i, from) { lbList = list; lbLast = from; lb.hidden = false; document.body.style.overflow = 'hidden'; lbShow(i); $('[data-lb="close"]', lb).focus(); }
+  function lbOpen(list, i, from) { track('photo_view', { page: document.body.dataset.page }); lbList = list; lbLast = from; lb.hidden = false; document.body.style.overflow = 'hidden'; lbShow(i); $('[data-lb="close"]', lb).focus(); }
   function lbClose() { lb.hidden = true; document.body.style.overflow = ''; $('#lb-img').src = ''; if (lbLast) lbLast.focus(); }
   if (lb) {
     lb.addEventListener('click', function (e) {
@@ -392,7 +415,7 @@
         $$('[data-svc]').forEach(function (p) { p.hidden = p.dataset.svc !== f; });
         $$('[data-tab]').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tab === f ? 'true' : 'false'); });
       }
-      $$('[data-tab]').forEach(function (b) { b.addEventListener('click', function () { render(b.dataset.tab); }); });
+      $$('[data-tab]').forEach(function (b) { b.addEventListener('click', function () { render(b.dataset.tab); track('menu_tab', { tab: b.dataset.tab }); }); });
       var qs0 = new URLSearchParams(location.search), q = qs0.get('floor');
       render(qs0.get('tab') === 'bar' && $('[data-tab="bar"]') ? 'bar' : q === '3F' ? '3F' : '2F');
     });
@@ -417,7 +440,7 @@
     function closeList() { box.hidden = true; song.setAttribute('aria-expanded', 'false'); song.removeAttribute('aria-activedescendant'); sActive = -1; }
     function pickSong(i) {
       var it = sItems[i]; if (!it) return;
-      song.value = it.t.slice(0, 80); rq.artist.value = it.a.slice(0, 60); closeList(); hint.textContent = '';
+      song.value = it.t.slice(0, 80); rq.artist.value = it.a.slice(0, 60); closeList(); hint.textContent = ''; rq.dataset.picked = '1';
       song.setAttribute('aria-invalid', 'false');
     }
     function setActive(i) {
@@ -470,7 +493,7 @@
       var btn = rq.querySelector('button[type=submit]'); btn.disabled = true;
       fetch('https://ntfy.sh/', { method: 'POST', body: JSON.stringify({ topic: GS.topic, title: floor + ' 신청곡', message: msg, tags: [floor, 'notes'] }) })
         .then(function (r) { if (!r.ok) throw new Error(r.status); })
-        .then(function () { store('gs_rq_last', String(Date.now())); toast(T.rqSent); rq.song.value = ''; rq.artist.value = ''; rq.memo.value = ''; })
+        .then(function () { track('song_request', { floor: floor, from_search: rq.dataset.picked === '1' ? 'yes' : 'no' }); rq.dataset.picked = ''; store('gs_rq_last', String(Date.now())); toast(T.rqSent); rq.song.value = ''; rq.artist.value = ''; rq.memo.value = ''; })
         .catch(function () { toast(T.rqFail); })
         .then(function () { btn.disabled = false; });
     });
@@ -522,6 +545,7 @@
       var text = lines.join('\n');
       // 팝업 차단을 피하려고 복사 완료를 기다리지 않고 바로 연다
       copy(text);
+      track('reserve_submit', { type: form.type.value, floor: floor ? floor.value : '', party: form.party.value });
       toast(T.copied);
       window.open(GS.instagram, '_blank', 'noopener');
     });
