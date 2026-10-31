@@ -1,0 +1,623 @@
+{
+ "_note": "가격 단위 원(₩), 부가세 포함. 2026-10-31 매장 메뉴판(구글 드라이브 groovenspot_store_info) 기준.",
+ "2F": {
+  "menu": [
+   {
+    "name": "샴페인 CHAMPAGNE",
+    "items": [
+     {
+      "ko": "오페라 프리마 브뤼",
+      "en": "OPERA PRIMA BRUT",
+      "price": 80000
+     },
+     {
+      "ko": "딥 루미너스",
+      "en": "DEEP",
+      "price": 150000
+     },
+     {
+      "ko": "킹",
+      "en": "KING",
+      "price": 150000
+     },
+     {
+      "ko": "퀸",
+      "en": "QUEEN",
+      "price": 150000
+     },
+     {
+      "ko": "오로라",
+      "en": "AURORA",
+      "price": 150000
+     },
+     {
+      "ko": "모엣 샹동",
+      "en": "MOET & CHANDON",
+      "price": 200000
+     },
+     {
+      "ko": "모엣 니르",
+      "en": "MOET N.I.R",
+      "price": 300000
+     },
+     {
+      "ko": "모엣 샹동 골든 라이트업",
+      "en": "MOET GOLDEN",
+      "price": 600000
+     },
+     {
+      "ko": "페리에주에 루미너스",
+      "en": "PERRIER JOUET",
+      "price": 1000000
+     },
+     {
+      "ko": "돔페리뇽 루미너스",
+      "en": "DOM PERIGNON",
+      "price": 1000000
+     },
+     {
+      "ko": "아르망디",
+      "en": "ARMAND DE",
+      "price": 2000000
+     }
+    ]
+   },
+   {
+    "name": "리큐르 LIQUEUR",
+    "items": [
+     {
+      "ko": "예거마이스터",
+      "en": "JAGERMEISTER",
+      "price": 140000
+     },
+     {
+      "ko": "말리부",
+      "en": "MALIBU",
+      "price": 140000
+     },
+     {
+      "ko": "콰이 페리치",
+      "en": "KWAI FEH RICH",
+      "price": 140000
+     },
+     {
+      "ko": "쿠엘보 모히토",
+      "en": "CUERVO MOJITO",
+      "price": 140000
+     },
+     {
+      "ko": "코카레로",
+      "en": "COCALERO",
+      "price": 160000
+     },
+     {
+      "ko": "파이어볼",
+      "en": "FIREBALL",
+      "price": 170000
+     },
+     {
+      "ko": "아그와",
+      "en": "AGWA",
+      "price": 180000
+     },
+     {
+      "ko": "힙노틱",
+      "en": "HPNOTIQ",
+      "price": 180000
+     },
+     {
+      "ko": "엑스레이티드",
+      "en": "X-RATED",
+      "price": 190000
+     }
+    ]
+   },
+   {
+    "name": "보드카 VODKA",
+    "items": [
+     {
+      "ko": "앱솔루트",
+      "en": "ABSOLUTE (오리지날/어피치)",
+      "price": 140000
+     },
+     {
+      "ko": "스미노프",
+      "en": "SMIRNOFF (그린애플)",
+      "price": 140000
+     },
+     {
+      "ko": "그레이구스",
+      "en": "GREY GOOSE",
+      "price": 190000
+     }
+    ]
+   },
+   {
+    "name": "위스키 WHISKEY",
+    "items": [
+     {
+      "ko": "제임슨",
+      "en": "JAMESON",
+      "price": 140000
+     },
+     {
+      "ko": "조니워커 블랙",
+      "en": "JOHNNIE WALKER BLACK",
+      "price": 170000
+     },
+     {
+      "ko": "잭다니엘스",
+      "en": "JACK DANIEL'S",
+      "price": 170000
+     },
+     {
+      "ko": "잭다니엘스 허니",
+      "en": "JD HONEY",
+      "price": 170000
+     },
+     {
+      "ko": "잭다니엘스 애플",
+      "en": "JD APPLE",
+      "price": 170000
+     },
+     {
+      "ko": "조니워커 블루라벨",
+      "en": "JOHNNIE WALKER BLUE",
+      "price": 1000000
+     }
+    ]
+   },
+   {
+    "name": "진 GIN",
+    "items": [
+     {
+      "ko": "봄베이",
+      "en": "BOMBAY",
+      "price": 160000
+     },
+     {
+      "ko": "핸드릭스",
+      "en": "HENDRICK'S",
+      "price": 230000
+     }
+    ]
+   },
+   {
+    "name": "데킬라 TEQUILA",
+    "items": [
+     {
+      "ko": "씨에라",
+      "en": "SIERRA",
+      "price": 140000
+     },
+     {
+      "ko": "호세 쿠엘보",
+      "en": "JOSE CUERVO",
+      "price": 140000
+     }
+    ]
+   },
+   {
+    "name": "럼 / 코냑 RUM & COGNAC",
+    "items": [
+     {
+      "ko": "론디아즈 151",
+      "en": "LANDIAZ 151",
+      "price": 140000
+     },
+     {
+      "ko": "헤네시 VSOP",
+      "en": "HENNESSY VSOP",
+      "price": 280000
+     }
+    ]
+   }
+  ],
+  "sets": [
+   {
+    "name": "딥 루미너스 SET",
+    "desc": "딥 루미너스 3병 + 딥 루미너스 1병(서비스) + 안주",
+    "price": 500000
+   },
+   {
+    "name": "오로라 SET",
+    "desc": "오로라 3병 + 오로라 1병(서비스) + 안주",
+    "price": 500000
+   },
+   {
+    "name": "퀸 SET",
+    "desc": "퀸 3병 + 퀸 1병(서비스) + 안주",
+    "price": 500000
+   },
+   {
+    "name": "킹 SET",
+    "desc": "킹 3병 + 킹 1병(서비스) + 안주",
+    "price": 500000
+   },
+   {
+    "name": "잭다니엘스 SET",
+    "desc": "잭다니엘스 + 오페라 프리마 브뤼 1병(서비스) + 안주",
+    "price": 200000
+   },
+   {
+    "name": "잭다니엘스 허니 SET",
+    "desc": "잭다니엘스 허니 1병 + 오페라 프리마 브뤼 1병(서비스) + 안주",
+    "price": 200000
+   },
+   {
+    "name": "잭다니엘스 애플 SET",
+    "desc": "잭다니엘스 애플 1병 + 오페라 프리마 브뤼 1병(서비스) + 안주",
+    "price": 200000
+   },
+   {
+    "name": "헤네시 VSOP",
+    "desc": "헤네시 VSOP + 오페라 프리마 브뤼 1병(서비스)",
+    "price": 280000
+   }
+  ]
+ },
+ "3F": {
+  "menu": [
+   {
+    "name": "샴페인 CHAMPAGNE",
+    "items": [
+     {
+      "ko": "딥 루미너스",
+      "en": "DEEP",
+      "price": 200000
+     },
+     {
+      "ko": "킹",
+      "en": "KING",
+      "price": 200000
+     },
+     {
+      "ko": "퀸",
+      "en": "QUEEN",
+      "price": 200000
+     },
+     {
+      "ko": "오로라",
+      "en": "AURORA",
+      "price": 200000
+     },
+     {
+      "ko": "모엣 샹동",
+      "en": "MOET & CHANDON",
+      "price": 250000
+     },
+     {
+      "ko": "모엣 니르",
+      "en": "MOET N.I.R",
+      "price": 350000
+     },
+     {
+      "ko": "모엣 샹동 골든 라이트업",
+      "en": "MOET GOLDEN",
+      "price": 600000
+     },
+     {
+      "ko": "페리에주에 루미너스",
+      "en": "PERRIER JOUET",
+      "price": 1000000
+     },
+     {
+      "ko": "돔페리뇽 루미너스",
+      "en": "DOM PERIGNON",
+      "price": 1100000
+     },
+     {
+      "ko": "아르망디",
+      "en": "ARMAND DE",
+      "price": 2200000
+     }
+    ]
+   },
+   {
+    "name": "리큐르 LIQUEUR",
+    "items": [
+     {
+      "ko": "예거마이스터",
+      "en": "JAGERMEISTER",
+      "price": 200000
+     },
+     {
+      "ko": "말리부",
+      "en": "MALIBU",
+      "price": 200000
+     },
+     {
+      "ko": "콰이 페리치",
+      "en": "KWAI FEH RICH",
+      "price": 200000
+     },
+     {
+      "ko": "쿠엘보 모히토",
+      "en": "CUERVO MOJITO",
+      "price": 200000
+     },
+     {
+      "ko": "코카레로",
+      "en": "COCALERO",
+      "price": 200000
+     },
+     {
+      "ko": "파이어볼",
+      "en": "FIREBALL",
+      "price": 200000
+     },
+     {
+      "ko": "아그와",
+      "en": "AGWA",
+      "price": 250000
+     },
+     {
+      "ko": "힙노틱",
+      "en": "HPNOTIQ",
+      "price": 250000
+     },
+     {
+      "ko": "엑스레이티드",
+      "en": "X-RATED",
+      "price": 250000
+     }
+    ]
+   },
+   {
+    "name": "보드카 VODKA",
+    "items": [
+     {
+      "ko": "앱솔루트",
+      "en": "ABSOLUTE (오리지날/어피치)",
+      "price": 200000
+     },
+     {
+      "ko": "스미노프",
+      "en": "SMIRNOFF (그린애플)",
+      "price": 200000
+     },
+     {
+      "ko": "그레이구스",
+      "en": "GREY GOOSE",
+      "price": 250000
+     }
+    ]
+   },
+   {
+    "name": "위스키 WHISKEY",
+    "items": [
+     {
+      "ko": "제임슨",
+      "en": "JAMESON",
+      "price": 170000
+     },
+     {
+      "ko": "조니워커 블랙",
+      "en": "JOHNNIE WALKER BLACK",
+      "price": 200000
+     },
+     {
+      "ko": "잭다니엘스",
+      "en": "JACK DANIEL'S",
+      "price": 200000
+     },
+     {
+      "ko": "잭다니엘스 허니",
+      "en": "JD HONEY",
+      "price": 200000
+     },
+     {
+      "ko": "잭다니엘스 애플",
+      "en": "JD APPLE",
+      "price": 200000
+     },
+     {
+      "ko": "조니워커 블루라벨",
+      "en": "JOHNNIE WALKER BLUE",
+      "price": 1000000
+     }
+    ]
+   },
+   {
+    "name": "진 GIN",
+    "items": [
+     {
+      "ko": "봄베이",
+      "en": "BOMBAY",
+      "price": 200000
+     },
+     {
+      "ko": "핸드릭스",
+      "en": "HENDRICK'S",
+      "price": 300000
+     }
+    ]
+   },
+   {
+    "name": "데킬라 TEQUILA",
+    "items": [
+     {
+      "ko": "씨에라",
+      "en": "SIERRA",
+      "price": 200000
+     },
+     {
+      "ko": "호세 쿠엘보",
+      "en": "JOSE CUERVO",
+      "price": 200000
+     }
+    ]
+   },
+   {
+    "name": "럼 / 코냑 RUM & COGNAC",
+    "items": [
+     {
+      "ko": "론디아즈 151",
+      "en": "LANDIAZ 151",
+      "price": 200000
+     },
+     {
+      "ko": "헤네시 VSOP",
+      "en": "HENNESSY VSOP",
+      "price": 350000
+     }
+    ]
+   }
+  ],
+  "sets": [
+   {
+    "name": "딥 루미너스",
+    "tiers": [
+     {
+      "q": "3+1 / 3B",
+      "price": 600000
+     },
+     {
+      "q": "6+2 / 5B",
+      "price": 1200000
+     },
+     {
+      "q": "10B",
+      "price": 1550000
+     }
+    ]
+   },
+   {
+    "name": "킹",
+    "tiers": [
+     {
+      "q": "3+1 / 3B",
+      "price": 600000
+     },
+     {
+      "q": "6+2 / 5B",
+      "price": 1200000
+     },
+     {
+      "q": "10B",
+      "price": 1550000
+     }
+    ]
+   },
+   {
+    "name": "퀸",
+    "tiers": [
+     {
+      "q": "3+1 / 3B",
+      "price": 600000
+     },
+     {
+      "q": "6+2 / 5B",
+      "price": 1200000
+     },
+     {
+      "q": "10B",
+      "price": 1550000
+     }
+    ]
+   },
+   {
+    "name": "오로라",
+    "tiers": [
+     {
+      "q": "3+1 / 3B",
+      "price": 600000
+     },
+     {
+      "q": "6+2 / 5B",
+      "price": 1200000
+     },
+     {
+      "q": "10B",
+      "price": 1550000
+     }
+    ]
+   },
+   {
+    "name": "모엣 샹동",
+    "tiers": [
+     {
+      "q": "3+1 / 3B",
+      "price": 700000
+     },
+     {
+      "q": "6+2 / 5B",
+      "price": 1200000
+     },
+     {
+      "q": "10B",
+      "price": 2300000
+     }
+    ]
+   },
+   {
+    "name": "모엣 N.I.R",
+    "tiers": [
+     {
+      "q": "3+1 / 3B",
+      "price": 1000000
+     },
+     {
+      "q": "6+2 / 5B",
+      "price": 1650000
+     },
+     {
+      "q": "10B",
+      "price": 3250000
+     }
+    ]
+   },
+   {
+    "name": "페리에주에",
+    "tiers": [
+     {
+      "q": "3+1 / 3B",
+      "price": 2900000
+     },
+     {
+      "q": "6+2 / 5B",
+      "price": 4800000
+     },
+     {
+      "q": "10B",
+      "price": 9500000
+     }
+    ]
+   },
+   {
+    "name": "돔페리뇽",
+    "tiers": [
+     {
+      "q": "3+1 / 3B",
+      "price": 3200000
+     },
+     {
+      "q": "6+2 / 5B",
+      "price": 5300000
+     },
+     {
+      "q": "10B",
+      "price": 10500000
+     }
+    ]
+   },
+   {
+    "name": "아르망디",
+    "tiers": [
+     {
+      "q": "3+1 / 3B",
+      "price": 6400000
+     },
+     {
+      "q": "6+2 / 5B",
+      "price": 10000000
+     },
+     {
+      "q": "10B",
+      "price": 20000000
+     }
+    ]
+   }
+  ]
+ }
+}
