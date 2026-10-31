@@ -12,6 +12,55 @@
     "floor": "3F",
     "genre": "EDM",
     "open": "22:00",
-    "lineup": { "3F": ["ASH", "BIXXB"] }
+    "lineup": {
+      "3F": [
+        "ASH",
+        "BIXXB"
+      ]
+    }
+  },
+  {
+    "date": "2026-10-31",
+    "title": "공포민속촌 · HALLOWEEN WEEKEND",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "lineup": {
+      "2F": [
+        "MUTE",
+        "ZINO",
+        "UZI",
+        "MAD",
+        "BINU",
+        "VANDALROCK",
+        "CANTAR",
+        "SENDOW",
+        "ROAD",
+        "TARO",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "MUMU",
+        "EZZY",
+        "ZET",
+        "MUTE",
+        "DIA",
+        "UZI",
+        "ROAD",
+        "TARO",
+        "KUPA",
+        "WOOK2",
+        "N",
+        "BILL",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-31.webp",
+    "desc": {
+      "ko": "할로윈 위크엔드 〈공포민속촌〉 — 새벽 2시 2F VANDALROCK",
+      "en": "Halloween Weekend — VANDALROCK on 2F at 2AM"
+    }
   }
 ]
