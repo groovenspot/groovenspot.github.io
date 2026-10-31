@@ -19,6 +19,8 @@ const LOGO_WORD = '<img src="/assets/logo-word.png" width="564" height="79" alt=
 const fig = (src, alt, cls = '') => `<figure class="shot ${cls}"><a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="${esc(alt)}" width="1080" height="1920" loading="lazy" decoding="async"></a><figcaption>${esc(alt)}</figcaption></figure>`;
 const PHONE = '0507-1301-5970';
 const ADDR_KO = '부산 부산진구 중앙대로680번가길 52';
+const GMAP = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ADDR_KO)}`;
+const GMAP_EMBED = (lang) => `https://maps.google.com/maps?q=${encodeURIComponent(ADDR_KO)}&hl=${lang === 'zh' ? 'zh-CN' : lang}&z=17&output=embed`;
 const VERSION = Date.now().toString(36);
 
 const PAGES = ['', 'events/', 'event/', 'floors/', 'menu/', 'artists/', 'reserve/', 'info/', 'request/'];
@@ -188,10 +190,11 @@ const BODIES = {
     <p class="visit-addr">${L('if.addr')}<br><span class="muted">${L('if.near')}</span></p>
     <div class="visit-act">
       <a class="btn" href="https://map.kakao.com/link/search/${encodeURIComponent(ADDR_KO)}" rel="noopener">${L('map.kakao')}</a>
-      <a class="btn" href="https://map.naver.com/v5/search/${encodeURIComponent(ADDR_KO)}" rel="noopener">${L('map.naver')}</a>
+      <a class="btn" href="https://map.naver.com/v5/search/${encodeURIComponent(ADDR_KO)}" rel="noopener">${L('map.naver')}</a><a class="btn" href="${GMAP}" rel="noopener">${L('map.google')}</a>
       <a class="btn" href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a>
     </div>
   </div>
+  <div class="gmap"><iframe src="${GMAP_EMBED(lang)}" title="${L('map.embed')} · Groove &amp; Spot" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
 </section>`;
   },
 
@@ -299,7 +302,7 @@ ${pageHead(lang, 'reserve')}
 <section class="wrap sec info-grid">
   <div class="panel"><h2 class="sec-h">${L('sec.visit')}</h2>
     <p>${L('if.addr')}<br><span class="muted">${L('if.near')}</span></p>
-    <div class="row-btns"><a class="btn" href="https://map.kakao.com/link/search/${encodeURIComponent(ADDR_KO)}" rel="noopener">${L('map.kakao')}</a><a class="btn" href="https://map.naver.com/v5/search/${encodeURIComponent(ADDR_KO)}" rel="noopener">${L('map.naver')}</a></div>
+    <div class="row-btns"><a class="btn" href="https://map.kakao.com/link/search/${encodeURIComponent(ADDR_KO)}" rel="noopener">${L('map.kakao')}</a><a class="btn" href="https://map.naver.com/v5/search/${encodeURIComponent(ADDR_KO)}" rel="noopener">${L('map.naver')}</a><a class="btn" href="${GMAP}" rel="noopener">${L('map.google')}</a></div>
   </div>
   <div class="panel"><h2 class="sec-h">${L('sec.hours')}</h2>
     <dl class="hours"><dt>${L('hr.weekday')}</dt><dd>21:30 – 06:00</dd><dt>${L('hr.weekend')}</dt><dd>21:00 – 07:00</dd></dl>
@@ -312,6 +315,7 @@ ${pageHead(lang, 'reserve')}
     <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a></p>
   </div>
 </section>
+<section class="wrap sec" aria-label="${L('map.embed')}"><div class="gmap gmap-lg"><iframe src="${GMAP_EMBED(lang)}" title="${L('map.embed')} · Groove &amp; Spot" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div></section>
 <section class="wrap sec"><div class="shots">${fig(`/assets/img/entry-policy-${lang === 'ko' ? 'ko' : 'en'}.webp`, L('img.policy'))}${fig('/assets/img/location-map.webp', L('img.map'))}</div></section>
 <section class="wrap sec" aria-labelledby="faq-h">
   <h2 class="sec-h" id="faq-h">${L('sec.faq')}</h2>
