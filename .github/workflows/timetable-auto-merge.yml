@@ -1,0 +1,45 @@
+name: Merge auto timetable
+
+# 매시간 자동 작업이 포스터에서 읽은 타임테이블을 claude/timetable-* 브랜치로 올리면,
+# 바뀐 파일이 타임테이블 두 개뿐인지 확인한 뒤 main 에 합치고, 페이지를 다시 만들고, 브랜치를 지운다.
+on:
+  push:
+    branches: ["claude/timetable-*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-site
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Check changed files
+        run: |
+          BR="${GITHUB_REF_NAME}"
+          git fetch origin "$BR"
+          CHANGED=$(git diff --name-only "$(git merge-base origin/main "origin/$BR")" "origin/$BR")
+          echo "$CHANGED"
+          BAD=$(echo "$CHANGED" | grep -vE '^data/timetable(-sources)?\.json$' || true)
+          if [ -n "$BAD" ]; then echo "::error::타임테이블 외 파일이 바뀌어 합치지 않아요: $BAD"; exit 1; fi
+      - name: Merge, rebuild, push
+        run: |
+          BR="${GITHUB_REF_NAME}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git merge --no-edit "origin/$BR"
+          node src/build.mjs
+          git add -A
+          git diff --cached --quiet || git commit -m "Rebuild pages from data"
+          for i in 1 2 3; do git push origin HEAD:main && break; git pull --rebase origin main; done
+          git push origin --delete "$BR"
