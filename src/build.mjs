@@ -23,7 +23,7 @@ const GMAP = `https://www.google.com/maps/search/?api=1&query=${encodeURICompone
 const GMAP_EMBED = (lang) => `https://maps.google.com/maps?q=${encodeURIComponent(ADDR_KO)}&hl=${lang === 'zh' ? 'zh-CN' : lang}&z=17&output=embed`;
 const VERSION = Date.now().toString(36);
 
-const PAGES = ['', 'events/', 'event/', 'floors/', 'menu/', 'artists/', 'reserve/', 'info/', 'request/'];
+const PAGES = ['', 'events/', 'event/', 'floors/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/'];
 const prefix = (lang) => (lang === 'ko' ? '' : `/${lang}`);
 const href = (lang, page) => `${prefix(lang)}/${page}`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -32,7 +32,7 @@ function layout(lang, page, { title, desc, body, active }) {
   const L = (k) => t(lang, k);
   const runtime = Object.fromEntries(Object.keys(T.ko).filter((k) => k.startsWith('rt.')).map((k) => [k.slice(3), L(k)]));
   const nav = [
-    ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['menu/', 'nav.menu'], ['artists/', 'nav.artists'], ['request/', 'nav.request'], ['info/', 'nav.info'],
+    ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['menu/', 'nav.menu'], ['gallery/', 'nav.gallery'], ['request/', 'nav.request'], ['info/', 'nav.info'],
   ];
   const fullTitle = title ? `${title} · Groove & Spot` : L('site.title');
   const alternates = LANGS.map((l) => `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${SITE}${href(l, page)}">`).join('\n');
@@ -96,7 +96,7 @@ ${body}
       <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a></p>
     </div>
   </div>
-  <p class="ftr-small muted"><a href="/floor/">${L('ft.floor')}</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
+  <p class="ftr-small muted"><a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="/floor/">${L('ft.floor')}</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
 </footer>
 <nav class="dock" aria-label="Quick actions">
   <a href="${href(lang, 'events/')}">${L('cta.tonight')}</a>
@@ -110,6 +110,12 @@ ${body}
     <p class="muted">${L('gate.d')}</p>
     <div class="gate-act"><a class="btn" href="https://www.google.com/">${L('gate.no')}</a><button class="btn btn-hot" type="button" id="gate-yes">${L('gate.yes')}</button></div>
   </div>
+</div>
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <button class="lb-x" type="button" data-lb="close" aria-label="${L('rt.close')}">✕</button>
+  <button class="lb-nav lb-prev" type="button" data-lb="prev" aria-label="${L('rt.prev')}">‹</button>
+  <figure class="lb-fig"><img id="lb-img" alt=""><figcaption id="lb-cap"></figcaption></figure>
+  <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="${L('rt.next')}">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, topic: REQ_TOPIC, t: runtime })};</script>
@@ -173,6 +179,10 @@ const BODIES = {
     ${floorCard(lang, '2F')}
     ${floorCard(lang, '3F')}
   </div>
+</section>
+<section class="wrap sec" aria-labelledby="ph-h" data-photos-sec hidden>
+  <div class="sec-top"><h2 class="sec-h" id="ph-h">${L('sec.photos')}</h2><a class="more" href="${href(lang, 'gallery/')}">${L('more.gallery')} →</a></div>
+  <div class="ph-strip" data-photos="latest" data-limit="8"></div>
 </section>
 <section class="wrap sec" aria-labelledby="sets-h">
   <h2 class="sec-h" id="sets-h">${L('sec.sets')}</h2>
@@ -256,6 +266,9 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
 <section class="wrap sec" aria-labelledby="lay-h"><h2 class="sec-h" id="lay-h">${L('sec.layout')}</h2><div class="shots">${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></section>`;
   },
 
+  'gallery/': (lang) => `${pageHead(lang, 'gallery')}
+<section class="wrap sec"><div data-albums></div></section>`,
+
   'artists/': (lang) => `${pageHead(lang, 'artists')}
 <section class="wrap sec"><div class="artists" data-artists></div></section>`,
 
@@ -326,7 +339,7 @@ ${pageHead(lang, 'reserve')}
   },
 };
 
-const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t' };
+const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t', 'gallery/': 'page.gallery.t' };
 
 function write(rel, html) {
   const file = join(ROOT, rel);
@@ -383,6 +396,7 @@ write('admin/index.html', `<!doctype html>
   <button role="tab" data-tab="requests" aria-selected="true">🎵 신청곡 <b id="rq-count"></b></button>
   <button role="tab" data-tab="timetable" aria-selected="false">🎧 DJ 타임테이블</button>
   <button role="tab" data-tab="events" aria-selected="false">📅 이벤트</button>
+  <button role="tab" data-tab="gallery" aria-selected="false">📸 사진첩</button>
 </nav>
 <main id="main" class="wrap adm-main">
 
@@ -440,6 +454,24 @@ write('admin/index.html', `<!doctype html>
     </form>
     <h2 class="sec-h adm-h">등록된 이벤트</h2>
     <ul class="ev-admin" id="ev-list"></ul>
+  </div>
+</section>
+
+<section data-panel="gallery" hidden>
+  <div class="adm-login" data-need-login></div>
+  <div data-when-login hidden>
+    <form class="rv-form adm-ev" id="al-form" novalidate>
+      <label>앨범<select id="al-pick"><option value="">+ 새 앨범 만들기</option></select></label>
+      <label>날짜<input id="al-date" type="date" required></label>
+      <label>앨범 이름<input id="al-title" maxlength="60" placeholder="HALLOWEEN NIGHT" required></label>
+      <label>연결할 이벤트 (선택)<select id="al-event"><option value="">연결 안 함</option></select></label>
+      <label class="full">사진 고르기 (여러 장 가능)<input id="al-files" type="file" accept="image/*" multiple></label>
+      <p class="full muted small">사진은 이 기기에서 긴 변 1600px로 줄여서 올려요. 한 번에 30장 정도까지 권장해요. 원본은 올라가지 않아요.</p>
+      <div class="full al-prev" id="al-prev"></div>
+      <div class="full adm-act"><button class="btn btn-hot" type="submit" id="al-save">사진 올리기</button><span class="muted small" id="al-progress"></span></div>
+    </form>
+    <h2 class="sec-h adm-h">앨범</h2>
+    <div id="al-list"></div>
   </div>
 </section>
 

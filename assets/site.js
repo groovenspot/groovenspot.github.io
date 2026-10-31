@@ -202,6 +202,7 @@
         (e.desc ? '<p class="lede">' + esc(pick(e.desc)) + '</p>' : '') +
         (e.entry ? '<p>' + esc(pick(e.entry)) + '</p>' : '') +
         (lineup ? '<div class="evd-sec"><div class="lineup">' + lineup + '</div></div>' : '') +
+        '<div class="evd-sec" data-evd-photos hidden><h2 class="sec-h">' + esc(T.photosOf) + '</h2><div data-evd-grid></div></div>' +
         '<div class="evd-act">' + (past ? '' : '<a class="btn btn-hot btn-lg" href="' + reserveHref + '">' + esc(T.reserveThis) + '</a>') +
         '<button class="btn btn-lg" type="button" data-share>' + esc(T.share) + '</button></div>' +
         '<a class="back" href="' + url('events/') + '">← ' + esc(document.querySelector('.nav a').textContent) + '</a>' +
@@ -209,6 +210,13 @@
       $('[data-share]', detail).addEventListener('click', function () {
         if (navigator.share) { navigator.share({ title: e.title, url: location.href }).catch(function () {}); return; }
         copy(location.href).then(function () { toast(T.linkCopied); });
+      });
+      load('gallery').then(function (raw) {
+        var list = [];
+        albumsOf(raw).filter(function (a) { return a.event === e.id || (!a.event && a.date === e.date); }).forEach(function (a) { list = list.concat(flat(a)); });
+        if (!list.length) return;
+        var g = $('[data-evd-grid]', detail); g.innerHTML = thumbs(list, 'ph-grid'); bindThumbs(g, list);
+        $('[data-evd-photos]', detail).hidden = false;
       });
       // 검색엔진용 구조화 데이터
       var ld = document.createElement('script');
@@ -241,6 +249,77 @@
           (a.role ? '<p>' + esc(pick(a.role)) + '</p>' : '') + (a.bio ? '<p>' + esc(pick(a.bio)) + '</p>' : '') +
           (links.length ? '<div class="links">' + links.join('') + '</div>' : '') + '</div></article>';
       }).join('');
+    });
+  }
+
+  /* ---------- 사진첩 (data/gallery.json) ---------- */
+  // 앨범: { id, date, title, event?, photos: [{ src, thumb, w, h }] }
+  function albumsOf(raw) {
+    return (Array.isArray(raw) ? raw : []).filter(function (a) { return a && a.date && a.photos && a.photos.length; })
+      .sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  }
+  var lb = $('#lb'), lbList = [], lbIdx = 0, lbLast = null;
+  function lbShow(i) {
+    lbIdx = (i + lbList.length) % lbList.length;
+    var p = lbList[lbIdx];
+    $('#lb-img').src = p.src; $('#lb-img').alt = p.alt || '';
+    $('#lb-cap').textContent = (p.cap ? p.cap + ' · ' : '') + (lbIdx + 1) + ' / ' + lbList.length;
+    var nx = lbList[(lbIdx + 1) % lbList.length]; if (nx) { var pre = new Image(); pre.src = nx.src; }
+  }
+  function lbOpen(list, i, from) { lbList = list; lbLast = from; lb.hidden = false; document.body.style.overflow = 'hidden'; lbShow(i); $('[data-lb="close"]', lb).focus(); }
+  function lbClose() { lb.hidden = true; document.body.style.overflow = ''; $('#lb-img').src = ''; if (lbLast) lbLast.focus(); }
+  if (lb) {
+    lb.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-lb]');
+      if (b) { var a = b.dataset.lb; if (a === 'close') lbClose(); else lbShow(lbIdx + (a === 'next' ? 1 : -1)); return; }
+      if (e.target === lb) lbClose();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (lb.hidden) return;
+      if (e.key === 'Escape') lbClose(); else if (e.key === 'ArrowRight') lbShow(lbIdx + 1); else if (e.key === 'ArrowLeft') lbShow(lbIdx - 1);
+    });
+    var tx = null;
+    lb.addEventListener('touchstart', function (e) { tx = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener('touchend', function (e) { if (tx == null) return; var dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) lbShow(lbIdx + (dx < 0 ? 1 : -1)); tx = null; });
+  }
+  function thumbs(list, cls) {
+    return '<div class="' + cls + '">' + list.map(function (p, i) {
+      return '<button type="button" class="ph" data-i="' + i + '"><img src="' + esc(p.thumb || p.src) + '" alt="' + esc(p.alt || '') + '" loading="lazy" decoding="async"' + (p.w ? ' width="' + p.w + '" height="' + p.h + '"' : '') + '></button>';
+    }).join('') + '</div>';
+  }
+  function bindThumbs(el, list) {
+    el.addEventListener('click', function (e) { var b = e.target.closest('.ph'); if (b && el.contains(b)) lbOpen(list, +b.dataset.i, b); });
+  }
+  function flat(album) {
+    var cap = dateLabel(album.date) + ' · ' + album.title;
+    return album.photos.map(function (p) { return { src: p.src, thumb: p.thumb, w: p.w, h: p.h, cap: cap, alt: album.title }; });
+  }
+
+  var albumsEl = $('[data-albums]');
+  if (albumsEl) {
+    load('gallery').then(function (raw) {
+      var albums = albumsOf(raw);
+      if (!albums.length) { albumsEl.innerHTML = emptyBox(T.noPhotos); return; }
+      albumsEl.innerHTML = albums.map(function (a, k) {
+        return '<section class="album" id="' + esc(a.id || '') + '"><div class="album-h"><h2 class="sec-h">' + esc(a.title) + '</h2><span class="muted">' + esc(dateLabel(a.date)) + ' · ' + esc(fmt(T.photoCount, { n: a.photos.length })) + '</span>' +
+          (a.event ? ' <a class="more" href="' + url('event/?id=' + encodeURIComponent(a.event)) + '">→</a>' : '') + '</div><div data-k="' + k + '"></div></section>';
+      }).join('');
+      albums.forEach(function (a, k) {
+        var holder = $('[data-k="' + k + '"]', albumsEl), list = flat(a);
+        holder.innerHTML = thumbs(list, 'ph-grid'); bindThumbs(holder, list);
+      });
+      if (location.hash) { var t = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (t) t.scrollIntoView(); }
+    });
+  }
+  var strip = $('[data-photos="latest"]');
+  if (strip) {
+    load('gallery').then(function (raw) {
+      var list = [];
+      albumsOf(raw).forEach(function (a) { list = list.concat(flat(a)); });
+      list = list.slice(0, +strip.dataset.limit || 8);
+      if (!list.length) return;
+      strip.innerHTML = thumbs(list, 'ph-row'); bindThumbs(strip, list);
+      $('[data-photos-sec]').hidden = false;
     });
   }
 

@@ -154,7 +154,7 @@
     token = t;
     return gh('https://api.github.com/repos/' + CFG.owner + '/' + CFG.repo).then(function (j) {
       if (!j.permissions || !j.permissions.push) throw new Error('이 키에는 저장 권한이 없어요. groovenspot 계정에서 public_repo 권한으로 만들어 주세요.');
-      store(TOKEN_KEY, t); loggedIn = true; renderLoginState(); loadTimetable(); loadEvents();
+      store(TOKEN_KEY, t); loggedIn = true; renderLoginState(); loadTimetable(); loadEvents(); loadGallery();
     });
   }
   var loginStarted = false;
@@ -394,7 +394,165 @@
     }).catch(function (err) { toast('저장 실패: ' + err.message); }).then(function () { busy(btn, false); });
   });
 
+  /* =========================================================
+     사진첩  data/gallery.json + assets/gallery/<앨범id>/
+     여러 파일을 Git Data API로 한 번에 커밋한다 (사진 + 썸네일 + gallery.json)
+     ========================================================= */
+  var GAL = [];
+  var GAPI = 'https://api.github.com/repos/' + CFG.owner + '/' + CFG.repo + '/git/';
+
+  // changes: [{ path, base64 } | { path, text } | { path, remove: true }], jsonMutators: { 'data/x.json': fn(cur) }
+  function commitFiles(changes, jsonMutators, message, attempt) {
+    attempt = attempt || 1;
+    var headSha, baseTree, jsonOut = {};
+    return gh(GAPI + 'ref/heads/' + CFG.branch).then(function (ref) {
+      headSha = ref.object.sha;
+      return gh(GAPI + 'commits/' + headSha);
+    }).then(function (c) {
+      baseTree = c.tree.sha;
+      var paths = Object.keys(jsonMutators || {});
+      return Promise.all(paths.map(function (p) {
+        return gh(p + '?ref=' + headSha).then(function (j) { return JSON.parse(b64decode(j.content)); }).catch(function () { return null; })
+          .then(function (cur) { jsonOut[p] = jsonMutators[p](cur); });
+      }));
+    }).then(function () {
+      var all = changes.concat(Object.keys(jsonOut).map(function (p) { return { path: p, text: JSON.stringify(jsonOut[p], null, 2) + '\n' }; }));
+      // 큰 파일은 blob으로 먼저 올린다 (동시에 4개씩)
+      var entries = [], i = 0;
+      function next() {
+        if (i >= all.length) return Promise.resolve();
+        var batch = all.slice(i, i + 4); i += 4;
+        return Promise.all(batch.map(function (ch) {
+          if (ch.remove) { entries.push({ path: ch.path, mode: '100644', type: 'blob', sha: null }); return null; }
+          if (ch.text != null) { entries.push({ path: ch.path, mode: '100644', type: 'blob', content: ch.text }); return null; }
+          return gh(GAPI + 'blobs', { method: 'POST', body: JSON.stringify({ content: ch.base64, encoding: 'base64' }) })
+            .then(function (b) { entries.push({ path: ch.path, mode: '100644', type: 'blob', sha: b.sha }); if (ch.onDone) ch.onDone(); });
+        })).then(next);
+      }
+      return next().then(function () { return gh(GAPI + 'trees', { method: 'POST', body: JSON.stringify({ base_tree: baseTree, tree: entries }) }); });
+    }).then(function (tree) {
+      return gh(GAPI + 'commits', { method: 'POST', body: JSON.stringify({ message: message, tree: tree.sha, parents: [headSha] }) });
+    }).then(function (commit) {
+      return gh(GAPI + 'refs/heads/' + CFG.branch, { method: 'PATCH', body: JSON.stringify({ sha: commit.sha }) });
+    }).then(function () { return jsonOut; }).catch(function (e) {
+      // 그 사이 다른 저장이 있었으면 최신 상태에서 한 번 더
+      if (attempt < 3 && /fast forward|Update is not a fast/i.test(e.message)) return commitFiles(changes, jsonMutators, message, attempt + 1);
+      throw e;
+    });
+  }
+
+  function resizeTo(file, maxSide, quality) {
+    var make = window.createImageBitmap ? createImageBitmap(file, { imageOrientation: 'from-image' }).catch(function () { return createImageBitmap(file); }) : Promise.reject();
+    return make.catch(function () {
+      return new Promise(function (res, rej) { var im = new Image(); im.onload = function () { res(im); }; im.onerror = rej; im.src = URL.createObjectURL(file); });
+    }).then(function (img) {
+      var w = img.width || img.naturalWidth, h = img.height || img.naturalHeight, k = Math.min(1, maxSide / Math.max(w, h));
+      var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      return { base64: c.toDataURL('image/jpeg', quality).split(',')[1], w: c.width, h: c.height };
+    });
+  }
+
+  var alPick = $('#al-pick'), alDate = $('#al-date'), alTitle = $('#al-title'), alEvent = $('#al-event'), alFiles = $('#al-files');
+  alDate.value = bizDate();
+
+  function renderAlbums() {
+    var sorted = GAL.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    alPick.innerHTML = '<option value="">+ 새 앨범 만들기</option>' + sorted.map(function (a) { return '<option value="' + esc(a.id) + '">' + esc(dateLabel(a.date) + ' · ' + a.title + ' (' + a.photos.length + '장)') + '</option>'; }).join('');
+    $('#al-list').innerHTML = sorted.length ? sorted.map(function (a) {
+      return '<div class="panel al-card"><div class="al-top"><b>' + esc(dateLabel(a.date) + ' · ' + a.title) + '</b> <span class="muted small">' + a.photos.length + '장</span>' +
+        '<span class="adm-act"><a class="btn" href="/gallery/#' + encodeURIComponent(a.id) + '" target="_blank">보기</a><button class="btn" type="button" data-al-del="' + esc(a.id) + '">앨범 삭제</button></span></div>' +
+        '<div class="al-thumbs">' + a.photos.map(function (p, i) { return '<span class="al-t"><img src="' + esc(p.thumb || p.src) + '" alt="" loading="lazy"><button type="button" title="이 사진 삭제" data-ph-del="' + esc(a.id) + '|' + i + '">✕</button></span>'; }).join('') + '</div></div>';
+    }).join('') : '<p class="empty">아직 앨범이 없어요. 위에서 첫 사진을 올려 보세요.</p>';
+  }
+  function loadGallery() {
+    return Promise.all([readJSON('data/gallery.json', []), readJSON('data/events.json', [])]).then(function (r) {
+      GAL = Array.isArray(r[0].data) ? r[0].data : [];
+      var evs = (Array.isArray(r[1].data) ? r[1].data : []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+      alEvent.innerHTML = '<option value="">연결 안 함</option>' + evs.map(function (e) { return '<option value="' + esc(evId(e)) + '" data-date="' + esc(e.date) + '" data-title="' + esc(e.title) + '">' + esc(dateLabel(e.date) + ' · ' + e.title) + '</option>'; }).join('');
+      renderAlbums();
+    }).catch(function (e) { toast(e.message); });
+  }
+  alPick.addEventListener('change', function () {
+    var a = GAL.filter(function (x) { return x.id === alPick.value; })[0];
+    alDate.disabled = alTitle.disabled = !!a;
+    if (a) { alDate.value = a.date; alTitle.value = a.title; alEvent.value = a.event || ''; }
+  });
+  alEvent.addEventListener('change', function () {
+    var o = alEvent.selectedOptions[0];
+    if (o && o.value && !alPick.value) { alDate.value = o.dataset.date; if (!alTitle.value) alTitle.value = o.dataset.title; }
+  });
+  alFiles.addEventListener('change', function () {
+    var fs = Array.prototype.slice.call(alFiles.files || []);
+    $('#al-prev').innerHTML = fs.map(function (f) { return '<img src="' + URL.createObjectURL(f) + '" alt="">'; }).join('');
+    $('#al-save').textContent = fs.length ? '사진 ' + fs.length + '장 올리기' : '사진 올리기';
+  });
+
+  $('#al-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var fs = Array.prototype.slice.call(alFiles.files || []);
+    if (!fs.length) { toast('올릴 사진을 골라 주세요.'); return; }
+    var existing = GAL.filter(function (x) { return x.id === alPick.value; })[0];
+    var date = existing ? existing.date : alDate.value, title = existing ? existing.title : alTitle.value.trim();
+    if (!date || !title) { toast('날짜와 앨범 이름을 넣어 주세요.'); return; }
+    var id = existing ? existing.id : date + '-' + (slug(title) || 'photos');
+    var btn = $('#al-save'), prog = $('#al-progress'); busy(btn, true);
+    var stamp = Date.now().toString(36), photos = [], changes = [], done = 0, total = fs.length;
+    var seq = Promise.resolve();
+    fs.forEach(function (f, i) {
+      seq = seq.then(function () {
+        prog.textContent = '사진 줄이는 중 ' + (i + 1) + '/' + total;
+        return Promise.all([resizeTo(f, 1600, .82), resizeTo(f, 480, .75)]).then(function (r) {
+          var name = stamp + '-' + String(i + 1).padStart(2, '0') + '.jpg', dir = 'assets/gallery/' + id + '/';
+          var tick = function () { done++; prog.textContent = '올리는 중 ' + Math.min(total, Math.ceil(done / 2)) + '/' + total; };
+          changes.push({ path: dir + name, base64: r[0].base64, onDone: tick }, { path: dir + 't/' + name, base64: r[1].base64, onDone: tick });
+          photos.push({ src: '/' + dir + name, thumb: '/' + dir + 't/' + name, w: r[0].w, h: r[0].h });
+        });
+      });
+    });
+    seq.then(function () {
+      var mut = {};
+      mut['data/gallery.json'] = function (cur) {
+        cur = Array.isArray(cur) ? cur : [];
+        var a = cur.filter(function (x) { return x.id === id; })[0];
+        if (!a) { a = { id: id, date: date, title: title, photos: [] }; cur.push(a); }
+        if (alEvent.value) a.event = alEvent.value; else if (!existing) delete a.event;
+        a.photos = a.photos.concat(photos);
+        return cur.sort(function (x, y) { return x.date < y.date ? 1 : -1; });
+      };
+      return commitFiles(changes, mut, '사진첩: ' + date + ' ' + title + ' 사진 ' + total + '장');
+    }).then(function (out) {
+      GAL = out['data/gallery.json']; renderAlbums();
+      $('#al-form').reset(); alDate.disabled = alTitle.disabled = false; alDate.value = bizDate(); $('#al-prev').innerHTML = ''; alPick.value = id; alPick.dispatchEvent(new Event('change'));
+      prog.textContent = ''; toast('사진 ' + total + '장을 올렸어요' + LIVE_NOTE);
+    }).catch(function (err) { prog.textContent = ''; toast('올리기 실패: ' + err.message); }).then(function () { busy(btn, false); btn.textContent = '사진 올리기'; });
+  });
+
+  $('#al-list').addEventListener('click', function (e) {
+    var ad = e.target.closest('[data-al-del]'), pd = e.target.closest('[data-ph-del]');
+    var b = ad || pd; if (!b) return;
+    if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; var old = b.textContent; b.textContent = ad ? '정말 삭제?' : '삭제?'; setTimeout(function () { b.dataset.confirm = ''; b.textContent = old; }, 4000); return; }
+    var id, idx = -1;
+    if (ad) id = ad.dataset.alDel; else { var p = pd.dataset.phDel.split('|'); id = p[0]; idx = +p[1]; }
+    var album = GAL.filter(function (x) { return x.id === id; })[0]; if (!album) return;
+    var gone = idx < 0 ? album.photos : [album.photos[idx]];
+    var changes = [];
+    gone.forEach(function (ph) { [ph.src, ph.thumb].filter(Boolean).forEach(function (s) { changes.push({ path: s.replace(/^\//, ''), remove: true }); }); });
+    var mut = {};
+    mut['data/gallery.json'] = function (cur) {
+      cur = Array.isArray(cur) ? cur : [];
+      if (idx < 0) return cur.filter(function (x) { return x.id !== id; });
+      var srcs = gone.map(function (g) { return g.src; });
+      cur.forEach(function (x) { if (x.id === id) x.photos = x.photos.filter(function (ph) { return srcs.indexOf(ph.src) < 0; }); });
+      return cur.filter(function (x) { return x.photos.length; });
+    };
+    b.disabled = true;
+    commitFiles(changes, mut, idx < 0 ? '사진첩: 앨범 삭제 ' + id : '사진첩: 사진 1장 삭제 (' + id + ')')
+      .then(function (out) { GAL = out['data/gallery.json']; renderAlbums(); toast((idx < 0 ? '앨범을' : '사진을') + ' 삭제했어요' + LIVE_NOTE); })
+      .catch(function (err) { b.disabled = false; toast('삭제 실패: ' + err.message); });
+  });
+
   /* ---------- 시작 ---------- */
   var startTab = store('gs_admin_tab');
-  showTab(startTab === 'timetable' || startTab === 'events' ? startTab : 'requests');
+  showTab(['timetable', 'events', 'gallery'].indexOf(startTab) >= 0 ? startTab : 'requests');
 })();
