@@ -52,6 +52,8 @@ function layout(lang, page, { title, desc, body, active }) {
 <title>${esc(fullTitle)}</title>
 <meta name="description" content="${esc(desc || L('site.desc'))}">
 <link rel="canonical" href="${SITE}${href(lang, page)}">
+<meta name="keywords" content="${esc(L('site.kw'))}">
+<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@type':'NightClub',name:'Groove & Spot',alternateName:['그루브앤스팟','GROOVE N SPOT','Groove Club Busan','그루브 클럽','グルーブアンドスポット'],description:L('site.desc'),url:SITE+'/',image:SITE+'/assets/og.png',logo:SITE+'/assets/icon-512.png',telephone:'+82-507-1301-5970',address:{'@type':'PostalAddress',streetAddress:'52 Jungang-daero 680beonga-gil, 2F-3F',addressLocality:'Busanjin-gu, Busan',addressCountry:'KR'},openingHoursSpecification:[{'@type':'OpeningHoursSpecification',dayOfWeek:['Sunday','Monday','Tuesday','Wednesday','Thursday'],opens:'21:30',closes:'06:00'},{'@type':'OpeningHoursSpecification',dayOfWeek:['Friday','Saturday'],opens:'21:00',closes:'07:00'}],isAccessibleForFree:true,publicAccess:true,keywords:L('site.kw'),hasMap:'https://www.google.com/maps/place/groove+club+busan/data=!4m2!3m1!1s0x3568eb656144707d:0x40a16e9eec334ab7',sameAs:['https://www.instagram.com/groovenspot','https://www.youtube.com/@groovebusan','https://www.threads.com/@groovenspot','https://www.facebook.com/profile.php?id=61594858447057']}).replace(/</g,'\\u003c')}</script>
 ${alternates}
 <link rel="alternate" hreflang="x-default" href="${SITE}/${page}">
 <meta property="og:type" content="website">
