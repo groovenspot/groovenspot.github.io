@@ -20,6 +20,8 @@ const fig = (src, alt, cls = '') => `<figure class="shot ${cls}"><a href="${src}
 const PHONE = '0507-1301-5970';
 const ADDR_KO = '부산 부산진구 중앙대로680번가길 52';
 const GMAP = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ADDR_KO)}`;
+// 길찾기 버튼: 구글 지도 경로 안내 (현재 위치 → 매장)
+const GMAP_DIR = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(ADDR_KO)}`;
 const GMAP_EMBED = (lang) => `https://maps.google.com/maps?q=${encodeURIComponent(ADDR_KO)}&hl=${lang === 'zh' ? 'zh-CN' : lang}&z=17&output=embed`;
 const VERSION = Date.now().toString(36);
 
@@ -108,7 +110,7 @@ ${body}
 <nav class="dock" aria-label="Quick actions">
   <a href="${href(lang, 'events/')}">${L('cta.tonight')}</a>
   <a class="dock-hot" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a>
-  <a href="https://map.naver.com/v5/search/${encodeURIComponent(ADDR_KO)}" rel="noopener">${L('cta.map')}</a>
+  <a href="${GMAP_DIR}" rel="noopener">${L('cta.map')}</a>
 </nav>
 <div class="gate" id="gate" hidden>
   <div class="gate-box" role="dialog" aria-modal="true" aria-labelledby="gate-q">
