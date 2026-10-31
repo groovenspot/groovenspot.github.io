@@ -13,6 +13,7 @@ const SITE = 'https://xn--2i0bl1s25d.site'; // 그루브.site
 const INSTAGRAM = 'https://www.instagram.com/groovenspot/';
 const SOUNDCLOUD = 'https://on.soundcloud.com/IWtEmqOHfTecbn1cBI';
 const YOUTUBE = 'https://www.youtube.com/@GROOVEBUSAN';
+const XHS = 'https://www.xiaohongshu.com/user/profile/679dc482000000000e01e057';
 // 신청곡 전달용 ntfy 토픽 (assets/admin.js 의 TOPIC 과 같아야 함)
 const REQ_TOPIC = 'groovenspot-req-6witbq5hriea';
 // Google Analytics 4 측정 ID (G-XXXXXXXXXX). 비워 두면 통계 코드를 넣지 않는다. 관리자 페이지에는 넣지 않음.
@@ -54,7 +55,7 @@ function layout(lang, page, { title, desc, body, active }) {
 <meta name="description" content="${esc(desc || L('site.desc'))}">
 <link rel="canonical" href="${SITE}${href(lang, page)}">
 <meta name="keywords" content="${esc(L('site.kw'))}">
-<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@type':'NightClub',name:'Groove & Spot',alternateName:['그루브앤스팟','GROOVE N SPOT','Groove Club Busan','그루브 클럽','グルーブアンドスポット'],description:L('site.desc'),url:SITE+'/',image:SITE+'/assets/og.png',logo:SITE+'/assets/icon-512.png',telephone:'+82-507-1301-5970',address:{'@type':'PostalAddress',streetAddress:'52 Jungang-daero 680beonga-gil, 2F-3F',addressLocality:'Busanjin-gu, Busan',addressCountry:'KR'},openingHoursSpecification:[{'@type':'OpeningHoursSpecification',dayOfWeek:['Sunday','Monday','Tuesday','Wednesday','Thursday'],opens:'21:30',closes:'06:00'},{'@type':'OpeningHoursSpecification',dayOfWeek:['Friday','Saturday'],opens:'21:00',closes:'07:00'}],isAccessibleForFree:true,publicAccess:true,keywords:L('site.kw'),hasMap:'https://www.google.com/maps/place/groove+club+busan/data=!4m2!3m1!1s0x3568eb656144707d:0x40a16e9eec334ab7',sameAs:['https://www.instagram.com/groovenspot','https://www.youtube.com/@groovebusan','https://www.threads.com/@groovenspot','https://www.facebook.com/profile.php?id=61594858447057']}).replace(/</g,'\\u003c')}</script>
+<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@type':'NightClub',name:'Groove & Spot',alternateName:['그루브앤스팟','GROOVE N SPOT','Groove Club Busan','그루브 클럽','グルーブアンドスポット'],description:L('site.desc'),url:SITE+'/',image:SITE+'/assets/og.png',logo:SITE+'/assets/icon-512.png',telephone:'+82-507-1301-5970',address:{'@type':'PostalAddress',streetAddress:'52 Jungang-daero 680beonga-gil, 2F-3F',addressLocality:'Busanjin-gu, Busan',addressCountry:'KR'},openingHoursSpecification:[{'@type':'OpeningHoursSpecification',dayOfWeek:['Sunday','Monday','Tuesday','Wednesday','Thursday'],opens:'21:30',closes:'06:00'},{'@type':'OpeningHoursSpecification',dayOfWeek:['Friday','Saturday'],opens:'21:00',closes:'07:00'}],isAccessibleForFree:true,publicAccess:true,keywords:L('site.kw'),hasMap:'https://www.google.com/maps/place/groove+club+busan/data=!4m2!3m1!1s0x3568eb656144707d:0x40a16e9eec334ab7',sameAs:['https://www.instagram.com/groovenspot','https://www.youtube.com/@groovebusan','https://www.threads.com/@groovenspot','https://www.facebook.com/profile.php?id=61594858447057',XHS]}).replace(/</g,'\\u003c')}</script>
 ${alternates}
 <link rel="alternate" hreflang="x-default" href="${SITE}/${page}">
 <meta property="og:type" content="website">
@@ -111,7 +112,7 @@ ${body}
     </div>
     <div>
       <h2 class="ftr-h">${L('sec.contact')}</h2>
-      <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a></p>
+      <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a><br><a href="${XHS}" rel="noopener">小红书 Xiaohongshu</a></p>
     </div>
   </div>
   <p class="ftr-small muted"><a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
@@ -351,7 +352,7 @@ ${pageHead(lang, 'reserve')}
     <ul class="checks"><li>${L('pol.age')}</li><li>${L('pol.dress')}</li><li>${L('pol.respect')}</li></ul>
   </div>
   <div class="panel"><h2 class="sec-h">${L('sec.contact')}</h2>
-    <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a></p>
+    <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a><br><a href="${XHS}" rel="noopener">小红书 Xiaohongshu</a></p>
   </div>
 </section>
 <section class="wrap sec" aria-label="${L('map.embed')}"><div class="gmap gmap-lg"><iframe src="${GMAP_EMBED(lang)}" title="${L('map.embed')} · Groove &amp; Spot" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div></section>
