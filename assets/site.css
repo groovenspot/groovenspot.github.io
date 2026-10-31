@@ -394,3 +394,15 @@ img { max-width: 100%; display: block; }
 @media (max-width: 600px) { .lb-nav { position: absolute; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); margin: 0; } .lb-prev { left: 16px; } .lb-next { right: 16px; } .lb { grid-template-columns: minmax(0, 1fr); } .lb-fig img { max-height: calc(100dvh - 150px); } }
 .lang summary { display: inline-flex; align-items: center; gap: 6px; letter-spacing: .02em; font-size: 14px; white-space: nowrap; }
 .lang-globe { font-size: 15px; line-height: 1; }
+
+/* song search */
+.rq-search { position: relative; display: grid; gap: 6px; }
+.rq-search > label { font-weight: 700; font-size: 14px; }
+.rq-results { list-style: none; margin: 0; padding: 6px; position: absolute; left: 0; right: 0; top: calc(100% - 22px); z-index: 20; background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; box-shadow: 0 18px 40px rgba(0, 0, 0, .6); max-height: 360px; overflow-y: auto; }
+.rq-results li { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 10px; cursor: pointer; min-height: 56px; }
+.rq-results li:hover, .rq-results li[aria-selected="true"] { background: rgba(255, 255, 255, .08); }
+.rq-results img, .rq-noimg { width: 44px; height: 44px; border-radius: 6px; flex: 0 0 auto; object-fit: cover; background: #222; }
+.rq-results .rq-t { display: grid; min-width: 0; }
+.rq-results b { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rq-results small { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rq-hint { margin: 0; min-height: 1.2em; }

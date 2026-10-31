@@ -237,7 +237,12 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
     return `${pageHead(lang, 'request')}
 <section class="wrap sec rv">
   <form class="rv-form" id="rq-form" novalidate>
-    <label>${L('rq.song')}<input name="song" maxlength="80" autocomplete="off" required></label>
+    <div class="full rq-search">
+      <label for="rq-song">${L('rq.song')}</label>
+      <input id="rq-song" name="song" maxlength="80" autocomplete="off" required placeholder="${esc(L('rq.searchPh'))}" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="rq-results">
+      <ul class="rq-results" id="rq-results" role="listbox" hidden></ul>
+      <p class="rq-hint muted small" id="rq-hint" aria-live="polite"></p>
+    </div>
     <label>${L('rq.artist')}<input name="artist" maxlength="60" autocomplete="off"></label>
     <fieldset class="seg full"><legend>${L('rq.floor')}</legend>
       <label class="seg-g"><input type="radio" name="floor" value="2F" checked><span>2F · HIPHOP</span></label>

@@ -7,6 +7,7 @@ export const HTML_LANG = { ko: 'ko', en: 'en', ja: 'ja', zh: 'zh-CN' };
 
 export const T = {
   ko: {
+    'rq.searchPh': '곡 제목이나 가수를 입력하면 검색돼요', 'rt.rqNoResult': '검색 결과가 없어요. 직접 입력해서 보내도 돼요.', 'rt.rqSearching': '검색 중…',
     'nav.gallery': '사진첩', 'page.gallery.t': '사진첩', 'page.gallery.s': 'Groove & Spot의 밤들. 파티 사진을 날짜별로 모았어요.', 'sec.photos': '최근 사진', 'more.gallery': '사진첩 전체 보기', 'rt.noPhotos': '아직 올라온 사진이 없어요.', 'rt.photoCount': '{n}장', 'rt.photosOf': '이 날의 사진', 'rt.close': '닫기', 'rt.prev': '이전 사진', 'rt.next': '다음 사진',
     'nav.menu': '메뉴', 'page.menu.t': '메뉴 & 가격', 'page.menu.s': '층마다 가격이 달라요. 바틀 세트와 주류는 층별로, 칵테일·슈터·맥주는 바 메뉴에서 확인하세요.', 'tab.bar': '바 메뉴 · 칵테일·슈터·맥주', 'more.menu': '전체 메뉴 & 가격 보기',
     'nav.request': '신청곡', 'page.request.t': '신청곡', 'page.request.s': 'DJ에게 듣고 싶은 곡을 보내 주세요. 분위기에 맞으면 틀어 드려요.', 'rq.song': '곡 제목', 'rq.artist': '아티스트', 'rq.floor': '어느 층에서?', 'rq.nick': '닉네임 (선택)', 'rq.memo': 'DJ에게 한마디 (선택)', 'rq.btn': '신청곡 보내기', 'rq.note': '신청곡은 DJ 화면에 바로 전달돼요. 모든 곡을 틀어 드리지는 못해요. 전화번호 같은 개인정보는 적지 마세요.', 'cta.request': '신청곡 보내기', 'rt.rqSent': '신청곡을 보냈어요! 🎵', 'rt.rqWait': '잠시 후 다시 보낼 수 있어요 ({s}초)', 'rt.rqNeed': '곡 제목을 입력해 주세요.', 'rt.rqFail': '전송에 실패했어요. 잠시 후 다시 시도해 주세요.',
@@ -63,6 +64,7 @@ export const T = {
     '404.t': '페이지를 찾을 수 없어요', '404.home': '홈으로',
   },
   en: {
+    'rq.searchPh': 'Type a title or artist to search', 'rt.rqNoResult': 'No matches. You can still send what you typed.', 'rt.rqSearching': 'Searching…',
     'nav.gallery': 'Gallery', 'page.gallery.t': 'Gallery', 'page.gallery.s': 'Nights at Groove & Spot, party photos by date.', 'sec.photos': 'Latest photos', 'more.gallery': 'Open the gallery', 'rt.noPhotos': 'No photos yet.', 'rt.photoCount': '{n} photos', 'rt.photosOf': 'Photos from this night', 'rt.close': 'Close', 'rt.prev': 'Previous photo', 'rt.next': 'Next photo',
     'nav.menu': 'Menu', 'page.menu.t': 'Menu & prices', 'page.menu.s': 'Prices differ by floor. Bottle sets and spirits are listed per floor; cocktails, shooters and beer are on the bar menu.', 'tab.bar': 'Bar · cocktails, shots, beer', 'more.menu': 'Full menu & prices',
     'nav.request': 'Requests', 'page.request.t': 'Song request', 'page.request.s': 'Send the DJ a track you want to hear. If it fits the vibe, it gets played.', 'rq.song': 'Song title', 'rq.artist': 'Artist', 'rq.floor': 'Which floor?', 'rq.nick': 'Nickname (optional)', 'rq.memo': 'Note to the DJ (optional)', 'rq.btn': 'Send request', 'rq.note': 'Requests go straight to the DJ screen. Not every track can be played. Please do not include phone numbers or personal info.', 'cta.request': 'Request a song', 'rt.rqSent': 'Request sent! 🎵', 'rt.rqWait': 'You can send another in {s}s', 'rt.rqNeed': 'Please enter a song title.', 'rt.rqFail': 'Could not send. Please try again shortly.',
@@ -116,6 +118,7 @@ export const T = {
     '404.t': 'Page not found', '404.home': 'Back home',
   },
   ja: {
+    'rq.searchPh': '曲名やアーティスト名を入力すると検索できます', 'rt.rqNoResult': '見つかりませんでした。入力したまま送れます。', 'rt.rqSearching': '検索中…',
     'nav.gallery': 'ギャラリー', 'page.gallery.t': 'ギャラリー', 'page.gallery.s': 'Groove & Spotの夜。パーティー写真を日付ごとにまとめました。', 'sec.photos': '最新の写真', 'more.gallery': 'ギャラリーを見る', 'rt.noPhotos': 'まだ写真はありません。', 'rt.photoCount': '{n}枚', 'rt.photosOf': 'この日の写真', 'rt.close': '閉じる', 'rt.prev': '前の写真', 'rt.next': '次の写真',
     'nav.menu': 'メニュー', 'page.menu.t': 'メニュー＆料金', 'page.menu.s': 'フロアごとに料金が異なります。ボトルセットとお酒はフロア別、カクテル・ショット・ビールはバーメニューをご覧ください。', 'tab.bar': 'バー · カクテル・ショット・ビール', 'more.menu': 'メニューと料金を見る',
     'nav.request': 'リクエスト', 'page.request.t': 'リクエスト', 'page.request.s': 'DJに聴きたい曲を送ってください。雰囲気に合えばかけます。', 'rq.song': '曲名', 'rq.artist': 'アーティスト', 'rq.floor': 'どのフロア？', 'rq.nick': 'ニックネーム（任意）', 'rq.memo': 'DJへひとこと（任意）', 'rq.btn': 'リクエストを送る', 'rq.note': 'リクエストはDJの画面にすぐ届きます。すべての曲をかけられるわけではありません。電話番号などの個人情報は書かないでください。', 'cta.request': 'リクエストする', 'rt.rqSent': 'リクエストを送りました！🎵', 'rt.rqWait': '{s}秒後にまた送れます', 'rt.rqNeed': '曲名を入力してください。', 'rt.rqFail': '送信できませんでした。しばらくしてからお試しください。',
@@ -169,6 +172,7 @@ export const T = {
     '404.t': 'ページが見つかりません', '404.home': 'ホームへ',
   },
   zh: {
+    'rq.searchPh': '输入歌名或歌手即可搜索', 'rt.rqNoResult': '没有找到。也可以直接发送输入的内容。', 'rt.rqSearching': '搜索中…',
     'nav.gallery': '相册', 'page.gallery.t': '相册', 'page.gallery.s': 'Groove & Spot的夜晚，按日期整理的派对照片。', 'sec.photos': '最新照片', 'more.gallery': '查看相册', 'rt.noPhotos': '还没有照片。', 'rt.photoCount': '{n}张', 'rt.photosOf': '当晚照片', 'rt.close': '关闭', 'rt.prev': '上一张', 'rt.next': '下一张',
     'nav.menu': '酒单', 'page.menu.t': '酒单与价格', 'page.menu.s': '各楼层价格不同。套餐和酒类按楼层显示，鸡尾酒、子弹杯和啤酒请看吧台菜单。', 'tab.bar': '吧台 · 鸡尾酒·子弹杯·啤酒', 'more.menu': '查看完整酒单与价格',
     'nav.request': '点歌', 'page.request.t': '点歌', 'page.request.s': '把想听的歌发给DJ，合适就会播放。', 'rq.song': '歌名', 'rq.artist': '歌手', 'rq.floor': '在哪一层？', 'rq.nick': '昵称（可选）', 'rq.memo': '给DJ留言（可选）', 'rq.btn': '发送点歌', 'rq.note': '点歌会直接发送到DJ屏幕，但不保证每首都能播放。请勿填写电话号码等个人信息。', 'cta.request': '点歌', 'rt.rqSent': '点歌已发送！🎵', 'rt.rqWait': '{s}秒后可再次发送', 'rt.rqNeed': '请输入歌名。', 'rt.rqFail': '发送失败，请稍后再试。',
