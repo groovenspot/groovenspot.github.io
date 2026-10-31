@@ -38,6 +38,17 @@
   /* ---------- 방문 통계 (Google Analytics, GA_ID 가 있을 때만) ---------- */
   // 이름·전화번호 같은 개인정보는 보내지 않는다
   function track(name, params) { try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {} }
+  // 사이트 안의 다른 페이지로 넘어가는 클릭은 바로 보내면 페이지가 바뀌며 사라질 수 있어서,
+  // 저장해 두었다가 다음 페이지가 열릴 때 보낸다
+  try {
+    var pend = JSON.parse(sessionStorage.getItem('gs_pending') || '[]');
+    sessionStorage.removeItem('gs_pending');
+    pend.forEach(function (x) { track(x[0], x[1]); });
+  } catch (e) {}
+  function trackNext(name, params) {
+    try { var l = JSON.parse(sessionStorage.getItem('gs_pending') || '[]'); l.push([name, params]); sessionStorage.setItem('gs_pending', JSON.stringify(l.slice(-5))); }
+    catch (e) { track(name, params); }
+  }
   function where(el) {
     if (el.closest('.dock')) return 'bottom_bar';
     if (el.closest('.mnav')) return 'mobile_menu';
@@ -48,10 +59,10 @@
     return document.body.dataset.page || 'page';
   }
   document.addEventListener('click', function (e) {
-    var a = e.target.closest('a[href]'); if (!a) return;
+    var a = e.target.closest('a[href]'); if (!a || e.defaultPrevented) return;
     var h = a.getAttribute('href') || '', at = where(a);
-    if (/\/reserve\/(\?|$)/.test(h)) track('reserve_click', { location: at });
-    else if (/\/request\/(\?|$)/.test(h)) track('request_click', { location: at });
+    if (/\/reserve\/(\?|$)/.test(h)) trackNext('reserve_click', { location: at });
+    else if (/\/request\/(\?|$)/.test(h)) trackNext('request_click', { location: at });
     else if (h.indexOf('tel:') === 0) track('call_click', { location: at });
     else if (/google\.com\/maps|map\.naver|map\.kakao/.test(h)) track('directions_click', { map: /google/.test(h) ? 'google' : /naver/.test(h) ? 'naver' : 'kakao', location: at });
     else if (/instagram\.com/.test(h)) track('instagram_click', { location: at });
