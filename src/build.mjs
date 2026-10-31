@@ -42,6 +42,7 @@ function layout(lang, page, { title, desc, body, active }) {
 <html lang="${HTML_LANG[lang]}">
 <head>
 <meta charset="utf-8">
+<script>if(location.protocol==='http:'&&!/^(localhost|127\\.|\\[)/.test(location.hostname))location.replace('https:'+location.href.slice(5))</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0909">
 <title>${esc(fullTitle)}</title>
@@ -383,6 +384,16 @@ write('404.html', layout('ko', '', {
   body: `<section class="phead wrap"><h1>404</h1><p class="lede">${t('ko', '404.t')} · ${t('en', '404.t')}</p><p><a class="btn btn-hot" href="/">${t('ko', '404.home')}</a></p></section>`,
 }).replace(/<link rel="canonical"[^>]*>\n/, ''));
 
+// 검색엔진용: 사이트맵 + robots.txt (관리자 페이지는 제외)
+const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+const smPages = PAGES.filter((p) => p !== 'event/');
+write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${smPages.flatMap((p) => LANGS.map((l) => `  <url><loc>${SITE}${href(l, p)}</loc><lastmod>${today}</lastmod>${LANGS.map((a) => `<xhtml:link rel="alternate" hreflang="${HTML_LANG[a]}" href="${SITE}${href(a, p)}"/>`).join('')}</url>`)).join('\n')}
+</urlset>
+`);
+write('robots.txt', `User-agent: *\nDisallow: /admin/\nDisallow: /floor/\nSitemap: ${SITE}/sitemap.xml\n`);
+
 console.log(`built ${LANGS.length * PAGES.length + 1} pages`);
 
 // 관리자 페이지 (한국어만, 검색 제외). 저장은 GitHub API로 data/*.json 을 직접 커밋한다.
@@ -390,6 +401,7 @@ write('admin/index.html', `<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script>if(location.protocol==='http:'&&!/^(localhost|127\\.|\\[)/.test(location.hostname))location.replace('https:'+location.href.slice(5))</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0a0909">
