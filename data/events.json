@@ -1,25 +1,5 @@
 [
   {
-    "date": "2026-07-24",
-    "title": "NEON FRIDAY",
-    "floor": "2F+3F",
-    "genre": "EDM / Pop",
-    "open": "21:30"
-  },
-  {
-    "date": "2026-07-25",
-    "title": "SATURDAY GUEST NIGHT",
-    "floor": "3F",
-    "genre": "EDM",
-    "open": "22:00",
-    "lineup": {
-      "3F": [
-        "ASH",
-        "BIXXB"
-      ]
-    }
-  },
-  {
     "date": "2026-08-07",
     "title": "OWN THE NIGHT",
     "floor": "2F+3F",
