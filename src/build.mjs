@@ -71,7 +71,7 @@ ${alternates}
     ${nav.map(([p, k]) => `<a href="${href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n    ')}
   </nav>
   <details class="lang">
-    <summary aria-label="Language">${lang.toUpperCase()}</summary>
+    <summary aria-label="Language: ${LANG_LABEL[lang]}"><span class="lang-globe" aria-hidden="true">🌐</span> Language</summary>
     <div class="lang-menu">
       ${LANGS.map((l) => `<a href="${href(l, page)}" hreflang="${HTML_LANG[l]}" data-lang="${l}"${l === lang ? ' aria-current="true"' : ''}>${LANG_LABEL[l]}</a>`).join('\n      ')}
     </div>

@@ -390,3 +390,5 @@ img { max-width: 100%; display: block; }
 .lb-nav { margin: 0 10px; }
 .lb-x { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); font-size: 18px !important; z-index: 1; }
 @media (max-width: 600px) { .lb-nav { position: absolute; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); margin: 0; } .lb-prev { left: 16px; } .lb-next { right: 16px; } .lb { grid-template-columns: minmax(0, 1fr); } .lb-fig img { max-height: calc(100dvh - 150px); } }
+.lang summary { display: inline-flex; align-items: center; gap: 6px; letter-spacing: .02em; font-size: 14px; white-space: nowrap; }
+.lang-globe { font-size: 15px; line-height: 1; }
