@@ -406,3 +406,19 @@ img { max-width: 100%; display: block; }
 .rq-results b { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rq-results small { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rq-hint { margin: 0; min-height: 1.2em; }
+
+/* mobile menu */
+.menu-btn { display: inline-flex; flex-direction: column; justify-content: center; gap: 5px; width: 44px; height: 44px; padding: 0 11px; border-radius: 12px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .04); cursor: pointer; flex: 0 0 auto; }
+.menu-btn span { display: block; height: 2px; border-radius: 2px; background: var(--txt); transition: transform .2s, opacity .2s; }
+.menu-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.menu-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+@media (min-width: 900px) { .menu-btn, .mnav { display: none !important; } }
+.mnav { position: fixed; z-index: 39; left: 0; right: 0; top: 0; bottom: 0; padding: calc(84px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(96px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+.mnav a:not(.btn) { display: block; padding: 14px 6px; font-family: var(--display); font-size: 24px; text-decoration: none; border-bottom: 1px solid var(--line); }
+:lang(ko) .mnav a:not(.btn), :lang(ja) .mnav a:not(.btn) { font-size: 26px; }
+.mnav a[aria-current="page"]:not(.btn) { color: var(--g); }
+.mnav-cta { margin-top: 18px; min-height: 52px; font-size: 17px; }
+body.mnav-open { overflow: hidden; }
+@media (max-width: 899px) { .hdr { gap: 8px; } .lang summary { padding: 8px 10px; } }
+@media (max-width: 400px) { .hdr .logo .logo-icon { height: 24px; } .hdr .logo img:last-child { height: 14px; } .lang summary { font-size: 13px; } }

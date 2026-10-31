@@ -35,6 +35,20 @@
     $('#gate-yes').focus();
   }
 
+  /* ---------- 휴대폰 메뉴 (☰) ---------- */
+  var mbtn = $('.menu-btn'), mnav = $('#mnav');
+  function setMenu(open) {
+    mnav.hidden = !open; mbtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    mbtn.setAttribute('aria-label', open ? mbtn.dataset.close : mbtn.dataset.open);
+    document.body.classList.toggle('mnav-open', open);
+  }
+  if (mbtn && mnav) {
+    mbtn.addEventListener('click', function () { setMenu(mnav.hidden); });
+    mnav.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !mnav.hidden) { setMenu(false); mbtn.focus(); } });
+    window.addEventListener('resize', function () { if (window.innerWidth >= 900 && !mnav.hidden) setMenu(false); });
+  }
+
   /* ---------- 언어 선택 기억 ---------- */
   $$('.lang-menu a').forEach(function (a) { a.addEventListener('click', function () { store('gs_lang', a.dataset.lang); }); });
   $$('.lang').forEach(function (d) {

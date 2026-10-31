@@ -77,7 +77,14 @@ ${alternates}
     </div>
   </details>
   <a class="btn btn-hot hdr-cta" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mnav" aria-label="${L('nav.open')}" data-open="${L('nav.open')}" data-close="${L('nav.close')}"><span></span><span></span><span></span></button>
 </header>
+<nav class="mnav" id="mnav" aria-label="Mobile" hidden>
+  <a href="${href(lang, '')}"${!active ? ' aria-current="page"' : ''}>${L('nav.home')}</a>
+  ${nav.map(([p, k]) => `<a href="${href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n  ')}
+  <a href="${href(lang, 'artists/')}"${active === 'artists/' ? ' aria-current="page"' : ''}>${L('nav.artists')}</a>
+  <a class="btn btn-hot mnav-cta" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a>
+</nav>
 <main id="main">
 ${body}
 </main>
