@@ -351,7 +351,8 @@
   }
   function flat(album) {
     var cap = dateLabel(album.date) + ' · ' + album.title;
-    return album.photos.map(function (p) { return { src: p.src, thumb: p.thumb, w: p.w, h: p.h, cap: cap, alt: album.title }; });
+    var alt = album.title + ' · ' + dateLabel(album.date) + ' · Busan nightclub Groove & Spot, Seomyeon';
+    return album.photos.map(function (p) { return { src: p.src, thumb: p.thumb, w: p.w, h: p.h, cap: cap, alt: alt }; });
   }
 
   var albumsEl = $('[data-albums]');

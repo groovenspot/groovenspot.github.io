@@ -29,6 +29,7 @@ const GMAP_DIR = `https://www.google.com/maps/dir/?api=1&destination=${encodeURI
 const GMAP_EMBED = (lang) => `https://maps.google.com/maps?q=${encodeURIComponent(ADDR_KO)}&hl=${lang === 'zh' ? 'zh-CN' : lang}&z=17&output=embed`;
 const VERSION = Date.now().toString(36);
 
+const FAQ_N = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6];
 const PAGES = ['', 'events/', 'event/', 'floors/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/'];
 const prefix = (lang) => (lang === 'ko' ? '' : `/${lang}`);
 const href = (lang, page) => `${prefix(lang)}/${page}`;
@@ -358,9 +359,10 @@ ${pageHead(lang, 'reserve')}
 <section class="wrap sec" aria-labelledby="faq-h">
   <h2 class="sec-h" id="faq-h">${L('sec.faq')}</h2>
   <div class="faq">
-    ${[1, 2, 3, 4, 5, 6].map((i) => `<details><summary>${L(`faq.q${i}`)}</summary><p>${L(`faq.a${i}`)}</p></details>`).join('\n    ')}
+    ${FAQ_N.map((i) => `<details><summary>${L(`faq.q${i}`)}</summary><p>${L(`faq.a${i}`)}</p></details>`).join('\n    ')}
   </div>
-</section>`;
+</section>
+<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ_N.map((i) => ({ '@type': 'Question', name: L(`faq.q${i}`), acceptedAnswer: { '@type': 'Answer', text: L(`faq.a${i}`) } })) }).replace(/</g, '\\u003c')}</script>`;
   },
 };
 
@@ -393,7 +395,51 @@ write('404.html', layout('ko', '', {
 
 // 검색엔진용: 사이트맵 + robots.txt (관리자 페이지는 제외)
 const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
-const smPages = PAGES.filter((p) => p !== 'event/');
+// 이벤트 상세 고정 페이지 (검색엔진용) — data/events.json·timetable.json·gallery.json 으로 생성
+import { readFileSync } from 'node:fs';
+const readJ = (f, d) => { try { return JSON.parse(readFileSync(join(ROOT, 'data', f), 'utf8')); } catch (e) { return d; } };
+const EVENTS = readJ('events.json', []), TTJ = readJ('timetable.json', {}), GAL = readJ('gallery.json', []);
+const slugE = (x) => String(x).toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/^-|-$/g, '');
+const pickL = (v, lang) => (v == null ? '' : typeof v === 'string' ? v : v[lang] || v.en || v.ko || '');
+const DOWS = { ko: ['일', '월', '화', '수', '목', '금', '토'], en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], ja: ['日', '月', '火', '水', '木', '金', '土'], zh: ['日', '一', '二', '三', '四', '五', '六'] };
+const dLabel = (d, lang) => { const [y, m, dd] = d.split('-').map(Number); const w = DOWS[lang][new Date(Date.UTC(y, m - 1, dd)).getUTCDay()]; return lang === 'en' ? `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m - 1]} ${dd}, ${y} (${w})` : lang === 'ko' ? `${y}년 ${m}월 ${dd}일 (${w})` : lang === 'ja' ? `${y}年${m}月${dd}日（${w}）` : `${y}年${m}月${dd}日（周${w}）`; };
+const nmin = (t) => { const [h, m] = t.split(':').map(Number); const v = h * 60 + m; return v < 720 ? v + 1440 : v; };
+const evPages = [];
+for (const e of EVENTS) {
+  if (!e || !e.date || !e.title) continue;
+  const id = e.id || `${e.date}-${slugE(e.title)}`;
+  const page = `event/${id}/`;
+  const floors = String(e.floor || '2F+3F').split('+').map((x) => x.trim());
+  const day = TTJ[e.date] || {};
+  const albums = GAL.filter((a) => a && a.photos && a.photos.length && (a.event === id || (!a.event && a.date === e.date)));
+  evPages.push(page);
+  for (const lang of LANGS) {
+    const L = (k) => t(lang, k);
+    const tt = floors.map((f) => { const rows = (day[f] || []).slice().sort((a, b) => nmin(a.t) - nmin(b.t)); const names = (e.lineup && e.lineup[f]) || []; if (!rows.length && !names.length) return ''; return `<div><p class="tt-h">${f}${f === '2F' ? ' · GROOVE · HIPHOP' : ' · SPOT · EDM'}</p>${rows.length ? `<ul class="tt">${rows.map((r) => `<li><span class="tm">${esc(r.t)}</span><span class="nm">${esc(r.n)}</span></li>`).join('')}</ul>` : `<ul>${names.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`}</div>`; }).join('');
+    const inTT = JSON.stringify(day).toUpperCase();
+    const extra = Object.keys(e.lineup || {}).filter((k) => !floors.includes(k)).map((k) => { const rest = e.lineup[k].filter((n) => !inTT.includes(String(n).toUpperCase())); return rest.length ? `<div><p class="tt-h">${k === 'GUEST' ? 'SPECIAL GUEST' : esc(k)}</p><ul>${rest.map((n) => `<li>${esc(n)}</li>`).join('')}</ul></div>` : ''; }).join('');
+    const names = [...new Set([...Object.values(e.lineup || {}).flat(), ...Object.values(day).flat().map((r) => r.n)])].filter(Boolean);
+    const photos = albums.flatMap((a) => a.photos).slice(0, 12);
+    const desc = `${pickL(e.desc, lang) || e.title} — ${dLabel(e.date, lang)} · Groove & Spot, Seomyeon, Busan. ${names.length ? 'DJ: ' + names.slice(0, 12).join(', ') : ''}`.trim();
+    const ld = { '@context': 'https://schema.org', '@type': 'MusicEvent', name: `${e.title} · Groove & Spot`, startDate: `${e.date}T${e.open || '21:30'}:00+09:00`, eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', isAccessibleForFree: true, description: desc, url: `${SITE}${href(lang, page)}`, image: e.flyer ? [SITE + e.flyer] : [SITE + '/assets/og.png'], location: { '@type': 'NightClub', name: 'Groove & Spot', address: { '@type': 'PostalAddress', streetAddress: '52 Jungang-daero 680beonga-gil', addressLocality: 'Busanjin-gu, Busan', addressCountry: 'KR' } }, organizer: { '@type': 'Organization', name: 'Groove & Spot', url: SITE + '/' }, performer: names.slice(0, 30).map((n) => ({ '@type': 'PerformingGroup', name: n })) };
+    const body = `<article class="evd wrap">
+  <div class="ev-art full">${e.flyer ? `<img src="${esc(e.flyer)}" alt="${esc(e.title)} · Groove &amp; Spot Busan ${esc(e.date)}" loading="eager">` : ''}</div>
+  <div>
+    <div class="chips">${floors.map((f) => `<span class="chip ${f === '2F' ? 'g' : 's'}">${f}${f === '2F' ? ' HIPHOP' : ' EDM'}</span>`).join('')}</div>
+    <h1>${esc(e.title)}</h1>
+    <p class="evd-when">${esc(dLabel(e.date, lang))}${e.open ? ` · OPEN ${esc(e.open)}` : ''}</p>
+    ${e.desc ? `<p class="lede">${esc(pickL(e.desc, lang))}</p>` : ''}
+    ${tt || extra ? `<div class="evd-sec"><h2 class="sec-h">${L('sec.timetable')}</h2><div class="lineup">${tt}${extra}</div></div>` : ''}
+    ${photos.length ? `<div class="evd-sec"><h2 class="sec-h">${L('ev.photos')}</h2><div class="ph-grid">${photos.map((p) => `<a class="ph" href="${href(lang, 'gallery/')}#${esc(albums[0].id || '')}"><img src="${esc(p.thumb || p.src)}" alt="${esc(albums[0].title)} · Busan nightclub Groove &amp; Spot" loading="lazy" decoding="async"${p.w ? ` width="${p.w}" height="${p.h}"` : ''}></a>`).join('')}</div><p><a class="more" href="${href(lang, 'gallery/')}#${esc(albums[0].id || '')}">${L('ev.more')} →</a></p></div>` : ''}
+    <p class="muted">Groove &amp; Spot · ${esc(L('if.addr'))} · ${esc(L('if.near'))}</p>
+    <div class="evd-act"><a class="btn btn-hot btn-lg" href="${href(lang, 'reserve/')}?date=${e.date}">${L('nav.reserve') || 'Reserve'}</a><a class="btn btn-lg" href="${href(lang, 'events/')}">${L('ev.all')}</a></div>
+  </div>
+</article>
+<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>`;
+    write(join(lang === 'ko' ? '' : lang, page, 'index.html'), layout(lang, page, { title: `${e.title} · ${dLabel(e.date, lang)}`, desc, body, active: 'events/' }));
+  }
+}
+const smPages = [...PAGES.filter((p) => p !== 'event/'), ...evPages];
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${smPages.flatMap((p) => LANGS.map((l) => `  <url><loc>${SITE}${href(l, p)}</loc><lastmod>${today}</lastmod>${LANGS.map((a) => `<xhtml:link rel="alternate" hreflang="${HTML_LANG[a]}" href="${SITE}${href(a, p)}"/>`).join('')}</url>`)).join('\n')}
