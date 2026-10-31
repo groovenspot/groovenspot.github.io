@@ -7,6 +7,7 @@ export const HTML_LANG = { ko: 'ko', en: 'en', ja: 'ja', zh: 'zh-CN' };
 
 export const T = {
   ko: {
+    'nav.request': '신청곡', 'page.request.t': '신청곡', 'page.request.s': 'DJ에게 듣고 싶은 곡을 보내 주세요. 분위기에 맞으면 틀어 드려요.', 'rq.song': '곡 제목', 'rq.artist': '아티스트', 'rq.floor': '어느 층에서?', 'rq.nick': '닉네임 (선택)', 'rq.memo': 'DJ에게 한마디 (선택)', 'rq.btn': '신청곡 보내기', 'rq.note': '신청곡은 DJ 화면에 바로 전달돼요. 모든 곡을 틀어 드리지는 못해요. 전화번호 같은 개인정보는 적지 마세요.', 'cta.request': '신청곡 보내기', 'rt.rqSent': '신청곡을 보냈어요! 🎵', 'rt.rqWait': '잠시 후 다시 보낼 수 있어요 ({s}초)', 'rt.rqNeed': '곡 제목을 입력해 주세요.', 'rt.rqFail': '전송에 실패했어요. 잠시 후 다시 시도해 주세요.',
     'more.yt': '유튜브 GROOVE CLUB BUSAN 라이브셋 보기', 'sec.layout': '테이블 배치도', 'sec.cocktail': '칵테일 · 슈터 · 맥주', 'img.layout': '2F·3F 테이블 배치도', 'img.cocktail': '바 메뉴 (슈터·밤·칵테일·맥주)', 'img.policy': '입장 안내', 'img.map': '오시는 길',
     'site.title': 'Groove & Spot · 부산 서면 클럽',
     'site.desc': '한 건물, 두 개의 무대. 2층 힙합존 GROOVE, 3층 EDM존 SPOT. 부산 서면, 연중무휴.',
@@ -60,6 +61,7 @@ export const T = {
     '404.t': '페이지를 찾을 수 없어요', '404.home': '홈으로',
   },
   en: {
+    'nav.request': 'Requests', 'page.request.t': 'Song request', 'page.request.s': 'Send the DJ a track you want to hear. If it fits the vibe, it gets played.', 'rq.song': 'Song title', 'rq.artist': 'Artist', 'rq.floor': 'Which floor?', 'rq.nick': 'Nickname (optional)', 'rq.memo': 'Note to the DJ (optional)', 'rq.btn': 'Send request', 'rq.note': 'Requests go straight to the DJ screen. Not every track can be played. Please do not include phone numbers or personal info.', 'cta.request': 'Request a song', 'rt.rqSent': 'Request sent! 🎵', 'rt.rqWait': 'You can send another in {s}s', 'rt.rqNeed': 'Please enter a song title.', 'rt.rqFail': 'Could not send. Please try again shortly.',
     'more.yt': 'Watch live sets on YouTube · GROOVE CLUB BUSAN', 'sec.layout': 'Table layout', 'sec.cocktail': 'Cocktails · shooters · beer', 'img.layout': '2F & 3F table layout', 'img.cocktail': 'Bar menu (shooters, bombs, cocktails, beer)', 'img.policy': 'Entry policy', 'img.map': 'How to get here',
     'site.title': 'Groove & Spot · Club in Seomyeon, Busan',
     'site.desc': 'One building, two stages. HIPHOP on 2F (GROOVE), EDM on 3F (SPOT). Seomyeon, Busan — open every night.',
@@ -110,6 +112,7 @@ export const T = {
     '404.t': 'Page not found', '404.home': 'Back home',
   },
   ja: {
+    'nav.request': 'リクエスト', 'page.request.t': 'リクエスト', 'page.request.s': 'DJに聴きたい曲を送ってください。雰囲気に合えばかけます。', 'rq.song': '曲名', 'rq.artist': 'アーティスト', 'rq.floor': 'どのフロア？', 'rq.nick': 'ニックネーム（任意）', 'rq.memo': 'DJへひとこと（任意）', 'rq.btn': 'リクエストを送る', 'rq.note': 'リクエストはDJの画面にすぐ届きます。すべての曲をかけられるわけではありません。電話番号などの個人情報は書かないでください。', 'cta.request': 'リクエストする', 'rt.rqSent': 'リクエストを送りました！🎵', 'rt.rqWait': '{s}秒後にまた送れます', 'rt.rqNeed': '曲名を入力してください。', 'rt.rqFail': '送信できませんでした。しばらくしてからお試しください。',
     'more.yt': 'YouTubeでライブセットを見る · GROOVE CLUB BUSAN', 'sec.layout': 'テーブル配置図', 'sec.cocktail': 'カクテル・ショット・ビール', 'img.layout': '2F・3F テーブル配置図', 'img.cocktail': 'バーメニュー（ショット・ボム・カクテル・ビール）', 'img.policy': '入場案内', 'img.map': 'アクセスマップ',
     'site.title': 'Groove & Spot · 釜山・西面のクラブ',
     'site.desc': '一つのビル、二つのステージ。2F HIPHOP「GROOVE」、3F EDM「SPOT」。釜山・西面、年中無休。',
@@ -160,6 +163,7 @@ export const T = {
     '404.t': 'ページが見つかりません', '404.home': 'ホームへ',
   },
   zh: {
+    'nav.request': '点歌', 'page.request.t': '点歌', 'page.request.s': '把想听的歌发给DJ，合适就会播放。', 'rq.song': '歌名', 'rq.artist': '歌手', 'rq.floor': '在哪一层？', 'rq.nick': '昵称（可选）', 'rq.memo': '给DJ留言（可选）', 'rq.btn': '发送点歌', 'rq.note': '点歌会直接发送到DJ屏幕，但不保证每首都能播放。请勿填写电话号码等个人信息。', 'cta.request': '点歌', 'rt.rqSent': '点歌已发送！🎵', 'rt.rqWait': '{s}秒后可再次发送', 'rt.rqNeed': '请输入歌名。', 'rt.rqFail': '发送失败，请稍后再试。',
     'more.yt': '在YouTube观看现场录像 · GROOVE CLUB BUSAN', 'sec.layout': '桌位分布图', 'sec.cocktail': '鸡尾酒 · 子弹杯 · 啤酒', 'img.layout': '2楼·3楼桌位分布图', 'img.cocktail': '酒吧菜单（子弹杯·炸弹酒·鸡尾酒·啤酒）', 'img.policy': '入场须知', 'img.map': '交通路线',
     'site.title': 'Groove & Spot · 釜山西面夜店',
     'site.desc': '一栋楼，两个舞台。2楼HIPHOP「GROOVE」，3楼EDM「SPOT」。釜山西面，全年无休。',
