@@ -619,5 +619,371 @@
     ]
    }
   ]
+ },
+ "bar": {
+  "note": {
+   "ko": "표기된 메뉴 외에 원하는 칵테일·슈터·밤은 직원에게 문의해 주세요. 주문지는 바텐더에게 주세요.",
+   "en": "Ask staff for cocktails, shooters or bombs not listed. Hand your order slip to the bartender.",
+   "ja": "記載以外のカクテル・ショット・ボムはスタッフにお尋ねください。注文用紙はバーテンダーへ。",
+   "zh": "菜单以外的鸡尾酒、子弹杯、炸弹酒请咨询工作人员。点单纸请交给调酒师。"
+  },
+  "menu": [
+   {
+    "name": "바 전용 바틀 세트 BAR-ONLY BOTTLE SET",
+    "note": {
+     "ko": "모든 세트에 음료 3개 포함",
+     "en": "3 drinks included in all sets",
+     "ja": "全セットにドリンク3杯付き",
+     "zh": "所有套餐含3杯饮料"
+    },
+    "items": [
+     {
+      "ko": "포션 세트",
+      "en": "POTION ENERGY SET",
+      "price": 80000
+     },
+     {
+      "ko": "카마 데킬라 세트",
+      "en": "KAMA TEQUILA SET",
+      "price": 80000
+     },
+     {
+      "ko": "오페라 세트",
+      "en": "OPERA PRIMA SET",
+      "price": 80000
+     }
+    ]
+   },
+   {
+    "name": "슈터 / 밤 SHOOTER / BOMB",
+    "items": [
+     {
+      "ko": "레몬 드랍",
+      "en": "LEMON DROP",
+      "price": 6000
+     },
+     {
+      "ko": "데킬라샷 시에라",
+      "en": "TEQUILA SHOT SIERRA",
+      "price": 6000
+     },
+     {
+      "ko": "데킬라샷 시에라 6샷",
+      "en": "TEQUILA SHOT SIERRA (6 SHOT)",
+      "price": 30000
+     },
+     {
+      "ko": "데킬라 슬래머",
+      "en": "TEQUILA SHOT SLAMMER",
+      "price": 7000
+     },
+     {
+      "ko": "보드카샷",
+      "en": "VODKA SHOT",
+      "price": 6000
+     },
+     {
+      "ko": "예거샷",
+      "en": "JAGER SHOT",
+      "price": 6000
+     },
+     {
+      "ko": "예거밤",
+      "en": "JAGER BOMB",
+      "price": 6000
+     },
+     {
+      "ko": "잭샷",
+      "en": "JACK SHOT",
+      "price": 7000
+     },
+     {
+      "ko": "잭샷 6잔",
+      "en": "JACK SHOT (6 SHOT)",
+      "price": 35000
+     },
+     {
+      "ko": "잭 허니샷",
+      "en": "JACK HONEY SHOT",
+      "price": 7000
+     },
+     {
+      "ko": "잭 허니샷 6샷",
+      "en": "JACK HONEY SHOT (6 SHOT)",
+      "price": 35000
+     },
+     {
+      "ko": "잭 애플샷",
+      "en": "JACK APPLE SHOT",
+      "price": 7000
+     },
+     {
+      "ko": "잭 애플샷 6샷",
+      "en": "JACK APPLE SHOT (6 SHOT)",
+      "price": 35000
+     },
+     {
+      "ko": "바카디샷",
+      "en": "BACARDI SHOT",
+      "price": 7000
+     },
+     {
+      "ko": "파이어볼샷",
+      "en": "FIREBALL SHOT",
+      "price": 6000
+     },
+     {
+      "ko": "파이어볼 6샷",
+      "en": "FIREBALL SHOT (6 SHOT)",
+      "price": 30000
+     },
+     {
+      "ko": "헤네시 VSOP샷",
+      "en": "HENNESSY SHOT",
+      "price": 13000
+     },
+     {
+      "ko": "B-52",
+      "en": "B-52",
+      "price": 9000
+     },
+     {
+      "ko": "엑스레이티드 밤",
+      "en": "X-RATED BOMB",
+      "price": 9000
+     },
+     {
+      "ko": "힙노틱 밤",
+      "en": "HPNOTIQ BOMB",
+      "price": 9000
+     },
+     {
+      "ko": "아그와 밤",
+      "en": "AGWA BOMB",
+      "price": 8000
+     },
+     {
+      "ko": "아그와 밤 6샷",
+      "en": "AGWA BOMB (6 SHOT)",
+      "price": 43000
+     },
+     {
+      "ko": "아이리쉬카 밤 (2샷)",
+      "en": "IRISH CAR BOMB (2 SHOT)",
+      "price": 18000
+     }
+    ]
+   },
+   {
+    "name": "칵테일 COCKTAIL",
+    "items": [
+     {
+      "ko": "보드카 토닉",
+      "en": "VODKA TONIC",
+      "price": 6000
+     },
+     {
+      "ko": "보드카 크랜베리",
+      "en": "VODKA CRANBERRY",
+      "price": 6000
+     },
+     {
+      "ko": "보드카 핫식스",
+      "en": "VODKA HOT6",
+      "price": 6000
+     },
+     {
+      "ko": "진 토닉",
+      "en": "GIN TONIC",
+      "price": 6000
+     },
+     {
+      "ko": "럼 콕",
+      "en": "RUM COKE",
+      "price": 6000
+     },
+     {
+      "ko": "잭 콕",
+      "en": "JACK COKE",
+      "price": 8000
+     },
+     {
+      "ko": "잭 애플 하이볼",
+      "en": "JACK APPLE HIGHBALL",
+      "price": 8000
+     },
+     {
+      "ko": "체리 콕",
+      "en": "CHERRY COKE",
+      "price": 8000
+     },
+     {
+      "ko": "제임슨 진저엘",
+      "en": "JAMESON GINGER ALE",
+      "price": 8000
+     },
+     {
+      "ko": "파이어볼 진저엘",
+      "en": "FIREBALL GINGER ALE",
+      "price": 8000
+     },
+     {
+      "ko": "깔루아 밀크",
+      "en": "KAHLUA MILK",
+      "price": 8000
+     },
+     {
+      "ko": "베일리스 밀크",
+      "en": "BAILEYS MILK",
+      "price": 8000
+     },
+     {
+      "ko": "블랙 러시안",
+      "en": "BLACK RUSSIAN",
+      "price": 8000
+     },
+     {
+      "ko": "레드 러시안",
+      "en": "RED RUSSIAN",
+      "price": 8000
+     },
+     {
+      "ko": "화이트 러시안",
+      "en": "WHITE RUSSIAN",
+      "price": 8000
+     },
+     {
+      "ko": "스크류 드라이버",
+      "en": "SCREW DRIVER",
+      "price": 8000
+     },
+     {
+      "ko": "말리부 파인",
+      "en": "MALIBU PINEAPPLE",
+      "price": 8000
+     },
+     {
+      "ko": "말리부 오렌지",
+      "en": "MALIBU ORANGE",
+      "price": 8000
+     },
+     {
+      "ko": "말리부 콕",
+      "en": "MALIBU COKE",
+      "price": 8000
+     },
+     {
+      "ko": "데킬라 선라이즈",
+      "en": "TEQUILA SUNRISE",
+      "price": 9000
+     },
+     {
+      "ko": "미도리 사워",
+      "en": "MIDORI SOUR",
+      "price": 9000
+     },
+     {
+      "ko": "피치 크러쉬",
+      "en": "PEACH CRUSH",
+      "price": 9000
+     },
+     {
+      "ko": "피치 코코",
+      "en": "PEACH COCO",
+      "price": 9000
+     },
+     {
+      "ko": "카시스 오렌지",
+      "en": "CASSIS ORANGE",
+      "price": 9000
+     },
+     {
+      "ko": "섹스 온 더 비치",
+      "en": "SEX ON THE BEACH",
+      "price": 9000
+     },
+     {
+      "ko": "준벅",
+      "en": "JUNE BUG",
+      "price": 10000
+     },
+     {
+      "ko": "AMF",
+      "en": "AMF",
+      "price": 10000
+     },
+     {
+      "ko": "롱 아일랜드 아이스티",
+      "en": "LONG ISLAND ICED TEA",
+      "price": 10000
+     },
+     {
+      "ko": "파우스트",
+      "en": "FAUST",
+      "price": 10000
+     }
+    ]
+   },
+   {
+    "name": "바틀 맥주 BOTTLE BEER",
+    "items": [
+     {
+      "ko": "호가든",
+      "en": "HOEGAARDEN",
+      "price": 8000
+     },
+     {
+      "ko": "버드와이저",
+      "en": "BUDWEISER",
+      "price": 9000
+     },
+     {
+      "ko": "코로나",
+      "en": "CORONA",
+      "price": 9000
+     },
+     {
+      "ko": "KGB",
+      "en": "KGB",
+      "price": 9000
+     },
+     {
+      "ko": "스텔라",
+      "en": "STELLA",
+      "price": 10000
+     },
+     {
+      "ko": "기네스",
+      "en": "GUINNESS",
+      "price": 10000
+     }
+    ]
+   },
+   {
+    "name": "무알콜 음료 NON-ALCOHOLIC",
+    "items": [
+     {
+      "ko": "카스 제로",
+      "en": "CASS ZERO",
+      "price": 9000
+     },
+     {
+      "ko": "카스 제로 레몬스퀴즈",
+      "en": "CASS ZERO LEMON SQUEEZE",
+      "price": 9000
+     },
+     {
+      "ko": "자몽주스",
+      "en": "GRAPEFRUIT JUICE",
+      "price": 7000
+     },
+     {
+      "ko": "신데렐라",
+      "en": "CINDERELLA",
+      "price": 8000
+     }
+    ]
+   }
+  ]
  }
 }

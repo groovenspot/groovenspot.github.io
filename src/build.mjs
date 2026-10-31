@@ -21,7 +21,7 @@ const PHONE = '0507-1301-5970';
 const ADDR_KO = '부산 부산진구 중앙대로680번가길 52';
 const VERSION = Date.now().toString(36);
 
-const PAGES = ['', 'events/', 'event/', 'floors/', 'artists/', 'reserve/', 'info/', 'request/'];
+const PAGES = ['', 'events/', 'event/', 'floors/', 'menu/', 'artists/', 'reserve/', 'info/', 'request/'];
 const prefix = (lang) => (lang === 'ko' ? '' : `/${lang}`);
 const href = (lang, page) => `${prefix(lang)}/${page}`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -30,7 +30,7 @@ function layout(lang, page, { title, desc, body, active }) {
   const L = (k) => t(lang, k);
   const runtime = Object.fromEntries(Object.keys(T.ko).filter((k) => k.startsWith('rt.')).map((k) => [k.slice(3), L(k)]));
   const nav = [
-    ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['artists/', 'nav.artists'], ['request/', 'nav.request'], ['info/', 'nav.info'],
+    ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['menu/', 'nav.menu'], ['artists/', 'nav.artists'], ['request/', 'nav.request'], ['info/', 'nav.info'],
   ];
   const fullTitle = title ? `${title} · Groove & Spot` : L('site.title');
   const alternates = LANGS.map((l) => `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${SITE}${href(l, page)}">`).join('\n');
@@ -135,6 +135,8 @@ const pageHead = (lang, key) => `<section class="phead wrap">
 
 const bars = (n) => Array.from({ length: n }, () => '<i></i>').join('');
 
+const menuTabs = (lang, withBar) => `<div class="tabs menu-tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="2F" class="tab-g">2F · HIPHOP</button><button role="tab" aria-selected="false" data-tab="3F" class="tab-s">3F · EDM</button>${withBar ? `<button role="tab" aria-selected="false" data-tab="bar" class="tab-b">${t(lang, 'tab.bar')}</button>` : ''}</div>`;
+
 const BODIES = {
   '': (lang) => {
     const L = (k) => t(lang, k);
@@ -236,6 +238,21 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
 </section>`;
   },
 
+  'menu/': (lang) => {
+    const L = (k) => t(lang, k);
+    return `${pageHead(lang, 'menu')}
+<section class="wrap sec" aria-label="${L('page.menu.t')}">
+  ${menuTabs(lang, true)}
+  <p class="muted small" data-svc="2F">${L('bt.svc2')}</p>
+  <p class="muted small" data-svc="3F" hidden>${L('bt.svc3')}</p>
+  <p class="muted small" data-svc="bar" hidden data-bar-note></p>
+  <div data-menu></div>
+  <p class="muted small">${L('mn.note')}</p>
+  <div class="row-btns"><a class="btn btn-hot" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a></div>
+</section>
+<section class="wrap sec" aria-labelledby="lay-h"><h2 class="sec-h" id="lay-h">${L('sec.layout')}</h2><div class="shots">${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></section>`;
+  },
+
   'artists/': (lang) => `${pageHead(lang, 'artists')}
 <section class="wrap sec"><div class="artists" data-artists></div></section>`,
 
@@ -266,14 +283,14 @@ ${pageHead(lang, 'reserve')}
 </section>
 <section class="wrap sec" aria-labelledby="mn-h">
   <div class="sec-top"><h2 class="sec-h" id="mn-h">${L('sec.sets2')} · ${L('sec.menu')}</h2>
-    <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="2F" class="tab-g">2F · HIPHOP</button><button role="tab" aria-selected="false" data-tab="3F" class="tab-s">3F · EDM</button></div>
+    ${menuTabs(lang, false)}
   </div>
   <p class="muted small" data-svc="2F">${L('bt.svc2')}</p>
   <p class="muted small" data-svc="3F" hidden>${L('bt.svc3')}</p>
   <div data-menu></div>
   <p class="muted small">${L('mn.note')}</p>
 </section>
-<section class="wrap sec" aria-labelledby="ck-h"><h2 class="sec-h" id="ck-h">${L('sec.cocktail')}</h2><div class="shots">${fig('/assets/img/cocktail-menu.webp', L('img.cocktail'))}${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></section>`;
+<section class="wrap sec"><div class="row-btns"><a class="btn" href="${href(lang, 'menu/')}?tab=bar">${L('sec.cocktail')} →</a><a class="btn" href="${href(lang, 'menu/')}">${L('more.menu')} →</a></div></section>`;
   },
 
   'info/': (lang) => {
@@ -305,7 +322,7 @@ ${pageHead(lang, 'reserve')}
   },
 };
 
-const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t' };
+const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t' };
 
 function write(rel, html) {
   const file = join(ROOT, rel);

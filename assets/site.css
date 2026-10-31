@@ -360,3 +360,7 @@ img { max-width: 100%; display: block; }
 .ev-art.gen { background-image: linear-gradient(180deg, rgba(10, 9, 9, .1), rgba(10, 9, 9, .55)), url(/assets/img/texture.webp), radial-gradient(120% 80% at 0% 0%, rgba(255, 122, 26, .55), transparent 60%), radial-gradient(120% 80% at 100% 100%, rgba(161, 91, 255, .55), transparent 60%); background-size: cover; background-position: center; background-blend-mode: normal, screen, normal, normal; background-color: #120d10; }
 .now-act { margin: 14px 0 0; }
 .fbig-body > p > .btn { margin-top: 14px; }
+
+.menu-tabs { flex-wrap: wrap; margin-bottom: 14px; }
+.tabs .tab-b[aria-selected="true"] { color: var(--txt); border-color: var(--txt); background: rgba(255, 255, 255, .1); }
+.mnote { margin: -2px 0 6px; font-size: 12px; color: var(--muted); }
