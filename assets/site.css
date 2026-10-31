@@ -434,3 +434,12 @@ body.mnav-open { overflow: hidden; }
 .vid p small { color: var(--muted); font-weight: 500; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vid-dur { position: absolute; right: 8px; bottom: 8px; background: rgba(0, 0, 0, .8); color: #fff; font: 700 12px/1 var(--body); padding: 4px 6px; border-radius: 6px; z-index: 1; }
 @media (max-width: 599px) { .videos[data-videos] { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 82%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; } .videos[data-videos] .vid { scroll-snap-align: start; } }
+
+/* guide page */
+.prose { max-width: 68ch; line-height: 1.7; }
+.prose p { margin: 0 0 .9em; }
+.prose ul { margin: 0 0 .9em; padding-left: 1.2em; }
+.prose li { margin: .35em 0; }
+.prose b { color: var(--fg, #fff); }
+.guide-quick { grid-template-columns: minmax(5.5em, max-content) 1fr; }
+.guide-quick dd { margin: 0; }

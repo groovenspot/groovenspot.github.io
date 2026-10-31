@@ -7,6 +7,7 @@ import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LANGS, LANG_LABEL, HTML_LANG, T, t } from './i18n.mjs';
+import { GUIDE, GUIDE_LINKS } from './guide.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://xn--2i0bl1s25d.site'; // 그루브.site
@@ -31,7 +32,7 @@ const GMAP_EMBED = (lang) => `https://maps.google.com/maps?q=${encodeURIComponen
 const VERSION = Date.now().toString(36);
 
 const FAQ_N = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6];
-const PAGES = ['', 'events/', 'event/', 'floors/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/'];
+const PAGES = ['', 'events/', 'event/', 'floors/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/'];
 const prefix = (lang) => (lang === 'ko' ? '' : `/${lang}`);
 const href = (lang, page) => `${prefix(lang)}/${page}`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -95,6 +96,7 @@ ${GA_TAG}
   <a href="${href(lang, '')}"${!active ? ' aria-current="page"' : ''}>${L('nav.home')}</a>
   ${nav.map(([p, k]) => `<a href="${href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n  ')}
   <a href="${href(lang, 'artists/')}"${active === 'artists/' ? ' aria-current="page"' : ''}>${L('nav.artists')}</a>
+  <a href="${href(lang, 'guide/')}"${active === 'guide/' ? ' aria-current="page"' : ''}>${GUIDE[lang].t}</a>
   <a class="btn btn-hot mnav-cta" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a>
 </nav>
 <main id="main">
@@ -115,7 +117,7 @@ ${body}
       <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a><br><a href="${XHS}" rel="noopener">小红书 Xiaohongshu</a></p>
     </div>
   </div>
-  <p class="ftr-small muted"><a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
+  <p class="ftr-small muted"><a href="${href(lang, 'guide/')}">${GUIDE[lang].t}</a> · <a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
 </footer>
 <nav class="dock" aria-label="Quick actions">
   <a href="${href(lang, 'events/')}">${L('cta.tonight')}</a>
@@ -336,6 +338,15 @@ ${pageHead(lang, 'reserve')}
 <section class="wrap sec"><div class="row-btns"><a class="btn" href="${href(lang, 'menu/')}?tab=bar">${L('sec.cocktail')} →</a><a class="btn" href="${href(lang, 'menu/')}">${L('more.menu')} →</a></div></section>`;
   },
 
+  'guide/': (lang) => {
+    const G = GUIDE[lang], K = GUIDE_LINKS[lang];
+    return `<section class="phead wrap"><h1>${G.h1}</h1><p class="lede">${G.lede}</p></section>
+<section class="wrap sec"><div class="panel"><dl class="hours guide-quick">${G.quick.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div></section>
+${G.secs.map(([h, b], i) => `<section class="wrap sec" aria-labelledby="g${i}"><h2 class="sec-h" id="g${i}">${h}</h2><div class="prose">${b}</div></section>`).join('\n')}
+<section class="wrap sec"><div class="row-btns"><a class="btn btn-hot" href="${href(lang, 'events/')}">${K[0]} →</a><a class="btn" href="${href(lang, 'info/')}">${K[1]} →</a><a class="btn" href="${href(lang, 'reserve/')}">${K[2]} →</a></div></section>
+<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'Article', headline: G.h1, description: G.s, inLanguage: HTML_LANG[lang], author: { '@type': 'Organization', name: 'Groove & Spot' }, publisher: { '@type': 'Organization', name: 'Groove & Spot', logo: { '@type': 'ImageObject', url: SITE + '/assets/icon-512.png' } }, image: SITE + '/assets/og.png', mainEntityOfPage: SITE + href(lang, 'guide/'), about: { '@type': 'NightClub', name: 'Groove & Spot', url: SITE + '/' } }).replace(/</g, '\\u003c')}</script>`;
+  },
+
   'info/': (lang) => {
     const L = (k) => t(lang, k);
     return `${pageHead(lang, 'info')}
@@ -359,6 +370,7 @@ ${pageHead(lang, 'reserve')}
 <section class="wrap sec"><div class="shots">${fig(`/assets/img/entry-policy-${lang === 'ko' ? 'ko' : 'en'}.webp`, L('img.policy'))}${fig('/assets/img/location-map.webp', L('img.map'))}</div></section>
 <section class="wrap sec" aria-labelledby="faq-h">
   <h2 class="sec-h" id="faq-h">${L('sec.faq')}</h2>
+  <p><a class="more" href="${href(lang, 'guide/')}">${GUIDE[lang].t} →</a></p>
   <div class="faq">
     ${FAQ_N.map((i) => `<details><summary>${L(`faq.q${i}`)}</summary><p>${L(`faq.a${i}`)}</p></details>`).join('\n    ')}
   </div>
@@ -380,8 +392,8 @@ for (const lang of LANGS) {
   for (const page of PAGES) {
     const titleKey = TITLES[page];
     const html = layout(lang, page, {
-      title: titleKey ? t(lang, titleKey) : null,
-      desc: titleKey && page !== 'event/' ? t(lang, `page.${page.replace('/', '')}.s`) : null,
+      title: page === 'guide/' ? GUIDE[lang].t : titleKey ? t(lang, titleKey) : null,
+      desc: page === 'guide/' ? GUIDE[lang].s : titleKey && page !== 'event/' ? t(lang, `page.${page.replace('/', '')}.s`) : null,
       body: BODIES[page](lang),
       active: page,
     });
