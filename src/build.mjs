@@ -96,7 +96,7 @@ ${body}
       <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a></p>
     </div>
   </div>
-  <p class="ftr-small muted"><a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="/floor/">${L('ft.floor')}</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
+  <p class="ftr-small muted"><a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="/floor/">${L('ft.floor')}</a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
 </footer>
 <nav class="dock" aria-label="Quick actions">
   <a href="${href(lang, 'events/')}">${L('cta.tonight')}</a>
@@ -410,6 +410,7 @@ write('admin/index.html', `<!doctype html>
     <div class="tabs" id="rq-filter"><button data-f="all" aria-selected="true">전체</button><button data-f="2F" class="tab-g" aria-selected="false">2F</button><button data-f="3F" class="tab-s" aria-selected="false">3F</button></div>
     <label class="adm-check"><input type="checkbox" id="rq-hide"> 틀은 곡 숨기기</label>
     <label class="adm-check"><input type="checkbox" id="rq-sound"> 새 신청곡 알림음</label>
+    <button class="btn btn-hot rq-refresh" type="button" id="rq-refresh">🔄 새로고침</button>
   </div>
   <p class="muted small" id="rq-status">불러오는 중…</p>
   <ol class="rq-list" id="rq-list"></ol>

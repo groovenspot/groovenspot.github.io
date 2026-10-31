@@ -68,7 +68,11 @@
     }).join('') : '<li class="empty">아직 들어온 신청곡이 없어요.</li>';
   }
 
+  var REFRESH_MS = 3 * 60 * 1000, nextAt = 0, polling = false, lastOk = '';
   function pollRequests() {
+    if (polling) return;
+    polling = true; nextAt = Date.now() + REFRESH_MS;
+    var btn = $('#rq-refresh'); if (btn) { btn.disabled = true; btn.textContent = '불러오는 중…'; }
     fetch('https://ntfy.sh/' + CFG.topic + '/json?poll=1&since=12h', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(function (txt) {
@@ -78,10 +82,16 @@
         if (lastIds && $('#rq-sound').checked && ids.some(function (id) { return lastIds.indexOf(id) < 0; })) beep();
         lastIds = ids;
         var d = kst();
-        $('#rq-status').textContent = '최근 12시간 · ' + requests.length + '곡 · ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' 갱신 (10초마다 자동)';
+        lastOk = '최근 12시간 · ' + requests.length + '곡 · ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ' 확인';
         renderRequests();
       })
-      .catch(function () { $('#rq-status').textContent = '신청곡을 불러오지 못했어요. 인터넷 연결을 확인해 주세요. 10초 후 다시 시도해요.'; });
+      .catch(function () { lastOk = '⚠️ 신청곡을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침을 눌러 주세요.'; })
+      .then(function () { polling = false; if (btn) { btn.disabled = false; btn.textContent = '🔄 새로고침'; } tickStatus(); });
+  }
+  // 상태 줄: 마지막 확인 시각 + 다음 자동 새로고침까지 남은 시간
+  function tickStatus() {
+    var left = Math.max(0, Math.round((nextAt - Date.now()) / 1000));
+    $('#rq-status').textContent = (lastOk || '불러오는 중…') + (nextAt ? ' · 자동 새로고침 ' + Math.floor(left / 60) + ':' + pad(left % 60) + ' 후' : '');
   }
 
   $('#rq-list').addEventListener('click', function (e) {
@@ -100,8 +110,11 @@
     });
   });
   $('#rq-hide').addEventListener('change', renderRequests);
+  $('#rq-refresh').addEventListener('click', pollRequests);
   pollRequests();
-  setInterval(pollRequests, 10000);
+  setInterval(function () { if (Date.now() >= nextAt) pollRequests(); else tickStatus(); }, 1000);
+  // 화면을 다시 켰을 때 3분이 지났으면 바로 새로고침
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() >= nextAt) pollRequests(); });
 
   /* =========================================================
      GitHub 로그인 + 파일 읽기/쓰기
