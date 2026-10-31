@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { LANGS, LANG_LABEL, HTML_LANG, T, t } from './i18n.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SITE = 'https://groovenspot.github.io';
+const SITE = 'https://xn--2i0bl1s25d.site'; // 그루브.site
 const INSTAGRAM = 'https://www.instagram.com/groovenspot/';
 const SOUNDCLOUD = 'https://on.soundcloud.com/IWtEmqOHfTecbn1cBI';
 const YOUTUBE = 'https://www.youtube.com/@GROOVEBUSAN';
@@ -375,7 +375,7 @@ write('admin/index.html', `<!doctype html>
   <ol class="rq-list" id="rq-list"></ol>
   <details class="adm-help"><summary>DJ 폰으로 실시간 알림 받기</summary>
     <p>휴대폰에 <b>ntfy</b> 앱(무료)을 설치하고 토픽 <code>${REQ_TOPIC}</code> 을 구독하면, 신청곡이 들어올 때마다 푸시 알림이 와요. 브라우저에서는 <a href="https://ntfy.sh/${REQ_TOPIC}" target="_blank" rel="noopener">ntfy.sh/${REQ_TOPIC}</a> 에서도 볼 수 있어요.</p>
-    <p>손님용 신청곡 페이지: <a href="/request/" target="_blank">groovenspot.github.io/request/</a> (매장 QR을 이 주소로 만들면 돼요)</p>
+    <p>손님용 신청곡 페이지: <a href="/request/" target="_blank">그루브.site/request/</a> (매장 QR을 이 주소로 만들면 돼요)</p>
   </details>
 </section>
 
