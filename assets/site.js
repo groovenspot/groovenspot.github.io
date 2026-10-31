@@ -228,8 +228,11 @@
         var names = (e.lineup && e.lineup[f]) || [];
         if (!tt.length && !names.length) return '';
         return '<div><p class="tt-h">' + f + (f === '2F' ? ' · GROOVE' : ' · SPOT') + '</p>' + (tt.length ? ttList(tt, e.date === BIZ && IS_OPEN) : '<ul>' + names.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>') + '</div>';
-      }).join('') + Object.keys(e.lineup || {}).filter(function (k) { return e.floors.indexOf(k) < 0 && (e.lineup[k] || []).length; }).map(function (k) {
-        return '<div><p class="tt-h">' + esc(k === 'GUEST' ? 'SPECIAL GUEST' : k) + '</p><ul>' + e.lineup[k].map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></div>';
+      }).join('') + Object.keys(e.lineup || {}).filter(function (k) { return e.floors.indexOf(k) < 0; }).map(function (k) {
+        var inTT = JSON.stringify(day || {}).toUpperCase();
+        var rest = (e.lineup[k] || []).filter(function (n) { return inTT.indexOf(String(n).toUpperCase()) < 0; });
+        if (!rest.length) return '';
+        return '<div><p class="tt-h">' + esc(k === 'GUEST' ? 'SPECIAL GUEST' : k) + '</p><ul>' + rest.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></div>';
       }).join('');
       var past = e.date < BIZ;
       var reserveHref = url('reserve/?date=' + e.date + (e.floors.length === 1 ? '&floor=' + e.floors[0] : ''));
