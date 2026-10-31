@@ -302,7 +302,8 @@
       if (!albums.length) { albumsEl.innerHTML = emptyBox(T.noPhotos); return; }
       albumsEl.innerHTML = albums.map(function (a, k) {
         return '<section class="album" id="' + esc(a.id || '') + '"><div class="album-h"><h2 class="sec-h">' + esc(a.title) + '</h2><span class="muted">' + esc(dateLabel(a.date)) + ' · ' + esc(fmt(T.photoCount, { n: a.photos.length })) + '</span>' +
-          (a.event ? ' <a class="more" href="' + url('event/?id=' + encodeURIComponent(a.event)) + '">→</a>' : '') + '</div><div data-k="' + k + '"></div></section>';
+          (a.event ? ' <a class="more" href="' + url('event/?id=' + encodeURIComponent(a.event)) + '">→</a>' : '') +
+          (a.ig && a.ig.length ? ' <a class="more" href="' + esc(a.ig[0]) + '" rel="noopener">Instagram ↗</a>' : '') + '</div><div data-k="' + k + '"></div></section>';
       }).join('');
       albums.forEach(function (a, k) {
         var holder = $('[data-k="' + k + '"]', albumsEl), list = flat(a);
