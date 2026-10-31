@@ -128,7 +128,7 @@ ${body}
 const floorCard = (lang, f) => {
   const L = (k) => t(lang, k);
   return `<article class="floor floor-${f === '2F' ? 'g' : 's'}">
-      <img class="floor-bg" src="/assets/img/floor-${f.toLowerCase()}.webp" width="1344" height="752" alt="" loading="lazy" decoding="async">
+      <img class="floor-bg" src="/assets/img/floor-${f.toLowerCase()}.webp" width="1079" height="606" alt="" loading="lazy" decoding="async">
       <p class="floor-no">${f}</p>
       <h3 class="floor-name">${L(`floor.${f}.name`)}</h3>
       <p class="floor-genre">${L(`floor.${f}.genre`)}</p>
@@ -150,8 +150,8 @@ const BODIES = {
     const L = (k) => t(lang, k);
     return `<section class="hero">
   <picture class="hero-bg" aria-hidden="true">
-    <source media="(max-width: 699px)" srcset="/assets/img/hero-tall.webp" width="752" height="1344">
-    <img src="/assets/img/hero-wide.webp" width="1344" height="752" alt="" fetchpriority="high">
+    <source media="(max-width: 699px)" srcset="/assets/img/hero-tall.webp" width="369" height="656">
+    <img src="/assets/img/hero-wide.webp" width="1079" height="656" alt="" fetchpriority="high">
   </picture>
   <div class="hero-in wrap">
     <p class="kicker">${L('hero.kicker')}</p>
@@ -219,7 +219,7 @@ const BODIES = {
     const am = (keys) => `<ul class="tags">${keys.map((k) => `<li>${L(`am.${k}`)}</li>`).join('')}</ul>`;
     const block = (f, keys) => `<section class="fbig fbig-${f === '2F' ? 'g' : 's'}" id="${f.toLowerCase()}">
   <div class="wrap fbig-in">
-    <div class="fbig-head"><img class="fbig-img" src="/assets/img/floor-${f.toLowerCase()}.webp" width="1344" height="752" alt="" loading="lazy" decoding="async"><p class="floor-no">${f}</p><h2 class="fbig-name">${L(`floor.${f}.name`)}</h2><p class="floor-genre">${L(`floor.${f}.genre`)}</p></div>
+    <div class="fbig-head"><img class="fbig-img" src="/assets/img/floor-${f.toLowerCase()}.webp" width="1079" height="606" alt="" loading="lazy" decoding="async"><p class="floor-no">${f}</p><h2 class="fbig-name">${L(`floor.${f}.name`)}</h2><p class="floor-genre">${L(`floor.${f}.genre`)}</p></div>
     <div class="fbig-body"><p class="lede">${L(`floor.${f}.long`)}</p>${am(keys)}
       <div class="tt-today" data-floor-tt="${f}"></div>
       <p><a class="btn" href="${href(lang, 'request/')}?floor=${f}">🎵 ${L('cta.request')}</a></p>
