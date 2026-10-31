@@ -98,7 +98,7 @@
 
   function art(e, big) {
     var only = e.floors.length === 1 ? ' only-' + e.floors[0] : '';
-    if (e.flyer) return '<div class="ev-art"><img src="' + esc(e.flyer) + '" alt="' + esc(e.title) + '" loading="' + (big ? 'eager' : 'lazy') + '"></div>';
+    if (e.flyer) return '<div class="ev-art' + (big ? ' full' : '') + '"><img src="' + esc(e.flyer) + '" alt="' + esc(e.title) + '" loading="' + (big ? 'eager' : 'lazy') + '"></div>';
     var p = e.date.split('-');
     return '<div class="ev-art gen' + only + '" aria-hidden="true"><div class="gd"><small>' + esc(DOW[dowOf(e.date)] || '') + '</small>' + (+p[1]) + '.' + p[2] + '</div><div class="gt">' + esc(e.title) + '</div></div>';
   }
