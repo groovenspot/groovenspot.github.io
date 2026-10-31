@@ -1,4 +1,3 @@
 User-agent: *
 Disallow: /admin/
-Disallow: /floor/
 Sitemap: https://xn--2i0bl1s25d.site/sitemap.xml
