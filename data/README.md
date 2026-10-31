@@ -78,6 +78,18 @@ GitHub 웹에서 파일을 열고 연필 아이콘으로 고친 뒤 **Commit cha
 ]
 ```
 
+## instagram.json — 인스타그램 게시물
+
+홈 화면에 보여줄 @groovenspot 게시물·릴스 주소를 최대 6개 넣습니다. 인스타그램 앱에서 게시물 → ⋯ → 링크 복사.
+인스타그램 공식 임베드로 보이므로 사진 파일을 따로 올릴 필요가 없습니다.
+
+```json
+[
+  "https://www.instagram.com/p/XXXXXXXXXXX/",
+  "https://www.instagram.com/reel/YYYYYYYYYYY/"
+]
+```
+
 ## menu.json — 메뉴·바틀 세트 가격
 
 층(`2F`, `3F`)별 `menu`(분류별 주류)와 `sets`(바틀 세트)가 있습니다. 가격은 숫자만 씁니다(`150000`).

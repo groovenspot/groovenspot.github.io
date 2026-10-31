@@ -208,6 +208,10 @@ img { max-width: 100%; display: block; }
 .sc-wave i:nth-child(3n) { height: 60%; animation-delay: -.8s; }
 @media (max-width: 520px) { .sc-wave i:nth-child(n+14) { display: none; } }
 
+/* instagram embeds */
+.ig { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); align-items: start; }
+.ig .instagram-media { margin: 0 !important; min-width: 0 !important; width: 100% !important; border-radius: var(--radius) !important; }
+
 /* visit */
 .visit-grid { display: grid; gap: 16px; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; background: var(--card); }
 @media (min-width: 800px) { .visit-grid { grid-template-columns: 1fr auto; align-items: center; } }

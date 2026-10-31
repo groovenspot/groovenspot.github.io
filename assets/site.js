@@ -257,6 +257,22 @@
     });
   }
 
+  /* ---------- 인스타그램 게시물 (공식 임베드) ---------- */
+  var igEl = $('[data-ig]');
+  if (igEl) {
+    load('instagram').then(function (list) {
+      list = (Array.isArray(list) ? list : []).map(function (u) { return typeof u === 'string' ? u : u && u.url; })
+        .filter(function (u) { return /^https:\/\/www\.instagram\.com\/(p|reel)\/[\w-]+/.test(u || ''); }).slice(0, 6);
+      if (!list.length) return;
+      igEl.innerHTML = list.map(function (u) {
+        var clean = u.split('?')[0].replace(/\/?$/, '/');
+        return '<blockquote class="instagram-media" data-instgrm-permalink="' + esc(clean) + '" data-instgrm-version="14"><a href="' + esc(clean) + '" rel="noopener">Instagram</a></blockquote>';
+      }).join('');
+      $('[data-ig-sec]').hidden = false;
+      var s = document.createElement('script'); s.async = true; s.src = 'https://www.instagram.com/embed.js'; document.body.appendChild(s);
+    });
+  }
+
   /* ---------- 메뉴 & 바틀 세트 ---------- */
   var menuEl = $('[data-menu]');
   function won(n) { return '₩' + Number(n).toLocaleString('en-US'); }

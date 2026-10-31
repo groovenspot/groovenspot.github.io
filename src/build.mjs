@@ -164,6 +164,10 @@ const BODIES = {
   <div class="videos" data-videos data-limit="3"></div>
   <a class="sc" href="${SOUNDCLOUD}" rel="noopener"><span class="sc-wave" aria-hidden="true">${bars(28)}</span><span>${L('more.sc')} →</span></a>
 </section>
+<section class="wrap sec" aria-labelledby="ig-h" data-ig-sec hidden>
+  <div class="sec-top"><h2 class="sec-h" id="ig-h">Instagram</h2><a class="more" href="${INSTAGRAM}" rel="noopener">@groovenspot →</a></div>
+  <div class="ig" data-ig></div>
+</section>
 <section class="wrap sec visit" aria-labelledby="vi-h">
   <h2 class="sec-h" id="vi-h">${L('sec.visit')}</h2>
   <div class="visit-grid">
