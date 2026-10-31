@@ -281,23 +281,24 @@
       if (!m) return;
       function render(f) {
         var d = m[f]; if (!d) return;
-        var sets = '<div class="sets">' + d.sets.map(function (s) {
+        var sets = !d.sets ? '' : '<div class="sets">' + d.sets.map(function (s) {
           return '<div class="set"><h3>' + esc(s.name) + '</h3>' + (s.desc ? '<p>' + esc(s.desc) + '</p>' : '') +
             (s.tiers ? '<div class="tiers">' + s.tiers.map(function (x) { return '<div><span>' + esc(x.q) + '</span><b>' + won(x.price) + '</b></div>'; }).join('') + '</div>' : '<div class="pr">' + won(s.price) + '</div>') + '</div>';
         }).join('') + '</div>';
         var menu = '<div class="menu">' + d.menu.map(function (c) {
-          return '<div class="mcat"><h3>' + esc(c.name) + '</h3>' + c.items.map(function (i) {
+          return '<div class="mcat"><h3>' + esc(c.name) + '</h3>' + (c.note ? '<p class="mnote">' + esc(pick(c.note)) + '</p>' : '') + c.items.map(function (i) {
             var main = LANG === 'ko' ? i.ko : i.en, sub = LANG === 'ko' ? i.en : i.ko;
             return '<div class="mrow"><span>' + esc(main) + '<small>' + esc(sub) + '</small></span><b>' + won(i.price) + '</b></div>';
           }).join('') + '</div>';
         }).join('') + '</div>';
         menuEl.innerHTML = sets + menu;
+        var bn = $('[data-bar-note]'); if (bn && m.bar) bn.textContent = pick(m.bar.note);
         $$('[data-svc]').forEach(function (p) { p.hidden = p.dataset.svc !== f; });
         $$('[data-tab]').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tab === f ? 'true' : 'false'); });
       }
       $$('[data-tab]').forEach(function (b) { b.addEventListener('click', function () { render(b.dataset.tab); }); });
-      var q = new URLSearchParams(location.search).get('floor');
-      render(q === '3F' ? '3F' : '2F');
+      var qs0 = new URLSearchParams(location.search), q = qs0.get('floor');
+      render(qs0.get('tab') === 'bar' && $('[data-tab="bar"]') ? 'bar' : q === '3F' ? '3F' : '2F');
     });
   }
 
