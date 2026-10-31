@@ -308,11 +308,11 @@
   /* ---------------- BGM (공개 녹음 · 내 파일) ---------------- */
   // src가 비어 있는 곡은 '준비 중'으로 보여요. 파일을 올리면 여기 주소만 채우면 돼요.
   var TRACKS = [
-    { n: '로드', src: '' }, { n: '무무', src: '' },
-    { n: '뮤트', src: '' }, { n: '빌', src: '' },
-    { n: '에이스', src: '' }, { n: '엔', src: '' },
-    { n: '우지', src: '' }, { n: '이지', src: '' },
-    { n: '쿠파', src: '' }, { n: '타로', src: '' }
+    { n: '로드', src: '/assets/bgm/01.m4a' }, { n: '무무', src: '/assets/bgm/02.m4a' },
+    { n: '뮤트', src: '/assets/bgm/03.m4a' }, { n: '빌', src: '/assets/bgm/04.m4a' },
+    { n: '에이스', src: '/assets/bgm/05.m4a' }, { n: '엔', src: '/assets/bgm/06.m4a' },
+    { n: '우지', src: '/assets/bgm/07.m4a' }, { n: '이지', src: '/assets/bgm/08.m4a' },
+    { n: '쿠파', src: '/assets/bgm/09.m4a' }, { n: '타로', src: '/assets/bgm/10.m4a' }
   ];
   var bgmEl = new Audio(), bgmOn = false, bgmIdx = -1, bgmName = '', bgmSub = '', bgmNode = null, bgmGain = null, analyser = null, freq = null, bassAvg = 0, bassHit = 0;
   bgmEl.preload = 'none'; bgmEl.crossOrigin = 'anonymous';
