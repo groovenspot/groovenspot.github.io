@@ -723,25 +723,9 @@
     var boothLight = new THREE.PointLight(0xffffff, .6, 6, 2); boothLight.position.set(djPos[0], 2.8, djPos[1]); g.add(boothLight);
     var fill = new THREE.PointLight(0xffe0c0, .5, 18, 2); fill.position.set(0, 4.2, 0); g.add(fill);
 
-    // 관객: 도면의 빈 바닥(존)에만, 가구와 겹치지 않게
+    // 가상 손님이 돌아다닐 때 쓰는 정보
     function hitAny(x, z, m) { for (var i = 0; i < rec.colliders.length; i++) { var c = rec.colliders[i]; if (x > c[0] - m && x < c[2] + m && z > c[1] - m && z < c[3] + m) return true; } return false; }
-    var area = rec.zones.map(function (r) { return (r[2] - r[0]) * (r[3] - r[1]); }), tot = area.reduce(function (a, b) { return a + b; }, 0);
-    var sx = X(pl.start[0]), sz = Z(pl.start[1]);
-    var CN = 100, body = new THREE.InstancedMesh(new THREE.CylinderGeometry(.21, .23, 1.15, 8), mat(0x141012, { roughness: .9 }), CN);
-    var headsM = new THREE.InstancedMesh(new THREE.SphereGeometry(.15, 10, 8), mat(0x1d1416, { roughness: .8 }), CN);
-    var hands = new THREE.InstancedMesh(new THREE.BoxGeometry(.07, .35, .07), mat(0x1d1416), CN * 2);
-    var people = [];
-    for (var cp = 0, tries = 0; cp < CN && tries < 4000; tries++) {
-      var pick = Math.random() * tot, zi = 0; while (pick > area[zi]) { pick -= area[zi]; zi++; }
-      var zr = rec.zones[zi], qx = zr[0] + Math.random() * (zr[2] - zr[0]), qz = zr[1] + Math.random() * (zr[3] - zr[1]);
-      if (hitAny(qx, qz, .25) || Math.hypot(qx - sx, qz - sz) < 2) continue;
-      if (people.some(function (o) { return Math.hypot(o.x - qx, o.z - qz) < .5; })) continue;
-      people.push({ x: qx, z: qz, ph: Math.random() * 6.28, amp: .5 + Math.random() * .7, rot: Math.atan2(djPos[0] - qx, djPos[1] - qz) + (Math.random() - .5) * .6, up: Math.random() < .35, h: .9 + Math.random() * .2 });
-      cp++;
-    }
-    body.count = headsM.count = people.length; hands.count = people.length * 2;
-    g.add(body); g.add(headsM); g.add(hands);
-    rec.crowd = { body: body, heads: headsM, hands: hands, people: people };
+    rec.hitAny = hitAny; rec.djPos = djPos; rec.startXZ = [X(pl.start[0]), Z(pl.start[1])]; rec.npcs = [];
 
     // 스파클러 파티클 풀
     var sparkGeo = new THREE.BufferGeometry(), SN = 600, sp = new Float32Array(SN * 3), sv = [];
@@ -752,6 +736,7 @@
     var sparkLight = new THREE.PointLight(0xffc870, 0, 7, 2); g.add(sparkLight);
     g.add(sparks); rec.sparks = { pts: sparks, v: sv, n: SN, emit: [], light: sparkLight };
 
+    var sx = X(pl.start[0]), sz = Z(pl.start[1]);
     rec.start = { x: sx, z: sz, yaw: Math.atan2(-(X(pl.look[0]) - sx), -(Z(pl.look[1]) - sz)) };
     g.visible = false; scene.add(g);
     floors[F] = rec;
@@ -939,7 +924,7 @@
     if (l.a === 2) { var band = new THREE.Mesh(new THREE.TorusGeometry(.162, .018, 6, 20, Math.PI), amat('#111', .05)); band.position.y = .02; head.add(band); [-1, 1].forEach(function (s) { var cup = cyl(.06, .06, .05, amat('#151515', .05)); cup.rotation.z = Math.PI / 2; cup.position.set(s * .155, -.01, 0); head.add(cup); }); }
     if (l.a === 3) { var stick = cyl(.02, .02, .34, glow(new THREE.Color(LOOK.t[l.t]).getHex(), 1)); stick.position.set(0, -.66, .1); stick.rotation.x = Math.PI / 2.6; arms[1].add(stick); }
     if (l.a === 4) { var ch = new THREE.Mesh(new THREE.TorusGeometry(.11, .013, 6, 20), new THREE.MeshStandardMaterial({ color: 0xffcf5a, metalness: 1, roughness: .25, emissive: 0x332200 })); ch.position.set(0, 1.37, .06); ch.rotation.x = Math.PI / 2.3; body.add(ch); }
-    var tag = nameTag(nick, LOOK.t[l.t], mine); tag.position.y = 2.04; g.add(tag);
+    var tag = null; if (nick !== null) { tag = nameTag(nick, LOOK.t[l.t], mine); tag.position.y = 2.04; g.add(tag); }
     return { g: g, body: body, arms: arms, legs: legs, tag: tag, bubble: null, bubbleUntil: 0 };
   }
   function disposeObj(o) { o.traverse(function (m) { if (m.geometry) m.geometry.dispose(); if (m.material) { if (m.material.map) m.material.map.dispose(); m.material.dispose(); } }); }
@@ -962,6 +947,53 @@
   var mine = null;
   function buildMine() { if (mine) { scene.remove(mine.g); disposeObj(mine.g); } mine = makeAvatar(me.look, myNick(), true); scene.add(mine.g); }
   buildMine();
+
+  /* ---------------- 가상 손님 (층마다 10명, 스스로 돌아다니며 춤춤) ---------------- */
+  var NPC_N = 10;
+  function randPoint(rec) {
+    var area = rec.zones.map(function (r) { return (r[2] - r[0]) * (r[3] - r[1]); }), tot = area.reduce(function (a, b) { return a + b; }, 0);
+    for (var k = 0; k < 40; k++) {
+      var pick = Math.random() * tot, zi = 0; while (pick > area[zi]) { pick -= area[zi]; zi++; }
+      var zr = rec.zones[zi], x = zr[0] + Math.random() * (zr[2] - zr[0]), z = zr[1] + Math.random() * (zr[3] - zr[1]);
+      if (!rec.hitAny(x, z, .4)) return [x, z];
+    }
+    return null;
+  }
+  function clearPath(rec, x0, z0, x1, z1) { var d = Math.hypot(x1 - x0, z1 - z0), n = Math.ceil(d / .3); for (var i = 1; i <= n; i++) { var f = i / n; if (rec.hitAny(x0 + (x1 - x0) * f, z0 + (z1 - z0) * f, .3)) return false; } return true; }
+  function nextGoal(rec, n) {
+    for (var k = 0; k < 14; k++) { var p = randPoint(rec); if (!p) continue; var d = Math.hypot(p[0] - n.x, p[1] - n.z); if (d > 1.5 && d < 10 && clearPath(rec, n.x, n.z, p[0], p[1])) return p; }
+    return null;
+  }
+  Object.keys(floors).forEach(function (F) {
+    var rec = floors[F];
+    for (var i = 0; i < NPC_N; i++) {
+      var p = null;
+      for (var k = 0; k < 40 && !p; k++) { var c = randPoint(rec); if (c && Math.hypot(c[0] - rec.startXZ[0], c[1] - rec.startXZ[1]) > 2 && !rec.npcs.some(function (o) { return Math.hypot(o.x - c[0], o.z - c[1]) < 1.2; })) p = c; }
+      if (!p) continue;
+      var av = makeAvatar(randLook(), null, false); rec.group.add(av.g);
+      rec.npcs.push({ av: av, x: p[0], z: p[1], r: Math.random() * 6.28, state: 'dance', until: performance.now() / 1000 + 1 + Math.random() * 8, sp: .75 + Math.random() * .5, style: Math.random(), goal: null, ph: Math.random() });
+    }
+  });
+  function updateNPCs(dt, t, ph, up) {
+    var rec = floors[active], now = performance.now() / 1000;
+    rec.npcs.forEach(function (n) {
+      if (n.state === 'walk') {
+        var dx = n.goal[0] - n.x, dz = n.goal[1] - n.z, d = Math.hypot(dx, dz);
+        if (d < .15) { n.state = 'dance'; n.until = now + 5 + Math.random() * 12; }
+        else {
+          var s = Math.min(d, n.sp * dt), nx = n.x + dx / d * s, nz = n.z + dz / d * s;
+          var bump = Math.hypot(nx - player.x, nz - player.z) < .7 || rec.npcs.some(function (o) { return o !== n && Math.hypot(nx - o.x, nz - o.z) < .6 && Math.hypot(n.x - o.x, n.z - o.z) > Math.hypot(nx - o.x, nz - o.z); });
+          if (!bump) { n.x = nx; n.z = nz; } else if (Math.random() < .03) { n.state = 'dance'; n.until = now + 1.5 + Math.random() * 3; }
+          var tr = Math.atan2(dx, dz), dr = Math.atan2(Math.sin(tr - n.r), Math.cos(tr - n.r)); n.r += dr * Math.min(1, dt * 8);
+        }
+      } else if (now > n.until) { var gl = nextGoal(rec, n); if (gl) { n.goal = gl; n.state = 'walk'; } else n.until = now + 3; }
+      else { var tr2 = Math.atan2(rec.djPos[0] - n.x, rec.djPos[1] - n.z) + Math.sin(t * .5 + n.ph * 6) * .4, dr2 = Math.atan2(Math.sin(tr2 - n.r), Math.cos(tr2 - n.r)); n.r += dr2 * Math.min(1, dt * 3); }
+      n.av.g.position.set(n.x, 0, n.z); n.av.g.rotation.y = n.r;
+      var walking = n.state === 'walk', emo = null;
+      if (!walking) emo = up ? 'hands' : n.style > .6 ? 'dance' : (n.style > .3 && Math.sin(t * .3 + n.ph * 9) > .6 ? 'hands' : null);
+      animAvatar(n.av, t + n.ph * 3, (ph + n.ph * .2) % 1, walking, emo);
+    });
+  }
   var thirdPerson = true, camMode = 0, myEmote = null, myEmoteUntil = 0;
   try { var savedCam = parseInt(localStorage.getItem('gs_vc_cam'), 10); if (savedCam >= 0 && savedCam < 3) setCam(savedCam); } catch (err) {}
 
@@ -1204,9 +1236,6 @@
     if (!len) return false;
     var sp = 3.2 * dt, sy = Math.sin(player.yaw), cy = Math.cos(player.yaw);
     var dx = (-sy * f + cy * s) * sp, dz = (-cy * f - sy * s) * sp;
-    // 관객 사이는 천천히
-    var crowdZone = floors[active].zones.some(function (r) { return player.x > r[0] && player.x < r[2] && player.z > r[1] && player.z < r[3]; });
-    if (crowdZone) { dx *= .55; dz *= .55; }
     if (!blocked(player.x + dx, player.z)) player.x += dx;
     if (!blocked(player.x, player.z + dz)) player.z += dz;
     var st = floors[active].stairs; if (Math.hypot(player.x - st.x, player.z - st.z) < .9) setFloor(active === '2F' ? '3F' : '2F');
@@ -1260,22 +1289,9 @@
     rec.dj.position.y = Math.abs(Math.sin(b.ph * Math.PI)) * .05;
     rec.dj.rotation.y = rec.djYaw + Math.sin(t * .7) * .2;
     rec.djArm.rotation.z = (dropping || t < handsUntil) ? -2.6 + Math.sin(t * 8) * .2 : -.2 - hit * .5;
-    // 관객
-    var C = rec.crowd, up = t < handsUntil || dropping;
-    updateAvatars(t, b.ph, walking, up); sendPresence(now, walking);
-    C.people.forEach(function (p, i) {
-      var j = Math.abs(Math.sin((b.ph + p.ph / 6.28) * Math.PI)) * .12 * p.amp * (.4 + e * .6);
-      var yb = .6 * p.h + j;
-      q.setFromAxisAngle(v3.set(0, 1, 0), p.rot + Math.sin(t * .8 + p.ph) * .15);
-      m4.compose(v3.set(p.x, yb, p.z), q, s3.set(1, p.h, 1)); C.body.setMatrixAt(i, m4);
-      m4.compose(v3.set(p.x, yb + .62 * p.h, p.z), q, s3.set(1, 1, 1)); C.heads.setMatrixAt(i, m4);
-      var hu = up || (p.up && e > .6 && Math.sin(t * .4 + p.ph) > .2);
-      for (var k = 0; k < 2; k++) {
-        var side = k ? .24 : -.24, hy = hu ? yb + .85 * p.h + Math.sin(t * 6 + p.ph + k) * .05 : -50;
-        m4.compose(v3.set(p.x + Math.cos(p.rot) * side, hy, p.z - Math.sin(p.rot) * side), q, s3.set(1, 1, 1)); C.hands.setMatrixAt(i * 2 + k, m4);
-      }
-    });
-    C.body.instanceMatrix.needsUpdate = true; C.heads.instanceMatrix.needsUpdate = true; C.hands.instanceMatrix.needsUpdate = true;
+    // 손님
+    var up = t < handsUntil || dropping;
+    updateAvatars(t, b.ph, walking, up); sendPresence(now, walking); updateNPCs(dt, t, b.ph, up);
     // 스파클러
     var S = rec.sparks, pos = S.pts.geometry.attributes.position.array, alive = false;
     S.emit = S.emit.filter(function (em) { return em.until > t; });
