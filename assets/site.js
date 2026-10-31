@@ -388,6 +388,57 @@
     var qf0 = new URLSearchParams(location.search).get('floor');
     if (qf0 === '3F') rq.querySelector('input[name=floor][value="3F"]').checked = true;
     var lastNick = store('gs_nick'); if (lastNick) rq.nick.value = lastNick;
+
+    // 곡 검색 (Apple iTunes 검색 API, 키 불필요). 한국 스토어 먼저, 결과가 없으면 글로벌 스토어.
+    var box = $('#rq-results'), hint = $('#rq-hint'), song = rq.song, sCache = {}, sTimer = null, sSeq = 0, sItems = [], sActive = -1;
+    function itunes(term, country) {
+      var k = country + '|' + term;
+      if (sCache[k]) return Promise.resolve(sCache[k]);
+      var u = 'https://itunes.apple.com/search?media=music&entity=song&limit=8&term=' + encodeURIComponent(term) + (country ? '&country=' + country : '');
+      return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (d) { var res = (d.results || []).map(function (x) { return { t: x.trackName, a: x.artistName, img: x.artworkUrl60 }; }); sCache[k] = res; return res; });
+    }
+    function closeList() { box.hidden = true; song.setAttribute('aria-expanded', 'false'); song.removeAttribute('aria-activedescendant'); sActive = -1; }
+    function pickSong(i) {
+      var it = sItems[i]; if (!it) return;
+      song.value = it.t.slice(0, 80); rq.artist.value = it.a.slice(0, 60); closeList(); hint.textContent = '';
+      song.setAttribute('aria-invalid', 'false');
+    }
+    function setActive(i) {
+      sActive = i;
+      $$('li', box).forEach(function (li, k) { li.setAttribute('aria-selected', k === i ? 'true' : 'false'); });
+      if (i >= 0) { song.setAttribute('aria-activedescendant', 'rq-opt-' + i); var li = $('#rq-opt-' + i); if (li) li.scrollIntoView({ block: 'nearest' }); }
+    }
+    function search() {
+      var term = song.value.trim(), my = ++sSeq;
+      if (term.length < 2) { closeList(); hint.textContent = ''; return; }
+      hint.textContent = T.rqSearching;
+      itunes(term, 'KR').catch(function () { return []; }).then(function (r) { return r.length ? r : itunes(term, ''); })
+        .then(function (res) {
+          if (my !== sSeq) return;
+          var seen = {};
+          sItems = res.filter(function (x) { var k = (x.t + '|' + x.a).toLowerCase(); if (seen[k]) return false; seen[k] = 1; return x.t; }).slice(0, 8);
+          if (!sItems.length) { closeList(); hint.textContent = T.rqNoResult; return; }
+          hint.textContent = '';
+          box.innerHTML = sItems.map(function (x, i) {
+            return '<li role="option" id="rq-opt-' + i + '" data-i="' + i + '" aria-selected="false">' + (x.img ? '<img src="' + esc(x.img) + '" alt="" width="44" height="44" loading="lazy">' : '<span class="rq-noimg"></span>') +
+              '<span class="rq-t"><b>' + esc(x.t) + '</b><small>' + esc(x.a) + '</small></span></li>';
+          }).join('');
+          box.hidden = false; song.setAttribute('aria-expanded', 'true'); sActive = -1;
+        })
+        .catch(function () { if (my === sSeq) { closeList(); hint.textContent = ''; } });
+    }
+    song.addEventListener('input', function () { clearTimeout(sTimer); sTimer = setTimeout(search, 350); });
+    song.addEventListener('keydown', function (e) {
+      if (box.hidden) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActive(Math.min(sItems.length - 1, sActive + 1)); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(Math.max(0, sActive - 1)); }
+      else if (e.key === 'Enter' && sActive >= 0) { e.preventDefault(); pickSong(sActive); }
+      else if (e.key === 'Escape') { closeList(); }
+    });
+    box.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    box.addEventListener('click', function (e) { var li = e.target.closest('li[data-i]'); if (li) pickSong(+li.dataset.i); });
+    document.addEventListener('click', function (e) { if (!e.target.closest('.rq-search')) closeList(); });
     rq.addEventListener('submit', function (ev) {
       ev.preventDefault();
       var song = rq.song.value.trim();
