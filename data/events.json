@@ -20,6 +20,442 @@
     }
   },
   {
+    "date": "2026-08-07",
+    "title": "OWN THE NIGHT",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-08-07.webp",
+    "desc": {
+      "ko": "스페셜 게스트 DJ HOWL",
+      "en": "Special guest DJ HOWL"
+    },
+    "ig": "https://www.instagram.com/p/DbeTD63zhz3/",
+    "lineup": {
+      "GUEST": [
+        "HOWL"
+      ]
+    }
+  },
+  {
+    "date": "2026-08-08",
+    "title": "CASINO ROYALE with CLOVER",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-08-08.webp",
+    "desc": {
+      "ko": "카지노 로얄 파티 · 게스트 DJ ARKINS",
+      "en": "Casino Royale party with guest DJ ARKINS"
+    },
+    "ig": "https://www.instagram.com/p/DbbkBRQk-3Y/",
+    "lineup": {
+      "GUEST": [
+        "ARKINS"
+      ]
+    }
+  },
+  {
+    "date": "2026-08-14",
+    "title": "TONIGHT, INFINITE ENERGY.",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-08-14.webp",
+    "desc": {
+      "ko": "2F GLOWBUM · 3F CHOPPER 스페셜 게스트",
+      "en": "Special guests: GLOWBUM (2F) · CHOPPER (3F)"
+    },
+    "ig": "https://www.instagram.com/p/DbeTbZaT8VV/",
+    "lineup": {
+      "2F": [
+        "GLOWBUM"
+      ],
+      "3F": [
+        "CHOPPER"
+      ]
+    }
+  },
+  {
+    "date": "2026-08-15",
+    "title": "WEDDING PARTY",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-08-15.webp",
+    "desc": {
+      "ko": "웨딩 파티 · 최강의 라인업",
+      "en": "Wedding Party with an all-star lineup"
+    },
+    "ig": "https://www.instagram.com/p/DbnkiFME0WV/",
+    "lineup": {
+      "GUEST": [
+        "DJ UZI",
+        "DENIS",
+        "ARKINS",
+        "SKINSHIP",
+        "TRY"
+      ]
+    }
+  },
+  {
+    "date": "2026-08-21",
+    "title": "TONIGHT, INFINITE ENERGY.",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-08-21.webp",
+    "desc": {
+      "ko": "스페셜 게스트 DJ YOUKEEP",
+      "en": "Special guest DJ YOUKEEP"
+    },
+    "ig": "https://www.instagram.com/p/Db0b0BsT9lB/",
+    "lineup": {
+      "GUEST": [
+        "YOUKEEP"
+      ]
+    }
+  },
+  {
+    "date": "2026-08-22",
+    "title": "SCHOOL UNIFORM PARTY",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-08-22.webp",
+    "desc": {
+      "ko": "교복 룩 파티 · EPIIK × SIXTHEMA",
+      "en": "School Look Party with EPIIK × SIXTHEMA"
+    },
+    "ig": "https://www.instagram.com/p/DbvbOT4zctj/",
+    "lineup": {
+      "GUEST": [
+        "EPIIK",
+        "SIXTHEMA"
+      ]
+    }
+  },
+  {
+    "date": "2026-08-28",
+    "title": "TONIGHT, INFINITE ENERGY.",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-08-28.webp",
+    "desc": {
+      "ko": "스페셜 게스트 DJ SWEENY",
+      "en": "Special guest DJ SWEENY"
+    },
+    "ig": "https://www.instagram.com/p/DcHeXOOTP-h/",
+    "lineup": {
+      "GUEST": [
+        "SWEENY"
+      ]
+    }
+  },
+  {
+    "date": "2026-08-29",
+    "title": "VIP PARTY",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-08-29.webp",
+    "desc": {
+      "ko": "VIP 파티 · 게스트 DJ SMASHER",
+      "en": "VIP Party with guest DJ SMASHER"
+    },
+    "ig": "https://www.instagram.com/p/DcLqtXzk9z1/",
+    "lineup": {
+      "GUEST": [
+        "SMASHER"
+      ]
+    }
+  },
+  {
+    "date": "2026-08-31",
+    "title": "ODDEST TOUR 01 : BUSAN",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "flyer": "/assets/flyers/2026-08-31.webp",
+    "desc": {
+      "ko": "ODDEST 멤버 전원이 처음으로 한자리에 모인 첫 번째 투어",
+      "en": "ODDEST Tour first stop — full lineup Monday party"
+    },
+    "ig": "https://www.instagram.com/p/DclZyaKzclQ/"
+  },
+  {
+    "date": "2026-09-04",
+    "title": "BLACK & WHITE",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-09-04.webp",
+    "desc": {
+      "ko": "블랙 & 화이트 파티 · 게스트 DJ GONGSTAR",
+      "en": "Black & White party with guest DJ GONGSTAR"
+    },
+    "ig": "https://www.instagram.com/p/DcizpfATY20/",
+    "lineup": {
+      "GUEST": [
+        "GONGSTAR"
+      ]
+    }
+  },
+  {
+    "date": "2026-09-05",
+    "title": "WE OWN THE NIGHT.",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-09-05.webp",
+    "desc": {
+      "ko": "스페셜 게스트 DJ COSMICKEY",
+      "en": "Special guest DJ COSMICKEY"
+    },
+    "ig": "https://www.instagram.com/p/DcdqLPhTGDi/",
+    "lineup": {
+      "GUEST": [
+        "COSMICKEY"
+      ]
+    }
+  },
+  {
+    "date": "2026-09-11",
+    "title": "IN BUSAN? IT'S GROOVE.",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-09-11.webp",
+    "desc": {
+      "ko": "2F 2AS · 3F POTAITO",
+      "en": "2AS (2F) · POTAITO (3F)"
+    },
+    "ig": "https://www.instagram.com/p/Dc3VX0fTMy5/",
+    "lineup": {
+      "2F": [
+        "2AS"
+      ],
+      "3F": [
+        "POTAITO"
+      ]
+    }
+  },
+  {
+    "date": "2026-09-12",
+    "title": "JAPANESE PARTY",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-09-12.webp",
+    "desc": {
+      "ko": "재패니즈 파티 · CALEBO × YUKA",
+      "en": "Japanese Party with CALEBO × YUKA"
+    },
+    "ig": "https://www.instagram.com/p/Dc3ce24THyp/",
+    "lineup": {
+      "2F": [
+        "CALEBO"
+      ],
+      "GUEST": [
+        "YUKA"
+      ]
+    }
+  },
+  {
+    "date": "2026-09-15",
+    "title": "BERMUDA EXCURSION IN SPOT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "flyer": "/assets/flyers/2026-09-15.webp",
+    "desc": {
+      "ko": "BERMUDA 레지던트 DJ 4인 원정 파티",
+      "en": "BERMUDA resident DJs takeover"
+    },
+    "ig": "https://www.instagram.com/p/Dc9ZUHizgVe/",
+    "lineup": {
+      "GUEST": [
+        "NEWT",
+        "BRIXX",
+        "MINUTE",
+        "HERMIT"
+      ]
+    }
+  },
+  {
+    "date": "2026-09-18",
+    "title": "GIRLS NIGHT PARTY",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-09-18.webp",
+    "desc": {
+      "ko": "걸스 나이트 파티 · Initial Music DJ GG",
+      "en": "Girls Night Party with DJ GG"
+    },
+    "ig": "https://www.instagram.com/p/DdL0K07E9zr/",
+    "lineup": {
+      "GUEST": [
+        "DJ GG"
+      ]
+    }
+  },
+  {
+    "date": "2026-09-19",
+    "title": "IN BUSAN? IT'S GROOVE.",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-09-19.webp",
+    "desc": {
+      "ko": "게스트 DJ SIZ × SUNGHOON",
+      "en": "Guest DJs SIZ × SUNGHOON"
+    },
+    "ig": "https://www.instagram.com/p/DdOavQGTuMr/",
+    "lineup": {
+      "GUEST": [
+        "SIZ",
+        "SUNGHOON"
+      ]
+    }
+  },
+  {
+    "date": "2026-09-23",
+    "title": "NOSTALGIA.",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "flyer": "/assets/flyers/2026-09-23.webp",
+    "desc": {
+      "ko": "노스탤지어 · 게스트 DJ NEO",
+      "en": "Nostalgia night with guest DJ NEO"
+    },
+    "ig": "https://www.instagram.com/p/DdZDL2xTjhx/",
+    "lineup": {
+      "GUEST": [
+        "NEO"
+      ]
+    }
+  },
+  {
+    "date": "2026-09-25",
+    "title": "IN BUSAN? IT'S GROOVE.",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-09-25.webp",
+    "desc": {
+      "ko": "추석 당일 게스트 DJ ATMOX × AUREDE",
+      "en": "Chuseok night with ATMOX × AUREDE"
+    },
+    "ig": "https://www.instagram.com/p/DdghxPZTnXd/",
+    "lineup": {
+      "GUEST": [
+        "ATMOX",
+        "AUREDE"
+      ]
+    }
+  },
+  {
+    "date": "2026-09-26",
+    "title": "IN BUSAN? IT'S GROOVE.",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-09-26.webp",
+    "desc": {
+      "ko": "게스트 DJ FRANKEN (PIKMA RECORDS)",
+      "en": "Guest DJ FRANKEN (Pikma Records)"
+    },
+    "ig": "https://www.instagram.com/p/Ddgh3zST5Yr/",
+    "lineup": {
+      "GUEST": [
+        "FRANKEN"
+      ]
+    }
+  },
+  {
+    "date": "2026-10-01",
+    "title": "ROK ARMED FORCES DAY",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "flyer": "/assets/flyers/2026-10-01.webp",
+    "desc": {
+      "ko": "국군의 날 밀리터리룩 파티",
+      "en": "Armed Forces Day military-look party"
+    },
+    "ig": "https://www.instagram.com/p/DdoQ0MpzA0u/"
+  },
+  {
+    "date": "2026-10-10",
+    "title": "IN BUSAN? IT'S GROOVE.",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-10-10.webp",
+    "desc": {
+      "ko": "게스트 DJ GIO × KEYNA",
+      "en": "Guest DJs GIO × KEYNA"
+    },
+    "ig": "https://www.instagram.com/p/Dd3s5BDTDqm/",
+    "lineup": {
+      "GUEST": [
+        "GIO",
+        "KEYNA"
+      ]
+    }
+  },
+  {
+    "date": "2026-10-18",
+    "title": "IN BUSAN? IT'S GROOVE.",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "flyer": "/assets/flyers/2026-10-18.webp",
+    "desc": {
+      "ko": "게스트 DJ BUCKY",
+      "en": "Guest DJ BUCKY"
+    },
+    "ig": "https://www.instagram.com/p/Dd9x7-fzk7R/",
+    "lineup": {
+      "GUEST": [
+        "BUCKY"
+      ]
+    }
+  },
+  {
+    "date": "2026-10-23",
+    "title": "RUNNING CREW PARTY",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-10-23.webp",
+    "desc": {
+      "ko": "러닝 크루 파티 · 스페셜 DJ CHOPPER",
+      "en": "Running Crew Party with special DJ CHOPPER"
+    },
+    "ig": "https://www.instagram.com/p/DeRbvclk0d6/",
+    "lineup": {
+      "GUEST": [
+        "CHOPPER"
+      ]
+    }
+  },
+  {
+    "date": "2026-10-24",
+    "title": "BIRTHDAY PARTY · KUPA × DJ KROWN",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-10-24.webp",
+    "desc": {
+      "ko": "생일 파티 · 스페셜 DJ 타임 KUPA × DJ KROWN",
+      "en": "Birthday party special DJ time: KUPA × DJ KROWN"
+    },
+    "ig": "https://www.instagram.com/p/DeO4tBkk5je/",
+    "lineup": {
+      "GUEST": [
+        "KUPA",
+        "DJ KROWN"
+      ]
+    }
+  },
+  {
+    "date": "2026-10-30",
+    "title": "HALLOWEEN WEEKEND",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-10-30.webp",
+    "desc": {
+      "ko": "할로윈 위크엔드 금요일 · 게스트 DJ ARKINS",
+      "en": "Halloween Weekend Friday with guest DJ ARKINS"
+    },
+    "ig": "https://www.instagram.com/p/Debu__gTGRE/",
+    "lineup": {
+      "GUEST": [
+        "ARKINS"
+      ]
+    }
+  },
+  {
     "date": "2026-10-31",
     "title": "공포민속촌 · HALLOWEEN WEEKEND",
     "floor": "2F+3F",
@@ -62,5 +498,34 @@
       "ko": "할로윈 위크엔드 〈공포민속촌〉 — 새벽 2시 2F VANDALROCK",
       "en": "Halloween Weekend — VANDALROCK on 2F at 2AM"
     }
+  },
+  {
+    "date": "2026-11-07",
+    "title": "FIREWORKS PARTY with G.O.A.T",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-11-07.webp",
+    "desc": {
+      "ko": "불꽃 파티 · 게스트 DJ JUNTARO",
+      "en": "Fireworks Party with guest DJ JUNTARO"
+    },
+    "ig": "https://www.instagram.com/p/Dez1ziSk_dA/",
+    "lineup": {
+      "GUEST": [
+        "JUNTARO"
+      ]
+    }
+  },
+  {
+    "date": "2026-11-14",
+    "title": "GROOVE / SPOT LABEL PARTY",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-11-14.webp",
+    "desc": {
+      "ko": "그루브/스팟 레이블 파티 · DJ 타임어택",
+      "en": "Groove / Spot Label Party — DJ time attack"
+    },
+    "ig": "https://www.instagram.com/p/DfHWnV4TEKa/"
   }
 ]
