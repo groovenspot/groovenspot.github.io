@@ -111,6 +111,9 @@ ${body}
   <a href="${href(lang, 'events/')}">${L('cta.tonight')}</a>
   <a class="dock-hot" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a>
   <a href="${GMAP_DIR}" rel="noopener">${L('cta.map')}</a>
+  <a class="dock-sub" href="${href(lang, 'request/')}"${active === 'request/' ? ' aria-current="page"' : ''}>🎵 ${L('nav.request')}</a>
+  <a class="dock-sub" href="${href(lang, 'menu/')}"${active === 'menu/' ? ' aria-current="page"' : ''}>🍾 ${L('nav.menu')}</a>
+  <a class="dock-sub" href="${href(lang, 'info/')}"${active === 'info/' ? ' aria-current="page"' : ''}>📍 ${L('nav.info')}</a>
 </nav>
 <div class="gate" id="gate" hidden>
   <div class="gate-box" role="dialog" aria-modal="true" aria-labelledby="gate-q">
