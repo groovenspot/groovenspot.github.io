@@ -203,8 +203,12 @@
     $('#tt-rows').innerHTML = list.length ? list.map(function (s, i) {
       return '<li><input type="time" value="' + esc(s.t) + '" data-i="' + i + '" data-k="t" aria-label="시간"><input value="' + esc(s.n) + '" data-i="' + i + '" data-k="n" aria-label="DJ 이름"><button class="btn" type="button" data-del="' + i + '" aria-label="삭제">✕</button></li>';
     }).join('') : '<li class="empty">' + dateLabel(ttDate.value) + ' ' + ttFloor + ' 라인업이 비어 있어요.</li>';
+    var s = TTSRC[ttDate.value], note = $('#tt-auto');
+    if (note) note.textContent = s && !s.none && !s.skipped ? '🤖 이 날 타임테이블은 포스터에서 자동으로 읽어 넣었어요. 틀린 곳은 고쳐서 저장하면 돼요.' : '';
   }
+  var TTSRC = {};
   function loadTimetable() {
+    readJSON('data/timetable-sources.json', {}).then(function (r) { TTSRC = r.data || {}; renderTT(); }).catch(function () {});
     return readJSON('data/timetable.json', {}).then(function (r) { TT = r.data || {}; renderTT(); }).catch(function (e) { toast(e.message); });
   }
   ttDate.addEventListener('change', renderTT);

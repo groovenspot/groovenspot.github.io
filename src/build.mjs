@@ -518,6 +518,7 @@ write('admin/index.html', `<!doctype html>
       <div class="tabs" id="tt-floor"><button data-f="2F" class="tab-g" aria-selected="true">2F · GROOVE</button><button data-f="3F" class="tab-s" aria-selected="false">3F · SPOT</button></div>
     </div>
     <p class="muted small">영업일 기준 날짜예요. 새벽 시간(00:00~07:00)도 전날 날짜에 넣으세요.</p>
+    <p class="muted small adm-auto" id="tt-auto"></p>
     <ul class="tt-edit" id="tt-rows"></ul>
     <form class="adm-row" id="tt-add"><input name="t" type="time" required aria-label="시작 시간"><input name="n" placeholder="DJ 이름" maxlength="40" required aria-label="DJ 이름"><button class="btn" type="submit">추가</button></form>
     <div class="adm-act"><button class="btn btn-hot" id="tt-save" type="button">이 날짜 저장</button><button class="btn" id="tt-clear" type="button">이 층 비우기</button></div>
@@ -544,7 +545,7 @@ write('admin/index.html', `<!doctype html>
       <label>2F 라인업 (쉼표로 구분)<input name="l2" placeholder="ZINO, ROAD"></label>
       <label>3F 라인업 (쉼표로 구분)<input name="l3" placeholder="DIA, ZET"></label>
       <label class="full">소개 (선택)<textarea name="desc" rows="2" maxlength="200"></textarea></label>
-      <label class="full">플라이어 이미지 (선택, 세로 4:5 권장)<input name="flyerFile" type="file" accept="image/*"></label>
+      <label class="full">포스터 · 타임테이블 이미지 (선택, 세로 이미지) <span class="muted small">타임테이블이 적힌 포스터를 올리면 오늘·내일 이벤트는 매시간(오후 2시~새벽 2시) 자동으로 읽어서 🎧 DJ 타임테이블에 넣어요.</span><input name="flyerFile" type="file" accept="image/*"></label>
       <div class="full adm-flyer" id="ev-flyer"></div>
       <div class="full adm-act"><button class="btn btn-hot" type="submit" id="ev-save">이벤트 저장</button><button class="btn" type="button" id="ev-reset">새로 작성</button></div>
     </form>

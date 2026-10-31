@@ -72,3 +72,6 @@
 .adm-ev select:disabled, .adm-ev input:disabled { opacity: .6; }
 .rq-refresh { margin-left: auto; min-height: 44px; }
 @media (max-width: 520px) { .rq-refresh { margin-left: 0; width: 100%; } }
+.adm-auto:empty { display: none; }
+.adm-auto { color: var(--txt) !important; background: rgba(255, 122, 26, .1); border: 1px solid rgba(255, 122, 26, .35); border-radius: 10px; padding: 8px 12px; }
+.adm-ev label .muted.small { font-weight: 500; }
