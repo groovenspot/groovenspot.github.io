@@ -137,9 +137,9 @@ ${body}
 </div>
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
   <button class="lb-x" type="button" data-lb="close" aria-label="${L('rt.close')}">✕</button>
-  <button class="lb-nav lb-prev" type="button" data-lb="prev" aria-label="${L('rt.prev')}">‹</button>
+  <button class="lb-nav lb-prev" type="button" data-lb="prev" aria-label="${L('rt.prevPhoto')}">‹</button>
   <figure class="lb-fig"><img id="lb-img" alt=""><figcaption id="lb-cap"></figcaption></figure>
-  <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="${L('rt.next')}">›</button>
+  <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="${L('rt.nextPhoto')}">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, topic: REQ_TOPIC, t: runtime })};</script>
