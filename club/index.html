@@ -408,9 +408,9 @@
   var H = 5, S = 36;
   var PLAN = {
     '2F': { x0: 20, x1: 1060, y0: 35, y1: 590, start: [539, 186], look: [556, 470],
-      zones: [[400, 182, 700, 338], [45, 182, 385, 264], [705, 182, 1045, 264], [628, 350, 658, 420], [470, 552, 650, 585]] },
+      zones: [[45, 178, 1045, 420], [45, 420, 470, 575], [470, 552, 650, 585], [630, 420, 660, 560]] },
     '3F': { x0: 20, x1: 1060, y0: 70, y1: 640, start: [575, 478], look: [462, 330],
-      zones: [[362, 182, 560, 505], [560, 432, 900, 505], [560, 182, 770, 250], [282, 432, 360, 630], [360, 505, 528, 630], [528, 592, 900, 632]] }
+      zones: [[285, 182, 775, 505], [775, 470, 900, 505], [285, 505, 528, 630], [528, 592, 900, 632]] }
   };
   var ADD = THREE.AdditiveBlending;
   function mat(c, o) { return new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .85, metalness: .05 }, o || {})); }
@@ -610,20 +610,6 @@
       // 출구 (오른쪽 위)
       add(box(1.5, 2.4, .05, glow(0xff5a1a, .3)), X(985), 1.2, -D / 2 + .03);
       sign('EXIT', X(985), 2.75, -D / 2 + .06, 1.2, 0, '#ff5a1a');
-      // H 혼술바존 4줄 x 8석
-      var hx = [68, 111, 155, 198, 242, 285, 328, 368], hy = [293, 353, 413, 477];
-      var hRows = [[25, 26, 27, 28, 29, 30, 31, 32], [24, 23, 22, 21, 20, 19, 18, 17], [9, 10, 11, 12, 13, 14, 15, 16], [8, 7, 6, 5, 4, 3, 2, 1]];
-      hRows.forEach(function (row, ri) { row.forEach(function (n, ci) { cube(hx[ci], hy[ri], 40, 'H' + n); }); });
-      collide(46, 272, 390, 498);
-      flat('H : 혼술바존', X(120), Z(252), .01, 2.4, '#ff9a4a');
-      sign('혼술바 H', X(218), 3, Z(385), 2.6, Math.PI / 2, '#ff9a4a', true);
-      // S 스툴
-      [['S3', 455, 222], ['S4', 511, 222], ['S5', 567, 222], ['S6', 623, 222], ['S1', 420, 293], ['S2', 471, 293], ['S7', 571, 293], ['S8', 623, 293], ['S9', 674, 293]].forEach(function (s) { stool(s[1], s[2], s[0]); });
-      // L 좌석 (2줄 x 3묶음)
-      var lTop = [[7, 724], [8, 762], [9, 799], [13, 845], [14, 883], [15, 921], [19, 965], [20, 1001], [21, 1030]];
-      var lBot = [[4, 724], [5, 762], [6, 799], [10, 845], [11, 883], [12, 921], [16, 965], [17, 1001], [18, 1030]];
-      lTop.forEach(function (l) { cube(l[1], 289, 38, 'L' + l[0]); }); lBot.forEach(function (l) { cube(l[1], 327, 38, 'L' + l[0]); });
-      collide(705, 270, 818, 346); collide(826, 270, 940, 346); collide(946, 270, 1048, 346);
       // DJ 부스 (가운데 아래, 관객 쪽 = 위)
       var bR = R(487, 345, 625, 545);
       add(box(bR.w, .3, bR.d, mat(0xc9c7c2, { metalness: .6, roughness: .3 })), bR.x, .15, bR.z);
@@ -686,11 +672,6 @@
       djFigure(dR.x - .4, dR.z, Math.PI / 2, 0);
       flat('DJ', dR.x - .1, dR.z + 1.2, 1.06, 1.3, cfg.css);
       collide(430, 258, 505, 425);
-      [['S4', 395, 257], ['S3', 392, 316], ['S2', 390, 378], ['S1', 388, 442], ['DB8', 446, 220], ['DB7', 499, 220], ['DB1', 440, 465], ['DB2', 496, 465], ['S7', 543, 277], ['S6', 543, 338], ['S5', 543, 400]].forEach(function (s) { stool(s[1], s[2], s[0]); });
-      // L 좌석 4 x 3
-      var lxs = [600, 648, 693, 738];
-      [[9, 10, 11, 12], [5, 6, 7, 8], [1, 2, 3, 4]].forEach(function (row, ri) { row.forEach(function (n, ci) { cube(lxs[ci], [267, 335, 405][ri], 42, 'L' + n); }); });
-      collide(578, 246, 760, 427);
       // LED 스크린 (DJ 뒤에 매달림, 오른쪽을 봄)
       ledWall(X(360), 3.3, dR.z, 5.4, Math.PI / 2);
       speaker(X(372), 3.2, Z(222), Math.PI / 2, 1.4); speaker(X(372), 3.2, Z(462), Math.PI / 2, 1.4);
@@ -741,7 +722,7 @@
     function hitAny(x, z, m) { for (var i = 0; i < rec.colliders.length; i++) { var c = rec.colliders[i]; if (x > c[0] - m && x < c[2] + m && z > c[1] - m && z < c[3] + m) return true; } return false; }
     var area = rec.zones.map(function (r) { return (r[2] - r[0]) * (r[3] - r[1]); }), tot = area.reduce(function (a, b) { return a + b; }, 0);
     var sx = X(pl.start[0]), sz = Z(pl.start[1]);
-    var CN = 70, body = new THREE.InstancedMesh(new THREE.CylinderGeometry(.21, .23, 1.15, 8), mat(0x141012, { roughness: .9 }), CN);
+    var CN = 100, body = new THREE.InstancedMesh(new THREE.CylinderGeometry(.21, .23, 1.15, 8), mat(0x141012, { roughness: .9 }), CN);
     var headsM = new THREE.InstancedMesh(new THREE.SphereGeometry(.15, 10, 8), mat(0x1d1416, { roughness: .8 }), CN);
     var hands = new THREE.InstancedMesh(new THREE.BoxGeometry(.07, .35, .07), mat(0x1d1416), CN * 2);
     var people = [];
