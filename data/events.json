@@ -153,7 +153,19 @@
       "ko": "ODDEST 멤버 전원이 처음으로 한자리에 모인 첫 번째 투어",
       "en": "ODDEST Tour first stop — full lineup Monday party"
     },
-    "ig": "https://www.instagram.com/p/DclZyaKzclQ/"
+    "ig": "https://www.instagram.com/p/DclZyaKzclQ/",
+    "lineup": {
+      "GUEST": [
+        "ASH",
+        "BIXXB",
+        "PEACE:BLUR",
+        "CALFSKIN",
+        "TRY",
+        "NOJU",
+        "GROZ",
+        "ROREN"
+      ]
+    }
   },
   {
     "date": "2026-09-04",
@@ -224,7 +236,7 @@
       "2F": [
         "CALEBO"
       ],
-      "GUEST": [
+      "3F": [
         "YUKA"
       ]
     }
@@ -313,7 +325,7 @@
     },
     "ig": "https://www.instagram.com/p/DdghxPZTnXd/",
     "lineup": {
-      "GUEST": [
+      "3F": [
         "ATMOX",
         "AUREDE"
       ]
@@ -360,7 +372,7 @@
     },
     "ig": "https://www.instagram.com/p/Dd3s5BDTDqm/",
     "lineup": {
-      "GUEST": [
+      "3F": [
         "GIO",
         "KEYNA"
       ]
