@@ -34,6 +34,123 @@
     }
   },
   {
+    "date": "2026-08-10",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "UZI"
+      ],
+      "3F": [
+        "KUPA",
+        "UZI",
+        "MUTE",
+        "ROAD",
+        "ZET",
+        "DIA",
+        "TARO",
+        "BILL"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-10.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-08-11",
+    "title": "TUESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "KUPA",
+        "MUMU",
+        "TARO",
+        "BINU",
+        "SENDOW"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "ZET",
+        "EZZY",
+        "TARO",
+        "KUPA",
+        "MUMU",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-11.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-08-12",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "KUPA",
+        "ROAD",
+        "BINU",
+        "TARO",
+        "MUMU"
+      ],
+      "3F": [
+        "N",
+        "EZZY",
+        "MUMU",
+        "KAIO",
+        "TARO",
+        "DIA",
+        "ROAD",
+        "KUPA"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-12.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-08-13",
+    "title": "THURSDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUMU",
+        "ROAD",
+        "UZI",
+        "SENDOW",
+        "ZINO"
+      ],
+      "3F": [
+        "N",
+        "MUMU",
+        "ROAD",
+        "KAIO",
+        "UZI",
+        "DIA",
+        "EZZY",
+        "JOHNY RIGHT HERE"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-13.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
     "date": "2026-08-14",
     "title": "TONIGHT, INFINITE ENERGY.",
     "floor": "2F+3F",
@@ -75,6 +192,161 @@
     }
   },
   {
+    "date": "2026-08-16",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "KUPA",
+        "UZI",
+        "BINU"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "EZZY",
+        "JOHNY RIGHT HERE",
+        "KAIO",
+        "ROAD",
+        "ZET",
+        "TARO",
+        "UZI",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-16.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-08-17",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUMU",
+        "DIA",
+        "TARO",
+        "BINU",
+        "SENDOW",
+        "ROAD"
+      ],
+      "3F": [
+        "N",
+        "EZZY",
+        "JOHNY RIGHT HERE",
+        "ZINO",
+        "MUTE",
+        "ROAD",
+        "MUMU",
+        "TARO",
+        "KUPA",
+        "ZET"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-17.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-08-18",
+    "title": "TUESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "KUPA",
+        "MUMU",
+        "BINU",
+        "SENDOW",
+        "ZINO",
+        "TARO"
+      ],
+      "3F": [
+        "BILL",
+        "A:ETH",
+        "EZZY",
+        "DIA",
+        "MUTE",
+        "TARO",
+        "ZET",
+        "KUPA",
+        "MUMU"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-18.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-08-19",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUMU",
+        "ZINO",
+        "BINU",
+        "ROAD",
+        "SENDOW"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "MUMU",
+        "ZET",
+        "ROAD",
+        "EZZY"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-19.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-08-20",
+    "title": "THURSDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUMU",
+        "TARO",
+        "BINU",
+        "SENDOW",
+        "ZINO"
+      ],
+      "3F": [
+        "A:ETH",
+        "BILL",
+        "N",
+        "TARO"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-20.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
     "date": "2026-08-21",
     "title": "TONIGHT, INFINITE ENERGY.",
     "floor": "2F+3F",
@@ -107,6 +379,123 @@
         "EPIIK",
         "SIXTHEMA"
       ]
+    }
+  },
+  {
+    "date": "2026-08-23",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "KUPA",
+        "ROAD",
+        "ZINO",
+        "BINU",
+        "SENDOW",
+        "TARO"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "EZZY",
+        "JOHNY RIGHT HERE",
+        "DIA",
+        "TARO",
+        "ZET",
+        "ROAD",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-23.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-08-24",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUMU",
+        "ROAD",
+        "BINU",
+        "TARO",
+        "SENDOW",
+        "ZINO"
+      ],
+      "3F": [
+        "DIA",
+        "WOOK2",
+        "ZET",
+        "ROAD",
+        "TARO",
+        "MUMU",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-24.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-08-25",
+    "title": "TUESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "ZINO",
+        "TARO",
+        "BINU",
+        "SENDOW",
+        "MUMU"
+      ],
+      "3F": [
+        "N",
+        "A:ETH",
+        "JOHNY RIGHT HERE"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-25.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-08-26",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUMU",
+        "ZINO",
+        "ROAD",
+        "SENDOW"
+      ],
+      "3F": [
+        "BILL",
+        "A:ETH",
+        "KUPA",
+        "DIA",
+        "MUTE",
+        "EZZY"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-26.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
     }
   },
   {
@@ -144,6 +533,40 @@
     }
   },
   {
+    "date": "2026-08-30",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "KUPA",
+        "ROAD",
+        "TARO",
+        "BINU",
+        "UZI",
+        "ZINO"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "EZZY",
+        "JOHNY RIGHT HERE",
+        "UZI",
+        "TARO",
+        "ZET",
+        "ROAD",
+        "KUPA"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-08-30.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
     "date": "2026-08-31",
     "title": "ODDEST TOUR 01 : BUSAN",
     "floor": "2F+3F",
@@ -165,6 +588,32 @@
         "GROZ",
         "ROREN"
       ]
+    }
+  },
+  {
+    "date": "2026-09-01",
+    "title": "TUESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "ZINO",
+        "UZI",
+        "CANTAR",
+        "BINU",
+        "MUMU"
+      ],
+      "3F": [
+        "JOHNY RIGHT HERE",
+        "MUMU",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-01.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
     }
   },
   {
@@ -199,6 +648,131 @@
       "GUEST": [
         "COSMICKEY"
       ]
+    }
+  },
+  {
+    "date": "2026-09-06",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "UZI",
+        "ROAD",
+        "TARO",
+        "BINU",
+        "SENDOW",
+        "ZINO"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "EZZY",
+        "JOHNY RIGHT HERE",
+        "ZET",
+        "TARO",
+        "UZI",
+        "ROAD",
+        "KUPA"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-06.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-09-07",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUMU",
+        "UZI",
+        "ROAD",
+        "CANTAR",
+        "ZINO"
+      ],
+      "3F": [
+        "BILL",
+        "A:ETH",
+        "EZZY",
+        "UZI",
+        "DIA",
+        "ROAD",
+        "ZET",
+        "KUPA",
+        "MUMU",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-07.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-09-08",
+    "title": "TUESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "3F": [
+        "BILL",
+        "EZZY",
+        "JOHNY RIGHT HERE",
+        "MUTE",
+        "UZI",
+        "ROAD",
+        "KAIO",
+        "MUMU",
+        "ZET",
+        "N",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-08.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-09-09",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUMU",
+        "ROAD",
+        "TARO",
+        "UZI",
+        "ZINO"
+      ],
+      "3F": [
+        "BILL",
+        "A:ETH",
+        "JOHNY RIGHT HERE",
+        "KUPA",
+        "TARO",
+        "ROAD",
+        "UZI",
+        "MUMU",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-09.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
     }
   },
   {
@@ -242,6 +816,72 @@
     }
   },
   {
+    "date": "2026-09-13",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "UZI",
+        "ROAD",
+        "TARO",
+        "BINU",
+        "ZINO"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "UZI",
+        "JOHNY RIGHT HERE",
+        "ZET",
+        "TARO",
+        "ROAD",
+        "KUPA",
+        "EZZY",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-13.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-09-14",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "KUPA",
+        "ZINO",
+        "UZI",
+        "TARO"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "JOHNY RIGHT HERE",
+        "UZI",
+        "ZET",
+        "TARO",
+        "KUPA",
+        "EZZY",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-14.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
     "date": "2026-09-15",
     "title": "BERMUDA EXCURSION IN SPOT",
     "floor": "2F+3F",
@@ -259,6 +899,73 @@
         "MINUTE",
         "HERMIT"
       ]
+    }
+  },
+  {
+    "date": "2026-09-16",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUTE",
+        "MUMU",
+        "UZI",
+        "ZINO",
+        "ROAD"
+      ],
+      "3F": [
+        "BILL",
+        "A:ETH",
+        "N",
+        "ROAD",
+        "MUTE",
+        "KUPA",
+        "DIA",
+        "UZI",
+        "MUMU",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-16.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-09-17",
+    "title": "THURSDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUTE",
+        "MUMU",
+        "TARO",
+        "ROAD",
+        "ZINO"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "JOHNY RIGHT HERE",
+        "MUTE",
+        "DIA",
+        "TARO",
+        "ROAD",
+        "EZZY",
+        "MUMU",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-17.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
     }
   },
   {
@@ -294,6 +1001,98 @@
         "SIZ",
         "SUNGHOON"
       ]
+    }
+  },
+  {
+    "date": "2026-09-20",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUMU",
+        "MUTE",
+        "ROAD"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "MUMU",
+        "TARO",
+        "KAIO",
+        "ZET",
+        "ROAD",
+        "KUPA",
+        "EZZY"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-20.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-09-21",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUMU",
+        "ZINO",
+        "UZI",
+        "TARO",
+        "ROAD"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "ZET",
+        "WOOK2",
+        "ROAD",
+        "LANCER",
+        "UZI",
+        "KUPA",
+        "EZZY",
+        "MUMU",
+        "TARO",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-21.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-09-22",
+    "title": "TUESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "JOHNY RIGHT HERE",
+        "KUPA",
+        "MUMU",
+        "UZI",
+        "KAIO",
+        "EZZY",
+        "DIA",
+        "ZET",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-22.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
     }
   },
   {
@@ -349,6 +1148,135 @@
     }
   },
   {
+    "date": "2026-09-27",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUTE",
+        "ZINO",
+        "ROAD",
+        "TARO"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "KUPA",
+        "MUTE",
+        "DIA",
+        "ZET",
+        "ROAD",
+        "TARO",
+        "EZZY",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-27.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-09-28",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "ZINO",
+        "TARO",
+        "UZI",
+        "MUMU"
+      ],
+      "3F": [
+        "N",
+        "A:ETH",
+        "MUMU",
+        "JOHNY RIGHT HERE",
+        "TARO",
+        "ZET",
+        "KUPA",
+        "UZI",
+        "EZZY",
+        "BILL",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-28.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-09-29",
+    "title": "TUESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "ROAD",
+        "ZINO",
+        "UZI",
+        "MUMU"
+      ],
+      "3F": [
+        "JOHNY RIGHT HERE",
+        "EZZY",
+        "ZET",
+        "MAD",
+        "DIA",
+        "KUPA",
+        "MUTE"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-29.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-09-30",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUTE",
+        "ZINO",
+        "TARO",
+        "ROAD",
+        "MUMU"
+      ],
+      "3F": [
+        "N",
+        "MUMU",
+        "KUPA",
+        "DIA",
+        "ROREN",
+        "MUTE",
+        "ZET",
+        "TARO",
+        "ROAD",
+        "BILL",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-09-30.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
     "date": "2026-10-01",
     "title": "ROK ARMED FORCES DAY",
     "floor": "2F+3F",
@@ -359,6 +1287,276 @@
       "en": "Armed Forces Day military-look party"
     },
     "ig": "https://www.instagram.com/p/DdoQ0MpzA0u/"
+  },
+  {
+    "date": "2026-10-02",
+    "title": "FRIDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUTE",
+        "TARO",
+        "MAD",
+        "BINU",
+        "CANTAR",
+        "UZI",
+        "SENDOW",
+        "ROAD"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "EZZY",
+        "MUTE",
+        "ZET",
+        "TARO",
+        "DIA",
+        "ROAD",
+        "UZI",
+        "A:ETH",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-02.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-03",
+    "title": "SATURDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUTE",
+        "ROAD",
+        "MAD",
+        "BINU",
+        "CANTAR",
+        "SENDOW",
+        "TARO"
+      ],
+      "3F": [
+        "BILL",
+        "A:ETH",
+        "N",
+        "KAIO",
+        "MUMU",
+        "MUTE",
+        "ROAD",
+        "TARO",
+        "KUPA",
+        "UZI",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-03.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-04",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUTE",
+        "ROAD",
+        "ZINO",
+        "BINU",
+        "CANTAR",
+        "GROOVE DJ",
+        "SENDOW"
+      ],
+      "3F": [
+        "N",
+        "MUTE",
+        "A:ETH",
+        "KAIO",
+        "UZI",
+        "DIA",
+        "TARO",
+        "ROAD",
+        "KUPA",
+        "EZZY",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-04.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-05",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUMU",
+        "ROAD",
+        "TARO",
+        "UZI",
+        "ZINO",
+        "KUPA",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "A:ETH",
+        "MUMU",
+        "DIA",
+        "HARIN",
+        "TARO",
+        "ROAD",
+        "UZI",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-05.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-06",
+    "title": "TUESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "3F": [
+        "BILL",
+        "KUPA",
+        "N",
+        "EZZY",
+        "JOHNY RIGHT HERE",
+        "MUMU",
+        "DIA",
+        "ROAD",
+        "A:ETH",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-06.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-07",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUMU",
+        "MUTE",
+        "TARO",
+        "UZI",
+        "ZINO",
+        "KUPA",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "BILL",
+        "KUPA",
+        "MUMU",
+        "JOHNY RIGHT HERE",
+        "MUTE",
+        "TARO",
+        "UZI",
+        "EZZY",
+        "N",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-07.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-08",
+    "title": "THURSDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUTE",
+        "TARO",
+        "ZINO",
+        "BINU",
+        "CANTAR",
+        "GROOVE DJ",
+        "SENDOW"
+      ],
+      "3F": [
+        "N",
+        "A:ETH",
+        "EZZY",
+        "JOHNY RIGHT HERE",
+        "MUTE",
+        "ZET",
+        "ROAD",
+        "TARO",
+        "UZI",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-08.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-09",
+    "title": "FRIDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "lineup": {
+      "2F": [
+        "MUTE",
+        "MAD",
+        "BINU",
+        "CANTAR",
+        "GROOVE DJ",
+        "SENDOW",
+        "ROAD"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "MUTE",
+        "UZI",
+        "DIA",
+        "ZET",
+        "ROAD",
+        "TARO",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-09.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
   },
   {
     "date": "2026-10-10",
@@ -379,6 +1577,213 @@
     }
   },
   {
+    "date": "2026-10-11",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUMU",
+        "MUTE",
+        "ROAD",
+        "BINU",
+        "TARO",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "BILL",
+        "MUMU",
+        "A:ETH",
+        "DIA",
+        "ROAD",
+        "ZET",
+        "MUTE",
+        "TARO",
+        "EZZY",
+        "N",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-11.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-12",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUMU",
+        "ROAD",
+        "UZI",
+        "TARO",
+        "KUPA"
+      ],
+      "3F": [
+        "N",
+        "TARO",
+        "MUMU",
+        "ZET",
+        "A:ETH",
+        "UZI",
+        "EZZY",
+        "ROAD",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-12.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-14",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "KUPA",
+        "MUTE",
+        "TARO",
+        "MUMU"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "TARO",
+        "WOOK2",
+        "EZZY",
+        "MUTE",
+        "ZET",
+        "A:ETH",
+        "MUMU",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-14.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-15",
+    "title": "THURSDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "UZI",
+        "MUTE",
+        "ROAD",
+        "MUMU"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "MUMU",
+        "ZET",
+        "UZI",
+        "MUTE",
+        "A:ETH",
+        "ROAD",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-15.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-16",
+    "title": "FRIDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUTE",
+        "ROAD",
+        "MAD",
+        "BINU",
+        "CANTAR",
+        "TARO",
+        "SENDOW",
+        "UZI"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "EZZY",
+        "ZET",
+        "MUTE",
+        "UZI",
+        "ROAD",
+        "TARO",
+        "MUMU",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-16.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-17",
+    "title": "SATURDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUTE",
+        "UZI",
+        "MAD",
+        "BINU",
+        "CANTAR",
+        "ROAD",
+        "SENDOW",
+        "TARO"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "EZZY",
+        "ZET",
+        "UZI",
+        "MUTE",
+        "TARO",
+        "ROAD",
+        "MUMU",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-17.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
     "date": "2026-10-18",
     "title": "IN BUSAN? IT'S GROOVE.",
     "floor": "2F+3F",
@@ -393,6 +1798,130 @@
       "GUEST": [
         "BUCKY"
       ]
+    }
+  },
+  {
+    "date": "2026-10-19",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "ZINO",
+        "MUMU",
+        "ROAD",
+        "TARO",
+        "KUPA",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "KUPA",
+        "ROAD",
+        "ZET",
+        "EZZY",
+        "TARO",
+        "MUMU",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-19.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-20",
+    "title": "TUESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "3F": [
+        "BILL",
+        "MUMU",
+        "A:ETH",
+        "EZZY",
+        "ZET",
+        "UZI",
+        "TARO",
+        "ROAD",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-20.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-21",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "KUPA",
+        "MUTE",
+        "UZI",
+        "ZINO",
+        "MUMU",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "MUMU",
+        "A:ETH",
+        "EZZY",
+        "MUTE",
+        "DIA",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-21.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-22",
+    "title": "THURSDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUMU",
+        "MUTE",
+        "UZI",
+        "ROAD",
+        "TARO",
+        "KUPA",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "N",
+        "MUMU",
+        "A:ETH",
+        "ZET",
+        "UZI",
+        "DIA",
+        "MUTE",
+        "ROAD",
+        "TARO",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-22.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
     }
   },
   {
@@ -428,6 +1957,154 @@
         "KUPA",
         "DJ KROWN"
       ]
+    }
+  },
+  {
+    "date": "2026-10-25",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "UZI",
+        "MUTE",
+        "ROAD",
+        "TARO",
+        "ZINO",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "EZZY",
+        "UZI",
+        "ZET",
+        "MUTE",
+        "TARO",
+        "ROAD",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-25.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-26",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "WOOK2",
+        "ZINO",
+        "UZI",
+        "TARO",
+        "ROAD",
+        "GROOVE DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-26.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-27",
+    "title": "TUESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "3F": [
+        "BILL",
+        "N",
+        "WOOK2",
+        "EZZY",
+        "DIA",
+        "A:ETH",
+        "ROAD",
+        "MUMU",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-27.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-28",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUMU",
+        "ZINO",
+        "MUTE",
+        "TARO",
+        "WOOK2",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "N",
+        "WOOK2",
+        "MUMU",
+        "A:ETH",
+        "EZZY",
+        "MUTE",
+        "TARO",
+        "DIA",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-28.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
+    }
+  },
+  {
+    "date": "2026-10-29",
+    "title": "THURSDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "WOOK2",
+        "TARO",
+        "MUTE",
+        "ROAD",
+        "ZINO",
+        "UZI",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "MUMU",
+        "UZI",
+        "JUYA",
+        "MUTE",
+        "ROAD",
+        "ZET",
+        "TARO",
+        "WOOK2",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-10-29.webp",
+    "desc": {
+      "ko": "그날 밤 DJ 타임테이블",
+      "en": "DJ timetable of the night"
     }
   },
   {
