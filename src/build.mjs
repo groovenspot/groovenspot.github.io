@@ -137,9 +137,9 @@ ${body}
 </div>
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
   <button class="lb-x" type="button" data-lb="close" aria-label="${L('rt.close')}">✕</button>
-  <button class="lb-nav lb-prev" type="button" data-lb="prev" aria-label="${L('rt.prev')}">‹</button>
+  <button class="lb-nav lb-prev" type="button" data-lb="prev" aria-label="${L('rt.prevPhoto')}">‹</button>
   <figure class="lb-fig"><img id="lb-img" alt=""><figcaption id="lb-cap"></figcaption></figure>
-  <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="${L('rt.next')}">›</button>
+  <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="${L('rt.nextPhoto')}">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, topic: REQ_TOPIC, t: runtime })};</script>
@@ -189,9 +189,9 @@ const BODIES = {
   </div>
 </section>
 <section class="now wrap" data-now hidden aria-labelledby="now-h">
-  <h2 class="sec-h" id="now-h"><span class="live-dot" aria-hidden="true"></span>${L('sec.now')}</h2>
+  <h2 class="sec-h" id="now-h"><span class="live-dot" aria-hidden="true"></span><span id="now-h-txt">${L('sec.now')}</span></h2>
   <div class="now-grid" data-now-grid></div>
-  <p class="now-act"><a class="btn" href="${href(lang, 'request/')}">🎵 ${L('cta.request')}</a></p>
+  <p class="now-act"><a class="btn" href="${href(lang, 'request/')}">🎵 ${L('cta.request')}</a><a class="more" href="${href(lang, 'floors/')}">${L('sec.timetable')} →</a></p>
 </section>
 <section class="wrap sec" aria-labelledby="up-h">
   <div class="sec-top"><h2 class="sec-h" id="up-h">${L('sec.upcoming')}</h2><a class="more" href="${href(lang, 'events/')}">${L('more.events')} →</a></div>
