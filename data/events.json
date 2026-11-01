@@ -2169,6 +2169,35 @@
     }
   },
   {
+    "date": "2026-11-01",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUTE",
+        "ZINO",
+        "TARO",
+        "WOOSCAR",
+        "UZI",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "A:ETH",
+        "EZZY",
+        "UZI",
+        "ZET",
+        "MUTE",
+        "DIA",
+        "TARO",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-11-01.webp"
+  },
+  {
     "date": "2026-11-07",
     "title": "FIREWORKS PARTY with G.O.A.T",
     "floor": "2F+3F",
