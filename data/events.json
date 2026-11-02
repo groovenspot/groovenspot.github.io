@@ -2198,6 +2198,35 @@
     "flyer": "/assets/timetables/2026-11-01.webp"
   },
   {
+    "date": "2026-11-02",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUTE",
+        "UZI",
+        "ROAD",
+        "TARO",
+        "ZINO"
+      ],
+      "3F": [
+        "KUPA",
+        "WOOK2",
+        "A:ETH x EZZY",
+        "MUMU",
+        "MUTE",
+        "ZET",
+        "UZI",
+        "TARO",
+        "ROAD",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-11-02.webp"
+  },
+  {
     "date": "2026-11-07",
     "title": "FIREWORKS PARTY with G.O.A.T",
     "floor": "2F+3F",
