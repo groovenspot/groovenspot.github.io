@@ -98,3 +98,5 @@ Tools/                      아이콘·Play 그래픽 생성 스크립트
 ## 다음 단계 (미구현)
 
 - 실제 기기 테스트 (Apple 쪽은 아직 Xcode 빌드도 안 해봄)
+
+> 이 브랜치는 groovenspot.github.io 저장소에서 분리해 보관한 Cardio Pacer 앱 원본이에요 (2026-11-04). CI 설정은 원래 `cardio-pacer/` 폴더 기준이라, 독립 저장소로 옮기면 `.github/workflows/cardio-pacer.yml`의 경로를 고쳐야 해요.
