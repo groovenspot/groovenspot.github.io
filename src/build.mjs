@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LANGS, LANG_LABEL, HTML_LANG, T, t } from './i18n.mjs';
 import { GUIDE, GUIDE_LINKS } from './guide.mjs';
+import { PRIVACY, EFFECTIVE } from './privacy.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://xn--2i0bl1s25d.site'; // 그루브.site
@@ -33,7 +34,7 @@ const GMAP_EMBED = (lang) => `https://maps.google.com/maps?q=${encodeURIComponen
 const VERSION = Date.now().toString(36);
 
 const FAQ_N = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6];
-const PAGES = ['', 'events/', 'event/', 'floors/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/'];
+const PAGES = ['', 'events/', 'event/', 'floors/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/', 'privacy/'];
 const prefix = (lang) => (lang === 'ko' ? '' : `/${lang}`);
 const href = (lang, page) => `${prefix(lang)}/${page}`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -118,7 +119,7 @@ ${body}
       <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a><br><a href="${TRIPADVISOR}" rel="noopener">Tripadvisor</a><br><a href="${XHS}" rel="noopener">小红书 Xiaohongshu</a></p>
     </div>
   </div>
-  <p class="ftr-small muted"><a href="${href(lang, 'guide/')}">${GUIDE[lang].t}</a> · <a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
+  <p class="ftr-small muted"><a href="${href(lang, 'guide/')}">${GUIDE[lang].t}</a> · <a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="${href(lang, 'privacy/')}"><b>${PRIVACY[lang].link}</b></a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
 </footer>
 <nav class="dock" aria-label="Quick actions">
   <a href="${href(lang, 'events/')}">${L('cta.tonight')}</a>
@@ -297,7 +298,7 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
   },
 
   'gallery/': (lang) => `${pageHead(lang, 'gallery')}
-<section class="wrap sec"><div data-albums></div></section>`,
+<section class="wrap sec"><div data-albums></div><p class="muted pp-note">📷 ${PRIVACY[lang].galleryNote}</p></section>`,
 
   'artists/': (lang) => `${pageHead(lang, 'artists')}
 <section class="wrap sec"><div class="artists" data-artists></div></section>`,
@@ -339,6 +340,11 @@ ${pageHead(lang, 'reserve')}
 <section class="wrap sec"><div class="row-btns"><a class="btn" href="${href(lang, 'menu/')}?tab=bar">${L('sec.cocktail')} →</a><a class="btn" href="${href(lang, 'menu/')}">${L('more.menu')} →</a></div></section>`;
   },
 
+  'privacy/': (lang) => {
+    const P = PRIVACY[lang];
+    return `<section class="phead wrap"><h1>${P.t}</h1><p class="lede">${P.lede}</p><p class="muted">${P.eff}: ${EFFECTIVE}</p></section>
+${P.secs.map(([h, b], i) => `<section class="wrap sec" aria-labelledby="pp${i}"><h2 class="sec-h" id="pp${i}">${h}</h2><div class="prose pp">${b}</div></section>`).join('\n')}`;
+  },
   'guide/': (lang) => {
     const G = GUIDE[lang], K = GUIDE_LINKS[lang];
     return `<section class="phead wrap"><h1>${G.h1}</h1><p class="lede">${G.lede}</p></section>
@@ -393,8 +399,8 @@ for (const lang of LANGS) {
   for (const page of PAGES) {
     const titleKey = TITLES[page];
     const html = layout(lang, page, {
-      title: page === 'guide/' ? GUIDE[lang].t : titleKey ? t(lang, titleKey) : null,
-      desc: page === 'guide/' ? GUIDE[lang].s : titleKey && page !== 'event/' ? t(lang, `page.${page.replace('/', '')}.s`) : null,
+      title: page === 'privacy/' ? PRIVACY[lang].t : page === 'guide/' ? GUIDE[lang].t : titleKey ? t(lang, titleKey) : null,
+      desc: page === 'privacy/' ? PRIVACY[lang].s : page === 'guide/' ? GUIDE[lang].s : titleKey && page !== 'event/' ? t(lang, `page.${page.replace('/', '')}.s`) : null,
       body: BODIES[page](lang),
       active: page,
     });

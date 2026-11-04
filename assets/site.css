@@ -452,3 +452,11 @@ body.mnav-open { overflow: hidden; }
 .now-next li { display: flex; gap: 10px; }
 .now-next span { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 3.2em; }
 .now-act { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+
+/* 개인정보처리방침 */
+.pp-t { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 14px; }
+.pp-t th, .pp-t td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--line, rgba(255,255,255,.14)); }
+.pp-t th { font-weight: 700; white-space: nowrap; }
+.prose.pp ul { padding-left: 1.2em; } .prose.pp li { margin: 6px 0; }
+.pp-note { margin-top: 18px; font-size: 13px; }
+@media (max-width: 640px) { .pp-t thead { display: none; } .pp-t tr { display: grid; gap: 2px; padding: 10px 0; border-bottom: 1px solid var(--line, rgba(255,255,255,.14)); } .pp-t td { border: 0; padding: 2px 0; } .pp-t td:first-child { font-weight: 700; } }
