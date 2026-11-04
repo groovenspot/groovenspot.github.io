@@ -107,7 +107,9 @@
   .bgm-head span { flex: 1; min-width: 0; color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bgm-head button { min-height: 34px; padding: 6px 10px; }
   #bgmctl { display: grid; gap: 6px; }
-  #bgmctl[hidden] { display: none; }
+  #bgmctl[hidden], #ytbox[hidden], #bgmyt[hidden] { display: none; }
+  #ytbox { position: relative; height: 0; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000; }
+  #ytbox iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
   #bgmseek { width: 100%; accent-color: var(--groove); }
   .bgm-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .bgm-btns { display: flex; gap: 6px; }
@@ -166,6 +168,8 @@
 
 <div id="bgm" class="chip" hidden role="dialog" aria-label="BGM 고르기">
   <div class="bgm-head"><b>🎧 BGM</b><span id="bgmtitle">데모 비트</span><button type="button" id="bgmclose" aria-label="닫기">✕</button></div>
+  <div id="ytbox" hidden></div>
+  <div id="bgmyt" class="bgm-row" hidden><span>유튜브 플레이어에서 재생·소리를 조절해요</span><span class="bgm-btns"><button type="button" id="ytprev" aria-label="이전 영상">⏮</button><button type="button" id="ytnext" aria-label="다음 영상">⏭</button></span></div>
   <div id="bgmctl" hidden>
     <input type="range" id="bgmseek" min="0" max="1000" value="0" aria-label="재생 위치">
     <div class="bgm-row"><span id="bgmtime">0:00 / --:--</span>
@@ -311,16 +315,10 @@
   }
   function clock() { return AC && audioOn ? AC.currentTime : performance.now() / 1000; }
 
-  /* ---------------- BGM (공개 녹음 · 내 파일) ---------------- */
-  // src가 비어 있는 곡은 '준비 중'으로 보여요. 파일을 올리면 여기 주소만 채우면 돼요.
-  var TRACKS = [
-    { n: '로드', a: '/_blob/939d7a7c523f27e93fbb51de911664a5', s: '/assets/bgm/01.m4a' }, { n: '무무', a: '/_blob/e6ab7cf7552c987bbeaf4e0ca01e0e39', s: '/assets/bgm/02.m4a' },
-    { n: '뮤트', a: '/_blob/7f16927eea0f1563b3c846185a257e91', s: '/assets/bgm/03.m4a' }, { n: '빌', a: '/_blob/161a3186a53758cc4bc67fd62ccf7c5a', s: '/assets/bgm/04.m4a' },
-    { n: '에이스', a: '/_blob/13c04e015145d38cffd0deaeb898d7ba', s: '/assets/bgm/05.m4a' }, { n: '엔', a: '/_blob/9cbe3396d12e414b25cbf9988a95bff8', s: '/assets/bgm/06.m4a' },
-    { n: '우지', a: '/_blob/5546eeab24e331c4bb675a23a60ab92d', s: '/assets/bgm/07.m4a' }, { n: '이지', a: '/_blob/9612104f49ee02c4e65d3515e1d38cf7', s: '/assets/bgm/08.m4a' },
-    { n: '쿠파', a: '/_blob/d959950d28b20f2e6d764fee4637a855', s: '/assets/bgm/09.m4a' }, { n: '타로', a: '/_blob/d8cc0b530cd9d7e3c81da6e0b8514396', s: '/assets/bgm/10.m4a' }
-  ];
-  TRACKS.forEach(function (tr) { tr.src = window.claude ? tr.a : tr.s; });
+  /* ---------------- BGM (GROOVE SESSIONS 유튜브 · 데모 비트 · 내 파일) ---------------- */
+  // 유튜브 공식 채널 영상을 플레이어로 틀어요 (저작권 이용 허락이 된 플랫폼). 목록은 data/videos.json 에서 옮겨 온 것.
+  // 다른 사이트 재생이 막힌 영상(oEmbed 401)은 뺐어요: j-9AnMHFeHc (WOO$CAR #32)
+  var TRACKS = [{"n": "ARKINS", "yt": "cq62DW_muNY", "s": 31, "d": "41:19"}, {"n": "VANDALROCK", "yt": "EWiqfFph0zU", "s": 30, "d": "58:33"}, {"n": "JUYA", "yt": "5RT02-6S9PM", "s": 29, "d": "39:09"}, {"n": "CANTAR", "yt": "BCZUWocn8GE", "s": 28, "d": "59:27"}, {"n": "ROAD", "yt": "K4EwPIGsIh8", "s": 27, "d": "41:08"}, {"n": "CHOPPER", "yt": "8DwCGecJlL4", "s": 26, "d": "34:03"}, {"n": "BUCKY", "yt": "ozo6z50q5ME", "s": 25, "d": "39:21"}, {"n": "SENDOW", "yt": "aCYt0vQt0Rw", "s": 24, "d": "59:47"}, {"n": "MUTE", "yt": "T_DzDtPP5Rg", "s": 23, "d": "38:20"}, {"n": "BINU", "yt": "_jv9wcteXfM", "s": 22, "d": "1:00:01"}, {"n": "UZI", "yt": "ZxWF6q5FHBk", "s": 21, "d": "43:12"}, {"n": "KEYNA", "yt": "PnvLmelOHaA", "s": 20, "d": "37:40"}, {"n": "GIO", "yt": "mizXXj-UqVU", "s": 19, "d": "39:25"}, {"n": "MAD", "yt": "mSQSQxr2bDI", "s": 18, "d": "55:22"}, {"n": "JOHNYRIGHTHERE", "yt": "8a7_AWD2KD4", "s": 17, "d": "37:01"}, {"n": "ZET", "yt": "UH7nJLwSPKw", "s": 16, "d": "37:10"}, {"n": "DIA", "yt": "INRX_JrThjA", "s": 15, "d": "39:57"}, {"n": "BRIXX", "yt": "glZfoN1eXRo", "s": 14, "d": "22:43"}, {"n": "CALEB", "yt": "kIaHSMZ1XiE", "s": 13, "d": "1:00:33"}, {"n": "YUKA", "yt": "-nUU0CmDVMo", "s": 12, "d": "30:24"}, {"n": "HERMIT", "yt": "HC6rRLWgL8w", "s": 10, "d": "38:44"}, {"n": "SIZ", "yt": "xof6ObtenaM", "s": 8, "d": "28:53"}, {"n": "SUNGHOON", "yt": "rGSgG0L0uoM", "s": 7, "d": "40:05"}, {"n": "GG", "yt": "hMj_FGPjC-Q", "s": 6, "d": "35:34"}, {"n": "NEO", "yt": "gok17CJCaJw", "s": 5, "d": "39:49"}, {"n": "POTAITO", "yt": "65E38_ypTLs", "s": 4, "d": "23:14"}, {"n": "FRANKEN", "yt": "Zo3-BVTTaXI", "s": 3, "d": "38:44"}, {"n": "AUREDE", "yt": "zw3jocYVZJI", "s": 2, "d": "39:05"}, {"n": "2AS", "yt": "3h0gqZV5Q18", "s": 1, "d": "56:13"}];
   var bgmEl = new Audio(), bgmOn = false, bgmIdx = -1, bgmName = '', bgmSub = '', bgmNode = null, bgmGain = null, analyser = null, freq = null, bassAvg = 0, bassHit = 0;
   bgmEl.preload = 'none'; bgmEl.crossOrigin = 'anonymous';
   function fmt(s) { if (!isFinite(s)) return '--:--'; s = Math.floor(s); var h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = s % 60; return (h ? h + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (x < 10 ? '0' : '') + x; }
@@ -333,26 +331,35 @@
       bgmNode.connect(analyser); analyser.connect(bgmGain); bgmGain.connect(AC.destination); bgmGain.gain.value = soundWanted ? 1 : 0;
     } catch (err) { bgmNode = null; analyser = null; }
   }
-  function playable(i) { return i === -2 || (i >= 0 && TRACKS[i] && TRACKS[i].src); }
+  var ytbox = $('#ytbox'), ytFrame = null;
+  function setYT(id) {
+    if (!id) { if (ytFrame) { ytFrame.remove(); ytFrame = null; } ytbox.hidden = true; return; }
+    if (!ytFrame) { ytFrame = document.createElement('iframe'); ytFrame.title = 'GROOVE SESSIONS'; ytFrame.allow = 'autoplay; encrypted-media; picture-in-picture'; ytFrame.setAttribute('allowfullscreen', ''); ytFrame.referrerPolicy = 'strict-origin-when-cross-origin'; ytbox.appendChild(ytFrame); }
+    ytFrame.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&playsinline=1&rel=0&modestbranding=1';
+    ytbox.hidden = false;
+  }
   function pickTrack(i, src, name) {
     if (i === -1) { // 데모 비트
-      bgmEl.pause(); bgmOn = false; bgmIdx = -1; bgmName = ''; renderBgm(); updateNow(); startAudio(); saveBgm(); return;
+      bgmEl.pause(); setYT(null); bgmOn = false; bgmIdx = -1; bgmName = ''; renderBgm(); updateNow(); startAudio(); saveBgm(); return;
     }
-    wireBgm(); if (AC.state === 'suspended') AC.resume();
-    bgmIdx = i; bgmOn = true; bgmName = name || TRACKS[i].n; bgmSub = i === -2 ? '내 파일' : 'GROOVE & SPOT 공개 녹음';
-    bgmEl.src = src || TRACKS[i].src; bgmEl.currentTime = 0;
-    startAudio(); // 데모 비트는 조용히, 시계는 계속
-    bgmEl.muted = !soundWanted;
-    bgmEl.play().catch(function () { toast('▶ 눌러서 재생', '#fff'); });
+    bgmIdx = i; bgmOn = true; bgmName = name || TRACKS[i].n; bgmSub = i === -2 ? '내 파일' : 'GROOVE SESSIONS #' + TRACKS[i].s;
+    if (i >= 0) { bgmEl.pause(); bgmEl.removeAttribute('src'); setYT(TRACKS[i].yt); initAudio(); startAudio(); }
+    else {
+      setYT(null); wireBgm(); if (AC.state === 'suspended') AC.resume();
+      bgmEl.src = src; bgmEl.currentTime = 0;
+      startAudio(); // 데모 비트는 조용히, 시계는 계속
+      bgmEl.muted = !soundWanted;
+      bgmEl.play().catch(function () { toast('▶ 눌러서 재생', '#fff'); });
+    }
     renderBgm(); updateNow(); saveBgm();
     toast('🎧 ' + bgmName, FLOORS[active].css);
   }
-  function saveBgm() { try { localStorage.setItem('gs_vc_bgm', bgmIdx >= 0 ? TRACKS[bgmIdx].n : ''); } catch (err) {} }
+  function saveBgm() { try { localStorage.setItem('gs_vc_bgm', bgmIdx >= 0 ? TRACKS[bgmIdx].yt : ''); } catch (err) {} }
   function nextTrack(dir) {
     var n = TRACKS.length; if (bgmIdx < 0) return;
-    for (var k = 1; k <= n; k++) { var j = (bgmIdx + dir * k + n * 2) % n; if (TRACKS[j].src) { pickTrack(j); return; } }
+    pickTrack((bgmIdx + dir + n) % n);
   }
-  bgmEl.addEventListener('ended', function () { if (bgmIdx >= 0) nextTrack(1); else pickTrack(-1); });
+  bgmEl.addEventListener('ended', function () { pickTrack(-1); });
   bgmEl.addEventListener('play', renderCtl); bgmEl.addEventListener('pause', renderCtl);
   bgmEl.addEventListener('error', function () { if (bgmOn && bgmEl.src) { toast('재생할 수 없는 파일이에요', '#ff8a8a'); pickTrack(-1); } });
   bgmEl.addEventListener('timeupdate', function () { if (seeking) return; $('#bgmseek').value = bgmEl.duration ? Math.round(bgmEl.currentTime / bgmEl.duration * 1000) : 0; $('#bgmtime').textContent = fmt(bgmEl.currentTime) + ' / ' + fmt(bgmEl.duration); });
@@ -360,8 +367,9 @@
   $('#bgmseek').addEventListener('input', function () { seeking = true; if (bgmEl.duration) $('#bgmtime').textContent = fmt(this.value / 1000 * bgmEl.duration) + ' / ' + fmt(bgmEl.duration); });
   $('#bgmseek').addEventListener('change', function () { seeking = false; if (bgmEl.duration) bgmEl.currentTime = this.value / 1000 * bgmEl.duration; });
   $('#bgmplay').addEventListener('click', function () { if (!bgmOn) return; if (bgmEl.paused) { wireBgm(); if (AC.state === 'suspended') AC.resume(); bgmEl.play().catch(function () {}); } else bgmEl.pause(); });
-  $('#bgmprev').addEventListener('click', function () { if (bgmOn && bgmEl.currentTime > 5) bgmEl.currentTime = 0; else nextTrack(-1); });
-  $('#bgmnext').addEventListener('click', function () { nextTrack(1); });
+  $('#bgmprev').addEventListener('click', function () { if (bgmIdx === -2) bgmEl.currentTime = 0; else nextTrack(-1); });
+  $('#ytprev').addEventListener('click', function () { nextTrack(-1); }); $('#ytnext').addEventListener('click', function () { nextTrack(1); });
+  $('#bgmnext').addEventListener('click', function () { if (bgmIdx >= 0) nextTrack(1); });
   $('#bgmfile').addEventListener('change', function () {
     var f = this.files && this.files[0]; if (!f) return;
     if (localUrl) URL.revokeObjectURL(localUrl); localUrl = URL.createObjectURL(f);
@@ -379,10 +387,10 @@
       b.addEventListener('click', function () { pickTrack(idx); }); list.appendChild(b);
     }
     row('🥁 데모 비트', '층별 장르로 바로 만드는 비트', -1, true);
-    TRACKS.forEach(function (tr, i) { row('🎧 ' + tr.n, tr.src ? '공개 녹음' : '준비 중', i, !!tr.src); });
+    TRACKS.forEach(function (tr, i) { row('▶ ' + tr.n, 'GROOVE SESSIONS #' + tr.s + (tr.d ? ' · ' + tr.d : ''), i, true); });
     if (bgmIdx === -2) row('📁 ' + bgmName, '내 파일 · 지금 재생 중', -2, false);
     $('#bgmtitle').textContent = bgmOn ? bgmName : '데모 비트';
-    $('#bgmctl').hidden = !bgmOn;
+    $('#bgmctl').hidden = bgmIdx !== -2; $('#bgmyt').hidden = bgmIdx < 0;
     var nowEl = $('#bgmnow'); nowEl.textContent = bgmOn ? '🎧 ' + bgmName : ''; nowEl.hidden = !bgmOn;
     renderCtl();
   }
@@ -391,7 +399,7 @@
   $('#bgmclose').addEventListener('click', function () { setBgmPanel(false); });
   // 저장된 곡은 입장할 때(사용자 클릭) 이어서 재생
   var savedBgm = ''; try { savedBgm = localStorage.getItem('gs_vc_bgm') || ''; } catch (err) {}
-  function resumeSavedBgm() { var i = TRACKS.findIndex(function (tr) { return tr.n === savedBgm && tr.src; }); if (i >= 0) pickTrack(i); savedBgm = ''; }
+  function resumeSavedBgm() { var i = TRACKS.findIndex(function (tr) { return tr.yt === savedBgm; }); if (i >= 0) pickTrack(i); savedBgm = ''; }
   function bgmBeat() {
     if (!analyser) return 0;
     analyser.getByteFrequencyData(freq);
