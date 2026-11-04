@@ -680,6 +680,8 @@
       gear(bR.x, conZ + .05, 1.35, 0);
       djFigure(bR.x, conZ + 1.0, Math.PI, .28);
       collide(487, 345, 625, 545, .28); // DJ 무대: 낮아서 그냥 걸어 올라감
+      rec.danceSpots = [[X(468), Z(395)], [X(468), Z(480)], [X(644), Z(395)], [X(644), Z(480)]].map(function (q) { return { x: q[0], z: q[1], y: 0, yaw: Math.PI }; });
+      rec.danceSpots.forEach(function (s) { rec.colliders.push([s.x - .25, s.z - .25, s.x + .25, s.z + .25]); var pad = add(new THREE.Mesh(new THREE.CylinderGeometry(.42, .46, .06, 32), mat(0x101012, { roughness: .3, metalness: .5 })), s.x, .03, s.z); var rg = add(new THREE.Mesh(new THREE.TorusGeometry(.44, .015, 6, 40), glow(cfg.color, .9)), s.x, .065, s.z); rg.rotation.x = Math.PI / 2; rec.movers.push({ type: 'strip', m: rg }); s.y = .06; });
       rec.colliders.push([bR.x - cw / 2 - .07, conZ - .68, bR.x + cw / 2 + .07, conZ + .68, 1.35]); // 콘솔
       rec.colliders.push([bR.x - .28, conZ + .72, bR.x + .28, conZ + 1.28, 9]); // DJ 자리
       flat('DJ', bR.x, bR.z + 1.2, .31, 2, cfg.css);
@@ -755,6 +757,8 @@
       var dEdge = add(box(dR.w + 1.46, .03, dR.d + 1.46, glow(cfg.color2, .8)), dR.x, .02, dR.z); rec.movers.push({ type: 'strip', m: dEdge });
       rec.colliders.push([dR.x - dR.w / 2 - .7, dR.z - dR.d / 2 - .7, dR.x + dR.w / 2 + .7, dR.z + dR.d / 2 + .7, .22]);
       collide(430, 258, 505, 425, 1.05);
+      rec.danceSpots = [[dR.x + rx * .15, dR.z - rz - .42], [dR.x + rx * .15, dR.z + rz + .42], [dR.x + rx + .42, dR.z - rz * .55], [dR.x + rx + .42, dR.z + rz * .55]].map(function (q) { return { x: q[0], z: q[1], y: .22, yaw: Math.PI / 2 }; });
+      rec.danceSpots.forEach(function (s) { rec.colliders.push([s.x - .25, s.z - .25, s.x + .25, s.z + .25]); });
       rec.colliders.push([dR.x - .75, dR.z - .3, dR.x - .15, dR.z + .3, 9]); // DJ 자리
       // ── 실제 3층처럼: 천장 LED · 로고 LED 큐브 · 네온 · 식물 ──
       // 천장 LED 화면 (플로어 위 전체)
@@ -1244,7 +1248,41 @@
       var av = makeAvatar(djLookFor(F), null, false); av.g.position.set(sp.x, sp.y0, sp.z); av.g.rotation.y = sp.yaw; rec.group.add(av.g); rec.djAv = av; });
   }
   Object.keys(floors).forEach(function (F) { var rec = floors[F], sp = rec.djSpec; if (!sp) return; var av = makeAvatar(DJ_LOOKS[F], null, false); av.g.position.set(sp.x, sp.y0, sp.z); av.g.rotation.y = sp.yaw; rec.group.add(av.g); rec.djAv = av; });
+  // DJ 옆 댄스팀 4명 (층마다 맞춰 입은 옷)
+  var CREW = {
+    '2F': [{ o: 4, tc: '#111113', ic: '#ff7a1a', bc: '#111113', s: 1, h: 2, hx: '#111', ch: 1 }, { o: 0, tc: '#ff7a1a', bc: '#111113', s: 0, h: 1, hx: '#141116' }, { o: 0, tc: '#ff7a1a', bc: '#111113', s: 2, h: 3, hx: '#2a1a12' }, { o: 4, tc: '#111113', ic: '#ff7a1a', bc: '#111113', s: 1, h: 0, hx: '#e2c98a', gl: 1 }],
+    '3F': [{ o: 0, tc: '#f2f0ea', bc: '#a861ff', s: 0, h: 1, hx: '#e9d9a8' }, { o: 4, tc: '#a861ff', ic: '#f2f0ea', bc: '#111113', s: 1, h: 0, hx: '#141116', gl: 1 }, { o: 4, tc: '#a861ff', ic: '#f2f0ea', bc: '#111113', s: 2, h: 4, hx: '#141116', ch: 1 }, { o: 0, tc: '#f2f0ea', bc: '#a861ff', s: 0, h: 3, hx: '#c43b6a' }]
+  };
+  Object.keys(floors).forEach(function (F) {
+    var rec = floors[F]; rec.crew = [];
+    (rec.danceSpots || []).forEach(function (s, i) { var av = makeAvatar(Object.assign({ t: 0, b: 0, hc: 0, a: 0 }, CREW[F][i]), null, false); av.g.position.set(s.x, s.y, s.z); av.g.rotation.y = s.yaw; rec.group.add(av.g); rec.crew.push({ av: av, s: s, i: i }); });
+  });
+  // 8박마다 바뀌는 안무: 스텝+펌프 → 웨이브 → 턴 → 포인트
+  function animCrew(rec, t, up) {
+    var beats = t * FLOORS[active].bpm / 60, bt = beats % 1, move = Math.floor(beats / 8) % 4, k = Math.abs(Math.sin(bt * Math.PI));
+    rec.crew.forEach(function (c) {
+      var A = c.av, side = c.i % 2 ? -1 : 1;
+      A.g.position.set(c.s.x, c.s.y, c.s.z); A.g.rotation.y = c.s.yaw; A.body.rotation.set(0, 0, 0); A.head.rotation.set(k * .1, 0, 0);
+      A.body.position.y = -(1 - k) * .05; A.legs.forEach(function (lg, j) { lg.rotation.set(-(1 - k) * .3, 0, 0); A.shins[j].rotation.x = (1 - k) * .6; });
+      if (up) move = 1;
+      if (move === 0) { // 옆 스텝 + 팔 펌프
+        var st = Math.sin(beats * Math.PI) * .18; A.g.position.x += Math.cos(c.s.yaw) * st; A.g.position.z -= Math.sin(c.s.yaw) * st;
+        A.arms[0].rotation.set(-1.6 + k * .9, 0, -.2); A.arms[1].rotation.set(-1.6 + (1 - k) * .9, 0, .2); A.fores[0].rotation.x = -1.2; A.fores[1].rotation.x = -1.2;
+      } else if (move === 1) { // 두 손 들고 웨이브
+        var wv = Math.sin(beats * Math.PI * .5 + c.i * .8);
+        A.arms[0].rotation.set(0, 0, -2.6 - wv * .25); A.arms[1].rotation.set(0, 0, 2.6 - wv * .25); A.fores[0].rotation.x = -.3 + wv * .3; A.fores[1].rotation.x = -.3 - wv * .3; A.body.rotation.z = wv * .12;
+      } else if (move === 2) { // 2박에 한 바퀴 턴
+        var b8 = beats % 8, spin = b8 % 4 < 2 ? (b8 % 2) / 2 * Math.PI * 2 * side : 0; A.g.rotation.y = c.s.yaw + spin;
+        A.arms[0].rotation.set(0, 0, -1.3); A.arms[1].rotation.set(0, 0, 1.3); A.fores[0].rotation.x = -.2; A.fores[1].rotation.x = -.2;
+      } else { // 관객 쪽으로 번갈아 포인트
+        var on = Math.floor(beats) % 2 === (c.i % 2), arm = A.arms[on ? 1 : 0], other = A.arms[on ? 0 : 1];
+        arm.rotation.set(-1.75, 0, on ? .1 : -.1); A.fores[on ? 1 : 0].rotation.x = 0; other.rotation.set(-.2, 0, on ? -.3 : .3); A.fores[on ? 0 : 1].rotation.x = -1.7;
+        A.body.rotation.y = (on ? -1 : 1) * .25;
+      }
+    });
+  }
   function updateNPCs(dt, t, ph, up) {
+    if (floors[active].crew) animCrew(floors[active], t, up);
     var rec = floors[active], now = performance.now() / 1000;
     rec.npcs.forEach(function (n) {
       if (n.state === 'walk') {
