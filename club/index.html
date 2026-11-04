@@ -657,7 +657,9 @@
       var strip = add(box(cw + .14, .022, .02, glow(cfg.color)), bR.x, 1.27, conZ - .69); rec.movers.push({ type: 'strip', m: strip });
       gear(bR.x, conZ + .05, 1.35, 0);
       djFigure(bR.x, conZ + 1.0, Math.PI, .28);
-      collide(487, 345, 625, 545);
+      collide(487, 345, 625, 545, .28); // DJ 무대: 낮아서 그냥 걸어 올라감
+      rec.colliders.push([bR.x - cw / 2 - .07, conZ - .68, bR.x + cw / 2 + .07, conZ + .68, 1.35]); // 콘솔
+      rec.colliders.push([bR.x - .28, conZ + .72, bR.x + .28, conZ + 1.28, 9]); // DJ 자리
       flat('DJ', bR.x, bR.z + 1.2, .31, 2, cfg.css);
       // LED 월 (DJ 뒤, 아래쪽 벽)
       ledWall(bR.x, 3.1, D / 2 - .05, 7.2, Math.PI);
@@ -710,7 +712,12 @@
       gear(dR.x + .3, dR.z, 1.05, -Math.PI / 2);
       djFigure(dR.x - .45, dR.z, Math.PI / 2, 0);
       flat('DJ', dR.x - .1, dR.z + 1.2, 1.06, 1.3, cfg.css);
-      collide(430, 258, 505, 425);
+      // 부스 둘레 단(0.22m): 걸어 올라가고, 거기서 점프하면 부스 위(1.05m)까지
+      add(box(dR.w + 1.4, .22, dR.d + 1.4, tmat('floor', 1.4, 2, { color: 0x8c8688, roughness: .22, metalness: .3 })), dR.x, .11, dR.z);
+      var dEdge = add(box(dR.w + 1.46, .03, dR.d + 1.46, glow(cfg.color2, .8)), dR.x, .02, dR.z); rec.movers.push({ type: 'strip', m: dEdge });
+      rec.colliders.push([dR.x - dR.w / 2 - .7, dR.z - dR.d / 2 - .7, dR.x + dR.w / 2 + .7, dR.z + dR.d / 2 + .7, .22]);
+      collide(430, 258, 505, 425, 1.05);
+      rec.colliders.push([dR.x - .75, dR.z - .3, dR.x - .15, dR.z + .3, 9]); // DJ 자리
       // LED 스크린 (DJ 뒤에 매달림, 오른쪽을 봄)
       ledWall(X(360), 3.3, dR.z, 5.4, Math.PI / 2);
       speaker(X(372), 3.2, Z(222), Math.PI / 2, 1.4); speaker(X(372), 3.2, Z(462), Math.PI / 2, 1.4);
@@ -1307,7 +1314,7 @@
   function blocked(x, z) {
     var m = .35, rec = floors[active], W = rec.W, D = rec.D;
     if (x < -W / 2 + m || x > W / 2 - m || z < -D / 2 + m || z > D / 2 - m) return true;
-    for (var i = 0; i < rec.colliders.length; i++) { var c = rec.colliders[i]; if (c[4] && player.jy >= c[4] - .06) continue; if (x > c[0] - m && x < c[2] + m && z > c[1] - m && z < c[3] + m) return true; }
+    for (var i = 0; i < rec.colliders.length; i++) { var c = rec.colliders[i]; if (c[4] && (player.jy >= c[4] - .06 || c[4] - player.jy <= .32)) continue; /* 올라섰거나 낮은 단은 통과 */ if (x > c[0] - m && x < c[2] + m && z > c[1] - m && z < c[3] + m) return true; }
     return false;
   }
   // 발밑 높이: 테이블·소파 위에 올라가 있으면 그 높이
