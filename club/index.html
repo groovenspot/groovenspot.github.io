@@ -115,6 +115,19 @@
   .vlist span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; } .vlist em { font-style: normal; font-weight: 800; font-variant-numeric: tabular-nums; } .vlist small { color: var(--muted); font-size: 11px; }
   #dbresult { display: grid; gap: 2px; padding: 8px; border-radius: 10px; background: rgba(255, 210, 58, .12); } #dbresult small { color: var(--muted); font-size: 11px; }
   #dbstart[hidden] { display: none; }
+  #games, #quiz { position: fixed; z-index: 9; left: 50%; transform: translateX(-50%); top: calc(76px + env(safe-area-inset-top, 0px)); width: min(420px, calc(100vw - 24px)); padding: 12px; display: grid; gap: 8px; max-height: calc(100dvh - 160px); overflow-y: auto; }
+  #games[hidden], #quiz[hidden], #racehud[hidden], #raceside[hidden] { display: none; }
+  .gcard { display: grid; justify-items: start; gap: 3px; border-radius: 12px; padding: 11px 14px; text-align: left; min-height: 56px; }
+  .gcard b { font-size: 15px; } .gcard small { color: var(--muted); font-size: 12px; font-weight: 500; }
+  #racehud { position: fixed; z-index: 7; left: 50%; transform: translateX(-50%); top: calc(12px + env(safe-area-inset-top, 0px)); font-weight: 700; font-size: 14px; white-space: nowrap; max-width: calc(100vw - 24px); overflow: hidden; text-overflow: ellipsis; border-color: #ffd23a; }
+  #raceside { position: fixed; z-index: 7; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(96px + env(safe-area-inset-top, 0px)); width: min(220px, calc(100vw - 24px)); padding: 10px 12px; display: grid; gap: 6px; font-size: 13px; }
+  #quiz { width: min(500px, calc(100vw - 24px)); }
+  #qzcv { width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius: 10px; background: #111; display: block; }
+  #qzopts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  #qzopts button { justify-content: center; min-height: 46px; font-weight: 800; }
+  #qzopts button.ok { background: rgba(57, 255, 138, .25); border-color: #39ff8a; } #qzopts button.bad { background: rgba(255, 59, 92, .25); border-color: #ff3b5c; }
+  #qznote { color: var(--muted); font-size: 13px; text-align: center; min-height: 18px; }
+  @media (max-width: 640px) { #racehud { top: calc(150px + env(safe-area-inset-top, 0px)); font-size: 12px; } #raceside { top: auto; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); width: 180px; font-size: 12px; } #quiz { top: calc(8px + env(safe-area-inset-top, 0px)); } #qzList { display: none; } }
   .dbrk { display: grid; gap: 4px; font-size: 12px; } .dbbtns { display: flex; gap: 6px; } .dbbtns button { flex: 1; justify-content: center; min-height: 38px; }
   #dbstart { background: linear-gradient(100deg, #ff4d00, var(--groove)); color: #1a0900; border-color: transparent; }
   #dbplay { position: fixed; z-index: 7; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(300px, calc(100vw - 24px)); display: grid; gap: 6px; }
@@ -173,6 +186,7 @@
     <div class="tools">
       <button type="button" id="edit" aria-label="캐릭터 꾸미기">✏️</button>
       <button type="button" id="bgmbtn" aria-pressed="false" aria-label="BGM 고르기">🎧</button>
+      <button type="button" id="gamesbtn" aria-pressed="false" aria-label="게임">🎮</button>
       <button type="button" id="sound" aria-pressed="true" aria-label="소리">🔊</button>
       <a class="btn" href="https://xn--2i0bl1s25d.site/request/" target="_blank" rel="noopener" aria-label="신청곡">🎵</a>
     </div>
@@ -216,6 +230,22 @@
   <label class="bgm-file">📁 내 음악 파일 열기<input type="file" id="bgmfile" accept="audio/*,.mp3,.m4a,.wav"></label>
 </div>
 
+<div id="games" class="chip" hidden role="dialog" aria-label="게임">
+  <div class="bgm-head"><b>🎮 게임</b><span>같은 시간 접속한 손님과 함께</span><button type="button" id="gamesclose" aria-label="닫기">✕</button></div>
+  <button type="button" class="gcard" id="g-dance"><b>🕺 댄스 배틀</b><small>DJ 앞 발판에서 리듬 화살표 대결 · 최대 4명</small></button>
+  <button type="button" class="gcard" id="g-dart"><b>🎯 다트</b><small>2층 다트 기계 · COUNT-UP 대결과 순위표</small></button>
+  <button type="button" class="gcard" id="g-race"><b>🍾 바틀 레이스 시작</b><small>2·3층에 나타나는 바틀을 먼저 집기 · 90초 · 모두 참가</small></button>
+  <button type="button" class="gcard" id="g-quiz"><b>❓ DJ 퀴즈 시작</b><small>GROOVE SESSIONS 썸네일로 DJ 맞히기 · 8문제 · 모두 참가</small></button>
+</div>
+<div id="racehud" class="chip" hidden aria-live="polite"></div>
+<div id="raceside" class="chip" hidden><b>🍾 레이스 점수</b><ol id="raceList" class="vlist"></ol></div>
+<div id="quiz" class="chip" hidden role="dialog" aria-label="DJ 퀴즈">
+  <div class="bgm-head"><b id="qzhead">❓ DJ 퀴즈</b><span></span><button type="button" id="qzclose" aria-label="닫기">✕</button></div>
+  <canvas id="qzcv" width="480" height="270" aria-label="퀴즈 그림"></canvas>
+  <div id="qzopts"><button type="button"></button><button type="button"></button><button type="button"></button><button type="button"></button></div>
+  <div id="qznote"></div>
+  <ol id="qzList" class="vlist"></ol>
+</div>
 <div id="dbbox" hidden>
   <div id="dbside" class="chip"><div id="dbTitle"></div><ol id="dbList" class="vlist"></ol>
     <div id="dbresult" hidden><b id="dbres1"></b><small id="dbres2"></small></div>
@@ -1421,6 +1451,171 @@
       _test: { begin: begin, start: start, G: G, judge: judgeAt, enter: enter, now: clock, spb: spb }
     };
   })();
+
+  /* ---------------- 바틀 레이스 · DJ 퀴즈 · 게임 메뉴 ---------------- */
+  var GAMES = (function () {
+    function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+    var UID = 'u' + Math.random().toString(36).slice(2, 10);
+    function myC() { return me.look.t; }
+    function vlist(el, rows) {
+      el.textContent = '';
+      rows.forEach(function (p, i) { var li = document.createElement('li'); if (p.me) li.className = 'me'; li.style.boxShadow = 'inset 4px 0 0 ' + (LOOK.t[p.c] || '#fff'); var a = document.createElement('b'); a.textContent = ['🥇', '🥈', '🥉'][i] || (i + 1); var n = document.createElement('span'); n.textContent = p.n; var s = document.createElement('em'); s.textContent = p.s; var r = document.createElement('small'); r.textContent = p.x || ''; li.appendChild(a); li.appendChild(n); li.appendChild(s); li.appendChild(r); el.appendChild(li); });
+    }
+    function cleanPlayer(d) { return { uid: /^u[a-z0-9]{4,12}$/.test(d && d.uid) ? d.uid : '', n: cleanText(d && d.n, 12) || '손님', c: toIdx(d && d.c, LOOK.t.length) }; }
+    function burst(F, x, z) { floors[F].sparks.emit.push({ p: new THREE.Vector3(x, .3, z), until: clock() + 4 }); }
+
+    /* ===== 바틀 레이스: 2·3층에 하나씩 나타나는 바틀을 먼저 집기, 90초 ===== */
+    var RACE_DUR = 90, R = { on: false, host: false, seed: 0, k: -1, pos: null, end: 0, scores: {}, claimed: -1 };
+    var bottle = new THREE.Group();
+    (function () {
+      var glass = new THREE.Mesh(new THREE.CylinderGeometry(.09, .1, .32, 20), new THREE.MeshStandardMaterial({ color: 0x0f5a2e, emissive: 0x0a3a1c, roughness: .1, metalness: .3 })); glass.position.y = .16; bottle.add(glass);
+      var neck = new THREE.Mesh(new THREE.CylinderGeometry(.03, .085, .14, 16), glass.material); neck.position.y = .39; bottle.add(neck);
+      var foil = new THREE.Mesh(new THREE.CylinderGeometry(.033, .033, .09, 14), new THREE.MeshStandardMaterial({ color: 0xffcf5a, metalness: 1, roughness: .25, emissive: 0x553300 })); foil.position.y = .5; bottle.add(foil);
+      var label = new THREE.Mesh(new THREE.CylinderGeometry(.101, .101, .11, 20, 1, true), glow(0xffd23a, .9)); label.position.y = .17; bottle.add(label);
+      var beam = new THREE.Mesh(new THREE.CylinderGeometry(.22, .22, 6, 20, 1, true), glow(0xffd23a, .14)); beam.position.y = 3; bottle.add(beam);
+      var ring = new THREE.Mesh(new THREE.RingGeometry(.35, .45, 32), glow(0xffd23a, .8)); ring.rotation.x = -Math.PI / 2; ring.position.y = .02; bottle.add(ring); bottle.userData.ring = ring;
+      var L = new THREE.PointLight(0xffd23a, 1.4, 4, 2); L.position.y = .6; bottle.add(L);
+      bottle.visible = false;
+    })();
+    function bottleAt(k) {
+      var r = rng(R.seed + k * 7919), F = r() < .5 ? '2F' : '3F', rec = floors[F];
+      if (r() < .25 && rec.tables.length) { var tb = rec.tables[Math.floor(r() * rec.tables.length)]; return { F: F, x: tb.x, z: tb.z, y: .66 }; }
+      var area = rec.zones.map(function (q) { return (q[2] - q[0]) * (q[3] - q[1]); }), tot = area.reduce(function (a, b) { return a + b; }, 0);
+      for (var tries = 0; tries < 60; tries++) { var pick = r() * tot, zi = 0; while (pick > area[zi]) { pick -= area[zi]; zi++; } var q = rec.zones[zi], x = q[0] + r() * (q[2] - q[0]), z = q[1] + r() * (q[3] - q[1]); if (!rec.hitAny(x, z, .45)) return { F: F, x: x, z: z, y: 0 }; }
+      return { F: F, x: rec.start.x, z: rec.start.z, y: 0 };
+    }
+    function spawn(k) {
+      R.k = k; R.pos = bottleAt(k); if (bottle.parent) bottle.parent.remove(bottle);
+      floors[R.pos.F].group.add(bottle); bottle.position.set(R.pos.x, R.pos.y, R.pos.z); bottle.visible = true;
+    }
+    function raceStart() { var sd = (Math.random() * 1e9) | 0; if (room) room.emit('brstart', { sd: sd }).catch(function () {}); raceBegin(sd, true); }
+    function raceBegin(sd, host) {
+      R.on = true; R.host = host; R.seed = sd; R.scores = {}; R.claimed = -1; R.end = performance.now() + (RACE_DUR + 3) * 1000; R.k = -1;
+      R.scores[UID] = { n: myNick(), c: myC(), s: 0, me: true };
+      $('#racehud').hidden = false; $('#raceside').hidden = false; closeMenu();
+      toast('🍾 바틀 레이스 시작!', '#ffd23a');
+      setTimeout(function () { if (R.on && R.k < 0) spawn(0); }, 3000);
+    }
+    function award(k, p) {
+      if (k !== R.k) return; var e = R.scores[p.uid] || (R.scores[p.uid] = { n: p.n, c: p.c, s: 0, me: p.uid === UID }); e.s++;
+      toast(p.uid === UID ? '🍾 획득! +1' : '🍾 ' + p.n + ' 획득', p.uid === UID ? '#ffd23a' : '#fff');
+      burst(R.pos.F, R.pos.x, R.pos.z); spawn(k + 1);
+    }
+    function raceEnd() {
+      R.on = false; bottle.visible = false; $('#racehud').hidden = true;
+      var list = Object.keys(R.scores).map(function (u) { return R.scores[u]; }).sort(function (a, b) { return b.s - a.s; });
+      var w = list[0]; if (w && w.s > 0) { toast(w.me ? '🍾 레이스 우승! 🏆' : '🍾 우승 ' + w.n + ' (' + w.s + '개)', w.me ? '#ffd23a' : '#fff'); if (w.me) burst(active, player.x, player.z); }
+      else toast('🍾 레이스 끝', '#fff');
+      setTimeout(function () { $('#raceside').hidden = true; }, 8000);
+    }
+    function raceTick(t) {
+      if (!R.on) return;
+      var left = Math.max(0, R.end - performance.now()) / 1000;
+      if (left <= 0) { raceEnd(); return; }
+      bottle.rotation.y = t * 1.6; bottle.position.y = (R.pos ? R.pos.y : 0) + .08 + Math.abs(Math.sin(t * 3)) * .08;
+      var hud = '🍾 바틀 레이스 · ' + Math.floor(left / 60) + ':' + String(Math.floor(left % 60)).padStart(2, '0') + ' · 나 ' + (R.scores[UID] ? R.scores[UID].s : 0) + '개';
+      if (R.pos && R.k >= 0) {
+        if (R.pos.F !== active) hud += ' · ' + (R.pos.F === '2F' ? '⬇ 2층' : '⬆ 3층') + '에 있어요';
+        else {
+          var dx = R.pos.x - player.x, dz = R.pos.z - player.z, d = Math.hypot(dx, dz), ang = Math.atan2(-dx, -dz) - player.yaw, arrows = ['⬆', '↖', '⬅', '↙', '⬇', '↘', '➡', '↗'];
+          var idx = Math.round(((ang % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI / 4)) % 8; hud += ' · ' + arrows[idx] + ' ' + d.toFixed(0) + 'm' + (R.pos.y > .3 ? ' (테이블 위 · 점프!)' : '');
+          if (d < .75 && (R.pos.y < .3 || player.jy > .45) && R.claimed !== R.k) {
+            R.claimed = R.k; var p = { uid: UID, n: myNick(), c: myC() };
+            if (R.host || !room) { if (room) room.emit('brgot', { k: R.k, uid: p.uid, n: p.n, c: p.c }).catch(function () {}); award(R.k, p); }
+            else room.emit('brclaim', { k: R.k, uid: p.uid, n: p.n, c: p.c }).catch(function () {});
+          }
+        }
+      }
+      $('#racehud').textContent = hud;
+      if (!R.lastR || performance.now() - R.lastR > 500) { R.lastR = performance.now(); vlist($('#raceList'), Object.keys(R.scores).map(function (u) { var e = R.scores[u]; return { n: e.n + (e.me ? ' (나)' : ''), c: e.c, s: e.s + '개', me: e.me }; }).sort(function (a, b) { return parseInt(b.s) - parseInt(a.s); })); }
+    }
+
+    /* ===== DJ 퀴즈: GROOVE SESSIONS 썸네일 모자이크/확대 → DJ 맞히기, 8문제 ===== */
+    var QN = 8, QT = 12, QR = 3, Q = { on: false, seed: 0, qs: [], t0: 0, i: -1, pick: -1, score: 0, got: {}, img: {} };
+    function qGen(seed) {
+      var r = rng(seed), idx = TRACKS.map(function (_, i) { return i; }), qs = [];
+      for (var i = idx.length - 1; i > 0; i--) { var j = Math.floor(r() * (i + 1)); var tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp; }
+      for (var k = 0; k < QN && k < idx.length; k++) {
+        var ans = idx[k], opts = [ans];
+        while (opts.length < 4) { var o = Math.floor(r() * TRACKS.length); if (opts.indexOf(o) < 0 && TRACKS[o].n !== TRACKS[ans].n) opts.push(o); }
+        for (var m = 3; m > 0; m--) { var n2 = Math.floor(r() * (m + 1)); var t2 = opts[m]; opts[m] = opts[n2]; opts[n2] = t2; }
+        qs.push({ a: ans, o: opts, type: k % 2 ? 'zoom' : 'pix', fx: .42 + r() * .16, fy: .22 + r() * .14 });
+      }
+      return qs;
+    }
+    function qImg(i) { var yt = TRACKS[i].yt; if (!Q.img[yt]) { var im = new Image(); im.crossOrigin = 'anonymous'; im.src = 'https://i.ytimg.com/vi/' + yt + '/mqdefault.jpg'; Q.img[yt] = im; } return Q.img[yt]; }
+    function quizStart() { var sd = (Math.random() * 1e9) | 0; if (room) room.emit('qzstart', { sd: sd }).catch(function () {}); quizBegin(sd); }
+    function quizBegin(sd) {
+      Q.on = true; Q.seed = sd; Q.qs = qGen(sd); Q.t0 = performance.now() + 3000; Q.i = -1; Q.score = 0; Q.got = {};
+      Q.qs.forEach(function (q) { qImg(q.a); });
+      $('#quiz').hidden = false; closeMenu(); toast('❓ DJ 퀴즈 시작!', '#4fd6ff'); pushQ();
+    }
+    function pushQ() { if (room) room.presence({ qz: Q.on ? { s: Q.score, i: Math.max(0, Q.i) + 1, u: UID } : null }).catch(function () {}); }
+    function quizRows() {
+      var rows = [{ n: myNick() + ' (나)', c: myC(), s: Q.score, me: true }];
+      Object.keys(peers).forEach(function (id) { var q = peers[id].qz; if (q) rows.push({ n: peers[id].nick, c: LOOK.t.indexOf(peers[id].color), s: q.s }); });
+      return rows.sort(function (a, b) { return b.s - a.s; });
+    }
+    function answer(oi) {
+      var now = performance.now(), q = Q.qs[Q.i]; if (!q || Q.pick >= 0) return;
+      var el = (now - (Q.t0 + Q.i * (QT + QR) * 1000)) / 1000; if (el < 0 || el > QT) return;
+      Q.pick = oi; var ok = q.o[oi] === q.a; Q.gain = ok ? Math.round(1000 - 700 * el / QT) : 0; Q.score += Q.gain; pushQ(); drawQuiz(true);
+    }
+    var qcv = $('#qzcv'), qcx = qcv.getContext('2d');
+    // 썸네일에서 사진이 있는 쪽 (글자로 DJ 이름이 보이지 않게 문제 중에는 이쪽만 보여줌)
+    var PHOTO_L = { CHOPPER: 1, BUCKY: 1, MUTE: 1, UZI: 1, KEYNA: 1, MAD: 1, ZET: 1, BRIXX: 1, YUKA: 1, SIZ: 1, GG: 1, POTAITO: 1, AUREDE: 1 };
+    function drawPic(q, el, reveal) {
+      var W = qcv.width = 480, H = qcv.height = 270, im = qImg(q.a); qcx.fillStyle = '#111'; qcx.fillRect(0, 0, W, H);
+      if (!im.complete || !im.naturalWidth) { qcx.fillStyle = '#888'; qcx.font = '700 16px sans-serif'; qcx.textAlign = 'center'; qcx.fillText('불러오는 중…', W / 2, H / 2); return; }
+      var k = Math.min(1, Math.max(0, el / QT)), iw0 = im.naturalWidth, ih = im.naturalHeight;
+      if (reveal) { qcx.drawImage(im, 0, 0, W, H); return; }
+      var left = !!PHOTO_L[TRACKS[q.a].n], ox = left ? 0 : iw0 * .56, iw = iw0 * .44, ch0 = iw * 9 / 16, oy = Math.max(0, (ih - ch0) * .35);
+      if (q.type === 'pix') { var cells = Math.round(8 + Math.pow(k, 1.6) * 70); var tmp = drawPic.tmp || (drawPic.tmp = document.createElement('canvas')); tmp.width = cells; tmp.height = Math.round(cells * 9 / 16); var tc = tmp.getContext('2d'); tc.drawImage(im, ox, oy, iw, ch0, 0, 0, tmp.width, tmp.height); qcx.imageSmoothingEnabled = false; qcx.drawImage(tmp, 0, 0, W, H); qcx.imageSmoothingEnabled = true; }
+      else { var z = 4.5 - 3.5 * Math.pow(k, .8), cw = iw / z, ch = ch0 / z, sx = ox + Math.min(iw - cw, Math.max(0, q.fx * iw - cw / 2)), sy = oy + Math.min(ch0 - ch, Math.max(0, q.fy * ch0 - ch / 2)); qcx.drawImage(im, sx, sy, cw, ch, 0, 0, W, H); }
+    }
+    function drawQuiz(force) {
+      var now = performance.now(), slot = (QT + QR) * 1000, i = Math.floor((now - Q.t0) / slot);
+      if (now < Q.t0) { $('#qzhead').textContent = '❓ DJ 퀴즈 · ' + Math.ceil((Q.t0 - now) / 1000) + '초 뒤 시작'; return; }
+      if (i >= Q.qs.length) { quizEnd(); return; }
+      if (i !== Q.i) { Q.i = i; Q.pick = -1; Q.gain = 0; pushQ(); var q0 = Q.qs[i]; var bt = $('#qzopts').children; for (var b = 0; b < 4; b++) { bt[b].textContent = TRACKS[q0.o[b]].n; bt[b].className = ''; bt[b].disabled = false; } }
+      var q = Q.qs[i], el = (now - Q.t0 - i * slot) / 1000, reveal = el > QT;
+      $('#qzhead').textContent = '❓ DJ 퀴즈 ' + (i + 1) + '/' + Q.qs.length + (reveal ? ' · 정답 공개' : ' · ⏱ ' + Math.ceil(QT - el)) + ' · ' + Q.score + '점';
+      drawPic(q, reveal ? QT : el, reveal);
+      if (reveal || force) { var bt2 = $('#qzopts').children; for (var c = 0; c < 4; c++) { bt2[c].disabled = true; if (reveal && q.o[c] === q.a) bt2[c].className = 'ok'; else if (c === Q.pick) bt2[c].className = q.o[c] === q.a ? 'ok' : 'bad'; } }
+      $('#qznote').textContent = Q.pick >= 0 ? (Q.gain ? '정답! +' + Q.gain : '아쉬워요!') : reveal ? '정답: ' + TRACKS[q.a].n : '이 썸네일의 DJ는? 빨리 맞힐수록 점수가 커요';
+      if (!Q.lastR || now - Q.lastR > 500) { Q.lastR = now; vlist($('#qzList'), quizRows()); }
+    }
+    function quizEnd() {
+      Q.on = false; pushQ(); var rows = quizRows(), w = rows[0], my = rows.findIndex(function (r) { return r.me; }) + 1;
+      $('#qzhead').textContent = '❓ DJ 퀴즈 끝 · ' + Q.score + '점 · ' + my + '위'; $('#qznote').textContent = '우승: ' + w.n.replace(' (나)', '') + ' (' + w.s + '점)';
+      toast(rows.length > 1 ? (my === 1 ? '❓ 퀴즈 우승! 🏆' : '❓ 퀴즈 ' + my + '위') : '❓ ' + Q.score + '점!', my === 1 ? '#ffd23a' : '#fff');
+      if (my === 1) burst(active, player.x, player.z);
+      setTimeout(function () { if (!Q.on) $('#quiz').hidden = true; }, 7000);
+    }
+    document.querySelectorAll('#qzopts button').forEach(function (b, i) { b.addEventListener('click', function () { answer(i); }); });
+    $('#qzclose').addEventListener('click', function () { Q.on = false; pushQ(); $('#quiz').hidden = true; });
+
+    /* ===== 게임 메뉴 ===== */
+    function closeMenu() { $('#games').hidden = true; $('#gamesbtn').setAttribute('aria-pressed', 'false'); }
+    $('#gamesbtn').addEventListener('click', function () { var on = $('#games').hidden; $('#games').hidden = !on; $('#gamesbtn').setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    $('#gamesclose').addEventListener('click', closeMenu);
+    function goto(F, px, pz, yaw) { if (active !== F) setFloor(F, true); player.x = px; player.z = pz; player.yaw = yaw; player.pitch = -.05; closeMenu(); }
+    $('#g-dance').addEventListener('click', function () { var rec = floors[active], P = active === '2F' ? [556, 300] : [600, 342]; goto(active, rec.X(P[0]) + (active === '3F' ? 2.2 : 0), rec.Z(P[1]) - (active === '2F' ? 2.2 : 0), active === '2F' ? Math.PI : Math.PI / 2); toast('🕺 발판에 올라서서 배틀 버튼!', '#fff'); });
+    $('#g-dart').addEventListener('click', function () { var s = floors['2F'].dartSpot; goto('2F', s.x, s.z + 3.2, 0); toast('🎯 다트 버튼을 눌러요', '#fff'); });
+    $('#g-race').addEventListener('click', function () { if (R.on) { toast('이미 레이스 중이에요', '#fff'); return; } raceStart(); });
+    $('#g-quiz').addEventListener('click', function () { if (Q.on) { toast('이미 퀴즈 중이에요', '#fff'); return; } quizStart(); });
+
+    return {
+      onRoom: function (r) {
+        r.on('brstart', function (m) { if (m.sameTab || R.on) return; var sd = (m.data || {}).sd; if (typeof sd === 'number' && isFinite(sd)) raceBegin(sd | 0, false); }, function () {});
+        r.on('brclaim', function (m) { if (m.sameTab || !R.on || !R.host) return; var d = m.data || {}, p = cleanPlayer(d); if (d.k !== R.k || !p.uid) return; r.emit('brgot', { k: R.k, uid: p.uid, n: p.n, c: p.c }).catch(function () {}); award(R.k, p); }, function () {});
+        r.on('brgot', function (m) { if (m.sameTab || !R.on) return; var d = m.data || {}, p = cleanPlayer(d); if (!p.uid || typeof d.k !== 'number') return; if (d.k === R.k) award(d.k, p); else if (d.k > R.k) { R.k = d.k; award(d.k, p); } }, function () {});
+        r.on('qzstart', function (m) { if (m.sameTab || Q.on) return; var sd = (m.data || {}).sd; if (typeof sd === 'number' && isFinite(sd)) quizBegin(sd | 0); }, function () {});
+      },
+      tick: function (t) { raceTick(t); if (Q.on) drawQuiz(false); if (R.on && bottle.userData.ring) bottle.userData.ring.material.opacity = .5 + .4 * Math.sin(t * 6); },
+      _test: { R: R, Q: Q, raceStart: raceStart, quizStart: quizStart, answer: answer, UID: UID }
+    };
+  })();
   $('#view').addEventListener('click', function () { setCam((camMode + 1) % 3); toast('🎥 ' + CAMS[camMode], '#fff'); });
   $('#bottle').addEventListener('click', function () {
     var rec = floors[active], best = null, bd = 1e9;
@@ -1813,6 +2008,7 @@
       if (en.key !== key) { var bub = en.av && en.av.bubble ? 1 : 0; if (en.av) { scene.remove(en.av.g); disposeObj(en.av.g); } en.av = makeAvatar(l, n, false); scene.add(en.av.g); en.key = key; }
       en.nick = n; en.color = LOOK.t[l.t]; en.f = pr.f;
       var dg = pr.dg && typeof pr.dg === 'object' ? pr.dg : null; en.dg = dg ? { s: Math.max(0, Math.min(1440, Math.floor(+dg.s) || 0)), r: Math.max(1, Math.min(8, Math.floor(+dg.r) || 1)), st: dg.st === 'done' ? 'done' : 'play' } : null;
+      var qz = pr.qz && typeof pr.qz === 'object' ? pr.qz : null; en.qz = qz ? { s: Math.max(0, Math.min(8000, Math.floor(+qz.s) || 0)) } : null;
       var db = pr.db && typeof pr.db === 'object' ? pr.db : null; en.db = db ? { s: Math.max(0, Math.min(200000, Math.floor(+db.s) || 0)), c: Math.max(0, Math.min(999, Math.floor(+db.c) || 0)), st: db.st === 'play' || db.st === 'done' ? db.st : 'ready', sd: Math.floor(+db.sd) || 0 } : null;
       en.tx = clampF(pr.f, pr.x, 'x'); en.tz = clampF(pr.f, pr.z, 'z'); en.tr = isFinite(+pr.r) ? +pr.r : 0; en.tm = !!pr.m; en.ty = Math.max(0, Math.min(2, +pr.j || 0));
       if (en.first) { en.x = en.tx; en.z = en.tz; en.r = en.tr; en.y = en.ty; en.first = false; }
@@ -1828,7 +2024,7 @@
   }
   function initRoom(r) {
     room = r;
-    if (DART) DART.onRoom(r); if (DANCE) DANCE.onRoom(r);
+    if (DART) DART.onRoom(r); if (DANCE) DANCE.onRoom(r); if (GAMES) GAMES.onRoom(r);
     room.onPeers(function (ch) {
       syncPeers(ch.peers);
       if (roomReady) ch.left.forEach(function (p) { if (!p.sameTab && p.presence && p.presence.n) sys(cleanText(p.presence.n, 12) + '님이 나갔어요'); });
@@ -2060,7 +2256,7 @@
     }
     // 손님
     var up = t < handsUntil || dropping;
-    updateAvatars(t, b.ph, walking, up); sendPresence(now, walking); updateNPCs(dt, t, b.ph, up); if (DART) DART.tick(t, dt); if (DANCE) DANCE.tick(t, dt);
+    updateAvatars(t, b.ph, walking, up); sendPresence(now, walking); updateNPCs(dt, t, b.ph, up); if (DART) DART.tick(t, dt); if (DANCE) DANCE.tick(t, dt); if (GAMES) GAMES.tick(t);
     // 스파클러
     var S = rec.sparks, pos = S.pts.geometry.attributes.position.array, alive = false;
     S.emit = S.emit.filter(function (em) { return em.until > t; });
@@ -2101,7 +2297,7 @@
 
   renderBgm();
   setFloor('2F', true);
-  if (/[?&]debug\b/.test(location.search)) window.__vc = { player: player, blocked: blocked, setFloor: setFloor, floors: floors, dart: DART, dance: DANCE };
+  if (/[?&]debug\b/.test(location.search)) window.__vc = { player: player, blocked: blocked, setFloor: setFloor, floors: floors, dart: DART, dance: DANCE, games: GAMES };
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { texList.forEach(function (o) { o.ctx.clearRect(0, 0, o.c.width, o.c.height); o.draw(o.ctx, o.c.width, o.c.height); o.tex.needsUpdate = true; }); [ '2F', '3F' ].forEach(function (F) { drawLED(F, 0, .3, 1); }); });
   tick();
 })();
