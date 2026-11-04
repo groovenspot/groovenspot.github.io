@@ -486,10 +486,22 @@
     [[0, -D / 2 + .02, W, .04], [0, D / 2 - .02, W, .04], [-W / 2 + .02, 0, .04, D], [W / 2 - .02, 0, .04, D]].forEach(function (a) { add(box(a[2], .03, a[3], glow(cfg.color, .35)), a[0], .02, a[1]); });
     var ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, D), mat(0x060506)); ceil.rotation.x = Math.PI / 2; ceil.position.y = H; g.add(ceil); rec.ceil.push(ceil);
     var pipeM = mat(0x2a2522, { metalness: .6, roughness: .5 });
-    for (var px = -12; px <= 12; px += 6) { var p = new THREE.Mesh(new THREE.CylinderGeometry(.09, .09, D, 8), pipeM); p.rotation.x = Math.PI / 2; add(p, px, H - .3, 0); rec.ceil.push(p); }
+    if (F === '2F') for (var px = -12; px <= 12; px += 6) { var p = new THREE.Mesh(new THREE.CylinderGeometry(.09, .09, D, 8), pipeM); p.rotation.x = Math.PI / 2; add(p, px, H - .3, 0); rec.ceil.push(p); }
     // 랜턴 (마름모 종이등)
     var lanternM = new THREE.MeshStandardMaterial({ color: 0xfff1d6, emissive: 0xffd9a0, emissiveIntensity: .8, roughness: .7 });
-    for (var li = 0; li < 10; li++) {
+    // 2층 천장: 물결 LED 튜브 (색 바뀌고 깜빡임)
+    if (F === '2F') {
+      var TUBES = 14;
+      for (var ti = 0; ti < TUBES; ti++) {
+        var z0 = -D / 2 + .8 + ti * (D - 1.6) / (TUBES - 1), pts = [], amp = .7 + (ti % 3) * .25, ph0 = ti * .9, yb = H - .45 - (ti % 2) * .35;
+        for (var k = 0; k <= 26; k++) { var xx = -W / 2 + .4 + k * (W - .8) / 26; pts.push(new THREE.Vector3(xx, yb - Math.abs(Math.sin(k * .55 + ph0)) * .45, z0 + Math.sin(k * .42 + ph0) * amp)); }
+        var tm = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false, fog: false });
+        var tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 160, .035, 6, false), tm); g.add(tube);
+        rec.movers.push({ type: 'tube', m: tube, i: ti, n: TUBES }); rec.ceil.push(tube);
+      }
+      var tubeLight = new THREE.PointLight(0xffffff, .8, 16, 2); tubeLight.position.set(0, H - 1, 0); g.add(tubeLight); rec.tubeLight = tubeLight;
+    }
+    for (var li = 0; li < 0; li++) {
       var lx = -W / 2 + 3 + (li % 5) * (W - 6) / 4, lz = li < 5 ? -D / 4 : D / 4 + .3;
       var lan = new THREE.Mesh(new THREE.OctahedronGeometry(.3, 0), lanternM); lan.scale.y = 1.35; add(lan, lx, H - 1.1 - (li % 2) * .35, lz);
       var cord = add(box(.01, 1, .01, mat(0x222222)), lx, H - .5, lz);
@@ -705,21 +717,76 @@
       [[215, 430], [520, 600]].forEach(function (yy) { var part = R(262, yy[0], 275, yy[1]); add(box(part.w, 2.8, part.d, tmat('wall', Math.max(1, part.d / 2.4), 1.2, { color: 0x9a9290, roughness: .8 })), part.x, 1.4, part.z); collide(262, yy[0], 275, yy[1]); });
       // DJ 부스 (타원, 오른쪽을 봄)
       var dR = R(430, 258, 505, 425), rx = dR.w / 2, rz = dR.d / 2;
-      var oval = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .98, 56), tmat('brass', 7, 1, { color: 0xcdbb9b, roughness: .34, metalness: .65 })); oval.scale.set(rx, 1, rz); add(oval, dR.x, .49, dR.z);
-      var otop = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .07, 56), tmat('floor', 1, 1, { color: 0xd8d2ce, roughness: .14, metalness: .2 })); otop.scale.set(rx + .09, 1, rz + .09); add(otop, dR.x, 1.015, dR.z);
+      var oval = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .98, 56), mat(0x0b0b0e, { roughness: .45, metalness: .3 })); oval.scale.set(rx, 1, rz); add(oval, dR.x, .49, dR.z);
+      var otop = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .07, 56), mat(0x121216, { roughness: .22, metalness: .4 })); otop.scale.set(rx + .09, 1, rz + .09); add(otop, dR.x, 1.015, dR.z);
       var oring = new THREE.Mesh(new THREE.TorusGeometry(1, .03, 6, 56), glow(cfg.color, .9)); oring.rotation.x = Math.PI / 2; oring.scale.set(rx + .04, rz + .04, 1); add(oring, dR.x, .04, dR.z); rec.movers.push({ type: 'strip', m: oring });
       var oring2 = oring.clone(); oring2.material = glow(cfg.color2, .9); oring2.scale.set(rx + .06, rz + .06, 1); add(oring2, dR.x, .975, dR.z); rec.movers.push({ type: 'strip', m: oring2 });
+      // 부스 옆면 스티커 띠 + 아크릴 가림막 (실제 3층 부스)
+      var stickers = canvasTex(1024, 256, function (x, w, h) {
+        x.fillStyle = '#0b0b0e'; x.fillRect(0, 0, w, h);
+        var words = ['GROOVE', 'SPOT', '뮤트', '빌', 'N', '에이스', '우지', '이지', '쿠파', '타로', '로드', '무무', 'EDM', 'BUSAN', '3F', 'LIVE', 'DJ', 'SEOMYEON'], cols = ['#ff5a1a', '#ffd23a', '#a861ff', '#4fd6ff', '#ff3b5c', '#1fff6a', '#f6efeb', '#ff9ad5'];
+        for (var i = 0; i < 46; i++) {
+          var sw = 70 + (i * 37) % 90, sh = 34 + (i * 23) % 40, sx = (i * 113) % (w - 40), sy = 12 + (i * 71) % (h - 60);
+          x.save(); x.translate(sx + sw / 2, sy + sh / 2); x.rotate(((i * 29) % 30 - 15) * Math.PI / 180);
+          x.fillStyle = cols[i % cols.length]; x.beginPath(); if (x.roundRect) x.roundRect(-sw / 2, -sh / 2, sw, sh, 8); else x.rect(-sw / 2, -sh / 2, sw, sh); x.fill();
+          x.fillStyle = i % 3 ? '#0b0b0e' : '#fff'; x.font = '800 ' + Math.round(sh * .5) + 'px Unbounded, "Black Han Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(words[i % words.length], 0, 2, sw - 10);
+          x.restore();
+        }
+      });
+      stickers.tex.wrapS = THREE.RepeatWrapping; stickers.tex.repeat.set(3, 1);
+      var band = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .56, 56, 1, true), new THREE.MeshStandardMaterial({ map: stickers.tex, roughness: .5, metalness: .05 })); band.scale.set(rx + .005, 1, rz + .005); add(band, dR.x, .6, dR.z);
+      var acr = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .45, 56, 1, true), new THREE.MeshStandardMaterial({ color: 0xcfe6ff, transparent: true, opacity: .14, roughness: .05, metalness: .1, side: THREE.DoubleSide, depthWrite: false })); acr.scale.set(rx + .06, 1, rz + .06); add(acr, dR.x, 1.28, dR.z);
+      var acrEdge = new THREE.Mesh(new THREE.TorusGeometry(1, .008, 4, 64), glow(0xdff0ff, .5)); acrEdge.rotation.x = Math.PI / 2; acrEdge.scale.set(rx + .06, rz + .06, 1); add(acrEdge, dR.x, 1.505, dR.z);
       gear(dR.x + .3, dR.z, 1.05, -Math.PI / 2);
       djFigure(dR.x - .45, dR.z, Math.PI / 2, 0);
       flat('DJ', dR.x - .1, dR.z + 1.2, 1.06, 1.3, cfg.css);
       // 부스 둘레 단(0.22m): 걸어 올라가고, 거기서 점프하면 부스 위(1.05m)까지
-      add(box(dR.w + 1.4, .22, dR.d + 1.4, tmat('floor', 1.4, 2, { color: 0x8c8688, roughness: .22, metalness: .3 })), dR.x, .11, dR.z);
+      add(box(dR.w + 1.4, .22, dR.d + 1.4, tmat('floor', 1.4, 2, { color: 0x4a4648, roughness: .3, metalness: .25 })), dR.x, .11, dR.z);
       var dEdge = add(box(dR.w + 1.46, .03, dR.d + 1.46, glow(cfg.color2, .8)), dR.x, .02, dR.z); rec.movers.push({ type: 'strip', m: dEdge });
       rec.colliders.push([dR.x - dR.w / 2 - .7, dR.z - dR.d / 2 - .7, dR.x + dR.w / 2 + .7, dR.z + dR.d / 2 + .7, .22]);
       collide(430, 258, 505, 425, 1.05);
       rec.colliders.push([dR.x - .75, dR.z - .3, dR.x - .15, dR.z + .3, 9]); // DJ 자리
-      // LED 스크린 (DJ 뒤에 매달림, 오른쪽을 봄)
-      ledWall(X(360), 3.3, dR.z, 5.4, Math.PI / 2);
+      // ── 실제 3층처럼: 천장 LED · 로고 LED 큐브 · 네온 · 식물 ──
+      // 천장 LED 화면 (플로어 위 전체)
+      var ceilLed = canvasTex(1024, 512, function () {});
+      var cl = new THREE.Mesh(new THREE.PlaneGeometry(L(560), L(330)), new THREE.MeshBasicMaterial({ map: ceilLed.tex, fog: false, toneMapped: false }));
+      cl.rotation.x = Math.PI / 2; cl.rotation.z = Math.PI; add(cl, X(610), H - .22, Z(345)); rec.ceil.push(cl);
+      var clFrame = add(box(L(566), .06, L(336), mat(0x050505, { roughness: .6 })), X(610), H - .17, Z(345)); rec.ceil.push(clFrame);
+      rec.led = ceilLed; rec.ceilLed = true;
+      var ledFill = new THREE.PointLight(0x8a5cff, .9, 12, 2); ledFill.position.set(X(610), H - 1.2, Z(345)); g.add(ledFill); rec.ledFill = ledFill;
+      // DJ 위 로고 LED 큐브
+      var cubeTex = canvasTex(512, 512, function (x, w, h) {
+        x.fillStyle = '#070303'; x.fillRect(0, 0, w, h);
+        for (var r = 9; r > 0; r--) { x.beginPath(); x.arc(w / 2, h * .56, r * 26, 0, 7); x.strokeStyle = r % 2 ? 'rgba(255,90,30,.85)' : 'rgba(120,20,10,.9)'; x.lineWidth = 9; x.stroke(); }
+        x.lineWidth = 6; x.strokeStyle = '#ff3b1a'; x.beginPath(); for (var i = 0; i <= w; i += 6) x.lineTo(i, h * .3 + Math.sin(i * .05) * 30 * Math.sin(i * .013)); x.stroke();
+        x.strokeStyle = '#ffd23a'; x.beginPath(); for (var j = 0; j <= w; j += 6) x.lineTo(j, h * .8 + Math.sin(j * .07 + 1) * 22); x.stroke();
+        x.font = '900 70px Unbounded, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#ff5a1a'; x.shadowBlur = 22; x.fillStyle = '#ffe2c4'; x.fillText('Groove', w / 2, h * .42); x.fillText('&Spot', w / 2, h * .58);
+        x.strokeStyle = 'rgba(255,200,150,.6)'; x.lineWidth = 6; x.shadowBlur = 0; x.strokeRect(6, 6, w - 12, h - 12);
+      });
+      var cube = new THREE.Group(); cube.position.set(dR.x + .15, 3.45, dR.z); g.add(cube);
+      var cm = new THREE.MeshBasicMaterial({ map: cubeTex.tex, toneMapped: false }), cb = mat(0x060606);
+      cube.add(new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.1, 1.25), [cm, cm, cb, cb, cm, cm]));
+      [-1, 1].forEach(function (s) { add(box(.012, H - 4, .012, mat(0x222222)), dR.x + .15 + s * .5, (H + 4) / 2, dR.z); });
+      rec.movers.push({ type: 'cube', m: cube });
+      // 네온사인 (DJ 뒤 칸막이 · 벽)
+      sign('1st', X(276) + .02, 2.25, Z(390), 1.0, Math.PI / 2, '#ffd23a');
+      sign('LP', X(276) + .02, 2.25, Z(300), .9, Math.PI / 2, '#b36bff');
+      var lips = new THREE.Mesh(new THREE.TorusGeometry(.32, .05, 10, 40), glow(0x39e6d0, .95)); lips.scale.set(1, .5, 1); add(lips, X(700), 2.9, -D / 2 + .06);
+      var lips2 = new THREE.Mesh(new THREE.TorusGeometry(.18, .04, 10, 32), glow(0xff5ab4, .95)); lips2.scale.set(1, .45, 1); add(lips2, X(470), 3.1, -D / 2 + .06);
+      sign('GROOVE & SPOT', X(612), 3.55, -D / 2 + .06, 2.6, 0, '#ff6a3a');
+      // 천장 가장자리 식물
+      var leafN = 220, leaves = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.2, 0), new THREE.MeshStandardMaterial({ color: 0x1d4a24, roughness: .8, emissive: 0x06200a }), leafN), lm = new THREE.Matrix4(), lq = new THREE.Quaternion(), le = new THREE.Euler(), ls = new THREE.Vector3(), lp = new THREE.Vector3();
+      for (var li2 = 0; li2 < leafN; li2++) {
+        var side = li2 % 3, f = Math.random();
+        if (side === 0) lp.set(-W / 2 + .3 + Math.random() * .5, H - .3 - Math.random() * .6, -D / 2 + f * D);           // 왼쪽 벽 위
+        else if (side === 1) lp.set(-W / 2 + f * W * .6, H - .3 - Math.random() * .6, -D / 2 + .3 + Math.random() * .5); // 안쪽 벽 위
+        else lp.set(X(268) + (Math.random() - .5) * .4, 2.85 + Math.random() * .35, Z(215) + f * L(385));                 // 칸막이 위
+        le.set(Math.random() * 6, Math.random() * 6, Math.random() * 6); lq.setFromEuler(le); var sc2 = .6 + Math.random() * .9; ls.set(sc2, sc2 * .7, sc2);
+        lm.compose(lp, lq, ls); leaves.setMatrixAt(li2, lm);
+      }
+      g.add(leaves);
+      var greenWash = new THREE.PointLight(0x3dff6a, 1.1, 11, 2); greenWash.position.set(X(330), 3.2, Z(520)); g.add(greenWash); rec.lights.push(greenWash);
+      var blueBeam = new THREE.PointLight(0x3a6bff, .9, 11, 2); blueBeam.position.set(X(760), 3.4, Z(220)); g.add(blueBeam); rec.lights.push(blueBeam);
       speaker(X(372), 3.2, Z(222), Math.PI / 2, 1.4); speaker(X(372), 3.2, Z(462), Math.PI / 2, 1.4);
       // MAIN BAR (세로, 양끝 병 진열장)
       var mb3 = counter(780, 292, 888, 424, 1.1);
@@ -759,7 +826,7 @@
       cone.geometry.translate(0, -2.8, 0); pivot.add(cone);
       rec.movers.push({ type: 'head', m: pivot, cone: cone, i: mh }); rec.ceil.push(pivot);
     });
-    var amb = new THREE.HemisphereLight(0x3a2a3a, 0x0a0606, .9); g.add(amb);
+    var amb = new THREE.HemisphereLight(0x3a2a3a, 0x0a0606, .9); g.add(amb); rec.hemi = amb;
     lightsAt.forEach(function (lp, i) { var Lt = new THREE.PointLight(i === 1 ? cfg.color2 : cfg.color, 1.2, 14, 2); Lt.position.set(X(lp[0]), 3.8, Z(lp[1])); g.add(Lt); rec.lights.push(Lt); });
     var boothLight = new THREE.PointLight(0xffffff, .6, 6, 2); boothLight.position.set(djPos[0], 2.8, djPos[1]); g.add(boothLight);
     var fill = new THREE.PointLight(0xffe0c0, .5, 18, 2); fill.position.set(0, 4.2, 0); g.add(fill);
@@ -789,7 +856,35 @@
 
   /* ---------------- LED 월 그리기 ---------------- */
   var ledInfo = { '2F': lineup('2F'), '3F': lineup('3F') };
+  function drawCeil(rec, t, beat, e) {
+    var x = rec.led.ctx, w = 1024, h = 512, mode = Math.floor(t / 14) % 3, k;
+    x.globalAlpha = 1; x.fillStyle = '#05040a'; x.fillRect(0, 0, w, h);
+    if (mode === 0) { // 네온 도형
+      var cols = ['#ff6ad5', '#ffe066', '#5ff2d0', '#ff9a3c', '#b98bff'];
+      for (k = 0; k < 16; k++) {
+        var px = ((k * 167 + t * 40 * (k % 2 ? 1 : -1)) % (w + 300) + w + 300) % (w + 300) - 150, py = (k * 97) % h, s = 60 + (k % 5) * 22 + beat * 26, rot = t * (.3 + k % 3 * .2) + k;
+        x.save(); x.translate(px, py); x.rotate(rot); x.strokeStyle = cols[k % 5]; x.lineWidth = 14; x.shadowColor = cols[k % 5]; x.shadowBlur = 18;
+        x.beginPath(); if (k % 2) { x.moveTo(-s, s * .6); x.lineTo(0, -s * .7); x.lineTo(s, s * .6); x.closePath(); } else { x.moveTo(-s, -s * .3); x.lineTo(0, s * .5); x.lineTo(s, -s * .3); }
+        x.stroke(); x.restore();
+      }
+    } else if (mode === 1) { // 파란 소용돌이 터널
+      x.save(); x.translate(w / 2, h / 2);
+      for (k = 0; k < 64; k++) { var a = k / 64 * Math.PI * 2 + t * .6; x.strokeStyle = k % 2 ? 'rgba(120,150,255,.9)' : 'rgba(230,235,255,.85)'; x.lineWidth = 6 + beat * 6; x.beginPath(); for (var r = 8; r < 620; r += 24) { var aa = a + r * .006 + Math.sin(t + r * .01) * .15; x.lineTo(Math.cos(aa) * r * 1.4, Math.sin(aa) * r * .7); } x.stroke(); }
+      x.restore();
+    } else { // 빨강·파랑 구름
+      for (k = 0; k < 9; k++) {
+        var cx = w / 2 + Math.sin(t * .23 + k * 1.7) * w * .45, cy = h / 2 + Math.cos(t * .31 + k * 2.3) * h * .4, rr = 160 + (k % 3) * 70 + beat * 40;
+        var gr = x.createRadialGradient(cx, cy, 0, cx, cy, rr), c = k % 3 === 0 ? '255,60,70' : k % 3 === 1 ? '70,80,255' : '255,255,255';
+        gr.addColorStop(0, 'rgba(' + c + ',' + (k % 3 === 2 ? .7 : .85) + ')'); gr.addColorStop(1, 'rgba(' + c + ',0)'); x.fillStyle = gr; x.fillRect(0, 0, w, h);
+      }
+    }
+    x.shadowBlur = 0; x.globalAlpha = .28; x.fillStyle = '#000'; for (k = 0; k < h; k += 4) x.fillRect(0, k, w, 1); for (k = 0; k < w; k += 4) x.fillRect(k, 0, 1, h); // LED 픽셀 결
+    x.globalAlpha = .9; x.font = '900 54px Unbounded, sans-serif'; x.textAlign = 'left'; x.textBaseline = 'top'; x.fillStyle = '#fff'; x.fillText(ledInfo['3F'].dj, 28, 22);
+    x.globalAlpha = 1; rec.led.tex.needsUpdate = true;
+    if (rec.ledFill) rec.ledFill.color.setHex(mode === 0 ? 0xc46bff : mode === 1 ? 0x5a7bff : 0xff4a5a);
+  }
   function drawLED(F, t, beat, e) {
+    if (floors[F].ceilLed) return drawCeil(floors[F], t, beat, e);
     var rec = floors[F], x = rec.led.ctx, w = 1024, h = 384, cfg = FLOORS[F];
     x.fillStyle = '#000'; x.fillRect(0, 0, w, h);
     var g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, cfg.css); g.addColorStop(1, F === '2F' ? '#ffcc4d' : '#4fd6ff');
@@ -1378,6 +1473,24 @@
       else if (o.type === 'spin') o.m.rotation.y = t * 3.5;
       else if (o.type === 'strip') o.m.material.opacity = .35 + hit * .65;
       else if (o.type === 'cone') o.m.scale.setScalar(1 + hit * .08);
+      else if (o.type === 'tube') {
+        var md = Math.floor(t / 12) % 5, c = o.m.material.color, k2 = o.i / o.n;
+        if (md === 0) c.setRGB(1, 1, 1).multiplyScalar(.55 + hit * .6);                                        // 흰색, 박자에 밝아짐
+        else if (md === 1) c.setHSL((t * .15 + k2) % 1, 1, .5 + hit * .15);                                      // 무지개가 흐름
+        else if (md === 2) { var on = Math.floor(t * 4 + o.i) % 2; c.setHSL((Math.floor(t / 3) * .17) % 1, 1, on ? .6 : .06); } // 줄마다 번갈아 깜빡
+        else if (md === 3) { var strobe = hit > .55 ? 1 : .08; c.setRGB(strobe, strobe, strobe); }                  // 박자에 맞춘 스트로브
+        else c.setRGB(1, .9, .88).multiplyScalar(.75 + hit * .35);                                               // 실제 2층처럼: 흰 줄 + 방 전체 빨간 조명
+        if (o.i === 0) {
+          var red = md === 4;
+          if (rec.tubeLight) { if (red) { rec.tubeLight.color.setHex(0xff1a10); rec.tubeLight.intensity = 3.2 + hit * 1.5; rec.tubeLight.distance = 26; } else { rec.tubeLight.color.copy(c); rec.tubeLight.intensity = .4 + c.getHSL({}).l * 1.2; rec.tubeLight.distance = 16; } }
+          if (!rec.baseCols) rec.baseCols = rec.lights.map(function (L) { return L.color.getHex(); });
+          rec.lights.forEach(function (L, li3) { L.color.setHex(red ? 0xff2010 : rec.baseCols[li3]); });
+          if (rec.hemi) { rec.hemi.color.setHex(red ? 0xd02018 : 0x3a2a3a); rec.hemi.groundColor.setHex(red ? 0x3a0606 : 0x0a0606); rec.hemi.intensity = red ? 1.5 : .9; }
+          rec.movers.forEach(function (o2) { if (o2.type === 'head') { if (!o2.base) o2.base = o2.cone.material.color.getHex(); o2.cone.material.color.setHex(red ? 0xff2a1a : o2.base); } });
+          rec.redMode = red;
+        }
+      }
+      else if (o.type === 'cube') { o.m.rotation.y = t * .25; o.m.position.y = 3.45 + Math.sin(t * .8) * .03; }
     });
     rec.lights.forEach(function (L, i) { L.intensity = .35 + hit * (i === 1 ? 2.4 : 1.8) + (dropping ? 1.5 : 0); });
     if (rec.laserGroup) {
