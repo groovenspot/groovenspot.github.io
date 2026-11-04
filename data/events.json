@@ -2251,6 +2251,34 @@
     }
   },
   {
+    "date": "2026-11-04",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "WOOK2",
+        "ZINO",
+        "MUMU",
+        "TARO"
+      ],
+      "3F": [
+        "N",
+        "KUPA",
+        "BILL",
+        "EZZY",
+        "A:ETH",
+        "DIA",
+        "MUMU",
+        "TARO",
+        "WOOK2",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-11-04.webp"
+  },
+  {
     "date": "2026-11-07",
     "title": "FIREWORKS PARTY with G.O.A.T",
     "floor": "2F+3F",
