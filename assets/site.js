@@ -486,12 +486,35 @@
 
     // 곡 검색 (Apple iTunes 검색 API, 키 불필요). 한국 스토어 먼저, 결과가 없으면 글로벌 스토어.
     var box = $('#rq-results'), hint = $('#rq-hint'), song = rq.song, sCache = {}, sTimer = null, sSeq = 0, sItems = [], sActive = -1;
+    // 응답이 늦으면 포기 (검색 중… 이 계속 남지 않게)
+    function timed(p, ms) { return new Promise(function (ok, no) { var tm = setTimeout(function () { no(new Error('timeout')); }, ms); p.then(function (v) { clearTimeout(tm); ok(v); }, function (e) { clearTimeout(tm); no(e); }); }); }
+    function jsonp(url, ms) { // CORS가 막혀도 되는 방식 (Deezer)
+      return new Promise(function (ok, no) {
+        var cb = 'gsCb' + Date.now() + Math.floor(Math.random() * 1e4), s = document.createElement('script'), done = false;
+        var end = function () { done = true; try { delete window[cb]; } catch (e) { window[cb] = undefined; } s.remove(); };
+        window[cb] = function (d) { if (done) return; end(); ok(d); };
+        s.onerror = function () { if (!done) { end(); no(new Error('jsonp')); } };
+        setTimeout(function () { if (!done) { end(); no(new Error('timeout')); } }, ms);
+        s.src = url + (url.indexOf('?') < 0 ? '?' : '&') + 'output=jsonp&callback=' + cb; document.head.appendChild(s);
+      });
+    }
     function itunes(term, country) {
       var k = country + '|' + term;
       if (sCache[k]) return Promise.resolve(sCache[k]);
       var u = 'https://itunes.apple.com/search?media=music&entity=song&limit=8&term=' + encodeURIComponent(term) + (country ? '&country=' + country : '');
-      return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      return timed(fetch(u), 5000).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
         .then(function (d) { var res = (d.results || []).map(function (x) { return { t: x.trackName, a: x.artistName, img: x.artworkUrl60 }; }); sCache[k] = res; return res; });
+    }
+    function deezer(term) {
+      var k = 'dz|' + term;
+      if (sCache[k]) return Promise.resolve(sCache[k]);
+      return jsonp('https://api.deezer.com/search?limit=8&q=' + encodeURIComponent(term), 5000)
+        .then(function (d) { var res = ((d && d.data) || []).map(function (x) { return { t: x.title, a: x.artist && x.artist.name, img: x.album && x.album.cover_small }; }); sCache[k] = res; return res; });
+    }
+    function anySearch(term) { // 한국 스토어 → 글로벌 → Deezer, 앞에서 실패하거나 결과가 없으면 다음
+      var tries = [function () { return itunes(term, 'KR'); }, function () { return itunes(term, ''); }, function () { return deezer(term); }], i = 0, failed = 0;
+      function next() { if (i >= tries.length) return Promise.resolve(failed === tries.length ? null : []); var f = tries[i++]; return f().then(function (r) { return r.length ? r : next(); }, function () { failed++; return next(); }); }
+      return next();
     }
     function closeList() { box.hidden = true; song.setAttribute('aria-expanded', 'false'); song.removeAttribute('aria-activedescendant'); sActive = -1; }
     function pickSong(i) {
@@ -508,11 +531,12 @@
       var term = song.value.trim(), my = ++sSeq;
       if (term.length < 2) { closeList(); hint.textContent = ''; return; }
       hint.textContent = T.rqSearching;
-      itunes(term, 'KR').catch(function () { return []; }).then(function (r) { return r.length ? r : itunes(term, ''); })
+      anySearch(term)
         .then(function (res) {
           if (my !== sSeq) return;
+          if (res === null) { closeList(); hint.textContent = T.rqSearchOff; return; }
           var seen = {};
-          sItems = res.filter(function (x) { var k = (x.t + '|' + x.a).toLowerCase(); if (seen[k]) return false; seen[k] = 1; return x.t; }).slice(0, 8);
+          sItems = res.filter(function (x) { if (!x.t) return false; x.a = x.a || ''; var k = (x.t + '|' + x.a).toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, 8);
           if (!sItems.length) { closeList(); hint.textContent = T.rqNoResult; return; }
           hint.textContent = '';
           box.innerHTML = sItems.map(function (x, i) {
@@ -523,7 +547,10 @@
         })
         .catch(function () { if (my === sSeq) { closeList(); hint.textContent = ''; } });
     }
-    song.addEventListener('input', function () { clearTimeout(sTimer); sTimer = setTimeout(search, 350); });
+    var composing = false; // 한글 조합 중에는 검색하지 않음 (자음·모음마다 요청이 몰려 막히지 않게)
+    song.addEventListener('compositionstart', function () { composing = true; });
+    song.addEventListener('compositionend', function () { composing = false; clearTimeout(sTimer); sTimer = setTimeout(search, 450); });
+    song.addEventListener('input', function () { clearTimeout(sTimer); if (!composing) sTimer = setTimeout(search, 600); else sTimer = setTimeout(search, 1200); });
     song.addEventListener('keydown', function (e) {
       if (box.hidden) return;
       if (e.key === 'ArrowDown') { e.preventDefault(); setActive(Math.min(sItems.length - 1, sActive + 1)); }
