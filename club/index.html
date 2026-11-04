@@ -779,8 +779,15 @@
       [-1, 1].forEach(function (s) { add(box(.012, H - 4, .012, mat(0x222222)), dR.x + .15 + s * .5, (H + 4) / 2, dR.z); });
       rec.movers.push({ type: 'cube', m: cube });
       // 네온사인 (DJ 뒤 칸막이 · 벽)
-      sign('1st', X(276) + .02, 2.25, Z(390), 1.0, Math.PI / 2, '#ffd23a');
-      sign('LP', X(276) + .02, 2.25, Z(300), .9, Math.PI / 2, '#b36bff');
+      sign('1st', X(560), 2.75, -D / 2 + .06, 1.0, 0, '#ffd23a');
+      sign('LP', X(860), 2.75, -D / 2 + .06, .9, 0, '#b36bff');
+      // D1·D2 뒤 칸막이 벽 스크린: 고른 GROOVE SESSIONS 썸네일
+      var wallScr = canvasTex(1024, 576, function (x, w, h) { x.fillStyle = '#05040a'; x.fillRect(0, 0, w, h); });
+      var wsW = 3.7, wsH = wsW * 9 / 16, wsZ = Z(343);
+      var ws = new THREE.Mesh(new THREE.PlaneGeometry(wsW, wsH), new THREE.MeshBasicMaterial({ map: wallScr.tex, fog: false, toneMapped: false })); ws.rotation.y = Math.PI / 2; add(ws, X(275) + .05, 1.82, wsZ);
+      var wsF = add(box(.04, wsH + .08, wsW + .08, mat(0x050505, { roughness: .5 })), X(275) + .005, 1.82, wsZ);
+      var wsEdge = add(box(.02, .02, wsW + .1, glow(cfg.color2, .8)), X(275) + .05, 1.82 - wsH / 2 - .05, wsZ); rec.movers.push({ type: 'strip', m: wsEdge });
+      rec.wallScr = wallScr; rec.wallKey = '';
       var lips = new THREE.Mesh(new THREE.TorusGeometry(.32, .05, 10, 40), glow(0x39e6d0, .95)); lips.scale.set(1, .5, 1); add(lips, X(700), 2.9, -D / 2 + .06);
       var lips2 = new THREE.Mesh(new THREE.TorusGeometry(.18, .04, 10, 32), glow(0xff5ab4, .95)); lips2.scale.set(1, .45, 1); add(lips2, X(470), 3.1, -D / 2 + .06);
       sign('GROOVE & SPOT', X(612), 3.55, -D / 2 + .06, 2.6, 0, '#ff6a3a');
@@ -889,8 +896,23 @@
       }
     }
     x.shadowBlur = 0; x.globalAlpha = .28; x.fillStyle = '#000'; for (k = 0; k < h; k += 4) x.fillRect(0, k, w, 1); for (k = 0; k < w; k += 4) x.fillRect(k, 0, 1, h); // LED 픽셀 결
-    x.globalAlpha = .9; if (thumbImg) { var tw = thumbImg.naturalWidth, th2 = thumbImg.naturalHeight, ch2 = tw * 9 / 16; x.drawImage(thumbImg, 0, (th2 - ch2) / 2, tw, ch2, 24, 20, 400, 225); } else { x.font = '900 54px Unbounded, sans-serif'; x.textAlign = 'left'; x.textBaseline = 'top'; x.fillStyle = '#fff'; x.fillText(ledInfo['3F'].dj, 28, 22); }
+    x.globalAlpha = .9; x.font = '900 54px Unbounded, sans-serif'; x.textAlign = 'left'; x.textBaseline = 'top'; x.fillStyle = '#fff'; x.fillText(ledInfo['3F'].dj, 28, 22);
     x.globalAlpha = 1; rec.led.tex.needsUpdate = true;
+    if (rec.wallScr) { // 벽 스크린은 바뀔 때만 다시 그림
+      var key = (thumbImg ? thumbImg.src : 'none') + '|' + ledInfo['3F'].dj;
+      if (key !== rec.wallKey) {
+        rec.wallKey = key; var c3 = rec.wallScr.ctx, W3 = 1024, H3 = 576;
+        c3.fillStyle = '#05040a'; c3.fillRect(0, 0, W3, H3);
+        if (thumbImg) { var tw3 = thumbImg.naturalWidth, th3 = thumbImg.naturalHeight, ch3 = tw3 * 9 / 16; c3.drawImage(thumbImg, 0, (th3 - ch3) / 2, tw3, ch3, 0, 0, W3, H3); }
+        else {
+          var gg = c3.createLinearGradient(0, 0, W3, H3); gg.addColorStop(0, '#2a0f4a'); gg.addColorStop(1, '#0a2a3a'); c3.fillStyle = gg; c3.fillRect(0, 0, W3, H3);
+          c3.textAlign = 'center'; c3.textBaseline = 'middle'; c3.font = '900 46px Unbounded, sans-serif'; c3.fillStyle = 'rgba(255,255,255,.8)'; c3.fillText('3F · SPOT · EDM', W3 / 2, 150);
+          var nm = ledInfo['3F'].dj; c3.font = '900 ' + (nm.length > 9 ? 96 : 140) + 'px Unbounded, sans-serif'; c3.shadowColor = '#a861ff'; c3.shadowBlur = 40; c3.fillStyle = '#fff'; c3.fillText(nm, W3 / 2, 320); c3.shadowBlur = 0;
+        }
+        c3.globalAlpha = .18; c3.fillStyle = '#000'; for (var r3 = 0; r3 < H3; r3 += 4) c3.fillRect(0, r3, W3, 1); c3.globalAlpha = 1;
+        rec.wallScr.tex.needsUpdate = true;
+      }
+    }
     if (rec.ledFill) rec.ledFill.color.setHex(mode === 0 ? 0xc46bff : mode === 1 ? 0x5a7bff : 0xff4a5a);
   }
   function drawLED(F, t, beat, e) {
