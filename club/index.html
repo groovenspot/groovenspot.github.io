@@ -691,11 +691,28 @@
       speaker(X(452), 0, Z(572), Math.PI, 2.4); speaker(X(660), 0, Z(572), Math.PI, 2.4);
       collide(434, 556, 470, 590); collide(642, 556, 662, 590);
       // MAIN BAR (오른쪽 아래)
-      var mb = counter(662, 430, 1000, 525, 1.1);
-      add(box(LX(300), .55, LZ(30), mat(0x120d0c, { roughness: .4 })), X(830), .3, Z(545));
-      add(box(LX(300), .03, LZ(30), glow(0xffb060, .8)), X(830), .58, Z(545));
-      bottles([[X(690), Z(545), X(970), Z(545), 26, .74], [X(700), Z(445), X(960), Z(445), 22, 1.25]]);
-      collide(675, 525, 990, 560);
+      var mb = counter(662, 430, 915, 525, 1.1);
+      add(box(LX(230), .55, LZ(30), mat(0x120d0c, { roughness: .4 })), X(790), .3, Z(545));
+      add(box(LX(230), .03, LZ(30), glow(0xffb060, .8)), X(790), .58, Z(545));
+      bottles([[X(690), Z(545), X(895), Z(545), 20, .74], [X(700), Z(445), X(890), Z(445), 17, 1.25]]);
+      collide(675, 525, 905, 560);
+      // 뒷계단 (평면도 오른쪽 끝 사다리꼴 공간, 실제 치수 m)
+      (function () {
+        function P(rx, rz) { return [-W / 2 + rx, -D / 2 + rz]; }
+        var a = P(29.8, 4.39), b = P(33.78, 3.69), c = P(33.78, 7.3), d = P(29.8, 6.67), wm = tmat('wall', 1.5, 1.6, { color: 0x9a9290, roughness: .85 });
+        function seg(p1, p2) { var dx = p2[0] - p1[0], dz = p2[1] - p1[1], len = Math.hypot(dx, dz), m = box(len, H, .14, wm); m.position.set((p1[0] + p2[0]) / 2, H / 2, (p1[1] + p2[1]) / 2); m.rotation.y = -Math.atan2(dz, dx); g.add(m); }
+        seg(a, b); seg(d, c);
+        var dz0 = (a[1] + d[1]) / 2, dw = 1.1;
+        seg(a, [a[0], dz0 - dw / 2]); seg([d[0], dz0 + dw / 2], d); // 앞벽 (가운데 문)
+        var lint = box(.14, H - 2.3, dw, wm); lint.position.set(a[0], 2.3 + (H - 2.3) / 2, dz0); g.add(lint);
+        var stepM = mat(0x2a2422, { roughness: .6 }), edgeM = glow(0xff7a1a, .9), n = 10, x0 = a[0] + .5, x1 = b[0] - .15, sw = 1.6;
+        for (var i = 0; i < n; i++) { var hh = (i + 1) * 2.4 / n, xx = x0 + (i + .5) * (x1 - x0) / n; add(box((x1 - x0) / n, hh, sw, stepM), xx, hh / 2, dz0); add(box(.04, .03, sw, edgeM), xx - (x1 - x0) / n / 2 + .02, hh + .01, dz0); }
+        sign('뒷계단', a[0] - .05, 2.62, dz0, 1.3, -Math.PI / 2, '#ff9a4a');
+        sign('▲ 3F', a[0] - .05, 3.2, dz0, 1.1, -Math.PI / 2, FLOORS['3F'].css);
+        add(box(.03, 2.3, dw, glow(0xff7a1a, .12)), a[0] - .02, 1.15, dz0);
+        rec.colliders.push([a[0] - .07, Math.min(a[1], b[1]) - .07, W / 2, dz0 - dw / 2], [a[0] - .07, dz0 + dw / 2, W / 2, Math.max(d[1], c[1]) + .07], [a[0] + .35, dz0 - dw / 2, W / 2, dz0 + dw / 2]);
+        rec.stairs2 = new THREE.Vector3(a[0] + .15, 0, dz0);
+      })();
       flat('MAIN BAR', mb.x, mb.z, 1.105, 3.4, cfg.css);
       sign('MAIN BAR', mb.x, 3.2, mb.z, 3.2, 0, cfg.css, true);
       heads = [[430, 230], [520, 190], [620, 230], [700, 300], [440, 360], [680, 390], [200, 220], [900, 220]];
@@ -1555,7 +1572,7 @@
     var dx = (-sy * f + cy * s) * sp, dz = (-cy * f - sy * s) * sp;
     if (!blocked(player.x + dx, player.z)) player.x += dx;
     if (!blocked(player.x, player.z + dz)) player.z += dz;
-    var st = floors[active].stairs; if (Math.hypot(player.x - st.x, player.z - st.z) < .9) setFloor(active === '2F' ? '3F' : '2F');
+    var st = floors[active].stairs, st2 = floors[active].stairs2; if (Math.hypot(player.x - st.x, player.z - st.z) < .9 || (st2 && Math.hypot(player.x - st2.x, player.z - st2.z) < .7)) setFloor(active === '2F' ? '3F' : '2F');
     return true;
   }
 
