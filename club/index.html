@@ -331,8 +331,10 @@
       bgmNode.connect(analyser); analyser.connect(bgmGain); bgmGain.connect(AC.destination); bgmGain.gain.value = soundWanted ? 1 : 0;
     } catch (err) { bgmNode = null; analyser = null; }
   }
-  var ytbox = $('#ytbox'), ytFrame = null;
+  var ytbox = $('#ytbox'), ytFrame = null, thumbImg = null;
+  function loadThumb(id) { thumbImg = null; if (!id) return; var im = new Image(); im.crossOrigin = 'anonymous'; im.onload = function () { if (bgmIdx >= 0 && TRACKS[bgmIdx].yt === id) thumbImg = im; }; im.src = 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg'; }
   function setYT(id) {
+    loadThumb(id);
     if (!id) { if (ytFrame) { ytFrame.remove(); ytFrame = null; } ytbox.hidden = true; return; }
     if (!ytFrame) { ytFrame = document.createElement('iframe'); ytFrame.title = 'GROOVE SESSIONS'; ytFrame.allow = 'autoplay; encrypted-media; picture-in-picture'; ytFrame.setAttribute('allowfullscreen', ''); ytFrame.referrerPolicy = 'strict-origin-when-cross-origin'; ytbox.appendChild(ytFrame); }
     ytFrame.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&playsinline=1&rel=0&modestbranding=1';
@@ -340,7 +342,7 @@
   }
   function pickTrack(i, src, name) {
     if (i === -1) { // 데모 비트
-      bgmEl.pause(); setYT(null); bgmOn = false; bgmIdx = -1; bgmName = ''; renderBgm(); updateNow(); startAudio(); saveBgm(); return;
+      bgmEl.pause(); setYT(null); bgmOn = false; bgmIdx = -1; bgmName = ''; renderBgm(); updateNow(); startAudio(); saveBgm(); if (typeof setDJLooks === 'function') setDJLooks(); return;
     }
     bgmIdx = i; bgmOn = true; bgmName = name || TRACKS[i].n; bgmSub = i === -2 ? '내 파일' : 'GROOVE SESSIONS #' + TRACKS[i].s;
     if (i >= 0) { bgmEl.pause(); bgmEl.removeAttribute('src'); setYT(TRACKS[i].yt); initAudio(); startAudio(); }
@@ -351,7 +353,7 @@
       bgmEl.muted = !soundWanted;
       bgmEl.play().catch(function () { toast('▶ 눌러서 재생', '#fff'); });
     }
-    renderBgm(); updateNow(); saveBgm();
+    renderBgm(); updateNow(); saveBgm(); if (typeof setDJLooks === 'function') setDJLooks();
     toast('🎧 ' + bgmName, FLOORS[active].css);
   }
   function saveBgm() { try { localStorage.setItem('gs_vc_bgm', bgmIdx >= 0 ? TRACKS[bgmIdx].yt : ''); } catch (err) {} }
@@ -887,7 +889,7 @@
       }
     }
     x.shadowBlur = 0; x.globalAlpha = .28; x.fillStyle = '#000'; for (k = 0; k < h; k += 4) x.fillRect(0, k, w, 1); for (k = 0; k < w; k += 4) x.fillRect(k, 0, 1, h); // LED 픽셀 결
-    x.globalAlpha = .9; x.font = '900 54px Unbounded, sans-serif'; x.textAlign = 'left'; x.textBaseline = 'top'; x.fillStyle = '#fff'; x.fillText(ledInfo['3F'].dj, 28, 22);
+    x.globalAlpha = .9; if (thumbImg) { var tw = thumbImg.naturalWidth, th2 = thumbImg.naturalHeight, ch2 = tw * 9 / 16; x.drawImage(thumbImg, 0, (th2 - ch2) / 2, tw, ch2, 24, 20, 400, 225); } else { x.font = '900 54px Unbounded, sans-serif'; x.textAlign = 'left'; x.textBaseline = 'top'; x.fillStyle = '#fff'; x.fillText(ledInfo['3F'].dj, 28, 22); }
     x.globalAlpha = 1; rec.led.tex.needsUpdate = true;
     if (rec.ledFill) rec.ledFill.color.setHex(mode === 0 ? 0xc46bff : mode === 1 ? 0x5a7bff : 0xff4a5a);
   }
@@ -895,6 +897,13 @@
     if (floors[F].ceilLed) return drawCeil(floors[F], t, beat, e);
     var rec = floors[F], x = rec.led.ctx, w = 1024, h = 384, cfg = FLOORS[F];
     x.fillStyle = '#000'; x.fillRect(0, 0, w, h);
+    if (thumbImg) { // 고른 GROOVE SESSIONS 썸네일을 LED에 (hqdefault는 위아래 검은 띠가 있어 가운데만)
+      var iw = thumbImg.naturalWidth, ih = thumbImg.naturalHeight, sh2 = iw * 9 / 16, sy = (ih - sh2) / 2, cropH = sh2 * (h / (w * 9 / 16)), sy2 = sy + (sh2 - cropH) / 2;
+      x.globalAlpha = .85 + beat * .15; x.drawImage(thumbImg, 0, sy2, iw, cropH, 0, 0, w, h); x.globalAlpha = .35;
+      var g2 = x.createLinearGradient(0, 0, w, 0); g2.addColorStop(0, cfg.css); g2.addColorStop(1, '#ffcc4d');
+      for (var j2 = 0; j2 < 48; j2++) { var v2 = (Math.sin(j2 * .7 + t * 3) * .5 + .5) * .2 + beat * .3; x.fillStyle = g2; x.fillRect(j2 * (w / 48) + 3, h - v2 * h * .5, w / 48 - 6, v2 * h * .5); }
+      x.globalAlpha = 1; rec.led.tex.needsUpdate = true; return;
+    }
     var g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, cfg.css); g.addColorStop(1, F === '2F' ? '#ffcc4d' : '#4fd6ff');
     // 이퀄라이저
     for (var i = 0; i < 48; i++) {
@@ -1049,9 +1058,9 @@
   function fabric(c, rough, side) { var cc = new THREE.Color(c); return new THREE.MeshStandardMaterial({ color: cc, roughness: rough == null ? .78 : rough, metalness: 0, emissive: cc.clone().multiplyScalar(.13), side: side || THREE.FrontSide }); }
   function makeAvatar(l, nick, mine) {
     var g = new THREE.Group(), body = new THREE.Group(); g.add(body);
-    var o = l.o, top = fabric(LOOK.t[l.t]), bot = fabric(LOOK.b[l.b], .85), sc = new THREE.Color(LOOK.s[l.s]);
+    var o = l.o, top = fabric(l.tc || LOOK.t[l.t]), bot = fabric(l.bc || LOOK.b[l.b], .85), sc = new THREE.Color(l.sc || LOOK.s[l.s]);
     var skin = new THREE.MeshStandardMaterial({ color: sc, roughness: .55, metalness: 0, emissive: sc.clone().multiplyScalar(.12) });
-    var hair = fabric(LOOK.hc[l.hc], .5), shoeM = new THREE.MeshStandardMaterial({ color: 0x121115, roughness: .3, metalness: .25 }), soleM = fabric('#ece6dc', .7);
+    var hair = fabric(l.hx || LOOK.hc[l.hc], .5), shoeM = new THREE.MeshStandardMaterial({ color: 0x121115, roughness: .3, metalness: .25 }), soleM = fabric('#ece6dc', .7);
     var legs = [], shins = [], arms = [], fores = [];
     [-1, 1].forEach(function (s) {
       var hip = new THREE.Group(); hip.position.set(s * .095, .9, 0);
@@ -1071,6 +1080,11 @@
       var hood = new THREE.Mesh(new THREE.TorusGeometry(.12, .055, 10, 24), top); hood.position.set(0, 1.43, -.1); hood.rotation.x = Math.PI / 2.3; body.add(hood);
       var pocket = box(.2, .09, .02, fabric(LOOK.t[l.t], .85)); pocket.position.set(0, 1.04, .128); body.add(pocket);
       [-1, 1].forEach(function (s) { var str = cyl(.006, .006, .14, fabric('#f4efe8', .6)); str.position.set(s * .04, 1.36, .135); body.add(str); });
+    }
+    if (o === 4) { // 앞이 열린 재킷 + 안에 입은 옷 (DJ 전용)
+      var inner = box(.15, .5, .02, fabric(l.ic || '#f2f0ea', .6)); inner.position.set(0, 1.18, .128); body.add(inner);
+      [-1, 1].forEach(function (s) { var lap = box(.06, .42, .022, top); lap.position.set(s * .07, 1.2, .132); lap.rotation.z = s * .12; body.add(lap); });
+      var zipA = box(.01, .5, .024, fabric('#9a9aa0', .3)); zipA.position.set(-.04, 1.16, .136); body.add(zipA);
     }
     if (o === 3) {
       var shirt = box(.1, .3, .02, fabric('#f4f1ea', .5)); shirt.position.set(0, 1.3, .132); body.add(shirt);
@@ -1097,13 +1111,16 @@
     var nose = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 8), skin); nose.scale.set(.014, .02, .018); nose.position.set(0, -.012, .124); head.add(nose);
     function dome(m, sx, sy, sz, y) { var d = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 16, 0, Math.PI * 2, 0, Math.PI * .52), m); d.scale.set(sx, sy, sz); d.position.set(0, y || .012, -.006); head.add(d); return d; }
     if (l.h === 0 || l.h === 1 || l.h === 3) dome(hair, .126, .148, .134);
+    if (l.h === 1) [-1, 1].forEach(function (s) { var lock = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 10), hair); lock.scale.set(.034, .15, .05); lock.position.set(s * .112, -.07, .045); head.add(lock); var lock2 = lock.clone(); lock2.scale.set(.04, .13, .05); lock2.position.set(s * .1, -.2, .02); head.add(lock2); });
     if (l.h === 1) { var back = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 14), hair); back.scale.set(.122, .175, .062); back.position.set(0, -.085, -.085); head.add(back); }
     if (l.h === 3) { var bun = new THREE.Mesh(new THREE.SphereGeometry(.056, 16, 12), hair); bun.position.set(0, .14, -.07); head.add(bun); }
     if (l.h === 2) { dome(top, .132, .125, .138, .03); var brim = box(.2, .016, .13, top); brim.position.set(0, .05, .13); brim.rotation.x = -.12; head.add(brim); }
+    if (l.gl && l.a !== 1) l = Object.assign({}, l, { a: 1, _ch: l.a === 4 || l.ch });
+    if (l.sp) { var sfm = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: .6, roughness: .3 }); [-1, 1].forEach(function (s) { var rim = new THREE.Mesh(new THREE.TorusGeometry(.03, .005, 6, 18), sfm); rim.position.set(s * .042, .016, .124); head.add(rim); }); }
     if (l.a === 1) { var gm = new THREE.MeshStandardMaterial({ color: 0x050507, metalness: .9, roughness: .08 }); [-1, 1].forEach(function (s) { var lens = box(.07, .036, .012, gm); lens.position.set(s * .042, .016, .124); head.add(lens); }); var br = box(.03, .008, .01, gm); br.position.set(0, .024, .127); head.add(br); }
     if (l.a === 2) { var hm = new THREE.MeshStandardMaterial({ color: 0x101012, roughness: .35, metalness: .4 }); var band = new THREE.Mesh(new THREE.TorusGeometry(.138, .013, 8, 24, Math.PI), hm); band.position.y = .03; head.add(band); [-1, 1].forEach(function (s) { var cup = cyl(.05, .05, .045, hm, 20); cup.rotation.z = Math.PI / 2; cup.position.set(s * .132, .0, 0); head.add(cup); var ring = new THREE.Mesh(new THREE.TorusGeometry(.04, .005, 6, 20), glow(new THREE.Color(LOOK.t[l.t]).getHex(), .9)); ring.rotation.y = Math.PI / 2; ring.position.set(s * .156, 0, 0); head.add(ring); }); }
     if (l.a === 3) { var stick = cyl(.016, .016, .32, glow(new THREE.Color(LOOK.t[l.t]).getHex(), 1)); stick.position.set(0, -.33, .1); stick.rotation.x = Math.PI / 2.4; fores[1].add(stick); }
-    if (l.a === 4) { var ch = new THREE.Mesh(new THREE.TorusGeometry(.085, .011, 8, 28), new THREE.MeshStandardMaterial({ color: 0xffcf5a, metalness: 1, roughness: .22, emissive: 0x332200 })); ch.position.set(0, 1.45, .045); ch.rotation.x = Math.PI / 2.25; body.add(ch); }
+    if (l.a === 4 || l._ch || (l.ch && l.a !== 4)) { var ch = new THREE.Mesh(new THREE.TorusGeometry(.085, .011, 8, 28), new THREE.MeshStandardMaterial({ color: 0xffcf5a, metalness: 1, roughness: .22, emissive: 0x332200 })); ch.position.set(0, 1.45, .045); ch.rotation.x = Math.PI / 2.25; body.add(ch); }
     var tag = null; if (nick !== null) { tag = nameTag(nick, LOOK.t[l.t], mine); tag.position.y = 2.08; g.add(tag); }
     return { g: g, body: body, head: head, arms: arms, fores: fores, legs: legs, shins: shins, tag: tag, bubble: null, bubbleUntil: 0 };
   }
@@ -1165,6 +1182,45 @@
     }
   });
   var DJ_LOOKS = { '2F': { o: 1, t: 0, b: 0, s: 1, h: 2, hc: 0, a: 2 }, '3F': { o: 0, t: 1, b: 0, s: 0, h: 1, hc: 4, a: 1 } };
+  // GROOVE SESSIONS 썸네일을 보고 만든 DJ 모습 (유튜브 영상 id → 모습)
+  var DK = '#141416', WH = '#f2f0ea', HB = '#141116';
+  var DJ_PRESET = {
+    cq62DW_muNY: { o: 4, tc: '#c8202a', ic: '#e6e2dc', bc: DK, s: 1, h: 0, hx: HB, gl: 1 },                 // ARKINS 빨간 트랙재킷·선글라스
+    EWiqfFph0zU: { o: 0, tc: DK, bc: DK, s: 1, h: 0, hx: HB, ch: 1 },                                      // VANDALROCK 검은 티·목걸이
+    '5RT02-6S9PM': { o: 4, tc: '#101012', ic: WH, bc: '#9fb3c8', s: 0, h: 1, hx: HB },                    // JUYA 가죽재킷·긴 머리
+    BCZUWocn8GE: { o: 0, tc: DK, bc: DK, s: 1, h: 0, hx: HB },                                             // CANTAR
+    K4EwPIGsIh8: { o: 0, tc: '#2a2a2e', bc: DK, s: 1, h: 0, hx: HB, gl: 1 },                              // ROAD 선글라스
+    '8DwCGecJlL4': { o: 4, tc: '#3e4a66', ic: '#22283a', bc: DK, s: 1, h: 4, hx: HB, ch: 1 },             // CHOPPER 패턴 셔츠·체인
+    ozo6z50q5ME: { o: 4, tc: '#161618', ic: '#2a2a2e', bc: DK, s: 1, h: 0, hx: HB },                      // BUCKY 검은 패딩
+    aCYt0vQt0Rw: { o: 1, tc: '#6d6a3e', bc: '#4a4a2a', s: 1, h: 2, hx: HB, gl: 1 },                     // SENDOW 카모 후드·안경
+    T_DzDtPP5Rg: { o: 4, tc: '#2c3756', ic: '#d8dce6', bc: DK, s: 1, h: 0, hx: HB },                      // MUTE 패턴 셔츠
+    _jv9wcteXfM: { o: 2, tc: '#d9c7a8', bc: '#d9c7a8', s: 0, h: 1, hx: HB },                             // BINU 베이지 원피스·긴 머리
+    ZxWF6q5FHBk: { o: 4, tc: '#111113', ic: '#111113', bc: DK, s: 1, h: 0, hx: HB, gl: 1 },               // UZI 가죽재킷·선글라스
+    PnvLmelOHaA: { o: 0, tc: '#1a1a1f', bc: DK, s: 0, h: 1, hx: '#e9d9a8' },                              // KEYNA 금발 긴 머리
+    'mizXXj-UqVU': { o: 4, tc: '#111113', ic: WH, bc: DK, s: 0, h: 0, hx: HB },                            // GIO 검은 재킷·흰 티
+    mSQSQxr2bDI: { o: 0, tc: DK, bc: DK, s: 2, h: 4, hx: HB, gl: 1, ch: 1 },                               // MAD 삭발·선글라스·체인
+    '8a7_AWD2KD4': { o: 4, tc: '#0e0e10', ic: '#0e0e10', bc: DK, s: 1, h: 0, hx: '#e2c98a', gl: 1 },      // JOHNYRIGHTHERE 올블랙·금발
+    UH7nJLwSPKw: { o: 1, tc: '#111113', bc: DK, s: 1, h: 2, hx: HB, ch: 1 },                              // ZET 검은 후드
+    INRX_JrThjA: { o: 2, tc: '#f4f0ec', bc: '#f4f0ec', s: 0, h: 1, hx: '#8a3a2a' },                      // DIA 흰 원피스·붉은 갈색 머리
+    glZfoN1eXRo: { o: 0, tc: '#1a1a1c', bc: DK, s: 1, h: 0, hx: HB },                                     // BRIXX 검은 카라티
+    kIaHSMZ1XiE: { o: 1, tc: '#1c1c1f', bc: DK, s: 1, h: 0, hx: HB, sp: 1 },                              // CALEB 검은 맨투맨·안경
+    '-nUU0CmDVMo': { o: 0, tc: '#f2ece4', bc: '#3a3a3a', s: 1, h: 1, hx: '#d2552a' },                    // YUKA 주황 머리
+    HC6rRLWgL8w: { o: 4, tc: '#2a2a30', ic: '#202024', bc: DK, s: 0, h: 0, hx: HB },                      // HERMIT 블랙 데님
+    xof6ObtenaM: { o: 4, tc: '#3a4560', ic: '#111113', bc: DK, s: 1, h: 0, hx: HB, ch: 1 },               // SIZ 데님재킷·목걸이
+    rGSgG0L0uoM: { o: 4, tc: '#111113', ic: '#111113', bc: DK, s: 0, h: 0, hx: HB },                      // SUNGHOON 가죽재킷
+    'hMj_FGPjC-Q': { o: 2, tc: '#f6eef0', bc: '#f6eef0', s: 0, h: 1, hx: HB },                           // GG 흰 레이스 원피스
+    gok17CJCaJw: { o: 4, tc: '#121214', ic: '#c8202a', bc: DK, s: 1, h: 0, hx: '#5a3a22', gl: 1 },       // NEO 트랙재킷·선글라스
+    '65E38_ypTLs': { o: 4, tc: '#1a1a1c', ic: '#c8202a', bc: DK, s: 1, h: 0, hx: HB },                    // POTAITO 레이싱 재킷
+    'Zo3-BVTTaXI': { o: 0, tc: '#141416', bc: DK, s: 1, h: 4, hx: HB, gl: 1 },                            // FRANKEN 삭발·선글라스
+    zw3jocYVZJI: { o: 4, tc: '#1a1a1c', ic: WH, bc: DK, s: 0, h: 0, hx: '#3a2a22' },                       // AUREDE 검은 재킷·흰 티
+    '3h0gqZV5Q18': { o: 4, tc: '#1a1a1c', ic: '#e6e2dc', bc: DK, s: 0, h: 0, hx: '#d0cfd8' }              // 2AS 탈색 머리
+  };
+  function djLookFor(F) { var tr = bgmIdx >= 0 ? TRACKS[bgmIdx] : null, pr = tr && DJ_PRESET[tr.yt]; return pr ? Object.assign({ t: 0, b: 0, hc: 0, a: 0 }, pr) : DJ_LOOKS[F]; }
+  function setDJLooks() {
+    Object.keys(floors).forEach(function (F) { var rec = floors[F], sp = rec.djSpec; if (!sp) return;
+      if (rec.djAv) { rec.group.remove(rec.djAv.g); disposeObj(rec.djAv.g); }
+      var av = makeAvatar(djLookFor(F), null, false); av.g.position.set(sp.x, sp.y0, sp.z); av.g.rotation.y = sp.yaw; rec.group.add(av.g); rec.djAv = av; });
+  }
   Object.keys(floors).forEach(function (F) { var rec = floors[F], sp = rec.djSpec; if (!sp) return; var av = makeAvatar(DJ_LOOKS[F], null, false); av.g.position.set(sp.x, sp.y0, sp.z); av.g.rotation.y = sp.yaw; rec.group.add(av.g); rec.djAv = av; });
   function updateNPCs(dt, t, ph, up) {
     var rec = floors[active], now = performance.now() / 1000;
