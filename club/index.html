@@ -100,6 +100,11 @@
   .gate-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .gate-actions button { justify-content: center; }
   body.chatopen.touch #joy { display: none; }
+  #dartbar { position: fixed; z-index: 7; left: 50%; transform: translateX(-50%); bottom: calc(70px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 6px 6px 16px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font-size: 13px; white-space: nowrap; max-width: calc(100vw - 24px); }
+  #dartbar[hidden] { display: none; }
+  #dartbar button { min-height: 36px; padding: 6px 12px; }
+  body.dartmode #joy, body.dartmode #jumpbtn, body.dartmode .hint { display: none !important; }
+  #dartbtn:not([hidden]) { border-color: #39ff8a; }
   #bgm { position: fixed; z-index: 8; top: calc(150px + env(safe-area-inset-top, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); width: min(330px, calc(100vw - 24px)); max-height: calc(100dvh - 240px); overflow-y: auto; touch-action: pan-y; display: grid; gap: 10px; padding: 12px; }
   #bgm[hidden] { display: none; }
   .bgm-head { display: flex; align-items: center; gap: 8px; }
@@ -163,6 +168,7 @@
   <button type="button" id="hands" aria-label="손 들기">🙌<span class="lbl"> 손 들기</span></button>
   <button type="button" id="dance" aria-label="춤추기">💃<span class="lbl"> 춤</span></button>
   <button type="button" id="chatbtn" aria-pressed="false" aria-label="채팅">💬<span class="lbl"> 채팅</span></button>
+  <button type="button" id="dartbtn" hidden aria-label="다트 하기">🎯<span class="lbl"> 다트</span></button>
   <button type="button" id="view" aria-label="시점 바꾸기 (지금 3인칭)">🎥<span class="lbl" id="viewlbl"> 3인칭</span></button>
 </div>
 
@@ -178,6 +184,8 @@
   <div id="bgmlist"></div>
   <label class="bgm-file">📁 내 음악 파일 열기<input type="file" id="bgmfile" accept="audio/*,.mp3,.m4a,.wav"></label>
 </div>
+
+<div id="dartbar" hidden><span id="dartinfo">드래그해서 조준 · 손을 떼면 던져요</span><button type="button" id="dartagain">↻ 다시</button><button type="button" id="dartexit">✕ 나가기</button></div>
 
 <div id="chat" hidden>
   <div id="chatlog" aria-live="polite" aria-label="채팅"></div>
@@ -665,7 +673,7 @@
       sign('계단 ▲ 3F', st.x, 2.6, Z(222), 1.6, 0, '#ff6a3a', false);
       sign('▲ 3F SPOT', st.x, 3.6, Z(222), 1.9, 0, FLOORS['3F'].css, false);
       rec.stairs = new THREE.Vector3(st.x, 0, Z(236));
-      dartboard(X(948), 1.7, -D / 2 + .05, 0);
+      rec.dartSpot = { x: X(935), z: -D / 2 + .02 }; // 다트 기계 (아래에서 만듦)
       // 출구 (오른쪽 위)
       add(box(1.5, 2.4, .05, glow(0xff5a1a, .3)), X(985), 1.2, -D / 2 + .03);
       sign('EXIT', X(985), 2.75, -D / 2 + .06, 1.2, 0, '#ff5a1a');
@@ -994,6 +1002,7 @@
   var keys = {}, joy = { x: 0, y: 0, id: null }, look = { id: null, x: 0, y: 0 };
   addEventListener('keydown', function (e) {
     var tg = e.target && e.target.tagName; if (tg === 'INPUT' || tg === 'TEXTAREA') return;
+    if (e.key === 'Escape' && document.body.classList.contains('dartmode')) { $('#dartexit').click(); return; }
     if (e.key === 'Enter' && $('#gate').hidden) { e.preventDefault(); setChatOpen(true); chatIn.focus(); return; }
     if (e.key === ' ' && !e.repeat) jump();
     keys[e.key.toLowerCase()] = true; if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].indexOf(e.key.toLowerCase()) >= 0) e.preventDefault(); });
@@ -1024,6 +1033,139 @@
   var CAMS = ['3인칭', '멀리', '1인칭'];
   function setCam(m) { camMode = m; thirdPerson = m !== 2; $('#viewlbl').textContent = ' ' + CAMS[m]; $('#view').setAttribute('aria-label', '시점 바꾸기 (지금 ' + CAMS[m] + ')'); try { localStorage.setItem('gs_vc_cam', String(m)); } catch (err) {} }
   $('#jumpbtn').addEventListener('pointerdown', function (e) { e.preventDefault(); jump(); });
+
+  /* ---------------- 2층 다트 기계 (소프트팁 전자 다트, COUNT-UP 8라운드) ---------------- */
+  var DART = (function () {
+    var rec = floors['2F'], spot = rec.dartSpot; if (!spot) return null;
+    var ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+    var R_BULL = .016, R_DBULL = .0064, R_T0 = .097, R_T1 = .107, R_D0 = .160, R_D1 = .170, R_FACE = .225;
+    var g = rec.group, bx = spot.x, bz = spot.z, by = 1.73;
+    // 캐비닛
+    var cab = new THREE.Group(); cab.position.set(bx, 0, bz); g.add(cab);
+    var body = new THREE.MeshStandardMaterial({ color: 0x15151a, roughness: .35, metalness: .45 });
+    var side = new THREE.MeshStandardMaterial({ color: 0x0c0c10, roughness: .5, metalness: .3 });
+    function bx3(w, h, d, m, x, y, z) { var me = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); me.position.set(x, y, z); cab.add(me); return me; }
+    bx3(1.0, .9, .55, body, 0, .45, .27);            // 아래 몸통
+    bx3(1.0, 1.45, .22, body, 0, 1.62, .11);           // 보드 뒤판
+    bx3(.08, 1.45, .32, side, -.54, 1.62, .16); bx3(.08, 1.45, .32, side, .54, 1.62, .16); // 옆 날개
+    bx3(1.16, .5, .4, body, 0, 2.6, .2);               // 위 스크린 박스
+    var ledM = [glow(0xff2a6a, .95), glow(0x2ad4ff, .95)];
+    [-1, 1].forEach(function (s, i) { var strip = bx3(.025, 2.05, .025, ledM[i], s * .585, 1.85, .33); rec.movers.push({ type: 'strip', m: strip }); });
+    var topStrip = bx3(1.18, .025, .025, glow(0xffffff, .9), 0, 2.86, .41); rec.movers.push({ type: 'strip', m: topStrip });
+    // 동전·버튼 패널
+    var panel = bx3(.7, .18, .06, side, 0, .78, .56); panel.rotation.x = -.5;
+    [[-.22, 0xff3b3b], [-.07, 0xffd23a], [.08, 0x3dff7a], [.23, 0x3ab0ff]].forEach(function (b) { var btn = new THREE.Mesh(new THREE.CylinderGeometry(.035, .035, .02, 18), glow(b[1], .95)); btn.rotation.x = Math.PI / 2 - .5; btn.position.set(b[0], .8, .6); cab.add(btn); });
+    var slot = bx3(.04, .1, .02, glow(0xffa040, .9), .32, .55, .555);
+    // 보드 (그림)
+    var boardTex = canvasTex(1024, 1024, function (x, w, h) {
+      var cx = w / 2, cy = h / 2, k = (w / 2) / R_FACE;
+      x.fillStyle = '#0a0a0c'; x.beginPath(); x.arc(cx, cy, w / 2, 0, 7); x.fill();
+      function ring(r0, r1, cA, cB) { for (var i = 0; i < 20; i++) { var a0 = -Math.PI / 2 + (i - .5) * Math.PI / 10, a1 = a0 + Math.PI / 10; x.beginPath(); x.arc(cx, cy, r1 * k, a0, a1); x.arc(cx, cy, r0 * k, a1, a0, true); x.closePath(); x.fillStyle = i % 2 ? cB : cA; x.fill(); } }
+      ring(R_BULL, R_T0, '#141418', '#e9e3d4'); ring(R_T0, R_T1, '#e0283a', '#1a6fe0'); ring(R_T1, R_D0, '#141418', '#e9e3d4'); ring(R_D0, R_D1, '#e0283a', '#1a6fe0');
+      // 소프트팁 구멍 결
+      x.fillStyle = 'rgba(0,0,0,.35)'; for (var rr = R_BULL + .006; rr < R_D1; rr += .0065) for (var aa = 0; aa < Math.PI * 2; aa += .0065 / rr) { x.beginPath(); x.arc(cx + Math.cos(aa) * rr * k, cy + Math.sin(aa) * rr * k, 1.6, 0, 7); x.fill(); }
+      x.fillStyle = '#e0283a'; x.beginPath(); x.arc(cx, cy, R_BULL * k, 0, 7); x.fill(); x.fillStyle = '#141418'; x.beginPath(); x.arc(cx, cy, R_DBULL * k, 0, 7); x.fill();
+      x.strokeStyle = 'rgba(200,200,210,.7)'; x.lineWidth = 3; [R_BULL, R_T0, R_T1, R_D0, R_D1].forEach(function (r) { x.beginPath(); x.arc(cx, cy, r * k, 0, 7); x.stroke(); });
+      x.font = '800 54px Unbounded, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#f2f0ea';
+      ORDER.forEach(function (n, i) { var a = -Math.PI / 2 + i * Math.PI / 10, r = (R_D1 + R_FACE) / 2 * k; x.fillText(String(n), cx + Math.cos(a) * r, cy + Math.sin(a) * r + 2); });
+    });
+    var board = new THREE.Mesh(new THREE.CircleGeometry(R_FACE, 64), new THREE.MeshBasicMaterial({ map: boardTex.tex, toneMapped: false })); board.position.set(0, by, .23); cab.add(board);
+    var surround = new THREE.Mesh(new THREE.TorusGeometry(R_FACE + .03, .03, 10, 64), new THREE.MeshStandardMaterial({ color: 0x222228, metalness: .6, roughness: .3 })); surround.position.set(0, by, .235); cab.add(surround);
+    var halo = new THREE.Mesh(new THREE.TorusGeometry(R_FACE + .07, .012, 6, 64), glow(0x2ad4ff, .9)); halo.position.set(0, by, .24); cab.add(halo); rec.movers.push({ type: 'strip', m: halo });
+    // 스크린
+    var scr = canvasTex(768, 320, function () {}); var scrM = new THREE.Mesh(new THREE.PlaneGeometry(1.0, .416), new THREE.MeshBasicMaterial({ map: scr.tex, toneMapped: false })); scrM.position.set(0, 2.6, .405); cab.add(scrM);
+    // 스로 라인 (보드 앞 2.37m)
+    var lineZ = bz + .23 + 2.37;
+    add2(new THREE.Mesh(new THREE.BoxGeometry(.9, .012, .05), glow(0xffd23a, .95)), bx, .007, lineZ);
+    function add2(m, x, y, z) { m.position.set(x, y, z); g.add(m); return m; }
+    var lab = canvasTex(256, 64, function (x, w, h) { x.font = '800 30px Unbounded, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#ffd23a'; x.fillText('THROW LINE', w / 2, h / 2); });
+    var labM = new THREE.Mesh(new THREE.PlaneGeometry(.8, .2), new THREE.MeshBasicMaterial({ map: lab.tex, transparent: true, toneMapped: false, depthWrite: false })); labM.rotation.x = -Math.PI / 2; add2(labM, bx, .008, lineZ + .15);
+    rec.colliders.push([bx - .62, bz, bx + .62, bz + .58]);
+
+    // 게임 상태
+    var S = { on: false, round: 1, dart: 0, total: 0, hits: [], last: '', aim: { x: 0, y: 0 }, aiming: false, flying: [], stuck: [], over: false, best: 0 };
+    try { S.best = +localStorage.getItem('gs_vc_dart_best') || 0; } catch (err) {}
+    var dartGeo = (function () { var gr = new THREE.Group(); var barrel = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .07, 10), new THREE.MeshStandardMaterial({ color: 0xcfd3d8, metalness: .9, roughness: .25 })); barrel.rotation.x = Math.PI / 2; gr.add(barrel); var tip = new THREE.Mesh(new THREE.CylinderGeometry(.0015, .003, .03, 8), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .4 })); tip.rotation.x = Math.PI / 2; tip.position.z = -.05; gr.add(tip); var shaft = new THREE.Mesh(new THREE.CylinderGeometry(.003, .003, .05, 8), new THREE.MeshStandardMaterial({ color: 0x15151a })); shaft.rotation.x = Math.PI / 2; shaft.position.z = .06; gr.add(shaft); var fl = new THREE.Mesh(new THREE.BoxGeometry(.035, .035, .03), glow(0xff7a1a, .9)); fl.position.z = .095; fl.rotation.z = Math.PI / 4; gr.add(fl); return gr; })();
+    function scoreAt(x, y) {
+      var r = Math.hypot(x, y); if (r > R_D1) return { pts: 0, name: 'OUT' };
+      if (r <= R_DBULL) return { pts: 50, name: 'D-BULL' }; if (r <= R_BULL) return { pts: 50, name: 'BULL' };
+      var th = Math.atan2(x, y), idx = Math.floor(((th + Math.PI / 20) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) / (Math.PI / 10)), n = ORDER[idx];
+      if (r >= R_T0 && r <= R_T1) return { pts: n * 3, name: 'T' + n }; if (r >= R_D0) return { pts: n * 2, name: 'D' + n };
+      return { pts: n, name: String(n) };
+    }
+    function drawScreen(t) {
+      var x = scr.ctx, w = 768, h = 320; x.fillStyle = '#06070c'; x.fillRect(0, 0, w, h);
+      x.textBaseline = 'middle'; x.textAlign = 'left'; x.font = '800 30px Unbounded, sans-serif'; x.fillStyle = '#2ad4ff'; x.fillText('COUNT-UP', 24, 34);
+      x.textAlign = 'right'; x.fillStyle = '#ffd23a'; x.fillText(S.on || S.over ? 'R ' + Math.min(S.round, 8) + '/8' : 'BEST ' + S.best, w - 24, 34);
+      x.textAlign = 'center'; x.font = '900 128px Unbounded, sans-serif'; x.fillStyle = '#fff'; x.shadowColor = '#ff2a6a'; x.shadowBlur = 24;
+      x.fillText(S.on || S.over ? String(S.total) : 'DARTS', w / 2, 150); x.shadowBlur = 0;
+      x.font = '800 34px Unbounded, sans-serif';
+      if (S.on || S.over) { for (var i = 0; i < 3; i++) { var hv = S.hits[i]; x.fillStyle = hv ? (hv.name[0] === 'T' ? '#ff5a6a' : hv.name[0] === 'D' ? '#5ab0ff' : hv.pts >= 50 ? '#ffd23a' : '#f2f0ea') : 'rgba(255,255,255,.25)'; x.fillText(hv ? hv.name : '—', w / 2 + (i - 1) * 220, 262); } }
+      else { x.fillStyle = 'rgba(255,255,255,' + (.5 + .5 * Math.sin(t * 4)) + ')'; x.fillText('▶ PRESS 🎯 TO PLAY', w / 2, 262); }
+      if (S.over) { x.fillStyle = '#ffd23a'; x.font = '800 28px Unbounded, sans-serif'; x.fillText('GAME OVER · BEST ' + S.best, w / 2, 300); }
+      scr.tex.needsUpdate = true;
+      if (S.on && S.mode) $('#dartinfo').textContent = 'R ' + Math.min(S.round, 8) + '/8 · ' + S.total + '점 · ' + S.hits.map(function (h) { return h.name; }).join(' ') + (S.hits.length ? '' : '조준하고 손 떼면 던져요');
+    }
+    drawScreen(0);
+    function clearStuck() { S.stuck.forEach(function (d) { g.remove(d); }); S.stuck = []; }
+    function start() { S.on = true; S.over = false; S.round = 1; S.dart = 0; S.total = 0; S.hits = []; clearStuck(); drawScreen(0); }
+    function throwDart() {
+      if (!S.on || S.flying.length || S.dart >= 3) return;
+      var gs = function () { return (Math.random() + Math.random() + Math.random() - 1.5) * .028; };
+      var tx = S.aim.x + gs(), ty = S.aim.y + gs(), d = dartGeo.clone(true); g.add(d);
+      var from = new THREE.Vector3(bx + .18, 1.5, lineZ - .25), to = new THREE.Vector3(bx + tx, by + ty, bz + .23 + .03);
+      S.flying.push({ m: d, from: from, to: to, t0: performance.now() / 1000, x: tx, y: ty }); S.dart++;
+    }
+    function land(f) {
+      var sc = scoreAt(f.x, f.y); S.hits.push(sc); S.total += sc.pts; S.stuck.push(f.m);
+      toast('🎯 ' + sc.name + (sc.pts ? ' +' + sc.pts : ''), sc.pts >= 50 ? '#ffd23a' : sc.name[0] === 'T' ? '#ff5a6a' : '#fff');
+      if (sc.pts === 0) { f.m.visible = false; }
+      if (S.dart >= 3) setTimeout(function () {
+        S.round++; S.dart = 0; S.hits = []; clearStuck();
+        if (S.round > 8) { S.on = false; S.over = true; if (S.total > S.best) { S.best = S.total; try { localStorage.setItem('gs_vc_dart_best', String(S.best)); } catch (err) {} toast('🏆 NEW BEST ' + S.best, '#ffd23a'); } $('#dartinfo').textContent = 'GAME OVER · ' + S.total + '점 · ↻ 다시를 누르면 새 게임'; }
+        drawScreen(performance.now() / 1000);
+      }, 1100);
+      drawScreen(performance.now() / 1000);
+    }
+    function near() { return active === '2F' && Math.hypot(player.x - bx, player.z - (lineZ)) < 2.2; }
+    var savedCam = null;
+    function enter() {
+      if (S.on || S.over) { if (!S.on) start(); } else start();
+      savedCam = { tp: thirdPerson }; thirdPerson = false; mode(true);
+      player.x = bx; player.z = lineZ + .05; player.yaw = 0; player.pitch = 0;
+    }
+    function exit() { S.on = false; S.over = false; clearStuck(); S.hits = []; drawScreen(0); mode(false); if (savedCam) thirdPerson = savedCam.tp; }
+    function mode(on) { S.mode = on; document.body.classList.toggle('dartmode', on); $('#dartbar').hidden = !on; $('#dartinfo').textContent = '드래그해서 조준 · 손을 떼면 던져요'; }
+    // 입력: 다트 모드에서는 화면 드래그 = 조준, 손 떼면 던지기
+    var ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -(bz + .23)), hitP = new THREE.Vector3();
+    function aimFrom(e) { var r = cvs.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height * 2 - 1)); ray.setFromCamera(ndc, camera); if (ray.ray.intersectPlane(plane, hitP)) { S.aim.x = Math.max(-.3, Math.min(.3, hitP.x - bx)); S.aim.y = Math.max(-.3, Math.min(.3, hitP.y - by)); S.sway = null; } }
+    cvs.addEventListener('pointerdown', function (e) { if (!S.mode) return; e.stopImmediatePropagation(); S.aiming = true; aimFrom(e); cvs.setPointerCapture(e.pointerId); }, true);
+    cvs.addEventListener('pointermove', function (e) { if (!S.mode) return; e.stopImmediatePropagation(); if (S.aiming || e.pointerType === 'mouse') aimFrom(e); }, true);
+    cvs.addEventListener('pointerup', function (e) { if (!S.mode) return; e.stopImmediatePropagation(); if (S.aiming) { S.aiming = false; throwDart(); } }, true);
+    $('#dartbtn').addEventListener('click', function () { if (S.mode) exit(); else enter(); });
+    $('#dartexit').addEventListener('click', exit);
+    $('#dartagain').addEventListener('click', function () { start(); $('#dartinfo').textContent = '드래그해서 조준 · 손을 떼면 던져요'; });
+    var reticle = new THREE.Mesh(new THREE.RingGeometry(.012, .018, 24), new THREE.MeshBasicMaterial({ color: 0x39ff8a, transparent: true, opacity: .95, toneMapped: false, depthTest: false })); reticle.renderOrder = 10; g.add(reticle); reticle.visible = false;
+    return {
+      tick: function (t, dt) {
+        $('#dartbtn').hidden = !(near() || S.mode);
+        if (Math.floor(t * 4) !== Math.floor((t - dt) * 4)) { if (!S.on && !S.over) drawScreen(t); }
+        S.flying = S.flying.filter(function (f) {
+          var k = Math.min(1, (performance.now() / 1000 - f.t0) / .32), p = f.from.clone().lerp(f.to, k); p.y += Math.sin(k * Math.PI) * .12;
+          f.m.position.copy(p); f.m.lookAt(f.to.x, f.to.y, f.to.z + 4); f.m.rotateY(Math.PI);
+          if (k >= 1) { f.m.position.copy(f.to); land(f); return false; } return true;
+        });
+        reticle.visible = !!S.mode && S.on;
+        if (S.mode) {
+          var sx = Math.sin(t * 1.3) * .01 + Math.sin(t * 3.1) * .004, sy = Math.cos(t * 1.7) * .01;
+          S.aim.x += (sx - (S.sway ? S.sway.x : 0)); S.aim.y += (sy - (S.sway ? S.sway.y : 0)); S.sway = { x: sx, y: sy };
+          reticle.position.set(bx + S.aim.x, by + S.aim.y, bz + .27);
+        }
+      },
+      camera: function () { if (!S.mode) { if (camera.fov !== 70) { camera.fov = 70; camera.updateProjectionMatrix(); } return false; } if (camera.fov !== 22) { camera.fov = 22; camera.updateProjectionMatrix(); } camera.position.set(bx, 1.62, lineZ + .05); camera.lookAt(bx, by + .12, bz); return true; },
+      blocking: function () { return !!S.mode; }
+    };
+  })();
   $('#view').addEventListener('click', function () { setCam((camMode + 1) % 3); toast('🎥 ' + CAMS[camMode], '#fff'); });
   $('#bottle').addEventListener('click', function () {
     var rec = floors[active], best = null, bd = 1e9;
@@ -1561,6 +1703,7 @@
     return h;
   }
   function move(dt) {
+    if (DART && DART.blocking()) return false;
     var f = 0, s = 0;
     if (keys.w || keys.arrowup) f += 1; if (keys.s || keys.arrowdown) f -= 1;
     if (keys.a || keys.arrowleft) s -= 1; if (keys.d || keys.arrowright) s += 1;
@@ -1596,7 +1739,7 @@
 
     // 카메라 (걸을 때 살짝 흔들림, 비트에 아주 약한 진동)
     var bob = walking ? Math.sin(now / 140) * .025 : 0;
-    if (thirdPerson) {
+    if (DART && DART.camera()) { /* 다트 조준 시점 */ } else if (thirdPerson) {
       var far = camMode === 1, fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw), cd = far ? 7.5 : 3.3, lim = rec;
       var ccx = Math.max(-lim.W / 2 + .3, Math.min(lim.W / 2 - .3, player.x - fx * cd)), ccz = Math.max(-lim.D / 2 + .3, Math.min(lim.D / 2 - .3, player.z - fz * cd));
       var got = Math.hypot(ccx - player.x, ccz - player.z), lift = far ? Math.max(0, (cd - got) * .25) : 0;
@@ -1651,7 +1794,7 @@
     }
     // 손님
     var up = t < handsUntil || dropping;
-    updateAvatars(t, b.ph, walking, up); sendPresence(now, walking); updateNPCs(dt, t, b.ph, up);
+    updateAvatars(t, b.ph, walking, up); sendPresence(now, walking); updateNPCs(dt, t, b.ph, up); if (DART) DART.tick(t, dt);
     // 스파클러
     var S = rec.sparks, pos = S.pts.geometry.attributes.position.array, alive = false;
     S.emit = S.emit.filter(function (em) { return em.until > t; });
