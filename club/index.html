@@ -465,7 +465,7 @@
     function R(a, b, c, d) { return { x: X((a + c) / 2), z: Z((b + d) / 2), w: L(c - a), d: L(d - b) }; }
     var rec = { group: g, W: W, D: D, colliders: [], movers: [], lasers: [], led: null, crowd: null, lights: [], tables: [], djArm: null, dj: null, ceil: [], zones: [], djYaw: 0, laserYaw: 0 };
     function add(m, x, y, z) { m.position.set(x, y, z); g.add(m); return m; }
-    function collide(a, b, c, d) { rec.colliders.push([X(a), Z(b), X(c), Z(d)]); }
+    function collide(a, b, c, d, h) { rec.colliders.push(h ? [X(a), Z(b), X(c), Z(d), h] : [X(a), Z(b), X(c), Z(d)]); }
     function sign(text, x, y, z, w, yaw, color, both) {
       var m = new THREE.Mesh(new THREE.PlaneGeometry(w, w / 2), new THREE.MeshBasicMaterial({ toneMapped: false, map: labelTex(text, color), transparent: true, blending: ADD, depthWrite: false, fog: false }));
       m.rotation.y = yaw; add(m, x, y, z);
@@ -524,7 +524,9 @@
       var yaw = back === 'n' ? 0 : back === 's' ? Math.PI : back === 'w' ? Math.PI / 2 : -Math.PI / 2;
       sign(label, r.x + (horiz ? 0 : sgn * (across / 2 - .15)), 1.22, r.z + (horiz ? sgn * (across / 2 - .15) : 0), Math.min(along * .8, 1.4), yaw, cfg.css);
       rec.tables.push(new THREE.Vector3(tx, .9, tz));
-      collide(a, b, c, d);
+      collide(a, b, c, d, .66); // 점프하면 올라설 수 있는 높이
+      if (back === 'n' && b - pl.y0 < 70) collide(a, pl.y0, c, b); // 벽과 테이블 사이 틈은 막기
+      if (back === 's' && pl.y1 - d < 70) collide(a, d, c, pl.y1);
     }
     // 둥근 스툴 (S, DB)
     function stool(px, py, label) {
@@ -693,7 +695,7 @@
       glassWall(22, 262, 236, 265); glassWall(22, 579, 236, 582); glassWall(233, 262, 236, 430); glassWall(233, 520, 236, 582);
       sign('SMOKING ▶', X(236) + .06, 2.95, Z(475), 1.5, Math.PI / 2, '#9fb6ff');
       add(box(.04, .03, L(90), glow(0x9fb6ff, .9)), X(234.5), 2.72, Z(475)); // 문 위 조명
-      [[45, 297, 200, 332], [45, 332, 80, 520], [45, 520, 190, 555]].forEach(function (s) { var r = R(s[0], s[1], s[2], s[3]); add(box(r.w, .5, r.d, sofaM), r.x, .25, r.z); collide(s[0], s[1], s[2], s[3]); });
+      [[45, 297, 200, 332], [45, 332, 80, 520], [45, 520, 190, 555]].forEach(function (s) { var r = R(s[0], s[1], s[2], s[3]); add(box(r.w, .5, r.d, sofaM), r.x, .25, r.z); collide(s[0], s[1], s[2], s[3], .5); });
       add(box(L(110), .45, L(160), tableM), X(150), .22, Z(425));
       flat('SMOKING\nROOM', X(150), Z(425), .46, 2.6, '#9fb6ff');
       sign('SMOKING ROOM', X(236) + .05, 3.1, Z(425), 2.6, Math.PI / 2, '#9fb6ff');
@@ -803,7 +805,7 @@
     if (active === F) return;
     if (active) floors[active].group.visible = false;
     active = F; curFloor = F; floors[F].group.visible = true; if (typeof updateOnline === 'function' && room) updateOnline();
-    var st0 = floors[F].start; player.x = st0.x; player.z = st0.z; player.yaw = st0.yaw; player.pitch = -.06;
+    player.jy = 0; jumpV = 0; var st0 = floors[F].start; player.x = st0.x; player.z = st0.z; player.yaw = st0.yaw; player.pitch = -.06;
     for (var sp = 0; sp < 30; sp++) { var ang = Math.random() * 6.283, rr = .6 + Math.random() * 1.2, nx = st0.x + Math.cos(ang) * rr, nz = st0.z + Math.sin(ang) * rr; if (!blocked(nx, nz)) { player.x = nx; player.z = nz; break; } }
     scene.fog.color.setHex(F === '2F' ? 0x0a0605 : 0x07050c);
     document.querySelectorAll('[data-floor]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.floor === F ? 'true' : 'false'); });
@@ -1075,7 +1077,7 @@
     });
   }
   var jumpV = 0; player.jy = 0;
-  function jump() { if (player.jy <= .001 && $('#gate').hidden) { jumpV = 4.4; } }
+  function jump() { if (!jumpV && player.jy <= groundAt(player.x, player.z) + .001 && $('#gate').hidden) { jumpV = 4.8; } }
   var thirdPerson = true, camMode = 0, myEmote = null, myEmoteUntil = 0;
   try { var savedCam = parseInt(localStorage.getItem('gs_vc_cam'), 10); if (savedCam >= 0 && savedCam < 3) setCam(savedCam); } catch (err) {}
 
@@ -1305,8 +1307,14 @@
   function blocked(x, z) {
     var m = .35, rec = floors[active], W = rec.W, D = rec.D;
     if (x < -W / 2 + m || x > W / 2 - m || z < -D / 2 + m || z > D / 2 - m) return true;
-    for (var i = 0; i < rec.colliders.length; i++) { var c = rec.colliders[i]; if (x > c[0] - m && x < c[2] + m && z > c[1] - m && z < c[3] + m) return true; }
+    for (var i = 0; i < rec.colliders.length; i++) { var c = rec.colliders[i]; if (c[4] && player.jy >= c[4] - .06) continue; if (x > c[0] - m && x < c[2] + m && z > c[1] - m && z < c[3] + m) return true; }
     return false;
+  }
+  // 발밑 높이: 테이블·소파 위에 올라가 있으면 그 높이
+  function groundAt(x, z) {
+    var rec = floors[active], h = 0, m = .12;
+    for (var i = 0; i < rec.colliders.length; i++) { var c = rec.colliders[i]; if (c[4] && c[4] > h && x > c[0] - m && x < c[2] + m && z > c[1] - m && z < c[3] + m) h = c[4]; }
+    return h;
   }
   function move(dt) {
     var f = 0, s = 0;
@@ -1339,7 +1347,8 @@
     var t = clock(), rec = floors[active], b = beatInfo(t), e = active === '3F' ? (audioOn && !bgmOn ? energy : 1) : 1, hit = b.hit * (.4 + .6 * e);
     var dropping = !bgmOn && dropT > 0 && t - dropT >= 0 && t - dropT < 1.2;
     var walking = move(dt);
-    if (jumpV || player.jy > 0) { jumpV -= 13 * dt; player.jy = Math.max(0, player.jy + jumpV * dt); if (player.jy === 0) jumpV = 0; }
+    var gnd = groundAt(player.x, player.z);
+    if (jumpV || player.jy > gnd + .001) { jumpV -= 13 * dt; player.jy += jumpV * dt; if (player.jy <= gnd) { player.jy = gnd; jumpV = 0; } } else player.jy = gnd;
 
     // 카메라 (걸을 때 살짝 흔들림, 비트에 아주 약한 진동)
     var bob = walking ? Math.sin(now / 140) * .025 : 0;
