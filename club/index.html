@@ -182,6 +182,19 @@
   .bgm-file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
   @media (max-width: 640px) { .creator { grid-template-columns: 1fr; } #pv { height: 200px; } .gate-actions { grid-template-columns: 1fr; } #chat { bottom: calc(62px + env(safe-area-inset-bottom, 0px)); } #chatlog { max-height: 26vh; } }
   @media (max-width: 520px) { .now .dj { font-size: 15px; } .bottom { flex-wrap: nowrap; gap: 6px; } .bottom .lbl { display: none; } .bottom button, .bottom .btn { padding: 9px 11px; font-size: 15px; justify-content: center; min-width: 42px; } .seg button { font-size: 12px; padding: 8px 9px; } #joy { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); } body.touch .hint { bottom: calc(198px + env(safe-area-inset-bottom, 0px)); } }
+  .bottom [hidden], .hud [hidden] { display: none !important; }
+  @media (max-width: 640px) {
+    .bottom { flex-wrap: wrap !important; gap: 6px; row-gap: 6px; justify-content: center; left: 8px; right: 8px; }
+    .bottom .seg { order: -1; flex: 0 0 100%; justify-content: center; }
+    .bottom .seg button { flex: 1; justify-content: center; }
+    .bottom button, .bottom .btn { min-width: 44px; padding: 8px 10px; }
+    body.touch #joy { bottom: calc(128px + env(safe-area-inset-bottom, 0px)); }
+    #jumpbtn { bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important; }
+    #chat { bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important; }
+    body.touch .hint { bottom: calc(250px + env(safe-area-inset-bottom, 0px)) !important; }
+    .top .chip { padding: 6px 9px; } .tools { gap: 4px; flex-wrap: nowrap; } .tools button, .tools .btn { min-height: 32px; min-width: 32px; padding: 4px 5px; font-size: 13px; justify-content: center; }
+    .floorname { font-size: 9px; letter-spacing: .06em; } .online { font-size: 10px; }
+  }
   @media (prefers-reduced-motion: reduce) { .now .k .dot { animation: none; } }
 </style>
 
@@ -2361,6 +2374,7 @@
   }
   function enter() {
     applyMe(); $('#gate').hidden = true;
+    setTimeout(updateOnline, 0);
     if (!entered) { entered = true; if (savedBgm && soundWanted) resumeSavedBgm(); $('#enter').textContent = '✓ 완료'; $('#enter-quiet').hidden = true; sys(room ? '입장했어요. 같은 시간에 접속한 손님과 채팅할 수 있어요.' : '입장했어요. 지금은 실시간 연결이 없어 나 혼자 보여요.'); }
   }
   $('#edit').addEventListener('click', openGate);
