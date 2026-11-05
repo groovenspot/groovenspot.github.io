@@ -27,6 +27,26 @@
   <script src="./partner-application.js" defer></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4Y93LP9PP"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','G-G4Y93LP9PP');}</script>
+  <style>
+    .partner-language { position: relative; margin-inline-start: auto; }
+    .partner-language summary {
+      display: inline-flex; align-items: center; gap: 6px; list-style: none;
+      cursor: pointer; font-weight: 700; font-size: 14px; letter-spacing: .02em;
+      padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 999px;
+      white-space: nowrap;
+    }
+    .partner-language summary::-webkit-details-marker { display: none; }
+    .partner-language-menu {
+      position: absolute; z-index: 1; right: 0; top: calc(100% + 8px);
+      background: var(--card); border: 1px solid var(--line-strong);
+      border-radius: 14px; padding: 6px; min-width: 150px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, .6);
+    }
+    .partner-language-menu a { display: block; padding: 10px 12px; border-radius: 10px; text-decoration: none; }
+    .partner-language-menu a:hover { background: rgba(255, 255, 255, .06); }
+    .partner-language-menu a[aria-current] { color: var(--orange); font-weight: 700; }
+    .partner-language + .header-tag { margin-left: 0; }
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#directory">매장 목록으로 바로가기</a>
@@ -40,6 +60,40 @@
         <a href="#course-map">코스 지도</a>
         <a class="nav-current" href="#directory">제휴 매장 <span id="nav-count">28</span></a>
       </nav>
+      <details class="partner-language">
+        <summary aria-label="Language"><span aria-hidden="true">🌐</span> Language</summary>
+        <div class="partner-language-menu">
+          <a href="?lang=ko" lang="ko">한국어</a>
+          <a href="?lang=en" lang="en">English</a>
+          <a href="?lang=ja" lang="ja">日本語</a>
+          <a href="?lang=zh" lang="zh-CN">中文</a>
+        </div>
+      </details>
+      <script>
+        (() => {
+          const menu = document.querySelector('.partner-language');
+          const toggle = menu.querySelector('summary');
+          menu.querySelectorAll('a').forEach(link => {
+            const language = new URL(link.href).searchParams.get('lang');
+            if (language === window.GS_PLANG) {
+              link.setAttribute('aria-current', 'true');
+              toggle.setAttribute('aria-label', 'Language: ' + link.textContent);
+            }
+            link.addEventListener('click', () => {
+              try { localStorage.setItem('gs_lang', language); } catch (error) {}
+            });
+          });
+          document.addEventListener('click', event => {
+            if (!menu.contains(event.target)) menu.open = false;
+          });
+          menu.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && menu.open) {
+              menu.open = false;
+              toggle.focus();
+            }
+          });
+        })();
+      </script>
       <span class="header-tag"><span></span> PARTNER GUIDE</span>
     </div>
   </header>
