@@ -82,6 +82,17 @@ body.mnav-open { overflow: hidden; }
 @media (max-width: 400px) { .hdr .logo .logo-icon { height: 24px; } .hdr .logo img:last-child { height: 14px; } .lang summary { font-size: 13px; } }
 .hdr .brand { width: auto; min-width: 0; }
 .hdr .logo img { object-fit: contain; }
+/* Internal verification and listing sources are not part of the public venue guide. */
+.details-checked,
+.field-sources,
+.branch-sources,
+.detail-sources > h3,
+.detail-sources > ul,
+.detail-sources:not(:has(details)),
+.course-selected-note a,
+#course-data-date,
+#sources { display: none !important; }
+.details-meta:not(:has(.details-note)) { display: none; }
 </style>
   <script src="/assets/site.js" defer></script>
 </head>
@@ -189,7 +200,7 @@ body.mnav-open { overflow: hidden; }
         <div id="course-selected" class="course-selected" aria-label="선택한 매장의 그루브 방문 혜택"><p class="course-selected-empty">매장을 선택하면 그루브 방문 혜택을 보여드릴게요.</p></div>
         <div id="course-destination" class="course-destination" aria-label="그루브앤스팟 목적지"></div>
       </div>
-      <div class="course-map-footnote"><p>위치는 공개 장소 정보, 혜택은 제휴 안내물 기준입니다. 개별 안내물이 없는 매장은 라인업 공통 혜택으로 표시합니다. 혜택 적용과 인증 조건은 방문 전 확인해 주세요. 가까운 핀은 숫자를 눌러 펼쳐볼 수 있습니다.</p><span id="course-data-date"></span></div>
+      <div class="course-map-footnote"><p>혜택 적용과 인증 조건은 방문 전 확인해 주세요. 가까운 핀은 숫자를 눌러 펼쳐볼 수 있습니다.</p><span id="course-data-date"></span></div>
       <p id="course-selection-status" class="sr-only course-selection-status" role="status" aria-live="polite"></p>
     </section>
 
@@ -203,7 +214,7 @@ body.mnav-open { overflow: hidden; }
     <section id="directory" class="directory container" aria-labelledby="directory-title">
       <div class="section-heading"><div><p class="eyebrow">THE PARTNER DIRECTORY</p><h2 id="directory-title">오늘의 다음 목적지</h2><p class="section-description">이름이나 위치로 찾고, 매장별 실제 사진과 영업정보를 확인하세요.</p></div><button id="download-csv" class="text-action" type="button" disabled><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3v9m-3-3 3 3 3-3M4 13v4h12v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>목록 저장</button></div>
 
-      <div class="directory-stats" aria-label="자료 현황"><div><strong id="total-count">28</strong><span>전체 제휴 매장</span></div><div><strong id="verified-count">—</strong><span>개별 제휴 안내물 확인</span></div><div><strong id="saved-count">0</strong><span>내가 저장한 매장</span></div><p><span class="stat-dot"></span>영업정보는 공개 매장정보, 제휴 혜택은 안내물을 기준으로 정리합니다.</p></div>
+      <div class="directory-stats" aria-label="자료 현황"><div><strong id="total-count">28</strong><span>전체 제휴 매장</span></div><div><strong id="verified-count">—</strong><span>개별 제휴 안내물 확인</span></div><div><strong id="saved-count">0</strong><span>내가 저장한 매장</span></div></div>
 
       <form id="search-form" class="search-toolbar" role="search">
         <label class="search-field" for="search"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><input id="search" type="search" placeholder="매장·주소·메뉴 검색" autocomplete="off"><kbd aria-hidden="true">⌘ K</kbd></label>
