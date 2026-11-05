@@ -43,7 +43,7 @@ function layout(lang, page, { title, desc, body, active }) {
   const L = (k) => t(lang, k);
   const runtime = Object.fromEntries(Object.keys(T.ko).filter((k) => k.startsWith('rt.')).map((k) => [k.slice(3), L(k)]));
   const nav = [
-    ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['menu/', 'nav.menu'], ['gallery/', 'nav.gallery'], ['request/', 'nav.request'], ['info/', 'nav.info'], ['/club/', 'nav.club'],
+    ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['menu/', 'nav.menu'], ['gallery/', 'nav.gallery'], ['request/', 'nav.request'], ['info/', 'nav.info'], ['/partners/', 'nav.partners'], ['/club/', 'nav.club'],
   ];
   const fullTitle = title ? `${title} · Groove & Spot` : L('site.title');
   const alternates = LANGS.map((l) => `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${SITE}${href(l, page)}">`).join('\n');
@@ -465,6 +465,7 @@ write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${smPages.flatMap((p) => LANGS.map((l) => `  <url><loc>${SITE}${href(l, p)}</loc><lastmod>${today}</lastmod>${LANGS.map((a) => `<xhtml:link rel="alternate" hreflang="${HTML_LANG[a]}" href="${SITE}${href(a, p)}"/>`).join('')}</url>`)).join('\n')}
   <url><loc>${SITE}/club/</loc><lastmod>${today}</lastmod></url>
+  <url><loc>${SITE}/partners/</loc><lastmod>${today}</lastmod></url>
 </urlset>
 `);
 write('robots.txt', `User-agent: *\nDisallow: /admin/\nSitemap: ${SITE}/sitemap.xml\n`);

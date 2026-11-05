@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0a0a">
+  <meta name="description" content="그루브앤스팟 제휴 매장 28곳의 실제 사진과 영업정보, 영수증 제휴 혜택을 한눈에 확인하세요.">
+  <title>제휴 매장 가이드 · Groove & Spot</title>
+  <link rel="canonical" href="https://xn--2i0bl1s25d.site/partners/">
+  <link rel="icon" href="./assets/logo-icon.png">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./assets/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="./assets/vendor/leaflet.markercluster/MarkerCluster.css">
+  <link rel="stylesheet" href="./assets/vendor/leaflet.markercluster/MarkerCluster.Default.css">
+  <link rel="stylesheet" href="./course-map.css">
+  <link rel="stylesheet" href="./partner-application.css">
+  <link rel="stylesheet" href="./mobile.css">
+  <script src="./assets/vendor/leaflet/leaflet.js" defer></script>
+  <script src="./assets/vendor/leaflet.markercluster/leaflet.markercluster.js" defer></script>
+  <script src="./course-map.js" defer></script>
+  <script src="./app.js" defer></script>
+  <script src="./partner-application.js" defer></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4Y93LP9PP"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','G-G4Y93LP9PP');}</script>
+</head>
+<body>
+  <a class="skip-link" href="#directory">매장 목록으로 바로가기</a>
+  <div class="preview-ribbon"><span class="ribbon-dot"></span> 제휴 매장 정보 미리보기 <span class="ribbon-divider">/</span> 안내물·공개 매장정보 기준 · 방문 전 확인</div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="Groove and Spot 홈페이지로">
+        <img id="brand-image" src="./assets/logo.png" alt="Groove & Spot" width="190" height="40">
+        <span id="brand-fallback" class="brand-fallback" hidden>Groove <i>&</i> Spot<span>BUSAN · SEOMYEON</span></span>
+      </a>
+      <nav aria-label="주요 메뉴">
+        <a href="#course-map">코스 지도</a>
+        <a class="nav-current" href="#directory">제휴 매장 <span id="nav-count">28</span></a>
+        <a id="header-source" href="#sources">원본 자료 <span aria-hidden="true">↗</span></a>
+      </nav>
+      <span class="header-tag"><span></span> PARTNER GUIDE</span>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> GOOD PLACES. GOOD CONNECTIONS.</p>
+          <h1>그루브의 밤,<br>함께하는 <em>공간들.</em></h1>
+          <p class="hero-description">다음에 갈 곳을 찾고 있나요?<br>그루브앤스팟의 제휴 매장과 혜택을 한곳에 모았습니다.</p>
+          <div class="hero-actions"><a class="button button-primary" href="#course-map">그루브 코스 지도 보기 <span aria-hidden="true">↗</span></a><a class="hero-source" id="hero-source" href="#sources">제휴 안내물 보기 <span aria-hidden="true">↗</span></a></div>
+          <a class="application-hero-link" href="#partner-apply">신규 제휴 업체 신청하기 <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <div class="partner-ticket">
+            <div class="ticket-top"><span>GROOVE & SPOT</span><span>↗</span></div>
+            <p>YOUR NEXT<br><span>GOOD SPOT.</span></p>
+            <div class="ticket-count"><strong id="ticket-count">28</strong><span>PLACES<br>TO CONNECT</span></div>
+            <div class="ticket-bottom"><span>PARTNER COLLECTION</span><span>BUSAN</span></div>
+          </div>
+          <span class="art-caption">한 장의 영수증, 이어지는 혜택.</span>
+        </div>
+      </div>
+      <div class="hero-bottom container"><span>EXPLORE OUR PARTNERS <span aria-hidden="true">↓</span></span><span>GROOVE 2F <i>×</i> SPOT 3F</span></div>
+    </section>
+
+    <section class="benefit-section container" aria-labelledby="benefit-title">
+      <div class="benefit-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M5 8h22v5a3 3 0 0 0 0 6v5H5v-5a3 3 0 0 0 0-6V8Z" stroke="currentColor" stroke-width="1.6"/><path d="M20 9v3m0 3v3m0 3v2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <div class="benefit-copy"><span class="eyebrow">KEEP YOUR RECEIPT</span><h2 id="benefit-title">제휴 매장 영수증을 챙겨오세요.</h2><p id="common-benefit">해당 업장 영수증 지참 시 그루브앤스팟 무료입장</p></div>
+      <div class="benefit-note"><span>방문 전 확인해 주세요</span><p>이용 조건과 매장별 혜택은<br>상세정보의 원본 안내물을 확인해 주세요.</p></div>
+    </section>
+
+    <section id="course-map" class="course-section container" aria-labelledby="course-map-title">
+      <div class="section-heading"><div><p class="eyebrow">FIRST STOP → GROOVE</p><h2 id="course-map-title">1차에서, 그루브까지.</h2><p class="section-description">제휴 소주집을 고르고, 그루브에서 받는 혜택까지 확인하세요.</p></div><span class="course-heading-tag"><strong id="course-map-total">—</strong>곳의 1차 장소</span></div>
+      <div class="course-flow" aria-label="그루브 방문 코스"><span><b>01</b>제휴 소주집 방문</span><i aria-hidden="true">→</i><span><b>02</b>영수증 챙기기</span><i aria-hidden="true">→</i><span><b>03</b>그루브에서 혜택 확인</span><small>결제내역 등 매장별 인증 조건은 상세 안내를 확인해 주세요.</small></div>
+      <div class="course-shell">
+        <form id="course-search-form" class="course-toolbar" role="search" aria-label="코스 지도 매장 검색"><label class="course-search" for="course-search"><span aria-hidden="true">⌕</span><input id="course-search" type="search" placeholder="매장·주소·혜택 검색" autocomplete="off"></label><label><span class="sr-only">그루브 방문 혜택 유형</span><select id="course-benefit-filter"><option value="all">모든 혜택</option><option value="entry">무료입장</option><option value="bottle">바틀 혜택</option><option value="drink">원드링크</option></select></label><button id="course-fit" class="course-fit" type="button"><span aria-hidden="true">⊕</span>지도 전체 보기</button></form>
+        <div class="course-body"><aside class="course-sidebar" aria-label="코스 지도 제휴 소주집 목록"><div class="course-list-heading"><strong id="course-count" role="status" aria-live="polite">매장을 불러오고 있습니다.</strong><span>선택하면 지도에서 보기</span></div><p id="course-loading" class="course-loading">1차 장소와 혜택을 불러오는 중입니다.</p><ul id="course-place-list" class="course-list"></ul><div id="course-empty" class="course-empty" hidden><p>조건에 맞는 매장이 없습니다.<br>다른 이름이나 혜택으로 찾아보세요.</p><button id="course-clear" type="button">전체 매장 보기</button></div></aside><div class="course-map-stage"><div id="course-leaflet" class="course-leaflet" role="region" aria-label="제휴 소주집과 그루브앤스팟 위치 지도"></div><p id="course-map-status" class="course-map-status" role="status" hidden></p><div id="course-map-fallback" class="course-map-fallback" hidden><p>매장 목록에서 혜택을 확인하고<br>네이버·구글 지도로 위치를 열어보세요.</p></div></div></div>
+        <div id="course-selected" class="course-selected" aria-label="선택한 매장의 그루브 방문 혜택"><p class="course-selected-empty">매장을 선택하면 그루브 방문 혜택을 보여드릴게요.</p></div>
+        <div id="course-destination" class="course-destination" aria-label="그루브앤스팟 목적지"></div>
+      </div>
+      <div class="course-map-footnote"><p>위치는 공개 장소 정보, 혜택은 제휴 안내물 기준입니다. 개별 안내물이 없는 매장은 라인업 공통 혜택으로 표시합니다. 혜택 적용과 인증 조건은 방문 전 확인해 주세요. 가까운 핀은 숫자를 눌러 펼쳐볼 수 있습니다.</p><span id="course-data-date"></span></div>
+      <p id="course-selection-status" class="sr-only course-selection-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="partner-apply" class="application-section container" aria-labelledby="partner-apply-title">
+      <div class="application-invitation">
+        <div class="application-invitation-copy"><p class="eyebrow">BECOME A PARTNER</p><h2 id="partner-apply-title">우리 매장도,<br>그루브와 함께.</h2><p>매장 소개와 제안하고 싶은 혜택을 알려주세요.<br>신청서를 작성하고 공식 Instagram DM으로 전달할 수 있어요.</p></div>
+        <div class="application-invitation-action"><ol class="application-steps" aria-label="제휴 신청 순서"><li><span>01</span>매장 정보 입력</li><li><span>02</span>신청서 확인·복사</li><li><span>03</span>공식 DM에서 직접 전송</li></ol><button class="button button-primary application-open" type="button" data-application-open>신규 제휴 업체 신청하기 <span aria-hidden="true">↗</span></button><p>입력 내용은 저장되지 않습니다.<br>최종 신청은 공식 DM에서 직접 전송해 주세요.</p></div>
+      </div>
+    </section>
+
+    <section id="directory" class="directory container" aria-labelledby="directory-title">
+      <div class="section-heading"><div><p class="eyebrow">THE PARTNER DIRECTORY</p><h2 id="directory-title">오늘의 다음 목적지</h2><p class="section-description">이름이나 위치로 찾고, 매장별 실제 사진과 영업정보를 확인하세요.</p></div><button id="download-csv" class="text-action" type="button" disabled><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3v9m-3-3 3 3 3-3M4 13v4h12v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>목록 저장</button></div>
+
+      <div class="directory-stats" aria-label="자료 현황"><div><strong id="total-count">28</strong><span>전체 제휴 매장</span></div><div><strong id="verified-count">—</strong><span>개별 제휴 안내물 확인</span></div><div><strong id="saved-count">0</strong><span>내가 저장한 매장</span></div><p><span class="stat-dot"></span>영업정보는 공개 매장정보, 제휴 혜택은 안내물을 기준으로 정리합니다.</p></div>
+
+      <form id="search-form" class="search-toolbar" role="search">
+        <label class="search-field" for="search"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><input id="search" type="search" placeholder="매장·주소·메뉴 검색" autocomplete="off"><kbd aria-hidden="true">⌘ K</kbd></label>
+        <label class="status-filter"><span class="sr-only">제휴 안내물 확인 상태</span><select id="status-filter"><option value="all">제휴 자료 전체</option><option value="poster">개별 제휴 안내물</option><option value="lineup-only">제휴 라인업만</option></select></label>
+        <button id="saved-filter" class="saved-filter" type="button" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 3h10v14l-5-3-5 3V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span>저장한 매장</span></button>
+      </form>
+      <div class="filter-line"><div id="category-filters" class="category-filters" aria-label="매장 유형"><button type="button" class="category-chip active" data-category="all" aria-pressed="true">전체</button></div><p id="result-count" class="result-count" role="status" aria-live="polite">자료를 불러오고 있습니다.</p></div>
+
+      <div id="loading-state" class="loading-state"><div class="loading-mark" aria-hidden="true"></div><p>함께하는 공간을 불러오는 중입니다.</p></div>
+      <div id="error-state" class="empty-state" hidden><span class="empty-symbol" aria-hidden="true">!</span><h3>매장 정보를 불러오지 못했습니다.</h3><p>잠시 후 다시 시도해 주세요.</p><button id="retry-load" class="button button-primary" type="button">다시 불러오기</button></div>
+      <div id="partner-grid" class="partner-grid"></div>
+      <div id="empty-state" class="empty-state" hidden><span class="empty-symbol" aria-hidden="true">⌕</span><h3>조건에 맞는 매장이 없습니다.</h3><p>다른 검색어를 입력하거나 필터를 초기화해 보세요.</p><button id="reset-filters" class="button button-outline" type="button">전체 매장 보기</button></div>
+    </section>
+
+    <section id="sources" class="sources-section container" aria-labelledby="sources-title"><div class="source-mark" aria-hidden="true">↗</div><div><p class="eyebrow">FROM THE ORIGINALS</p><h2 id="sources-title">확인할 수 있는 정보부터, 차근차근.</h2><p>제휴 안내물과 공개된 매장정보를 바탕으로 정리했습니다.<br>확인하지 못한 정보는 추정하지 않고 미확인으로 표시합니다.</p><span id="updated-at" class="updated-at"></span></div><a id="folder-source" class="button button-outline" href="#sources">원본 자료 폴더 <span aria-hidden="true">↗</span></a></section>
+  </main>
+
+  <footer class="site-footer"><div class="container footer-inner"><div class="footer-brand">Groove <i>&</i> Spot<small>GOOD MUSIC. GOOD PEOPLE. GOOD SPOTS.</small></div><p>제휴 안내물과 공개된 매장정보를 바탕으로 정리한 미리보기<br>혜택·영업시간·연락처 등은 변경될 수 있으니 방문 전 확인해 주세요.</p><div class="application-footer-links"><a href="#partner-apply">신규 제휴 업체 신청하기 ↗</a><a href="/">그루브앤스팟 홈 ↗</a><a href="/info/">오시는 길 ↗</a><a href="#top">위로 돌아가기 ↑</a></div></div></footer>
+
+  <dialog id="detail-dialog" aria-labelledby="detail-title"><div class="dialog-shell"><div class="dialog-top"><span>PARTNER DETAILS</span><button id="close-detail" class="icon-button close-detail" type="button" aria-label="매장 상세정보 닫기"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div><div id="detail-content"></div></div></dialog>
+  <dialog id="application-dialog" aria-labelledby="application-dialog-title" aria-describedby="application-dialog-description">
+    <div class="application-dialog-shell">
+      <div class="application-dialog-top"><span>PARTNER APPLICATION</span><button id="application-close" class="icon-button" type="button" aria-label="제휴 신청서 닫기"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+      <div class="application-dialog-heading"><p class="eyebrow">LET’S CONNECT</p><h2 id="application-dialog-title">신규 제휴 업체 신청하기</h2><p id="application-dialog-description">신청서를 확인·복사한 뒤 공식 Instagram DM에서 직접 전송해 주세요.</p><ol class="application-progress" aria-label="신청서 작성 단계"><li data-application-stage="form" aria-current="step"><span>1</span>정보 입력</li><li data-application-stage="preview"><span>2</span>신청서 확인</li><li><span>3</span>DM 직접 전송</li></ol></div>
+      <form id="application-form" class="application-form" method="dialog" novalidate>
+        <p class="application-required-note"><span aria-hidden="true">*</span> 필수 입력 항목</p>
+        <div id="application-errors" class="application-error-summary" role="alert" tabindex="-1" hidden></div>
+        <div class="application-fields">
+          <div class="application-field"><label for="application-store-name">매장명 <span aria-hidden="true">*</span></label><input id="application-store-name" name="storeName" type="text" autocomplete="organization" maxlength="60" required aria-describedby="application-error-store-name" placeholder="매장 이름을 입력해 주세요"><p id="application-error-store-name" class="application-field-error" hidden></p></div>
+          <div class="application-field"><label for="application-category">업종 <span aria-hidden="true">*</span></label><select id="application-category" name="category" required aria-describedby="application-error-category"><option value="">업종을 선택해 주세요</option><option value="주점·식당">주점·식당</option><option value="노래·룸">노래·룸</option><option value="숙박">숙박</option><option value="파티">파티</option><option value="기타">기타</option></select><p id="application-error-category" class="application-field-error" hidden></p></div>
+          <div class="application-field application-field-wide"><label for="application-address">매장 주소 <span aria-hidden="true">*</span></label><input id="application-address" name="address" type="text" autocomplete="street-address" maxlength="120" required aria-describedby="application-error-address" placeholder="도로명 주소와 층·호수"><p id="application-error-address" class="application-field-error" hidden></p></div>
+          <div class="application-field"><label for="application-contact-name">담당자 이름 <span aria-hidden="true">*</span></label><input id="application-contact-name" name="contactName" type="text" autocomplete="name" maxlength="30" required aria-describedby="application-error-contact-name" placeholder="연락받을 담당자 이름"><p id="application-error-contact-name" class="application-field-error" hidden></p></div>
+          <div class="application-field"><label for="application-instagram">매장 Instagram <span class="application-optional">선택</span></label><input id="application-instagram" name="instagram" type="text" inputmode="url" autocomplete="off" maxlength="180" aria-describedby="application-instagram-help application-error-instagram" placeholder="아이디 또는 프로필 주소"><p id="application-instagram-help" class="application-field-help">매장 계정의 아이디나 프로필 주소를 입력해 주세요.</p><p id="application-error-instagram" class="application-field-error" hidden></p></div>
+        </div>
+        <fieldset class="application-contact-fields"><legend>연락처 <span>전화 또는 이메일 중 하나는 필수입니다.</span></legend><div class="application-fields"><div class="application-field"><label for="application-phone">전화번호</label><input id="application-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="30" aria-describedby="application-contact-help application-error-phone" placeholder="010-0000-0000"><p id="application-error-phone" class="application-field-error" hidden></p></div><div class="application-field"><label for="application-email">이메일</label><input id="application-email" name="email" type="email" autocomplete="email" maxlength="100" aria-describedby="application-contact-help application-error-email" placeholder="partner@example.com"><p id="application-error-email" class="application-field-error" hidden></p></div></div><p id="application-contact-help" class="application-field-help">제휴 논의에 사용할 연락처를 한 가지 이상 적어 주세요.</p></fieldset>
+        <div class="application-field application-field-proposal"><label for="application-benefit">제안 혜택·협의 내용 <span aria-hidden="true">*</span></label><textarea id="application-benefit" name="benefit" rows="4" maxlength="300" required aria-describedby="application-benefit-help application-error-benefit" placeholder="매장에서 제공할 수 있는 혜택이나 함께 논의하고 싶은 내용을 적어 주세요."></textarea><p id="application-benefit-help" class="application-field-help">제휴 조건과 지도 등록은 상담 후 협의합니다. (최대 300자)</p><p id="application-error-benefit" class="application-field-error" hidden></p></div>
+        <div class="application-field application-field-message"><label for="application-note">추가 문의 <span class="application-optional">선택</span></label><textarea id="application-note" name="note" rows="3" maxlength="100" aria-describedby="application-error-note" placeholder="매장 소개나 추가로 전할 내용이 있다면 적어 주세요."></textarea><p id="application-error-note" class="application-field-error" hidden></p></div>
+        <p class="application-privacy-note">입력 내용은 저장되지 않으며, 닫으면 초기화됩니다. 신청서를 복사한 뒤 공식 DM에서 직접 전송해야 전달됩니다.</p>
+        <button class="button button-primary application-submit" type="submit">신청서 확인하기 <span aria-hidden="true">→</span></button>
+      </form>
+      <section id="application-preview" class="application-preview" aria-labelledby="application-preview-title" hidden>
+        <div class="application-preview-heading"><div><p class="eyebrow">READY TO SHARE</p><h3 id="application-preview-title" tabindex="-1">신청서를 확인해 주세요.</h3></div><button id="application-edit" class="application-edit" type="button">내용 수정</button></div>
+        <pre id="application-message" class="application-message" tabindex="0" aria-label="작성한 제휴 신청서"></pre>
+        <div class="application-send-guide"><strong>공식 DM에서 전송하면 신청이 전달됩니다.</strong><p>아래에서 신청서를 복사하고, 열린 DM 창에 붙여넣어 직접 전송해 주세요. 이 페이지에서는 DM 전송 여부를 확인할 수 없습니다.</p></div>
+        <div class="application-preview-actions"><button id="application-copy" class="button button-outline" type="button"><span aria-hidden="true">01</span> 신청서 복사</button><a id="application-dm" class="button button-primary" href="https://ig.me/m/groovenspot" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">02</span> 공식 Instagram DM 열기 ↗</a></div>
+        <p id="application-copy-status" class="application-copy-status" role="status" aria-live="polite"></p>
+        <div id="application-manual-copy" class="application-manual-copy" hidden><label for="application-manual-message">수동 복사용 신청서</label><textarea id="application-manual-message" rows="7" readonly aria-describedby="application-manual-help"></textarea><div><p id="application-manual-help">텍스트를 선택한 뒤 복사해 주세요. 컴퓨터에서는 Ctrl+C 또는 ⌘C, 휴대폰에서는 길게 눌러 복사할 수 있습니다.</p><button id="application-select-message" type="button">전체 선택</button></div></div>
+        <p id="application-send-status" class="application-send-status" role="status" aria-live="polite"></p>
+        <div class="application-channel-help"><p>DM이 열리지 않나요? <a href="https://www.instagram.com/groovenspot/" target="_blank" rel="noopener noreferrer">공식 계정 @groovenspot ↗</a>에서 메시지를 보내 주세요.</p><p>전화 문의 <a href="tel:050713015970">0507-1301-5970</a></p></div>
+      </section>
+    </div>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
