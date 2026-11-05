@@ -304,7 +304,6 @@ function renderStats() {
   if (!state.data) return;
   const total = state.data.partners.length;
   $('#total-count').textContent = total;
-  $('#nav-count').textContent = total;
   $('#ticket-count').textContent = total;
   $('#verified-count').textContent = state.data.partners.filter(isPoster).length;
   $('#saved-count').textContent = state.saved.size;
