@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="./course-map.css">
   <link rel="stylesheet" href="./partner-application.css">
   <link rel="stylesheet" href="./mobile.css">
+  <script src="./i18n.js"></script>
   <script src="./assets/vendor/leaflet/leaflet.js" defer></script>
   <script src="./assets/vendor/leaflet.markercluster/leaflet.markercluster.js" defer></script>
   <script src="./course-map.js" defer></script>
@@ -25,7 +26,6 @@
 </head>
 <body>
   <a class="skip-link" href="#directory">매장 목록으로 바로가기</a>
-  <div class="preview-ribbon"><span class="ribbon-dot"></span> 제휴 매장 정보 미리보기 <span class="ribbon-divider">/</span> 안내물·공개 매장정보 기준 · 방문 전 확인</div>
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="/" aria-label="Groove and Spot 홈페이지로">
@@ -35,7 +35,6 @@
       <nav aria-label="주요 메뉴">
         <a href="#course-map">코스 지도</a>
         <a class="nav-current" href="#directory">제휴 매장 <span id="nav-count">28</span></a>
-        <a id="header-source" href="#sources">원본 자료 <span aria-hidden="true">↗</span></a>
       </nav>
       <span class="header-tag"><span></span> PARTNER GUIDE</span>
     </div>
@@ -48,7 +47,7 @@
           <p class="eyebrow"><span></span> GOOD PLACES. GOOD CONNECTIONS.</p>
           <h1>그루브의 밤,<br>함께하는 <em>공간들.</em></h1>
           <p class="hero-description">다음에 갈 곳을 찾고 있나요?<br>그루브앤스팟의 제휴 매장과 혜택을 한곳에 모았습니다.</p>
-          <div class="hero-actions"><a class="button button-primary" href="#course-map">그루브 코스 지도 보기 <span aria-hidden="true">↗</span></a><a class="hero-source" id="hero-source" href="#sources">제휴 안내물 보기 <span aria-hidden="true">↗</span></a></div>
+          <div class="hero-actions"><a class="button button-primary" href="#course-map">그루브 코스 지도 보기 <span aria-hidden="true">↗</span></a></div>
           <a class="application-hero-link" href="#partner-apply">신규 제휴 업체 신청하기 <span aria-hidden="true">↗</span></a>
         </div>
         <div class="hero-art" aria-hidden="true">
@@ -109,10 +108,10 @@
       <div id="empty-state" class="empty-state" hidden><span class="empty-symbol" aria-hidden="true">⌕</span><h3>조건에 맞는 매장이 없습니다.</h3><p>다른 검색어를 입력하거나 필터를 초기화해 보세요.</p><button id="reset-filters" class="button button-outline" type="button">전체 매장 보기</button></div>
     </section>
 
-    <section id="sources" class="sources-section container" aria-labelledby="sources-title"><div class="source-mark" aria-hidden="true">↗</div><div><p class="eyebrow">FROM THE ORIGINALS</p><h2 id="sources-title">확인할 수 있는 정보부터, 차근차근.</h2><p>제휴 안내물과 공개된 매장정보를 바탕으로 정리했습니다.<br>확인하지 못한 정보는 추정하지 않고 미확인으로 표시합니다.</p><span id="updated-at" class="updated-at"></span></div><a id="folder-source" class="button button-outline" href="#sources">원본 자료 폴더 <span aria-hidden="true">↗</span></a></section>
+    <section id="sources" class="sources-section container" aria-labelledby="sources-title"><div class="source-mark" aria-hidden="true">↗</div><div><p class="eyebrow">FROM THE ORIGINALS</p><h2 id="sources-title">확인할 수 있는 정보부터, 차근차근.</h2><p>제휴 안내물과 공개된 매장정보를 바탕으로 정리했습니다.<br>확인하지 못한 정보는 추정하지 않고 미확인으로 표시합니다.</p><span id="updated-at" class="updated-at"></span></div></section>
   </main>
 
-  <footer class="site-footer"><div class="container footer-inner"><div class="footer-brand">Groove <i>&</i> Spot<small>GOOD MUSIC. GOOD PEOPLE. GOOD SPOTS.</small></div><p>제휴 안내물과 공개된 매장정보를 바탕으로 정리한 미리보기<br>혜택·영업시간·연락처 등은 변경될 수 있으니 방문 전 확인해 주세요.</p><div class="application-footer-links"><a href="#partner-apply">신규 제휴 업체 신청하기 ↗</a><a href="/">그루브앤스팟 홈 ↗</a><a href="/info/">오시는 길 ↗</a><a href="#top">위로 돌아가기 ↑</a></div></div></footer>
+  <footer class="site-footer"><div class="container footer-inner"><div class="footer-brand">Groove <i>&</i> Spot<small>GOOD MUSIC. GOOD PEOPLE. GOOD SPOTS.</small></div><p>제휴 안내물과 공개된 매장정보를 바탕으로 정리했습니다.<br>혜택·영업시간·연락처 등은 변경될 수 있으니 방문 전 확인해 주세요.</p><div class="application-footer-links"><a href="#partner-apply">신규 제휴 업체 신청하기 ↗</a><a href="/">그루브앤스팟 홈 ↗</a><a href="/info/">오시는 길 ↗</a><a href="#top">위로 돌아가기 ↑</a></div></div></footer>
 
   <dialog id="detail-dialog" aria-labelledby="detail-title"><div class="dialog-shell"><div class="dialog-top"><span>PARTNER DETAILS</span><button id="close-detail" class="icon-button close-detail" type="button" aria-label="매장 상세정보 닫기"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div><div id="detail-content"></div></div></dialog>
   <dialog id="application-dialog" aria-labelledby="application-dialog-title" aria-describedby="application-dialog-description">

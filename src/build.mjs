@@ -83,7 +83,7 @@ ${GA_TAG}
 <header class="hdr">
   <a class="brand logo" href="${href(lang, '')}"><img class="logo-icon" src="/assets/logo-icon.png" width="181" height="150" alt="">${LOGO_WORD}</a>
   <nav class="nav" aria-label="Main">
-    ${nav.map(([p, k]) => `<a href="${p[0] === '/' ? p : href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n    ')}
+    ${nav.map(([p, k]) => `<a href="${p === '/partners/' && lang !== 'ko' ? p + '?lang=' + lang : p[0] === '/' ? p : href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n    ')}
   </nav>
   <details class="lang">
     <summary aria-label="Language: ${LANG_LABEL[lang]}"><span class="lang-globe" aria-hidden="true">🌐</span> Language</summary>
@@ -96,7 +96,7 @@ ${GA_TAG}
 </header>
 <nav class="mnav" id="mnav" aria-label="Mobile" hidden>
   <a href="${href(lang, '')}"${!active ? ' aria-current="page"' : ''}>${L('nav.home')}</a>
-  ${nav.map(([p, k]) => `<a href="${p[0] === '/' ? p : href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n  ')}
+  ${nav.map(([p, k]) => `<a href="${p === '/partners/' && lang !== 'ko' ? p + '?lang=' + lang : p[0] === '/' ? p : href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n  ')}
   <a href="${href(lang, 'artists/')}"${active === 'artists/' ? ' aria-current="page"' : ''}>${L('nav.artists')}</a>
   <a href="${href(lang, 'guide/')}"${active === 'guide/' ? ' aria-current="page"' : ''}>${GUIDE[lang].t}</a>
   <a class="btn btn-hot mnav-cta" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a>

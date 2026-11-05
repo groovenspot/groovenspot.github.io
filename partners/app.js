@@ -21,6 +21,7 @@ function httpUrl(value) {
   if (!value || typeof value !== 'string') return null;
   try {
     const url = new URL(value);
+    if (/(^|\.)drive\.google\.com$|(^|\.)docs\.google\.com$/.test(url.hostname)) return null; // 비공개 드라이브 원본은 숨김
     return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null;
   } catch {
     return null;
@@ -239,6 +240,7 @@ function toggleSaved(id) {
 }
 
 function setExternalLink(element, url) {
+  if (!element) return;
   const checked = httpUrl(url);
   if (!checked) {
     element.hidden = true;
