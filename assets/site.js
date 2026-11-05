@@ -207,26 +207,30 @@
     var date = IS_OPEN ? BIZ : ymd(NOW.date);
     var day = tt && tt[date];
     var ev = normEvents(evs).filter(function (e) { return e.date === date; })[0];
+    var labels = {
+      ko: ['지금', '다음', '첫 DJ', '힙합 · R&B', '일정 없음', '라인업'],
+      en: ['Now', 'Next', 'First DJ', 'Hip-hop · R&B', 'No slot listed', 'Lineup'],
+      ja: ['現在', '次', '最初のDJ', 'ヒップホップ · R&B', '予定なし', '出演DJ'],
+      zh: ['当前', '下一位', '首位 DJ', '嘻哈 · R&B', '暂无安排', '阵容']
+    }[LANG] || ['Now', 'Next', 'First DJ', 'Hip-hop · R&B', 'No slot listed', 'Lineup'];
     var live = false;
     var cards = ['2F', '3F'].map(function (f) {
       var list = slots(day, f), i = IS_OPEN ? currentIdx(list) : -1;
-      var head = '<div class="fl">' + f + (f === '2F' ? ' · GROOVE' : ' · SPOT') + '</div>', main = '', subl = '', rest = [];
-      if (i >= 0) {
-        live = true;
-        var nx = list[i + 1];
-        main = list[i].n; subl = fmt(T.since, { t: list[i].t });
-        rest = list.slice(i + 1, i + 4);
-      } else if (list.length) {
-        main = list[0].n; subl = fmt(T.startsAt, { t: list[0].t });
-        rest = list.slice(1, 4);
-      } else {
-        var names = ev && ev.lineup ? (ev.lineup[f] || ev.lineup.GUEST || []) : [];
-        if (names.length) { main = names[0]; subl = names.slice(1, 5).join(' · '); }
-        else { main = T.lineupSoon; subl = ''; }
+      var current = list[Math.max(i, 0)], next = list[Math.max(i, 0) + 1];
+      var spot = f === '3F';
+      live = live || i >= 0;
+      var head = '<h3 class="fl">' + f + (spot ? ' SPOT' : ' GROOVE') + '</h3>' +
+        '<p class="now-genre">' + esc(spot ? 'EDM' : labels[3]) + '</p>';
+      function row(label, name, time) {
+        return '<div><dt>' + esc(label) + (time ? ' <time>' + esc(time) + '</time>' : '') +
+          '</dt><dd class="dj">' + esc(name) + '</dd></div>';
       }
-      return '<div class="now-card' + (f === '3F' ? ' s' : '') + (i >= 0 ? ' on' : '') + '">' + head + '<div class="dj">' + esc(main) + '</div>' +
-        (subl ? '<div class="nx">' + esc(subl) + '</div>' : '') +
-        (rest.length ? '<ul class="now-next">' + rest.map(function (s) { return '<li><span>' + esc(s.t) + '</span>' + esc(s.n) + '</li>'; }).join('') + '</ul>' : '') + '</div>';
+      var names = ev && ev.lineup ? (ev.lineup[f] || ev.lineup.GUEST || []) : [];
+      var first = current
+        ? row(i >= 0 ? labels[0] : labels[2], current.n, current.t)
+        : row(labels[5], names.join(' · ') || T.lineupSoon, '');
+      return '<section class="now-card' + (spot ? ' s' : '') + (i >= 0 ? ' on' : '') + '">' + head +
+        '<dl class="now-slots">' + first + row(labels[1], next ? next.n : labels[4], next && next.t) + '</dl></section>';
     }).join('');
     $('[data-now-grid]').innerHTML = cards;
     var h = $('#now-h-txt'); if (h) h.textContent = live ? T.nowPlaying : fmt(T.tonightLineup, { d: dateLabel(date) }) + (ev ? ' · ' + ev.title : '');

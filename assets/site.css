@@ -105,8 +105,17 @@ img { max-width: 100%; display: block; }
 .now { padding-top: 32px; }
 .live-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff3b5c; animation: pulse 1.4s infinite; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 59, 92, .6); } 50% { box-shadow: 0 0 0 8px rgba(255, 59, 92, 0); } }
-.now-grid { display: grid; gap: 12px; }
-@media (min-width: 700px) { .now-grid { grid-template-columns: 1fr 1fr; } }
+.now-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 700px) { .now-grid { gap: 12px; } }
+.now-grid .now-card { min-width: 0; padding: clamp(10px, 2vw, 18px); }
+.now-grid .now-card .fl { margin: 0; color: var(--g); letter-spacing: .04em; }
+.now-grid .now-card.s .fl { color: var(--s); }
+.now-genre { margin: 0; color: var(--muted); font-size: 12px; }
+.now-slots { margin: 0; }
+.now-slots > div { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 8px; }
+.now-slots dt { color: var(--muted); font-size: 12px; }
+.now-slots dt time { margin-inline-start: 4px; font-variant-numeric: tabular-nums; }
+.now-grid .now-slots .dj { margin: 3px 0 0; font-size: clamp(16px, 3vw, 26px); }
 .now-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; background: var(--card); border-left: 4px solid var(--g); }
 .now-card.s { border-left-color: var(--s); }
 .now-card .fl { font-size: 12px; font-weight: 800; letter-spacing: .14em; color: var(--muted); }
