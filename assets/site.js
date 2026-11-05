@@ -167,10 +167,44 @@
     return '<p class="empty">' + esc(msg) + ' <a href="' + esc(GS.instagram) + '" rel="noopener">@groovenspot →</a></p>';
   }
 
+  var savedKey = 'gs_saved_events';
+  var saveLabels = {
+    ko: ['행사 저장', '저장됨', '저장한 행사'],
+    en: ['Save event', 'Saved', 'Saved event'],
+    ja: ['イベントを保存', '保存済み', '保存したイベント'],
+    zh: ['收藏活动', '已收藏', '收藏的活动']
+  }[LANG] || ['Save event', 'Saved', 'Saved event'];
+  function savedIds() {
+    try {
+      var ids = JSON.parse(store(savedKey));
+      return Array.isArray(ids) ? ids : [];
+    } catch (e) { return []; }
+  }
+  function refreshOnReturn(update) {
+    window.addEventListener('pageshow', update);
+    window.addEventListener('storage', function (event) {
+      if (!event.key || event.key === savedKey) update();
+    });
+    update();
+  }
+
   var evLists = $$('[data-events]');
   if (evLists.length) {
     load('events').then(function (raw) {
       var all = normEvents(raw);
+      var savedLine = $('[data-saved-event]');
+      if (savedLine) refreshOnReturn(function () {
+        var ids = savedIds();
+        var e = all.find(function (event) { return event.date >= BIZ && ids.indexOf(event.id) >= 0; });
+        savedLine.hidden = !e;
+        savedLine.textContent = '';
+        if (!e) return;
+        var link = document.createElement('a');
+        link.href = url('event/?id=' + encodeURIComponent(e.id));
+        link.textContent = saveLabels[2] + ' · ' + dateLabel(e.date) +
+          (e.open ? ' ' + e.open : '') + ' · ' + e.title + ' →';
+        savedLine.appendChild(link);
+      });
       evLists.forEach(function (el) {
         var past = el.dataset.events === 'past';
         var list = all.filter(function (e) { return past ? e.date < BIZ : e.date >= BIZ; });
@@ -288,9 +322,25 @@
         (lineup ? '<div class="evd-sec"><div class="lineup">' + lineup + '</div></div>' : '') +
         '<div class="evd-sec" data-evd-photos hidden><h2 class="sec-h">' + esc(T.photosOf) + '</h2><div data-evd-grid></div></div>' +
         '<div class="evd-act">' + (past ? '' : '<a class="btn btn-hot btn-lg" href="' + reserveHref + '">' + esc(T.reserveThis) + '</a>') +
+        (past ? '' : '<button class="btn btn-lg" type="button" data-save-event aria-pressed="false">' + esc(saveLabels[0]) + '</button>') +
         '<button class="btn btn-lg" type="button" data-share>' + esc(T.share) + '</button></div>' +
         '<a class="back" href="' + url('events/') + '">← ' + esc(document.querySelector('.nav a').textContent) + '</a>' +
         '</div></article>';
+      var saveButton = $('[data-save-event]', detail);
+      if (saveButton) {
+        function updateSaveButton() {
+          var saved = savedIds().indexOf(e.id) >= 0;
+          saveButton.setAttribute('aria-pressed', String(saved));
+          saveButton.textContent = saveLabels[saved ? 1 : 0];
+        }
+        refreshOnReturn(updateSaveButton);
+        saveButton.addEventListener('click', function () {
+          var ids = savedIds();
+          var nextIds = ids.indexOf(e.id) >= 0 ? ids.filter(function (id) { return id !== e.id; }) : ids.concat(e.id);
+          store(savedKey, JSON.stringify(nextIds));
+          updateSaveButton();
+        });
+      }
       $('[data-share]', detail).addEventListener('click', function () {
         if (navigator.share) { navigator.share({ title: e.title, url: location.href }).catch(function () {}); return; }
         copy(location.href).then(function () { toast(T.linkCopied); });

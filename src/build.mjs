@@ -198,6 +198,7 @@ const BODIES = {
 </section>
 <section class="wrap sec" aria-labelledby="up-h">
   <div class="sec-top"><h2 class="sec-h" id="up-h">${L('sec.upcoming')}</h2><a class="more" href="${href(lang, 'events/')}">${L('more.events')} →</a></div>
+  <p class="small" data-saved-event hidden></p>
   <div class="cards" data-events="upcoming" data-limit="6"></div>
 </section>
 <section class="wrap sec" aria-labelledby="fl-h">
