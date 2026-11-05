@@ -20,7 +20,7 @@ export const GUIDE = {
       ['가는 법', `<p>부산 지하철 1·2호선 <b>서면역 3번 출구</b>로 나와 3분이면 도착합니다.</p>
 <ul><li>부산역에서: 지하철 1호선으로 약 15분</li><li>해운대에서: 지하철 2호선으로 약 35분, 택시 약 25분</li><li>김해공항에서: 경전철로 사상역 → 2호선 환승, 약 45분</li></ul>
 <p>택시 기사님께는 "서면 그루브앤스팟, 중앙대로680번가길 52"라고 보여 주세요. 지하철은 자정 무렵 끊기니 귀가는 택시(카카오T)를 추천합니다.</p>`],
-      ['입장 규칙', `<ul><li>입장료는 없습니다. 술은 바에서 주문하거나 테이블·보틀 세트를 이용하세요.</li><li>연 나이 19세 이상(${BY}년생까지)만 입장할 수 있습니다.</li><li>실물 신분증이 꼭 필요합니다. 사진이나 사본은 안 됩니다. 외국인은 여권 원본을 가져오세요.</li><li>복장은 캐주얼이면 충분합니다. 슬리퍼, 상하의 트레이닝복은 입장이 제한될 수 있습니다.</li></ul>`],
+      ['입장 규칙', `<ul><li>입장료는 없습니다. 술은 바에서 주문하거나 테이블·보틀 세트를 이용하세요.</li><li>연 나이 19세 이상(${BY}년생까지)만 입장할 수 있습니다.</li><li>실물 신분증이 꼭 필요합니다. 사진이나 사본은 안 됩니다. 외국인은 여권 원본을 가져오세요.</li><li>드레스코드가 있습니다. 과도한 캐주얼, 트레이닝복, 슬리퍼·스포츠 샌들은 입장이 제한될 수 있습니다.</li></ul>`],
       ['층별 분위기', `<p><b>2층 GROOVE</b> — 힙합·R&B. 혼자 와도 편한 솔로바(H석), 스테이지석, 테이블이 있고 다트도 있습니다.</p>
 <p><b>3층 SPOT</b> — 빅룸 EDM. 메인 스테이지를 보는 L석, 포토존, 흡연실이 있습니다.</p>
 <p>매일 오후 그날 DJ 타임테이블이 인스타그램 @groovenspot 스토리와 이 사이트 이벤트 페이지에 올라옵니다.</p>`],
@@ -45,7 +45,7 @@ export const GUIDE = {
       ['Getting there', `<p>Take Busan Metro Line 1 or 2 to <b>Seomyeon Station</b> and leave by <b>Exit 3</b>. The club is a 3-minute walk.</p>
 <ul><li>From Busan Station: about 15 min on Line 1</li><li>From Haeundae: about 35 min on Line 2, or about 25 min by taxi</li><li>From Gimhae Airport: light rail to Sasang, then Line 2 — about 45 min</li></ul>
 <p>For taxis, show the driver the Korean address: <b>부산 부산진구 중앙대로680번가길 52</b>. The metro stops around midnight, so plan to take a taxi home.</p>`],
-      ['Entry rules', `<ul><li>Entry is free. Order drinks at the bar or book a table / bottle set.</li><li>Korea counts age by calendar year: you can enter if you were born in ${BY} or earlier.</li><li>Bring your <b>physical passport</b>. Photos and copies are not accepted.</li><li>Casual dress is fine. Slippers and full training wear may be refused.</li></ul>`],
+      ['Entry rules', `<ul><li>Entry is free. Order drinks at the bar or book a table / bottle set.</li><li>Korea counts age by calendar year: you can enter if you were born in ${BY} or earlier.</li><li>Bring your <b>physical passport</b>. Photos and copies are not accepted.</li><li>There is a dress code: overly casual wear, training wear (tracksuits) and slippers or sports sandals may be refused.</li></ul>`],
       ['Two floors, two vibes', `<p><b>2F GROOVE</b> — hip-hop and R&B. A solo bar (H seats) if you come alone, stage seats and tables for groups, plus darts.</p>
 <p><b>3F SPOT</b> — big-room EDM with L seats facing the main stage, a photo zone and a smoking room.</p>
 <p>Every afternoon the night's DJ timetable goes up on Instagram @groovenspot (stories) and on our events page.</p>`],
@@ -70,7 +70,7 @@ export const GUIDE = {
       ['行き方', `<p>釜山地下鉄1号線・2号線の<b>西面駅3番出口</b>から徒歩3分です。</p>
 <ul><li>釜山駅から：1号線で約15分</li><li>海雲台から：2号線で約35分、タクシーで約25分</li><li>金海空港から：軽電鉄で沙上へ→2号線乗り換え、約45分</li></ul>
 <p>タクシーでは韓国語住所<b>「부산 부산진구 중앙대로680번가길 52」</b>を見せてください。地下鉄は深夜0時ごろ終わるので、帰りはタクシー（Kakao Tアプリ）がおすすめです。</p>`],
-      ['入場ルール', `<ul><li>入場料はかかりません。ドリンクはバーで注文、またはテーブル・ボトルセットをご利用ください。</li><li>韓国は年単位で年齢を数えます。${BY}年以前に生まれた方が入場できます。</li><li><b>パスポート原本</b>を必ずお持ちください。写真やコピーは不可です。</li><li>服装はカジュアルでOK。サンダル・上下ジャージは入場をお断りする場合があります。</li></ul>`],
+      ['入場ルール', `<ul><li>入場料はかかりません。ドリンクはバーで注文、またはテーブル・ボトルセットをご利用ください。</li><li>韓国は年単位で年齢を数えます。${BY}年以前に生まれた方が入場できます。</li><li><b>パスポート原本</b>を必ずお持ちください。写真やコピーは不可です。</li><li>ドレスコードがあります。カジュアルすぎる服装、ジャージ、スリッパ・スポーツサンダルは入場をお断りする場合があります。</li></ul>`],
       ['フロアごとの雰囲気', `<p><b>2階 GROOVE</b> — ヒップホップとR&B。一人でも気軽なソロバー（H席）、ステージ席、テーブル席、ダーツもあります。</p>
 <p><b>3階 SPOT</b> — ビッグルームEDM。メインステージ前のL席、フォトゾーン、喫煙室があります。</p>
 <p>毎日午後、その日のDJタイムテーブルをInstagram @groovenspot（ストーリー）と当サイトのイベントページで公開しています。</p>`],
@@ -95,7 +95,7 @@ export const GUIDE = {
       ['怎么去', `<p>乘坐釜山地铁1号线或2号线到<b>西面站</b>，从<b>3号出口</b>出来步行3分钟。</p>
 <ul><li>从釜山站：地铁1号线约15分钟</li><li>从海云台：地铁2号线约35分钟，出租车约25分钟</li><li>从金海机场：轻轨到沙上站换乘2号线，约45分钟</li></ul>
 <p>打车时请给司机看韩文地址<b>「부산 부산진구 중앙대로680번가길 52」</b>。地铁大约午夜停运，回程建议打车（Kakao T）。</p>`],
-      ['入场规定', `<ul><li>免费入场。酒水可在吧台点，也可以订台或点酒套餐。</li><li>韩国按出生年份计算年龄：${BY}年及以前出生的客人可以入场。</li><li>请务必携带<b>护照原件</b>，照片和复印件无效。</li><li>穿着休闲即可。拖鞋、整套运动服可能被拒绝入场。</li></ul>`],
+      ['入场规定', `<ul><li>免费入场。酒水可在吧台点，也可以订台或点酒套餐。</li><li>韩国按出生年份计算年龄：${BY}年及以前出生的客人可以入场。</li><li>请务必携带<b>护照原件</b>，照片和复印件无效。</li><li>有着装要求：过于随意的穿着、运动服、拖鞋或运动凉鞋可能会被拒绝入场。</li></ul>`],
       ['两层两种氛围', `<p><b>2楼 GROOVE</b> — 嘻哈和R&B。一个人来也舒服的单人吧台（H座）、舞台座位和卡座，还有飞镖。</p>
 <p><b>3楼 SPOT</b> — 大场EDM，有正对主舞台的L座、拍照区和吸烟室。</p>
 <p>每天下午，当晚的DJ时间表会发布在 Instagram @groovenspot（快拍）和本站活动页面。</p>`],
