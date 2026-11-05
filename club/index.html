@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="부산 서면 Groove &amp; Spot 2층 힙합 · 3층 EDM을 3D로 둘러보는 가상 클럽. 캐릭터를 꾸미고 DJ 공개 녹음을 들어보세요.">
 <link rel="canonical" href="https://xn--2i0bl1s25d.site/club/">
+  <link rel="stylesheet" href="./table-games.css?v=1">
 </head>
 <body>
 <title>Groove &amp; Spot 가상 클럽</title>
@@ -246,6 +247,7 @@
 
 <div id="games" class="chip" hidden role="dialog" aria-label="게임">
   <div class="bgm-head"><b>🎮 게임</b><span>같은 시간 접속한 손님과 함께</span><button type="button" id="gamesclose" aria-label="닫기">✕</button></div>
+  <button type="button" class="gcard" id="g-table"><b>💥 테이블 게임</b><small>휴대폰 한 대로 손가락 폭탄·타이머·반응속도</small></button>
   <button type="button" class="gcard" id="g-dance"><b>🕺 댄스 배틀</b><small>DJ 앞 발판에서 리듬 화살표 대결 · 최대 4명</small></button>
   <button type="button" class="gcard" id="g-dart"><b>🎯 다트</b><small>2층 다트 기계 · COUNT-UP 대결과 순위표</small></button>
   <button type="button" class="gcard" id="g-race"><b>🍾 바틀 레이스 시작</b><small>2·3층에 나타나는 바틀을 먼저 집기 · 90초 · 모두 참가</small></button>
@@ -2472,5 +2474,48 @@
 })();
 </script>
 
+<dialog id="table-games" aria-labelledby="table-title">
+  <header class="table-head">
+    <h2 id="table-title">테이블 게임</h2>
+    <form method="dialog"><button type="submit" aria-label="테이블 게임 닫기">✕</button></form>
+  </header>
+  <nav class="table-picker" aria-label="테이블 게임 선택">
+    <button type="button" data-table-game="finger" aria-pressed="true">손가락 폭탄</button>
+    <button type="button" data-table-game="timer" aria-pressed="false">0.00초 타이머</button>
+    <button type="button" data-table-game="reflex" aria-pressed="false">반응속도</button>
+  </nav>
+  <section data-table-panel="finger">
+    <h3>손가락 폭탄 뽑기</h3>
+    <div id="table-finger-pad" role="group" aria-label="여러 손가락을 동시에 올리는 영역">
+      <strong id="table-finger-status" aria-live="polite">두 명 이상 손가락을 올려요</strong>
+    </div>
+    <button type="button" id="table-finger-reset">다시 뽑기</button>
+  </section>
+  <section data-table-panel="timer" hidden>
+    <h3>0.00초 정밀 타이머</h3>
+    <p>시작을 누르고 다음 사람에게 넘겨요. 시간을 보지 않고 감으로 멈추세요.</p>
+    <label class="table-rule">승부 규칙
+      <select id="table-timer-rule">
+        <option value="hundredths">소수점 두 자리 가장 낮게</option>
+        <option value="target">7.00초에 가장 가깝게</option>
+      </select>
+    </label>
+    <div class="table-controls">
+      <button type="button" id="table-timer-action">1번 시작</button>
+      <button type="button" id="table-timer-reset">기록 초기화</button>
+    </div>
+    <p id="table-timer-status" class="table-status" aria-live="polite"></p>
+    <ol id="table-timer-scores" class="table-scores" aria-label="타이머 기록"></ol>
+  </section>
+  <section data-table-panel="reflex" hidden>
+    <h3>화면 컬러 반응속도</h3>
+    <p>초록 화면에 ‘지금!’이 뜨면 누르세요. 일찍 누르면 헛스윙이에요.</p>
+    <button type="button" id="table-reflex-pad" data-state="ready">1번 시작</button>
+    <button type="button" id="table-reflex-reset">기록 초기화</button>
+    <p id="table-reflex-status" class="table-status" aria-live="polite"></p>
+    <ol id="table-reflex-scores" class="table-scores" aria-label="반응속도 기록"></ol>
+  </section>
+</dialog>
+<script src="./table-games.js?v=1" defer></script>
 </body>
 </html>
