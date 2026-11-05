@@ -268,6 +268,7 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
       <input id="rq-song" name="song" maxlength="80" autocomplete="off" required placeholder="${esc(L('rq.searchPh'))}" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="rq-results">
       <ul class="rq-results" id="rq-results" role="listbox" hidden></ul>
       <p class="rq-hint muted small" id="rq-hint" aria-live="polite"></p>
+      <div class="rq-recent" id="rq-recent" hidden><p class="muted small">${esc(L('rq.recent'))}</p><div class="rq-chips" id="rq-chips"></div></div>
     </div>
     <label>${L('rq.artist')}<input name="artist" maxlength="60" autocomplete="off"></label>
     <fieldset class="seg full"><legend>${L('rq.floor')}</legend>
