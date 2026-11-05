@@ -538,7 +538,7 @@
     if (qf0 === '3F') rq.querySelector('input[name=floor][value="3F"]').checked = true;
     var lastNick = store('gs_nick'); if (lastNick) rq.nick.value = lastNick;
 
-    // 곡 검색 (Apple iTunes 검색 API, 키 불필요). 한국 스토어 먼저, 결과가 없으면 글로벌 스토어.
+    // 로컬 곡을 먼저 표시하고 외부 검색 결과를 보완한다.
     var box = $('#rq-results'), hint = $('#rq-hint'), song = rq.song, sCache = {}, sTimer = null, sSeq = 0, sItems = [], sActive = -1;
     // 응답이 늦으면 포기 (검색 중… 이 계속 남지 않게)
     function timed(p, ms) { return new Promise(function (ok, no) { var tm = setTimeout(function () { no(new Error('timeout')); }, ms); p.then(function (v) { clearTimeout(tm); ok(v); }, function (e) { clearTimeout(tm); no(e); }); }); }
@@ -556,22 +556,32 @@
       var k = country + '|' + term;
       if (sCache[k]) return Promise.resolve(sCache[k]);
       var u = 'https://itunes.apple.com/search?media=music&entity=song&limit=8&term=' + encodeURIComponent(term) + (country ? '&country=' + country : '');
-      return timed(fetch(u), 5000).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      return timed(fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }), 2200)
         .then(function (d) { var res = (d.results || []).map(function (x) { return { t: x.trackName, a: x.artistName, img: x.artworkUrl60 }; }); sCache[k] = res; return res; });
     }
     function deezer(term) {
       var k = 'dz|' + term;
       if (sCache[k]) return Promise.resolve(sCache[k]);
-      return jsonp('https://api.deezer.com/search?limit=8&q=' + encodeURIComponent(term), 5000)
+      return jsonp('https://api.deezer.com/search?limit=8&q=' + encodeURIComponent(term), 2200)
         .then(function (d) { var res = ((d && d.data) || []).map(function (x) { return { t: x.title, a: x.artist && x.artist.name, img: x.album && x.album.cover_small }; }); sCache[k] = res; return res; });
     }
     // 두 번 실패한 검색 서비스는 이번 방문 동안 건너뜀
     function bad(k) { try { return +sessionStorage.getItem('gs_sbad_' + k) >= 2; } catch (e) { return false; } }
     function fail(k) { try { sessionStorage.setItem('gs_sbad_' + k, String((+sessionStorage.getItem('gs_sbad_' + k) || 0) + 1)); } catch (e) {} }
-    function anySearch(term) { // 한국 스토어 → 글로벌 → Deezer, 앞에서 실패하거나 결과가 없으면 다음
-      var tries = [['kr', function () { return itunes(term, 'KR'); }], ['us', function () { return itunes(term, ''); }], ['dz', function () { return deezer(term); }]].filter(function (x) { return !bad(x[0]); }), i = 0, failed = 0, n = tries.length;
-      function next() { if (i >= tries.length) return Promise.resolve(failed === n ? null : []); var f = tries[i++]; return f[1]().then(function (r) { return r.length ? r : next(); }, function () { failed++; fail(f[0]); return next(); }); }
-      return n ? next() : Promise.resolve(null);
+    function anySearch(term) {
+      var tries = [['kr', function () { return itunes(term, 'KR'); }], ['us', function () { return itunes(term, ''); }], ['dz', function () { return deezer(term); }]].filter(function (x) { return !bad(x[0]); });
+      if (!tries.length) return Promise.resolve(null);
+      return new Promise(function (resolve) {
+        var remaining = tries.length, responded = false;
+        function finish() { if (--remaining === 0) resolve(responded ? [] : null); }
+        tries.forEach(function (source) {
+          source[1]().then(function (results) {
+            responded = true;
+            if (results.length) resolve(results);
+            finish();
+          }, function () { fail(source[0]); finish(); });
+        });
+      });
     }
     // 저장된 인기곡 목록 (검색이 막혀도 바로 찾기 · 한글 가수명 · 초성 검색)
     var SONGS = null, songsP = null;
@@ -592,8 +602,10 @@
       return out.sort(function (x, y) { return y.sc - x.sc || x.i - y.i; }).slice(0, 8);
     }
     function closeList() { box.hidden = true; song.setAttribute('aria-expanded', 'false'); song.removeAttribute('aria-activedescendant'); sActive = -1; }
+    function cancelSearch() { clearTimeout(sTimer); sSeq++; }
     function pickSong(i) {
       var it = sItems[i]; if (!it) return;
+      cancelSearch();
       song.value = it.t.slice(0, 80); rq.artist.value = it.a.slice(0, 60); closeList(); hint.textContent = ''; rq.dataset.picked = '1';
       song.setAttribute('aria-invalid', 'false');
     }
@@ -603,20 +615,37 @@
       if (i >= 0) { song.setAttribute('aria-activedescendant', 'rq-opt-' + i); var li = $('#rq-opt-' + i); if (li) li.scrollIntoView({ block: 'nearest' }); }
     }
     function search() {
-      var term = song.value.trim(), my = ++sSeq;
-      if (term.length < 2) { closeList(); hint.textContent = ''; return; }
-      var local = localSearch(term);
-      if (local.length) show(local, ''); else hint.textContent = T.rqSearching;
-      if (!SONGS) loadSongs().then(function () { if (my === sSeq && box.hidden) { var l2 = localSearch(term); if (l2.length) show(l2, ''); } });
-      if (/^[ㄱ-ㅎ\s]+$/.test(term)) { loadSongs().then(function () { if (my === sSeq) show(localSearch(term), ''); }); return; } // 초성은 저장 목록에서만
-      anySearch(term)
-        .then(function (res) {
+      cancelSearch();
+      var term = song.value.trim(), my = sSeq;
+      closeList();
+      if (term.length < 2) { hint.textContent = ''; return; }
+
+      var initials = /^[ㄱ-ㅎ\s]+$/.test(term), remoteResults = null;
+      function render() {
+        var local = localSearch(term);
+        if (remoteResults && remoteResults.length) {
+          show(local.filter(function (x) { return x.sc >= 5; }).concat(remoteResults, local), '');
+        } else if (local.length) {
+          show(local, remoteResults === null ? '' : (remoteResults === false ? T.rqLocal : ''));
+        } else if (remoteResults === false) {
+          closeList(); hint.textContent = T.rqSearchOff;
+        } else if (remoteResults !== null || (initials && SONGS)) {
+          show([], '');
+        } else {
+          hint.textContent = T.rqSearching;
+        }
+      }
+      render();
+      if (!SONGS) loadSongs().then(function () { if (my === sSeq) render(); });
+      if (initials) return;
+      sTimer = setTimeout(function () {
+        anySearch(term).then(function (results) {
           if (my !== sSeq) return;
-          if (res === null || !res.length) { var l3 = localSearch(term); if (res === null) track('song_search_fail', { term_len: term.length }); if (l3.length) { show(l3, res === null ? T.rqLocal : ''); return; } }
-          if (res === null) { closeList(); hint.textContent = T.rqSearchOff; return; }
-          var l5 = localSearch(term); show(l5.filter(function (x) { return x.sc >= 5; }).concat(res, l5), ''); // 제목이 그대로 시작하는 인기곡을 앞에
-        })
-        .catch(function () { if (my === sSeq) { var l4 = localSearch(term); if (l4.length) show(l4, T.rqLocal); else { closeList(); hint.textContent = T.rqSearchOff; } } });
+          remoteResults = results === null ? false : results;
+          if (results === null) track('song_search_fail', { term_len: term.length });
+          render();
+        });
+      }, 250);
     }
     function show(res, note) {
       var seen = {};
@@ -646,28 +675,28 @@
         chips.addEventListener('click', function (e) {
           var b = e.target.closest('button[data-ri]'); if (!b) return;
           var parts = list[+b.dataset.ri].split(' — ');
+          cancelSearch();
           song.value = parts[0].slice(0, 80); rq.artist.value = (parts.slice(1).join(' — ') || '').slice(0, 60);
           rq.dataset.picked = '1'; closeList(); hint.textContent = ''; song.setAttribute('aria-invalid', 'false');
           track('song_recent_pick', {});
         });
       }).catch(function () {});
     })();
-    song.addEventListener('focus', loadSongs, { once: true });
-    setTimeout(loadSongs, 1500);
-    var composing = false; // 한글 조합 중에는 검색하지 않음 (자음·모음마다 요청이 몰려 막히지 않게)
-    song.addEventListener('compositionstart', function () { composing = true; });
-    song.addEventListener('compositionend', function () { composing = false; clearTimeout(sTimer); sTimer = setTimeout(search, 450); });
-    song.addEventListener('input', function () { clearTimeout(sTimer); if (!composing) sTimer = setTimeout(search, 600); else sTimer = setTimeout(search, 1200); });
+    loadSongs();
+    var composing = false;
+    song.addEventListener('compositionstart', function () { composing = true; cancelSearch(); closeList(); });
+    song.addEventListener('compositionend', function () { composing = false; search(); });
+    song.addEventListener('input', function () { if (!composing) search(); });
     song.addEventListener('keydown', function (e) {
       if (box.hidden) return;
       if (e.key === 'ArrowDown') { e.preventDefault(); setActive(Math.min(sItems.length - 1, sActive + 1)); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(Math.max(0, sActive - 1)); }
       else if (e.key === 'Enter' && sActive >= 0) { e.preventDefault(); pickSong(sActive); }
-      else if (e.key === 'Escape') { closeList(); }
+      else if (e.key === 'Escape') { cancelSearch(); closeList(); }
     });
     box.addEventListener('mousedown', function (e) { e.preventDefault(); });
     box.addEventListener('click', function (e) { var li = e.target.closest('li[data-i]'); if (li) pickSong(+li.dataset.i); });
-    document.addEventListener('click', function (e) { if (!e.target.closest('.rq-search')) closeList(); });
+    document.addEventListener('click', function (e) { if (!e.target.closest('.rq-search')) { cancelSearch(); closeList(); } });
     rq.addEventListener('submit', function (ev) {
       ev.preventDefault();
       var song = rq.song.value.trim();
