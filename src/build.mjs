@@ -42,7 +42,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 
 function layout(lang, page, { title, desc, body, active }) {
   const L = (k) => t(lang, k);
-  const isHome = active === '';
+  const isHome = page === '' && active === '';
   const runtime = Object.fromEntries(Object.keys(T.ko).filter((k) => k.startsWith('rt.')).map((k) => [k.slice(3), L(k)]));
   const nav = [
     ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['menu/', 'nav.menu'], ['gallery/', 'nav.gallery'], ['request/', 'nav.request'], ['info/', 'nav.info'], ['/partners/', 'nav.partners'], ['/club/', 'nav.club'],
@@ -56,7 +56,7 @@ function layout(lang, page, { title, desc, body, active }) {
 <meta name="naver-site-verification" content="663bc824a0d4240c00416f2be7539140c3b01922">
 <script>if(location.protocol==='http:'&&!/^(localhost|127\\.|\\[)/.test(location.hostname))location.replace('https:'+location.href.slice(5))</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="${isHome ? '#101014' : '#0a0909'}">
+<meta name="theme-color" content="#101014">
 <title>${esc(fullTitle)}</title>
 <meta name="description" content="${esc(desc || L('site.desc'))}">
 <link rel="canonical" href="${SITE}${href(lang, page)}">
@@ -78,15 +78,16 @@ ${alternates}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="/assets/site.css?v=${VERSION}">${isHome ? `
+<link rel="stylesheet" href="/assets/site.css?v=${VERSION}">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&display=swap">
+<link rel="stylesheet" href="/assets/shell.css?v=${VERSION}">${isHome ? `
 <link rel="stylesheet" href="/assets/home.css?v=${VERSION}">` : ''}
 ${GA_TAG}
 </head>
-<body data-page="${page.replace(/\/$/, '') || 'home'}">
+<body class="site-public" data-page="${page.replace(/\/$/, '') || (isHome ? 'home' : 'not-found')}">
 <a class="skip" href="#main">Skip to content</a>
 <header class="hdr">
-  <a class="brand logo${isHome ? ' home-brand' : ''}" href="${href(lang, '')}">${isHome ? LOGO_FULL : `<img class="logo-icon" src="/assets/logo-icon.png" width="181" height="150" alt="">${LOGO_WORD}`}</a>
+  <a class="brand logo site-brand" href="${href(lang, '')}">${LOGO_FULL}</a>
   <nav class="nav" aria-label="Main">
     ${nav.map(([p, k]) => `<a href="${p === '/partners/' && lang !== 'ko' ? p + '?lang=' + lang : p[0] === '/' ? p : href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n    ')}
   </nav>
@@ -112,7 +113,7 @@ ${body}
 <footer class="ftr">
   <div class="ftr-grid">
     <div>
-      <a class="brand logo logo-lg" href="${href(lang, '')}"><img class="logo-icon" src="/assets/logo-icon.png" width="181" height="150" alt="">${LOGO_WORD}</a>
+      <a class="brand logo site-brand" href="${href(lang, '')}">${LOGO_FULL}</a>
       <p class="muted">${L('if.addr')}<br>${L('if.near')}</p>
     </div>
     <div>
@@ -494,6 +495,7 @@ write('admin/index.html', `<!doctype html>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/assets/site.css?v=${VERSION}">
+<link rel="stylesheet" href="/assets/shell.css?v=${VERSION}">
 <link rel="stylesheet" href="/assets/admin.css?v=${VERSION}">
 </head>
 <body class="adm" data-page="admin">

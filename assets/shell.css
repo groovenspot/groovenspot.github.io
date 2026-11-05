@@ -1,0 +1,133 @@
+/* Groove & Spot — shared navigation, controls and footer */
+/* brand wordmark */
+.brand { font-family: var(--display); font-weight: 900; letter-spacing: -.01em; text-decoration: none; display: inline-flex; align-items: baseline; gap: .12em; line-height: 1; }
+.b-g { color: var(--g); }
+.b-s { color: var(--s); }
+.b-amp { color: var(--txt); font-weight: 500; }
+
+/* header */
+.hdr {
+  position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; background: rgba(10, 9, 9, .82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+@media (min-width: 700px) { .hdr { padding: 14px max(32px, calc((100% - 1180px) / 2 + 32px)); } }
+.hdr .brand { font-size: 17px; margin-right: auto; }
+.nav { display: none; gap: 4px; }
+.nav a { text-decoration: none; padding: 8px 12px; border-radius: 999px; color: var(--muted); font-weight: 600; font-size: 15px; }
+.nav a:hover, .nav a[aria-current="page"] { color: var(--txt); background: rgba(255, 255, 255, .06); }
+@media (min-width: 1024px) { .nav { display: flex; } }
+.hdr .hdr-cta { display: none; }
+@media (min-width: 1024px) { .hdr .hdr-cta { display: inline-flex; } }
+.lang { position: relative; }
+.lang summary { list-style: none; cursor: pointer; font-weight: 700; font-size: 13px; letter-spacing: .08em; padding: 8px 12px; border: 1px solid var(--line-2); border-radius: 999px; }
+.lang summary::-webkit-details-marker { display: none; }
+.lang-menu { position: absolute; right: 0; top: calc(100% + 8px); background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 6px; min-width: 150px; box-shadow: 0 20px 50px rgba(0, 0, 0, .6); }
+.lang-menu a { display: block; padding: 10px 12px; border-radius: 10px; text-decoration: none; }
+.lang-menu a:hover { background: rgba(255, 255, 255, .06); }
+.lang-menu a[aria-current] { color: var(--g); font-weight: 700; }
+
+/* buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+  padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .04);
+  color: var(--txt); font: 700 15px/1.2 var(--body); text-decoration: none; cursor: pointer; transition: transform .15s, background .15s;
+}
+.btn:hover { background: rgba(255, 255, 255, .09); }
+.btn:active { transform: scale(.98); }
+.btn-hot { background: linear-gradient(100deg, var(--g-deep), var(--g)); border-color: transparent; color: #140700; }
+.btn-hot:hover { background: linear-gradient(100deg, var(--g), #ff9a4a); }
+.btn-lg { min-height: 52px; padding: 14px 24px; font-size: 16px; }
+
+/* footer */
+.ftr { margin-top: 80px; border-top: 1px solid var(--line); padding: 40px 16px 24px; }
+@media (min-width: 700px) { .ftr { padding: 48px 32px 28px; } }
+.ftr-grid { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; }
+@media (min-width: 800px) { .ftr-grid { grid-template-columns: 1.4fr 1fr 1fr; } }
+.ftr p { margin: 10px 0 0; }
+.ftr a { text-decoration: none; }
+.ftr a:hover { text-decoration: underline; }
+.brand-lg { font-size: 26px; }
+.ftr-h { font-size: 13px; letter-spacing: .14em; color: var(--muted); margin: 0; }
+.ftr-small { max-width: 1180px; margin: 32px auto 0 !important; font-size: 13px; }
+
+/* mobile dock */
+.dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: rgba(10, 9, 9, .92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
+.dock a { display: flex; align-items: center; justify-content: center; min-height: 48px; border-radius: 14px; text-decoration: none; font-weight: 700; font-size: 15px; background: rgba(255, 255, 255, .05); border: 1px solid var(--line); }
+.dock .dock-hot { background: linear-gradient(100deg, var(--g-deep), var(--g)); color: #140700; border-color: transparent; }
+@media (min-width: 1024px) { .dock { display: none; } }
+
+/* logo */
+.logo { display: inline-flex; align-items: center; gap: 8px; }
+.logo img { display: block; width: auto; }
+.hdr .logo .logo-icon { height: 28px; }
+.hdr .logo img:last-child { height: 18px; }
+@media (max-width: 380px) { .hdr .logo img:last-child { height: 15px; } }
+.logo-lg .logo-icon { height: 40px; }
+.logo-lg img:last-child { height: 26px; }
+
+.lang summary { display: inline-flex; align-items: center; gap: 6px; letter-spacing: .02em; font-size: 14px; white-space: nowrap; }
+.lang-globe { font-size: 15px; line-height: 1; }
+
+/* mobile menu */
+.menu-btn { display: inline-flex; flex-direction: column; justify-content: center; gap: 5px; width: 44px; height: 44px; padding: 0 11px; border-radius: 12px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .04); cursor: pointer; flex: 0 0 auto; }
+.menu-btn span { display: block; height: 2px; border-radius: 2px; background: var(--txt); transition: transform .2s, opacity .2s; }
+.menu-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.menu-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+@media (min-width: 1024px) { .menu-btn, .mnav { display: none !important; } }
+.mnav { position: fixed; z-index: 39; left: 0; right: 0; top: 0; bottom: 0; padding: calc(84px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(96px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+.mnav a:not(.btn) { display: block; padding: 14px 6px; font-family: var(--display); font-size: 24px; text-decoration: none; border-bottom: 1px solid var(--line); }
+:lang(ko) .mnav a:not(.btn), :lang(ja) .mnav a:not(.btn) { font-size: 26px; }
+.mnav a[aria-current="page"]:not(.btn) { color: var(--g); }
+.mnav-cta { margin-top: 18px; min-height: 52px; font-size: 17px; }
+body.mnav-open { overflow: hidden; }
+@media (max-width: 1023px) { .hdr { gap: 8px; } .lang summary { padding: 8px 10px; } }
+@media (max-width: 400px) { .hdr .logo .logo-icon { height: 24px; } .hdr .logo img:last-child { height: 14px; } .lang summary { font-size: 13px; } }
+
+/* dock: 2nd row (requests · menu · info) */
+.dock { grid-template-columns: 1fr 1.3fr 1fr; row-gap: 6px; }
+.dock .dock-sub { min-height: 38px; font-size: 13px; font-weight: 600; border-radius: 10px; background: transparent; color: var(--muted); }
+.dock .dock-sub[aria-current="page"] { color: var(--txt); border-color: var(--line-2); background: rgba(255, 255, 255, .06); }
+
+
+/* Public site theme shared by the main site and the partners directory. */
+body.site-public {
+  --bg: #101014;
+  --bg-2: #131419;
+  --card: #16171d;
+  --txt: #f5f5f8;
+  --muted: #b8b9c4;
+  --line: #353641;
+  --line-2: #535461;
+  --radius: 4px;
+  --site-silver: #e1e3ec;
+  --site-title: "Barlow Condensed", var(--body);
+  background: var(--bg);
+  color: var(--txt);
+}
+.site-public .hdr, .site-public .dock { background: rgba(17, 17, 22, .96); }
+.site-public .hdr { gap: 10px; padding-block: 8px; }
+.site-public .hdr .brand { flex-shrink: 0; min-height: 44px; }
+.hdr .logo.site-brand img { width: clamp(90px, 12vw, 110px); height: auto; }
+.ftr .logo.site-brand img { width: 140px; height: auto; }
+.site-public .hdr .nav { gap: 2px; }
+.site-public .hdr .nav a { padding: 8px clamp(5px, .75vw, 12px); border-radius: var(--radius); font-size: 13px; white-space: nowrap; }
+.site-public .hdr-cta { white-space: nowrap; }
+.site-public .hdr .lang summary, .site-public .hdr .menu-btn, .site-public .btn, .site-public .dock a {
+  border-radius: var(--radius);
+}
+.site-public .hdr .lang summary, .site-public .hdr .menu-btn { min-height: 44px; }
+.site-public .lang-menu, .site-public .lang-menu a { border-radius: var(--radius); }
+.site-public .btn-hot, .site-public .dock .dock-hot {
+  background: var(--site-silver);
+  color: #14151a;
+}
+.site-public .btn-hot:hover, .site-public .dock .dock-hot:hover { background: #f6f7fd; }
+.site-public .dock .dock-sub { min-height: 44px; }
+
+@media (max-width: 1023px) {
+  body.site-public { padding-bottom: calc(126px + env(safe-area-inset-bottom, 0px)); }
+  .site-public .toast { bottom: calc(140px + env(safe-area-inset-bottom, 0px)); }
+  .site-public .mnav { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+}

@@ -77,7 +77,7 @@
     mbtn.addEventListener('click', function () { setMenu(mnav.hidden); });
     mnav.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !mnav.hidden) { setMenu(false); mbtn.focus(); } });
-    window.addEventListener('resize', function () { if (window.innerWidth >= 900 && !mnav.hidden) setMenu(false); });
+    window.addEventListener('resize', function () { if (!mnav.hidden && getComputedStyle(mbtn).display === 'none') setMenu(false); });
   }
 
   /* ---------- 언어 선택 기억 ---------- */

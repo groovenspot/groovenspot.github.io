@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#0a0909">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101014">
   <meta name="description" content="그루브앤스팟 제휴 매장 28곳의 실제 사진과 영업정보, 영수증 제휴 혜택을 한눈에 확인하세요.">
   <title>제휴 매장 가이드 · Groove & Spot</title>
   <link rel="canonical" href="https://xn--2i0bl1s25d.site/partners/">
@@ -18,14 +18,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-  <link rel="stylesheet" href="./style.css?v=9b9be3b">
+  <link rel="stylesheet" href="./style.css?v=unified-1">
   <link rel="stylesheet" href="./assets/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="./assets/vendor/leaflet.markercluster/MarkerCluster.css">
   <link rel="stylesheet" href="./assets/vendor/leaflet.markercluster/MarkerCluster.Default.css">
   <link rel="stylesheet" href="./course-map.css">
   <link rel="stylesheet" href="./partner-application.css">
   <link rel="stylesheet" href="./mobile.css">
+  <link rel="stylesheet" href="/assets/shell.css?v=unified-1">
   <script src="./i18n.js?v=9b9be3b"></script>
   <script src="./assets/vendor/leaflet/leaflet.js" defer></script>
   <script src="./assets/vendor/leaflet.markercluster/leaflet.markercluster.js" defer></script>
@@ -35,60 +37,6 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4Y93LP9PP"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','G-G4Y93LP9PP');}</script>
   <style>
-/* Shared Groove & Spot header rules from assets/site.css. */
-:root { --body: var(--font); --txt: var(--ink); --line-2: var(--line-strong); --g: var(--orange); --g-deep: var(--orange-deep); }
-.hdr {
-  position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; background: rgba(10, 9, 9, .82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line);
-}
-@media (min-width: 700px) { .hdr { padding: 14px max(32px, calc((100% - 1180px) / 2 + 32px)); } }
-.hdr .brand { font-size: 17px; margin-right: auto; }
-.nav { display: none; gap: 4px; }
-.nav a { text-decoration: none; padding: 8px 12px; border-radius: 999px; color: var(--muted); font-weight: 600; font-size: 15px; }
-.nav a:hover, .nav a[aria-current="page"] { color: var(--txt); background: rgba(255, 255, 255, .06); }
-@media (min-width: 900px) { .nav { display: flex; } }
-.hdr .hdr-cta { display: none; }
-@media (min-width: 900px) { .hdr .hdr-cta { display: inline-flex; } }
-.lang { position: relative; }
-.lang summary { list-style: none; cursor: pointer; font-weight: 700; font-size: 13px; letter-spacing: .08em; padding: 8px 12px; border: 1px solid var(--line-2); border-radius: 999px; }
-.lang summary::-webkit-details-marker { display: none; }
-.lang-menu { position: absolute; right: 0; top: calc(100% + 8px); background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 6px; min-width: 150px; box-shadow: 0 20px 50px rgba(0, 0, 0, .6); }
-.lang-menu a { display: block; padding: 10px 12px; border-radius: 10px; text-decoration: none; }
-.lang-menu a:hover { background: rgba(255, 255, 255, .06); }
-.lang-menu a[aria-current] { color: var(--g); font-weight: 700; }
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
-  padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .04);
-  color: var(--txt); font: 700 15px/1.2 var(--body); text-decoration: none; cursor: pointer; transition: transform .15s, background .15s;
-}
-.btn:hover { background: rgba(255, 255, 255, .09); }
-.btn:active { transform: scale(.98); }
-.btn-hot { background: linear-gradient(100deg, var(--g-deep), var(--g)); border-color: transparent; color: #140700; }
-.btn-hot:hover { background: linear-gradient(100deg, var(--g), #ff9a4a); }
-.logo { display: inline-flex; align-items: center; gap: 8px; }
-.logo img { display: block; width: auto; }
-.hdr .logo .logo-icon { height: 28px; }
-.hdr .logo img:last-child { height: 18px; }
-@media (max-width: 380px) { .hdr .logo img:last-child { height: 15px; } }
-.lang summary { display: inline-flex; align-items: center; gap: 6px; letter-spacing: .02em; font-size: 14px; white-space: nowrap; }
-.lang-globe { font-size: 15px; line-height: 1; }
-.menu-btn { display: inline-flex; flex-direction: column; justify-content: center; gap: 5px; width: 44px; height: 44px; padding: 0 11px; border-radius: 12px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .04); cursor: pointer; flex: 0 0 auto; }
-.menu-btn span { display: block; height: 2px; border-radius: 2px; background: var(--txt); transition: transform .2s, opacity .2s; }
-.menu-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.menu-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
-.menu-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-@media (min-width: 900px) { .menu-btn, .mnav { display: none !important; } }
-.mnav { position: fixed; z-index: 39; left: 0; right: 0; top: 0; bottom: 0; padding: calc(84px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(96px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
-.mnav a:not(.btn) { display: block; padding: 14px 6px; font-family: var(--display); font-size: 24px; text-decoration: none; border-bottom: 1px solid var(--line); }
-:lang(ko) .mnav a:not(.btn), :lang(ja) .mnav a:not(.btn) { font-size: 26px; }
-.mnav a[aria-current="page"]:not(.btn) { color: var(--g); }
-.mnav-cta { margin-top: 18px; min-height: 52px; font-size: 17px; }
-body.mnav-open { overflow: hidden; }
-@media (max-width: 899px) { .hdr { gap: 8px; } .lang summary { padding: 8px 10px; } }
-@media (max-width: 400px) { .hdr .logo .logo-icon { height: 24px; } .hdr .logo img:last-child { height: 14px; } .lang summary { font-size: 13px; } }
-.hdr .brand { width: auto; min-width: 0; }
-.hdr .logo img { object-fit: contain; }
 /* Internal verification and listing sources are not part of the public venue guide. */
 .details-checked,
 .field-sources,
@@ -118,10 +66,10 @@ body.mnav-open { overflow: hidden; }
 </style>
   <script src="/assets/site.js" defer></script>
 </head>
-<body>
+<body class="site-public" data-page="partners">
   <a class="skip-link" href="#directory">매장 목록으로 바로가기</a>
   <header class="hdr">
-  <a class="brand logo" href="/"><span id="brand-fallback" class="brand-fallback" hidden>Groove &amp; Spot</span><img class="logo-icon" src="/assets/logo-icon.png" width="181" height="150" alt=""><img id="brand-image" src="/assets/logo-word.png" width="564" height="79" alt="Groove &amp; Spot"></a>
+  <a class="brand logo site-brand" href="/"><span id="brand-fallback" class="brand-fallback" hidden>Groove &amp; Spot</span><img id="brand-image" src="/assets/logo.png" width="564" height="229" alt="Groove &amp; Spot"></a>
   <nav class="nav" aria-label="Main">
     <a href="/events/">이벤트</a>
     <a href="/floors/">플로어</a>
@@ -254,8 +202,33 @@ body.mnav-open { overflow: hidden; }
     <section id="sources" class="sources-section container" aria-labelledby="sources-title"><div class="source-mark" aria-hidden="true">↗</div><div><p class="eyebrow">FROM THE ORIGINALS</p><h2 id="sources-title">확인할 수 있는 정보부터, 차근차근.</h2><p>제휴 안내물과 공개된 매장정보를 바탕으로 정리했습니다.<br>확인하지 못한 정보는 추정하지 않고 미확인으로 표시합니다.</p><span id="updated-at" class="updated-at"></span></div></section>
   </main>
 
-  <footer class="site-footer"><div class="container footer-inner"><div class="footer-brand">Groove <i>&</i> Spot<small>GOOD MUSIC. GOOD PEOPLE. GOOD SPOTS.</small></div><p>제휴 안내물과 공개된 매장정보를 바탕으로 정리했습니다.<br>혜택·영업시간·연락처 등은 변경될 수 있으니 방문 전 확인해 주세요.</p><div class="application-footer-links"><a href="#partner-apply">신규 제휴 업체 신청하기 ↗</a><a href="/">그루브앤스팟 홈 ↗</a><a href="/info/">오시는 길 ↗</a><a href="#top">위로 돌아가기 ↑</a></div></div></footer>
+  <footer class="site-footer"><div class="container footer-inner"><div class="footer-brand"><a class="brand logo site-brand" href="/"><img src="/assets/logo.png" width="564" height="229" alt="Groove &amp; Spot" loading="lazy"></a><small>GOOD MUSIC. GOOD PEOPLE. GOOD SPOTS.</small></div><p>제휴 안내물과 공개된 매장정보를 바탕으로 정리했습니다.<br>혜택·영업시간·연락처 등은 변경될 수 있으니 방문 전 확인해 주세요.</p><div class="application-footer-links"><a href="#partner-apply">신규 제휴 업체 신청하기 ↗</a><a href="/">그루브앤스팟 홈 ↗</a><a href="/info/">오시는 길 ↗</a><a href="#top">위로 돌아가기 ↑</a></div></div></footer>
 
+  <nav class="dock" aria-label="Quick actions">
+    <a href="/events/">오늘 이벤트</a>
+    <a class="dock-hot" href="/reserve/">예약하기</a>
+    <a href="https://www.google.com/maps/dir/?api=1&amp;destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">길찾기</a>
+    <a class="dock-sub" href="/request/">🎵 신청곡</a>
+    <a class="dock-sub" href="/menu/">🍾 메뉴</a>
+    <a class="dock-sub" href="/info/">📍 안내</a>
+  </nav>
+  <script>
+    (() => {
+      const language = window.GS_PLANG;
+      const labels = {
+        en: ['Tonight', 'Book a table', 'Directions', '🎵 Requests', '🍾 Menu', '📍 Info'],
+        ja: ['今夜', '予約する', '地図', '🎵 リクエスト', '🍾 メニュー', '📍 案内'],
+        zh: ['今晚', '立即预订', '导航', '🎵 点歌', '🍾 酒单', '📍 须知']
+      }[language];
+      if (!labels) return;
+      document.querySelector('.footer-brand .site-brand').href = '/' + language + '/';
+      document.querySelectorAll('.dock a').forEach((link, index) => {
+        const href = link.getAttribute('href');
+        if (href.startsWith('/')) link.setAttribute('href', '/' + language + href);
+        link.textContent = labels[index];
+      });
+    })();
+  </script>
   <dialog id="detail-dialog" aria-labelledby="detail-title"><div class="dialog-shell"><div class="dialog-top"><span>PARTNER DETAILS</span><button id="close-detail" class="icon-button close-detail" type="button" aria-label="매장 상세정보 닫기"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div><div id="detail-content"></div></div></dialog>
   <dialog id="application-dialog" aria-labelledby="application-dialog-title" aria-describedby="application-dialog-description">
     <div class="application-dialog-shell">
