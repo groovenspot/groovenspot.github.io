@@ -115,29 +115,20 @@
   .vlist span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; } .vlist em { font-style: normal; font-weight: 800; font-variant-numeric: tabular-nums; } .vlist small { color: var(--muted); font-size: 11px; }
   #dbresult { display: grid; gap: 2px; padding: 8px; border-radius: 10px; background: rgba(255, 210, 58, .12); } #dbresult small { color: var(--muted); font-size: 11px; }
   #dbstart[hidden] { display: none; }
-  #bpbar, #djxbar { position: fixed; z-index: 7; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; padding: 8px 10px 8px 14px; max-width: calc(100vw - 24px); font-size: 13px; }
-  #bpbar[hidden], #djxbar[hidden], #pzbox[hidden], #pzphoto[hidden], #mfbox[hidden], #bpvs[hidden], #mfjoin[hidden], #mfgo[hidden], #mfnew[hidden] { display: none; }
+  #djxbar { position: fixed; z-index: 7; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; padding: 8px 10px 8px 14px; max-width: calc(100vw - 24px); font-size: 13px; }
+  #djxbar[hidden], #mfbox[hidden], #mfjoin[hidden], #mfgo[hidden], #mfnew[hidden] { display: none; }
   #djxbar { display: grid; gap: 8px; } .djxbtns { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; } .djxbtns button { min-height: 40px; }
-  body.bpmode .bottom, body.djxmode .bottom, body.bpmode #joy, body.djxmode #joy, body.bpmode #jumpbtn, body.djxmode #jumpbtn { display: none !important; }
-  #pzbox, #mfbox { position: fixed; z-index: 9; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(96px + env(safe-area-inset-top, 0px)); width: min(340px, calc(100vw - 24px)); padding: 12px; display: grid; gap: 8px; max-height: calc(100dvh - 180px); overflow-y: auto; }
-  #pzcount { font: 900 22px/1 var(--display); color: #ffd23a; text-align: right; }
-  #pzposes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; } #pzposes button { justify-content: center; min-height: 46px; } #pzposes button[aria-pressed="true"] { background: rgba(168, 97, 255, .3); border-color: #a861ff; }
-  #pzphoto { display: grid; gap: 6px; } #pzimg { width: 100%; border-radius: 10px; display: block; } #pzres { font-size: 13px; text-align: center; }
+  body.djxmode .bottom, body.djxmode #joy, body.djxmode #jumpbtn { display: none !important; }
+  #mfbox { position: fixed; z-index: 9; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(96px + env(safe-area-inset-top, 0px)); width: min(340px, calc(100vw - 24px)); padding: 12px; display: grid; gap: 8px; max-height: calc(100dvh - 180px); overflow-y: auto; }
   #mfrole { font-weight: 800; } #mflog { margin: 0; white-space: pre-wrap; font: 12px/1.5 var(--body); color: var(--muted); max-height: 120px; overflow-y: auto; }
   .mfl li { grid-template-columns: 0 1fr auto auto auto; } .mfl li button { min-height: 30px; padding: 4px 10px; font-size: 12px; }
-  #games, #quiz { position: fixed; z-index: 9; left: 50%; transform: translateX(-50%); top: calc(76px + env(safe-area-inset-top, 0px)); width: min(420px, calc(100vw - 24px)); padding: 12px; display: grid; gap: 8px; max-height: calc(100dvh - 160px); overflow-y: auto; }
-  #games[hidden], #quiz[hidden], #racehud[hidden], #raceside[hidden] { display: none; }
+  #games { position: fixed; z-index: 9; left: 50%; transform: translateX(-50%); top: calc(76px + env(safe-area-inset-top, 0px)); width: min(420px, calc(100vw - 24px)); padding: 12px; display: grid; gap: 8px; max-height: calc(100dvh - 160px); overflow-y: auto; }
+  #games[hidden], #racehud[hidden], #raceside[hidden] { display: none; }
   .gcard { display: grid; justify-items: start; gap: 3px; border-radius: 12px; padding: 11px 14px; text-align: left; min-height: 56px; }
   .gcard b { font-size: 15px; } .gcard small { color: var(--muted); font-size: 12px; font-weight: 500; }
   #racehud { position: fixed; z-index: 7; left: 50%; transform: translateX(-50%); top: calc(12px + env(safe-area-inset-top, 0px)); font-weight: 700; font-size: 14px; white-space: nowrap; max-width: calc(100vw - 24px); overflow: hidden; text-overflow: ellipsis; border-color: #ffd23a; }
   #raceside { position: fixed; z-index: 7; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(96px + env(safe-area-inset-top, 0px)); width: min(220px, calc(100vw - 24px)); padding: 10px 12px; display: grid; gap: 6px; font-size: 13px; }
-  #quiz { width: min(500px, calc(100vw - 24px)); }
-  #qzcv { width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius: 10px; background: #111; display: block; }
-  #qzopts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  #qzopts button { justify-content: center; min-height: 46px; font-weight: 800; }
-  #qzopts button.ok { background: rgba(57, 255, 138, .25); border-color: #39ff8a; } #qzopts button.bad { background: rgba(255, 59, 92, .25); border-color: #ff3b5c; }
-  #qznote { color: var(--muted); font-size: 13px; text-align: center; min-height: 18px; }
-  @media (max-width: 640px) { #racehud { top: calc(150px + env(safe-area-inset-top, 0px)); font-size: 12px; } #raceside { top: auto; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); width: 180px; font-size: 12px; } #quiz { top: calc(8px + env(safe-area-inset-top, 0px)); } #qzList { display: none; } }
+  @media (max-width: 640px) { #racehud { top: calc(150px + env(safe-area-inset-top, 0px)); font-size: 12px; } #raceside { top: auto; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); width: 180px; font-size: 12px; } }
   .dbrk { display: grid; gap: 4px; font-size: 12px; } .dbbtns { display: flex; gap: 6px; } .dbbtns button { flex: 1; justify-content: center; min-height: 38px; }
   #dbstart { background: linear-gradient(100deg, #ff4d00, var(--groove)); color: #1a0900; border-color: transparent; }
   #dbplay { position: fixed; z-index: 7; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(300px, calc(100vw - 24px)); display: grid; gap: 6px; }
@@ -235,8 +226,6 @@
   <button type="button" id="hands" aria-label="손 들기">🙌<span class="lbl"> 손 들기</span></button>
   <button type="button" id="dance" aria-label="춤추기">💃<span class="lbl"> 춤</span></button>
   <button type="button" id="chatbtn" aria-pressed="false" aria-label="채팅">💬<span class="lbl"> 채팅</span></button>
-  <button type="button" id="bpbtn" hidden aria-label="비어퐁">🏓<span class="lbl"> 비어퐁</span></button>
-  <button type="button" id="pzbtn" hidden aria-label="포즈 챌린지">📸<span class="lbl"> 챌린지</span></button>
   <button type="button" id="dancebtn" hidden aria-label="댄스 배틀">🕺<span class="lbl"> 배틀</span></button>
   <button type="button" id="dartbtn" hidden aria-label="다트 하기">🎯<span class="lbl"> 다트</span></button>
   <button type="button" id="view" aria-label="시점 바꾸기 (지금 3인칭)">🎥<span class="lbl" id="viewlbl"> 3인칭</span></button>
@@ -260,28 +249,12 @@
   <button type="button" class="gcard" id="g-dance"><b>🕺 댄스 배틀</b><small>DJ 앞 발판에서 리듬 화살표 대결 · 최대 4명</small></button>
   <button type="button" class="gcard" id="g-dart"><b>🎯 다트</b><small>2층 다트 기계 · COUNT-UP 대결과 순위표</small></button>
   <button type="button" class="gcard" id="g-race"><b>🍾 바틀 레이스 시작</b><small>2·3층에 나타나는 바틀을 먼저 집기 · 90초 · 모두 참가</small></button>
-  <button type="button" class="gcard" id="g-quiz"><b>❓ DJ 퀴즈 시작</b><small>GROOVE SESSIONS 썸네일로 DJ 맞히기 · 8문제 · 모두 참가</small></button>
   <button type="button" class="gcard" id="g-ck"><b>🏏 다트 크리켓</b><small>1:1로 번갈아 15~20·불을 닫는 펍 규칙 · 상대가 없으면 CPU</small></button>
-  <button type="button" class="gcard" id="g-bp"><b>🏓 비어퐁</b><small>2층 비어퐁 테이블 · 컵 6개 · 혼자 연습 또는 1:1</small></button>
-  <button type="button" class="gcard" id="g-pz"><b>📸 포토존 포즈 챌린지</b><small>3층 포토존 · 제시된 포즈로 단체 사진</small></button>
   <button type="button" class="gcard" id="g-dj"><b>🎧 DJ 해보기</b><small>지금 층 부스에서 3분 동안 게스트 DJ · 조명·스파클러·드롭</small></button>
   <button type="button" class="gcard" id="g-mf"><b>🕵️ 마피아</b><small>채팅으로 하는 추리 게임 · 4명 이상 · 밤에 한 명씩 귀가</small></button>
 </div>
 <div id="racehud" class="chip" hidden aria-live="polite"></div>
 <div id="raceside" class="chip" hidden><b>🍾 레이스 점수</b><ol id="raceList" class="vlist"></ol></div>
-<div id="quiz" class="chip" hidden role="dialog" aria-label="DJ 퀴즈">
-  <div class="bgm-head"><b id="qzhead">❓ DJ 퀴즈</b><span></span><button type="button" id="qzclose" aria-label="닫기">✕</button></div>
-  <canvas id="qzcv" width="480" height="270" aria-label="퀴즈 그림"></canvas>
-  <div id="qzopts"><button type="button"></button><button type="button"></button><button type="button"></button><button type="button"></button></div>
-  <div id="qznote"></div>
-  <ol id="qzList" class="vlist"></ol>
-</div>
-<div id="bpbar" class="chip" hidden><span id="bpinfo"></span><button type="button" id="bpvs" hidden>⚔️ 대결</button><button type="button" id="bpexit">✕ 나가기</button></div>
-<div id="pzbox" class="chip" hidden role="dialog" aria-label="포즈 챌린지">
-  <div class="bgm-head"><b id="pztitle">📸 포즈 챌린지</b><span id="pzcount"></span><button type="button" id="pzclose" aria-label="닫기">✕</button></div>
-  <div id="pzposes"><button type="button" aria-pressed="false">🙌 만세</button><button type="button" aria-pressed="false">🫶 하트</button><button type="button" aria-pressed="false">👉 포인트</button><button type="button" aria-pressed="false">🕺 앉기</button></div>
-  <div id="pzphoto" hidden><img id="pzimg" alt="포토존 단체 사진"><div id="pzres"></div><button type="button" id="pzsave">⬇ 사진 저장</button></div>
-</div>
 <div id="djxbar" class="chip" hidden><b id="djxtime">🎧 게스트 DJ</b>
   <div class="djxbtns"><button type="button" id="djxbgm">🎵 BGM</button><button type="button" data-fx="spark">🔥 스파클러</button><button type="button" data-fx="color">💡 조명</button><button type="button" data-fx="strobe">⚡ 스트로브</button><button type="button" data-fx="drop">💥 드롭</button><button type="button" data-fx="hands">🙌 손 들어</button><button type="button" id="djxstop">⏹ 내려가기</button></div></div>
 <div id="mfbox" class="chip" hidden role="dialog" aria-label="마피아">
@@ -1549,7 +1522,7 @@
     };
   })();
 
-  /* ---------------- 바틀 레이스 · DJ 퀴즈 · 게임 메뉴 ---------------- */
+  /* ---------------- 바틀 레이스 · 게임 메뉴 ---------------- */
   var GAMES = (function () {
     function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
     var UID = 'u' + Math.random().toString(36).slice(2, 10);
@@ -1627,71 +1600,6 @@
       if (!R.lastR || performance.now() - R.lastR > 500) { R.lastR = performance.now(); vlist($('#raceList'), Object.keys(R.scores).map(function (u) { var e = R.scores[u]; return { n: e.n + (e.me ? ' (나)' : ''), c: e.c, s: e.s + '개', me: e.me }; }).sort(function (a, b) { return parseInt(b.s) - parseInt(a.s); })); }
     }
 
-    /* ===== DJ 퀴즈: GROOVE SESSIONS 썸네일 모자이크/확대 → DJ 맞히기, 8문제 ===== */
-    var QN = 8, QT = 12, QR = 3, Q = { on: false, seed: 0, qs: [], t0: 0, i: -1, pick: -1, score: 0, got: {}, img: {} };
-    function qGen(seed) {
-      var r = rng(seed), idx = TRACKS.map(function (_, i) { return i; }), qs = [];
-      for (var i = idx.length - 1; i > 0; i--) { var j = Math.floor(r() * (i + 1)); var tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp; }
-      for (var k = 0; k < QN && k < idx.length; k++) {
-        var ans = idx[k], opts = [ans];
-        while (opts.length < 4) { var o = Math.floor(r() * TRACKS.length); if (opts.indexOf(o) < 0 && TRACKS[o].n !== TRACKS[ans].n) opts.push(o); }
-        for (var m = 3; m > 0; m--) { var n2 = Math.floor(r() * (m + 1)); var t2 = opts[m]; opts[m] = opts[n2]; opts[n2] = t2; }
-        qs.push({ a: ans, o: opts, type: k % 2 ? 'zoom' : 'pix', fx: .42 + r() * .16, fy: .22 + r() * .14 });
-      }
-      return qs;
-    }
-    function qImg(i) { var yt = TRACKS[i].yt; if (!Q.img[yt]) { var im = new Image(); im.crossOrigin = 'anonymous'; im.src = 'https://i.ytimg.com/vi/' + yt + '/mqdefault.jpg'; Q.img[yt] = im; } return Q.img[yt]; }
-    function quizStart() { var sd = (Math.random() * 1e9) | 0; if (room) room.emit('qzstart', { sd: sd }).catch(function () {}); quizBegin(sd); }
-    function quizBegin(sd) {
-      Q.on = true; Q.seed = sd; Q.qs = qGen(sd); Q.t0 = performance.now() + 3000; Q.i = -1; Q.score = 0; Q.got = {};
-      Q.qs.forEach(function (q) { qImg(q.a); });
-      $('#quiz').hidden = false; closeMenu(); toast('❓ DJ 퀴즈 시작!', '#4fd6ff'); pushQ();
-    }
-    function pushQ() { if (room) room.presence({ qz: Q.on ? { s: Q.score, i: Math.max(0, Q.i) + 1, u: UID } : null }).catch(function () {}); }
-    function quizRows() {
-      var rows = [{ n: myNick() + ' (나)', c: myC(), s: Q.score, me: true }];
-      Object.keys(peers).forEach(function (id) { var q = peers[id].qz; if (q) rows.push({ n: peers[id].nick, c: LOOK.t.indexOf(peers[id].color), s: q.s }); });
-      return rows.sort(function (a, b) { return b.s - a.s; });
-    }
-    function answer(oi) {
-      var now = performance.now(), q = Q.qs[Q.i]; if (!q || Q.pick >= 0) return;
-      var el = (now - (Q.t0 + Q.i * (QT + QR) * 1000)) / 1000; if (el < 0 || el > QT) return;
-      Q.pick = oi; var ok = q.o[oi] === q.a; Q.gain = ok ? Math.round(1000 - 700 * el / QT) : 0; Q.score += Q.gain; pushQ(); drawQuiz(true);
-    }
-    var qcv = $('#qzcv'), qcx = qcv.getContext('2d');
-    // 썸네일에서 사진이 있는 쪽 (글자로 DJ 이름이 보이지 않게 문제 중에는 이쪽만 보여줌)
-    var PHOTO_L = { CHOPPER: 1, BUCKY: 1, MUTE: 1, UZI: 1, KEYNA: 1, MAD: 1, ZET: 1, BRIXX: 1, YUKA: 1, SIZ: 1, GG: 1, POTAITO: 1, AUREDE: 1 };
-    function drawPic(q, el, reveal) {
-      var W = qcv.width = 480, H = qcv.height = 270, im = qImg(q.a); qcx.fillStyle = '#111'; qcx.fillRect(0, 0, W, H);
-      if (!im.complete || !im.naturalWidth) { qcx.fillStyle = '#888'; qcx.font = '700 16px sans-serif'; qcx.textAlign = 'center'; qcx.fillText('불러오는 중…', W / 2, H / 2); return; }
-      var k = Math.min(1, Math.max(0, el / QT)), iw0 = im.naturalWidth, ih = im.naturalHeight;
-      if (reveal) { qcx.drawImage(im, 0, 0, W, H); return; }
-      var left = !!PHOTO_L[TRACKS[q.a].n], ox = left ? 0 : iw0 * .56, iw = iw0 * .44, ch0 = iw * 9 / 16, oy = Math.max(0, (ih - ch0) * .35);
-      if (q.type === 'pix') { var cells = Math.round(8 + Math.pow(k, 1.6) * 70); var tmp = drawPic.tmp || (drawPic.tmp = document.createElement('canvas')); tmp.width = cells; tmp.height = Math.round(cells * 9 / 16); var tc = tmp.getContext('2d'); tc.drawImage(im, ox, oy, iw, ch0, 0, 0, tmp.width, tmp.height); qcx.imageSmoothingEnabled = false; qcx.drawImage(tmp, 0, 0, W, H); qcx.imageSmoothingEnabled = true; }
-      else { var z = 4.5 - 3.5 * Math.pow(k, .8), cw = iw / z, ch = ch0 / z, sx = ox + Math.min(iw - cw, Math.max(0, q.fx * iw - cw / 2)), sy = oy + Math.min(ch0 - ch, Math.max(0, q.fy * ch0 - ch / 2)); qcx.drawImage(im, sx, sy, cw, ch, 0, 0, W, H); }
-    }
-    function drawQuiz(force) {
-      var now = performance.now(), slot = (QT + QR) * 1000, i = Math.floor((now - Q.t0) / slot);
-      if (now < Q.t0) { $('#qzhead').textContent = '❓ DJ 퀴즈 · ' + Math.ceil((Q.t0 - now) / 1000) + '초 뒤 시작'; return; }
-      if (i >= Q.qs.length) { quizEnd(); return; }
-      if (i !== Q.i) { Q.i = i; Q.pick = -1; Q.gain = 0; pushQ(); var q0 = Q.qs[i]; var bt = $('#qzopts').children; for (var b = 0; b < 4; b++) { bt[b].textContent = TRACKS[q0.o[b]].n; bt[b].className = ''; bt[b].disabled = false; } }
-      var q = Q.qs[i], el = (now - Q.t0 - i * slot) / 1000, reveal = el > QT;
-      $('#qzhead').textContent = '❓ DJ 퀴즈 ' + (i + 1) + '/' + Q.qs.length + (reveal ? ' · 정답 공개' : ' · ⏱ ' + Math.ceil(QT - el)) + ' · ' + Q.score + '점';
-      drawPic(q, reveal ? QT : el, reveal);
-      if (reveal || force) { var bt2 = $('#qzopts').children; for (var c = 0; c < 4; c++) { bt2[c].disabled = true; if (reveal && q.o[c] === q.a) bt2[c].className = 'ok'; else if (c === Q.pick) bt2[c].className = q.o[c] === q.a ? 'ok' : 'bad'; } }
-      $('#qznote').textContent = Q.pick >= 0 ? (Q.gain ? '정답! +' + Q.gain : '아쉬워요!') : reveal ? '정답: ' + TRACKS[q.a].n : '이 썸네일의 DJ는? 빨리 맞힐수록 점수가 커요';
-      if (!Q.lastR || now - Q.lastR > 500) { Q.lastR = now; vlist($('#qzList'), quizRows()); }
-    }
-    function quizEnd() {
-      Q.on = false; pushQ(); var rows = quizRows(), w = rows[0], my = rows.findIndex(function (r) { return r.me; }) + 1;
-      $('#qzhead').textContent = '❓ DJ 퀴즈 끝 · ' + Q.score + '점 · ' + my + '위'; $('#qznote').textContent = '우승: ' + w.n.replace(' (나)', '') + ' (' + w.s + '점)';
-      toast(rows.length > 1 ? (my === 1 ? '❓ 퀴즈 우승! 🏆' : '❓ 퀴즈 ' + my + '위') : '❓ ' + Q.score + '점!', my === 1 ? '#ffd23a' : '#fff');
-      if (my === 1) burst(active, player.x, player.z);
-      setTimeout(function () { if (!Q.on) $('#quiz').hidden = true; }, 7000);
-    }
-    document.querySelectorAll('#qzopts button').forEach(function (b, i) { b.addEventListener('click', function () { answer(i); }); });
-    $('#qzclose').addEventListener('click', function () { Q.on = false; pushQ(); $('#quiz').hidden = true; });
-
     /* ===== 게임 메뉴 ===== */
     function closeMenu() { $('#games').hidden = true; $('#gamesbtn').setAttribute('aria-pressed', 'false'); }
     $('#gamesbtn').addEventListener('click', function () { var on = $('#games').hidden; $('#games').hidden = !on; $('#gamesbtn').setAttribute('aria-pressed', on ? 'true' : 'false'); });
@@ -1701,25 +1609,21 @@
     $('#g-dart').addEventListener('click', function () { var s = floors['2F'].dartSpot; goto('2F', s.x, s.z + 3.2, 0); toast('🎯 다트 버튼을 눌러요', '#fff'); });
     $('#g-race').addEventListener('click', function () { if (R.on) { toast('이미 레이스 중이에요', '#fff'); return; } raceStart(); });
     $('#g-ck').addEventListener('click', function () { var s = floors['2F'].dartSpot; goto('2F', s.x, s.z + 3.2, 0); toast('🎯 다트 → 🏏 크리켓 버튼', '#fff'); });
-    $('#g-bp').addEventListener('click', function () { closeMenu(); MORE.gotoBP(); toast('🏓 비어퐁 버튼을 눌러요', '#fff'); });
-    $('#g-pz').addEventListener('click', function () { closeMenu(); MORE.gotoPZ(); toast('📸 챌린지 버튼을 눌러요', '#fff'); });
     $('#g-dj').addEventListener('click', function () { closeMenu(); MORE.dj(); });
     $('#g-mf').addEventListener('click', function () { closeMenu(); MORE.mafia(); });
-    $('#g-quiz').addEventListener('click', function () { if (Q.on) { toast('이미 퀴즈 중이에요', '#fff'); return; } quizStart(); });
 
     return {
       onRoom: function (r) {
         r.on('brstart', function (m) { if (m.sameTab || R.on) return; var sd = (m.data || {}).sd; if (typeof sd === 'number' && isFinite(sd)) raceBegin(sd | 0, false); }, function () {});
         r.on('brclaim', function (m) { if (m.sameTab || !R.on || !R.host) return; var d = m.data || {}, p = cleanPlayer(d); if (d.k !== R.k || !p.uid) return; r.emit('brgot', { k: R.k, uid: p.uid, n: p.n, c: p.c }).catch(function () {}); award(R.k, p); }, function () {});
         r.on('brgot', function (m) { if (m.sameTab || !R.on) return; var d = m.data || {}, p = cleanPlayer(d); if (!p.uid || typeof d.k !== 'number') return; if (d.k === R.k) award(d.k, p); else if (d.k > R.k) { R.k = d.k; award(d.k, p); } }, function () {});
-        r.on('qzstart', function (m) { if (m.sameTab || Q.on) return; var sd = (m.data || {}).sd; if (typeof sd === 'number' && isFinite(sd)) quizBegin(sd | 0); }, function () {});
       },
-      tick: function (t) { raceTick(t); if (Q.on) drawQuiz(false); if (R.on && bottle.userData.ring) bottle.userData.ring.material.opacity = .5 + .4 * Math.sin(t * 6); },
-      _test: { R: R, Q: Q, raceStart: raceStart, quizStart: quizStart, answer: answer, UID: UID }
+      tick: function (t) { raceTick(t); if (R.on && bottle.userData.ring) bottle.userData.ring.material.opacity = .5 + .4 * Math.sin(t * 6); },
+      _test: { R: R, raceStart: raceStart, UID: UID }
     };
   })();
 
-  /* ---------------- 비어퐁 · 포토존 챌린지 · DJ 체험 · 마피아 ---------------- */
+  /* ---------------- DJ 체험 · 마피아 ---------------- */
   var MORE = (function () {
     var UID = 'u' + Math.random().toString(36).slice(2, 10);
     function P0() { return { uid: UID, n: myNick(), c: me.look.t }; }
@@ -1729,148 +1633,6 @@
     function vl(el, rows) { el.textContent = ''; rows.forEach(function (p) { var li = document.createElement('li'); if (p.me) li.className = 'me'; li.style.boxShadow = 'inset 4px 0 0 ' + (LOOK.t[p.c] || '#fff'); var a = document.createElement('b'); a.textContent = p.b || ''; var n = document.createElement('span'); n.textContent = p.n; var s = document.createElement('em'); s.textContent = p.s == null ? '' : p.s; var r = document.createElement('small'); r.textContent = p.x || ''; li.appendChild(a); li.appendChild(n); li.appendChild(s); li.appendChild(r); if (p.btn) li.appendChild(p.btn); el.appendChild(li); }); }
     var CAMS = [];
     function camOverride() { for (var i = 0; i < CAMS.length; i++) if (CAMS[i]()) return true; return false; }
-
-    /* ===== 🏓 비어퐁 (2층 왼쪽 빈 공간, 컵 6개씩) ===== */
-    var BP = (function () {
-      var rec = floors['2F'], tx = rec.X(215), tz = rec.Z(385), TL = 2.44, TW = .61, TH = .74, CR = .055;
-      var tb = new THREE.Group(); tb.position.set(tx, 0, tz); rec.group.add(tb);
-      var top = new THREE.Mesh(new THREE.BoxGeometry(TL, .04, TW), new THREE.MeshStandardMaterial({ color: 0x111118, roughness: .3, metalness: .4 })); top.position.y = TH; tb.add(top);
-      var mid = new THREE.Mesh(new THREE.PlaneGeometry(TL - .1, .03), glow(0xff7a1a, .9)); mid.rotation.x = -Math.PI / 2; mid.position.y = TH + .021; tb.add(mid);
-      var lineM = new THREE.Mesh(new THREE.PlaneGeometry(.02, TW - .04), glow(0xffffff, .7)); lineM.rotation.x = -Math.PI / 2; lineM.position.y = TH + .021; tb.add(lineM);
-      [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach(function (s) { var leg = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, TH, 10), mat(0x333338, { metalness: .7 })); leg.position.set(s[0] * (TL / 2 - .08), TH / 2, s[1] * (TW / 2 - .06)); tb.add(leg); });
-      [-1, 1].forEach(function (s) { var st = new THREE.Mesh(new THREE.BoxGeometry(.03, .03, TW), glow(s < 0 ? 0xff5ab4 : 0x4fd6ff, .95)); st.position.set(s * TL / 2, TH + .02, 0); tb.add(st); });
-      var lab = canvasTex(512, 96, function (x, w, h) { x.font = '900 54px Unbounded, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#fff'; x.shadowColor = '#ff7a1a'; x.shadowBlur = 18; x.fillText('BEER PONG', w / 2, h / 2); });
-      var lm = new THREE.Mesh(new THREE.PlaneGeometry(1.3, .24), new THREE.MeshBasicMaterial({ map: lab.tex, transparent: true, toneMapped: false, depthWrite: false })); lm.rotation.x = -Math.PI / 2; lm.position.y = TH + .022; tb.add(lm);
-      rec.colliders.push([tx - TL / 2, tz - TW / 2, tx + TL / 2, tz + TW / 2]);
-      var cupM = new THREE.MeshStandardMaterial({ color: 0xd6202e, roughness: .35 }), rimM = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .4 });
-      var LAY = [[0, 0], [1, -.5], [1, .5], [2, -1], [2, 0], [2, 1]];
-      function cupPos(end, i) { var l = LAY[i], dirx = end === 0 ? -1 : 1; return { x: dirx * (TL / 2 - .1 - l[0] * CR * 1.75), z: l[1] * CR * 2.05 }; }
-      var cups = [[], []];
-      [0, 1].forEach(function (end) { for (var i = 0; i < 6; i++) { var g2 = new THREE.Group(), cp = cupPos(end, i); var c = new THREE.Mesh(new THREE.CylinderGeometry(CR, CR * .72, .12, 20, 1, true), cupM); c.position.y = .06; g2.add(c); var rim = new THREE.Mesh(new THREE.TorusGeometry(CR, .006, 6, 20), rimM); rim.rotation.x = Math.PI / 2; rim.position.y = .12; g2.add(rim); var beer = new THREE.Mesh(new THREE.CircleGeometry(CR * .9, 16), new THREE.MeshStandardMaterial({ color: 0xf0b030, emissive: 0x3a2400 })); beer.rotation.x = -Math.PI / 2; beer.position.y = .09; g2.add(beer); g2.position.set(cp.x, TH + .02, cp.z); tb.add(g2); cups[end].push(g2); } });
-      var ball = new THREE.Mesh(new THREE.SphereGeometry(.02, 14, 10), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x444444 })); ball.visible = false; tb.add(ball);
-      // 상태: end 0 = 왼쪽(−x) 끝에 선 사람이 오른쪽 컵(end 1)을 노림
-      var G = { mode: false, end: 0, game: null, aim: null, fly: null };
-      function standPos(end) { return { x: tx + (end === 0 ? -1 : 1) * (TL / 2 + .55), z: tz, yaw: end === 0 ? -Math.PI / 2 : Math.PI / 2 }; }
-      function near() { return active === '2F' && Math.hypot(player.x - tx, player.z - tz) < TL / 2 + 1.4 && !G.mode; }
-      function resetCups(alive) { [0, 1].forEach(function (e) { cups[e].forEach(function (c, i) { c.visible = alive ? alive[e][i] : true; }); }); }
-      function others() { var o = []; Object.keys(peers).forEach(function (id) { var en = peers[id]; if (en.bp && en.f === '2F') o.push({ uid: en.bp.u, end: en.bp.e, n: en.nick, c: LOOK.t.indexOf(en.color) }); }); return o; }
-      function push() { setPres({ bp: G.mode ? { u: UID, e: G.end } : null }); }
-      function enter() {
-        var taken = others().map(function (o) { return o.end; }); G.end = taken.indexOf(0) < 0 ? 0 : 1; G.mode = true; G.saved = thirdPerson; thirdPerson = true;
-        var sp = standPos(G.end); player.x = sp.x; player.z = sp.z; player.yaw = sp.yaw; player.pitch = 0;
-        G.game = { solo: true, alive: [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]], shots: 0, turn: G.end, left: 2, p: {} }; resetCups(G.game.alive);
-        $('#bpbar').hidden = false; document.body.classList.add('bpmode'); push(); info();
-      }
-      function exit() { G.mode = false; G.game = null; resetCups(); $('#bpbar').hidden = true; document.body.classList.remove('bpmode'); thirdPerson = G.saved == null ? true : G.saved; push(); }
-      function info() {
-        var gm = G.game; if (!gm) return; var oppCups = gm.alive[1 - G.end].reduce(function (a, b) { return a + b; }, 0), myCups = gm.alive[G.end].reduce(function (a, b) { return a + b; }, 0);
-        var s = gm.solo ? '🏓 연습 · 남은 컵 ' + oppCups + ' · 던진 공 ' + gm.shots : (gm.over ? '🏓 경기 끝' : gm.turn === G.end ? '🏓 내 차례 · 공 ' + gm.left + '개' : '🏓 ' + (gm.oppN || '상대') + ' 차례') + ' · 상대 컵 ' + oppCups + ' · 내 컵 ' + myCups;
-        $('#bpinfo').textContent = s + (gm.over || gm.solo ? '' : '') + ' · 끌어서 조준(위=멀리) 놓으면 던짐';
-        var o = others().filter(function (q) { return q.end !== G.end; })[0]; $('#bpvs').hidden = !(gm.solo && o); if (o) $('#bpvs').textContent = '⚔️ ' + o.n + '와 대결';
-      }
-      function vsStart() { var o = others().filter(function (q) { return q.end !== G.end; })[0]; if (!o) return; var id = 'b' + Math.random().toString(36).slice(2, 8); emit('bpstart', { id: id, a: P0(), ae: G.end, b: o.uid }); begin(id, G.end, o.n); }
-      function begin(id, firstEnd, oppN) { G.game = { solo: false, id: id, alive: [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]], shots: 0, turn: firstEnd, left: 2, oppN: oppN }; resetCups(G.game.alive); info(); toast('🏓 비어퐁 대결 시작!', '#ffd23a'); }
-      function result(end, tgtX, tgtZ) { // end 쪽 사람이 던진 공이 (tgtX,tgtZ)에 떨어짐 → 맞은 컵 번호 또는 -1
-        var gm = G.game, oe = 1 - end, best = -1, bd = 9; cups[oe].forEach(function (c, i) { if (!gm.alive[oe][i]) return; var d = Math.hypot(c.position.x - tgtX, c.position.z - tgtZ); if (d < bd) { bd = d; best = i; } }); return bd < CR * .9 ? best : -1;
-      }
-      function applyShot(end, tgtX, tgtZ, hit, mine) {
-        var gm = G.game; if (!gm) return; var oe = 1 - end, from = new THREE.Vector3(standPos(end).x - tx + (end === 0 ? .15 : -.15), 1.25, 0);
-        G.fly = { t0: performance.now(), from: from, to: new THREE.Vector3(tgtX, TH + (hit >= 0 ? .1 : .02), tgtZ), hit: hit, oe: oe, end: end, mine: mine }; ball.visible = true;
-      }
-      function landed(f) {
-        var gm = G.game; ball.visible = false; if (!gm) return;
-        if (f.hit >= 0) { gm.alive[f.oe][f.hit] = 0; cups[f.oe][f.hit].visible = false; var wp = cups[f.oe][f.hit].getWorldPosition(new THREE.Vector3()); floors['2F'].sparks.emit.push({ p: wp, until: clock() + 1.2 }); toast(f.mine ? '🍺 골인!' : '🍺 ' + (gm.oppN || '상대') + ' 골인', '#ffd23a'); }
-        else if (f.mine) toast('빗나갔어요', '#fff');
-        if (gm.solo) { gm.shots++; if (gm.alive[1 - G.end].every(function (a) { return !a; })) { toast('🏓 클리어! 공 ' + gm.shots + '개', '#ffd23a'); setTimeout(function () { if (G.game && G.game.solo) { G.game.alive = [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]]; G.game.shots = 0; resetCups(G.game.alive); info(); } }, 2500); } }
-        else {
-          if (gm.alive[f.oe].every(function (a) { return !a; })) { gm.over = true; toast(f.end === G.end ? '🏓 비어퐁 승리! 🏆' : '🏓 ' + (gm.oppN || '상대') + ' 승리', '#ffd23a'); }
-          else if (--gm.left <= 0) { gm.turn = 1 - gm.turn; gm.left = 2; }
-        }
-        info();
-      }
-      // 조준: 화면을 끌어서 방향(좌우)과 거리(위아래)
-      var aim = null;
-      function canThrow() { var gm = G.game; return G.mode && gm && !G.fly && (gm.solo || (!gm.over && gm.turn === G.end)); }
-      cvs.addEventListener('pointerdown', function (e) { if (!G.mode) return; e.stopImmediatePropagation(); if (!canThrow()) return; aim = { x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY }; cvs.setPointerCapture(e.pointerId); }, true);
-      cvs.addEventListener('pointermove', function (e) { if (!G.mode) return; e.stopImmediatePropagation(); if (aim) { aim.x = e.clientX; aim.y = e.clientY; } }, true);
-      cvs.addEventListener('pointerup', function (e) {
-        if (!G.mode) return; e.stopImmediatePropagation(); if (!aim) return;
-        var dx = (aim.x - aim.x0) / innerWidth, dy = (aim.y0 - aim.y) / innerHeight; aim = null; if (dy < .03) { toast('위로 끌어서 던져요', '#fff'); return; }
-        var dir = G.end === 0 ? 1 : -1, dist = Math.min(TL, .6 + dy * 3.4), noise = function () { return (Math.random() + Math.random() - 1) * .035; };
-        var X = (standPos(G.end).x - tx) + dir * .55 + dir * dist + noise(), Z = -dx * 1.4 * dir * (G.end === 0 ? 1 : 1) + noise();
-        X = Math.max(-TL / 2 - .3, Math.min(TL / 2 + .3, X)); var hit = result(G.end, X, Z);
-        if (!G.game.solo) emit('bpshot', { id: G.game.id, e: G.end, x: Math.round(X * 1000) / 1000, z: Math.round(Z * 1000) / 1000, h: hit });
-        applyShot(G.end, X, Z, hit, true);
-      }, true);
-      var aimLine = new THREE.Mesh(new THREE.RingGeometry(CR * .6, CR, 20), new THREE.MeshBasicMaterial({ color: 0x39ff8a, transparent: true, opacity: .9, toneMapped: false, depthTest: false })); aimLine.rotation.x = -Math.PI / 2; aimLine.renderOrder = 10; aimLine.visible = false; tb.add(aimLine);
-      $('#bpexit').addEventListener('click', exit); $('#bpvs').addEventListener('click', vsStart);
-      CAMS.push(function () { if (!G.mode) return false; var sp = standPos(G.end), dir = G.end === 0 ? 1 : -1; camera.position.set(sp.x - dir * .35, 1.55, sp.z); camera.lookAt(tx + dir * (TL / 2 - .25), TH, tz); return true; });
-      return {
-        enter: enter, near: near, mode: function () { return G.mode; },
-        onRoom: function (r) {
-          r.on('bpstart', function (m) { if (m.sameTab || !G.mode) return; var d = m.data || {}; if (d.b !== UID) return; var a = cleanP(d.a); if (!a) return; begin(String(d.id).slice(0, 10), d.ae === 1 ? 1 : 0, a.n); });
-          r.on('bpshot', function (m) { if (m.sameTab || !G.mode || !G.game || G.game.solo) return; var d = m.data || {}; if (d.id !== G.game.id || (d.e !== 0 && d.e !== 1) || d.e === G.end) return; var x = +d.x, z = +d.z, h = d.h | 0; if (!isFinite(x) || !isFinite(z) || h < -1 || h > 5) return; applyShot(d.e, x, z, h, false); });
-        },
-        tick: function () {
-          $('#bpbtn').hidden = !near();
-          if (G.mode && (!G.lastI || performance.now() - G.lastI > 600)) { G.lastI = performance.now(); info(); }
-          if (G.fly) { var f = G.fly, k = Math.min(1, (performance.now() - f.t0) / 650), p = f.from.clone().lerp(f.to, k); p.y += Math.sin(k * Math.PI) * .55; ball.position.copy(p); if (k >= 1) { G.fly = null; landed(f); } }
-          aimLine.visible = !!(G.mode && aim); if (aim) { var dx = (aim.x - aim.x0) / innerWidth, dy = Math.max(0, (aim.y0 - aim.y) / innerHeight), dir = G.end === 0 ? 1 : -1; aimLine.position.set(Math.max(-TL / 2, Math.min(TL / 2, (standPos(G.end).x - tx) + dir * .55 + dir * Math.min(TL, .6 + dy * 3.4))), TH + .14, -dx * 1.4 * dir); }
-          if (G.mode) { var sp = standPos(G.end); player.x = sp.x; player.z = sp.z; player.yaw = sp.yaw; mine.g.visible = false; (floors['2F'].npcs || []).forEach(function (n) { if (Math.abs(n.z - tz) < 2.2 && Math.abs(n.x - tx) < TL / 2 + 2.5) n.av.g.visible = false; }); Object.keys(peers).forEach(function (id) { var en = peers[id]; if (en.av && !(en.bp) && Math.abs(en.z - tz) < 1.5 && Math.abs(en.x - tx) < TL / 2 + 1.5) en.av.g.visible = false; }); }
-        }
-      };
-    })();
-
-    /* ===== 📸 포토존 포즈 챌린지 (3층 포토존) ===== */
-    var PZ = (function () {
-      var rec = floors['3F'], zx = rec.W / 2 - 1.6, zz = rec.Z(565), POSES = [['🙌', '만세'], ['🫶', '하트'], ['👉', '포인트'], ['🕺', '앉기']];
-      var G = { on: false, t0: 0, target: 0, mine: -1, photo: null };
-      var pcam = new THREE.PerspectiveCamera(55, 4 / 3, .05, 60);
-      function near() { return active === '3F' && Math.hypot(player.x - zx, player.z - zz) < 2.2; }
-      function poseAv(A, p, k) {
-        if (!A || p < 0) return;
-        if (p === 0) { A.arms[0].rotation.set(0, 0, -2.8); A.arms[1].rotation.set(0, 0, 2.8); A.fores[0].rotation.x = 0; A.fores[1].rotation.x = 0; }
-        else if (p === 1) { A.arms[0].rotation.set(0, 0, -2.5); A.arms[1].rotation.set(0, 0, 2.5); A.fores[0].rotation.set(0, 0, 1.4); A.fores[1].rotation.set(0, 0, -1.4); }
-        else if (p === 2) { A.arms[1].rotation.set(-1.6, 0, .1); A.fores[1].rotation.x = 0; A.arms[0].rotation.set(0, 0, -.3); A.fores[0].rotation.x = -1.6; A.body.rotation.y = -.3; }
-        else { A.body.position.y = -.18; A.legs.forEach(function (lg, j) { lg.rotation.x = -.8; A.shins[j].rotation.x = 1.4; }); A.arms[0].rotation.set(-1.3, 0, -.4); A.arms[1].rotation.set(-1.3, 0, .4); }
-      }
-      function start() { var tg = Math.floor(Math.random() * 4), t0 = Date.now(); emit('pzstart', { p: tg }); begin(tg); }
-      function begin(tg) { G.on = true; G.target = tg; G.t0 = performance.now() + 5000; G.mine = -1; G.shot = false; $('#pzbox').hidden = false; $('#pzphoto').hidden = true; $('#pztitle').textContent = '📸 포즈 챌린지 · ' + POSES[tg][0] + ' ' + POSES[tg][1] + '!'; setPres({ pz: { p: -1 } }); }
-      function pick(i) { if (!G.on) return; G.mine = i; setPres({ pz: { p: i } }); document.querySelectorAll('#pzposes button').forEach(function (b, k) { b.setAttribute('aria-pressed', k === i ? 'true' : 'false'); }); }
-      function shoot() {
-        G.shot = true; pcam.position.set(zx - 3.3, 1.55, zz); pcam.lookAt(zx + .5, 1.15, zz); var w0 = renderer.domElement.width, h0 = renderer.domElement.height; pcam.aspect = w0 / h0; pcam.updateProjectionMatrix(); renderer.render(scene, pcam);
-        var src = renderer.domElement, out = document.createElement('canvas'); out.width = 960; out.height = 760; var x = out.getContext('2d');
-        x.fillStyle = '#0b0a0c'; x.fillRect(0, 0, 960, 760);
-        var sw = Math.min(w0, h0 * 4 / 3), sh = sw * 3 / 4; x.drawImage(src, (w0 - sw) / 2, (h0 - sh) / 2, sw, sh, 30, 30, 900, 675);
-        x.font = '900 30px Unbounded, sans-serif'; x.fillStyle = '#fff'; x.textBaseline = 'middle'; x.fillText('GROOVE & SPOT · 3F PHOTO ZONE', 30, 732);
-        x.textAlign = 'right'; x.fillStyle = '#a861ff'; x.fillText(POSES[G.target][0] + ' ' + new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), 930, 732);
-        G.photo = out.toDataURL('image/png');
-        $('#pzimg').src = G.photo; $('#pzphoto').hidden = false;
-        var ok = G.mine === G.target, inZone = 1 + Object.keys(peers).filter(function (id) { var en = peers[id]; return en.f === '3F' && Math.hypot(en.x - zx, en.z - zz) < 2.4; }).length;
-        $('#pzres').textContent = (ok ? '✨ 포즈 성공!' : '😅 포즈가 달라요 (' + POSES[G.target][1] + ')') + ' · 함께 찍힌 손님 ' + inZone + '명';
-        toast('📸 찰칵!', '#fff'); G.on = false; setPres({ pz: null });
-      }
-      document.querySelectorAll('#pzposes button').forEach(function (b, i) { b.addEventListener('click', function () { pick(i); }); });
-      $('#pzclose').addEventListener('click', function () { $('#pzbox').hidden = true; G.on = false; setPres({ pz: null }); });
-      $('#pzsave').addEventListener('click', function () {
-        if (!G.photo) return; var name = 'groove-spot-photo-' + Date.now() + '.png';
-        if (window.claude && window.claude.use) { window.claude.use('downloads').then(function (d) { if (!d) throw 0; return fetch(G.photo).then(function (r) { return r.blob(); }).then(function (bl) { return d.save({ filename: name, data: bl }); }); }).catch(function () { toast('저장할 수 없어요', '#fff'); }); return; }
-        var a = document.createElement('a'); a.href = G.photo; a.download = name; document.body.appendChild(a); a.click(); a.remove();
-      });
-      CAMS.push(function () { if (!G.on) return false; camera.position.set(zx - 3.3, 1.55, zz); camera.lookAt(zx + .5, 1.15, zz); return true; });
-      return {
-        near: near, start: start,
-        onRoom: function (r) { r.on('pzstart', function (m) { if (m.sameTab || active !== '3F' || !near()) return; var p = (m.data || {}).p; if (p === 0 || p === 1 || p === 2 || p === 3) begin(p); }); },
-        tick: function () {
-          $('#pzbtn').hidden = !near() || G.on;
-          if (G.on && near()) player.yaw = Math.PI / 2; // 카메라 쪽으로
-          if (G.on || (G.mine >= 0 && performance.now() - G.t0 < 1500)) poseAv(mine, G.mine, 1);
-          Object.keys(peers).forEach(function (id) { var en = peers[id]; if (en.pzp >= 0 && en.av) poseAv(en.av, en.pzp, 1); });
-          if (G.on) { var left = (G.t0 - performance.now()) / 1000; $('#pzcount').textContent = left > 0 ? Math.ceil(left) : '📸'; if (left <= 0 && !G.shot) shoot(); }
-          if (G.on) (floors['3F'].npcs || []).forEach(function (n) { if (Math.hypot(n.x - (zx - 1.6), n.z - zz) < 2) n.av.g.visible = false; });
-        }
-      };
-    })();
 
     /* ===== 🎧 DJ 체험 (3분 동안 부스에서 이펙트) ===== */
     var DJX = (function () {
@@ -2009,22 +1771,18 @@
       };
     })();
 
-    $('#bpbtn').addEventListener('click', function () { BP.enter(); });
-    $('#pzbtn').addEventListener('click', function () { PZ.start(); });
     return {
       camera: camOverride,
-      blocking: function () { return BP.mode() || DJX.on(); },
+      blocking: function () { return DJX.on(); },
       ground: function () { if (!DJX.on()) return null; var sp = floors[active].djSpec; return sp ? (sp.y0 || 0) : null; },
       onRoom: function (r) {
         var H = {}, shim = { on: function (k, f) { H[k] = f; } };
         r.on('x', function (m) { var o = m.data || {}; if (typeof o.k !== 'string' || !H[o.k]) return; try { H[o.k]({ sameTab: m.sameTab, peer: m.peer, data: o.d }); } catch (err) {} }, function () {});
-        BP.onRoom(shim); PZ.onRoom(shim); DJX.onRoom(shim); MF.onRoom(shim);
+        DJX.onRoom(shim); MF.onRoom(shim);
       },
-      tick: function (t) { BP.tick(); PZ.tick(); DJX.tick(); MF.tick(); },
+      tick: function (t) { DJX.tick(); MF.tick(); },
       dj: DJX.start, mafia: MF.host,
-      gotoBP: function () { if (active !== '2F') setFloor('2F', true); player.x = floors['2F'].X(215) - 2.2; player.z = floors['2F'].Z(385); player.yaw = -Math.PI / 2; },
-      gotoPZ: function () { if (active !== '3F') setFloor('3F', true); player.x = floors['3F'].W / 2 - 3; player.z = floors['3F'].Z(565); player.yaw = -Math.PI / 2; },
-      _test: { BP: BP, PZ: PZ, DJX: DJX, MF: MF, UID: UID }
+      _test: { DJX: DJX, MF: MF, UID: UID }
     };
   })();
   $('#view').addEventListener('click', function () { setCam((camMode + 1) % 3); toast('🎥 ' + CAMS[camMode], '#fff'); });
@@ -2419,9 +2177,6 @@
       if (en.key !== key) { var bub = en.av && en.av.bubble ? 1 : 0; if (en.av) { scene.remove(en.av.g); disposeObj(en.av.g); } en.av = makeAvatar(l, n, false); scene.add(en.av.g); en.key = key; }
       en.nick = n; en.color = LOOK.t[l.t]; en.f = pr.f;
       var dg = pr.dg && typeof pr.dg === 'object' ? pr.dg : null; en.dg = dg ? { s: Math.max(0, Math.min(1440, Math.floor(+dg.s) || 0)), r: Math.max(1, Math.min(8, Math.floor(+dg.r) || 1)), st: dg.st === 'done' ? 'done' : 'play', u: /^u[a-z0-9]{4,12}$/.test(dg.u) ? dg.u : '' } : null;
-      var qz = pr.qz && typeof pr.qz === 'object' ? pr.qz : null; en.qz = qz ? { s: Math.max(0, Math.min(8000, Math.floor(+qz.s) || 0)) } : null;
-      en.bp = pr.bp && typeof pr.bp === 'object' && /^u[a-z0-9]{4,12}$/.test(pr.bp.u) ? { u: pr.bp.u, e: pr.bp.e === 1 ? 1 : 0 } : null;
-      en.pzp = pr.pz && typeof pr.pz === 'object' && [0, 1, 2, 3].indexOf(pr.pz.p) >= 0 ? pr.pz.p : -1;
       en.djx = pr.djx && typeof pr.djx === 'object' && (pr.djx.F === '2F' || pr.djx.F === '3F') ? { F: pr.djx.F } : null;
       var db = pr.db && typeof pr.db === 'object' ? pr.db : null; en.db = db ? { s: Math.max(0, Math.min(200000, Math.floor(+db.s) || 0)), c: Math.max(0, Math.min(999, Math.floor(+db.c) || 0)), st: db.st === 'play' || db.st === 'done' ? db.st : 'ready', sd: Math.floor(+db.sd) || 0 } : null;
       en.tx = clampF(pr.f, pr.x, 'x'); en.tz = clampF(pr.f, pr.z, 'z'); en.tr = isFinite(+pr.r) ? +pr.r : 0; en.tm = !!pr.m; en.ty = Math.max(0, Math.min(2, +pr.j || 0));
@@ -2615,7 +2370,7 @@
 
     // 카메라 (걸을 때 살짝 흔들림, 비트에 아주 약한 진동)
     var bob = walking ? Math.sin(now / 140) * .025 : 0;
-    if (DART && DART.camera()) { /* 다트 조준 시점 */ } else if (DANCE && DANCE.camera()) { /* 댄스 배틀 정면 시점 */ } else if (MORE && MORE.camera()) { /* 비어퐁·포토존·DJ 시점 */ } else if (thirdPerson) {
+    if (DART && DART.camera()) { /* 다트 조준 시점 */ } else if (DANCE && DANCE.camera()) { /* 댄스 배틀 정면 시점 */ } else if (MORE && MORE.camera()) { /* DJ 시점 */ } else if (thirdPerson) {
       var far = camMode === 1, fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw), cd = far ? 7.5 : 3.3, lim = rec;
       var ccx = Math.max(-lim.W / 2 + .3, Math.min(lim.W / 2 - .3, player.x - fx * cd)), ccz = Math.max(-lim.D / 2 + .3, Math.min(lim.D / 2 - .3, player.z - fz * cd));
       var got = Math.hypot(ccx - player.x, ccz - player.z), lift = far ? Math.max(0, (cd - got) * .25) : 0;
