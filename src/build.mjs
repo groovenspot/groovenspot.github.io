@@ -51,6 +51,7 @@ function layout(lang, page, { title, desc, body, active }) {
 <html lang="${HTML_LANG[lang]}">
 <head>
 <meta charset="utf-8">
+<meta name="naver-site-verification" content="663bc824a0d4240c00416f2be7539140c3b01922">
 <script>if(location.protocol==='http:'&&!/^(localhost|127\\.|\\[)/.test(location.hostname))location.replace('https:'+location.href.slice(5))</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0909">
