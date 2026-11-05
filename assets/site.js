@@ -540,6 +540,9 @@
 
     // 로컬 곡을 먼저 표시하고 외부 검색 결과를 보완한다.
     var box = $('#rq-results'), hint = $('#rq-hint'), song = rq.song, sCache = {}, sTimer = null, sSeq = 0, sItems = [], sActive = -1;
+    var manualHint = { ko: '곡 제목을 직접 입력해도 신청할 수 있어요.', en: 'You can enter a song title and submit it directly.', ja: '曲名を直接入力してリクエストできます。', zh: '可直接输入歌曲名并提交。' }[LANG] || 'You can enter a song title and submit it directly.';
+    song.placeholder = { ko: '곡 제목 입력', en: 'Enter song title', ja: '曲名を入力', zh: '输入歌曲名' }[LANG] || 'Enter song title';
+    hint.textContent = manualHint;
     // 응답이 늦으면 포기 (검색 중… 이 계속 남지 않게)
     function timed(p, ms) { return new Promise(function (ok, no) { var tm = setTimeout(function () { no(new Error('timeout')); }, ms); p.then(function (v) { clearTimeout(tm); ok(v); }, function (e) { clearTimeout(tm); no(e); }); }); }
     function jsonp(url, ms) { // CORS가 막혀도 되는 방식 (Deezer)
@@ -584,8 +587,17 @@
       });
     }
     // 저장된 인기곡 목록 (검색이 막혀도 바로 찾기 · 한글 가수명 · 초성 검색)
-    var SONGS = null, songsP = null;
-    function loadSongs() { if (!songsP) songsP = fetch('/data/songs.json?v=' + new Date().toISOString().slice(0, 10)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { SONGS = (d && d.songs) || []; return SONGS; }).catch(function () { SONGS = []; return SONGS; }); return songsP; }
+    // 전체 목록이 로딩 중이거나 연결이 끊겨도 일부 곡은 바로 선택할 수 있다.
+    var SONGS = [["FaSHioN","CORTIS","K-HIPHOP","코르티스"],["Killin' It Girl (Solo Version)","j-hope","K-HIPHOP","제이홉"],["MAMACITA","ATEEZ","K-HIPHOP","에이티즈"],["WDA (Whole Different Animal) (feat. G-DRAGON)","aespa","K-HIPHOP","에스파"],["SPOT!","ZICO","K-HIPHOP","지코"],["FXCK UP THE WORLD (Vixi Solo Version)","LISA","K-HIPHOP","리사"],["Really Like You","BABYMONSTER","K-HIPHOP","베이비몬스터"],["CLIK CLAK","BABYMONSTER","K-HIPHOP","베이비몬스터"],["Scott and Zelda","BIBI","K-HIPHOP","비비"],["BTBT","B.I","K-HIPHOP","비아이"],["Fallin'","ATEEZ","K-HIPHOP","에이티즈"],["WOKE UP","XG","K-HIPHOP","엑스지"],["BOLO (feat. YDG)","PENOMECO","K-HIPHOP","페노메코"],["Don't Go Insane","DPR IAN","K-HIPHOP","디피알 이안"],["Woke Up In Tokyo (RUKA & ASA)","BABYMONSTER","K-HIPHOP","베이비몬스터"],["TUNNEL VISION","ITZY","K-HIPHOP","있지"],["Future Perfect (Pass the MIC)","ENHYPEN","K-HIPHOP","엔하이픈"],["TOXIN","ATEEZ","K-HIPHOP","에이티즈"],["Body","ATEEZ","K-HIPHOP","에이티즈"],["WICKED","ALLDAY PROJECT","K-HIPHOP","올데이 프로젝트"],["Fall In Love Again","P1Harmony","K-HIPHOP","피원하모니"],["Daydream","ENHYPEN","K-HIPHOP","엔하이픈"],["IT's You (YEOSANG, SAN, WOOYOUNG)","ATEEZ","K-HIPHOP","에이티즈"],["Hold Me Tight","BTS","K-HIPHOP","방탄소년단"],["BAND","창모 & Hash Swan & ASH ISLAND & 김효은","K-HIPHOP","해쉬스완 애쉬 아일랜드"],["One More Rollie","CHANGMO","K-HIPHOP","창모"],["Selfmade Orange","CHANGMO","K-HIPHOP","창모"],["Hood Boyz","CHANGMO","K-HIPHOP","창모"]], songsP = null;
+    function loadSongs() {
+      if (!songsP) songsP = timed(fetch('/data/songs.json').then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      }), 3000).then(function (data) {
+        if (data && Array.isArray(data.songs) && data.songs.length) SONGS = data.songs;
+      }).catch(function () {});
+      return songsP;
+    }
     var CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
     function norm(s) { return String(s || '').toLowerCase().replace(/[\s.,'’!?\-_()\[\]&·~]/g, ''); }
     function cho(s) { var o = ''; for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i) - 0xac00; o += c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : s[i]; } return o; }
@@ -614,35 +626,29 @@
       $$('li', box).forEach(function (li, k) { li.setAttribute('aria-selected', k === i ? 'true' : 'false'); });
       if (i >= 0) { song.setAttribute('aria-activedescendant', 'rq-opt-' + i); var li = $('#rq-opt-' + i); if (li) li.scrollIntoView({ block: 'nearest' }); }
     }
-    function search() {
+    function search(localOnly) {
       cancelSearch();
       var term = song.value.trim(), my = sSeq;
       closeList();
-      if (term.length < 2) { hint.textContent = ''; return; }
+      hint.textContent = manualHint;
+      if (term.length < 2) return;
 
-      var initials = /^[ㄱ-ㅎ\s]+$/.test(term), remoteResults = null;
+      var remoteResults = [];
       function render() {
         var local = localSearch(term);
-        if (remoteResults && remoteResults.length) {
-          show(local.filter(function (x) { return x.sc >= 5; }).concat(remoteResults, local), '');
-        } else if (local.length) {
-          show(local, remoteResults === null ? '' : (remoteResults === false ? T.rqLocal : ''));
-        } else if (remoteResults === false) {
-          closeList(); hint.textContent = T.rqSearchOff;
-        } else if (remoteResults !== null || (initials && SONGS)) {
-          show([], '');
-        } else {
-          hint.textContent = T.rqSearching;
-        }
+        var combined = remoteResults.length
+          ? local.filter(function (x) { return x.sc >= 5; }).concat(remoteResults, local)
+          : local;
+        if (combined.length && sActive < 0) show(combined, '');
       }
       render();
-      if (!SONGS) loadSongs().then(function () { if (my === sSeq) render(); });
-      if (initials) return;
+      loadSongs().then(function () { if (my === sSeq) render(); });
+      if (localOnly || /^[ㄱ-ㅎ\s]+$/.test(term)) return;
       sTimer = setTimeout(function () {
         anySearch(term).then(function (results) {
           if (my !== sSeq) return;
-          remoteResults = results === null ? false : results;
           if (results === null) track('song_search_fail', { term_len: term.length });
+          remoteResults = results || [];
           render();
         });
       }, 250);
@@ -686,7 +692,7 @@
     var composing = false;
     song.addEventListener('compositionstart', function () { composing = true; cancelSearch(); closeList(); });
     song.addEventListener('compositionend', function () { composing = false; search(); });
-    song.addEventListener('input', function () { if (!composing) search(); });
+    song.addEventListener('input', function () { search(composing); });
     song.addEventListener('keydown', function (e) {
       if (box.hidden) return;
       if (e.key === 'ArrowDown') { e.preventDefault(); setActive(Math.min(sItems.length - 1, sActive + 1)); }
