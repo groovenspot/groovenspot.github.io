@@ -75,6 +75,12 @@ function galleryCountLabel(partner, count) {
 
 function partnerMedia(partner, thumbnail = false) {
   const photos = galleryPhotos(partner);
+  const poster = assetUrl(thumbnail
+    ? partner.poster?.thumbnail || partner.poster?.path
+    : partner.poster?.path || partner.poster?.thumbnail);
+  if (poster) {
+    return { url: poster, kind: 'poster', label: '제휴 안내물', alt: partner.name + ' 제휴 안내물', photoCount: photos.length };
+  }
   const photo = photos[0];
   return {
     url: photo ? (thumbnail ? photo.thumbnail : photo.path) : null,
@@ -131,12 +137,9 @@ function galleryMarkup(partner) {
 function posterDetailsMarkup(partner) {
   const poster = assetUrl(partner.poster?.path || partner.poster?.thumbnail);
   if (!poster) return '';
-  const thumbnail = assetUrl(partner.poster?.thumbnail || partner.poster?.path);
-  const original = httpUrl(partner.poster?.sourceUrl);
-  return '<details class="affiliate-poster"><summary>제휴 안내물 보기 <span aria-hidden="true">＋</span></summary>' +
-    '<a href="' + esc(poster) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(partner.name) + ' 제휴 안내물 크게 보기"><img src="' + esc(thumbnail) + '" alt="' + esc(partner.name) + ' 제휴 안내물" loading="lazy" decoding="async"></a>' +
-    '<p>제휴 혜택을 안내하는 홍보물이며 매장 사진 수에는 포함하지 않습니다.</p>' +
-    (original ? '<a class="affiliate-poster-source" href="' + esc(original) + '" target="_blank" rel="noopener noreferrer">제휴 안내물 출처 ↗</a>' : '') + '</details>';
+  return '<section class="partner-main-poster"><h3>제휴 안내물</h3>' +
+    '<a href="' + esc(poster) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(partner.name) + ' 제휴 안내물 크게 보기">' +
+    '<img src="' + esc(poster) + '" alt="' + esc(partner.name) + ' 제휴 안내물" decoding="async"></a></section>';
 }
 
 function mapUrl(partner) {
@@ -364,7 +367,7 @@ function cardHtml(partner, index) {
   return '<article class="partner-card tone-' + (index % 4) + '" data-id="' + esc(partner.id) + '">' +
     '<div class="card-visual">' +
       '<button class="card-image-button" type="button" data-open="' + esc(partner.id) + '" aria-label="' + esc(partner.name) + ' 상세정보 보기">' + visual + '</button>' +
-      '<span class="card-visual-kind' + (galleryNeedsCheck(partner, media.photoCount) ? ' is-pending' : '') + '">' + media.label + '</span>' +
+      '<span class="card-visual-kind' + (media.kind !== 'poster' && galleryNeedsCheck(partner, media.photoCount) ? ' is-pending' : '') + '">' + media.label + '</span>' +
       '<span class="card-category">' + esc(categoryOf(partner)) + '</span>' +
       '<button type="button" class="save-button" data-save="' + esc(partner.id) + '" aria-pressed="' + saved + '" aria-label="' + esc(partner.name) + (saved ? ' 저장 해제' : ' 저장하기') + '">' + icons.bookmark + '</button>' +
     '</div><div class="card-body">' +
@@ -437,16 +440,10 @@ function branchesMarkup(partner) {
 }
 
 function detailHtml(partner) {
-  const imageMarkup = galleryMarkup(partner);
+  const posterMarkup = posterDetailsMarkup(partner);
+  const imageMarkup = posterMarkup + (posterMarkup && !galleryPhotos(partner).length ? '' : galleryMarkup(partner));
   const summary = text(partner.summary) || '제휴 라인업에 기재된 매장입니다. 상세정보는 확인한 자료를 기준으로 표시합니다.';
   const sourceLabel = isPoster(partner) ? '개별 제휴 안내물 확인' : '제휴 라인업만 확인';
-  const sources = (Array.isArray(partner.sources) ? partner.sources : []).filter((source) => httpUrl(source.url));
-  const sourceMarkup = sources.map((source) => {
-    const photoSource = galleryPhotos(partner).some((photo) => httpUrl(source.url) === httpUrl(photo.sourceUrl)) || (partner.image && httpUrl(source.url) === httpUrl(partner.image.sourceUrl));
-    const datedPoster = !photoSource && ['lineup', 'poster'].includes(source.kind) && source.sourceDate;
-    return '<li><a href="' + esc(httpUrl(source.url)) + '" target="_blank" rel="noopener noreferrer"><span>' + esc(source.title || '매장 정보 원문') + '</span><span aria-hidden="true">↗</span></a>' +
-      (datedPoster ? '<small>원문 수정일 · ' + esc(sourceDate(source.sourceDate)) + '</small>' : '') + '</li>';
-  }).join('');
   const common = text(state.data.commonBenefit) || defaultBenefit;
   const groove = text(partner.grooveBenefit).trim();
   const partnerBenefit = text(partner.partnerBenefit).trim();
@@ -479,8 +476,7 @@ function detailHtml(partner) {
     '<section class="detail-benefit"><span class="eyebrow">RECEIPT BENEFIT · 라인업 공통 안내</span><h3>' + display(common) + '</h3><p>전체 제휴 라인업에 기재된 공통 안내입니다. 당일 영수증 여부 등 추가 조건은 원문에 명시된 범위에서 확인해 주세요.</p></section>' +
     specificGroove + benefitAtPartner +
     (text(partner.benefitNotes).trim() ? '<p class="detail-notice"><strong>추가 확인 사항</strong><br>' + display(partner.benefitNotes) + '</p>' : '') +
-    (sources.length || partner.poster ? '<section class="detail-sources"><h3>정보·사진 출처</h3><ul>' + sourceMarkup + '</ul>' + posterDetailsMarkup(partner) + '</section>' : '') +
-    '<p class="detail-notice">제휴 혜택은 안내물, 영업정보는 공개된 매장정보를 기준으로 정리했습니다. <strong>현재 영업 여부·시간·제휴 적용 조건은 방문 전 매장에 확인해 주세요.</strong> 지도 링크는 매장명 또는 주소 검색이며, 개별 장소를 확인한 링크는 아닙니다.</p>' +
+    '<p class="detail-notice"><strong>현재 영업 여부·시간·제휴 적용 조건은 방문 전 매장에 확인해 주세요.</strong></p>' +
     '</div></div>';
 }
 
