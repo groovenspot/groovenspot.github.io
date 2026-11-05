@@ -28,75 +28,127 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4Y93LP9PP"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','G-G4Y93LP9PP');}</script>
   <style>
-    .partner-language { position: relative; margin-inline-start: auto; }
-    .partner-language summary {
-      display: inline-flex; align-items: center; gap: 6px; list-style: none;
-      cursor: pointer; font-weight: 700; font-size: 14px; letter-spacing: .02em;
-      padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 999px;
-      white-space: nowrap;
-    }
-    .partner-language summary::-webkit-details-marker { display: none; }
-    .partner-language-menu {
-      position: absolute; z-index: 1; right: 0; top: calc(100% + 8px);
-      background: var(--card); border: 1px solid var(--line-strong);
-      border-radius: 14px; padding: 6px; min-width: 150px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, .6);
-    }
-    .partner-language-menu a { display: block; padding: 10px 12px; border-radius: 10px; text-decoration: none; }
-    .partner-language-menu a:hover { background: rgba(255, 255, 255, .06); }
-    .partner-language-menu a[aria-current] { color: var(--orange); font-weight: 700; }
-    .partner-language + .header-tag { margin-left: 0; }
-  </style>
+/* Shared Groove & Spot header rules from assets/site.css. */
+:root { --body: var(--font); --txt: var(--ink); --line-2: var(--line-strong); --g: var(--orange); --g-deep: var(--orange-deep); }
+.hdr {
+  position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; background: rgba(10, 9, 9, .82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+@media (min-width: 700px) { .hdr { padding: 14px max(32px, calc((100% - 1180px) / 2 + 32px)); } }
+.hdr .brand { font-size: 17px; margin-right: auto; }
+.nav { display: none; gap: 4px; }
+.nav a { text-decoration: none; padding: 8px 12px; border-radius: 999px; color: var(--muted); font-weight: 600; font-size: 15px; }
+.nav a:hover, .nav a[aria-current="page"] { color: var(--txt); background: rgba(255, 255, 255, .06); }
+@media (min-width: 900px) { .nav { display: flex; } }
+.hdr .hdr-cta { display: none; }
+@media (min-width: 900px) { .hdr .hdr-cta { display: inline-flex; } }
+.lang { position: relative; }
+.lang summary { list-style: none; cursor: pointer; font-weight: 700; font-size: 13px; letter-spacing: .08em; padding: 8px 12px; border: 1px solid var(--line-2); border-radius: 999px; }
+.lang summary::-webkit-details-marker { display: none; }
+.lang-menu { position: absolute; right: 0; top: calc(100% + 8px); background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 6px; min-width: 150px; box-shadow: 0 20px 50px rgba(0, 0, 0, .6); }
+.lang-menu a { display: block; padding: 10px 12px; border-radius: 10px; text-decoration: none; }
+.lang-menu a:hover { background: rgba(255, 255, 255, .06); }
+.lang-menu a[aria-current] { color: var(--g); font-weight: 700; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+  padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .04);
+  color: var(--txt); font: 700 15px/1.2 var(--body); text-decoration: none; cursor: pointer; transition: transform .15s, background .15s;
+}
+.btn:hover { background: rgba(255, 255, 255, .09); }
+.btn:active { transform: scale(.98); }
+.btn-hot { background: linear-gradient(100deg, var(--g-deep), var(--g)); border-color: transparent; color: #140700; }
+.btn-hot:hover { background: linear-gradient(100deg, var(--g), #ff9a4a); }
+.logo { display: inline-flex; align-items: center; gap: 8px; }
+.logo img { display: block; width: auto; }
+.hdr .logo .logo-icon { height: 28px; }
+.hdr .logo img:last-child { height: 18px; }
+@media (max-width: 380px) { .hdr .logo img:last-child { height: 15px; } }
+.lang summary { display: inline-flex; align-items: center; gap: 6px; letter-spacing: .02em; font-size: 14px; white-space: nowrap; }
+.lang-globe { font-size: 15px; line-height: 1; }
+.menu-btn { display: inline-flex; flex-direction: column; justify-content: center; gap: 5px; width: 44px; height: 44px; padding: 0 11px; border-radius: 12px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .04); cursor: pointer; flex: 0 0 auto; }
+.menu-btn span { display: block; height: 2px; border-radius: 2px; background: var(--txt); transition: transform .2s, opacity .2s; }
+.menu-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.menu-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+@media (min-width: 900px) { .menu-btn, .mnav { display: none !important; } }
+.mnav { position: fixed; z-index: 39; left: 0; right: 0; top: 0; bottom: 0; padding: calc(84px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(96px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+.mnav a:not(.btn) { display: block; padding: 14px 6px; font-family: var(--display); font-size: 24px; text-decoration: none; border-bottom: 1px solid var(--line); }
+:lang(ko) .mnav a:not(.btn), :lang(ja) .mnav a:not(.btn) { font-size: 26px; }
+.mnav a[aria-current="page"]:not(.btn) { color: var(--g); }
+.mnav-cta { margin-top: 18px; min-height: 52px; font-size: 17px; }
+body.mnav-open { overflow: hidden; }
+@media (max-width: 899px) { .hdr { gap: 8px; } .lang summary { padding: 8px 10px; } }
+@media (max-width: 400px) { .hdr .logo .logo-icon { height: 24px; } .hdr .logo img:last-child { height: 14px; } .lang summary { font-size: 13px; } }
+.hdr .brand { width: auto; min-width: 0; }
+.hdr .logo img { object-fit: contain; }
+</style>
+  <script src="/assets/site.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#directory">매장 목록으로 바로가기</a>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="/" aria-label="Groove and Spot 홈페이지로">
-        <img id="brand-image" src="./assets/logo.png" alt="Groove & Spot" width="190" height="40">
-        <span id="brand-fallback" class="brand-fallback" hidden>Groove <i>&</i> Spot<span>BUSAN · SEOMYEON</span></span>
-      </a>
-      <nav aria-label="주요 메뉴">
-        <a href="#course-map">코스 지도</a>
-        <a class="nav-current" href="#directory">제휴 매장 <span id="nav-count">28</span></a>
-      </nav>
-      <details class="partner-language">
-        <summary aria-label="Language"><span aria-hidden="true">🌐</span> Language</summary>
-        <div class="partner-language-menu">
-          <a href="?lang=ko" lang="ko">한국어</a>
-          <a href="?lang=en" lang="en">English</a>
-          <a href="?lang=ja" lang="ja">日本語</a>
-          <a href="?lang=zh" lang="zh-CN">中文</a>
-        </div>
-      </details>
-      <script>
-        (() => {
-          const menu = document.querySelector('.partner-language');
-          const toggle = menu.querySelector('summary');
-          menu.querySelectorAll('a').forEach(link => {
-            const language = new URL(link.href).searchParams.get('lang');
-            if (language === window.GS_PLANG) {
-              link.setAttribute('aria-current', 'true');
-              toggle.setAttribute('aria-label', 'Language: ' + link.textContent);
-            }
-            link.addEventListener('click', () => {
-              try { localStorage.setItem('gs_lang', language); } catch (error) {}
-            });
-          });
-          document.addEventListener('click', event => {
-            if (!menu.contains(event.target)) menu.open = false;
-          });
-          menu.addEventListener('keydown', event => {
-            if (event.key === 'Escape' && menu.open) {
-              menu.open = false;
-              toggle.focus();
-            }
-          });
-        })();
-      </script>
-      <span class="header-tag"><span></span> PARTNER GUIDE</span>
+  <header class="hdr">
+  <a class="brand logo" href="/"><span id="brand-fallback" class="brand-fallback" hidden>Groove &amp; Spot</span><img class="logo-icon" src="/assets/logo-icon.png" width="181" height="150" alt=""><img id="brand-image" src="/assets/logo-word.png" width="564" height="79" alt="Groove &amp; Spot"></a>
+  <nav class="nav" aria-label="Main">
+    <a href="/events/">이벤트</a>
+    <a href="/floors/">플로어</a>
+    <a href="/menu/">메뉴</a>
+    <a href="/gallery/">사진첩</a>
+    <a href="/request/">신청곡</a>
+    <a href="/info/">안내</a>
+    <a href="/partners/?lang=ko" aria-current="page">제휴 매장</a>
+    <a href="/club/">가상 클럽</a>
+  </nav>
+  <details class="lang">
+    <summary aria-label="Language: 한국어"><span class="lang-globe" aria-hidden="true">🌐</span> Language</summary>
+    <div class="lang-menu">
+      <a href="?lang=ko" hreflang="ko" data-lang="ko" aria-current="true">한국어</a>
+      <a href="?lang=en" hreflang="en" data-lang="en">English</a>
+      <a href="?lang=ja" hreflang="ja" data-lang="ja">日本語</a>
+      <a href="?lang=zh" hreflang="zh-CN" data-lang="zh">中文</a>
     </div>
-  </header>
+  </details>
+  <a class="btn btn-hot hdr-cta" href="/reserve/">예약하기</a>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mnav" aria-label="메뉴 열기" data-open="메뉴 열기" data-close="메뉴 닫기"><span></span><span></span><span></span></button>
+</header>
+<nav class="mnav" id="mnav" aria-label="Mobile" hidden>
+  <a href="/">홈</a>
+  <a href="/events/">이벤트</a>
+  <a href="/floors/">플로어</a>
+  <a href="/menu/">메뉴</a>
+  <a href="/gallery/">사진첩</a>
+  <a href="/request/">신청곡</a>
+  <a href="/info/">안내</a>
+  <a href="/partners/?lang=ko" aria-current="page">제휴 매장</a>
+  <a href="/club/">가상 클럽</a>
+  <a href="/artists/">아티스트</a>
+  <a href="/guide/">부산 서면 클럽 가이드</a>
+  <a class="btn btn-hot mnav-cta" href="/reserve/">예약하기</a>
+</nav>
+<script>
+  (() => {
+    const language = window.GS_PLANG || 'ko';
+    const header = document.querySelector('.hdr');
+    const menu = document.querySelector('#mnav');
+    const selected = header.querySelector('.lang-menu a[data-lang="' + language + '"]');
+    header.querySelector('.lang-menu [aria-current]').removeAttribute('aria-current');
+    selected.setAttribute('aria-current', 'true');
+    header.querySelector('.lang summary').setAttribute('aria-label', 'Language: ' + selected.textContent);
+    const translated = {"en":{"links":[["/en/events/","Events"],["/en/floors/","Floors"],["/en/menu/","Menu"],["/en/gallery/","Gallery"],["/en/request/","Requests"],["/en/info/","Info"],["/partners/?lang=en","Partners"],["/club/","Virtual club"],["/en/reserve/","Book a table"],["/en/","Home"],["/en/events/","Events"],["/en/floors/","Floors"],["/en/menu/","Menu"],["/en/gallery/","Gallery"],["/en/request/","Requests"],["/en/info/","Info"],["/partners/?lang=en","Partners"],["/club/","Virtual club"],["/en/artists/","Artists"],["/en/guide/","Busan Nightlife Guide: Seomyeon Clubs"],["/en/reserve/","Book a table"]],"button":["Open menu","Close menu"]},"ja":{"links":[["/ja/events/","イベント"],["/ja/floors/","フロア"],["/ja/menu/","メニュー"],["/ja/gallery/","ギャラリー"],["/ja/request/","リクエスト"],["/ja/info/","案内"],["/partners/?lang=ja","提携店"],["/club/","バーチャルクラブ"],["/ja/reserve/","予約する"],["/ja/","ホーム"],["/ja/events/","イベント"],["/ja/floors/","フロア"],["/ja/menu/","メニュー"],["/ja/gallery/","ギャラリー"],["/ja/request/","リクエスト"],["/ja/info/","案内"],["/partners/?lang=ja","提携店"],["/club/","バーチャルクラブ"],["/ja/artists/","アーティスト"],["/ja/guide/","釜山ナイトライフガイド：西面のクラブ"],["/ja/reserve/","予約する"]],"button":["メニューを開く","メニューを閉じる"]},"zh":{"links":[["/zh/events/","活动"],["/zh/floors/","楼层"],["/zh/menu/","酒单"],["/zh/gallery/","相册"],["/zh/request/","点歌"],["/zh/info/","须知"],["/partners/?lang=zh","合作店铺"],["/club/","虚拟俱乐部"],["/zh/reserve/","立即预订"],["/zh/","首页"],["/zh/events/","活动"],["/zh/floors/","楼层"],["/zh/menu/","酒单"],["/zh/gallery/","相册"],["/zh/request/","点歌"],["/zh/info/","须知"],["/partners/?lang=zh","合作店铺"],["/club/","虚拟俱乐部"],["/zh/artists/","艺人"],["/zh/guide/","釜山夜生活指南：西面夜店"],["/zh/reserve/","立即预订"]],"button":["打开菜单","关闭菜单"]}};
+    if (language === 'ko') return;
+    const labels = translated[language];
+    const links = [...header.querySelectorAll('.nav a, .hdr-cta'), ...menu.querySelectorAll('a')];
+    links.forEach((link, index) => {
+      const [href, title] = labels.links[index];
+      link.setAttribute('href', href);
+      link.textContent = title.replace(/&amp;/g, '&');
+    });
+    header.querySelector('.brand').setAttribute('href', '/' + language + '/');
+    const button = header.querySelector('.menu-btn');
+    [button.dataset.open, button.dataset.close] = labels.button;
+    button.setAttribute('aria-label', button.dataset.open);
+  })();
+</script>
 
   <main id="top">
     <section class="hero">
