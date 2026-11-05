@@ -23,6 +23,7 @@ const REQ_TOPIC = 'groovenspot-req-6witbq5hriea';
 const GA_ID = 'G-G4Y93LP9PP';
 const GA_TAG = GA_ID ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','${GA_ID}');}</script>` : '';
+const LOGO_FULL = '<img src="/assets/logo.png" width="564" height="229" alt="Groove &amp; Spot">';
 const LOGO_WORD = '<img src="/assets/logo-word.png" width="564" height="79" alt="Groove &amp; Spot">';
 const fig = (src, alt, cls = '') => `<figure class="shot ${cls}"><a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="${esc(alt)}" width="1080" height="1920" loading="lazy" decoding="async"></a><figcaption>${esc(alt)}</figcaption></figure>`;
 const PHONE = '0507-1301-5970';
@@ -41,6 +42,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 
 function layout(lang, page, { title, desc, body, active }) {
   const L = (k) => t(lang, k);
+  const isHome = active === '';
   const runtime = Object.fromEntries(Object.keys(T.ko).filter((k) => k.startsWith('rt.')).map((k) => [k.slice(3), L(k)]));
   const nav = [
     ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['menu/', 'nav.menu'], ['gallery/', 'nav.gallery'], ['request/', 'nav.request'], ['info/', 'nav.info'], ['/partners/', 'nav.partners'], ['/club/', 'nav.club'],
@@ -54,7 +56,7 @@ function layout(lang, page, { title, desc, body, active }) {
 <meta name="naver-site-verification" content="663bc824a0d4240c00416f2be7539140c3b01922">
 <script>if(location.protocol==='http:'&&!/^(localhost|127\\.|\\[)/.test(location.hostname))location.replace('https:'+location.href.slice(5))</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0a0909">
+<meta name="theme-color" content="${isHome ? '#101014' : '#0a0909'}">
 <title>${esc(fullTitle)}</title>
 <meta name="description" content="${esc(desc || L('site.desc'))}">
 <link rel="canonical" href="${SITE}${href(lang, page)}">
@@ -76,13 +78,15 @@ ${alternates}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="/assets/site.css?v=${VERSION}">
+<link rel="stylesheet" href="/assets/site.css?v=${VERSION}">${isHome ? `
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&display=swap">
+<link rel="stylesheet" href="/assets/home.css?v=${VERSION}">` : ''}
 ${GA_TAG}
 </head>
 <body data-page="${page.replace(/\/$/, '') || 'home'}">
 <a class="skip" href="#main">Skip to content</a>
 <header class="hdr">
-  <a class="brand logo" href="${href(lang, '')}"><img class="logo-icon" src="/assets/logo-icon.png" width="181" height="150" alt="">${LOGO_WORD}</a>
+  <a class="brand logo${isHome ? ' home-brand' : ''}" href="${href(lang, '')}">${isHome ? LOGO_FULL : `<img class="logo-icon" src="/assets/logo-icon.png" width="181" height="150" alt="">${LOGO_WORD}`}</a>
   <nav class="nav" aria-label="Main">
     ${nav.map(([p, k]) => `<a href="${p === '/partners/' && lang !== 'ko' ? p + '?lang=' + lang : p[0] === '/' ? p : href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n    ')}
   </nav>
@@ -176,28 +180,27 @@ const BODIES = {
   '': (lang) => {
     const L = (k) => t(lang, k);
     return `<section class="hero">
-  <picture class="hero-bg" aria-hidden="true">
-    <source media="(max-width: 699px)" srcset="/assets/img/hero-tall.webp" width="369" height="656">
-    <img src="/assets/img/hero-wide.webp" width="1079" height="656" alt="" fetchpriority="high">
-  </picture>
+  <img class="hero-bg" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" fetchpriority="high">
   <div class="hero-in wrap">
     <p class="kicker">${L('hero.kicker')}</p>
-    <h1 class="hero-logo"><img src="/assets/logo.png" width="564" height="229" alt="Groove &amp; Spot"></h1>
+    <h1 class="hero-logo">${LOGO_FULL}</h1>
     <p class="hero-tag">${L('hero.tag')}</p>
-    <p class="status" data-status></p>
     <div class="hero-act">
-      <a class="btn btn-hot btn-lg" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a>
-      <a class="btn btn-lg" href="${href(lang, 'events/')}">${L('cta.events')}</a>
+      <a class="btn btn-hot" href="${href(lang, 'reserve/')}">${L('cta.reserve')} <span aria-hidden="true">↗</span></a>
+      <a class="btn" href="#home-lineup">${L('cta.lineup')} <span aria-hidden="true">↓</span></a>
+      <p class="status" data-status></p>
     </div>
   </div>
 </section>
-<section class="now wrap" data-now hidden aria-labelledby="now-h">
-  <h2 class="sec-h" id="now-h"><span class="live-dot" aria-hidden="true"></span><span id="now-h-txt">${L('sec.now')}</span></h2>
-  <div class="now-grid" data-now-grid></div>
-  <p class="now-act"><a class="btn" href="${href(lang, 'request/')}">🎵 ${L('cta.request')}</a><a class="more" href="${href(lang, 'floors/')}">${L('sec.timetable')} →</a></p>
+<section class="now" id="home-lineup" data-now hidden aria-labelledby="now-h">
+  <div class="wrap">
+    <h2 class="sec-h" id="now-h"><span class="home-title" aria-hidden="true">TONIGHT</span><span class="home-subtitle"><span class="live-dot" aria-hidden="true"></span><span id="now-h-txt">${L('sec.now')}</span></span></h2>
+    <div class="now-grid" data-now-grid></div>
+    <p class="now-act"><a class="btn" href="${href(lang, 'request/')}">🎵 ${L('cta.request')}</a><a class="more" href="${href(lang, 'floors/')}">${L('sec.timetable')} →</a></p>
+  </div>
 </section>
-<section class="wrap sec" aria-labelledby="up-h">
-  <div class="sec-top"><h2 class="sec-h" id="up-h">${L('sec.upcoming')}</h2><a class="more" href="${href(lang, 'events/')}">${L('more.events')} →</a></div>
+<section class="wrap sec home-events" aria-labelledby="up-h">
+  <div class="sec-top"><h2 class="sec-h" id="up-h"><span class="home-title" aria-hidden="true">UPCOMING</span><span class="home-subtitle">${L('sec.upcoming')}</span></h2><a class="more" href="${href(lang, 'events/')}">${L('more.events')} →</a></div>
   <p class="small" data-saved-event hidden></p>
   <div class="cards" data-events="upcoming" data-limit="6"></div>
 </section>
