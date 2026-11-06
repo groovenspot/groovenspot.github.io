@@ -3,5 +3,10 @@
     "source": "/assets/timetables/2026-10-31.webp",
     "skipped": "manual",
     "at": "2026-10-31T09:50:41.429Z"
+  },
+  "2026-11-07": {
+    "source": "/assets/flyers/2026-11-07.webp",
+    "none": true,
+    "at": "2026-11-06T05:08:44.761Z"
   }
 }
