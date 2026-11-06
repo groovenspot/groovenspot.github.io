@@ -2309,6 +2309,40 @@
     "flyer": "/assets/timetables/2026-11-05.webp"
   },
   {
+    "date": "2026-11-06",
+    "title": "FRIDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "lineup": {
+      "2F": [
+        "WOOK2",
+        "MUTE",
+        "TARO",
+        "MAD",
+        "BINU",
+        "ZINO",
+        "ROAD",
+        "SENDOW",
+        "UZI",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "N",
+        "WOOK2",
+        "BILL",
+        "UZI",
+        "MUTE",
+        "EZZY",
+        "ZET",
+        "MUMU X A:ETH",
+        "TARO",
+        "ROAD",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-11-06.webp"
+  },
+  {
     "date": "2026-11-07",
     "title": "FIREWORKS PARTY with G.O.A.T",
     "floor": "2F+3F",
