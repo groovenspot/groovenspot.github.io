@@ -2396,5 +2396,22 @@
       "en": "Groove / Spot Label Party — DJ time attack"
     },
     "ig": "https://www.instagram.com/p/DfHWnV4TEKa/"
+  },
+  {
+    "date": "2026-11-20",
+    "title": "ARUN TEAM PARTY",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-11-20.webp",
+    "desc": {
+      "ko": "교복 파티 · 스페셜 게스트 DJ HENDORPHIN",
+      "en": "School Uniform Party with special guest DJ HENDORPHIN"
+    },
+    "ig": "https://www.instagram.com/p/DfZidjmk39-/",
+    "lineup": {
+      "GUEST": [
+        "HENDORPHIN"
+      ]
+    }
   }
 ]
