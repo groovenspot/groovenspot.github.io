@@ -2347,13 +2347,39 @@
     "title": "FIREWORKS PARTY with G.O.A.T",
     "floor": "2F+3F",
     "open": "21:00",
-    "flyer": "/assets/flyers/2026-11-07.webp",
+    "flyer": "/assets/timetables/2026-11-07.webp",
     "desc": {
       "ko": "불꽃 파티 · 게스트 DJ JUNTARO",
       "en": "Fireworks Party with guest DJ JUNTARO"
     },
     "ig": "https://www.instagram.com/p/Dez1ziSk_dA/",
     "lineup": {
+      "2F": [
+        "WOOK2",
+        "MUTE",
+        "UZI",
+        "MAD",
+        "BINU",
+        "ZINO",
+        "ROAD",
+        "SENDOW",
+        "TARO",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "N",
+        "WOOK2",
+        "BILL",
+        "MUMU",
+        "MUTE X ZET",
+        "JUNTARO",
+        "TARO",
+        "UZI",
+        "EZZY",
+        "A:ETH X KUPA",
+        "ROAD",
+        "SPOT DJ"
+      ],
       "GUEST": [
         "JUNTARO"
       ]
