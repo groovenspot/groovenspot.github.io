@@ -744,35 +744,46 @@
     var draft = store('gs_rv'); // 이름·연락처만 이 기기에 기억
     if (draft) { try { draft = JSON.parse(draft); form.name.value = draft.name || ''; form.phone.value = draft.phone || ''; } catch (e) {} }
 
-    form.addEventListener('submit', function (ev) {
-      ev.preventDefault();
+    function bookText(needPhone) {
       var ok = true;
-      ['name', 'phone'].forEach(function (k) {
+      (needPhone ? ['name', 'phone'] : ['name']).forEach(function (k) {
         var bad = !form[k].value.trim();
         form[k].setAttribute('aria-invalid', bad ? 'true' : 'false');
         if (bad) ok = false;
       });
-      if (!ok) { toast(T.need); (form.name.value.trim() ? form.phone : form.name).focus(); return; }
+      if (!ok) { toast(T.need); (form.name.value.trim() ? form.phone : form.name).focus(); return null; }
       store('gs_rv', JSON.stringify({ name: form.name.value.trim(), phone: form.phone.value.trim() }));
       function lab(name) { var el = form[name]; var l = el.closest('label'); return l ? l.firstChild.textContent.trim() : name; }
       var floor = form.querySelector('input[name=floor]:checked');
       var type = form.type.options[form.type.selectedIndex].text;
-      var lines = [
-        T['bk.title'],
-        lab('name') + ': ' + form.name.value.trim(),
-        lab('phone') + ': ' + form.phone.value.trim(),
+      var lines = [T['bk.title'], lab('name') + ': ' + form.name.value.trim()];
+      if (form.phone.value.trim()) lines.push(lab('phone') + ': ' + form.phone.value.trim());
+      lines.push(
         lab('date') + ': ' + form.date.value + ' (' + (DOW[dowOf(form.date.value)] || '') + ')',
         lab('party') + ': ' + form.party.value,
         $('.seg legend', form).textContent + ': ' + (floor ? floor.nextElementSibling.textContent : ''),
         lab('type') + ': ' + type
-      ];
+      );
       if (form.req.value.trim()) lines.push(lab('req') + ': ' + form.req.value.trim());
-      var text = lines.join('\n');
+      return { text: lines.join('\n'), floor: floor ? floor.value : '' };
+    }
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var b = bookText(true); if (!b) return;
       // 팝업 차단을 피하려고 복사 완료를 기다리지 않고 바로 연다
-      copy(text);
-      track('reserve_submit', { type: form.type.value, floor: floor ? floor.value : '', party: form.party.value });
+      copy(b.text);
+      track('reserve_submit', { type: form.type.value, floor: b.floor, party: form.party.value });
       toast(T.copied);
       window.open(GS.instagram, '_blank', 'noopener');
+    });
+
+    // WhatsApp: 사용자 이름(@groovenspot) 링크라 전화번호가 노출되지 않는다. 연락처는 WhatsApp에 있으니 이름만 필수.
+    var wa = $('[data-wa]', form);
+    if (wa) wa.addEventListener('click', function () {
+      var b = bookText(false); if (!b) return;
+      track('reserve_whatsapp', { type: form.type.value, floor: b.floor, party: form.party.value });
+      window.open((GS.whatsapp || 'https://wa.me/groovenspot') + '?text=' + encodeURIComponent(b.text), '_blank', 'noopener');
     });
   }
 })();
