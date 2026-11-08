@@ -150,7 +150,7 @@ ${body}
   <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="${L('rt.nextPhoto')}">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, topic: REQ_TOPIC, t: runtime })};</script>
+<script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, whatsapp: 'https://wa.me/groovenspot', topic: REQ_TOPIC, t: runtime })};</script>
 <script src="/assets/site.js?v=${VERSION}" defer></script>
 </body>
 </html>
@@ -330,6 +330,7 @@ ${pageHead(lang, 'reserve')}
     <label class="full">${L('rv.req')}<textarea name="req" rows="3" placeholder="${esc(L('rv.p.req'))}"></textarea></label>
     <div class="full rv-act">
       <button class="btn btn-hot btn-lg" type="submit">${L('rv.btn')}</button>
+      <button class="btn btn-lg btn-wa" type="button" data-wa>${L('rv.wa')}</button>
       <a class="btn btn-lg" href="tel:${PHONE.replace(/-/g, '')}">${L('rv.call')} · ${PHONE}</a>
     </div>
     <p class="full muted small">${L('rv.note')}</p>

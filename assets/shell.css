@@ -131,3 +131,5 @@ body.site-public {
   .site-public .toast { bottom: calc(140px + env(safe-area-inset-bottom, 0px)); }
   .site-public .mnav { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
 }
+.btn-wa { background: #25D366; border-color: transparent; color: #062b14; }
+.btn-wa:hover { background: #3ee07a; }
