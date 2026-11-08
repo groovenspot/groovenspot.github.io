@@ -150,8 +150,9 @@ ${body}
   <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="${L('rt.nextPhoto')}">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, whatsapp: 'https://wa.me/groovenspot', topic: REQ_TOPIC, t: runtime })};</script>
+<script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, whatsapp: 'https://wa.me/groovenspot', v: VERSION, topic: REQ_TOPIC, t: runtime })};</script>
 <script src="/assets/site.js?v=${VERSION}" defer></script>
+<script src="/assets/chat.js?v=${VERSION}" defer></script>
 </body>
 </html>
 `;
@@ -421,6 +422,45 @@ write('404.html', layout('ko', '', {
   body: `<section class="phead wrap"><h1>404</h1><p class="lede">${t('ko', '404.t')} · ${t('en', '404.t')}</p><p><a class="btn btn-hot" href="/">${t('ko', '404.home')}</a></p></section>`,
 }).replace(/<link rel="canonical"[^>]*>\n/, ''));
 
+
+// 안내 챗봇 데이터 (정해진 답변형) — FAQ 문구를 그대로 쓰고 키워드로 찾는다
+const CHAT_IDS = { 1: 'dress', 2: 'age', 3: 'walkin', 4: 'parking', 5: 'smoke', 6: 'group', 7: 'fee', 8: 'foreign', 9: 'hours', 10: 'music', 11: 'timetable', 12: 'table' };
+const CHAT_KW = {
+  dress: ['dress', 'wear', 'clothes', 'outfit', 'shoes', 'slipper', 'sandal', '드레스', '복장', '옷', '슬리퍼', '신발', '츄리닝', '트레이닝', '服装', 'ドレス', '服', '着', '靴', '穿', '鞋'],
+  age: ['age', 'old', 'minor', 'id card', '나이', '미성년', '19', '몇살', '신분증', '年齢', '歳', '年龄', '岁', '证件'],
+  walkin: ['walk in', 'walk-in', 'without book', 'without reserv', '예약 없이', '예약없이', '워크인', '그냥 가', '予約なし', '予約なしで', '不预订', '没预订'],
+  parking: ['park', 'car', '주차', '차 ', '駐車', '车', '停车'],
+  smoke: ['smok', 'cigar', 'vape', '흡연', '담배', '전자담배', '喫煙', 'タバコ', '吸烟', '抽烟', '烟'],
+  group: ['group', 'private', 'party', 'birthday', 'hire', 'rent', '단체', '대관', '생일', '파티', '団体', '貸切', '誕生日', '包场', '团体', '生日'],
+  fee: ['fee', 'cover', 'entry', 'free', 'charge', 'price to enter', '입장료', '무료', '돈 내', '料金', '入場料', '無料', '门票', '入场费', '免费'],
+  foreign: ['foreign', 'tourist', 'passport', 'korean only', '외국인', '여권', '관광', '外国', 'パスポート', '観光', '护照', '游客', '外国人'],
+  hours: ['hour', 'open', 'close', 'what time', 'when', '영업', '시간', '몇시', '언제', '오픈', '마감', '営業', '時間', '何時', '营业', '几点', '时间'],
+  music: ['music', 'genre', 'hip', 'edm', 'house', 'r&b', 'kpop', 'k-pop', '음악', '장르', '힙합', '노래', '音楽', 'ジャンル', '音乐', '风格'],
+  timetable: ['dj', 'timetable', 'line up', 'lineup', 'who play', '타임테이블', '라인업', '디제이', 'タイムテーブル', '出演', '时间表', '阵容'],
+  table: ['table', 'book', 'reserv', 'bottle', 'vip', 'guest', 'list', '테이블', '예약', '바틀', '게스트', 'テーブル', '予約', 'ボトル', '卡座', '预订', '订座', '酒'],
+  location: ['where', 'address', 'location', 'direction', 'station', 'subway', 'metro', 'how to get', 'map', '위치', '주소', '어디', '가는', '역', '지하철', '찾아', '場所', '住所', '行き方', '駅', '地址', '位置', '怎么去', '地铁', '在哪'],
+};
+const CHAT_LOC = {
+  ko: '부산 부산진구 중앙대로680번가길 52, 2·3층이에요. 서면역 3번 출구에서 걸어서 3분이에요.',
+  en: '52 Jungang-daero 680beonga-gil, Busanjin-gu, Busan (2F–3F). 3 min walk from Seomyeon Station Exit 3.',
+  ja: '釜山 釜山鎮区 中央大路680番街キル52の2・3階です。西面駅3番出口から徒歩3分です。',
+  zh: '釜山 釜山镇区 中央大路680番街路52号 2–3楼，西面站3号出口步行3分钟。',
+};
+const CHAT_LOC_Q = { ko: '위치·가는 길', en: 'Location & directions', ja: '場所・行き方', zh: '位置与交通' };
+const CHAT_UI = {
+  ko: { title: '그루브 안내', hi: '안녕하세요! GROOVE N SPOT 안내예요. 궁금한 걸 누르거나 입력해 주세요.', ph: '예: 영업시간, 여권, 예약', fallback: '그 질문은 제가 정확히 답하기 어려워요. 예약 페이지나 WhatsApp·인스타 DM으로 물어봐 주시면 담당자가 답해 드려요.', book: '예약하기', map: '지도 열기' },
+  en: { title: 'Groove Guide', hi: 'Hi! This is the GROOVE N SPOT guide. Tap a question or type yours.', ph: 'e.g. hours, passport, table', fallback: "I can't answer that one for sure. Ask us on WhatsApp or Instagram DM, or use the booking page — our team will reply.", book: 'Book now', map: 'Open map' },
+  ja: { title: 'GROOVE案内', hi: 'こんにちは！GROOVE N SPOTの案内です。質問を選ぶか入力してください。', ph: '例：営業時間、パスポート、予約', fallback: 'その質問には正確にお答えできません。WhatsAppかInstagramのDM、または予約ページからお問い合わせください。担当者が返信します。', book: '予約する', map: '地図を開く' },
+  zh: { title: 'GROOVE 指南', hi: '你好！这里是GROOVE N SPOT指南。点选或输入你的问题。', ph: '例如：营业时间、护照、预订', fallback: '这个问题我无法准确回答。请通过WhatsApp或Instagram私信，或在预订页面联系我们，工作人员会回复你。', book: '立即预订', map: '打开地图' },
+};
+const CHAT_TOP = ['hours', 'location', 'foreign', 'fee', 'dress', 'table', 'music', 'timetable'];
+for (const lang of LANGS) {
+  const items = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6].map((i) => ({ id: CHAT_IDS[i], q: t(lang, `faq.q${i}`), a: t(lang, `faq.a${i}`) }));
+  items.push({ id: 'location', q: CHAT_LOC_Q[lang], a: `${CHAT_LOC[lang]} <a href="${GMAP}" target="_blank" rel="noopener">${CHAT_UI[lang].map} →</a>` });
+  for (const it of items) { it.k = CHAT_KW[it.id]; if (CHAT_TOP.includes(it.id)) it.top = 1; }
+  items.sort((a, b) => (CHAT_TOP.indexOf(a.id) + 99 * !a.top) - (CHAT_TOP.indexOf(b.id) + 99 * !b.top));
+  write(`assets/chat-${lang}.json`, JSON.stringify({ ui: CHAT_UI[lang], reserve: href(lang, 'reserve/'), items }));
+}
 // 검색엔진용: 사이트맵 + robots.txt (관리자 페이지는 제외)
 const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 // 이벤트 상세 고정 페이지 (검색엔진용) — data/events.json·timetable.json·gallery.json 으로 생성
