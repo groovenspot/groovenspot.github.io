@@ -19,6 +19,8 @@ const XHS = 'https://www.xiaohongshu.com/user/profile/679dc482000000000e01e057';
 const TRIPADVISOR = 'https://www.tripadvisor.com/Attraction_Review-g297884-d34781588-Reviews-Groove_Spot-Busan.html';
 // 신청곡 전달용 ntfy 토픽 (assets/admin.js 의 TOPIC 과 같아야 함)
 const REQ_TOPIC = 'groovenspot-req-6witbq5hriea';
+// 예약 저장: 그루브 구글 계정 시트('GROOVE 예약·손님')의 Apps Script 웹 앱. 비우면 저장 없이 DM만.
+const BOOK_API = 'https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec';
 // Google Analytics 4 측정 ID (G-XXXXXXXXXX). 비워 두면 통계 코드를 넣지 않는다. 관리자 페이지에는 넣지 않음.
 const GA_ID = 'G-G4Y93LP9PP';
 const GA_TAG = GA_ID ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
@@ -150,7 +152,7 @@ ${body}
   <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="${L('rt.nextPhoto')}">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, whatsapp: 'https://wa.me/groovenspot', v: VERSION, topic: REQ_TOPIC, t: runtime })};</script>
+<script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, whatsapp: 'https://wa.me/groovenspot', bookApi: BOOK_API, v: VERSION, topic: REQ_TOPIC, t: runtime })};</script>
 <script src="/assets/site.js?v=${VERSION}" defer></script>
 <script src="/assets/chat.js?v=${VERSION}" defer></script>
 </body>
@@ -328,7 +330,11 @@ ${pageHead(lang, 'reserve')}
       <label><input type="radio" name="floor" value="any" checked><span>${L('rv.any')}</span></label>
     </fieldset>
     <label>${L('rv.type')}<select name="type">${opt('guest', L('rv.t.guest'))}${opt('table', L('rv.t.table'))}${opt('bottle', L('rv.t.bottle'))}${opt('h', L('rv.t.h'))}</select></label>
+    <label>${L('rv.bday')}<input name="bday" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="${esc(L('rv.p.bday'))}"></label>
     <label class="full">${L('rv.req')}<textarea name="req" rows="3" placeholder="${esc(L('rv.p.req'))}"></textarea></label>
+    <label class="full rv-chk"><input type="checkbox" name="consent"><span>${L('rv.consent')} <a href="${href(lang, 'privacy/')}">${PRIVACY[lang].link}</a></span></label>
+    <label class="full rv-chk"><input type="checkbox" name="promo"><span>${L('rv.promo')}</span></label>
+    <input class="rv-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div class="full rv-act">
       <button class="btn btn-hot btn-lg" type="submit">${L('rv.btn')}</button>
       <button class="btn btn-lg btn-wa" type="button" data-wa>${L('rv.wa')}</button>
