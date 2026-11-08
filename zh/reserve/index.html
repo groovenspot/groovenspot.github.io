@@ -30,9 +30,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="/assets/site.css?v=mw7b0ijt">
+<link rel="stylesheet" href="/assets/site.css?v=mw7bo2lr">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&display=swap">
-<link rel="stylesheet" href="/assets/shell.css?v=mw7b0ijt">
+<link rel="stylesheet" href="/assets/shell.css?v=mw7bo2lr">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4Y93LP9PP"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','G-G4Y93LP9PP');}</script>
 </head>
@@ -94,7 +94,11 @@
       <label><input type="radio" name="floor" value="any" checked><span>都可以</span></label>
     </fieldset>
     <label>类型<select name="type"><option value="guest">宾客名单（入场）</option><option value="table">卡座</option><option value="bottle">套餐</option><option value="h">单人吧台H</option></select></label>
+    <label>生日（可选）<input name="bday" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="例：03-15"></label>
     <label class="full">备注（可选）<textarea name="req" rows="3" placeholder="例：今天生日，想要DJ附近的桌位！"></textarea></label>
+    <label class="full rv-chk"><input type="checkbox" name="consent"><span>［必填］同意为确认预订保存姓名、电话和到店信息1年。 <a href="/zh/privacy/">隐私政策</a></span></label>
+    <label class="full rv-chk"><input type="checkbox" name="promo"><span>［可选］接收生日及活动优惠通知。</span></label>
+    <input class="rv-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div class="full rv-act">
       <button class="btn btn-hot btn-lg" type="submit">通过Instagram私信预订</button>
       <button class="btn btn-lg btn-wa" type="button" data-wa>通过WhatsApp预订</button>
@@ -154,8 +158,8 @@
   <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="下一张">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>window.GS={"lang":"zh","root":"/zh","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","v":"mw7b0ijt","topic":"groovenspot-req-6witbq5hriea","t":{"nowPlaying":"正在播放","tonightLineup":"{d} 今晚阵容","startsAt":"{t} 开始","lineupSoon":"阵容即将公布","setsOf":"当晚DJ的现场录像","rqNoResult":"没有找到。也可以直接发送输入的内容。","rqSearching":"搜索中…","rqSearchOff":"暂时无法搜索，请直接输入歌名发送。","rqLocal":"网络搜索较慢，以下来自已保存的热门歌曲。没有的话直接输入即可。","noPhotos":"还没有照片。","photoCount":"{n}张","photosOf":"当晚照片","close":"关闭","prevPhoto":"上一张","nextPhoto":"下一张","rqSent":"点歌已发送！🎵","rqWait":"{s}秒后可再次发送","rqNeed":"请输入歌名。","rqFail":"发送失败，请稍后再试。","openNow":"营业中 · 至{t}","opensAt":"今晚{t} OPEN","noEvents":"下一期阵容正在筹备中，将在Instagram首发。","noArtists":"艺人介绍即将上线。","since":"{t}起","next":"下一位 {n} · {t}","notFound":"找不到该活动。","copied":"预订信息已复制，请粘贴到@groovenspot私信发送。","need":"请输入姓名和电话。","share":"分享","linkCopied":"链接已复制。","reserveThis":"预订这一天","open":"OPEN","past":"已结束","bk.title":"[Groove & Spot 预订申请]","today":"今天","tonight":"TONIGHT","dow":"周日,周一,周二,周三,周四,周五,周六"}};</script>
-<script src="/assets/site.js?v=mw7b0ijt" defer></script>
-<script src="/assets/chat.js?v=mw7b0ijt" defer></script>
+<script>window.GS={"lang":"zh","root":"/zh","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","bookApi":"https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec","v":"mw7bo2lr","topic":"groovenspot-req-6witbq5hriea","t":{"nowPlaying":"正在播放","tonightLineup":"{d} 今晚阵容","startsAt":"{t} 开始","lineupSoon":"阵容即将公布","setsOf":"当晚DJ的现场录像","rqNoResult":"没有找到。也可以直接发送输入的内容。","rqSearching":"搜索中…","rqSearchOff":"暂时无法搜索，请直接输入歌名发送。","rqLocal":"网络搜索较慢，以下来自已保存的热门歌曲。没有的话直接输入即可。","noPhotos":"还没有照片。","photoCount":"{n}张","photosOf":"当晚照片","close":"关闭","prevPhoto":"上一张","nextPhoto":"下一张","rqSent":"点歌已发送！🎵","rqWait":"{s}秒后可再次发送","rqNeed":"请输入歌名。","rqFail":"发送失败，请稍后再试。","openNow":"营业中 · 至{t}","opensAt":"今晚{t} OPEN","noEvents":"下一期阵容正在筹备中，将在Instagram首发。","noArtists":"艺人介绍即将上线。","since":"{t}起","next":"下一位 {n} · {t}","notFound":"找不到该活动。","copied":"预订信息已复制，请粘贴到@groovenspot私信发送。","need":"请输入姓名和电话。","consent":"请勾选必填的同意项。","bk.code":"预订编号","share":"分享","linkCopied":"链接已复制。","reserveThis":"预订这一天","open":"OPEN","past":"已结束","bk.title":"[Groove & Spot 预订申请]","today":"今天","tonight":"TONIGHT","dow":"周日,周一,周二,周三,周四,周五,周六"}};</script>
+<script src="/assets/site.js?v=mw7bo2lr" defer></script>
+<script src="/assets/chat.js?v=mw7bo2lr" defer></script>
 </body>
 </html>
