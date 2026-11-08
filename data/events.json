@@ -2386,6 +2386,42 @@
     }
   },
   {
+    "date": "2026-11-08",
+    "title": "SUNDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "WOOK2",
+        "MUTE",
+        "ROAD",
+        "TARO",
+        "ZINO",
+        "UZI",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "KUPA",
+        "BILL",
+        "EZZY",
+        "UZI",
+        "LILY",
+        "ZET",
+        "MUTE",
+        "DIA",
+        "N",
+        "TARO",
+        "ROAD x WOOK2",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-11-08.webp",
+    "desc": {
+      "ko": "3F 새벽 01:40 LILY 스페셜 타임",
+      "en": "Highlighted set: LILY on 3F at 1:40AM"
+    }
+  },
+  {
     "date": "2026-11-14",
     "title": "GROOVE / SPOT LABEL PARTY",
     "floor": "2F+3F",
