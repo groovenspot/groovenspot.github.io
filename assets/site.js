@@ -752,11 +752,13 @@
         if (bad) ok = false;
       });
       if (!ok) { toast(T.need); (form.name.value.trim() ? form.phone : form.name).focus(); return null; }
+      if (!form.consent.checked) { toast(T.consent); form.consent.focus(); return null; }
       store('gs_rv', JSON.stringify({ name: form.name.value.trim(), phone: form.phone.value.trim() }));
       function lab(name) { var el = form[name]; var l = el.closest('label'); return l ? l.firstChild.textContent.trim() : name; }
       var floor = form.querySelector('input[name=floor]:checked');
       var type = form.type.options[form.type.selectedIndex].text;
-      var lines = [T['bk.title'], lab('name') + ': ' + form.name.value.trim()];
+      var code = bookCode();
+      var lines = [T['bk.title'], T['bk.code'] + ': ' + code, lab('name') + ': ' + form.name.value.trim()];
       if (form.phone.value.trim()) lines.push(lab('phone') + ': ' + form.phone.value.trim());
       lines.push(
         lab('date') + ': ' + form.date.value + ' (' + (DOW[dowOf(form.date.value)] || '') + ')',
@@ -765,7 +767,33 @@
         lab('type') + ': ' + type
       );
       if (form.req.value.trim()) lines.push(lab('req') + ': ' + form.req.value.trim());
-      return { text: lines.join('\n'), floor: floor ? floor.value : '' };
+      return { text: lines.join('\n'), floor: floor ? floor.value : '', code: code };
+    }
+
+    // 예약코드: 날짜(MMDD) + 헷갈리지 않는 글자 4개. DM 문장과 시트에 같은 코드가 들어간다.
+    function bookCode() {
+      var A = 'ACDEFGHJKMNPQRTUVWXY34679', d = form.date.value || BIZ, c = 'G' + d.slice(5, 7) + d.slice(8, 10) + '-';
+      var r = new Uint32Array(4);
+      if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(r); else for (var i = 0; i < 4; i++) r[i] = Math.floor(Math.random() * 1e9);
+      for (var j = 0; j < 4; j++) c += A.charAt(r[j] % A.length);
+      return c;
+    }
+    function normBday(v) {
+      var d = String(v || '').replace(/\D/g, '');
+      if (d.length === 3) d = '0' + d;
+      return d.length === 4 && +d.slice(0, 2) >= 1 && +d.slice(0, 2) <= 12 && +d.slice(2) >= 1 && +d.slice(2) <= 31 ? d.slice(0, 2) + '-' + d.slice(2) : '';
+    }
+    // 그루브 구글 시트에 저장(응답을 기다리지 않음 — 실패해도 DM 은 그대로 간다)
+    function saveBooking(b, channel) {
+      if (!GS.bookApi) return;
+      var TYPE = { guest: '게스트', table: '테이블', bottle: '바틀', h: 'H존' };
+      var body = JSON.stringify({
+        code: b.code, name: form.name.value.trim(), phone: form.phone.value.trim(), date: form.date.value,
+        party: form.party.value, floor: b.floor === 'any' ? '상관없음' : b.floor, type: TYPE[form.type.value] || form.type.value,
+        req: form.req.value.trim(), bday: normBday(form.bday.value), promo: form.promo.checked, consent: form.consent.checked,
+        channel: channel, lang: GS.lang, hp: form.website ? form.website.value : ''
+      });
+      try { fetch(GS.bookApi, { method: 'POST', mode: 'no-cors', keepalive: true, body: body }); } catch (e) {}
     }
 
     form.addEventListener('submit', function (ev) {
@@ -773,6 +801,7 @@
       var b = bookText(true); if (!b) return;
       // 팝업 차단을 피하려고 복사 완료를 기다리지 않고 바로 연다
       copy(b.text);
+      saveBooking(b, 'instagram');
       track('reserve_submit', { type: form.type.value, floor: b.floor, party: form.party.value });
       toast(T.copied);
       window.open(GS.instagram, '_blank', 'noopener');
@@ -782,6 +811,7 @@
     var wa = $('[data-wa]', form);
     if (wa) wa.addEventListener('click', function () {
       var b = bookText(false); if (!b) return;
+      saveBooking(b, 'whatsapp');
       track('reserve_whatsapp', { type: form.type.value, floor: b.floor, party: form.party.value });
       window.open((GS.whatsapp || 'https://wa.me/groovenspot') + '?text=' + encodeURIComponent(b.text), '_blank', 'noopener');
     });
