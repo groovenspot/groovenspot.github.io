@@ -8,6 +8,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LANGS, LANG_LABEL, HTML_LANG, T, t } from './i18n.mjs';
 import { GUIDE, GUIDE_LINKS } from './guide.mjs';
+import { SEO, SEO_EV, EV_DESC, EV_INFO } from './seo.mjs';
+import { ARTICLES, ART_UI } from './articles.mjs';
 import { PRIVACY, EFFECTIVE } from './privacy.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -366,6 +368,7 @@ ${P.secs.map(([h, b], i) => `<section class="wrap sec" aria-labelledby="pp${i}">
 <section class="wrap sec"><div class="panel"><dl class="hours guide-quick">${G.quick.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div></section>
 ${G.secs.map(([h, b], i) => `<section class="wrap sec" aria-labelledby="g${i}"><h2 class="sec-h" id="g${i}">${h}</h2><div class="prose">${b}</div></section>`).join('\n')}
 <section class="wrap sec"><div class="row-btns"><a class="btn btn-hot" href="${href(lang, 'events/')}">${K[0]} →</a><a class="btn" href="${href(lang, 'info/')}">${K[1]} →</a><a class="btn" href="${href(lang, 'reserve/')}">${K[2]} →</a></div></section>
+${ARTICLES.length ? `<section class="wrap sec" aria-labelledby="g-more"><h2 class="sec-h" id="g-more">${ART_UI.more[lang]}</h2><div class="prose"><ul>${ARTICLES.map((a) => `<li><a href="${href(lang, `guide/${a.slug}/`)}">${esc(a[lang].t)}</a></li>`).join('')}</ul></div></section>` : ''}
 <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'Article', headline: G.h1, description: G.s, inLanguage: HTML_LANG[lang], author: { '@type': 'Organization', name: 'Groove & Spot' }, publisher: { '@type': 'Organization', name: 'Groove & Spot', logo: { '@type': 'ImageObject', url: SITE + '/assets/icon-512.png' } }, image: SITE + '/assets/og.png', mainEntityOfPage: SITE + href(lang, 'guide/'), about: { '@type': 'NightClub', name: 'Groove & Spot', url: SITE + '/' } }).replace(/</g, '\\u003c')}</script>`;
   },
 
@@ -413,9 +416,10 @@ for (const lang of LANGS) {
   if (lang !== 'ko' && existsSync(join(ROOT, lang))) rmSync(join(ROOT, lang), { recursive: true });
   for (const page of PAGES) {
     const titleKey = TITLES[page];
+    const seo = (SEO[lang] || {})[page];
     const html = layout(lang, page, {
-      title: page === 'privacy/' ? PRIVACY[lang].t : page === 'guide/' ? GUIDE[lang].t : titleKey ? t(lang, titleKey) : null,
-      desc: page === 'privacy/' ? PRIVACY[lang].s : page === 'guide/' ? GUIDE[lang].s : titleKey && page !== 'event/' ? t(lang, `page.${page.replace('/', '')}.s`) : null,
+      title: page === 'privacy/' ? PRIVACY[lang].t : page === 'guide/' ? GUIDE[lang].t : seo ? seo.t : titleKey ? t(lang, titleKey) : null,
+      desc: page === 'privacy/' ? PRIVACY[lang].s : page === 'guide/' ? GUIDE[lang].s : seo ? seo.s : titleKey && page !== 'event/' ? t(lang, `page.${page.replace('/', '')}.s`) : null,
       body: BODIES[page](lang),
       active: page,
     });
@@ -494,7 +498,9 @@ for (const e of EVENTS) {
     const extra = Object.keys(e.lineup || {}).filter((k) => !floors.includes(k)).map((k) => { const rest = e.lineup[k].filter((n) => !inTT.includes(String(n).toUpperCase())); return rest.length ? `<div><p class="tt-h">${k === 'GUEST' ? 'SPECIAL GUEST' : esc(k)}</p><ul>${rest.map((n) => `<li>${esc(n)}</li>`).join('')}</ul></div>` : ''; }).join('');
     const names = [...new Set([...Object.values(e.lineup || {}).flat(), ...Object.values(day).flat().map((r) => r.n)])].filter(Boolean);
     const photos = albums.flatMap((a) => a.photos).slice(0, 12);
-    const desc = `${pickL(e.desc, lang) || e.title} — ${dLabel(e.date, lang)} · Groove & Spot, Seomyeon, Busan. ${names.length ? 'DJ: ' + names.slice(0, 12).join(', ') : ''}`.trim();
+    const desc = `${pickL(e.desc, lang) || e.title} — ${dLabel(e.date, lang)} · ${EV_DESC[lang]}. ${names.length ? 'DJ: ' + names.slice(0, 12).join(', ') : ''}`.trim();
+    const EI = EV_INFO[lang];
+    const evInfo = `<div class="evd-sec"><h2 class="sec-h">${EI.h}</h2><dl class="hours guide-quick">${EI.rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl><p><a class="more" href="${href(lang, 'guide/')}">${EI.more}: ${GUIDE[lang].t} →</a></p></div>`;
     const ld = { '@context': 'https://schema.org', '@type': 'MusicEvent', name: `${e.title} · Groove & Spot`, startDate: `${e.date}T${e.open || '21:30'}:00+09:00`, eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', isAccessibleForFree: true, description: desc, url: `${SITE}${href(lang, page)}`, image: e.flyer ? [SITE + e.flyer] : [SITE + '/assets/og.png'], location: { '@type': 'NightClub', name: 'Groove & Spot', address: { '@type': 'PostalAddress', streetAddress: '52 Jungang-daero 680beonga-gil', addressLocality: 'Busanjin-gu, Busan', addressCountry: 'KR' } }, organizer: { '@type': 'Organization', name: 'Groove & Spot', url: SITE + '/' }, performer: names.slice(0, 30).map((n) => ({ '@type': 'PerformingGroup', name: n })) };
     const body = `<article class="evd wrap">
   <div class="ev-art full">${e.flyer ? `<img src="${esc(e.flyer)}" alt="${esc(e.title)} · Groove &amp; Spot Busan ${esc(e.date)}" loading="eager">` : ''}</div>
@@ -505,15 +511,37 @@ for (const e of EVENTS) {
     ${e.desc ? `<p class="lede">${esc(pickL(e.desc, lang))}</p>` : ''}
     ${tt || extra ? `<div class="evd-sec"><h2 class="sec-h">${L('sec.timetable')}</h2><div class="lineup">${tt}${extra}</div></div>` : ''}
     ${photos.length ? `<div class="evd-sec"><h2 class="sec-h">${L('ev.photos')}</h2><div class="ph-grid">${photos.map((p) => `<a class="ph" href="${href(lang, 'gallery/')}#${esc(albums[0].id || '')}"><img src="${esc(p.thumb || p.src)}" alt="${esc(albums[0].title)} · Busan nightclub Groove &amp; Spot" loading="lazy" decoding="async"${p.w ? ` width="${p.w}" height="${p.h}"` : ''}></a>`).join('')}</div><p><a class="more" href="${href(lang, 'gallery/')}#${esc(albums[0].id || '')}">${L('ev.more')} →</a></p></div>` : ''}
+    ${evInfo}
     <p class="muted">Groove &amp; Spot · ${esc(L('if.addr'))} · ${esc(L('if.near'))}</p>
     <div class="evd-act"><a class="btn btn-hot btn-lg" href="${href(lang, 'reserve/')}?date=${e.date}">${L('nav.reserve') || 'Reserve'}</a><a class="btn btn-lg" href="${href(lang, 'events/')}">${L('ev.all')}</a></div>
   </div>
 </article>
 <script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>`;
-    write(join(lang === 'ko' ? '' : lang, page, 'index.html'), layout(lang, page, { title: `${e.title} · ${dLabel(e.date, lang)}`, desc, body, active: 'events/' }));
+    write(join(lang === 'ko' ? '' : lang, page, 'index.html'), layout(lang, page, { title: `${e.title} · ${dLabel(e.date, lang)} · ${SEO_EV[lang]}`, desc, body, active: 'events/' }));
   }
 }
-const smPages = [...PAGES.filter((p) => p !== 'event/'), ...evPages];
+
+// 검색 유입용 안내 글 (guide/<slug>/)
+const artPages = [];
+for (const a of ARTICLES) {
+  const page = `guide/${a.slug}/`;
+  artPages.push(page);
+  for (const lang of LANGS) {
+    const A = a[lang], U = ART_UI.related[lang];
+    const fill = (html) => html.replace(/%%a:([a-z0-9-]+)%%/g, (_, s) => href(lang, `guide/${s}/`)).replace(/%%(events|info|reserve|guide|floors|menu)%%/g, (_, p) => href(lang, `${p}/`));
+    const others = ARTICLES.filter((x) => x !== a);
+    const body = `<article>
+<section class="phead wrap"><h1>${A.h1}</h1><p class="lede">${A.lede}</p><p class="muted">${ART_UI.updated[lang]}: ${a.date}</p></section>
+${A.secs.map(([h, b], i) => `<section class="wrap sec" aria-labelledby="a${i}"><h2 class="sec-h" id="a${i}">${h}</h2><div class="prose">${fill(b)}</div></section>`).join('\n')}
+<section class="wrap sec"><div class="row-btns"><a class="btn btn-hot" href="${href(lang, 'events/')}">${U[0]} →</a><a class="btn" href="${href(lang, 'info/')}">${U[1]} →</a><a class="btn" href="${href(lang, 'reserve/')}">${U[2]} →</a><a class="btn" href="${href(lang, 'guide/')}">${U[3]} →</a></div></section>
+${others.length ? `<section class="wrap sec" aria-labelledby="a-more"><h2 class="sec-h" id="a-more">${ART_UI.more[lang]}</h2><div class="prose"><ul>${others.map((x) => `<li><a href="${href(lang, `guide/${x.slug}/`)}">${esc(x[lang].t)}</a></li>`).join('')}</ul></div></section>` : ''}
+</article>
+<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'Article', headline: A.h1, description: A.s, inLanguage: HTML_LANG[lang], datePublished: a.date, dateModified: a.date, author: { '@type': 'Organization', name: 'Groove & Spot' }, publisher: { '@type': 'Organization', name: 'Groove & Spot', logo: { '@type': 'ImageObject', url: SITE + '/assets/icon-512.png' } }, image: SITE + '/assets/og.png', mainEntityOfPage: SITE + href(lang, page), about: { '@type': 'NightClub', name: 'Groove & Spot', url: SITE + '/' } }).replace(/</g, '\\u003c')}</script>`;
+    write(join(lang === 'ko' ? '' : lang, page, 'index.html'), layout(lang, page, { title: A.t, desc: A.s, body, active: 'guide/' }));
+  }
+}
+
+const smPages = [...PAGES.filter((p) => p !== 'event/'), ...artPages, ...evPages];
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${smPages.flatMap((p) => LANGS.map((l) => `  <url><loc>${SITE}${href(l, p)}</loc><lastmod>${today}</lastmod>${LANGS.map((a) => `<xhtml:link rel="alternate" hreflang="${HTML_LANG[a]}" href="${SITE}${href(a, p)}"/>`).join('')}</url>`)).join('\n')}
