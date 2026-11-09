@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>GROOVE DM Console</title>
+<style>
+:root{--bg:#0f1117;--panel:#171a23;--line:#2a2f3d;--ink:#eef0f6;--sub:#9aa1b5;--acc:#e4572e;--ok:#3ccf91;--warn:#f5b84b;--blue:#4c8dff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--line);background:#12141c}
+header h1{font-size:18px;margin:0;letter-spacing:.3px}
+header h1 b{color:var(--acc)}
+header .who{color:var(--sub);font-size:13px}
+main{display:grid;grid-template-columns:330px 1fr;min-height:calc(100vh - 57px)}
+nav{border-right:1px solid var(--line);padding:18px}
+.step{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:var(--panel)}
+.step.done{border-color:#24533f}
+.step.active{border-color:var(--acc)}
+.step h3{margin:0 0 4px;font-size:14px;display:flex;gap:8px;align-items:center}
+.step .n{width:22px;height:22px;border-radius:50%;background:#2a2f3d;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.step.done .n{background:var(--ok);color:#06110c}
+.step.active .n{background:var(--acc)}
+.step p{margin:0;color:var(--sub);font-size:12.5px}
+.perm{display:inline-block;font:11.5px/1.6 ui-monospace,Menlo,monospace;background:#202536;color:#b9c6ff;border:1px solid #33405f;border-radius:5px;padding:0 6px;margin:3px 4px 0 0}
+section{padding:22px 28px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.card h2{margin:0 0 6px;font-size:17px}
+.hint{color:var(--sub);font-size:13px;margin:0 0 12px}
+button{font:inherit;border:0;border-radius:8px;padding:10px 16px;cursor:pointer;background:var(--acc);color:#fff;font-weight:600}
+button.sec{background:#2a2f3d}
+button.fb{background:#1877f2}
+button:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kv{display:grid;grid-template-columns:170px 1fr;gap:4px 12px;font-size:14px}
+.kv div:nth-child(odd){color:var(--sub)}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center;cursor:pointer}
+.item:hover,.item.sel{border-color:var(--acc)}
+.badge{font-size:12px;padding:2px 8px;border-radius:20px;background:#22283a;color:var(--sub)}
+.badge.ok{background:#173a2b;color:var(--ok)}
+.chat{display:grid;grid-template-columns:260px 1fr;gap:14px}
+.msgs{border:1px solid var(--line);border-radius:10px;padding:12px;min-height:260px;max-height:420px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.bubble{max-width:75%;padding:8px 12px;border-radius:14px;font-size:14px}
+.in{background:#262b3a;align-self:flex-start}
+.out{background:#2c4f8f;align-self:flex-end}
+.meta{font-size:11px;color:var(--sub);margin-top:2px}
+textarea{width:100%;min-height:70px;background:#0f1117;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit}
+.tpl{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tpl button{background:#22283a;color:#cfd6ea;font-weight:500;padding:6px 10px;font-size:12.5px}
+.log{font:12px/1.5 ui-monospace,Menlo,monospace;color:#8f97ad;white-space:pre-wrap;max-height:140px;overflow:auto;background:#0b0d12;border-radius:8px;padding:8px 10px;border:1px solid var(--line)}
+.err{color:#ff8a7a}
+.okc{color:var(--ok)}
+footer{color:var(--sub);font-size:12px;padding:10px 28px 24px}
+</style>
+</head>
+<body>
+<header>
+  <h1><b>GROOVE</b> DM Console <span style="color:var(--sub);font-weight:400;font-size:13px">· Groove &amp; Spot Busan staff tool</span></h1>
+  <div class="who" id="who">Not logged in</div>
+</header>
+<main>
+<nav>
+  <div class="step" id="s1"><h3><span class="n">1</span>Log in with Facebook</h3><p>Staff admin logs in and grants access to our own Page and Instagram account.</p></div>
+  <div class="step" id="s2"><h3><span class="n">2</span>Select business &amp; Page</h3><p>Find our business portfolio and our Page "Groovenspot".</p><span class="perm">business_management</span><span class="perm">pages_show_list</span></div>
+  <div class="step" id="s3"><h3><span class="n">3</span>Account overview</h3><p>Page details and the linked Instagram account @groovenspot.</p><span class="perm">pages_read_engagement</span><span class="perm">instagram_basic</span></div>
+  <div class="step" id="s4"><h3><span class="n">4</span>Enable message notifications</h3><p>Subscribe our app to the Page's messaging webhook so new DMs reach our server.</p><span class="perm">pages_manage_metadata</span></div>
+  <div class="step" id="s5"><h3><span class="n">5</span>Read &amp; reply to Instagram DMs</h3><p>Read customer messages and send a reply from @groovenspot.</p><span class="perm">instagram_manage_messages</span></div>
+</nav>
+<section>
+  <div class="card" id="c1">
+    <h2>1 · Log in with Facebook</h2>
+    <p class="hint">Only our own staff admin uses this tool. The access token stays in this browser tab and is never stored.</p>
+    <div class="row"><button class="fb" id="loginBtn">Continue with Facebook</button><button class="sec" id="logoutBtn" style="display:none">Log out</button></div>
+  </div>
+
+  <div class="card" id="c2" style="display:none">
+    <h2>2 · Business portfolio &amp; Page</h2>
+    <p class="hint">business_management: read our business portfolio that owns the Page. pages_show_list: list the Pages this admin manages.</p>
+    <div class="kv" id="bizKv"></div>
+    <div style="height:10px"></div>
+    <div class="list" id="pages"></div>
+  </div>
+
+  <div class="card" id="c3" style="display:none">
+    <h2>3 · Account overview</h2>
+    <p class="hint">pages_read_engagement: read Page name, followers and link. instagram_basic: read the linked Instagram professional account profile.</p>
+    <div class="kv" id="ovKv"></div>
+  </div>
+
+  <div class="card" id="c4" style="display:none">
+    <h2>4 · Message notifications (webhook)</h2>
+    <p class="hint">pages_manage_metadata: subscribe our app to the Page's <b>messages</b> field so new Instagram DMs are sent to our server in real time.</p>
+    <div class="row"><span class="badge" id="subState">Checking…</span><button id="subBtn">Enable message notifications</button></div>
+  </div>
+
+  <div class="card" id="c5" style="display:none">
+    <h2>5 · Instagram Direct inbox</h2>
+    <p class="hint">instagram_manage_messages: read conversations that customers started with @groovenspot and reply as @groovenspot (within Meta's 24-hour messaging window).</p>
+    <div class="row" style="margin-bottom:10px"><button class="sec" id="refreshBtn">Refresh inbox</button></div>
+    <div class="chat">
+      <div class="list" id="convs"></div>
+      <div>
+        <div class="msgs" id="msgs"><div class="meta">Select a conversation.</div></div>
+        <div class="tpl" id="tpl">
+          <button data-t="Hi! Groove &amp; Spot is open every day: Sun–Thu 9:30 PM–6 AM, Fri–Sat 9 PM–7 AM. 3 min from Seomyeon Station exit 3. Free entry, 19+, please bring your passport/ID 🙌">Opening hours</button>
+          <button data-t="2F is Hip-hop and 3F is EDM. Entry is free. See you tonight!">Floors &amp; entry</button>
+          <button data-t="Thanks for reaching out! For tables, please leave your date and number of people — our MD will contact you shortly.">Table inquiry</button>
+        </div>
+        <textarea id="reply" placeholder="Type a reply to the customer…"></textarea>
+        <div class="row" style="margin-top:8px"><button id="sendBtn" disabled>Send reply</button><span class="meta" id="sendState"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:14px">API log</h2>
+    <div class="log" id="log"></div>
+  </div>
+</section>
+</main>
+<footer>GROOVE DM Console is an internal tool of Groove &amp; Spot Busan (Seomyeon, Busan). It only accesses our own Facebook Page "Groovenspot" and Instagram account @groovenspot. Privacy policy: https://partymap.kr/ig-webhook/privacy</footer>
+
+<script>
+const APP_ID = '1603648898109818';
+const API = 'https://graph.facebook.com/v24.0';
+const CONFIG_ID = ''; // Facebook Login for Business configuration ID
+const SCOPES = ['business_management','pages_show_list','pages_read_engagement','pages_manage_metadata','instagram_basic','instagram_manage_messages'];
+const REDIRECT = location.origin + location.pathname;
+const $ = id => document.getElementById(id);
+let userToken = null, page = null, ig = null, conv = null;
+
+function log(t, cls){ const d=document.createElement('div'); if(cls) d.className=cls; d.textContent = new Date().toLocaleTimeString('en-GB') + '  ' + t; $('log').prepend(d); }
+function step(n, state){ for(let i=1;i<=5;i++){ const s=$('s'+i); if(i<n) {s.classList.add('done'); s.classList.remove('active');} if(i===n){ s.classList.add(state==='done'?'done':'active'); if(state==='done') s.classList.remove('active'); } } }
+async function g(path, token, opts={}){
+  const url = path.startsWith('http') ? path : API + path;
+  const sep = url.includes('?') ? '&' : '?';
+  const r = await fetch(url + sep + 'access_token=' + encodeURIComponent(token), opts);
+  const j = await r.json();
+  const label = (opts.method||'GET') + ' ' + path.split('?')[0];
+  if (j.error){ log(label + ' → ' + j.error.message, 'err'); throw new Error(j.error.message); }
+  log(label + ' → ' + r.status, 'okc'); return j;
+}
+
+$('loginBtn').onclick = () => {
+  const p = new URLSearchParams({client_id: APP_ID, redirect_uri: REDIRECT, response_type: 'token', state: 'groove'});
+  if (CONFIG_ID) p.set('config_id', CONFIG_ID); else p.set('scope', SCOPES.join(','));
+  location.href = 'https://www.facebook.com/v24.0/dialog/oauth?' + p.toString();
+};
+$('logoutBtn').onclick = () => { userToken = null; location.href = REDIRECT; };
+
+async function start(){
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get('error')) { log('Login cancelled: ' + (h.get('error_description')||h.get('error')), 'err'); return; }
+  if (!h.get('access_token')) { step(1); return; }
+  userToken = h.get('access_token'); history.replaceState(null, '', location.pathname + location.search);
+  const me = await g('/me?fields=id,name', userToken);
+  $('who').textContent = 'Logged in as ' + me.name; $('loginBtn').style.display='none'; $('logoutBtn').style.display='';
+  const perms = await g('/me/permissions', userToken);
+  const granted = perms.data.filter(p=>p.status==='granted').map(p=>p.permission);
+  log('Granted: ' + granted.join(', '));
+  step(2); $('c2').style.display='';
+  try{
+    const biz = await g('/me/businesses?fields=id,name', userToken);
+    $('bizKv').innerHTML = '<div>Business portfolio</div><div>' + (biz.data.map(b=>b.name).join(', ') || '—') + '</div>';
+  }catch(e){ $('bizKv').innerHTML = '<div>Business portfolio</div><div class="err">'+e.message+'</div>'; }
+  const acc = await g('/me/accounts?fields=id,name,access_token,instagram_business_account{id,username}', userToken);
+  $('pages').innerHTML = '';
+  acc.data.forEach(p => {
+    const d = document.createElement('div'); d.className='item';
+    d.innerHTML = '<div><b>'+p.name+'</b><div class="meta">Page ID '+p.id+'</div></div><span class="badge'+(p.instagram_business_account?' ok':'')+'">'+(p.instagram_business_account? 'Instagram @'+p.instagram_business_account.username : 'No Instagram')+'</span>';
+    d.onclick = () => { [...$('pages').children].forEach(x=>x.classList.remove('sel')); d.classList.add('sel'); selectPage(p); };
+    $('pages').appendChild(d);
+  });
+}
+
+async function selectPage(p){
+  page = p; ig = p.instagram_business_account; step(3); $('c3').style.display='';
+  const info = await g('/'+p.id+'?fields=name,link,followers_count,fan_count,category', p.access_token);
+  let html = '<div>Page</div><div>'+info.name+' · '+(info.category||'')+'</div><div>Page followers</div><div>'+(info.followers_count ?? info.fan_count ?? '—')+'</div><div>Page link</div><div>'+(info.link||'—')+'</div>';
+  if (ig){
+    const igi = await g('/'+ig.id+'?fields=username,name,followers_count,media_count', p.access_token);
+    html += '<div>Instagram</div><div>@'+igi.username+' · '+(igi.name||'')+'</div><div>Instagram followers</div><div>'+igi.followers_count+'</div><div>Posts</div><div>'+igi.media_count+'</div>';
+  }
+  $('ovKv').innerHTML = html;
+  step(4); $('c4').style.display=''; checkSub();
+  $('c5').style.display=''; loadConvs();
+}
+
+async function checkSub(){
+  const s = await g('/'+page.id+'/subscribed_apps', page.access_token);
+  const mine = s.data.find(a => a.id === APP_ID);
+  const on = mine && (mine.subscribed_fields||[]).includes('messages');
+  $('subState').textContent = on ? 'Subscribed: messages' : 'Not subscribed';
+  $('subState').className = 'badge' + (on ? ' ok' : '');
+  $('subBtn').disabled = !!on; if (on) step(5);
+}
+$('subBtn').onclick = async () => {
+  await g('/'+page.id+'/subscribed_apps?subscribed_fields=messages', page.access_token, {method:'POST'});
+  checkSub();
+};
+
+async function loadConvs(){
+  const c = await g('/'+page.id+'/conversations?platform=instagram&fields=participants,updated_time&limit=10', page.access_token);
+  $('convs').innerHTML = '';
+  c.data.forEach(cv => {
+    const other = (cv.participants.data||[]).find(x => x.id !== (ig && ig.id)) || {};
+    const d = document.createElement('div'); d.className='item';
+    d.innerHTML = '<div><b>@'+(other.username||other.name||'customer')+'</b><div class="meta">'+new Date(cv.updated_time).toLocaleString('en-GB')+'</div></div>';
+    d.onclick = () => { [...$('convs').children].forEach(x=>x.classList.remove('sel')); d.classList.add('sel'); openConv(cv.id, other); };
+    $('convs').appendChild(d);
+  });
+}
+$('refreshBtn').onclick = loadConvs;
+
+async function openConv(id, other){
+  conv = {id, other};
+  const m = await g('/'+id+'?fields=messages.limit(12){message,from,created_time}', page.access_token);
+  const box = $('msgs'); box.innerHTML = '';
+  (m.messages ? m.messages.data : []).slice().reverse().forEach(x => {
+    const mine = ig && x.from && x.from.id === ig.id;
+    const b = document.createElement('div'); b.className = 'bubble ' + (mine ? 'out' : 'in');
+    b.innerHTML = (x.message || '<i>(attachment)</i>') + '<div class="meta">' + (mine ? '@groovenspot' : '@'+(x.from.username||'customer')) + ' · ' + new Date(x.created_time).toLocaleTimeString('en-GB') + '</div>';
+    box.appendChild(b);
+  });
+  box.scrollTop = box.scrollHeight; $('sendBtn').disabled = false;
+}
+document.querySelectorAll('#tpl button').forEach(b => b.onclick = () => { $('reply').value = b.dataset.t; });
+
+$('sendBtn').onclick = async () => {
+  const text = $('reply').value.trim(); if (!text || !conv) return;
+  $('sendBtn').disabled = true; $('sendState').textContent = 'Sending…';
+  try{
+    await g('/'+page.id+'/messages', page.access_token, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({recipient:{id: conv.other.id}, message:{text}})});
+    $('sendState').textContent = 'Sent ✓'; $('reply').value=''; step(5,'done');
+    setTimeout(() => openConv(conv.id, conv.other), 1500);
+  }catch(e){ $('sendState').textContent = 'Failed: ' + e.message; }
+  $('sendBtn').disabled = false;
+};
+start().catch(e => log(e.message, 'err'));
+</script>
+</body>
+</html>
