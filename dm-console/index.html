@@ -91,7 +91,7 @@ footer{color:var(--sub);font-size:12px;padding:10px 28px 24px}
 
   <div class="card" id="c4" style="display:none">
     <h2>4 · Message notifications (webhook)</h2>
-    <p class="hint">pages_manage_metadata: subscribe our app to the Page's <b>messages</b> field so new Instagram DMs are sent to our server in real time.</p>
+    <p class="hint">pages_manage_metadata: subscribe our app to our Page so that Instagram Direct message webhooks for @groovenspot are delivered to our server in real time.</p>
     <div class="row"><span class="badge" id="subState">Checking…</span><button id="subBtn">Enable message notifications</button></div>
   </div>
 
@@ -191,13 +191,13 @@ async function selectPage(p){
 async function checkSub(){
   const s = await g('/'+page.id+'/subscribed_apps', page.access_token);
   const mine = s.data.find(a => a.id === APP_ID);
-  const on = mine && (mine.subscribed_fields||[]).includes('messages');
-  $('subState').textContent = on ? 'Subscribed: messages' : 'Not subscribed';
+  const on = !!mine;
+  $('subState').textContent = on ? 'Subscribed: ' + ((mine.subscribed_fields||[]).join(', ') || 'yes') : 'Not subscribed';
   $('subState').className = 'badge' + (on ? ' ok' : '');
   $('subBtn').disabled = !!on; if (on) step(5);
 }
 $('subBtn').onclick = async () => {
-  await g('/'+page.id+'/subscribed_apps?subscribed_fields=messages', page.access_token, {method:'POST'});
+  await g('/'+page.id+'/subscribed_apps?subscribed_fields=feed', page.access_token, {method:'POST'});
   checkSub();
 };
 
