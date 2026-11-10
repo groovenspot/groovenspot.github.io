@@ -1,11 +1,11 @@
 name: Sync YouTube live sets
 
-# 매주 수요일 11:17(한국 시간)에 유튜브 채널 GROOVE CLUB BUSAN 의 새 공개 롱폼(GROOVE SESSIONS)을
+# 매일 11:17(한국 시간)에 유튜브 채널 GROOVE CLUB BUSAN 의 새 공개 롱폼(GROOVE SESSIONS)을
 # data/videos.json(홈 '라이브셋')과 가상 클럽 BGM 목록(club/index.html 의 var TRACKS)에 추가한다.
 # 로그인·API 키 없이 공개 페이지만 읽고, 추가만 하며 지우지 않는다. 바로 돌리려면 Actions 탭에서 Run workflow.
 on:
   schedule:
-    - cron: "17 2 * * 3"
+    - cron: "17 2 * * *"
   workflow_dispatch:
 
 permissions:

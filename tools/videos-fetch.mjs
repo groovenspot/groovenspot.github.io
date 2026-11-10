@@ -1,5 +1,5 @@
 // 유튜브 채널 GROOVE CLUB BUSAN 의 공개 롱폼(GROOVE SESSIONS) 목록을 읽어 JSON 파일로 저장한다.
-// 로그인·API 키 없이 공개 페이지만 읽는다 (.github/workflows/videos-sync.yml 이 매주 실행).
+// 로그인·API 키 없이 공개 페이지만 읽는다 (.github/workflows/videos-sync.yml 이 매일 실행).
 //   · '동영상' 탭 재생목록 페이지(한국어) → 영상 ID · 한국어 제목 · 길이
 //   · oEmbed → 다른 사이트 재생(퍼가기) 허용 여부. 가상 클럽 BGM 목록에 아직 없는 영상만 확인한다.
 // 사용: node tools/videos-fetch.mjs out.json   → 이어서 node tools/videos-sync.mjs out.json

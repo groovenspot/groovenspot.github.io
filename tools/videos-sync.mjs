@@ -1,4 +1,4 @@
-// 유튜브 채널의 공개 롱폼(GROOVE SESSIONS) 목록을 홈페이지에 맞춘다 (.github/workflows/videos-sync.yml 이 매주 실행).
+// 유튜브 채널의 공개 롱폼(GROOVE SESSIONS) 목록을 홈페이지에 맞춘다 (.github/workflows/videos-sync.yml 이 매일 실행).
 //   · data/videos.json  — 없는 영상을 추가(최신 세션이 맨 위). 지우지는 않는다.
 //   · club/index.html   — 가상 클럽 BGM 목록(var TRACKS)에 '퍼가기 허용'된 영상만 추가.
 // 입력: tools/videos-fetch.mjs 가 만든 JSON
