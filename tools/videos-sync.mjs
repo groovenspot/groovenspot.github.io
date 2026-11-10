@@ -1,7 +1,7 @@
-// 유튜브 채널의 공개 롱폼(GROOVE SESSIONS) 목록을 홈페이지에 맞춘다 (매주 자동 작업이 사용).
+// 유튜브 채널의 공개 롱폼(GROOVE SESSIONS) 목록을 홈페이지에 맞춘다 (.github/workflows/videos-sync.yml 이 매주 실행).
 //   · data/videos.json  — 없는 영상을 추가(최신 세션이 맨 위). 지우지는 않는다.
 //   · club/index.html   — 가상 클럽 BGM 목록(var TRACKS)에 '퍼가기 허용'된 영상만 추가.
-// 입력: 맥미니 yt_upload/site_videos.py 가 만든 site_videos.json
+// 입력: tools/videos-fetch.mjs 가 만든 JSON
 //   { "videos": [ { youtube, session, dj, title_ko, title_en, duration, privacy, embeddable } ] }
 // 사용: node tools/videos-sync.mjs site_videos.json [--dry]
 // 결과는 JSON 으로 출력한다: added·tracksAdded·retitled 가 모두 비어 있으면 바뀐 게 없는 것.
