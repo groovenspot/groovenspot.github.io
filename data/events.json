@@ -2452,6 +2452,31 @@
     "flyer": "/assets/timetables/2026-11-09.webp"
   },
   {
+    "date": "2026-11-10",
+    "title": "SPOT DAY",
+    "floor": "3F",
+    "open": "21:30",
+    "lineup": {
+      "3F": [
+        "KUPA",
+        "WOOK2",
+        "BILL",
+        "MUMU A:ETH",
+        "EZZY",
+        "ZET",
+        "UZI",
+        "TARO",
+        "ROAD",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-11-10.webp",
+    "desc": {
+      "ko": "3층 EDM 존 단독 운영",
+      "en": "3F EDM zone only"
+    }
+  },
+  {
     "date": "2026-11-14",
     "title": "GROOVE / SPOT LABEL PARTY",
     "floor": "2F+3F",
