@@ -39,7 +39,7 @@ const GMAP_EMBED = (lang) => `https://maps.google.com/maps?q=${encodeURIComponen
 const VERSION = Date.now().toString(36);
 
 const FAQ_N = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6];
-const PAGES = ['', 'events/', 'event/', 'floors/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/', 'privacy/'];
+const PAGES = ['', 'events/', 'event/', 'floors/', 'seats/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/', 'privacy/'];
 const prefix = (lang) => (lang === 'ko' ? '' : `/${lang}`);
 const href = (lang, page) => `${prefix(lang)}/${page}`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -266,7 +266,26 @@ const BODIES = {
     return `${pageHead(lang, 'floors')}
 ${block('2F', ['dj', 'bar', 'h', 'stage', 'table', 'dart'])}
 ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
-<section class="wrap sec" aria-labelledby="lay-h"><h2 class="sec-h" id="lay-h">${L('sec.layout')}</h2><div class="shots">${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></section>`;
+<section class="wrap sec" aria-labelledby="lay-h"><div class="sec-top"><h2 class="sec-h" id="lay-h">${L('sec.layout')}</h2><a class="btn btn-hot" href="${href(lang, 'seats/')}">${L('cta.seats')} →</a></div><div class="shots">${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></section>`;
+  },
+
+  'seats/': (lang) => {
+    const L = (k) => t(lang, k);
+    // 화면 문구는 이 페이지에만 넣는다(다른 페이지의 window.GS.t 를 키우지 않으려고)
+    const S = Object.fromEntries(Object.keys(T.ko).filter((k) => k.startsWith('st.')).map((k) => [k.slice(3), L(k)]));
+    return `${pageHead(lang, 'seats')}
+<section class="wrap sec sm" data-seats data-floor="2F" aria-label="${esc(L('page.seats.t'))}">
+  <div class="tabs sm-tabs" role="tablist" aria-label="${esc(L('st.floorsel'))}"><button type="button" role="tab" class="tab-g" data-sfloor="2F" aria-selected="true">2F · GROOVE</button><button type="button" role="tab" class="tab-s" data-sfloor="3F" aria-selected="false">3F · SPOT</button></div>
+  <div class="sm-grid">
+    <div>
+      <div class="sm-wrap"><div class="sm-map" data-sm-map></div></div>
+      <p class="muted small sm-hint">${L('st.hint')} <a href="/assets/img/table-layout.webp" target="_blank" rel="noopener">${L('st.orig')}</a></p>
+    </div>
+    <div class="panel sm-panel" data-sm-panel aria-live="polite"><div><h2 class="sm-h">${L('st.pick.t')}</h2><p class="muted">${L('st.pick.d')}</p></div></div>
+  </div>
+  <noscript><div class="shots">${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></noscript>
+  <script type="application/json" id="seats-t">${JSON.stringify(S).replace(/</g, '\\u003c')}</script>
+</section>`;
   },
 
   'request/': (lang) => {
@@ -306,7 +325,7 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
   <p class="muted small">${L('mn.note')}</p>
   <div class="row-btns"><a class="btn btn-hot" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a></div>
 </section>
-<section class="wrap sec" aria-labelledby="lay-h"><h2 class="sec-h" id="lay-h">${L('sec.layout')}</h2><div class="shots">${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></section>`;
+<section class="wrap sec" aria-labelledby="lay-h"><div class="sec-top"><h2 class="sec-h" id="lay-h">${L('sec.layout')}</h2><a class="btn btn-hot" href="${href(lang, 'seats/')}">${L('cta.seats')} →</a></div><div class="shots">${fig('/assets/img/table-layout.webp', L('img.layout'))}</div></section>`;
   },
 
   'gallery/': (lang) => `${pageHead(lang, 'gallery')}
@@ -322,6 +341,7 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
 ${pageHead(lang, 'reserve')}
 <section class="wrap sec rv">
   <form class="rv-form" id="rv-form" novalidate>
+    <p class="full rv-seat" data-rv-seat data-label="${esc(L('st.sel'))}" data-change="${esc(L('rv.seat.change'))}"><a href="${href(lang, 'seats/')}">🪑 ${L('rv.seat.link')} →</a></p>
     <label>${L('rv.name')}<input name="name" autocomplete="name" placeholder="${esc(L('rv.p.name'))}" required></label>
     <label>${L('rv.phone')}<input name="phone" type="tel" autocomplete="tel" placeholder="010-0000-0000" required></label>
     <label>${L('rv.date')}<input name="date" type="date" required></label>
@@ -404,7 +424,7 @@ ${ARTICLES.length ? `<section class="wrap sec" aria-labelledby="g-more"><h2 clas
   },
 };
 
-const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t', 'gallery/': 'page.gallery.t' };
+const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'seats/': 'page.seats.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t', 'gallery/': 'page.gallery.t' };
 
 function write(rel, html) {
   const file = join(ROOT, rel);
@@ -584,6 +604,7 @@ write('admin/index.html', `<!doctype html>
   <button role="tab" data-tab="timetable" aria-selected="false">🎧 DJ 타임테이블</button>
   <button role="tab" data-tab="events" aria-selected="false">📅 이벤트</button>
   <button role="tab" data-tab="gallery" aria-selected="false">📸 사진첩</button>
+  <button role="tab" data-tab="seats" aria-selected="false">🪑 자리 최소금액</button>
 </nav>
 <main id="main" class="wrap adm-main">
 
@@ -661,6 +682,19 @@ write('admin/index.html', `<!doctype html>
     </form>
     <h2 class="sec-h adm-h">앨범</h2>
     <div id="al-list"></div>
+  </div>
+</section>
+
+<section data-panel="seats" hidden>
+  <div class="adm-login" data-need-login></div>
+  <div data-when-login hidden>
+    <div class="adm-bar">
+      <div class="tabs" id="st-floor"><button data-f="2F" class="tab-g" aria-selected="true">2F · GROOVE</button><button data-f="3F" class="tab-s" aria-selected="false">3F · SPOT</button></div>
+      <a class="btn" href="/seats/" target="_blank" rel="noopener">손님 화면 보기</a>
+    </div>
+    <p class="muted small">자리 고르기 페이지에 보이는 자리별 최소 주문 금액이에요. 단위는 <b>만원</b>이고, 평일(일~목)과 주말(금·토)을 따로 넣어요. 한쪽만 넣으면 두 요일 모두 같은 금액으로 보여요.</p>
+    <div class="st-list" id="st-list"></div>
+    <div class="adm-act"><button class="btn btn-hot" id="st-save" type="button">2F · 3F 모두 저장</button></div>
   </div>
 </section>
 

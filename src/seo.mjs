@@ -5,6 +5,7 @@ export const SEO = {
   ko: {
     'events/': { t: '부산 서면 클럽 이벤트 일정 · 오늘 밤 DJ 라인업', s: '부산 서면 클럽 그루브앤스팟의 파티 일정과 오늘 밤 DJ 타임테이블. 2층 힙합·3층 EDM, 입장 무료, 서면역 3번 출구 도보 3분.' },
     'floors/': { t: '2층 힙합 · 3층 EDM 플로어 안내 | 부산 서면 클럽', s: '한 건물에 두 개의 무대. 2층 GROOVE는 힙합·R&B와 혼술바 H석, 3층 SPOT은 대형 사운드 EDM과 포토존·흡연실.' },
+    'seats/': { t: '부산 서면 클럽 테이블 배치도 · 자리 고르기', s: '그루브앤스팟 2층·3층 테이블과 좌석 배치도. 구역을 눌러 자리 번호와 바틀 가격을 확인하고 예약 문의를 남기세요.' },
     'menu/': { t: '부산 서면 클럽 메뉴 · 바틀 가격표 (2층·3층)', s: '그루브앤스팟 2층·3층 바틀 세트와 샴페인·양주 가격, 칵테일·슈터·맥주 바 메뉴. 원화·부가세 포함 가격.' },
     'gallery/': { t: '부산 서면 클럽 파티 사진첩', s: '부산 서면 클럽 그루브앤스팟의 파티 사진을 날짜별로 모았어요. 할로윈·테마 파티·게스트 DJ 나이트.' },
     'artists/': { t: '부산 클럽 DJ 라인업 · 레지던트 & 게스트 DJ', s: '부산 서면 클럽 그루브앤스팟 무대에 서는 레지던트 DJ와 게스트 DJ. 2층 힙합, 3층 EDM 라이브셋.' },
@@ -15,6 +16,7 @@ export const SEO = {
   en: {
     'events/': { t: "Busan Club Events & Tonight's DJ Lineup", s: "Party calendar and tonight's DJ timetable at Groove & Spot, Seomyeon, Busan. 2F hip-hop, 3F EDM, free entry, 3 min from Seomyeon Station Exit 3." },
     'floors/': { t: 'Hip-hop & EDM Club Floors in Seomyeon, Busan', s: 'One building, two stages. 2F GROOVE: hip-hop & R&B with a solo bar. 3F SPOT: big-room EDM with a photo zone and smoking room.' },
+    'seats/': { t: 'Busan Club Table Map · Pick Your Seat', s: 'Interactive 2F & 3F floor plan of Groove & Spot in Seomyeon, Busan. Tap a zone to see seat numbers and bottle prices, then send a booking request.' },
     'menu/': { t: 'Busan Club Drink Menu & Bottle Prices', s: 'Bottle sets, champagne and spirits prices for 2F and 3F, plus cocktails, shooters and beer at Groove & Spot. Prices in KRW, VAT included.' },
     'gallery/': { t: 'Busan Nightclub Party Photos', s: 'Photos from parties at Groove & Spot, a two-floor club in Seomyeon, Busan — Halloween, theme nights and guest DJ nights.' },
     'artists/': { t: 'Busan Club DJs: Residents & Guest DJs', s: 'Resident and guest DJs playing Groove & Spot in Seomyeon, Busan. Hip-hop on 2F, EDM on 3F, with full live sets on YouTube.' },
@@ -25,6 +27,7 @@ export const SEO = {
   ja: {
     'events/': { t: '釜山・西面クラブのイベント・今夜のDJラインナップ', s: '釜山・西面のクラブGroove & Spotのパーティー日程と今夜のDJタイムテーブル。2階ヒップホップ・3階EDM、入場無料、西面駅3番出口から徒歩3分。' },
     'floors/': { t: '2階ヒップホップ・3階EDM｜釜山・西面のクラブ', s: '一つのビルに二つのステージ。2階GROOVEはヒップホップ・R&Bとソロバー、3階SPOTはビッグルームEDMとフォトゾーン・喫煙室。' },
+    'seats/': { t: '釜山・西面クラブ テーブル配置図・席を選ぶ', s: 'Groove & Spotの2F・3F配置図。エリアをタップして席番号とボトル料金を確認し、そのまま予約リクエストを送れます。' },
     'menu/': { t: '釜山クラブのドリンクメニュー・ボトル料金', s: 'Groove & Spot 2階・3階のボトルセット、シャンパン・洋酒の料金と、カクテル・シューター・ビールのバーメニュー。ウォン・税込。' },
     'gallery/': { t: '釜山・西面クラブのパーティー写真', s: '釜山・西面の2フロアクラブGroove & Spotのパーティー写真。ハロウィン、テーマパーティー、ゲストDJナイト。' },
     'artists/': { t: '釜山クラブのDJ：レジデント・ゲストDJ', s: '釜山・西面のGroove & Spotでプレイするレジデント・ゲストDJ。2階ヒップホップ、3階EDM。ライブセットはYouTubeで。' },
@@ -35,6 +38,7 @@ export const SEO = {
   zh: {
     'events/': { t: '釜山西面夜店活动与今晚DJ阵容', s: '釜山西面夜店Groove & Spot的派对日程和今晚DJ时间表。2楼嘻哈、3楼EDM，免费入场，西面站3号出口步行3分钟。' },
     'floors/': { t: '2楼嘻哈·3楼EDM｜釜山西面夜店', s: '一栋楼两个舞台。2楼GROOVE是嘻哈·R&B和单人吧台，3楼SPOT是大场EDM，有拍照区和吸烟室。' },
+    'seats/': { t: '釜山西面夜店卡座分布图 · 选座位', s: 'Groove & Spot 2楼·3楼卡座与座位分布图。点击区域查看座位号和酒水价格，并提交预订咨询。' },
     'menu/': { t: '釜山夜店酒水单与酒套餐价格', s: 'Groove & Spot 2楼·3楼的酒套餐、香槟和洋酒价格，以及鸡尾酒、Shot和啤酒吧台菜单。韩元计价，含税。' },
     'gallery/': { t: '釜山西面夜店派对照片', s: '釜山西面两层夜店Groove & Spot的派对照片：万圣节、主题派对和客座DJ之夜。' },
     'artists/': { t: '釜山夜店DJ：驻场与客座DJ', s: '在釜山西面Groove & Spot演出的驻场DJ和客座DJ。2楼嘻哈，3楼EDM，完整现场DJ Set可在YouTube观看。' },
