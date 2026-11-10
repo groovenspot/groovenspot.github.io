@@ -84,6 +84,8 @@ GitHub 웹에서 파일을 열고 연필 아이콘으로 고친 뒤 **Commit cha
 
 `youtube`에는 영상 주소의 `v=` 뒤 11자리 ID를 씁니다. 최신 영상을 맨 위에 둡니다. 홈에는 위에서 3개만 나옵니다.
 
+매주 수요일 자동 작업이 유튜브 채널의 새 공개 롱폼(GROOVE SESSIONS)을 `tools/videos-sync.mjs` 로 추가합니다(가상 클럽 BGM 목록 `club/index.html` 의 `var TRACKS` 포함, 퍼가기가 허용된 영상만). 자동 작업은 추가만 하고 지우지 않습니다. 손으로 고쳐도 됩니다.
+
 ```json
 [
   { "youtube": "dQw4w9WgXcQ", "title": "GROOVE 2F · DJ ZINO LIVE SET" }
