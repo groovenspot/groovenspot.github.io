@@ -404,3 +404,48 @@ img { max-width: 100%; display: block; }
 .site-public :is(.set, .tt, .faq details, .tabs button, .seg span, .rq-results),
 .site-public .rv-form :is(input, select, textarea) { border-radius: var(--radius); }
 .site-public .rv-form :is(input, select, textarea) { background: var(--bg); }
+
+/* ---------- 자리 고르기 (/seats/) ---------- */
+.sm { --fc: var(--g); --fc-tint: rgba(255, 122, 26, .16); --fc-edge: rgba(255, 122, 26, .55); --fc-halo: rgba(255, 122, 26, .35); }
+.sm[data-floor="3F"] { --fc: var(--s); --fc-tint: rgba(161, 91, 255, .18); --fc-edge: rgba(161, 91, 255, .6); --fc-halo: rgba(161, 91, 255, .4); }
+.sm-tabs { margin-bottom: 14px; }
+.sm-tabs button { flex: 1 1 0; max-width: 220px; }
+.sm-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .sm-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; } }
+.sm-wrap { background: #100e0e; border: 1px solid var(--line); border-radius: var(--radius); padding: 6px; }
+.sm-map { position: relative; width: 100%; aspect-ratio: 100 / 92; container-type: inline-size; font-size: 8px; line-height: 1; }
+.sm-lm, .sm-cell { position: absolute; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-align: center; pointer-events: none; overflow: hidden; }
+.sm-lm { z-index: 1; border-radius: 6px; background: #131111; color: #8f8582; border: 1px solid rgba(255, 255, 255, .07); font-size: clamp(6.5px, 2cqw, 12px); font-weight: 600; letter-spacing: .04em; }
+.sm-lm.dj { background: #2b2625; color: var(--txt); font-family: var(--display); font-weight: 800; }
+.sm-lm.v { writing-mode: vertical-rl; }
+.sm-zone { position: absolute; z-index: 2; box-sizing: border-box; min-width: 44px; min-height: 44px; margin: 0; padding: 0; border: 1px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .03); border-radius: 10px; color: inherit; font: inherit; cursor: pointer; }
+.sm-zone:hover { border-color: var(--fc-edge); }
+.sm-zone[aria-pressed="true"] { border: 1.5px solid var(--fc); background: var(--fc-tint); }
+.sm-cap { position: absolute; left: 5px; top: 4px; font-size: clamp(7px, 2.1cqw, 12px); font-weight: 700; letter-spacing: .06em; color: var(--muted); }
+.sm-zone[aria-pressed="true"] .sm-cap { color: var(--fc); }
+.sm-cell { z-index: 3; border-radius: 4px; background: #1d1919; color: #cfc5c1; border: 1px solid rgba(255, 255, 255, .14); font-size: clamp(6.5px, 1.95cqw, 11.5px); font-weight: 700; }
+.sm-cell.r { border-radius: 50%; }
+.sm-cell.lm { background: #131111; color: #8f8582; border-color: rgba(255, 255, 255, .07); font-weight: 600; }
+.sm-cell.in { background: #2a2422; color: var(--txt); border-color: var(--fc-edge); }
+.sm-cell.on { background: var(--fc); color: #0a0909; border-color: var(--fc); box-shadow: 0 0 0 3px var(--fc-halo); }
+.sm-hint { margin: 10px 4px 0; }
+.sm-hint a, .sm-rows a, .sm-go p a { color: var(--txt); font-weight: 600; }
+.sm-panel { display: grid; gap: 16px; }
+.sm-panel p { margin: 0; }
+.sm-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--fc); }
+.sm-h { margin: 4px 0; font-size: 22px; line-height: 1.25; }
+.sm-lab { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 8px !important; }
+.sm-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.sm-chips button { min-width: 52px; height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line-2); background: #1f1b1b; color: var(--txt); font: 700 14px/1 var(--body); cursor: pointer; }
+.sm-chips button[aria-pressed="true"] { background: var(--fc); border-color: var(--fc); color: #0a0909; }
+.sm-rows { display: grid; gap: 8px; }
+.sm-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; background: #1f1b1b; font-size: 14px; }
+.sm-row span { color: var(--muted); }
+.sm-row b { font-size: 17px; font-variant-numeric: tabular-nums; text-align: right; }
+.sm-row b small { display: block; margin-top: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.sm-row b small:first-child { margin-top: 0; }
+.sm-row.min { background: none; border: 1px solid var(--fc-edge); }
+.sm-go { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.sm-go .btn { width: 100%; }
+.rv-form .rv-seat { margin: 0; font-size: 14px; }
+.rv-form .rv-seat a { color: var(--g); font-weight: 700; }

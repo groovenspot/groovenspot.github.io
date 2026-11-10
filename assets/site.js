@@ -531,6 +531,122 @@
     });
   }
 
+  /* ---------- 자리 고르기 (data/seats.json: 배치 + 자리별 최소 주문 금액) ---------- */
+  var smEl = $('[data-seats]');
+  if (smEl) {
+    var ST = {}; try { ST = JSON.parse($('#seats-t').textContent); } catch (e) {}
+    Promise.all([load('seats'), load('menu')]).then(function (res) {
+      var SD = res[0], MENU = res[1]; if (!SD || !SD.floors) return;
+      var AR = 0.92, FNAME = { '2F': 'GROOVE', '3F': 'SPOT' };
+      var mapEl = $('[data-sm-map]', smEl), panel = $('[data-sm-panel]', smEl);
+      var q = new URLSearchParams(location.search);
+      var st = { floor: q.get('floor') === '3F' ? '3F' : '2F', zone: null, seat: null };
+
+      function zoneOf(id) { return (SD.floors[st.floor].zones || []).filter(function (z) { return z.id === id; })[0] || null; }
+      function n2(v) { return Math.round(v * 100) / 100; }
+      function box(x, y, w, h) { return 'left:' + n2(x) + '%;top:' + n2(y) + '%;width:' + n2(w) + '%;height:' + n2(h) + '%'; }
+      // 구역 안 자리 칸의 위치(지도 % 좌표)
+      function cellsOf(z) {
+        if (z._c) return z._c;
+        var out = [], g = z.grid, b = z.box;
+        function label(n) { return g && g.short ? n.replace(/^[A-Z]+/, '') : n; }
+        if (g) {
+          var padX = g.padX == null ? 0.8 : g.padX, padT = g.padT == null ? 1.2 : g.padT, padB = g.padB == null ? 1.2 : g.padB;
+          var gx = g.gx == null ? 0.6 : g.gx, gy = g.gy == null ? 1.1 : g.gy, grp = g.grp || 0, gg = g.gg || 0;
+          var cols = g.rows[0].length, nrow = g.rows.length, groups = grp ? Math.ceil(cols / grp) - 1 : 0;
+          var cw = (b[2] - 2 * padX - (cols - 1) * gx - groups * gg) / cols, ch = (b[3] - padT - padB - (nrow - 1) * gy) / nrow;
+          g.rows.forEach(function (row, r) {
+            row.forEach(function (n, c) {
+              if (!n) return;
+              var lm = n.charAt(0) === '#';
+              out.push({ n: n, lm: lm, t: lm ? (ST[n.slice(1)] || n.slice(1)) : label(n), x: b[0] + padX + c * (cw + gx) + (grp ? Math.floor(c / grp) * gg : 0), y: b[1] + padT + r * (ch + gy), w: cw, h: ch });
+            });
+          });
+        }
+        if (z.dots) z.dots.list.forEach(function (a) { var d = z.dots.d, h = d / AR; out.push({ n: a[0], t: a[0], round: true, x: a[1] - d / 2, y: a[2] - h / 2, w: d, h: h }); });
+        (z.rects || []).forEach(function (a) { out.push({ n: a[0], t: a[0], x: a[1], y: a[2], w: a[3], h: a[4] }); });
+        z._c = out; return out;
+      }
+      function seatLabel(n) { return /^T\d/.test(n) ? 'TABLE ' + n.slice(1) : n; }
+      // 그 층 메뉴판의 가장 싼 바틀·세트 가격
+      function fromPrices(fk) {
+        var m = MENU && MENU[fk]; if (!m) return {};
+        var b = [], s = [];
+        (m.menu || []).forEach(function (c) { (c.items || []).forEach(function (i) { if (i.price) b.push(i.price); }); });
+        (m.sets || []).forEach(function (x) { if (x.price) s.push(x.price); (x.tiers || []).forEach(function (t) { if (t.price) s.push(t.price); }); });
+        return { bottle: b.length ? Math.min.apply(null, b) : null, set: s.length ? Math.min.apply(null, s) : null };
+      }
+      // 자리별 최소 주문 금액: 관리자가 넣은 값만 보여 준다
+      function minOf(z, seat) {
+        var m = (SD.min || {})[st.floor + '.' + z.id]; if (!m || m.mode === 'hide') return null;
+        if (m.mode === 'none') return { none: true };
+        var ex = m.ex || {}, v = seat && ex[seat] ? ex[seat] : m;
+        var wd = v.wd != null ? v.wd : v.we, we = v.we != null ? v.we : v.wd;
+        if (wd == null) return null;
+        return { wd: wd, we: we, varies: !seat && Object.keys(ex).length > 0 };
+      }
+
+      function renderMap() {
+        var F = SD.floors[st.floor], h = '';
+        smEl.dataset.floor = st.floor;
+        $$('[data-sfloor]', smEl).forEach(function (b) { b.setAttribute('aria-selected', b.dataset.sfloor === st.floor ? 'true' : 'false'); });
+        (F.landmarks || []).forEach(function (m) {
+          h += '<span class="sm-lm' + (m.dj ? ' dj' : '') + (m.v ? ' v' : '') + '" aria-hidden="true" style="' + box(m.x, m.y, m.w, m.h) + '">' + esc(m.k ? ST[m.k] || m.k : m.t) + '</span>';
+        });
+        (F.zones || []).forEach(function (z) {
+          var on = st.zone === z.id;
+          h += '<button type="button" class="sm-zone" data-zone="' + esc(z.id) + '" aria-pressed="' + on + '" aria-label="' + esc(st.floor + ' ' + (ST['z.' + st.floor + '.' + z.id] || z.name)) + '" style="' + box(z.box[0], z.box[1], z.box[2], z.box[3]) + '">' + (z.cap ? '<span class="sm-cap">' + esc(z.cap) + '</span>' : '') + '</button>';
+          cellsOf(z).forEach(function (c) {
+            h += '<span class="sm-cell' + (c.lm ? ' lm' : on ? ' in' : '') + (on && !c.lm && st.seat === c.n ? ' on' : '') + (c.round ? ' r' : '') + '" aria-hidden="true" style="' + box(c.x, c.y, c.w, c.h) + '">' + esc(c.t) + '</span>';
+          });
+        });
+        mapEl.innerHTML = h;
+      }
+
+      function renderPanel() {
+        var z = zoneOf(st.zone);
+        if (!z) { panel.innerHTML = '<div><h2 class="sm-h">' + esc(ST['pick.t']) + '</h2><p class="muted">' + esc(ST['pick.d']) + '</p></div>'; return; }
+        var key = st.floor + '.' + z.id, fl = st.floor + ' ' + FNAME[st.floor];
+        var h = '<div><p class="sm-eyebrow">' + esc(fl) + '</p><h2 class="sm-h">' + esc(ST['z.' + key] || z.name) + '</h2>' + (ST['d.' + key] ? '<p class="muted">' + esc(ST['d.' + key]) + '</p>' : '') + '</div>';
+        if (z.seats && z.seats.length) {
+          h += '<div><p class="sm-lab">' + esc(ST.seatno) + '</p><div class="sm-chips">' +
+            '<button type="button" data-seat="" aria-pressed="' + !st.seat + '">' + esc(ST.any) + '</button>' +
+            z.seats.map(function (n) { return '<button type="button" data-seat="' + esc(n) + '" aria-pressed="' + (st.seat === n) + '">' + esc(n) + '</button>'; }).join('') + '</div></div>';
+        }
+        var p = fromPrices(st.floor), mn = minOf(z, st.seat), rows = '';
+        if (mn && mn.none) rows += '<div class="sm-row min"><span>' + esc(ST.min) + '</span><b>' + esc(ST.none) + '</b></div>';
+        else if (mn && mn.wd === mn.we) rows += '<div class="sm-row min"><span>' + esc(ST.min) + '</span><b>' + won(mn.wd) + '</b></div>';
+        else if (mn) rows += '<div class="sm-row min"><span>' + esc(ST.min) + '</span><b><small>' + esc(ST.wd) + '</small>' + won(mn.wd) + '<small>' + esc(ST.we) + '</small>' + won(mn.we) + '</b></div>';
+        if (mn && mn.varies) rows += '<p class="muted small">' + esc(ST['var']) + '</p>';
+        if (p.bottle) rows += '<div class="sm-row"><span>' + esc(ST.bottle) + '</span><b>' + esc(fmt(ST.from, { p: won(p.bottle) })) + '</b></div>';
+        if (p.set) rows += '<div class="sm-row"><span>' + esc(ST.set) + '</span><b>' + esc(fmt(ST.from, { p: won(p.set) })) + '</b></div>';
+        if (rows) h += '<div class="sm-rows">' + rows + '<p class="muted small">' + esc(fmt(ST.note, { f: st.floor })) + ' · <a href="' + esc(url('menu/') + '?floor=' + st.floor) + '">' + esc(ST.menu) + '</a></p></div>';
+        var seat = st.seat ? seatLabel(st.seat) : z.name;
+        h += '<div class="sm-go"><p><span class="muted">' + esc(ST.sel) + '</span> <b>' + esc(fl + ' · ' + seat) + '</b></p>' +
+          '<a class="btn btn-hot btn-lg" href="' + esc(url('reserve/') + '?floor=' + st.floor + '&type=' + (z.kind === 'h' ? 'h' : 'table') + '&seat=' + encodeURIComponent(seat)) + '">' + esc(ST.cta) + '</a>' +
+          '<p class="muted small">' + esc(ST.md) + ' <a href="tel:' + esc(String(GS.phone || '').replace(/-/g, '')) + '">' + esc(GS.phone || '') + '</a></p></div>';
+        panel.innerHTML = h;
+      }
+      function render(focus) {
+        renderMap(); renderPanel();
+        try { history.replaceState(null, '', location.pathname + '?floor=' + st.floor + (st.zone ? '&zone=' + st.zone + (st.seat ? '&seat=' + st.seat : '') : '')); } catch (e) {}
+        var el = focus && $(focus, smEl); if (el) el.focus({ preventScroll: true });
+      }
+
+      smEl.addEventListener('click', function (e) {
+        var f = e.target.closest('[data-sfloor]'), zb = e.target.closest('.sm-zone'), sb = e.target.closest('[data-seat]');
+        if (f) { st = { floor: f.dataset.sfloor === '3F' ? '3F' : '2F', zone: null, seat: null }; render('[data-sfloor="' + st.floor + '"]'); }
+        else if (zb) { st.zone = zb.dataset.zone; st.seat = null; track('seat_zone', { floor: st.floor, zone: st.zone }); render('.sm-zone[data-zone="' + st.zone + '"]'); }
+        else if (sb) { st.seat = sb.dataset.seat || null; if (st.seat) track('seat_pick', { floor: st.floor, zone: st.zone, seat: st.seat }); render('[data-seat="' + (st.seat || '') + '"]'); }
+      });
+
+      // 주소로 바로 열기: /seats/?floor=3F&zone=l&seat=L7
+      var z0 = zoneOf(q.get('zone'));
+      if (z0) { st.zone = z0.id; var s0 = q.get('seat'); if (s0 && (z0.seats || []).indexOf(s0) >= 0) st.seat = s0; }
+      render();
+    });
+  }
+
   /* ---------- 신청곡 (ntfy 토픽으로 전송 → 관리자 페이지·DJ 폰에서 확인) ---------- */
   var rq = $('#rq-form');
   if (rq) {
@@ -741,6 +857,15 @@
     form.date.value = qs.get('date') && qs.get('date') >= BIZ ? qs.get('date') : BIZ;
     var qf = qs.get('floor');
     if (qf === '2F' || qf === '3F') { var r = form.querySelector('input[name=floor][value="' + qf + '"]'); if (r) r.checked = true; }
+    // 자리 고르기(/seats/)에서 넘어온 자리: 예약 종류를 맞추고 요청 사항에 적어 둔다(시트·DM 문장에 그대로 들어감)
+    var qType = qs.get('type');
+    if (['guest', 'table', 'bottle', 'h'].indexOf(qType) >= 0) form.type.value = qType;
+    var qSeat = (qs.get('seat') || '').replace(/[^A-Za-z0-9 ·–-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24);
+    var seatBox = $('[data-rv-seat]', form);
+    if (qSeat && (qf === '2F' || qf === '3F')) {
+      form.req.value = T.seat + ': ' + qf + ' ' + qSeat;
+      if (seatBox) seatBox.innerHTML = '🪑 ' + esc(seatBox.dataset.label) + ': <b>' + esc(qf + ' · ' + qSeat) + '</b> · <a href="' + esc(url('seats/') + '?floor=' + qf) + '">' + esc(seatBox.dataset.change) + '</a>';
+    }
     var draft = store('gs_rv'); // 이름·연락처만 이 기기에 기억
     if (draft) { try { draft = JSON.parse(draft); form.name.value = draft.name || ''; form.phone.value = draft.phone || ''; } catch (e) {} }
 

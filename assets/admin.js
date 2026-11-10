@@ -167,7 +167,7 @@
     token = t;
     return gh('https://api.github.com/repos/' + CFG.owner + '/' + CFG.repo).then(function (j) {
       if (!j.permissions || !j.permissions.push) throw new Error('이 키에는 저장 권한이 없어요. groovenspot 계정에서 public_repo 권한으로 만들어 주세요.');
-      store(TOKEN_KEY, t); loggedIn = true; renderLoginState(); loadTimetable(); loadEvents(); loadGallery();
+      store(TOKEN_KEY, t); loggedIn = true; renderLoginState(); loadTimetable(); loadEvents(); loadGallery(); loadSeats();
     });
   }
   var loginStarted = false;
@@ -569,7 +569,112 @@
       .catch(function (err) { b.disabled = false; toast('삭제 실패: ' + err.message); });
   });
 
+  /* =========================================================
+     자리 최소금액  data/seats.json 의 min
+     { "2F.top": { mode: 'show'|'none'|'hide', wd: 원, we: 원, ex: { "T4": { wd, we } } } }
+     배치(floors)는 건드리지 않고 min 만 바꾼다. 화면 입력 단위는 만원.
+     ========================================================= */
+  var SEATS = null, stFloor = '2F', stMin = {};
+  var ST_NAME = { '2F.top': 'TABLE 2–7', '2F.s': 'S석 S1–S9', '2F.l': 'L석 L4–L21', '2F.h': '혼술바존 H1–H32', '2F.t1': 'TABLE 1 (DJ 옆)', '3F.top': 'TABLE 9–13', '3F.dj': 'DJ 부스 주변 S·D·DB석', '3F.l': 'L석 L1–L12', '3F.bot': 'TABLE 1–4' };
+  var ST_MODE = [['show', '금액 표시'], ['none', '최소금액 없음'], ['hide', '표시 안 함']];
+  function man(w) { return w == null || w === '' ? '' : String(Math.round(w / 1000) / 10); }
+  function toWon(v) { v = String(v == null ? '' : v).replace(/[^\d.]/g, ''); if (!v) return null; var n = Math.round(parseFloat(v) * 10000); return isFinite(n) && n >= 0 && n <= 1e9 ? n : null; }
+  function stEntry(key) { if (!stMin[key]) stMin[key] = { mode: 'hide', wd: null, we: null, ex: {} }; if (!stMin[key].ex) stMin[key].ex = {}; return stMin[key]; }
+  function stSeatName(n) { return /^T\d/.test(n) ? 'TABLE ' + n.slice(1) : n; }
+
+  function renderSeats() {
+    var box = $('#st-list'); if (!box) return;
+    if (!SEATS || !SEATS.floors) { box.innerHTML = '<p class="empty">자리 배치 파일(data/seats.json)을 불러오지 못했어요.</p>'; return; }
+    box.innerHTML = (SEATS.floors[stFloor].zones || []).map(function (z) {
+      var key = stFloor + '.' + z.id, m = stEntry(key), off = m.mode !== 'show';
+      var amt = function (k, label, v) { return '<label>' + label + '<span class="st-in"><input inputmode="decimal" data-k="' + k + '" value="' + esc(man(v)) + '"' + (off ? ' disabled' : '') + ' placeholder="0"><i>만원</i></span></label>'; };
+      var exKeys = Object.keys(m.ex), left = (z.seats || []).filter(function (n) { return exKeys.indexOf(n) < 0; });
+      var ex = !(z.seats || []).length ? '' : '<div class="st-ex"' + (off ? ' hidden' : '') + '><p class="muted small">이 줄과 금액이 다른 자리만 따로 넣어요.</p>' +
+        exKeys.map(function (n) {
+          return '<div class="st-exrow" data-seat="' + esc(n) + '"><b>' + esc(stSeatName(n)) + '</b>' + amt('wd', '평일', m.ex[n].wd) + amt('we', '주말', m.ex[n].we) + '<button class="btn" type="button" data-ex-del aria-label="' + esc(stSeatName(n)) + ' 예외 삭제">✕</button></div>';
+        }).join('') +
+        (left.length ? '<div class="st-add"><select data-ex-seat aria-label="자리 고르기">' + left.map(function (n) { return '<option value="' + esc(n) + '">' + esc(stSeatName(n)) + '</option>'; }).join('') + '</select><button class="btn" type="button" data-ex-add>＋ 자리별 금액 추가</button></div>' : '') + '</div>';
+      return '<div class="panel st-zone" data-key="' + esc(key) + '"><div class="st-head"><b>' + esc(ST_NAME[key] || z.name) + '</b>' +
+        '<select data-k="mode" aria-label="표시 방식">' + ST_MODE.map(function (o) { return '<option value="' + o[0] + '"' + (m.mode === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>' +
+        '<div class="st-amt" data-main>' + amt('wd', '평일 (일~목)', m.wd) + amt('we', '주말 (금·토)', m.we) + '</div>' + ex + '</div>';
+    }).join('');
+  }
+  function loadSeats() {
+    return readJSON('data/seats.json', null).then(function (r) {
+      SEATS = r.data; stMin = JSON.parse(JSON.stringify((SEATS && SEATS.min) || {})); renderSeats();
+    }).catch(function (e) { toast(e.message); });
+  }
+  $$('#st-floor button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      stFloor = b.dataset.f;
+      $$('#st-floor button').forEach(function (x) { x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
+      renderSeats();
+    });
+  });
+  var stList = $('#st-list');
+  if (stList) {
+    // 입력값은 바로 stMin 에 반영(다시 그리지 않아 커서가 유지된다)
+    stList.addEventListener('input', function (e) {
+      var el = e.target, card = el.closest('.st-zone'); if (!card || !el.dataset.k || el.dataset.k === 'mode') return;
+      var m = stEntry(card.dataset.key), row = el.closest('.st-exrow');
+      (row ? m.ex[row.dataset.seat] : m)[el.dataset.k] = toWon(el.value);
+    });
+    stList.addEventListener('change', function (e) {
+      var el = e.target, card = el.closest('.st-zone'); if (!card || el.dataset.k !== 'mode') return;
+      stEntry(card.dataset.key).mode = el.value; renderSeats();
+      var first = $('.st-zone[data-key="' + card.dataset.key + '"] [data-main] input'); if (first && el.value === 'show') first.focus();
+    });
+    stList.addEventListener('click', function (e) {
+      var add = e.target.closest('[data-ex-add]'), del = e.target.closest('[data-ex-del]');
+      var card = e.target.closest('.st-zone'); if (!card || (!add && !del)) return;
+      var m = stEntry(card.dataset.key);
+      if (add) { var n = $('[data-ex-seat]', card).value; m.ex[n] = { wd: null, we: null }; }
+      else delete m.ex[del.closest('.st-exrow').dataset.seat];
+      renderSeats();
+      if (add) { var inp = $('.st-zone[data-key="' + card.dataset.key + '"] .st-exrow[data-seat="' + n + '"] input'); if (inp) inp.focus(); }
+    });
+  }
+  // 저장할 모양으로 정리: 금액 없는 '금액 표시'는 막고, 한쪽만 넣은 요일은 같은 금액으로 채운다
+  function cleanMin() {
+    var out = {}, bad = null;
+    ['2F', '3F'].forEach(function (f) {
+      ((SEATS.floors[f] || {}).zones || []).forEach(function (z) {
+        var key = f + '.' + z.id, m = stMin[key]; if (!m || m.mode === 'hide') return;
+        if (m.mode === 'none') { out[key] = { mode: 'none' }; return; }
+        var wd = m.wd != null ? m.wd : m.we, we = m.we != null ? m.we : m.wd;
+        if (wd == null) { bad = bad || key; return; }
+        var o = { mode: 'show', wd: wd, we: we }, ex = {};
+        Object.keys(m.ex || {}).forEach(function (n) {
+          var v = m.ex[n], a = v.wd != null ? v.wd : v.we, b = v.we != null ? v.we : v.wd;
+          if (a != null && (z.seats || []).indexOf(n) >= 0 && !(a === wd && b === we)) ex[n] = { wd: a, we: b };
+        });
+        if (Object.keys(ex).length) o.ex = ex;
+        out[key] = o;
+      });
+    });
+    return { min: out, bad: bad };
+  }
+  var stSave = $('#st-save');
+  if (stSave) stSave.addEventListener('click', function () {
+    if (!SEATS || !SEATS.floors) return;
+    var c = cleanMin();
+    if (c.bad) {
+      toast((ST_NAME[c.bad] || c.bad) + ' (' + c.bad.slice(0, 2) + '): 금액을 넣거나 표시 방식을 바꿔 주세요.');
+      if (c.bad.slice(0, 2) !== stFloor) { var fb = $('#st-floor [data-f="' + c.bad.slice(0, 2) + '"]'); if (fb) fb.click(); }
+      var inp = $('.st-zone[data-key="' + c.bad + '"] [data-main] input'); if (inp) inp.focus();
+      return;
+    }
+    busy(stSave, true);
+    updateJSON('data/seats.json', null, function (cur) {
+      if (!cur || !cur.floors) throw new Error('data/seats.json 을 찾지 못했어요.');
+      cur.min = c.min; return cur;
+    }, '자리 최소금액 수정').then(function (next) {
+      SEATS = next; stMin = JSON.parse(JSON.stringify(next.min || {})); renderSeats();
+      toast('자리 최소금액을 저장했어요' + LIVE_NOTE);
+    }).catch(function (e) { toast('저장 실패: ' + e.message); }).then(function () { busy(stSave, false); });
+  });
+
   /* ---------- 시작 ---------- */
   var startTab = store('gs_admin_tab');
-  showTab(['timetable', 'events', 'gallery'].indexOf(startTab) >= 0 ? startTab : 'requests');
+  showTab(['timetable', 'events', 'gallery', 'seats'].indexOf(startTab) >= 0 ? startTab : 'requests');
 })();
