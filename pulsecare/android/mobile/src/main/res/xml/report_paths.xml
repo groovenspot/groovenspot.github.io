@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 진료용 요약 PDF만 공유합니다 (앱 캐시의 reports 폴더). -->
+<paths>
+    <cache-path name="reports" path="reports/" />
+</paths>
