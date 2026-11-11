@@ -39,7 +39,7 @@ const GMAP_EMBED = (lang) => `https://maps.google.com/maps?q=${encodeURIComponen
 const VERSION = Date.now().toString(36);
 
 const FAQ_N = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6];
-const PAGES = ['', 'events/', 'event/', 'floors/', 'seats/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/', 'privacy/'];
+const PAGES = ['', 'links/', 'events/', 'event/', 'floors/', 'seats/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/', 'privacy/'];
 const prefix = (lang) => (lang === 'ko' ? '' : `/${lang}`);
 const href = (lang, page) => `${prefix(lang)}/${page}`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -47,6 +47,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 function layout(lang, page, { title, desc, body, active }) {
   const L = (k) => t(lang, k);
   const isHome = page === '' && active === '';
+  const bare = page === 'links/'; // 인스타 프로필 링크용 한 장 페이지: 푸터·하단 바·챗봇 없이 (헤더는 홈과 같게)
   const runtime = Object.fromEntries(Object.keys(T.ko).filter((k) => k.startsWith('rt.')).map((k) => [k.slice(3), L(k)]));
   const nav = [
     ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['menu/', 'nav.menu'], ['gallery/', 'nav.gallery'], ['request/', 'nav.request'], ['info/', 'nav.info'], ['/partners/', 'nav.partners'], ['/club/', 'nav.club'],
@@ -84,7 +85,7 @@ ${alternates}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/assets/site.css?v=${VERSION}">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&display=swap">
-<link rel="stylesheet" href="/assets/shell.css?v=${VERSION}">${isHome ? `
+<link rel="stylesheet" href="/assets/shell.css?v=${VERSION}">${isHome || bare ? `
 <link rel="stylesheet" href="/assets/home.css?v=${VERSION}">` : ''}
 ${GA_TAG}
 </head>
@@ -114,7 +115,7 @@ ${GA_TAG}
 <main id="main">
 ${body}
 </main>
-<footer class="ftr">
+${bare ? '' : `<footer class="ftr">
   <div class="ftr-grid">
     <div>
       <a class="brand logo site-brand" href="${href(lang, '')}">${LOGO_FULL}</a>
@@ -138,7 +139,7 @@ ${body}
   <a class="dock-sub" href="${href(lang, 'request/')}"${active === 'request/' ? ' aria-current="page"' : ''}>🎵 ${L('nav.request')}</a>
   <a class="dock-sub" href="${href(lang, 'menu/')}"${active === 'menu/' ? ' aria-current="page"' : ''}>🍾 ${L('nav.menu')}</a>
   <a class="dock-sub" href="${href(lang, 'info/')}"${active === 'info/' ? ' aria-current="page"' : ''}>📍 ${L('nav.info')}</a>
-</nav>
+</nav>`}
 <div class="gate" id="gate" hidden>
   <div class="gate-box" role="dialog" aria-modal="true" aria-labelledby="gate-q">
     <p class="gate-badge">19+</p>
@@ -156,7 +157,7 @@ ${body}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, whatsapp: 'https://wa.me/groovenspot', bookApi: BOOK_API, v: VERSION, topic: REQ_TOPIC, t: runtime })};</script>
 <script src="/assets/site.js?v=${VERSION}" defer></script>
-<script src="/assets/chat.js?v=${VERSION}" defer></script>
+${bare ? '' : `<script src="/assets/chat.js?v=${VERSION}" defer></script>`}
 </body>
 </html>
 `;
@@ -183,6 +184,54 @@ const bars = (n) => Array.from({ length: n }, () => '<i></i>').join('');
 const menuTabs = (lang, withBar) => `<div class="tabs menu-tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="2F" class="tab-g">2F · HIPHOP</button><button role="tab" aria-selected="false" data-tab="3F" class="tab-s">3F · EDM</button>${withBar ? `<button role="tab" aria-selected="false" data-tab="bar" class="tab-b">${t(lang, 'tab.bar')}</button>` : ''}</div>`;
 
 const BODIES = {
+  // 인스타 프로필 링크용 한 장 페이지 (링크트리 대신). 홈과 같은 디자인(히어로·TONIGHT·영문 제목+한글 부제).
+  // 순서 = 인스타에서 넘어온 손님이 많이 찾는 순.
+  'links/': (lang) => {
+    const L = (k) => t(lang, k);
+    const items = [
+      { k: 'reserve', en: 'RESERVE', u: href(lang, 'reserve/'), t: L('lk.reserve') },
+      { k: 'events', en: 'LINEUP', u: href(lang, 'events/'), t: L('cta.events') },
+      { k: 'seats', en: 'SEATS', u: href(lang, 'seats/'), t: L('page.seats.t'), s: L('lk.seats.s') },
+      { k: 'directions', en: 'DIRECTIONS', u: GMAP_DIR, t: L('lk.dir'), s: `${L('if.near')} · Google Maps`, ext: 1 },
+      { k: 'timetable', en: 'TIMETABLE', u: href(lang, 'floors/'), t: L('lk.tt') },
+      { k: 'menu', en: 'MENU', u: href(lang, 'menu/'), t: L('page.menu.t') },
+      { k: 'livesets', en: 'LIVE SETS', u: YOUTUBE, t: L('lk.sets'), s: 'GROOVE SESSIONS · YouTube', ext: 1 },
+      { k: 'club', en: 'VIRTUAL CLUB', u: '/club/', t: L('nav.club') },
+      { k: 'request', en: 'SONG REQUEST', u: href(lang, 'request/'), t: L('cta.request') },
+      { k: 'guestdj', en: 'GUEST DJ', u: 'https://ig.me/m/groovenspot', t: L('lk.dj'), s: L('lk.dj.s'), ext: 1 },
+    ];
+    const soc = [['Instagram', INSTAGRAM], ['YouTube', YOUTUBE], ['SoundCloud', SOUNDCLOUD], ['Threads', 'https://www.threads.com/@groovenspot'], ['Tripadvisor', TRIPADVISOR], ['小红书', XHS]];
+    return `<section class="hero">
+  <img class="hero-bg" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" fetchpriority="high">
+  <div class="hero-in wrap">
+    <p class="kicker">${L('hero.kicker')}</p>
+    <h1 class="hero-logo">${LOGO_FULL}</h1>
+    <p class="hero-tag">${L('lk.tag')}</p>
+    <div class="hero-act">
+      <a class="btn btn-hot" href="${href(lang, 'reserve/')}" data-lk="reserve_hero">${L('cta.reserve')} <span aria-hidden="true">↗</span></a>
+      <a class="btn" href="#lk-list" data-lk="links_down">${L('page.links.t')} <span aria-hidden="true">↓</span></a>
+      <p class="status" data-status></p>
+    </div>
+  </div>
+</section>
+<section class="now" id="home-lineup" data-now hidden aria-labelledby="now-h">
+  <div class="wrap">
+    <h2 class="sec-h" id="now-h"><span class="home-title" aria-hidden="true">TONIGHT</span><span class="home-subtitle"><span class="live-dot" aria-hidden="true"></span><span id="now-h-txt">${L('sec.now')}</span></span></h2>
+    <div class="now-grid" data-now-grid></div>
+  </div>
+</section>
+<section class="wrap sec lk" id="lk-list" aria-labelledby="lk-h">
+  <h2 class="sec-h" id="lk-h"><span class="home-title" aria-hidden="true">LINKS</span><span class="home-subtitle">${L('page.links.t')}</span></h2>
+  <ul class="lk-list">
+    ${items.map((i) => `<li><a class="lk-row" href="${i.u}" data-lk="${i.k}"${i.ext ? ' rel="noopener"' : ''}><span class="lk-en">${i.en}</span><span class="lk-t">${i.t}</span>${i.s ? `<span class="lk-s">${esc(i.s)}</span>` : ''}<span class="lk-go" aria-hidden="true">${i.ext ? '↗' : '→'}</span></a></li>`).join('\n    ')}
+  </ul>
+</section>
+<section class="wrap sec lk" aria-labelledby="lk-f">
+  <h2 class="sec-h" id="lk-f"><span class="home-title" aria-hidden="true">FOLLOW</span><span class="home-subtitle">${L('lk.follow')}</span></h2>
+  <p class="lk-soc">${soc.map(([n, u]) => `<a class="btn" href="${u}" rel="noopener" data-lk="${n === '小红书' ? 'xiaohongshu' : n.toLowerCase()}">${n} <span aria-hidden="true">↗</span></a>`).join('')}</p>
+  <p class="lk-foot muted">${L('if.addr')}<br>${L('hr.weekday')} 21:30 – 06:00 · ${L('hr.weekend')} 21:00 – 07:00 · <a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br>${L('ft.age')} · © 2026 Groove &amp; Spot</p>
+</section>`;
+  },
   '': (lang) => {
     const L = (k) => t(lang, k);
     return `<section class="hero">
@@ -424,7 +473,7 @@ ${ARTICLES.length ? `<section class="wrap sec" aria-labelledby="g-more"><h2 clas
   },
 };
 
-const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'seats/': 'page.seats.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t', 'gallery/': 'page.gallery.t' };
+const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'seats/': 'page.seats.t', 'links/': 'page.links.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t', 'gallery/': 'page.gallery.t' };
 
 function write(rel, html) {
   const file = join(ROOT, rel);

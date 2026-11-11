@@ -150,3 +150,22 @@ body.site-public {
 .gc-form input { flex: 1; min-width: 0; background: #0d0d10; color: inherit; border: 1px solid rgba(255,255,255,.18); border-radius: 10px; padding: 9px 10px; font-size: 16px; }
 .gc-send { border: 0; border-radius: 10px; padding: 0 14px; background: var(--g, #ff7a1a); color: #140700; cursor: pointer; }
 @media (min-width: 900px) { .gc-btn { bottom: 24px; } .gc-box { bottom: 86px; } }
+
+/* 링크 모음 (/links/) — 인스타 프로필 링크용. 홈 디자인(home.css)을 그대로 쓰고 목록만 더함 */
+body[data-page="links"] { --home-live: #ffac8d; }
+body.site-public[data-page="links"] { padding-bottom: 0; }
+body[data-page="links"] .now { padding: 26px 0 22px; background: var(--bg-2); border-bottom: 1px solid var(--line); }
+body[data-page="links"] .now .sec-h, .lk .sec-h { display: block; margin: 0 0 14px; }
+.lk-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+@media (min-width: 760px) { .lk-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } }
+.lk-row { position: relative; display: block; min-height: 64px; padding: 11px 40px 12px 14px; border: 1px solid var(--line); border-top-color: #6c6f81; border-radius: var(--radius); background: var(--card); text-decoration: none; transition: border-color .15s, background .15s; }
+.lk-row:hover { background: #1b1c23; border-color: #6c6f81; }
+.lk-en { display: block; font: 700 13px/1 var(--site-title); letter-spacing: .08em; color: var(--muted); }
+.lk-t { display: block; margin-top: 5px; font: 700 17px/1.3 var(--body); color: var(--txt); }
+.lk-s { display: block; margin-top: 2px; font-size: 12px; line-height: 1.4; color: var(--muted); }
+.lk-go { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; }
+.lk-list li:first-child .lk-row { border-top-color: var(--home-live); }
+.lk-soc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.lk-soc .btn { min-height: 40px; padding: 8px 13px; font-size: 13px; }
+.lk-foot { margin: 22px 0 calc(28px + env(safe-area-inset-bottom, 0px)); font-size: 12px; line-height: 1.8; }
+.lk-foot a { color: inherit; }
