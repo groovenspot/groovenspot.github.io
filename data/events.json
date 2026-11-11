@@ -2477,6 +2477,36 @@
     }
   },
   {
+    "date": "2026-11-11",
+    "title": "WEDNESDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "GROOVE DJ",
+        "MUTE",
+        "UZI",
+        "ROAD",
+        "ZINO",
+        "WOOK2",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "N",
+        "ROAD",
+        "EZZY",
+        "WOOK2 BILL",
+        "UZI",
+        "DIA",
+        "MUTE",
+        "MUMU",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-11-11.webp"
+  },
+  {
     "date": "2026-11-14",
     "title": "GROOVE / SPOT LABEL PARTY",
     "floor": "2F+3F",
