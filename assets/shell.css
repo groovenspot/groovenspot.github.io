@@ -150,3 +150,38 @@ body.site-public {
 .gc-form input { flex: 1; min-width: 0; background: #0d0d10; color: inherit; border: 1px solid rgba(255,255,255,.18); border-radius: 10px; padding: 9px 10px; font-size: 16px; }
 .gc-send { border: 0; border-radius: 10px; padding: 0 14px; background: var(--g, #ff7a1a); color: #140700; cursor: pointer; }
 @media (min-width: 900px) { .gc-btn { bottom: 24px; } .gc-box { bottom: 86px; } }
+
+/* 링크 모음 (/links/) — 인스타 프로필 링크용 한 장 페이지 */
+
+.lk { width: 100%; max-width: 520px; margin: 0 auto; padding: calc(28px + env(safe-area-inset-top, 0px)) 16px calc(36px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; align-items: center; text-align: center; }
+.lk-logo img { width: min(62vw, 230px); height: auto; }
+.lk-tag { margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.lk-status { margin-top: 12px; font-size: 13px; }
+.lk-lang { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 14px; }
+.lk-lang a { padding: 6px 11px; min-height: 32px; display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; text-decoration: none; color: var(--muted); }
+.lk-lang a[aria-current] { color: var(--txt); border-color: var(--line-2); background: rgba(255, 255, 255, .06); }
+.lk-h { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 10px; font: 700 13px/1.3 var(--body); letter-spacing: .06em; color: var(--muted); }
+.lk-now { width: 100%; margin-top: 22px; padding: 0; background: none; border: 0; text-align: start; }
+.lk-now .now-grid { gap: 8px; }
+.lk-now .now-card { padding: 10px 12px; }
+.lk-now .now-card .fl { font: 700 16px/1.1 var(--site-title); letter-spacing: .04em; }
+.lk-now .now-genre { margin: 2px 0 0; font-size: 11px; color: var(--muted); }
+.lk-now .now-slots > div { margin-top: 6px; padding-top: 6px; }
+.lk-now .now-slots .dj { font: 700 17px/1.15 var(--site-title) !important; }
+.lk-list { list-style: none; margin: 22px 0 0; padding: 0; width: 100%; display: grid; gap: 10px; }
+.lk-btn { display: grid; grid-template-columns: 34px minmax(0, 1fr) 18px; align-items: center; gap: 10px; min-height: 60px; padding: 10px 14px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--card); text-decoration: none; text-align: start; transition: background .15s, border-color .15s; }
+.lk-btn:hover { background: #1d1e25; border-color: #6c6f81; }
+.lk-btn.hot { background: var(--site-silver); border-color: transparent; color: #111116; }
+.lk-btn.hot:hover { background: #f6f7fd; }
+.lk-btn.hot small { color: #4a4b55; }
+.lk-ic { font-size: 22px; line-height: 1; text-align: center; }
+.lk-tx b { display: block; font-size: 16px; line-height: 1.3; }
+.lk-tx small { display: block; margin-top: 2px; font-size: 12px; line-height: 1.35; color: var(--muted); }
+.lk-go { font-size: 22px; line-height: 1; opacity: .5; }
+.lk-h2 { margin-top: 28px; }
+.lk-soc { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0; }
+.lk-soc a { padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; text-decoration: none; }
+.lk-foot { margin: 22px 0 0; font-size: 12px; line-height: 1.7; }
+.lk-foot a { color: inherit; }
+body.site-public[data-page="links"] { padding-bottom: 0; }
+body[data-page="links"] main { min-height: 0; }

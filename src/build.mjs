@@ -39,7 +39,7 @@ const GMAP_EMBED = (lang) => `https://maps.google.com/maps?q=${encodeURIComponen
 const VERSION = Date.now().toString(36);
 
 const FAQ_N = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6];
-const PAGES = ['', 'events/', 'event/', 'floors/', 'seats/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/', 'privacy/'];
+const PAGES = ['', 'links/', 'events/', 'event/', 'floors/', 'seats/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/', 'privacy/'];
 const prefix = (lang) => (lang === 'ko' ? '' : `/${lang}`);
 const href = (lang, page) => `${prefix(lang)}/${page}`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -47,6 +47,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 function layout(lang, page, { title, desc, body, active }) {
   const L = (k) => t(lang, k);
   const isHome = page === '' && active === '';
+  const bare = page === 'links/'; // 인스타 프로필 링크용 한 장 페이지: 메뉴·푸터·하단 바 없이
   const runtime = Object.fromEntries(Object.keys(T.ko).filter((k) => k.startsWith('rt.')).map((k) => [k.slice(3), L(k)]));
   const nav = [
     ['events/', 'nav.events'], ['floors/', 'nav.floors'], ['menu/', 'nav.menu'], ['gallery/', 'nav.gallery'], ['request/', 'nav.request'], ['info/', 'nav.info'], ['/partners/', 'nav.partners'], ['/club/', 'nav.club'],
@@ -90,7 +91,7 @@ ${GA_TAG}
 </head>
 <body class="site-public" data-page="${page.replace(/\/$/, '') || (isHome ? 'home' : 'not-found')}">
 <a class="skip" href="#main">Skip to content</a>
-<header class="hdr">
+${bare ? '' : `<header class="hdr">
   <a class="brand logo site-brand" href="${href(lang, '')}">${LOGO_FULL}</a>
   <nav class="nav" aria-label="Main">
     ${nav.map(([p, k]) => `<a href="${p === '/partners/' && lang !== 'ko' ? p + '?lang=' + lang : p[0] === '/' ? p : href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n    ')}
@@ -110,11 +111,11 @@ ${GA_TAG}
   <a href="${href(lang, 'artists/')}"${active === 'artists/' ? ' aria-current="page"' : ''}>${L('nav.artists')}</a>
   <a href="${href(lang, 'guide/')}"${active === 'guide/' ? ' aria-current="page"' : ''}>${GUIDE[lang].t}</a>
   <a class="btn btn-hot mnav-cta" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a>
-</nav>
+</nav>`}
 <main id="main">
 ${body}
 </main>
-<footer class="ftr">
+${bare ? '' : `<footer class="ftr">
   <div class="ftr-grid">
     <div>
       <a class="brand logo site-brand" href="${href(lang, '')}">${LOGO_FULL}</a>
@@ -138,7 +139,7 @@ ${body}
   <a class="dock-sub" href="${href(lang, 'request/')}"${active === 'request/' ? ' aria-current="page"' : ''}>🎵 ${L('nav.request')}</a>
   <a class="dock-sub" href="${href(lang, 'menu/')}"${active === 'menu/' ? ' aria-current="page"' : ''}>🍾 ${L('nav.menu')}</a>
   <a class="dock-sub" href="${href(lang, 'info/')}"${active === 'info/' ? ' aria-current="page"' : ''}>📍 ${L('nav.info')}</a>
-</nav>
+</nav>`}
 <div class="gate" id="gate" hidden>
   <div class="gate-box" role="dialog" aria-modal="true" aria-labelledby="gate-q">
     <p class="gate-badge">19+</p>
@@ -156,7 +157,7 @@ ${body}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>window.GS=${JSON.stringify({ lang, root: prefix(lang), phone: PHONE, instagram: INSTAGRAM, whatsapp: 'https://wa.me/groovenspot', bookApi: BOOK_API, v: VERSION, topic: REQ_TOPIC, t: runtime })};</script>
 <script src="/assets/site.js?v=${VERSION}" defer></script>
-<script src="/assets/chat.js?v=${VERSION}" defer></script>
+${bare ? '' : `<script src="/assets/chat.js?v=${VERSION}" defer></script>`}
 </body>
 </html>
 `;
@@ -183,6 +184,39 @@ const bars = (n) => Array.from({ length: n }, () => '<i></i>').join('');
 const menuTabs = (lang, withBar) => `<div class="tabs menu-tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="2F" class="tab-g">2F · HIPHOP</button><button role="tab" aria-selected="false" data-tab="3F" class="tab-s">3F · EDM</button>${withBar ? `<button role="tab" aria-selected="false" data-tab="bar" class="tab-b">${t(lang, 'tab.bar')}</button>` : ''}</div>`;
 
 const BODIES = {
+  // 인스타 프로필 링크용 한 장 페이지 (링크트리 대신). 순서 = 인스타에서 넘어온 손님이 많이 찾는 순.
+  'links/': (lang) => {
+    const L = (k) => t(lang, k);
+    const items = [
+      { k: 'reserve', ic: '🍾', u: href(lang, 'reserve/'), t: L('lk.reserve'), hot: 1 },
+      { k: 'events', ic: '📅', u: href(lang, 'events/'), t: L('cta.events') },
+      { k: 'seats', ic: '🪑', u: href(lang, 'seats/'), t: L('page.seats.t'), s: L('lk.seats.s') },
+      { k: 'directions', ic: '📍', u: GMAP_DIR, t: L('lk.dir'), s: `${L('if.near')} · Google Maps`, ext: 1 },
+      { k: 'timetable', ic: '⏱️', u: href(lang, 'floors/'), t: L('lk.tt') },
+      { k: 'menu', ic: '🍸', u: href(lang, 'menu/'), t: L('page.menu.t') },
+      { k: 'livesets', ic: '▶️', u: YOUTUBE, t: L('lk.sets'), s: 'GROOVE SESSIONS · YouTube', ext: 1 },
+      { k: 'club', ic: '🕹️', u: '/club/', t: L('nav.club') },
+      { k: 'request', ic: '🎵', u: href(lang, 'request/'), t: L('cta.request') },
+      { k: 'guestdj', ic: '🎧', u: 'https://ig.me/m/groovenspot', t: L('lk.dj'), s: L('lk.dj.s'), ext: 1 },
+    ];
+    const soc = [['Instagram', INSTAGRAM], ['YouTube', YOUTUBE], ['SoundCloud', SOUNDCLOUD], ['Threads', 'https://www.threads.com/@groovenspot'], ['Tripadvisor', TRIPADVISOR], ['小红书', XHS]];
+    return `<section class="lk">
+  <a class="lk-logo" href="${href(lang, '')}">${LOGO_FULL}</a>
+  <p class="lk-tag">${L('lk.tag')}</p>
+  <p class="status lk-status" data-status></p>
+  <nav class="lk-lang" aria-label="Language">${LANGS.map((l) => `<a href="${href(l, 'links/')}" hreflang="${HTML_LANG[l]}"${l === lang ? ' aria-current="true"' : ''}>${LANG_LABEL[l]}</a>`).join('')}</nav>
+  <section class="now lk-now" data-now hidden aria-labelledby="now-h">
+    <h2 class="lk-h" id="now-h"><span class="live-dot" aria-hidden="true"></span><span id="now-h-txt">${L('sec.now')}</span></h2>
+    <div class="now-grid" data-now-grid></div>
+  </section>
+  <ul class="lk-list">
+    ${items.map((i) => `<li><a class="lk-btn${i.hot ? ' hot' : ''}" href="${i.u}" data-lk="${i.k}"${i.ext ? ' rel="noopener"' : ''}><span class="lk-ic" aria-hidden="true">${i.ic}</span><span class="lk-tx"><b>${i.t}</b>${i.s ? `<small>${esc(i.s)}</small>` : ''}</span><span class="lk-go" aria-hidden="true">›</span></a></li>`).join('\n    ')}
+  </ul>
+  <h2 class="lk-h lk-h2">${L('lk.follow')}</h2>
+  <p class="lk-soc">${soc.map(([n, u]) => `<a href="${u}" rel="noopener" data-lk="${n.toLowerCase()}">${n}</a>`).join('')}</p>
+  <p class="lk-foot muted">${L('hr.weekday')} 21:30–06:00 · ${L('hr.weekend')} 21:00–07:00<br><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a> · 19+ · © Groove &amp; Spot</p>
+</section>`;
+  },
   '': (lang) => {
     const L = (k) => t(lang, k);
     return `<section class="hero">
@@ -424,7 +458,7 @@ ${ARTICLES.length ? `<section class="wrap sec" aria-labelledby="g-more"><h2 clas
   },
 };
 
-const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'seats/': 'page.seats.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t', 'gallery/': 'page.gallery.t' };
+const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'seats/': 'page.seats.t', 'links/': 'page.links.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t', 'gallery/': 'page.gallery.t' };
 
 function write(rel, html) {
   const file = join(ROOT, rel);

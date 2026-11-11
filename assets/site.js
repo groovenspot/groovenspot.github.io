@@ -58,6 +58,8 @@
   document.addEventListener('click', function (e) {
     var a = e.target.closest('a[href]'); if (!a || e.defaultPrevented) return;
     var h = a.getAttribute('href') || '', at = where(a);
+    // 링크 모음(/links/): 어떤 버튼을 눌렀는지 (인스타 프로필에서 들어온 손님 동선)
+    if (a.dataset.lk) { var lk = { item: a.dataset.lk }; if (/^\//.test(h)) trackNext('links_click', lk); else track('links_click', lk); }
     if (/\/reserve\/(\?|$)/.test(h)) trackNext('reserve_click', { location: at });
     else if (/\/request\/(\?|$)/.test(h)) trackNext('request_click', { location: at });
     else if (h.indexOf('tel:') === 0) track('call_click', { location: at });
