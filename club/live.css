@@ -12,6 +12,8 @@
 /* NOW PLAYING 칩 아래: 피크 타임 · 투표 */
 .lv-now { display: grid; gap: 4px; justify-items: end; margin-top: 4px; }
 .lv-peak { font: 700 11px/1.2 var(--body); color: var(--muted); }
+.lv-radioline { font: 700 11px/1.25 var(--body); color: #ffd23a; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.lv-radioline[hidden] { display: none; }
 .lv-peak.on { color: #ffd23a; animation: lvpk 1s ease-in-out infinite; }
 @keyframes lvpk { 50% { opacity: .55; } }
 .lv-votebtn { display: inline-block; white-space: nowrap; min-height: 30px; padding: 7px 10px; font-size: 12px; line-height: 1.2; border-color: rgba(255, 210, 58, .5); }
@@ -73,7 +75,7 @@
 body.dartmode .lv-dock, body.dancemode .lv-dock, body.djxmode .lv-dock { display: none; }
 @media (max-width: 640px) {
   .lv-long { display: none; }
-  .lv-peak { font-size: 10px; }
+  .lv-peak, .lv-radioline { font-size: 10px; }
   .lv-chip .lbl, .lv-dinfo small { display: none; }
   .lv-big { top: 47%; }
   .lv-dock { bottom: auto; top: calc(152px + env(safe-area-inset-top, 0px)); }

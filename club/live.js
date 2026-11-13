@@ -49,6 +49,7 @@
   var hintEl = mk('div', 'lv-hint'); hintEl.hidden = true; doc.body.appendChild(hintEl);
   var tapBtn = mk('button', 'lv-tap', '🔇 눌러서 소리 켜기'); tapBtn.type = 'button'; tapBtn.hidden = true; doc.body.appendChild(tapBtn);
   var nowBox = mk('div', 'lv-now'); var nowPanel = $('#now-panel'); if (nowPanel) nowPanel.appendChild(nowBox);
+  var radioLine = mk('div', 'lv-radioline'); radioLine.hidden = true; nowBox.appendChild(radioLine);
   var peakLine = mk('div', 'lv-peak'); nowBox.appendChild(peakLine);
   var voteBtn = mk('button', 'lv-votebtn'); voteBtn.type = 'button'; voteBtn.hidden = true; nowBox.appendChild(voteBtn);
   var voteTime = mk('span'); voteBtn.appendChild(doc.createTextNode('🗳️ ')); voteBtn.appendChild(mk('span', 'lv-long', '다음 곡 ')); voteBtn.appendChild(doc.createTextNode('투표 · ')); voteBtn.appendChild(voteTime);
@@ -207,10 +208,10 @@
     setText(RB.note, R.on ? '가장 많이 뽑힌 곡이 다음에 나와요 · 이 층에 있는 사람 모두 같이 들어요' : '라디오를 켜면 투표한 곡을 다 같이 들어요');
     voteBtn.hidden = !R.on || !G.entered();
     setText(voteTime, mmss(left));
-    if (R.on && G.bgm().on && nowPanel) {
-      var nk = $('#nowk'), ns = $('#nowsub'); if (nk) setText(nk, 'CLUB RADIO');
-      if (ns) { var key = CH[ch].name + mmss(pos); if (ns.dataset.lv !== key) { ns.dataset.lv = key; ns.textContent = ''; ns.appendChild(mk('span', 'lv-long', '📻 ' + CH[ch].name + ' · ')); ns.appendChild(doc.createTextNode(mmss(pos) + ' / ' + mmss(dur(s.yt) / 1000))); } }
-    }
+    // NOW PLAYING 칩은 오늘 라인업(우리 DJ) 그대로 두고, 라디오 곡은 아래 한 줄로만
+    var playing = R.on && G.bgm().on && G.bgm().idx >= 0 && tr;
+    radioLine.hidden = !playing;
+    if (playing) setText(radioLine, '📻 ' + tr.n + ' #' + tr.s + ' · ' + mmss(pos) + ' / ' + mmss(dur(s.yt) / 1000));
   }
   on('rs', function (d) { if (d && CH[d.ch]) adopt(d.ch, d, true); });
   on('rq', function () { ['2F', '3F'].forEach(function (ch) { var C = CH[ch]; if (C.st && validState(ch, C.st, now()) && now() - C.pubT > 4000) { C.pubT = now(); setTimeout(function () { emit('rs', { ch: ch, yt: C.st.yt, t0: C.st.t0 }); }, 200 + Math.random() * 1200); } }); });
@@ -460,7 +461,7 @@
     var n = MS.next, txt = '', col = G.FLOORS[F].css;
     if (n) { var beats = (n.at - pnow()) / 1000 / MS.spb; if (beats <= 3.05 && beats > 0) txt = String(Math.ceil(beats - .05)); }
     if (MS.drop && pnow() - SHOW.npcJump < 2400) txt = 'DROP';
-    else if (!txt && PEAK.on && (MS.bar % 16) < 2) { txt = 'PEAK TIME'; col = '#ffd23a'; }
+    else if (!txt && PEAK.on && PEAK.left > 585) { txt = 'PEAK TIME'; col = '#ffd23a'; }   // 피크 타임 시작 15초만 (평소엔 원래 LED 그대로)
     if (!txt) return;
     var x = rec.led.ctx, w = rec.led.c.width, h = rec.led.c.height;
     x.save(); x.globalAlpha = .9; x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(0, 0, w, h);

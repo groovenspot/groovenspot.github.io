@@ -431,6 +431,7 @@
   // 유튜브 공식 채널 영상을 플레이어로 틀어요 (저작권 이용 허락이 된 플랫폼). 목록은 data/videos.json 에서 옮겨 온 것.
   // 다른 사이트 재생이 막힌 영상(oEmbed 401)은 뺐어요: j-9AnMHFeHc (WOO$CAR #32). 비공개로 바뀐 ARKINS 031(cq62DW_muNY)도 제외
   var TRACKS = [{"n": "PAD", "yt": "dCGLe8eoCaU", "s": 36, "d": "57:55"}, {"n": "LILY", "yt": "Wh4yKtwqba0", "s": 35, "d": "39:49"}, {"n": "JUNTARO", "yt": "suaSXr4VAOs", "s": 34, "d": "41:01"}, {"n": "EZZY", "yt": "BFswuBOMnlQ", "s": 33, "d": "41:26"}, {"n": "VANDALROCK", "yt": "EWiqfFph0zU", "s": 30, "d": "58:33"}, {"n": "JUYA", "yt": "5RT02-6S9PM", "s": 29, "d": "39:09"}, {"n": "CANTAR", "yt": "BCZUWocn8GE", "s": 28, "d": "59:27"}, {"n": "ROAD", "yt": "K4EwPIGsIh8", "s": 27, "d": "41:08"}, {"n": "CHOPPER", "yt": "8DwCGecJlL4", "s": 26, "d": "34:03"}, {"n": "BUCKY", "yt": "ozo6z50q5ME", "s": 25, "d": "39:21"}, {"n": "SENDOW", "yt": "aCYt0vQt0Rw", "s": 24, "d": "59:47"}, {"n": "MUTE", "yt": "T_DzDtPP5Rg", "s": 23, "d": "38:20"}, {"n": "BINU", "yt": "_jv9wcteXfM", "s": 22, "d": "1:00:01"}, {"n": "UZI", "yt": "ZxWF6q5FHBk", "s": 21, "d": "43:12"}, {"n": "KEYNA", "yt": "PnvLmelOHaA", "s": 20, "d": "37:40"}, {"n": "GIO", "yt": "mizXXj-UqVU", "s": 19, "d": "39:25"}, {"n": "MAD", "yt": "mSQSQxr2bDI", "s": 18, "d": "55:22"}, {"n": "JOHNYRIGHTHERE", "yt": "8a7_AWD2KD4", "s": 17, "d": "37:01"}, {"n": "ZET", "yt": "UH7nJLwSPKw", "s": 16, "d": "37:10"}, {"n": "DIA", "yt": "INRX_JrThjA", "s": 15, "d": "39:57"}, {"n": "BRIXX", "yt": "glZfoN1eXRo", "s": 14, "d": "22:43"}, {"n": "CALEB", "yt": "kIaHSMZ1XiE", "s": 13, "d": "1:00:33"}, {"n": "YUKA", "yt": "-nUU0CmDVMo", "s": 12, "d": "30:24"}, {"n": "HERMIT", "yt": "HC6rRLWgL8w", "s": 10, "d": "38:44"}, {"n": "SIZ", "yt": "xof6ObtenaM", "s": 8, "d": "28:53"}, {"n": "SUNGHOON", "yt": "rGSgG0L0uoM", "s": 7, "d": "40:05"}, {"n": "GG", "yt": "hMj_FGPjC-Q", "s": 6, "d": "35:34"}, {"n": "NEO", "yt": "gok17CJCaJw", "s": 5, "d": "39:49"}, {"n": "POTAITO", "yt": "65E38_ypTLs", "s": 4, "d": "23:14"}, {"n": "FRANKEN", "yt": "Zo3-BVTTaXI", "s": 3, "d": "38:44"}, {"n": "AUREDE", "yt": "zw3jocYVZJI", "s": 2, "d": "39:05"}, {"n": "2AS", "yt": "3h0gqZV5Q18", "s": 1, "d": "56:13"}];
+  var bgmRadio = false; // 클럽 라디오(배경 음악)로 트는 중이면 DJ·LED·NOW PLAYING 은 오늘 라인업 그대로
   var bgmEl = new Audio(), bgmOn = false, bgmIdx = -1, bgmName = '', bgmSub = '', bgmNode = null, bgmGain = null, analyser = null, freq = null, bassAvg = 0, bassHit = 0;
   bgmEl.preload = 'none'; bgmEl.crossOrigin = 'anonymous';
   function fmt(s) { if (!isFinite(s)) return '--:--'; s = Math.floor(s); var h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = s % 60; return (h ? h + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (x < 10 ? '0' : '') + x; }
@@ -456,9 +457,9 @@
   function pickTrack(i, src, name, opt) {
     opt = opt || {}; if (window.GSLive && GSLive.onPick) GSLive.onPick(i, !!opt.radio);
     if (i === -1) { // 데모 비트
-      bgmEl.pause(); setYT(null); bgmOn = false; bgmIdx = -1; bgmName = ''; renderBgm(); updateNow(); startAudio(); saveBgm(); if (typeof setDJLooks === 'function') setDJLooks(); return;
+      bgmEl.pause(); setYT(null); bgmOn = false; bgmRadio = false; bgmIdx = -1; bgmName = ''; renderBgm(); updateNow(); startAudio(); saveBgm(); if (typeof setDJLooks === 'function') setDJLooks(); return;
     }
-    bgmIdx = i; bgmOn = true; bgmName = name || TRACKS[i].n; bgmSub = opt.sub || (i === -2 ? '내 파일' : 'GROOVE SESSIONS #' + TRACKS[i].s);
+    bgmIdx = i; bgmOn = true; bgmRadio = i >= 0 && !!opt.radio; bgmName = name || TRACKS[i].n; bgmSub = opt.sub || (i === -2 ? '내 파일' : 'GROOVE SESSIONS #' + TRACKS[i].s);
     if (i >= 0) { bgmEl.pause(); bgmEl.removeAttribute('src'); setYT(TRACKS[i].yt, opt.start); initAudio(); startAudio(); }
     else {
       setYT(null); wireBgm(); if (AC.state === 'suspended') AC.resume();
@@ -507,7 +508,7 @@
     if (bgmIdx === -2) row('📁 ' + bgmName, '내 파일 · 지금 재생 중', -2, false);
     $('#bgmtitle').textContent = bgmOn ? bgmName : '데모 비트';
     $('#bgmctl').hidden = bgmIdx !== -2; $('#bgmyt').hidden = bgmIdx < 0;
-    var nowEl = $('#bgmnow'); nowEl.textContent = bgmOn ? '🎧 ' + bgmName : ''; nowEl.hidden = !bgmOn;
+    var nowEl = $('#bgmnow'); nowEl.textContent = bgmOn ? (bgmRadio ? '📻 ' : '🎧 ') + bgmName : ''; nowEl.hidden = !bgmOn;
     renderCtl();
   }
   function setBgmPanel(on) { $('#bgm').hidden = !on; $('#bgmbtn').setAttribute('aria-pressed', on ? 'true' : 'false'); }
@@ -1085,11 +1086,11 @@
     x.shadowBlur = 0; x.globalAlpha = .28; x.fillStyle = '#000'; for (k = 0; k < h; k += 4) x.fillRect(0, k, w, 1); for (k = 0; k < w; k += 4) x.fillRect(k, 0, 1, h); // LED 픽셀 결
     x.globalAlpha = 1; rec.led.tex.needsUpdate = true;
     if (rec.wallScr) { // 벽 스크린은 바뀔 때만 다시 그림
-      var key = (thumbImg ? thumbImg.src : 'none') + '|' + ledInfo['3F'].dj;
+      var wallImg = bgmRadio ? null : thumbImg, key = (wallImg ? wallImg.src : 'none') + '|' + ledInfo['3F'].dj;
       if (key !== rec.wallKey) {
         rec.wallKey = key; var c3 = rec.wallScr.ctx, W3 = 1024, H3 = 576;
         c3.fillStyle = '#05040a'; c3.fillRect(0, 0, W3, H3);
-        if (thumbImg) { var tw3 = thumbImg.naturalWidth, th3 = thumbImg.naturalHeight, ch3 = tw3 * 9 / 16; c3.drawImage(thumbImg, 0, (th3 - ch3) / 2, tw3, ch3, 0, 0, W3, H3); }
+        if (wallImg) { var tw3 = wallImg.naturalWidth, th3 = wallImg.naturalHeight, ch3 = tw3 * 9 / 16; c3.drawImage(wallImg, 0, (th3 - ch3) / 2, tw3, ch3, 0, 0, W3, H3); }
         else {
           var gg = c3.createLinearGradient(0, 0, W3, H3); gg.addColorStop(0, '#2a0f4a'); gg.addColorStop(1, '#0a2a3a'); c3.fillStyle = gg; c3.fillRect(0, 0, W3, H3);
           c3.textAlign = 'center'; c3.textBaseline = 'middle'; c3.font = '900 46px Unbounded, sans-serif'; c3.fillStyle = 'rgba(255,255,255,.8)'; c3.fillText('3F · SPOT · EDM', W3 / 2, 150);
@@ -1105,7 +1106,7 @@
     if (floors[F].ceilLed) return drawCeil(floors[F], t, beat, e);
     var rec = floors[F], x = rec.led.ctx, w = 1024, h = 384, cfg = FLOORS[F];
     x.fillStyle = '#000'; x.fillRect(0, 0, w, h);
-    if (thumbImg) { // 고른 GROOVE SESSIONS 썸네일을 LED에 (hqdefault는 위아래 검은 띠가 있어 가운데만)
+    if (thumbImg && !bgmRadio) { // 고른 GROOVE SESSIONS 썸네일을 LED에 (hqdefault는 위아래 검은 띠가 있어 가운데만)
       var iw = thumbImg.naturalWidth, ih = thumbImg.naturalHeight, sh2 = iw * 9 / 16, sy = (ih - sh2) / 2, cropH = sh2 * (h / (w * 9 / 16)), sy2 = sy + (sh2 - cropH) / 2;
       x.globalAlpha = .85 + beat * .15; x.drawImage(thumbImg, 0, sy2, iw, cropH, 0, 0, w, h); x.globalAlpha = .35;
       var g2 = x.createLinearGradient(0, 0, w, 0); g2.addColorStop(0, cfg.css); g2.addColorStop(1, '#ffcc4d');
@@ -1145,9 +1146,9 @@
   }
   function updateNow() {
     ledInfo = { '2F': lineup('2F'), '3F': lineup('3F') };
-    if (bgmOn) ['2F', '3F'].forEach(function (f) { ledInfo[f] = { dj: bgmName, sub: bgmSub, live: true }; });
+    if (bgmOn && !bgmRadio) ['2F', '3F'].forEach(function (f) { ledInfo[f] = { dj: bgmName, sub: bgmSub, live: true }; });
     var n = ledInfo[active || '2F'];
-    $('#now-panel').hidden = !n.sub && !n.live;
+    $('#now-panel').hidden = !n.sub && !n.live && !bgmRadio;
     $('#nowdj').textContent = n.dj; $('#nowsub').textContent = n.sub;
     $('#nowk').textContent = n.live ? 'NOW PLAYING' : 'TONIGHT';
     $('#livedot').style.display = n.live ? '' : 'none';
@@ -2105,7 +2106,7 @@
     zw3jocYVZJI: { o: 4, tc: '#1a1a1c', ic: WH, bc: DK, s: 0, h: 0, hx: '#3a2a22' },                       // AUREDE 검은 재킷·흰 티
     '3h0gqZV5Q18': { o: 4, tc: '#1a1a1c', ic: '#e6e2dc', bc: DK, s: 0, h: 0, hx: '#d0cfd8' }              // 2AS 탈색 머리
   };
-  function djLookFor(F) { var tr = bgmIdx >= 0 ? TRACKS[bgmIdx] : null, pr = tr && DJ_PRESET[tr.yt]; return pr ? Object.assign({ t: 0, b: 0, hc: 0, a: 0 }, pr) : DJ_LOOKS[F]; }
+  function djLookFor(F) { var tr = bgmIdx >= 0 && !bgmRadio ? TRACKS[bgmIdx] : null, pr = tr && DJ_PRESET[tr.yt]; return pr ? Object.assign({ t: 0, b: 0, hc: 0, a: 0 }, pr) : DJ_LOOKS[F]; }
   function setDJLooks() {
     Object.keys(floors).forEach(function (F) { var rec = floors[F], sp = rec.djSpec; if (!sp) return;
       if (rec.djAv) { rec.group.remove(rec.djAv.g); disposeObj(rec.djAv.g); }
