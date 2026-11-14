@@ -2576,12 +2576,39 @@
     "title": "GROOVE / SPOT LABEL PARTY",
     "floor": "2F+3F",
     "open": "21:00",
-    "flyer": "/assets/flyers/2026-11-14.webp",
+    "flyer": "/assets/timetables/2026-11-14.webp",
     "desc": {
       "ko": "그루브/스팟 레이블 파티 · DJ 타임어택",
       "en": "Groove / Spot Label Party — DJ time attack"
     },
-    "ig": "https://www.instagram.com/p/DfHWnV4TEKa/"
+    "ig": "https://www.instagram.com/p/DfHWnV4TEKa/",
+    "lineup": {
+      "2F": [
+        "WOOK2",
+        "MUTE",
+        "ZINO",
+        "UZI",
+        "BINU",
+        "CANTAR",
+        "TARO",
+        "ROAD",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "N",
+        "WOOK2",
+        "TARO",
+        "A:ETH",
+        "EZZY",
+        "MUMU",
+        "ZET",
+        "DIA",
+        "MUTE",
+        "UZI",
+        "ROAD",
+        "KUPA"
+      ]
+    }
   },
   {
     "date": "2026-11-20",
