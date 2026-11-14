@@ -1,0 +1,448 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex">
+<title>일본 마운자로 원정 계산기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: 약국 영수증처럼 숫자가 주인공. 왼쪽에 조건 입력, 오른쪽에 결론 → 순위 → 병원 원장 → 반입 수칙 순. */
+:root{
+  --bg:#f3f6f8; --panel:#ffffff; --ink:#12222e; --ink2:#465a68; --mute:#6f8290; --line:#d6dfe5; --soft:#e9eff3;
+  --accent:#0b5f8a; --accent-ink:#ffffff;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --good:#0a6b3d; --good-bg:#dff3e8; --warn:#8a5300; --warn-bg:#fcecc9; --bad:#a32222; --bad-bg:#fbe0de;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f171d; --panel:#172229; --ink:#e8eef2; --ink2:#b4c3cd; --mute:#8497a4; --line:#2b3a44; --soft:#1f2c35;
+  --accent:#6cc0ea; --accent-ink:#06202e;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --good:#7fd8a6; --good-bg:#12372a; --warn:#f0c36a; --warn-bg:#3d2f10; --bad:#f29a94; --bad-bg:#40191a;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f171d; --panel:#172229; --ink:#e8eef2; --ink2:#b4c3cd; --mute:#8497a4; --line:#2b3a44; --soft:#1f2c35;
+  --accent:#6cc0ea; --accent-ink:#06202e;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --good:#7fd8a6; --good-bg:#12372a; --warn:#f0c36a; --warn-bg:#3d2f10; --bad:#f29a94; --bad-bg:#40191a;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
+h1{font-size:clamp(24px,4vw,34px);line-height:1.2;margin:0;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+h2{font-size:19px;margin:0;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+h3{font-size:14px;margin:0;font-weight:600;color:var(--ink2)}
+p{margin:0}
+a{color:var(--accent)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.mute{color:var(--mute)} .small{font-size:13px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{display:flex;flex-direction:column;gap:12px}
+.lede{color:var(--ink2);max-width:66ch}
+.rule{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);background:var(--panel);border-radius:6px}
+.rule>div{padding:10px 16px;flex:1 1 150px;min-width:0;border-right:1px solid var(--line)}
+.rule>div:last-child{border-right:0}
+.rule b{display:block;font-family:var(--mono);font-size:20px;font-weight:600;line-height:1.3}
+.rule span{font-size:12.5px;color:var(--mute)}
+
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.controls{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:860px){.controls{position:static;max-height:none}}
+fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+legend{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--mute);padding:0;margin-bottom:6px;text-transform:uppercase}
+label.f{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;color:var(--ink2)}
+label.f>span{min-width:0}
+input[type=number],select{font:inherit;font-family:var(--mono);font-size:13.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;width:118px;text-align:right}
+select{text-align:left;font-family:var(--sans)}
+label.c{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:var(--ink2);cursor:pointer}
+label.c input{margin-top:4px;accent-color:var(--accent)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{font:inherit;font-size:13px;padding:6px 11px;border:1px solid var(--line);background:var(--bg);color:var(--ink2);border-radius:4px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.months{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.months label{font-size:12px;color:var(--mute);display:flex;flex-direction:column;gap:3px}
+.months select{width:100%}
+hr{border:0;border-top:1px solid var(--line);margin:0}
+
+.results{display:flex;flex-direction:column;gap:24px;min-width:0}
+.verdict{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.verdict .eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--accent);text-transform:uppercase}
+.verdict .who{font-size:clamp(19px,3vw,24px);font-weight:700;line-height:1.3;text-wrap:balance}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.kpis>div{background:var(--panel);padding:10px 14px;min-width:0}
+.kpis b{display:block;font-family:var(--mono);font-size:19px;font-weight:600;line-height:1.35}
+.kpis span{font-size:12.5px;color:var(--mute)}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+ul.ins{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;color:var(--ink2);font-size:14px}
+
+.sec{display:flex;flex-direction:column;gap:12px;min-width:0}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.legend .kr{width:0;height:12px;border-left:2px dashed var(--ink);border-radius:0}
+.chart{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.row{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr) 92px;gap:12px;align-items:center;cursor:default;border-radius:4px;padding:2px 0}
+.row:hover,.row:focus-visible{background:var(--soft)}
+.row .nm{font-size:13.5px;font-weight:600;line-height:1.3;min-width:0;overflow-wrap:anywhere}
+.row .nm small{display:block;font-weight:400;font-size:12px;color:var(--mute)}
+.row .tot{text-align:right;font-family:var(--mono);font-size:13.5px;font-weight:600}
+.track{position:relative;height:18px}
+.bar{display:flex;gap:2px;height:100%}
+.bar i{display:block;height:100%;min-width:0}
+.bar i:last-child{border-radius:0 4px 4px 0}
+.krline{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px dashed var(--ink);opacity:.75;pointer-events:none}
+@media (max-width:600px){.row{grid-template-columns:minmax(0,1fr) 92px}.row .track{grid-column:1/-1;grid-row:2}}
+.tip{position:fixed;z-index:20;background:var(--ink);color:var(--bg);font-size:12.5px;line-height:1.5;padding:8px 10px;border-radius:4px;pointer-events:none;max-width:260px}
+.tip b{display:block}
+.tip table{border-collapse:collapse}.tip td{padding:0 0 0 0}.tip td:last-child{text-align:right;padding-left:14px;font-family:var(--mono)}
+.btn{font:inherit;font-size:13px;padding:6px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:4px;cursor:pointer;align-self:flex-start}
+
+.scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+table.t{border-collapse:collapse;width:100%;font-size:13px}
+table.t th,table.t td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.t th{font-size:12px;font-weight:600;color:var(--mute);white-space:nowrap;background:var(--soft)}
+table.t td.n,table.t th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.t tr:last-child td{border-bottom:0}
+table.t td.nm{min-width:170px;font-weight:600}
+table.t td.nm small{display:block;font-weight:400;color:var(--mute)}
+table.t td.note{min-width:240px;color:var(--ink2)}
+.chip{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:999px;white-space:nowrap;margin:0 4px 3px 0}
+.chip.ok{background:var(--good-bg);color:var(--good)} .chip.wn{background:var(--warn-bg);color:var(--warn)} .chip.no{background:var(--bad-bg);color:var(--bad)} .chip.nt{background:var(--soft);color:var(--ink2)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.cols ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--ink2)}
+.src{font-size:13px;color:var(--ink2);columns:2 320px;column-gap:28px;padding-left:18px;margin:0}
+.src li{break-inside:avoid;margin-bottom:4px;overflow-wrap:anywhere}
+footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);padding-top:16px;max-width:80ch}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>일본 마운자로 원정 계산기</h1>
+    <p class="lede">약값, 진료·서류비, 호텔 배송비, 왕복 교통비를 합쳐 어디서 받는 것이 가장 싼지 계산합니다. 병원 가격은 2026년 11월 14일에 공개 자료로 확인한 값이고, 교통비와 한국 가격은 직접 고칠 수 있습니다.</p>
+    <div class="rule" aria-label="한국 반입 기준">
+      <div><b>12펜</b><span>1인 휴대 반입 한도 (주 1회, 3개월분)</span></div>
+      <div><b>11월 12일~</b><span>식약처·관세청 허용 시행</span></div>
+      <div><b>본인 휴대만</b><span>해외 직구·국제 배송·대리 구매·재판매 불가</span></div>
+      <div><b>영수증·상자</b><span>세관이 정상 구매 여부를 확인할 수 있음</span></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <form class="panel controls" id="controls" onsubmit="return false">
+      <fieldset>
+        <legend>사올 양과 용량</legend>
+        <div class="seg" id="monthsSeg" role="group" aria-label="개월 수">
+          <button type="button" data-m="1">4펜</button><button type="button" data-m="2">8펜</button><button type="button" data-m="3">12펜</button>
+        </div>
+        <div class="months">
+          <label>1개월차<select id="d1"></select></label>
+          <label>2개월차<select id="d2"></select></label>
+          <label>3개월차<select id="d3"></select></label>
+        </div>
+        <p class="small mute">용량은 의사가 정합니다. 처음이면 보통 2.5mg으로 4주 시작합니다.</p>
+      </fieldset>
+      <hr>
+      <fieldset>
+        <legend>출발지와 교통비 (왕복, 원)</legend>
+        <div class="seg" id="originSeg" role="group" aria-label="출발지">
+          <button type="button" data-o="pus">부산</button><button type="button" data-o="sel">서울</button>
+        </div>
+        <label class="f"><span>후쿠오카 왕복</span><input type="number" id="t_fuk" min="0" step="1000"></label>
+        <label class="f"><span>오사카 왕복</span><input type="number" id="t_osa" min="0" step="1000"></label>
+        <label class="f"><span>도쿄 왕복</span><input type="number" id="t_tyo" min="0" step="1000"></label>
+        <label class="f"><span>숙박 박수 (0 = 당일치기)</span><input type="number" id="nights" min="0" max="14" step="1"></label>
+        <label class="f"><span>1박 요금</span><input type="number" id="nightRate" min="0" step="1000"></label>
+        <label class="c"><input type="checkbox" id="noTravel"><span>어차피 갈 여행이라 교통·숙박비는 빼고 계산</span></label>
+        <p class="small mute">부산–후쿠오카만 최근 조회가(15만~17만원대)이고 나머지는 추정 기본값입니다. 배편(부산–하카타)을 탈 경우 그 요금을 넣으세요. 공항–시내 왕복 교통비는 도시별로 자동 가산합니다.</p>
+      </fieldset>
+      <hr>
+      <fieldset>
+        <legend>조건</legend>
+        <label class="c"><input type="checkbox" id="onlyOk"><span>관광객 처방이 공식 확인된 곳만</span></label>
+        <label class="c"><input type="checkbox" id="hideBlocked"><span>예약 중단·마감·품절인 곳 제외</span></label>
+        <label class="c"><input type="checkbox" id="withDoc"><span>영문 처방 증명서 발급비 포함 (세관 대비 권장)</span></label>
+        <label class="f"><span>환율 (100엔당 원)</span><input type="number" id="fx" min="1" step="1"></label>
+      </fieldset>
+      <hr>
+      <fieldset>
+        <legend>한국 가격 (4펜, 원)</legend>
+        <div id="krInputs" style="display:flex;flex-direction:column;gap:8px"></div>
+        <p class="small mute">2.5·5mg은 국내 비급여 판매가 범위의 중간값, 7.5mg 이상은 공급가 기준 추정입니다. 다니는 병원 가격으로 바꾸세요.</p>
+      </fieldset>
+      <button type="button" class="btn" id="reset">기본값으로 되돌리기</button>
+    </form>
+
+    <div class="results">
+      <section class="verdict" id="verdict" aria-live="polite"></section>
+
+      <section class="sec">
+        <div class="sec-h"><h2>총비용 순위</h2>
+          <div class="legend"><span><i style="background:var(--s1)"></i>약값</span><span><i style="background:var(--s2)"></i>진료·서류·배송</span><span><i style="background:var(--s3)"></i>교통·숙박</span><span><i class="kr"></i>한국에서 같은 양</span></div>
+        </div>
+        <div class="chart" id="chart"></div>
+        <button type="button" class="btn" id="more" hidden></button>
+        <p class="small mute" id="excluded"></p>
+      </section>
+
+      <section class="sec">
+        <h2>몇 달 치를 사와야 남는가</h2>
+        <div class="scroll"><table class="t" id="be"></table></div>
+      </section>
+
+      <section class="sec">
+        <h2>순위 상세</h2>
+        <div class="scroll"><table class="t" id="rank"></table></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="sec">
+    <div class="sec-h"><h2>병원별 공개 가격 (4펜, 엔, 세금 포함)</h2><span class="small mute">빈칸은 가격 미공개. 12펜 묶음가가 있는 곳은 계산에 자동 반영합니다.</span></div>
+    <div class="scroll"><table class="t" id="catalog"></table></div>
+  </section>
+
+  <section class="sec">
+    <h2>반입과 수령에서 놓치기 쉬운 것</h2>
+    <div class="cols">
+      <div class="panel"><h3>세관</h3><ul>
+        <li>한도는 1인 12펜입니다. 일본에서 이미 맞은 펜도 3개월분에 포함해 계산하는 것이 안전합니다.</li>
+        <li>식약처 설명으로는 별도 서류 제출이 의무는 아니지만 세관이 정상 구매 여부를 확인할 수 있습니다. 원래 상자, 영수증, 처방 증명서를 함께 들고 오세요.</li>
+        <li>본인 이름으로 처방받아 본인이 들고 와야 합니다. 가족·지인 몫을 대신 사거나 국내에서 되파는 것은 허용되지 않습니다.</li>
+        <li>일본에서 한국으로 보내는 국제 배송과 해외 직구는 여전히 금지입니다. 원격 진료를 받아도 수령은 일본 안에서 해야 합니다.</li>
+      </ul></div>
+      <div class="panel"><h3>원격 진료와 호텔 배송</h3><ul>
+        <li>온라인 진료 후 일본 내 호텔로 냉장 배송해 주는 병원이 있습니다. 병원이 도쿄·오사카에 있어도 항공료가 싼 도시의 호텔에서 받을 수 있습니다.</li>
+        <li>프런트가 냉장 택배를 받아 보관해 주는 호텔만 가능합니다. 에어비앤비는 대부분 안 됩니다. 예약 전에 호텔에 확인하세요.</li>
+        <li>도쿄 밖으로 보내는 경우 5영업일 전 신청을 요구하는 곳이 있습니다. 출국 1~2주 전에 진료를 끝내는 일정이 안전합니다.</li>
+        <li>일본 거주자 전용 온라인 클리닉(DMM 등)은 값이 싸도 여행자는 대상이 아닙니다.</li>
+      </ul></div>
+      <div class="panel"><h3>보관과 안전</h3><ul>
+        <li>2~8℃ 냉장 보관 약입니다. 보냉백과 보냉제를 챙기고, 얼리지 마세요. 30℃ 이하 실온에서는 최대 21일까지 허용됩니다.</li>
+        <li>위탁 수하물은 얼 수 있으니 기내에 들고 타세요.</li>
+        <li>해외에서 산 약은 국내 의약품 부작용 피해구제 대상이 아닙니다. 증량과 부작용 관리는 국내 주치의와 상의하세요.</li>
+        <li>일본 후생노동성 장관이 방일객 과다 처방에 우려를 밝혔습니다. 처방 개수 제한이 생길 수 있으니 예약 직전에 다시 확인하세요.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>출처</h2>
+    <ol class="src" id="sources"></ol>
+  </section>
+
+  <footer>이 페이지는 가격 비교용 정보이며 의료 조언이 아닙니다. 처방 여부, 용량, 처방 개수는 일본 의사가 진료 후 결정합니다. 가격·재고·예약 상태는 자주 바뀌므로 결제 전에 각 병원 공식 채널에서 다시 확인하세요. 진료비·배송비가 "미확인"인 항목은 0원으로 계산했습니다.</footer>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+(function(){
+const DOSES=[2.5,5,7.5,10,12.5,15];
+const CITY={fuk:'후쿠오카',osa:'오사카',tyo:'도쿄'};
+const LOCAL_YEN={fuk:600,osa:2000,tyo:3000}; // 공항–시내 왕복 추정
+const ORIGIN={pus:{fuk:170000,osa:230000,tyo:300000},sel:{fuk:220000,osa:240000,tyo:300000}};
+const KR_DEFAULT={2.5:300000,5:380000,7.5:550000,10:550000,12.5:700000,15:700000};
+const S={
+ weblioF:'https://care.weblio.jp/mounjaro-fukuoka-ko/', weblioT:'https://care.weblio.jp/mounjaro-tokyo-ko/',
+ almond:'https://almond.clinic/column/ko/18145/', jnc:'https://japannetclinic.com/', mil:'https://milc.info/mnj/inbmnj/inbmnj-ko.html',
+ onc:'https://on-clinic.jp/column/manjaro-onrain-yasui/', make2t:'https://www.make2t.kr/2026/11/japan-mounjaro-4-pens-first-visit-total-cost-2026.html',
+ aur:'https://aurelia-online.jp/lp-mounjaro-online-cheapest-ko.html', osaka:'https://miyoshi-cvc.com/column/mounjaro-osaka/', silk:'https://yoyogiclinic.com/blog/manjaro-tokyo-cheap/'
+};
+// tourist: ok=공식 안내 있음, unknown=안내 없음, no=여행자 대상 아님. hotel.fee null=미확인(0원 계산)
+const CL=[
+ {id:'modena',name:'모데나 클리닉',city:'fuk',area:'텐진 다이묘·공항점',tourist:'ok',ko:'한국어 페이지·문진표',visit:1,p4:{2.5:12500},consult:0,doc:0,blocked:'11/13부터 신규 예약 일시 중단',note:'영문 처방 확인서 무료. 원칙 3개월분까지, 당일 수령. 5mg 이상 가격 미공개.',src:S.weblioF},
+ {id:'baba',name:'바바 토털케어 클리닉',city:'fuk',area:'가스가시 (하카타에서 전철)',tourist:'ok',ko:'공지 한국어',visit:1,p4:{2.5:12800,5:18000,7.5:24000,10:30000,12.5:36000,15:42000},consult:null,doc:null,blocked:'해외 거주자 예약 12/10까지 마감',note:'전 용량 가격 공개. 10mg 이상은 재고 사전 확인. 보냉백 유료.',src:S.weblioF},
+ {id:'medb',name:'메디컬 미용 클리닉 후쿠오카',city:'fuk',area:'텐진 다이묘',tourist:'ok',ko:'',visit:1,p4:{2.5:13000},consult:0,doc:null,note:'약 구매 시 진찰료 없음. 의사 판단 시 혈액검사 3,300엔. LINE 예약.',src:S.weblioF},
+ {id:'mirai',name:'미라이 메디컬 클리닉',city:'fuk',area:'나카스카와바타',tourist:'ok',ko:'한국어 안내 페이지',visit:1,p4:{2.5:12000},consult:1650,doc:3300,note:'첫 상담료 1,650엔, 진단서 3,300엔.',src:S.weblioF},
+ {id:'fontana',name:'FONTANA CLINIC 텐진',city:'fuk',area:'텐진 이마이즈미',tourist:'ok',ko:'한국어 스태프 상주, 카카오톡',visit:1,hotel:{fee:null,nation:1},p4:{2.5:15800},consult:0,doc:null,blocked:'웹 예약 12월 초까지 거의 마감',note:'비대면 진료 후 일본 내 호텔 배송 가능(배송비 미확인).',src:S.weblioF},
+ {id:'fukta',name:'후쿠오카 TA 클리닉',city:'fuk',area:'텐진 이마이즈미',tourist:'unknown',ko:'',visit:1,p4:{2.5:9800},consult:null,doc:null,note:'후쿠오카 최저 표시가. 여행자 안내 없음, 예약제.',src:S.weblioF},
+ {id:'micelle',name:'미셀 클리닉 후쿠오카',city:'fuk',area:'텐진 다이묘',tourist:'unknown',ko:'',visit:1,p4:{2.5:12000},consult:null,doc:null,note:'1펜 단위 구매 가능. BMI 18.5 이하 처방 안 함.',src:S.weblioF},
+ {id:'clara',name:'클라라 미용피부과 텐진',city:'fuk',area:'텐진',tourist:'unknown',ko:'',visit:1,p4:{2.5:17600,5:35200,7.5:52800,10:70400},consult:0,doc:null,note:'LINE 예약 우선.',src:S.weblioF},
+ {id:'mil',name:'MIL CLINIC OSAKA',city:'osa',area:'신사이바시',tourist:'ok',ko:'일본어·영어 진료',visit:1,hotel:{fee:null,nation:1},p4:{2.5:14800,5:22000,7.5:30000,10:40000,12.5:53000,15:66000},p12:{2.5:43000,5:64000,7.5:88000,10:118000,12.5:157000,15:196000},consult:0,doc:0,note:'2펜 1박스 단위, 12펜은 6박스 세트가. 온라인 진료 무료, 일본 전국 호텔 냉장 배송(배송비 미확인). 4박스 이상 영문 증명서 무료.',src:S.mil},
+ {id:'lightosa',name:'LIGHT CLINIC 오사카',city:'osa',area:'우메다',tourist:'unknown',ko:'',visit:1,p4:{2.5:14000,5:21000,7.5:29000,10:37000,12.5:44000},consult:null,doc:null,note:'여행자 안내 없음.',src:S.onc},
+ {id:'tsuwa',name:'스이타역앞 츠와부키 내과',city:'osa',area:'스이타',tourist:'unknown',ko:'',visit:1,p4:{2.5:15000,5:24000,7.5:32000,10:42000,12.5:50000,15:58000},consult:0,doc:null,note:'여행자 안내 없음.',src:S.osaka},
+ {id:'almond',name:'아몬드 클리닉',city:'tyo',area:'이치가야',tourist:'ok',ko:'한국어 문진표·통역, 카카오톡',visit:1,hotel:{fee:1000,nation:1},p4:{2.5:16500,5:28000,7.5:40000,10:49000,12.5:58000,15:68000},p12:{2.5:46500,5:81000,7.5:117000,10:144000,12.5:171000,15:201000},consult:0,doc:3000,note:'진료비 0엔. 온라인 진료 후 전국 호텔 배송 1,000엔. 영문 처방 증명서 3,000엔.',src:S.almond},
+ {id:'jnc',name:'재팬넷클리닉',city:'tyo',area:'긴자·신바시',tourist:'ok',ko:'원장 한국어 진료, 카카오톡',visit:1,hotel:{fee:3957,nation:1},p4:{2.5:22000,5:39600,7.5:57200,10:76264,12.5:95336},p12:{2.5:34584,5:66891,7.5:99924,10:133233,12.5:166539},consult:3630,doc:7370,docReq:1,blocked:'2.5·5mg 품절, 11/16 입고 예정',note:'12펜은 3개월 플랜가. 일본 주소가 없으면 영문 처방전 7,370엔 필수. 호텔 배송 33,000원, 도쿄 외 5영업일 전 신청.',src:S.jnc},
+ {id:'ehealth',name:'이헬스 클리닉 신주쿠 (외국인 프로그램)',city:'tyo',area:'신주쿠산초메',tourist:'ok',ko:'한국어 안내 페이지',visit:1,p4:{2.5:19000},p12:{2.5:52000},consult:0,doc:null,note:'진찰 포함가. 영어·중국어 진료, 당일 수령.',src:S.weblioT},
+ {id:'shinjuku',name:'신주쿠역앞 클리닉',city:'tyo',area:'신주쿠 서쪽 출구',tourist:'ok',ko:'일본어 필요(통역 동반)',visit:1,p4:{2.5:14000,5:24000,7.5:30000,10:36000},consult:0,doc:null,note:'평일 예약 없이 방문. 7.5·10mg은 BMI 22 이상만.',src:S.weblioT},
+ {id:'silk',name:'도쿄 실크클리닉',city:'tyo',area:'신주쿠',tourist:'ok',ko:'한국어 안내 페이지',visit:1,hotel:{fee:null,nation:0},p4:{2.5:8000,5:14000,7.5:22000},consult:null,doc:null,flag:'출처마다 가격 다름',note:'2.5mg 8,000엔은 비교 기사 기준이며 다른 기사는 12,000엔으로 적음. 호텔 배송 안내 있음(비용 미확인). 예약 전 실가격 확인 필수.',src:S.silk},
+ {id:'ryogoku',name:'료고쿠 요코즈나 클리닉',city:'tyo',area:'료고쿠',tourist:'unknown',ko:'',visit:1,p4:{2.5:13200,5:26400},consult:3300,doc:null,note:'초진 3,300엔 별도.',src:S.make2t},
+ {id:'aurelia',name:'AURELIA ONLINE',city:'online',area:'온라인 전용',tourist:'unknown',ko:'안내만 한국어, 진료는 일본어·영어',hotel:{fee:300,nation:1},p4:{2.5:11800,5:18800,7.5:29800,10:37800,12.5:46800,15:54800},p12:{2.5:31800,5:51800,7.5:79800,10:97800,12.5:124800,15:146800},consult:0,doc:null,note:'일본 내 본인 수령만. 여행자 처방과 호텔 수령 여부는 명시 없음.',src:S.aur},
+ {id:'dmm',name:'DMM 온라인 클리닉',city:'online',area:'온라인 전용',tourist:'no',ko:'',hotel:{fee:550,nation:1},p4:{2.5:12500,7.5:32300,10:40500},p12:{2.5:31500,5:62400,7.5:90900,10:115500},consult:0,doc:null,note:'일본 거주자 대상. 비교용으로만 표시하며 순위에서 제외.',src:S.weblioT}
+];
+const SOURCES=[
+ ['식약처·관세청 휴대 반입 허용 (머니투데이, 11/11)','https://www.mt.co.kr/thebio/2026/11/11/2026111117265020740'],
+ ['최대 12개 반입 허용 단독 보도 (MTN, 11/11)','https://news.mtn.co.kr/article/2026111116412519794'],
+ ['후쿠오카 클리닉 비교 (Weblio케어, 11/14)',S.weblioF],['도쿄 클리닉 비교 (Weblio케어)',S.weblioT],
+ ['아몬드 클리닉 가격표',S.almond],['재팬넷클리닉 가격표',S.jnc],['MIL CLINIC OSAKA 여행자 안내',S.mil],
+ ['일본 온라인 진료 17곳 비교 (온쿠리)',S.onc],['4펜 실제 비용 비교 (make2t)',S.make2t],['AURELIA ONLINE 가격표',S.aur],
+ ['오사카 클리닉 비교',S.osaka],['도쿄 최저가 비교 (도쿄 실크 포함)',S.silk],
+ ['부산–후쿠오카 항공 요금 정리','https://japanweather.kr/busan-fukuoka-flight-fares-gimhae-hakata-2026/'],
+ ['국내 마운자로 가격 (닥터나우)','https://doctornow.co.kr/non-benefit/비만/마운자로'],
+ ['여행자 휴대품 통관 기준 해설','https://ohhyunlaw-international.com/faq/8342']
+];
+
+const DEF={m:3,d:[2.5,5,5],origin:'pus',t:Object.assign({},ORIGIN.pus),nights:0,nightRate:70000,noTravel:false,onlyOk:true,hideBlocked:false,withDoc:true,fx:840,kr:Object.assign({},KR_DEFAULT)};
+let st=JSON.parse(JSON.stringify(DEF));
+try{const s=JSON.parse(localStorage.getItem('mj-calc-v1')||'null'); if(s&&s.d&&s.t&&s.kr) st=Object.assign(st,s);}catch(e){}
+const save=()=>{try{localStorage.setItem('mj-calc-v1',JSON.stringify(st))}catch(e){}};
+const $=id=>document.getElementById(id);
+const won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
+const man=n=>{const v=Math.round(n/1000)/10;return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+'만원'};
+const yen=n=>Math.round(n).toLocaleString('ko-KR')+'엔';
+
+// 병원 약값(엔). 3개월 동일 용량이고 12펜 묶음가가 있으면 그 값, 아니면 4펜가 합산. 가격 없는 용량이 있으면 null
+function drugYen(c,doses){
+  if(doses.length===3&&doses.every(d=>d===doses[0])&&c.p12&&c.p12[doses[0]]) return {yen:c.p12[doses[0]],bundle:true};
+  let s=0; for(const d of doses){ if(!c.p4||!c.p4[d]) return null; s+=c.p4[d]; }
+  return {yen:s,bundle:false};
+}
+function travelWon(city,hotelMode){
+  if(st.noTravel) return 0;
+  const nights=hotelMode?Math.max(st.nights,1):st.nights;
+  return (st.t[city]||0)+LOCAL_YEN[city]*st.fx/100+nights*st.nightRate;
+}
+function cheapestCity(){return Object.keys(CITY).reduce((a,b)=>travelWon(b,true)<travelWon(a,true)?b:a)}
+function options(months){
+  const doses=st.d.slice(0,months), out=[], skipped=[];
+  for(const c of CL){
+    if(c.tourist==='no') continue;
+    if(st.onlyOk&&c.tourist!=='ok') continue;
+    if(st.hideBlocked&&c.blocked) continue;
+    const dr=drugYen(c,doses);
+    if(!dr){skipped.push(c.name);continue;}
+    const feeBase=(c.consult||0)+((st.withDoc||c.docReq)?(c.doc||0):0);
+    const unk=[]; if(c.consult==null) unk.push('진료비'); if(st.withDoc&&c.doc==null) unk.push('서류비');
+    const mk=(mode,city,extraYen,unkExtra)=>{
+      const drug=dr.yen*st.fx/100, fee=(feeBase+extraYen)*st.fx/100, trav=travelWon(city,mode==='hotel');
+      out.push({c,mode,city,drug,fee,trav,total:drug+fee+trav,bundle:dr.bundle,unk:unk.concat(unkExtra||[]),drugYen:dr.yen,feeYen:feeBase+extraYen});
+    };
+    if(c.visit) mk('visit',c.city,0);
+    if(c.hotel){
+      const city=c.hotel.nation?cheapestCity():c.city;
+      mk('hotel',city,c.hotel.fee||0,c.hotel.fee==null?['배송비']:[]);
+    }
+  }
+  out.sort((a,b)=>a.total-b.total);
+  return {list:out,skipped};
+}
+const krCost=months=>st.d.slice(0,months).reduce((s,d)=>s+(st.kr[d]||0),0);
+const modeLabel=o=>o.mode==='visit'?CITY[o.city]+' 방문 수령':'온라인 진료 + '+CITY[o.city]+' 호텔 배송';
+
+let showAll=false;
+function render(){
+  const {list,skipped}=options(st.m), kr=krCost(st.m), pens=st.m*4;
+  const V=$('verdict');
+  if(!list.length){
+    V.innerHTML='<span class="eyebrow">결과 없음</span><p class="who">이 용량 조합의 가격을 공개한 병원이 없습니다</p><p class="mute">"관광객 처방이 공식 확인된 곳만"을 끄거나 용량을 바꿔 보세요.</p>';
+    $('chart').innerHTML='';$('rank').innerHTML='';$('more').hidden=true;
+  } else {
+    const b=list[0], save_=kr-b.total;
+    const drugOnly=list.slice().sort((x,y)=>(x.drug+x.fee)-(y.drug+y.fee))[0];
+    const clean=list.find(o=>!o.c.blocked&&!o.c.flag&&!o.unk.length);
+    const ins=[];
+    ins.push('교통·숙박비가 총비용의 '+Math.round(b.trav/b.total*100)+'%입니다. '+(b.trav>b.drug?'약값보다 이동 비용이 더 크니 항공권 특가가 약값 차이보다 중요합니다.':'이 조건에서는 약값 차이가 순위를 가릅니다.'));
+    if(drugOnly!==b) ins.push('교통비를 빼면 '+drugOnly.c.name+' ('+modeLabel(drugOnly)+')이 '+man(drugOnly.drug+drugOnly.fee)+'으로 가장 쌉니다.');
+    if(b.c.blocked) ins.push('1위 병원은 현재 "'+b.c.blocked+'" 상태입니다.'+(clean&&clean!==b?' 지금 예약 가능하고 비용이 모두 확인된 곳 중에서는 '+clean.c.name+' ('+modeLabel(clean)+', '+man(clean.total)+')이 가장 쌉니다.':''));
+    else if(b.c.flag||b.unk.length) ins.push('1위는 '+(b.c.flag?b.c.flag:b.unk.join('·')+' 미확인')+' 상태입니다.'+(clean&&clean!==b?' 비용이 모두 확인된 곳 중에서는 '+clean.c.name+' ('+modeLabel(clean)+', '+man(clean.total)+')이 가장 쌉니다.':''));
+    if(b.bundle) ins.push('12펜 묶음가를 적용했습니다. 4펜씩 따로 사는 것보다 쌉니다.');
+    V.innerHTML='<span class="eyebrow">'+pens+'펜 기준 최저 조합</span>'
+      +'<p class="who">'+b.c.name+' · '+modeLabel(b)+'</p>'
+      +'<div class="kpis"><div><b>'+man(b.total)+'</b><span>총비용 (약 '+yen(b.drugYen)+' 포함)</span></div>'
+      +'<div><b>'+man(b.total/pens)+'</b><span>1펜당 실질 비용</span></div>'
+      +'<div><b class="'+(save_>=0?'pos':'neg')+'">'+(save_>=0?'':'−')+man(Math.abs(save_))+'</b><span>한국('+man(kr)+') 대비 '+(save_>=0?'절약':'손해')+'</span></div>'
+      +'<div><b class="'+(save_>=0?'pos':'neg')+'">'+(kr?Math.round(save_/kr*100):0)+'%</b><span>절감률</span></div></div>'
+      +'<ul class="ins">'+ins.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+
+    // 차트
+    const shown=showAll?list:list.slice(0,10), max=Math.max(kr,...shown.map(o=>o.total))*1.02;
+    $('chart').innerHTML=shown.map((o,i)=>{
+      const w=v=>(v/max*100).toFixed(2)+'%';
+      return '<div class="row" tabindex="0" data-i="'+i+'"><div class="nm">'+(i+1)+'. '+o.c.name+'<small>'+modeLabel(o)+(o.c.blocked?' · 예약 제한':'')+(o.unk.length?' · '+o.unk.join('·')+' 미확인':'')+'</small></div>'
+        +'<div class="track"><div class="bar"><i style="width:'+w(o.drug)+';background:var(--s1)"></i>'+(o.fee>0?'<i style="width:'+w(o.fee)+';background:var(--s2)"></i>':'')+(o.trav>0?'<i style="width:'+w(o.trav)+';background:var(--s3)"></i>':'')+'</div>'
+        +'<span class="krline" style="left:'+w(kr)+'"></span></div><div class="tot">'+man(o.total)+'</div></div>';
+    }).join('');
+    $('chart')._data=shown;
+    $('more').hidden=list.length<=10; $('more').textContent=showAll?'상위 10개만 보기':'전체 '+list.length+'개 보기';
+
+    $('rank').innerHTML='<thead><tr><th>#</th><th>병원 · 방식</th><th class="n">약값</th><th class="n">진료·서류·배송</th><th class="n">교통·숙박</th><th class="n">총비용</th><th class="n">1펜당</th><th class="n">한국 대비</th><th>상태</th></tr></thead><tbody>'
+      +list.map((o,i)=>'<tr><td class="n">'+(i+1)+'</td><td class="nm">'+o.c.name+'<small>'+modeLabel(o)+'</small></td><td class="n">'+won(o.drug)+'<br><span class="mute">'+yen(o.drugYen)+'</span></td><td class="n">'+won(o.fee)+'</td><td class="n">'+won(o.trav)+'</td><td class="n"><b>'+won(o.total)+'</b></td><td class="n">'+won(o.total/pens)+'</td><td class="n '+(kr-o.total>=0?'pos':'neg')+'">'+(kr-o.total>=0?'−':'+')+won(Math.abs(kr-o.total))+'</td><td>'+chips(o.c,o)+'</td></tr>').join('')+'</tbody>';
+  }
+  $('excluded').textContent=skipped.length?'선택한 용량의 가격을 공개하지 않아 빠진 곳: '+skipped.join(', '):'';
+
+  // 손익분기
+  $('be').innerHTML='<thead><tr><th>사오는 양</th><th>최저 조합</th><th class="n">일본 총비용</th><th class="n">한국 같은 양</th><th class="n">차액</th></tr></thead><tbody>'
+    +[1,2,3].map(m=>{const r=options(m).list[0],k=krCost(m); if(!r) return '<tr><td>'+m*4+'펜</td><td colspan="4" class="mute">가격 공개 병원 없음</td></tr>';
+      const s=k-r.total; return '<tr><td><b>'+m*4+'펜</b> <span class="mute">('+st.d.slice(0,m).map(d=>d+'mg').join(' → ')+')</span></td><td>'+r.c.name+' <span class="mute">· '+modeLabel(r)+'</span></td><td class="n">'+won(r.total)+'</td><td class="n">'+won(k)+'</td><td class="n '+(s>=0?'pos':'neg')+'"><b>'+(s>=0?'절약 ':'손해 ')+won(Math.abs(s))+'</b></td></tr>';}).join('')+'</tbody>';
+  save();
+}
+function chips(c,o){
+  let h=c.tourist==='ok'?'<span class="chip ok">관광객 처방 확인</span>':c.tourist==='no'?'<span class="chip no">일본 거주자 전용</span>':'<span class="chip nt">여행자 안내 없음</span>';
+  if(c.blocked) h+='<span class="chip wn">'+c.blocked+'</span>';
+  if(c.flag) h+='<span class="chip wn">'+c.flag+'</span>';
+  if(o&&o.unk.length) h+='<span class="chip nt">'+o.unk.join('·')+' 미확인</span>';
+  return h;
+}
+function catalog(){
+  const groups=[['fuk','후쿠오카'],['osa','오사카'],['tyo','도쿄'],['online','온라인 전용']];
+  let h='<thead><tr><th>병원</th>'+DOSES.map(d=>'<th class="n">'+d+'mg</th>').join('')+'<th class="n">진료비</th><th class="n">영문 서류</th><th class="n">호텔 배송</th><th>상태 · 메모</th></tr></thead><tbody>';
+  const f=v=>v==null?'<span class="mute">미확인</span>':v===0?'0':v.toLocaleString('ko-KR');
+  for(const [k,nm] of groups){
+    h+='<tr><th colspan="'+(DOSES.length+5)+'">'+nm+'</th></tr>';
+    for(const c of CL.filter(x=>x.city===k)){
+      h+='<tr><td class="nm"><a href="'+c.src+'" target="_blank" rel="noopener">'+c.name+'</a><small>'+c.area+(c.ko?' · '+c.ko:'')+'</small></td>'
+        +DOSES.map(d=>'<td class="n">'+(c.p4&&c.p4[d]?c.p4[d].toLocaleString('ko-KR'):'')+(c.p12&&c.p12[d]?'<br><span class="mute">12펜 '+c.p12[d].toLocaleString('ko-KR')+'</span>':'')+'</td>').join('')
+        +'<td class="n">'+f(c.consult)+'</td><td class="n">'+f(c.doc)+(c.docReq?'<br><span class="mute">필수</span>':'')+'</td><td class="n">'+(c.hotel?f(c.hotel.fee):'<span class="mute">없음</span>')+'</td><td class="note">'+chips(c)+'<br>'+c.note+'</td></tr>';
+    }
+  }
+  $('catalog').innerHTML=h+'</tbody>';
+  $('sources').innerHTML=SOURCES.map(s=>'<li><a href="'+s[1]+'" target="_blank" rel="noopener">'+s[0]+'</a></li>').join('');
+}
+
+// 입력 동기화
+function fill(){
+  ['d1','d2','d3'].forEach((id,i)=>{const e=$(id); if(!e.options.length) e.innerHTML=DOSES.map(d=>'<option value="'+d+'">'+d+'mg</option>').join(''); e.value=st.d[i]; e.parentElement.style.visibility=i<st.m?'visible':'hidden';});
+  document.querySelectorAll('#monthsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.m===st.m)));
+  document.querySelectorAll('#originSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.o===st.origin)));
+  $('t_fuk').value=st.t.fuk;$('t_osa').value=st.t.osa;$('t_tyo').value=st.t.tyo;$('nights').value=st.nights;$('nightRate').value=st.nightRate;$('fx').value=st.fx;
+  $('noTravel').checked=st.noTravel;$('onlyOk').checked=st.onlyOk;$('hideBlocked').checked=st.hideBlocked;$('withDoc').checked=st.withDoc;
+  if(!$('krInputs').children.length) $('krInputs').innerHTML=DOSES.map(d=>'<label class="f"><span>'+d+'mg</span><input type="number" id="kr_'+String(d).replace('.','_')+'" data-d="'+d+'" min="0" step="10000"></label>').join('');
+  $('krInputs').querySelectorAll('input').forEach(e=>e.value=st.kr[e.dataset.d]);
+}
+const numv=e=>Math.max(0,+e.value||0);
+$('controls').addEventListener('input',ev=>{
+  const e=ev.target;
+  if(e.id==='d1'||e.id==='d2'||e.id==='d3') st.d[+e.id[1]-1]=+e.value;
+  else if(e.id.startsWith('t_')){st.t[e.id.slice(2)]=numv(e);st.origin='custom';}
+  else if(e.id==='nights') st.nights=Math.round(numv(e));
+  else if(e.id==='nightRate') st.nightRate=numv(e);
+  else if(e.id==='fx') st.fx=numv(e)||DEF.fx;
+  else if(e.dataset.d) st.kr[e.dataset.d]=numv(e);
+  else if(e.type==='checkbox') st[e.id]=e.checked;
+  document.querySelectorAll('#originSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.o===st.origin)));
+  render();
+});
+$('monthsSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;st.m=+b.dataset.m;fill();render();});
+$('originSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;st.origin=b.dataset.o;st.t=Object.assign({},ORIGIN[st.origin]);fill();render();});
+$('reset').addEventListener('click',()=>{st=JSON.parse(JSON.stringify(DEF));fill();render();});
+$('more').addEventListener('click',()=>{showAll=!showAll;render();});
+
+// 툴팁
+const tip=$('tip');
+function showTip(row,x,y){
+  const o=$('chart')._data[+row.dataset.i]; if(!o) return;
+  tip.innerHTML='<b>'+o.c.name+'</b>'+modeLabel(o)+'<table><tr><td>약값</td><td>'+won(o.drug)+'</td></tr><tr><td>진료·서류·배송</td><td>'+won(o.fee)+'</td></tr><tr><td>교통·숙박</td><td>'+won(o.trav)+'</td></tr><tr><td>합계</td><td>'+won(o.total)+'</td></tr></table>';
+  tip.hidden=false;
+  const r=tip.getBoundingClientRect();
+  tip.style.left=Math.max(8,Math.min(x+14,innerWidth-r.width-8))+'px';
+  tip.style.top=Math.max(8,Math.min(y+14,innerHeight-r.height-8))+'px';
+}
+$('chart').addEventListener('mousemove',e=>{const r=e.target.closest('.row'); r?showTip(r,e.clientX,e.clientY):tip.hidden=true;});
+$('chart').addEventListener('mouseleave',()=>tip.hidden=true);
+$('chart').addEventListener('focusin',e=>{const r=e.target.closest('.row'); if(r){const b=r.getBoundingClientRect();showTip(r,b.left+40,b.bottom-10);}});
+$('chart').addEventListener('focusout',()=>tip.hidden=true);
+
+fill();catalog();render();
+})();
+</script>
