@@ -6,7 +6,7 @@
 /* Layout: 약국 영수증처럼 숫자가 주인공. 왼쪽에 조건 입력, 오른쪽에 결론 → 순위 → 병원 원장 → 반입 수칙 순. */
 :root{
   --bg:#f3f7f5; --panel:#ffffff; --ink:#22302d; --ink2:#51615d; --mute:#7b8a86; --line:#e1e9e6; --soft:#edf3f1;
-  --accent:#23786e; --accent-ink:#ffffff; --tint:#e4f2ee; --shadow:0 1px 2px rgba(34,48,45,.04),0 8px 24px rgba(34,48,45,.06);
+  --accent:#23786e; --accent-ink:#ffffff; --tint:#e4f2ee; --il1:#cfe8e2; --il2:#9fd0c4; --il3:#f6d9a8; --shadow:0 1px 2px rgba(34,48,45,.04),0 8px 24px rgba(34,48,45,.06);
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
   --good:#0a6b3d; --good-bg:#dff3e8; --warn:#8a5300; --warn-bg:#fcecc9; --bad:#a32222; --bad-bg:#fbe0de;
   --sans:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
@@ -16,13 +16,13 @@
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#141a19; --panel:#1c2423; --ink:#e9efed; --ink2:#b7c4c0; --mute:#8a9995; --line:#2a3533; --soft:#232d2b;
-  --accent:#7fd1c4; --accent-ink:#0b2622; --tint:#1d302d; --shadow:0 1px 2px rgba(0,0,0,.25);
+  --accent:#7fd1c4; --accent-ink:#0b2622; --tint:#1d302d; --il1:#24403b; --il2:#3a6b62; --il3:#8a7445; --shadow:0 1px 2px rgba(0,0,0,.25);
   --s1:#3987e5; --s2:#d95926; --s3:#199e70;
   --good:#7fd8a6; --good-bg:#12372a; --warn:#f0c36a; --warn-bg:#3d2f10; --bad:#f29a94; --bad-bg:#40191a;
   color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#141a19; --panel:#1c2423; --ink:#e9efed; --ink2:#b7c4c0; --mute:#8a9995; --line:#2a3533; --soft:#232d2b;
-  --accent:#7fd1c4; --accent-ink:#0b2622; --tint:#1d302d; --shadow:0 1px 2px rgba(0,0,0,.25);
+  --accent:#7fd1c4; --accent-ink:#0b2622; --tint:#1d302d; --il1:#24403b; --il2:#3a6b62; --il3:#8a7445; --shadow:0 1px 2px rgba(0,0,0,.25);
   --s1:#3987e5; --s2:#d95926; --s3:#199e70;
   --good:#7fd8a6; --good-bg:#12372a; --warn:#f0c36a; --warn-bg:#3d2f10; --bad:#f29a94; --bad-bg:#40191a;
   color-scheme:dark }
@@ -175,12 +175,41 @@ legend{text-transform:none;letter-spacing:.01em;font-size:13px}
 .chip{padding:2px 9px}
 table.t th{background:var(--soft)}
 .tip{border-radius:var(--r2)}
+.hero{display:flex;gap:28px;align-items:center;justify-content:space-between}
+.herotext{display:flex;flex-direction:column;gap:12px;min-width:0;flex:1 1 320px}
+.heroart{flex:0 1 360px;width:100%;max-width:360px;height:auto;display:block}
+@media (max-width:720px){.hero{flex-direction:column-reverse;align-items:stretch}.heroart{max-width:100%;flex-basis:auto}}
+.stephead{display:flex;gap:16px;align-items:center}
+.stephead svg{width:64px;height:64px;flex:none}
+.steptitle{font-family:var(--disp);font-size:24px;line-height:1.3}
 </style>
 
 <div class="wrap" id="controls">
   <header class="top">
-    <h1>일본 마운자로 원정 계산기</h1>
-    <p class="lede">주의사항을 확인한 뒤 용량과 날짜를 정하면, 약값·진료비·배송비·교통비를 합쳐 가장 싼 경로를 찾아 줍니다. 병원 가격은 2026년 11월 14일 공개 자료 기준입니다.</p>
+    <div class="hero">
+      <div class="herotext">
+        <h1>일본 마운자로 원정 계산기</h1>
+        <p class="lede">주의사항을 확인한 뒤 용량과 날짜를 정하면, 약값·진료비·배송비·교통비를 합쳐 가장 싼 경로를 찾아 줍니다. 병원 가격은 2026년 11월 14일 공개 자료 기준입니다.</p>
+      </div>
+      <svg class="heroart" viewBox="0 0 360 160" role="img" aria-label="부산에서 배와 비행기로 일본 섬에 다녀오는 그림">
+        <defs><clipPath id="hc"><rect width="360" height="160" rx="24"/></clipPath></defs>
+        <g clip-path="url(#hc)">
+          <rect width="360" height="160" fill="var(--tint)"/>
+          <circle cx="292" cy="44" r="20" fill="var(--il3)"/>
+          <path d="M206 114 Q250 58 300 96 Q332 78 360 114 Z" fill="var(--il2)"/>
+          <path d="M0 114 Q30 84 72 100 Q92 92 108 114 Z" fill="var(--il2)"/>
+          <rect x="18" y="84" width="10" height="20" rx="2" fill="var(--panel)" opacity=".85"/><rect x="32" y="74" width="10" height="30" rx="2" fill="var(--panel)" opacity=".85"/><rect x="46" y="88" width="10" height="16" rx="2" fill="var(--panel)" opacity=".85"/>
+          <rect y="112" width="360" height="48" fill="var(--il1)"/>
+          <path d="M0 128 q15 -8 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0" fill="none" stroke="var(--panel)" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+          <path d="M-15 144 q15 -8 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0" fill="none" stroke="var(--panel)" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+          <path d="M72 96 Q160 22 254 82" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="1 8" stroke-linecap="round"/>
+          <path d="M150 52 l22 -5 l-9 12 l-4 -5 z" fill="var(--accent)"/>
+          <path d="M126 106 h56 l-9 14 h-38 z" fill="var(--accent)"/>
+          <rect x="139" y="95" width="28" height="11" rx="3" fill="var(--panel)"/><rect x="157" y="86" width="6" height="9" rx="1.5" fill="var(--il3)"/>
+          <circle cx="146" cy="100.5" r="1.8" fill="var(--accent)"/><circle cx="153" cy="100.5" r="1.8" fill="var(--accent)"/><circle cx="160" cy="100.5" r="1.8" fill="var(--accent)"/>
+        </g>
+      </svg>
+    </div>
     <div class="rule" aria-label="한국 반입 기준">
       <div><b>12펜</b><span>1인 휴대 반입 한도 (주 1회, 3개월분)</span></div>
       <div><b>11월 12일~</b><span>식약처·관세청 허용 시행</span></div>
@@ -198,6 +227,7 @@ table.t th{background:var(--soft)}
   </nav>
 
   <div class="step" data-step="notice">
+    <div class="stephead"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="var(--tint)"/><path d="M32 13 l15 6 v11 c0 10 -6.5 17.5 -15 21 c-8.5 -3.5 -15 -11 -15 -21 V19 z" fill="var(--il2)"/><polyline points="24,32 30,38 41,26" fill="none" stroke="var(--panel)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div><p class="steptitle">먼저 읽어 주세요</p><p class="mute">규정과 위험을 확인한 뒤에 계산을 시작합니다.</p></div></div>
   <section class="sec">
     <h2>사기 전에 알아야 할 것</h2>
     <div class="cols two">
@@ -212,6 +242,7 @@ table.t th{background:var(--soft)}
   </div>
 
   <div class="step" data-step="plan" hidden>
+    <div class="stephead"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="var(--tint)"/><g transform="rotate(-35 32 32)"><rect x="11" y="26" width="34" height="12" rx="6" fill="var(--il2)"/><rect x="18" y="30" width="12" height="4" rx="2" fill="var(--panel)"/><rect x="45" y="28.5" width="8" height="7" rx="2" fill="var(--accent)"/><line x1="53" y1="32" x2="59" y2="32" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/></g></svg><div><p class="steptitle">얼마나, 어떤 용량으로</p><p class="mute">사올 펜 수와 달마다 맞을 용량을 고릅니다.</p></div></div>
     <div class="cols two">
       <div class="panel">
       <fieldset>
@@ -249,6 +280,7 @@ table.t th{background:var(--soft)}
   </div>
 
   <div class="step" data-step="travel" hidden>
+    <div class="stephead"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="var(--tint)"/><path d="M15 36 h34 l-6 11 h-22 z" fill="var(--accent)"/><rect x="24" y="27" width="16" height="9" rx="2.5" fill="var(--il2)"/><rect x="35" y="20" width="4" height="7" rx="1" fill="var(--il3)"/><path d="M12 52 q5 -4 10 0 t10 0 t10 0 t10 0" fill="none" stroke="var(--il2)" stroke-width="2.5" stroke-linecap="round"/></svg><div><p class="steptitle">언제, 무엇을 타고</p><p class="mute">날짜를 고르면 그 날짜의 항공·배 요금을 찾아 넣습니다.</p></div></div>
     <div class="panel narrow">
       <fieldset>
         <legend>출발지와 교통비 (왕복, 원)</legend>
@@ -296,6 +328,7 @@ table.t th{background:var(--soft)}
   </div>
 
   <div class="step" data-step="result" hidden>
+    <div class="stephead"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="var(--tint)"/><rect x="15" y="34" width="9" height="17" rx="3" fill="var(--il2)"/><rect x="27.5" y="20" width="9" height="31" rx="3" fill="var(--accent)"/><rect x="40" y="39" width="9" height="12" rx="3" fill="var(--il2)"/><circle cx="32" cy="14" r="3" fill="var(--il3)"/></svg><div><p class="steptitle">가장 싼 경로</p><p class="mute">약값과 교통비를 합친 총비용 순서입니다.</p></div></div>
     <div class="sumbar" id="sumbar"></div>
     <div class="results">
       <section class="verdict" id="verdict" aria-live="polite"></section>
@@ -342,6 +375,7 @@ table.t th{background:var(--soft)}
   </div>
 
   <div class="step" data-step="prep" hidden>
+    <div class="stephead"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="var(--tint)"/><rect x="18" y="15" width="28" height="37" rx="5" fill="var(--il2)"/><rect x="26" y="11" width="12" height="8" rx="3" fill="var(--accent)"/><polyline points="24,29 27,32 32,26" fill="none" stroke="var(--panel)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="35" y1="30" x2="41" y2="30" stroke="var(--panel)" stroke-width="2.5" stroke-linecap="round"/><polyline points="24,40 27,43 32,37" fill="none" stroke="var(--panel)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="35" y1="41" x2="41" y2="41" stroke="var(--panel)" stroke-width="2.5" stroke-linecap="round"/></svg><div><p class="steptitle">떠나기 전에 챙길 것</p><p class="mute">예약부터 귀국 후 보관까지 순서대로 확인합니다.</p></div></div>
   <section class="sec">
     <div class="sec-h"><h2>준비 순서</h2><span class="small mute">체크한 항목은 이 기기에 저장됩니다.</span></div>
     <div class="cols two" id="todo">
