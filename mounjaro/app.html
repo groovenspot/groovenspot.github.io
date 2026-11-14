@@ -132,6 +132,16 @@ ol.route .amt{font-family:var(--mono);font-size:13.5px;white-space:nowrap;text-a
 .ack{border-top:3px solid var(--accent)}
 .sumbar{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;font-size:13.5px;color:var(--ink2)}
 .sumbar b{color:var(--ink);font-weight:600}
+.bform{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:10px 24px}
+.bform .wide{grid-column:1/-1}
+.bform input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:var(--r2);padding:8px 10px;flex:1 1 260px;min-width:0;max-width:100%}
+.bform .wide{flex-wrap:wrap}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap}
+.post{gap:8px}.post .who{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mute)}
+.post .who img{width:22px;height:22px;border-radius:50%}
+.post .trip{font-family:var(--disp);font-size:19px;line-height:1.35}
+.post .contact{font-size:13.5px;overflow-wrap:anywhere;background:var(--soft);border-radius:var(--r2);padding:8px 10px}
+.empty{grid-column:1/-1;text-align:center;color:var(--mute);padding:28px 16px;border:1px dashed var(--line);border-radius:var(--r)}
 .btn{font:inherit;font-size:13px;padding:6px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:var(--r2);cursor:pointer;align-self:flex-start}
 
 .scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
@@ -224,6 +234,7 @@ table.t th{background:var(--soft)}
     <button type="button" data-go="travel"><i>3</i>날짜와 교통</button>
     <button type="button" data-go="result"><i>4</i>최저가 결과</button>
     <button type="button" data-go="prep"><i>5</i>준비 체크</button>
+    <button type="button" data-go="board"><i>6</i>동행 찾기</button>
   </nav>
 
   <div class="step" data-step="notice">
@@ -390,7 +401,38 @@ table.t th{background:var(--soft)}
     <h2>출처</h2>
     <ol class="src" id="sources"></ol>
   </section>
-    <div class="stepnav"><button type="button" class="btn" data-go="result">← 최저가 결과</button><button type="button" class="btn" id="reset">기본값으로 되돌리기</button></div>
+    <div class="stepnav"><button type="button" class="btn" data-go="result">← 최저가 결과</button><button type="button" class="btn primary" data-go="board">동행 찾기 →</button></div>
+    <div class="stepnav" style="border-top:0;padding-top:0"><span></span><button type="button" class="btn" id="reset">기본값으로 되돌리기</button></div>
+  </div>
+
+  <div class="step" data-step="board" hidden>
+    <div class="stephead"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="var(--tint)"/><circle cx="24" cy="25" r="7" fill="var(--il2)"/><path d="M11 47 c0 -8 6 -13 13 -13 s13 5 13 13 z" fill="var(--il2)"/><circle cx="42" cy="27" r="6" fill="var(--accent)"/><path d="M33 47 c0 -7 4 -11 9 -11 s10 4 10 11 z" fill="var(--accent)"/></svg><div><p class="steptitle">같이 갈 사람 찾기</p><p class="mute">같은 날짜에 가는 사람끼리 배·숙소를 함께 알아볼 수 있게 일정을 올립니다.</p></div></div>
+    <div class="panel ack"><h3>게시판 규칙</h3><ul class="ins">
+      <li>각자 진료받고 각자 들고 옵니다. 대신 사 달라는 글, 약을 팔거나 넘기는 글은 불법이라 올릴 수 없고 발견하면 지웁니다.</li>
+      <li>전화번호, 주민번호, 집 주소는 적지 마세요. 연락은 오픈채팅 링크나 메신저 아이디로 받습니다.</li>
+      <li>처음 만날 때는 터미널이나 공항 같은 공개된 장소에서 만나고, 돈을 먼저 보내 달라는 요청에는 응하지 마세요.</li>
+      <li>한 사람이 글 하나를 올릴 수 있고, 귀국일이 지나면 목록에서 사라집니다.</li>
+    </ul></div>
+    <div class="panel" id="boardFormBox">
+      <h3>내 일정 올리기</h3>
+      <div class="bform" id="boardForm">
+        <label class="f"><span>출발일</span><input type="date" id="b_dep"></label>
+        <label class="f"><span>귀국일</span><input type="date" id="b_ret"></label>
+        <label class="f"><span>출발지</span><select id="b_origin"><option value="부산">부산</option><option value="서울">서울</option><option value="기타">기타</option></select></label>
+        <label class="f"><span>가는 곳</span><select id="b_dest"><option value="대마도">대마도</option><option value="후쿠오카">후쿠오카</option><option value="오사카">오사카</option><option value="도쿄">도쿄</option></select></label>
+        <label class="f"><span>교통편</span><select id="b_mode"><option value="배">배</option><option value="항공">항공</option></select></label>
+        <label class="f"><span>찾는 인원</span><select id="b_seats"><option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명 이상</option></select></label>
+        <label class="f wide"><span>한마디 (120자)</span><input type="text" id="b_note" maxlength="120" placeholder="예: 히타카츠 당일치기, 배표 같이 예매하실 분"></label>
+        <label class="f wide"><span>연락 방법 (80자)</span><input type="text" id="b_contact" maxlength="80" placeholder="오픈채팅 링크 또는 메신저 아이디"></label>
+      </div>
+      <div class="row-btns"><button type="button" class="btn" id="b_fill">계산기 일정으로 채우기</button><button type="button" class="btn primary" id="b_save">올리기</button><button type="button" class="btn" id="b_del" hidden>내 글 지우기</button></div>
+      <p class="small" id="b_msg" role="status" aria-live="polite"></p>
+    </div>
+    <section class="sec">
+      <div class="sec-h"><h2>올라온 일정</h2><span class="small mute" id="boardState" role="status"></span></div>
+      <div class="cols two" id="boardList"></div>
+    </section>
+    <div class="stepnav"><button type="button" class="btn" data-go="prep">← 준비 체크</button><span></span></div>
   </div>
 
   <footer>이 페이지는 가격 비교용 정보이며 의료 조언이 아닙니다. 처방 여부, 용량, 처방 개수는 일본 의사가 진료 후 결정합니다. 가격·재고·예약 상태는 자주 바뀌므로 결제 전에 각 병원 공식 채널에서 다시 확인하세요. 진료비·배송비가 "미확인"인 항목은 0원으로 계산했습니다.</footer>
@@ -828,9 +870,69 @@ fetch('fares.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(d=>{ if(
   autoSea(); Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0); fareState(); seaShow(); render(); liveShow(); }).catch(()=>{});
 if(window.claude&&window.claude.use) window.claude.use('mcp').then(m=>{ if(!m) {liveShow();return;} mcp=m; $('liveBtn').hidden=false; liveShow(); }).catch(()=>{});
 liveShow();
+
+// 동행 게시판: Claude 안에서는 이 아티팩트의 공유 저장소(db)를 쓴다. 한 사람이 글 하나(posts/<내 id>)
+(async function(){
+  const list=$('boardList'), state=$('boardState'), msg=$('b_msg'), today=iso(new Date());
+  const off=t=>{ $('boardFormBox').hidden=true; list.innerHTML=''; const d=document.createElement('div'); d.className='empty'; d.textContent=t; list.appendChild(d); };
+  $('b_fill').addEventListener('click',()=>{ $('b_dep').value=st.dep; $('b_ret').value=st.ret; $('b_origin').value=st.origin==='sel'?'서울':'부산';
+    const o=options(st.m).list[0]; if(o){ $('b_dest').value=CITY[o.city]; $('b_mode').value=o.how||'배'; } });
+  $('b_dep').value=st.dep; $('b_ret').value=st.ret;
+  if(!(window.claude&&window.claude.use)){ off('동행 게시판은 이 웹 주소에서는 아직 열리지 않았습니다.'); return; }
+  const [db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
+  if(!db){ off('로그인한 상태로 Claude에서 열어야 게시판을 볼 수 있습니다.'); return; }
+  const uid=user?await user.id():null, owner=user?await user.isOwner():false, canW=user?await user.can('data.write'):null;
+  if(!uid||canW===false){ $('boardForm').hidden=true; $('b_fill').hidden=$('b_save').hidden=true; msg.textContent='지금 권한으로는 글을 읽을 수만 있습니다. 글을 쓰려면 이 페이지 소유자에게 참여자 권한을 요청하세요.'; }
+  const BAN=/(판매|팝니다|삽니다|양도|나눔|대리\s*구매|구매\s*대행|대신\s*(사|구매)|되팔)/, PHONE=/01[016789][-\s.]?\d{3,4}[-\s.]?\d{4}/;
+  let posts=[], busy=false, drawn=0;
+  async function draw(stale){
+    const mine=posts.find(p=>p.id===uid); $('b_del').hidden=!mine; $('b_save').textContent=mine?'내 글 고치기':'올리기';
+    const live=posts.filter(p=>p.ret>=today).sort((a,b)=>(a.dep+a.id).localeCompare(b.dep+b.id)), tok=++drawn;
+    const ps=user&&live.length?await user.profiles(live.map(p=>p.id)):{}; if(tok!==drawn) return;
+    state.textContent=(live.length?live.length+'건':'')+(stale?' · 최신 내용이 아닐 수 있습니다':'');
+    list.innerHTML='';
+    if(!live.length){ const d=document.createElement('div'); d.className='empty'; d.textContent='아직 올라온 일정이 없습니다. 위에서 내 일정을 먼저 올려 보세요.'; list.appendChild(d); return; }
+    live.forEach(p=>{
+      const c=document.createElement('div'); c.className='panel post';
+      const who=document.createElement('div'); who.className='who'; const pr=ps[p.id];
+      if(pr){const im=document.createElement('img'); im.src=pr.avatarUrl; im.alt=''; who.appendChild(im);}
+      const nm=document.createElement('span'); nm.textContent=(pr&&pr.name)||'이름 비공개'; who.appendChild(nm);
+      if(p.id===uid){const ch=document.createElement('span'); ch.className='chip nt'; ch.textContent='내 글'; who.appendChild(ch);}
+      if(p.dep===st.dep){const ch=document.createElement('span'); ch.className='chip ok'; ch.textContent='내 출발일과 같은 날'; who.appendChild(ch);}
+      const trip=document.createElement('div'); trip.className='trip'; trip.textContent=tripLabel(p.dep,p.ret);
+      const meta=document.createElement('div'); meta.className='small'; meta.textContent=String(p.origin)+' → '+String(p.dest)+' · '+String(p.mode)+' · '+(+p.seats>=4?'4명 이상':(+p.seats||1)+'명')+' 찾음';
+      c.append(who,trip,meta);
+      if(p.note){const n=document.createElement('p'); n.textContent=String(p.note); c.appendChild(n);}
+      const ct=document.createElement('div'); ct.className='contact'; const cv=String(p.contact||'');
+      if(/^https:\/\/open\.kakao\.com\/[\w\/-]+$/.test(cv)){const a=document.createElement('a'); a.href=cv; a.target='_blank'; a.rel='noopener'; a.textContent=cv; ct.append('연락: ',a);} else ct.textContent='연락: '+cv;
+      c.appendChild(ct);
+      if(owner&&p.id!==uid){const b=document.createElement('button'); b.type='button'; b.className='btn'; b.textContent='이 글 지우기 (관리)'; b.addEventListener('click',async()=>{ if(busy) return; busy=true; try{await db.doc('posts/'+p.id).delete();}catch(e){msg.textContent='지우지 못했습니다. 잠시 뒤 다시 시도하세요.';} busy=false; }); c.appendChild(b);}
+      list.appendChild(c);
+    });
+  }
+  state.textContent='불러오는 중';
+  const timer=setTimeout(()=>{ state.textContent='게시판에 아직 연결되지 않았습니다. 잠시 기다려 주세요.'; },10000);
+  db.collection('posts').onSnapshot(snap=>{ if(!snap.metadata.fromCache) clearTimeout(timer); posts=snap.docs.map(d=>Object.assign({},d.data(),{id:d.id})); draw(snap.metadata.fromCache); },
+    e=>{ clearTimeout(timer); state.textContent=e&&e.code==='revoked'?'이 페이지 접근 권한이 바뀌어 게시판을 볼 수 없습니다.':'게시판을 불러오지 못했습니다. 페이지를 다시 열어 주세요.'; });
+  $('b_save').addEventListener('click',async()=>{
+    if(busy||!uid) return;
+    const v=id=>$(id).value.trim(), body={dep:v('b_dep'),ret:v('b_ret'),origin:v('b_origin'),dest:v('b_dest'),mode:v('b_mode'),seats:+v('b_seats'),note:v('b_note').slice(0,120),contact:v('b_contact').slice(0,80),at:Date.now()};
+    if(!body.dep||!body.ret){msg.textContent='출발일과 귀국일을 넣어 주세요.';return;}
+    if(body.ret<body.dep){msg.textContent='귀국일이 출발일보다 빠릅니다.';return;}
+    if(body.ret<today){msg.textContent='이미 지난 일정입니다.';return;}
+    if(!body.contact){msg.textContent='연락 방법을 넣어 주세요. 오픈채팅 링크나 메신저 아이디면 됩니다.';return;}
+    if(BAN.test(body.note+' '+body.contact)){msg.textContent='대리 구매, 판매, 양도에 해당하는 표현이 있어 올릴 수 없습니다. 각자 진료받고 각자 들고 오는 동행만 구할 수 있습니다.';return;}
+    if(PHONE.test(body.note+' '+body.contact)){msg.textContent='전화번호는 적을 수 없습니다. 오픈채팅 링크나 메신저 아이디로 바꿔 주세요.';return;}
+    busy=true; $('b_save').disabled=true;
+    try{ await db.doc('posts/'+uid).set(body); msg.textContent='올렸습니다. 귀국일이 지나면 목록에서 사라집니다.'; }
+    catch(e){ msg.textContent=e&&e.code==='quota_exceeded'?'게시판이 가득 찼습니다. 소유자에게 알려 주세요.':e&&e.code==='invalid_argument'?'지금 권한으로는 글을 쓸 수 없습니다. 소유자에게 참여자 권한을 요청하세요.':'올리지 못했습니다. 잠시 뒤 다시 눌러 주세요.'; }
+    busy=false; $('b_save').disabled=false;
+  });
+  $('b_del').addEventListener('click',async()=>{ if(busy||!uid) return; busy=true; try{ await db.doc('posts/'+uid).delete(); msg.textContent='내 글을 지웠습니다.'; }catch(e){ msg.textContent='지우지 못했습니다. 잠시 뒤 다시 눌러 주세요.'; } busy=false; });
+})();
 // 단계 이동: 주의사항 확인 → 용량·조건 → 날짜·교통 → 결과 → 준비
 (function(){
-  const ORDER=['notice','plan','travel','result','prep'], acks=[...document.querySelectorAll('#ack input')];
+  const ORDER=['notice','plan','travel','result','prep','board'], acks=[...document.querySelectorAll('#ack input')];
   let ok={}; try{ok=JSON.parse(localStorage.getItem('mj-ack-v1')||'{}')}catch(e){}
   acks.forEach(a=>a.checked=!!ok[a.id]);
   const allAck=()=>acks.every(a=>a.checked);
