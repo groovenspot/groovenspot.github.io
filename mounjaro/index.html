@@ -118,6 +118,10 @@ ol.route small{display:block;color:var(--ink2);font-size:13px;font-weight:400}
 ol.route .amt{font-family:var(--mono);font-size:13.5px;white-space:nowrap;text-align:right}
 .row{cursor:pointer}.row[aria-current=true]{background:var(--soft);box-shadow:inset 3px 0 0 var(--accent)}
 #dates tbody tr{cursor:pointer}#dates tbody tr:hover{background:var(--soft)}
+.live{display:flex;flex-direction:column;gap:8px}
+.live ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.live li b{font-weight:600}
+.btn:disabled{opacity:.6;cursor:default}
 .btn{font:inherit;font-size:13px;padding:6px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:4px;cursor:pointer;align-self:flex-start}
 
 .scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px}
@@ -178,8 +182,13 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
         <label class="f"><span>출발일</span><input type="date" id="dep"></label>
         <label class="f"><span>귀국일</span><input type="date" id="ret"></label>
         <p class="small" id="fareState" role="status"></p>
+        <div class="live" id="liveBox">
+          <button type="button" class="btn" id="liveBtn" hidden>이 날짜 항공 요금 조회</button>
+          <div id="liveState" class="small" role="status" aria-live="polite"></div>
+        </div>
         <div class="fares" id="fares" aria-label="선택한 날짜로 요금 검색"></div>
-        <p class="small mute">링크를 누르면 고른 날짜가 들어간 검색 화면이 새 탭으로 열립니다. 거기서 본 왕복 총액을 아래 칸에 넣으면 순위가 다시 계산됩니다.</p>
+        <p class="small mute">날짜를 바꾸면 익스피디아에서 항공 요금을 다시 조회해 아래 칸과 순위에 반영합니다. 배 요금은 조회가 안 되니 링크로 확인해 직접 넣으세요.</p>
+        <label class="f"><span>달러 환율 (1달러당 원)</span><input type="number" id="usd" min="1" step="1"></label>
         <label class="f"><span>대마도 배 (히타카츠)</span><input type="number" id="t_tsu_sea" min="0" step="1000"></label>
         <label class="f"><span>후쿠오카 항공</span><input type="number" id="t_fuk_air" min="0" step="1000"></label>
         <label class="f"><span>후쿠오카 배 (뉴카멜리아)</span><input type="number" id="t_fuk_sea" min="0" step="1000"></label>
@@ -190,11 +199,6 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
         <label class="f"><span>숙박 박수 (0 = 당일치기)</span><input type="number" id="nights" min="0" max="14" step="1"></label>
         <label class="f"><span>1박 요금</span><input type="number" id="nightRate" min="0" step="1000"></label>
         <label class="c"><input type="checkbox" id="noTravel"><span>어차피 갈 여행이라 교통·숙박비는 빼고 계산</span></label>
-        <div class="fares" style="font-size:12.5px"><div><b style="min-width:0">부산 출발 항공 기본값은 12월 5일(토) 당일 왕복 조회가입니다</b></div>
-          <div>후쿠오카 53.2만원: 제주항공 07:00 출발, 15:10 귀국 ($397.90)</div>
-          <div>오사카 50.5만원: 제주항공 08:20 출발, 19:15 귀국 ($377.80)</div>
-          <div>도쿄 84.3만원: 제주항공 07:10 출발, 대한항공 19:40 귀국 ($631.20)</div>
-          <div class="mute">11월 14일 익스피디아 편도 2장 합산, 1달러 1,336원 환산. 항공사 직판이나 국내 여행사가 더 쌀 수 있으니 위 링크로 확인하세요. 서울 출발과 배 요금은 추정치입니다.</div></div>
         <p class="small mute">도시마다 항공과 배 중 싼 쪽을 자동으로 고릅니다. 0을 넣으면 그 교통편은 제외합니다. 후쿠오카 배는 1박 이상, 오사카 배는 2박 이상 일정에서만 계산하고 선내에서 자는 밤은 숙박비에서 뺍니다. 배 요금은 유류할증료·터미널 이용료·일본 출국세를 더한 추정 총액이고, 특가와 정상가 차이가 크니 실제 결제 금액으로 바꾸세요.</p>
       </fieldset>
       <hr>
@@ -356,16 +360,16 @@ const SOURCES=[
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const addDays=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return iso(d)};
 const D0=iso(new Date())<='2026-12-05'?'2026-12-05':addDays(iso(new Date()),21); // 항공 기본값을 조회한 날짜
-const DEF={m:3,d:[2.5,5,5],origin:'pus',dest:'auto',dep:D0,ret:D0,saved:{},t:Object.assign({},ORIGIN.pus),nights:0,nightRate:70000,noTravel:false,onlyOk:true,hideBlocked:false,withDoc:true,fx:840,kr:Object.assign({},KR_DEFAULT)};
+const DEF={m:3,d:[2.5,5,5],origin:'pus',dest:'auto',dep:D0,ret:D0,saved:{},live:{},usd:1336,t:Object.assign({},ORIGIN.pus),nights:0,nightRate:70000,noTravel:false,onlyOk:true,hideBlocked:false,withDoc:true,fx:840,kr:Object.assign({},KR_DEFAULT)};
 let st=JSON.parse(JSON.stringify(DEF));
-try{const s=JSON.parse(localStorage.getItem('mj-calc-v4')||'null'); if(s&&s.d&&s.t&&s.kr) st=Object.assign(st,s);}catch(e){}
+try{const s=JSON.parse(localStorage.getItem('mj-calc-v5')||'null'); if(s&&s.d&&s.t&&s.kr) st=Object.assign(st,s);}catch(e){}
 if(!st.dep||st.dep<iso(new Date())){st.dep=D0;st.ret=addDays(D0,st.nights||0);}
 // 조회해 둔 날짜별 요금 (부산 출발). 키: 출발일_귀국일
 const SEED={'2026-12-05_2026-12-05':{tsu_sea:110000,fuk_air:532000,fuk_sea:240000,osa_air:505000,osa_sea:230000,tyo_air:843000,toBusan:0}};
 const dkey=()=>st.origin+'|'+st.dep+'_'+st.ret;
 const stored=k=>(st.saved&&st.saved[k])||(k.startsWith('pus|')&&SEED[k.slice(4)])||null;
-if(!st.saved) st.saved={};
-const save=()=>{try{localStorage.setItem('mj-calc-v4',JSON.stringify(st))}catch(e){}};
+if(!st.saved) st.saved={}; if(!st.live) st.live={}; if(!st.usd) st.usd=1336;
+const save=()=>{try{localStorage.setItem('mj-calc-v5',JSON.stringify(st))}catch(e){}};
 const $=id=>document.getElementById(id);
 const won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
 const man=n=>{const v=Math.round(n/1000)/10;return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+'만원'};
@@ -482,7 +486,7 @@ function render(){
      rows.push({k,dep,ret,f,o:options(st.m).list[0]}); Object.assign(st,bak);});
    const min=Math.min(...rows.filter(r=>r.o&&r.f).map(r=>r.o.total));
    $('dates').innerHTML='<thead><tr><th>일정</th><th>최저가 경로</th><th class="n">교통·숙박</th><th class="n">총비용</th><th>요금</th></tr></thead><tbody>'
-     +rows.map(r=>'<tr tabindex="0" data-dep="'+r.dep+'" data-ret="'+r.ret+'"><td><b>'+tripLabel(r.dep,r.ret)+'</b></td><td>'+(r.o?r.o.c.name+' <span class="mute">· '+modeLabel(r.o)+'</span>':'<span class="mute">없음</span>')+'</td><td class="n">'+(r.o?won(r.o.trav):'')+'</td><td class="n"><b>'+(r.o?won(r.o.total):'')+'</b></td><td>'+(r.f?(r.o&&r.o.total===min&&rows.length>1?'<span class="chip ok">가장 쌈</span>':'')+'<span class="chip nt">'+(st.saved[r.k]?'직접 입력':'조회가')+'</span>':'<span class="chip wn">요금 확인 전</span>')+'</td></tr>').join('')+'</tbody>';}
+     +rows.map(r=>'<tr tabindex="0" data-dep="'+r.dep+'" data-ret="'+r.ret+'"><td><b>'+tripLabel(r.dep,r.ret)+'</b></td><td>'+(r.o?r.o.c.name+' <span class="mute">· '+modeLabel(r.o)+'</span>':'<span class="mute">없음</span>')+'</td><td class="n">'+(r.o?won(r.o.trav):'')+'</td><td class="n"><b>'+(r.o?won(r.o.total):'')+'</b></td><td>'+(r.f?(r.o&&r.o.total===min&&rows.length>1?'<span class="chip ok">가장 쌈</span>':'')+'<span class="chip nt">'+(st.live[r.k]?'실시간 조회':st.saved[r.k]?'직접 입력':'조회가')+'</span>':'<span class="chip wn">요금 확인 전</span>')+'</td></tr>').join('')+'</tbody>';}
 
   // 손익분기
   $('be').innerHTML='<thead><tr><th>사오는 양</th><th>최저 조합</th><th class="n">일본 총비용</th><th class="n">한국 같은 양</th><th class="n">차액</th></tr></thead><tbody>'
@@ -518,7 +522,8 @@ const tripLabel=(dep,ret)=>{const n=Math.round((new Date(ret)-new Date(dep))/864
 function loadFares(){const f=stored(dkey()); if(f){st.t=Object.assign({},f);Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0);} fareState();}
 function fareState(){
   const k=dkey(), el=$('fareState');
-  if(st.saved[k]) el.innerHTML='<span class="chip ok">저장됨</span>'+tripLabel(st.dep,st.ret)+' 요금으로 계산 중입니다.';
+  if(st.live[k]) el.innerHTML='<span class="chip ok">실시간 조회</span>'+tripLabel(st.dep,st.ret)+' 항공 요금을 조회해 넣었습니다.';
+  else if(st.saved[k]) el.innerHTML='<span class="chip ok">저장됨</span>'+tripLabel(st.dep,st.ret)+' 요금으로 계산 중입니다.';
   else if(stored(k)) el.innerHTML='<span class="chip ok">조회가</span>'+tripLabel(st.dep,st.ret)+' 요금으로 계산 중입니다.';
   else el.innerHTML='<span class="chip wn">요금 확인 전</span>'+tripLabel(st.dep,st.ret)+' 요금이 아직 없습니다. 아래 값은 다른 날짜의 요금이니 링크로 확인해 고쳐 주세요.';
 }
@@ -565,7 +570,7 @@ function fill(){
   ['d1','d2','d3'].forEach((id,i)=>{const e=$(id); if(!e.options.length) e.innerHTML=DOSES.map(d=>'<option value="'+d+'">'+d+'mg</option>').join(''); e.value=st.d[i]; e.parentElement.style.visibility=i<st.m?'visible':'hidden';});
   document.querySelectorAll('#monthsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.m===st.m)));
   document.querySelectorAll('#originSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.o===st.origin)));
-  Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0);$('dest').value=st.dest;$('dep').value=st.dep;$('ret').value=st.ret;fareLinks();$('nights').value=st.nights;$('nightRate').value=st.nightRate;$('fx').value=st.fx;
+  Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0);$('dest').value=st.dest;$('usd').value=st.usd;$('dep').value=st.dep;$('ret').value=st.ret;fareLinks();$('nights').value=st.nights;$('nightRate').value=st.nightRate;$('fx').value=st.fx;
   $('noTravel').checked=st.noTravel;$('onlyOk').checked=st.onlyOk;$('hideBlocked').checked=st.hideBlocked;$('withDoc').checked=st.withDoc;
   if(!$('krInputs').children.length) $('krInputs').innerHTML=DOSES.map(d=>'<label class="f"><span>'+d+'mg</span><input type="number" id="kr_'+String(d).replace('.','_')+'" data-d="'+d+'" min="0" step="10000"></label>').join('');
   $('krInputs').querySelectorAll('input').forEach(e=>e.value=st.kr[e.dataset.d]);
@@ -576,13 +581,14 @@ $('controls').addEventListener('input',ev=>{
   if(e.id==='d1'||e.id==='d2'||e.id==='d3') st.d[+e.id[1]-1]=+e.value;
   else if(e.id.startsWith('t_')){st.t[e.id.slice(2)]=numv(e);st.saved[dkey()]=Object.assign({},st.t);fareState();}
   else if(e.id==='dest') st.dest=e.value;
+  else if(e.id==='usd'){st.usd=numv(e)||DEF.usd;}
   else if(e.id==='dep'||e.id==='ret'){
     if(!e.value) return;
     st[e.id]=e.value; if(st.ret<st.dep){ if(e.id==='dep') st.ret=addDays(st.dep,st.nights); else st.dep=st.ret; }
     st.nights=Math.round((new Date(st.ret)-new Date(st.dep))/864e5);
-    $('dep').value=st.dep;$('ret').value=st.ret;$('nights').value=st.nights;loadFares();fareLinks();
+    $('dep').value=st.dep;$('ret').value=st.ret;$('nights').value=st.nights;loadFares();fareLinks();liveSoon();
   }
-  else if(e.id==='nights'){st.nights=Math.round(numv(e));st.ret=addDays(st.dep,st.nights);$('ret').value=st.ret;loadFares();fareLinks();}
+  else if(e.id==='nights'){st.nights=Math.round(numv(e));st.ret=addDays(st.dep,st.nights);$('ret').value=st.ret;loadFares();fareLinks();liveSoon();}
   else if(e.id==='nightRate') st.nightRate=numv(e);
   else if(e.id==='fx') st.fx=numv(e)||DEF.fx;
   else if(e.dataset.d) st.kr[e.dataset.d]=numv(e);
@@ -591,11 +597,11 @@ $('controls').addEventListener('input',ev=>{
   render();
 });
 $('monthsSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;st.m=+b.dataset.m;fill();render();});
-$('originSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;st.origin=b.dataset.o;st.t=Object.assign({},stored(dkey())||ORIGIN[st.origin]);fill();render();});
+$('originSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;st.origin=b.dataset.o;st.t=Object.assign({},stored(dkey())||ORIGIN[st.origin]);fill();fareState();render();liveSoon();});
 $('reset').addEventListener('click',()=>{st=JSON.parse(JSON.stringify(DEF));sel=0;fill();fareState();render();});
 $('chart').addEventListener('click',e=>{const r=e.target.closest('.row');if(!r)return;sel=+r.dataset.i;render();});
 $('chart').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const r=e.target.closest('.row');if(!r)return;e.preventDefault();sel=+r.dataset.i;render();});
-const goDate=tr=>{if(!tr)return;st.dep=tr.dataset.dep;st.ret=tr.dataset.ret;st.nights=Math.round((new Date(st.ret)-new Date(st.dep))/864e5);loadFares();fill();render();};
+const goDate=tr=>{if(!tr)return;st.dep=tr.dataset.dep;st.ret=tr.dataset.ret;st.nights=Math.round((new Date(st.ret)-new Date(st.dep))/864e5);loadFares();fill();render();liveShow();};
 $('dates').addEventListener('click',e=>goDate(e.target.closest('tbody tr')));
 $('dates').addEventListener('keydown',e=>{if(e.key==='Enter')goDate(e.target.closest('tbody tr'));});
 $('more').addEventListener('click',()=>{showAll=!showAll;render();});
@@ -616,6 +622,61 @@ $('chart').addEventListener('focusin',e=>{const r=e.target.closest('.row'); if(r
 $('chart').addEventListener('focusout',()=>tip.hidden=true);
 
 fill();fareState();catalog();render();
+// 실시간 항공 요금: 보는 사람의 Expedia 커넥터를 호출한다 (Claude 안에서 열었을 때만 동작)
+let mcp=null, liveTok=0, liveTimer=0, liveBusy=false;
+const AIRCITY={fuk:'Fukuoka, Japan',osa:'Osaka, Japan',tyo:'Tokyo, Japan'};
+const tmin=t=>{const m=/(\d+):(\d+)\s*(AM|PM)/i.exec(t||''); if(!m) return null; let h=+m[1]%12; if(/PM/i.test(m[3])) h+=12; return h*60+ +m[2];};
+const hhmm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const toWon=p=>{const v=+p.value; return p.currency==='KRW'?v:p.currency==='JPY'?v*st.fx/100:v*st.usd;};
+async function expedia(input){
+  const call=()=>mcp.callTool('Expedia','search_flights',input,{cache:{staleTime:18e5,gcTime:36e5}});
+  let r; try{r=await call();}catch(e){ if(e&&e.retryable){await new Promise(z=>setTimeout(z,Math.min(e.retryAfterMs||1500,8000)+Math.random()*500)); r=await call();} else throw e; }
+  let pl=r.payload; if(typeof pl==='string'){try{pl=JSON.parse(pl)}catch(x){pl=null}}
+  return (pl&&Array.isArray(pl.options))?pl.options:[];
+}
+const leg=o=>o.slices.map(sl=>({dep:tmin(sl.departure_time),arr:tmin(sl.arrival_time),air:(sl.legs&&sl.legs[0]&&sl.legs[0].operating_airline_name)||'',seats:sl.seats_left}));
+const hasSeat=o=>o.slices.every(sl=>sl.seats_left!==0)&&o.price&&o.price.total_price;
+async function liveCity(city){
+  const from=st.origin==='sel'?'Seoul, South Korea':'Busan, South Korea', base={number_of_stops:0,user_locale:'en-US',client_device_info:{device_type:'desktop',agent_name:'ClaudeAI'}};
+  if(st.dep===st.ret){ // 당일치기: 편도 두 장을 조합. 오전 도착 + 현지 5시간 이상
+    const [o,r]=await Promise.all([expedia(Object.assign({origin:from,destination:AIRCITY[city],departure_date:st.dep,limit:12},base)),expedia(Object.assign({origin:AIRCITY[city],destination:from,departure_date:st.dep,limit:12},base))]);
+    let best=null;
+    o.filter(hasSeat).forEach(a=>{const A=leg(a)[0]; if(A.arr==null||A.arr>690) return;
+      r.filter(hasSeat).forEach(b=>{const B=leg(b)[0]; if(B.dep==null||B.dep<A.arr+300) return;
+        const won=toWon(a.price.total_price)+toWon(b.price.total_price); if(!best||won<best.won) best={won,txt:A.air+' '+hhmm(A.dep)+' 출발, '+B.air+' '+hhmm(B.dep)+' 귀국 (현지 '+Math.floor((B.dep-A.arr)/60)+'시간)'};});});
+    return best||{won:0,txt:'당일 왕복이 되는 편이 없습니다 (오전 도착, 현지 5시간 이상 기준)'};
+  }
+  const o=(await expedia(Object.assign({origin:from,destination:AIRCITY[city],departure_date:st.dep,return_date:st.ret,limit:8},base))).filter(hasSeat);
+  if(!o.length) return {won:0,txt:'직항 왕복편을 찾지 못했습니다'};
+  const b=o.reduce((x,y)=>toWon(y.price.total_price)<toWon(x.price.total_price)?y:x), L=leg(b);
+  return {won:toWon(b.price.total_price),txt:L[0].air+' '+hhmm(L[0].dep)+' 출발, '+(L[1]?L[1].air+' '+hhmm(L[1].dep)+' 귀국':'')};
+}
+const LIVE_ERR={server_not_connected:'Expedia 커넥터가 연결되어 있지 않습니다. claude.ai 설정 → 커넥터에서 Expedia를 추가한 뒤 다시 조회하세요.',needs_reauth:'Expedia 커넥터 로그인이 만료됐습니다. claude.ai 설정 → 커넥터에서 다시 연결하세요.',selection_required:'Expedia 커넥터가 여러 개입니다. Claude가 묻는 창에서 하나를 고른 뒤 다시 조회하세요.',not_in_manifest:'이 페이지에서 Expedia 사용이 허용되지 않았습니다. 페이지의 권한 메뉴에서 허용하면 조회됩니다.',approval_required:'조회하려면 Expedia 사용을 허용해야 합니다. 버튼을 다시 눌러 허용하세요.',consent_required:'조회하려면 Expedia 사용을 허용해야 합니다. 버튼을 다시 눌러 허용하세요.',blocked_by_policy:'조직 정책으로 Expedia 조회가 막혀 있습니다. 링크로 확인해 직접 넣으세요.',not_granted:'이 화면에서는 실시간 조회를 쓸 수 없습니다. 링크로 확인해 직접 넣으세요.',capability_disabled:'이 화면에서는 실시간 조회를 쓸 수 없습니다. 링크로 확인해 직접 넣으세요.',rate_limited:'조회가 너무 잦습니다. 잠시 뒤 다시 눌러 주세요.'};
+function liveShow(msg){
+  const L=st.live[dkey()], el=$('liveState');
+  if(msg){el.innerHTML=msg;return;}
+  if(!L){el.textContent=mcp?'':'실시간 조회는 Claude에서 이 페이지를 열고 Expedia 커넥터를 허용했을 때 동작합니다.';return;}
+  el.innerHTML='<ul>'+Object.keys(AIRCITY).map(c=>{const x=L[c]; return x?'<li><b>'+CITY[c]+(x.won?' '+man(x.won):'')+'</b> '+(x.err?'<span class="chip wn">조회 실패</span>':'')+x.txt+'</li>':'';}).join('')+'</ul><span class="mute">'+new Date(L.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 익스피디아 조회, 1달러 '+st.usd.toLocaleString('ko-KR')+'원 환산</span>';
+}
+async function liveFetch(){
+  if(!mcp||liveBusy) return;
+  const tok=++liveTok, key=dkey(); liveBusy=true; $('liveBtn').disabled=true;
+  liveShow('<span class="chip nt">조회 중</span>'+tripLabel(st.dep,st.ret)+' 항공 요금을 익스피디아에서 찾고 있습니다. 30초쯤 걸립니다.');
+  const cities=Object.keys(AIRCITY), res=await Promise.all(cities.map(c=>liveCity(c).then(v=>({v}),e=>({e}))));
+  liveBusy=false; $('liveBtn').disabled=false;
+  if(tok!==liveTok||key!==dkey()) { liveSoon(); return; } // 조회 중에 날짜가 바뀜
+  const errs=res.filter(r=>r.e);
+  if(errs.length===cities.length){const c=errs[0].e&&errs[0].e.code; liveShow('<span class="chip wn">조회 실패</span>'+(LIVE_ERR[c]||'익스피디아가 응답하지 않았습니다. 잠시 뒤 다시 누르거나 링크로 확인해 직접 넣으세요.')+(c==='tool_error'&&errs[0].e.message?' ('+String(errs[0].e.message).slice(0,80)+')':'')); return;}
+  const L={at:Date.now()};
+  res.forEach((r,i)=>{const c=cities[i]; if(r.e){L[c]={won:0,err:1,txt:'이 구간만 조회하지 못해 이전 값을 그대로 둡니다.'};return;}
+    L[c]=r.v; st.t[c+'_air']=Math.round(r.v.won/1000)*1000;});
+  st.live[key]=L; st.saved[key]=Object.assign({},st.t);
+  Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0); sel=0; fareState(); render(); liveShow();
+}
+function liveSoon(){ liveShow(); if(!mcp) return; clearTimeout(liveTimer); liveTok++; if(st.live[dkey()]&&Date.now()-st.live[dkey()].at<18e5) return; liveTimer=setTimeout(liveFetch,900); }
+$('liveBtn').addEventListener('click',()=>{delete st.live[dkey()];liveFetch();});
+if(window.claude&&window.claude.use) window.claude.use('mcp').then(m=>{ if(!m) {liveShow();return;} mcp=m; $('liveBtn').hidden=false; liveShow(); }).catch(()=>{});
+liveShow();
 })();
 // 준비 체크리스트
 (function(){let td={};try{td=JSON.parse(localStorage.getItem('mj-todo-v1')||'{}')}catch(e){}
