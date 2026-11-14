@@ -139,6 +139,10 @@ ol.route .amt{font-family:var(--mono);font-size:13.5px;white-space:nowrap;text-a
 .ack{border-top:3px solid var(--accent)}
 .sumbar{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;font-size:13.5px;color:var(--ink2)}
 .sumbar b{color:var(--ink);font-weight:600}
+.mateopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:10px 24px}
+.mateopts input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:var(--r2);padding:8px 10px;flex:1 1 180px;min-width:0}
+#mateText{font:inherit;font-size:14px;line-height:1.7;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:var(--r2);padding:12px 14px;width:100%;resize:vertical}
+.row-btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .btn{font:inherit;font-size:13px;padding:6px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:var(--r2);cursor:pointer;align-self:flex-start}
 
 .scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
@@ -346,6 +350,25 @@ table.t th{background:var(--soft)}
       </section>
 
       <section class="sec">
+        <div class="sec-h"><h2>같이 갈 사람 찾기</h2><span class="small mute">이 페이지는 글과 연락처를 저장하지 않습니다.</span></div>
+        <div class="panel">
+          <p class="small mute">위 경로로 동행 구하는 글을 만들어 드립니다. 복사해서 평소 쓰는 여행 카페나 SNS에 직접 올리세요.</p>
+          <div class="mateopts">
+            <label class="f"><span>찾는 인원</span><select id="m_seats"><option value="1명">1명</option><option value="1~2명" selected>1~2명</option><option value="2~3명">2~3명</option><option value="인원 무관">인원 무관</option></select></label>
+            <label class="f"><span>연락 방법</span><input type="text" id="m_contact" maxlength="60" placeholder="오픈채팅 링크나 메신저 아이디 (비워도 됨)"></label>
+          </div>
+          <textarea id="mateText" readonly rows="9" aria-label="동행 구하는 글"></textarea>
+          <div class="row-btns"><button type="button" class="btn primary" id="mateCopy">글 복사하기</button><span class="small" id="mateMsg" role="status" aria-live="polite"></span></div>
+          <div class="fares" id="mateLinks" aria-label="이 날짜 동행 글 찾아보기"></div>
+          <ul class="ins">
+            <li>전화번호 대신 오픈채팅 링크나 메신저 아이디를 쓰세요.</li>
+            <li>처음 만날 때는 터미널이나 공항처럼 공개된 장소에서 만나고, 돈을 먼저 보내 달라는 요청에는 응하지 마세요.</li>
+            <li>약을 대신 사 주거나 넘겨받는 것은 불법입니다. 각자 진료받고 각자 들고 와야 합니다.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="sec">
         <div class="sec-h"><h2>날짜별 최저가</h2><span class="small mute">요금을 넣은 날짜마다 가장 싼 경로를 다시 계산합니다.</span></div>
         <div class="scroll"><table class="t" id="dates"></table></div>
         <p class="small mute">날짜를 바꾸고 그 날짜의 교통 요금을 넣으면 여기에 한 줄씩 쌓입니다. 행을 누르면 그 날짜로 돌아갑니다.</p>
@@ -549,6 +572,7 @@ const krCost=months=>st.d.slice(0,months).reduce((s,d)=>s+(st.kr[d]||0),0);
 const modeLabel=o=>(o.mode==='visit'?CITY[o.city]+' 방문 수령':'온라인 진료 + '+CITY[o.city]+(o.depot?' 야마토 영업소 수령':' 호텔 배송'))+(o.how?' ('+o.how+')':'');
 
 let showAll=false, sel=0;
+let mateR=null; // 동행 글에 쓰는 현재 경로
 function render(){
   const {list,skipped}=options(st.m), kr=krCost(st.m), pens=st.m*4;
   const V=$('verdict');
@@ -589,6 +613,7 @@ function render(){
     const R=list[sel];
     $('routeSub').textContent=tripLabel(st.dep,st.ret)+' · '+(sel?(sel+1)+'위 '+R.c.name+' (순위에서 다른 줄을 누르면 바뀝니다)':'1위 조합. 순위에서 다른 줄을 누르면 그 경로를 봅니다');
     $('route').innerHTML=routeHtml(R,kr,pens);
+    mateCard(R);
     $('chart').querySelectorAll('.row').forEach(r=>r.setAttribute('aria-current',String(+r.dataset.i===sel)));
     $('more').hidden=list.length<=10; $('more').textContent=showAll?'상위 10개만 보기':'전체 '+list.length+'개 보기';
 
@@ -835,6 +860,28 @@ fetch('fares.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(d=>{ if(
   autoSea(); Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0); fareState(); seaShow(); render(); liveShow(); }).catch(()=>{});
 if(window.claude&&window.claude.use) window.claude.use('mcp').then(m=>{ if(!m) {liveShow();return;} mcp=m; $('liveBtn').hidden=false; liveShow(); }).catch(()=>{});
 liveShow();
+
+// 동행 구하는 글: 고른 경로로 문구만 만들어 준다. 저장하지 않는다
+function mateCard(o){
+  if(o) mateR=o; o=mateR; if(!o) return;
+  const L=LEG[o.city+o.how]||[], day=st.dep===st.ret, ct=$('m_contact').value.trim();
+  const lines=['[일본 동행 구함] '+tripLabel(st.dep,st.ret),
+    '· 구간: '+(st.origin==='sel'?'서울':'부산')+' → '+CITY[o.city]+(o.how?' ('+o.how+')':''),
+    o.how==='배'&&L[1]?'· 가는 편: '+L[1].split('.')[0]:'',
+    o.how==='배'&&L[3]?'· 오는 편: '+kdate(st.ret)+' '+L[3].split('.')[0]:'',
+    '· 목적: 일본 병원 진료와 처방 약 수령'+(o.mode==='hotel'?(o.depot?' (현지 택배 영업소 수령)':' (숙소 수령)'):' ('+o.c.area.split(' (')[0]+')'),
+    '· 찾는 인원: '+$('m_seats').value,
+    '· '+(o.how==='배'?'배표':'항공권')+'·이동을 같이 알아보실 분 구합니다. 진료와 약은 각자 받고 각자 들고 옵니다. 대리 구매나 약 거래는 하지 않습니다.',
+    ct?'· 연락: '+ct:'· 연락: 댓글이나 쪽지 주세요'].filter(Boolean);
+  $('mateText').value=lines.join('\n');
+  const q=(+st.dep.slice(5,7))+'월 '+(+st.dep.slice(8))+'일 '+CITY[o.city]+' 동행', e=encodeURIComponent, A=(h,t)=>'<a href="'+h+'" target="_blank" rel="noopener">'+t+'</a>';
+  $('mateLinks').innerHTML='<div><b>이 날짜 동행 글 찾기</b>'+A('https://search.naver.com/search.naver?ssc=tab.cafe.all&query='+e(q),'네이버 카페')+A('https://search.daum.net/search?w=cafe&q='+e(q),'다음 카페')+A('https://search.naver.com/search.naver?query='+e(CITY[o.city]+' 여행 동행 카페'),'여행 카페 찾기')+'</div>';
+}
+$('m_seats').addEventListener('change',()=>mateCard());
+$('m_contact').addEventListener('input',()=>{ const v=$('m_contact').value; $('mateMsg').textContent=/01[016789][-\s.]?\d{3,4}[-\s.]?\d{4}/.test(v)?'전화번호처럼 보입니다. 공개 글에는 오픈채팅 링크나 메신저 아이디를 권합니다.':''; mateCard(); });
+$('mateCopy').addEventListener('click',async()=>{ const t=$('mateText');
+  try{ await navigator.clipboard.writeText(t.value); $('mateMsg').textContent='복사했습니다. 카페나 SNS에 붙여 넣으세요.'; }
+  catch(e){ t.focus(); t.select(); $('mateMsg').textContent='자동 복사가 막혀 글을 선택해 두었습니다. 복사 단축키로 복사하세요.'; } });
 // 단계 이동: 주의사항 확인 → 용량·조건 → 날짜·교통 → 결과 → 준비
 (function(){
   const ORDER=['notice','plan','travel','result','prep'], acks=[...document.querySelectorAll('#ack input')];
