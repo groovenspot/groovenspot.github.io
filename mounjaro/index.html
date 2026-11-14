@@ -61,8 +61,12 @@ fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;
 legend{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--mute);padding:0;margin-bottom:6px;text-transform:uppercase}
 label.f{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;color:var(--ink2)}
 label.f>span{min-width:0}
-input[type=number],select{font:inherit;font-family:var(--mono);font-size:13.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;width:118px;text-align:right}
+input[type=number],input[type=date],select{font:inherit;font-family:var(--mono);font-size:13.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;width:118px;text-align:right}
 select{text-align:left;font-family:var(--sans)}
+input[type=date]{width:150px;text-align:left}
+.fares{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:4px;padding:10px;background:var(--bg);font-size:13px}
+.fares div{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.fares b{font-weight:600;min-width:92px;color:var(--ink2)}
 label.c{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:var(--ink2);cursor:pointer}
 label.c input{margin-top:4px;accent-color:var(--accent)}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
@@ -161,6 +165,10 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
         <div class="seg" id="originSeg" role="group" aria-label="출발지">
           <button type="button" data-o="pus">부산</button><button type="button" data-o="sel">서울</button>
         </div>
+        <label class="f"><span>출발일</span><input type="date" id="dep"></label>
+        <label class="f"><span>귀국일</span><input type="date" id="ret"></label>
+        <div class="fares" id="fares" aria-label="선택한 날짜로 요금 검색"></div>
+        <p class="small mute">링크를 누르면 고른 날짜가 들어간 검색 화면이 새 탭으로 열립니다. 거기서 본 왕복 총액을 아래 칸에 넣으면 순위가 다시 계산됩니다.</p>
         <label class="f"><span>대마도 배 (히타카츠)</span><input type="number" id="t_tsu_sea" min="0" step="1000"></label>
         <label class="f"><span>후쿠오카 항공</span><input type="number" id="t_fuk_air" min="0" step="1000"></label>
         <label class="f"><span>후쿠오카 배 (뉴카멜리아)</span><input type="number" id="t_fuk_sea" min="0" step="1000"></label>
@@ -318,9 +326,13 @@ const SOURCES=[
  ['여행자 휴대품 통관 기준 해설','https://ohhyunlaw-international.com/faq/8342']
 ];
 
-const DEF={m:3,d:[2.5,5,5],origin:'pus',dest:'auto',t:Object.assign({},ORIGIN.pus),nights:0,nightRate:70000,noTravel:false,onlyOk:true,hideBlocked:false,withDoc:true,fx:840,kr:Object.assign({},KR_DEFAULT)};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const addDays=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return iso(d)};
+const D0=addDays(iso(new Date()),21);
+const DEF={m:3,d:[2.5,5,5],origin:'pus',dest:'auto',dep:D0,ret:D0,t:Object.assign({},ORIGIN.pus),nights:0,nightRate:70000,noTravel:false,onlyOk:true,hideBlocked:false,withDoc:true,fx:840,kr:Object.assign({},KR_DEFAULT)};
 let st=JSON.parse(JSON.stringify(DEF));
 try{const s=JSON.parse(localStorage.getItem('mj-calc-v2')||'null'); if(s&&s.d&&s.t&&s.kr) st=Object.assign(st,s);}catch(e){}
+if(!st.dep||st.dep<iso(new Date())){st.dep=D0;st.ret=addDays(D0,st.nights||0);}
 const save=()=>{try{localStorage.setItem('mj-calc-v2',JSON.stringify(st))}catch(e){}};
 const $=id=>document.getElementById(id);
 const won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
@@ -454,12 +466,29 @@ function catalog(){
   $('sources').innerHTML=SOURCES.map(s=>'<li><a href="'+s[1]+'" target="_blank" rel="noopener">'+s[0]+'</a></li>').join('');
 }
 
+// 날짜별 요금 검색 링크
+function fareLinks(){
+  const o=st.origin==='sel'?{sky:'sela',iata:'ICN',nm:'서울'}:{sky:'pus',iata:'PUS',nm:'부산'};
+  const y=x=>x.slice(2).replace(/-/g,''), n=x=>x.replace(/-/g,''), kd=x=>(+x.slice(5,7))+'월 '+(+x.slice(8))+'일';
+  const A=(href,t)=>'<a href="'+href+'" target="_blank" rel="noopener">'+t+'</a>';
+  const air=(nm,sky,iata)=>'<div><b>'+nm+' 항공</b>'
+    +A('https://www.skyscanner.co.kr/transport/flights/'+o.sky+'/'+sky+'/'+y(st.dep)+'/'+y(st.ret)+'/?adultsv2=1&cabinclass=economy','스카이스캐너')
+    +A('https://flight.naver.com/flights/international/'+o.iata+'-'+iata+'-'+n(st.dep)+'/'+iata+'-'+o.iata+'-'+n(st.ret)+'?adult=1&fareType=Y','네이버')
+    +A('https://www.google.com/travel/flights?q='+encodeURIComponent('Flights from '+o.iata+' to '+iata+' on '+st.dep+' through '+st.ret),'구글')+'</div>';
+  const q=t=>'https://search.naver.com/search.naver?query='+encodeURIComponent(t+' '+kd(st.dep)+' 출발 '+kd(st.ret)+' 귀국 왕복 요금');
+  $('fares').innerHTML='<div><b>대마도 배</b>'+A('https://www.daea.com/','대아고속해운')+A(q('부산 히타카츠 배편 팬스타 쓰시마링크'),'팬스타 검색')+A(q('부산 대마도 배편 최저가'),'특가 검색')+'</div>'
+    +air('후쿠오카','fuk','FUK')
+    +'<div><b>후쿠오카 배</b>'+A(q('부산 후쿠오카 뉴카멜리아'),'뉴카멜리아 검색')+'</div>'
+    +air('오사카','osaa','KIX')
+    +'<div><b>오사카 배</b>'+A(q('부산 오사카 팬스타 미라클'),'팬스타 검색')+'</div>'
+    +air('도쿄','tyoa','NRT');
+}
 // 입력 동기화
 function fill(){
   ['d1','d2','d3'].forEach((id,i)=>{const e=$(id); if(!e.options.length) e.innerHTML=DOSES.map(d=>'<option value="'+d+'">'+d+'mg</option>').join(''); e.value=st.d[i]; e.parentElement.style.visibility=i<st.m?'visible':'hidden';});
   document.querySelectorAll('#monthsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.m===st.m)));
   document.querySelectorAll('#originSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.o===st.origin)));
-  Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0);$('dest').value=st.dest;$('nights').value=st.nights;$('nightRate').value=st.nightRate;$('fx').value=st.fx;
+  Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0);$('dest').value=st.dest;$('dep').value=st.dep;$('ret').value=st.ret;fareLinks();$('nights').value=st.nights;$('nightRate').value=st.nightRate;$('fx').value=st.fx;
   $('noTravel').checked=st.noTravel;$('onlyOk').checked=st.onlyOk;$('hideBlocked').checked=st.hideBlocked;$('withDoc').checked=st.withDoc;
   if(!$('krInputs').children.length) $('krInputs').innerHTML=DOSES.map(d=>'<label class="f"><span>'+d+'mg</span><input type="number" id="kr_'+String(d).replace('.','_')+'" data-d="'+d+'" min="0" step="10000"></label>').join('');
   $('krInputs').querySelectorAll('input').forEach(e=>e.value=st.kr[e.dataset.d]);
@@ -470,7 +499,13 @@ $('controls').addEventListener('input',ev=>{
   if(e.id==='d1'||e.id==='d2'||e.id==='d3') st.d[+e.id[1]-1]=+e.value;
   else if(e.id.startsWith('t_')){st.t[e.id.slice(2)]=numv(e);st.origin='custom';}
   else if(e.id==='dest') st.dest=e.value;
-  else if(e.id==='nights') st.nights=Math.round(numv(e));
+  else if(e.id==='dep'||e.id==='ret'){
+    if(!e.value) return;
+    st[e.id]=e.value; if(st.ret<st.dep){ if(e.id==='dep') st.ret=addDays(st.dep,st.nights); else st.dep=st.ret; }
+    st.nights=Math.round((new Date(st.ret)-new Date(st.dep))/864e5);
+    $('dep').value=st.dep;$('ret').value=st.ret;$('nights').value=st.nights;fareLinks();
+  }
+  else if(e.id==='nights'){st.nights=Math.round(numv(e));st.ret=addDays(st.dep,st.nights);$('ret').value=st.ret;fareLinks();}
   else if(e.id==='nightRate') st.nightRate=numv(e);
   else if(e.id==='fx') st.fx=numv(e)||DEF.fx;
   else if(e.dataset.d) st.kr[e.dataset.d]=numv(e);
