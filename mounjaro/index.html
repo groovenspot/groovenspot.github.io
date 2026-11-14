@@ -127,7 +127,7 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
 <div class="wrap">
   <header class="top">
     <h1>일본 마운자로 원정 계산기</h1>
-    <p class="lede">약값, 진료·서류비, 호텔 배송비, 왕복 교통비를 합쳐 어디서 받는 것이 가장 싼지 계산합니다. 병원 가격은 2026년 11월 14일에 공개 자료로 확인한 값이고, 교통비와 한국 가격은 직접 고칠 수 있습니다.</p>
+    <p class="lede">약값, 진료·서류비, 병원 배송비, 배·항공 왕복 교통비를 합쳐 어디서 받는 것이 가장 싼지 계산합니다. 병원 가격은 2026년 11월 14일에 공개 자료로 확인한 값이고, 교통비와 한국 가격은 직접 고칠 수 있습니다.</p>
     <div class="rule" aria-label="한국 반입 기준">
       <div><b>12펜</b><span>1인 휴대 반입 한도 (주 1회, 3개월분)</span></div>
       <div><b>11월 12일~</b><span>식약처·관세청 허용 시행</span></div>
@@ -156,13 +156,17 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
         <div class="seg" id="originSeg" role="group" aria-label="출발지">
           <button type="button" data-o="pus">부산</button><button type="button" data-o="sel">서울</button>
         </div>
-        <label class="f"><span>후쿠오카 왕복</span><input type="number" id="t_fuk" min="0" step="1000"></label>
-        <label class="f"><span>오사카 왕복</span><input type="number" id="t_osa" min="0" step="1000"></label>
-        <label class="f"><span>도쿄 왕복</span><input type="number" id="t_tyo" min="0" step="1000"></label>
+        <label class="f"><span>대마도 배 (히타카츠)</span><input type="number" id="t_tsu_sea" min="0" step="1000"></label>
+        <label class="f"><span>후쿠오카 항공</span><input type="number" id="t_fuk_air" min="0" step="1000"></label>
+        <label class="f"><span>후쿠오카 배 (뉴카멜리아)</span><input type="number" id="t_fuk_sea" min="0" step="1000"></label>
+        <label class="f"><span>오사카 항공</span><input type="number" id="t_osa_air" min="0" step="1000"></label>
+        <label class="f"><span>오사카 배 (팬스타)</span><input type="number" id="t_osa_sea" min="0" step="1000"></label>
+        <label class="f"><span>도쿄 항공</span><input type="number" id="t_tyo_air" min="0" step="1000"></label>
+        <label class="f"><span>부산항까지 이동 (배편에 가산)</span><input type="number" id="t_toBusan" min="0" step="1000"></label>
         <label class="f"><span>숙박 박수 (0 = 당일치기)</span><input type="number" id="nights" min="0" max="14" step="1"></label>
         <label class="f"><span>1박 요금</span><input type="number" id="nightRate" min="0" step="1000"></label>
         <label class="c"><input type="checkbox" id="noTravel"><span>어차피 갈 여행이라 교통·숙박비는 빼고 계산</span></label>
-        <p class="small mute">부산–후쿠오카만 최근 조회가(15만~17만원대)이고 나머지는 추정 기본값입니다. 배편(부산–하카타)을 탈 경우 그 요금을 넣으세요. 공항–시내 왕복 교통비는 도시별로 자동 가산합니다.</p>
+        <p class="small mute">도시마다 항공과 배 중 싼 쪽을 자동으로 고릅니다. 0을 넣으면 그 교통편은 제외합니다. 배 요금은 유류할증료·터미널 이용료·일본 출국세를 더한 추정 총액이고, 특가와 정상가 차이가 크니 실제 결제 금액으로 바꾸세요.</p>
       </fieldset>
       <hr>
       <fieldset>
@@ -170,6 +174,7 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
         <label class="c"><input type="checkbox" id="onlyOk"><span>관광객 처방이 공식 확인된 곳만</span></label>
         <label class="c"><input type="checkbox" id="hideBlocked"><span>예약 중단·마감·품절인 곳 제외</span></label>
         <label class="c"><input type="checkbox" id="withDoc"><span>영문 처방 증명서 발급비 포함 (세관 대비 권장)</span></label>
+        <label class="f"><span>배송 수령지</span><select id="dest"><option value="auto">가장 싼 곳 자동</option><option value="tsu">대마도</option><option value="fuk">후쿠오카</option><option value="osa">오사카</option><option value="tyo">도쿄</option></select></label>
         <label class="f"><span>환율 (100엔당 원)</span><input type="number" id="fx" min="1" step="1"></label>
       </fieldset>
       <hr>
@@ -206,6 +211,25 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
   </div>
 
   <section class="sec">
+    <div class="sec-h"><h2>병원 배송 비교</h2><span class="small mute">결제액은 왼쪽에서 고른 양 기준 (약값 + 진료비 + 서류비 + 배송비)</span></div>
+    <div class="scroll"><table class="t" id="deliv"></table></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><h2>부산에서 배로 가는 법</h2><span class="small mute">부산항 국제여객터미널 출발. 시간표는 요일·계절에 따라 바뀝니다.</span></div>
+    <div class="scroll"><table class="t">
+      <thead><tr><th>노선</th><th>배</th><th>소요</th><th>대표 시간</th><th class="n">왕복 총액 (추정)</th><th>약 받기</th></tr></thead>
+      <tbody>
+        <tr><td class="nm">대마도 히타카츠<small>북부, 부산에서 가장 가까움</small></td><td>팬스타 쓰시마링크, 씨플라워, 노바</td><td>1시간 10~30분</td><td>부산 08:40 → 09:50<br>히타카츠 17:10 → 18:20</td><td class="n">9만~25만원</td><td class="note">당일치기 가능 (체류 약 7시간). 현지에 처방 병원이 없어 배송 수령만 됩니다. 숙박 없이 받으려면 야마토 영업소 수령.</td></tr>
+        <tr><td class="nm">대마도 이즈하라<small>남부, 중심 시가지</small></td><td>팬스타 쓰시마링크, 씨플라워</td><td>2시간 10분 이상</td><td>부산 09:20 → 11:40<br>이즈하라 15:30 → 17:50</td><td class="n">12만~30만원</td><td class="note">당일 체류 약 4시간. 숙소가 많아 호텔 수령에 유리.</td></tr>
+        <tr><td class="nm">후쿠오카 하카타항<small>시내까지 버스 약 20분</small></td><td>뉴카멜리아</td><td>갈 때 9시간 (야간), 올 때 6시간</td><td>부산 22:30 → 07:30<br>하카타 12:30 → 18:30</td><td class="n">15만~27만원</td><td class="note">배에서 1박하므로 숙박비가 줄지만, 아침 도착 당일 12:30 배로 돌아오려면 병원 문 여는 10시 직후 진료뿐이라 빠듯합니다. 1박 권장.</td></tr>
+        <tr><td class="nm">오사카 난코<small>시내까지 지하철 약 40분</small></td><td>팬스타 미라클</td><td>약 19시간 (선내 1박)</td><td>운항 요일은 선사에 확인</td><td class="n">18만~28만원</td><td class="note">왕복만 이틀이 걸립니다. 비용만 보면 항공과 비슷하거나 비쌉니다.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small mute">대마도 왕복 총액 계산 예: 할인 왕복권 5만원 + 부산발 유류할증료 16,000원 + 대마도발 유류할증료 1,600엔 + 부산 터미널 이용료 7,000원 + 현지 부두세 500엔 + 일본 출국세 3,000엔(2026년 7월 인상) = 약 11만원. 왕복 특가는 24,900원부터, 정상 운임은 편도 9만원입니다.</p>
+  </section>
+
+  <section class="sec">
     <div class="sec-h"><h2>병원별 공개 가격 (4펜, 엔, 세금 포함)</h2><span class="small mute">빈칸은 가격 미공개. 12펜 묶음가가 있는 곳은 계산에 자동 반영합니다.</span></div>
     <div class="scroll"><table class="t" id="catalog"></table></div>
   </section>
@@ -220,7 +244,8 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
         <li>일본에서 한국으로 보내는 국제 배송과 해외 직구는 여전히 금지입니다. 원격 진료를 받아도 수령은 일본 안에서 해야 합니다.</li>
       </ul></div>
       <div class="panel"><h3>원격 진료와 호텔 배송</h3><ul>
-        <li>온라인 진료 후 일본 내 호텔로 냉장 배송해 주는 병원이 있습니다. 병원이 도쿄·오사카에 있어도 항공료가 싼 도시의 호텔에서 받을 수 있습니다.</li>
+        <li>온라인 진료 후 일본 내 호텔로 냉장 배송해 주는 병원이 있습니다. 병원이 후쿠오카·도쿄·오사카에 있어도 교통비가 싼 대마도나 후쿠오카에서 받을 수 있습니다.</li>
+        <li>대마도 수령을 공식 안내하는 곳은 FONTANA CLINIC 한 곳입니다. 배송에 2~3일이 걸리고 배가 결항하면 약도 늦으니, 방문 1주 전까지 진료를 끝내세요.</li>
         <li>프런트가 냉장 택배를 받아 보관해 주는 호텔만 가능합니다. 에어비앤비는 대부분 안 됩니다. 예약 전에 호텔에 확인하세요.</li>
         <li>도쿄 밖으로 보내는 경우 5영업일 전 신청을 요구하는 곳이 있습니다. 출국 1~2주 전에 진료를 끝내는 일정이 안전합니다.</li>
         <li>일본 거주자 전용 온라인 클리닉(DMM 등)은 값이 싸도 여행자는 대상이 아닙니다.</li>
@@ -246,15 +271,15 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
 <script>
 (function(){
 const DOSES=[2.5,5,7.5,10,12.5,15];
-const CITY={fuk:'후쿠오카',osa:'오사카',tyo:'도쿄'};
-const LOCAL_YEN={fuk:600,osa:2000,tyo:3000}; // 공항–시내 왕복 추정
-const ORIGIN={pus:{fuk:170000,osa:230000,tyo:300000},sel:{fuk:220000,osa:240000,tyo:300000}};
+const CITY={tsu:'대마도',fuk:'후쿠오카',osa:'오사카',tyo:'도쿄'};
+const LOCAL_YEN={tsu:0,fuk:600,osa:2000,tyo:3000}; // 터미널–시내 왕복 추정
+const ORIGIN={pus:{tsu_sea:110000,fuk_air:170000,fuk_sea:240000,osa_air:230000,osa_sea:230000,tyo_air:300000,toBusan:0},sel:{tsu_sea:110000,fuk_air:220000,fuk_sea:240000,osa_air:240000,osa_sea:230000,tyo_air:300000,toBusan:120000}};
 const KR_DEFAULT={2.5:300000,5:380000,7.5:550000,10:550000,12.5:700000,15:700000};
 const S={
  weblioF:'https://care.weblio.jp/mounjaro-fukuoka-ko/', weblioT:'https://care.weblio.jp/mounjaro-tokyo-ko/',
  almond:'https://almond.clinic/column/ko/18145/', jnc:'https://japannetclinic.com/', mil:'https://milc.info/mnj/inbmnj/inbmnj-ko.html',
  onc:'https://on-clinic.jp/column/manjaro-onrain-yasui/', make2t:'https://www.make2t.kr/2026/11/japan-mounjaro-4-pens-first-visit-total-cost-2026.html',
- aur:'https://aurelia-online.jp/lp-mounjaro-online-cheapest-ko.html', osaka:'https://miyoshi-cvc.com/column/mounjaro-osaka/', silk:'https://yoyogiclinic.com/blog/manjaro-tokyo-cheap/'
+ aur:'https://aurelia-online.jp/lp-mounjaro-online-cheapest-ko.html', fonT:'https://fontana-clinic.jp/kr-tsushima-mounjaro/', osaka:'https://miyoshi-cvc.com/column/mounjaro-osaka/', silk:'https://yoyogiclinic.com/blog/manjaro-tokyo-cheap/'
 };
 // tourist: ok=공식 안내 있음, unknown=안내 없음, no=여행자 대상 아님. hotel.fee null=미확인(0원 계산)
 const CL=[
@@ -262,25 +287,26 @@ const CL=[
  {id:'baba',name:'바바 토털케어 클리닉',city:'fuk',area:'가스가시 (하카타에서 전철)',tourist:'ok',ko:'공지 한국어',visit:1,p4:{2.5:12800,5:18000,7.5:24000,10:30000,12.5:36000,15:42000},consult:null,doc:null,blocked:'해외 거주자 예약 12/10까지 마감',note:'전 용량 가격 공개. 10mg 이상은 재고 사전 확인. 보냉백 유료.',src:S.weblioF},
  {id:'medb',name:'메디컬 미용 클리닉 후쿠오카',city:'fuk',area:'텐진 다이묘',tourist:'ok',ko:'',visit:1,p4:{2.5:13000},consult:0,doc:null,note:'약 구매 시 진찰료 없음. 의사 판단 시 혈액검사 3,300엔. LINE 예약.',src:S.weblioF},
  {id:'mirai',name:'미라이 메디컬 클리닉',city:'fuk',area:'나카스카와바타',tourist:'ok',ko:'한국어 안내 페이지',visit:1,p4:{2.5:12000},consult:1650,doc:3300,note:'첫 상담료 1,650엔, 진단서 3,300엔.',src:S.weblioF},
- {id:'fontana',name:'FONTANA CLINIC 텐진',city:'fuk',area:'텐진 이마이즈미',tourist:'ok',ko:'한국어 스태프 상주, 카카오톡',visit:1,hotel:{fee:null,nation:1},p4:{2.5:15800},consult:0,doc:null,blocked:'웹 예약 12월 초까지 거의 마감',note:'비대면 진료 후 일본 내 호텔 배송 가능(배송비 미확인).',src:S.weblioF},
+ {id:'fontana',name:'FONTANA CLINIC 텐진',city:'fuk',area:'텐진 이마이즈미',tourist:'ok',ko:'한국어 스태프 상주',visit:1,hotel:{fee:2500,nation:1,docIncl:1,depot:1,tsu:1,place:'호텔·숙박시설 또는 야마토 운수 영업소',lead:'배송 2~3일. 방문 1주 전까지 진료 권장',tsuNote:'공식 안내 있음'},p4:{2.5:15800,5:25400,7.5:40600,10:48900,12.5:60000,15:68300},p12:{2.5:46200,5:72000,7.5:116100,10:139500,12.5:171000,15:193500},consult:0,doc:null,blocked:'웹 예약 12월 초까지 거의 마감',note:'초진·재진 무료. 온라인 진료는 약값 + 2,500엔(배송비와 일·영 병기 처방전 포함). 대마도 호텔·야마토 영업소 수령 안내. 보냉백 무료. 최대 6개월분.',src:S.fonT},
  {id:'fukta',name:'후쿠오카 TA 클리닉',city:'fuk',area:'텐진 이마이즈미',tourist:'unknown',ko:'',visit:1,p4:{2.5:9800},consult:null,doc:null,note:'후쿠오카 최저 표시가. 여행자 안내 없음, 예약제.',src:S.weblioF},
  {id:'micelle',name:'미셀 클리닉 후쿠오카',city:'fuk',area:'텐진 다이묘',tourist:'unknown',ko:'',visit:1,p4:{2.5:12000},consult:null,doc:null,note:'1펜 단위 구매 가능. BMI 18.5 이하 처방 안 함.',src:S.weblioF},
  {id:'clara',name:'클라라 미용피부과 텐진',city:'fuk',area:'텐진',tourist:'unknown',ko:'',visit:1,p4:{2.5:17600,5:35200,7.5:52800,10:70400},consult:0,doc:null,note:'LINE 예약 우선.',src:S.weblioF},
- {id:'mil',name:'MIL CLINIC OSAKA',city:'osa',area:'신사이바시',tourist:'ok',ko:'일본어·영어 진료',visit:1,hotel:{fee:null,nation:1},p4:{2.5:14800,5:22000,7.5:30000,10:40000,12.5:53000,15:66000},p12:{2.5:43000,5:64000,7.5:88000,10:118000,12.5:157000,15:196000},consult:0,doc:0,note:'2펜 1박스 단위, 12펜은 6박스 세트가. 온라인 진료 무료, 일본 전국 호텔 냉장 배송(배송비 미확인). 4박스 이상 영문 증명서 무료.',src:S.mil},
+ {id:'mil',name:'MIL CLINIC OSAKA',city:'osa',area:'신사이바시',tourist:'ok',ko:'일본어·영어 진료',visit:1,hotel:{fee:null,nation:1,place:'일본 전국 호텔 (프런트 수령 동의 필요), 사가와 냉장편',lead:'미확인',tsuNote:'홋카이도·오키나와는 +1,500엔. 대마도는 확인 필요'},p4:{2.5:14800,5:22000,7.5:30000,10:40000,12.5:53000,15:66000},p12:{2.5:43000,5:64000,7.5:88000,10:118000,12.5:157000,15:196000},consult:0,doc:0,note:'2펜 1박스 단위, 12펜은 6박스 세트가. 온라인 진료 무료, 일본 전국 호텔 냉장 배송(배송비 미확인). 4박스 이상 영문 증명서 무료.',src:S.mil},
  {id:'lightosa',name:'LIGHT CLINIC 오사카',city:'osa',area:'우메다',tourist:'unknown',ko:'',visit:1,p4:{2.5:14000,5:21000,7.5:29000,10:37000,12.5:44000},consult:null,doc:null,note:'여행자 안내 없음.',src:S.onc},
  {id:'tsuwa',name:'스이타역앞 츠와부키 내과',city:'osa',area:'스이타',tourist:'unknown',ko:'',visit:1,p4:{2.5:15000,5:24000,7.5:32000,10:42000,12.5:50000,15:58000},consult:0,doc:null,note:'여행자 안내 없음.',src:S.osaka},
- {id:'almond',name:'아몬드 클리닉',city:'tyo',area:'이치가야',tourist:'ok',ko:'한국어 문진표·통역, 카카오톡',visit:1,hotel:{fee:1000,nation:1},p4:{2.5:16500,5:28000,7.5:40000,10:49000,12.5:58000,15:68000},p12:{2.5:46500,5:81000,7.5:117000,10:144000,12.5:171000,15:201000},consult:0,doc:3000,note:'진료비 0엔. 온라인 진료 후 전국 호텔 배송 1,000엔. 영문 처방 증명서 3,000엔.',src:S.almond},
- {id:'jnc',name:'재팬넷클리닉',city:'tyo',area:'긴자·신바시',tourist:'ok',ko:'원장 한국어 진료, 카카오톡',visit:1,hotel:{fee:3957,nation:1},p4:{2.5:22000,5:39600,7.5:57200,10:76264,12.5:95336},p12:{2.5:34584,5:66891,7.5:99924,10:133233,12.5:166539},consult:3630,doc:7370,docReq:1,blocked:'2.5·5mg 품절, 11/16 입고 예정',note:'12펜은 3개월 플랜가. 일본 주소가 없으면 영문 처방전 7,370엔 필수. 호텔 배송 33,000원, 도쿄 외 5영업일 전 신청.',src:S.jnc},
+ {id:'almond',name:'아몬드 클리닉',city:'tyo',area:'이치가야',tourist:'ok',ko:'한국어 문진표·통역, 카카오톡',visit:1,hotel:{fee:1000,nation:1,place:'일본 전국 호텔',lead:'미확인',tsuNote:'전국 균일 요금 안내. 낙도 배송은 확인 필요'},p4:{2.5:16500,5:28000,7.5:40000,10:49000,12.5:58000,15:68000},p12:{2.5:46500,5:81000,7.5:117000,10:144000,12.5:171000,15:201000},consult:0,doc:3000,note:'진료비 0엔. 온라인 진료 후 전국 호텔 배송 1,000엔. 영문 처방 증명서 3,000엔.',src:S.almond},
+ {id:'jnc',name:'재팬넷클리닉',city:'tyo',area:'긴자·신바시',tourist:'ok',ko:'원장 한국어 진료, 카카오톡',visit:1,hotel:{fee:3957,nation:1,place:'프런트가 받아 주는 호텔만 (에어비앤비·택배 영업소 불가)',lead:'도쿄 외 지역은 5영업일 전 신청',tsuNote:'확인 필요'},p4:{2.5:22000,5:39600,7.5:57200,10:76264,12.5:95336},p12:{2.5:34584,5:66891,7.5:99924,10:133233,12.5:166539},consult:3630,doc:7370,docReq:1,blocked:'2.5·5mg 품절, 11/16 입고 예정',note:'12펜은 3개월 플랜가. 일본 주소가 없으면 영문 처방전 7,370엔 필수. 호텔 배송 33,000원, 도쿄 외 5영업일 전 신청.',src:S.jnc},
  {id:'ehealth',name:'이헬스 클리닉 신주쿠 (외국인 프로그램)',city:'tyo',area:'신주쿠산초메',tourist:'ok',ko:'한국어 안내 페이지',visit:1,p4:{2.5:19000},p12:{2.5:52000},consult:0,doc:null,note:'진찰 포함가. 영어·중국어 진료, 당일 수령.',src:S.weblioT},
  {id:'shinjuku',name:'신주쿠역앞 클리닉',city:'tyo',area:'신주쿠 서쪽 출구',tourist:'ok',ko:'일본어 필요(통역 동반)',visit:1,p4:{2.5:14000,5:24000,7.5:30000,10:36000},consult:0,doc:null,note:'평일 예약 없이 방문. 7.5·10mg은 BMI 22 이상만.',src:S.weblioT},
- {id:'silk',name:'도쿄 실크클리닉',city:'tyo',area:'신주쿠',tourist:'ok',ko:'한국어 안내 페이지',visit:1,hotel:{fee:null,nation:0},p4:{2.5:8000,5:14000,7.5:22000},consult:null,doc:null,flag:'출처마다 가격 다름',note:'2.5mg 8,000엔은 비교 기사 기준이며 다른 기사는 12,000엔으로 적음. 호텔 배송 안내 있음(비용 미확인). 예약 전 실가격 확인 필수.',src:S.silk},
+ {id:'silk',name:'도쿄 실크클리닉',city:'tyo',area:'신주쿠',tourist:'ok',ko:'한국어 안내 페이지',visit:1,hotel:{fee:null,nation:0,place:'호텔 (조건 미확인)',lead:'미확인',tsuNote:'미확인'},p4:{2.5:8000,5:14000,7.5:22000},consult:null,doc:null,flag:'출처마다 가격 다름',note:'2.5mg 8,000엔은 비교 기사 기준이며 다른 기사는 12,000엔으로 적음. 호텔 배송 안내 있음(비용 미확인). 예약 전 실가격 확인 필수.',src:S.silk},
  {id:'ryogoku',name:'료고쿠 요코즈나 클리닉',city:'tyo',area:'료고쿠',tourist:'unknown',ko:'',visit:1,p4:{2.5:13200,5:26400},consult:3300,doc:null,note:'초진 3,300엔 별도.',src:S.make2t},
- {id:'aurelia',name:'AURELIA ONLINE',city:'online',area:'온라인 전용',tourist:'unknown',ko:'안내만 한국어, 진료는 일본어·영어',hotel:{fee:300,nation:1},p4:{2.5:11800,5:18800,7.5:29800,10:37800,12.5:46800,15:54800},p12:{2.5:31800,5:51800,7.5:79800,10:97800,12.5:124800,15:146800},consult:0,doc:null,note:'일본 내 본인 수령만. 여행자 처방과 호텔 수령 여부는 명시 없음.',src:S.aur},
+ {id:'aurelia',name:'AURELIA ONLINE',city:'online',area:'온라인 전용',tourist:'unknown',ko:'안내만 한국어, 진료는 일본어·영어',hotel:{fee:300,nation:1,place:'일본 내 본인 수령 (호텔 가능 여부 명시 없음)',lead:'당일 발송, 최단 익일 도착',tsuNote:'미확인'},p4:{2.5:11800,5:18800,7.5:29800,10:37800,12.5:46800,15:54800},p12:{2.5:31800,5:51800,7.5:79800,10:97800,12.5:124800,15:146800},consult:0,doc:null,note:'일본 내 본인 수령만. 여행자 처방과 호텔 수령 여부는 명시 없음.',src:S.aur},
  {id:'dmm',name:'DMM 온라인 클리닉',city:'online',area:'온라인 전용',tourist:'no',ko:'',hotel:{fee:550,nation:1},p4:{2.5:12500,7.5:32300,10:40500},p12:{2.5:31500,5:62400,7.5:90900,10:115500},consult:0,doc:null,note:'일본 거주자 대상. 비교용으로만 표시하며 순위에서 제외.',src:S.weblioT}
 ];
 const SOURCES=[
  ['식약처·관세청 휴대 반입 허용 (머니투데이, 11/11)','https://www.mt.co.kr/thebio/2026/11/11/2026111117265020740'],
  ['최대 12개 반입 허용 단독 보도 (MTN, 11/11)','https://news.mtn.co.kr/article/2026111116412519794'],
+ ['FONTANA CLINIC 대마도 수령 안내',S.fonT],['부산–대마도 배편 요금·시간표 (make2t)','https://www.make2t.kr/2026/11/busan-tsushima-ferry-booking-price-timetable-2026.html'],['뉴카멜리아 시간표·요금','https://usefulinfoshare.naturelove40.com/2026/10/blog-post_627.html'],['부산–후쿠오카·오사카 배편 안내 (Trip.com)','https://kr.trip.com/guide/transport/fukuoka-boat-trip.html'],
  ['후쿠오카 클리닉 비교 (Weblio케어, 11/14)',S.weblioF],['도쿄 클리닉 비교 (Weblio케어)',S.weblioT],
  ['아몬드 클리닉 가격표',S.almond],['재팬넷클리닉 가격표',S.jnc],['MIL CLINIC OSAKA 여행자 안내',S.mil],
  ['일본 온라인 진료 17곳 비교 (온쿠리)',S.onc],['4펜 실제 비용 비교 (make2t)',S.make2t],['AURELIA ONLINE 가격표',S.aur],
@@ -290,10 +316,10 @@ const SOURCES=[
  ['여행자 휴대품 통관 기준 해설','https://ohhyunlaw-international.com/faq/8342']
 ];
 
-const DEF={m:3,d:[2.5,5,5],origin:'pus',t:Object.assign({},ORIGIN.pus),nights:0,nightRate:70000,noTravel:false,onlyOk:true,hideBlocked:false,withDoc:true,fx:840,kr:Object.assign({},KR_DEFAULT)};
+const DEF={m:3,d:[2.5,5,5],origin:'pus',dest:'auto',t:Object.assign({},ORIGIN.pus),nights:0,nightRate:70000,noTravel:false,onlyOk:true,hideBlocked:false,withDoc:true,fx:840,kr:Object.assign({},KR_DEFAULT)};
 let st=JSON.parse(JSON.stringify(DEF));
-try{const s=JSON.parse(localStorage.getItem('mj-calc-v1')||'null'); if(s&&s.d&&s.t&&s.kr) st=Object.assign(st,s);}catch(e){}
-const save=()=>{try{localStorage.setItem('mj-calc-v1',JSON.stringify(st))}catch(e){}};
+try{const s=JSON.parse(localStorage.getItem('mj-calc-v2')||'null'); if(s&&s.d&&s.t&&s.kr) st=Object.assign(st,s);}catch(e){}
+const save=()=>{try{localStorage.setItem('mj-calc-v2',JSON.stringify(st))}catch(e){}};
 const $=id=>document.getElementById(id);
 const won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
 const man=n=>{const v=Math.round(n/1000)/10;return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+'만원'};
@@ -305,13 +331,16 @@ function drugYen(c,doses){
   let s=0; for(const d of doses){ if(!c.p4||!c.p4[d]) return null; s+=c.p4[d]; }
   return {yen:s,bundle:false};
 }
-function travelWon(city,hotelMode){
-  if(st.noTravel) return 0;
-  const nights=hotelMode?Math.max(st.nights,1):st.nights;
-  return (st.t[city]||0)+LOCAL_YEN[city]*st.fx/100+nights*st.nightRate;
+function travel(city,deliv,depot){
+  if(st.noTravel) return {won:0,how:''};
+  const nights=(deliv&&!depot)?Math.max(st.nights,1):st.nights;
+  const air=st.t[city+'_air']||0, sea=st.t[city+'_sea']?st.t[city+'_sea']+(st.t.toBusan||0):0;
+  if(!air&&!sea) return null;
+  const useSea=sea&&(!air||sea<air);
+  return {won:(useSea?sea:air)+LOCAL_YEN[city]*st.fx/100+nights*st.nightRate,how:useSea?'배':'항공'};
 }
-function cheapestCity(){return Object.keys(CITY).reduce((a,b)=>travelWon(b,true)<travelWon(a,true)?b:a)}
-function options(months){
+function options(months,dest){
+  dest=dest||st.dest;
   const doses=st.d.slice(0,months), out=[], skipped=[];
   for(const c of CL){
     if(c.tourist==='no') continue;
@@ -319,23 +348,29 @@ function options(months){
     if(st.hideBlocked&&c.blocked) continue;
     const dr=drugYen(c,doses);
     if(!dr){skipped.push(c.name);continue;}
-    const feeBase=(c.consult||0)+((st.withDoc||c.docReq)?(c.doc||0):0);
-    const unk=[]; if(c.consult==null) unk.push('진료비'); if(st.withDoc&&c.doc==null) unk.push('서류비');
-    const mk=(mode,city,extraYen,unkExtra)=>{
-      const drug=dr.yen*st.fx/100, fee=(feeBase+extraYen)*st.fx/100, trav=travelWon(city,mode==='hotel');
-      out.push({c,mode,city,drug,fee,trav,total:drug+fee+trav,bundle:dr.bundle,unk:unk.concat(unkExtra||[]),drugYen:dr.yen,feeYen:feeBase+extraYen});
+    const mk=(mode,city)=>{
+      const h=c.hotel, deliv=mode==='hotel';
+      const tr=travel(city,deliv,deliv&&h.depot); if(!tr) return null;
+      const docIn=deliv&&h.docIncl;
+      const feeYen=(c.consult||0)+(docIn?0:((st.withDoc||c.docReq)?(c.doc||0):0))+(deliv?(h.fee||0):0);
+      const unk=[]; if(c.consult==null) unk.push('진료비'); if(st.withDoc&&c.doc==null&&!docIn) unk.push('서류비');
+      if(deliv&&h.fee==null) unk.push('배송비'); if(deliv&&city==='tsu'&&!h.tsu) unk.push('대마도 배송 가능 여부');
+      const drug=dr.yen*st.fx/100, fee=feeYen*st.fx/100;
+      return {c,mode,city,how:tr.how,depot:deliv&&h.depot&&st.nights===0,drug,fee,trav:tr.won,total:drug+fee+tr.won,bundle:dr.bundle,unk,drugYen:dr.yen,feeYen};
     };
-    if(c.visit) mk('visit',c.city,0);
+        if(c.visit&&(dest==='auto'||dest===c.city)){const o=mk('visit',c.city); if(o) out.push(o);}
     if(c.hotel){
-      const city=c.hotel.nation?cheapestCity():c.city;
-      mk('hotel',city,c.hotel.fee||0,c.hotel.fee==null?['배송비']:[]);
+      let cities=c.hotel.nation?Object.keys(CITY):[c.city];
+      if(dest!=='auto') cities=cities.filter(x=>x===dest);
+      const best=cities.map(x=>mk('hotel',x)).filter(Boolean).sort((a,b)=>(a.total+a.unk.length)-(b.total+b.unk.length))[0];
+      if(best) out.push(best);
     }
   }
   out.sort((a,b)=>a.total-b.total);
   return {list:out,skipped};
 }
 const krCost=months=>st.d.slice(0,months).reduce((s,d)=>s+(st.kr[d]||0),0);
-const modeLabel=o=>o.mode==='visit'?CITY[o.city]+' 방문 수령':'온라인 진료 + '+CITY[o.city]+' 호텔 배송';
+const modeLabel=o=>(o.mode==='visit'?CITY[o.city]+' 방문 수령':'온라인 진료 + '+CITY[o.city]+(o.depot?' 야마토 영업소 수령':' 호텔 배송'))+(o.how?' ('+o.how+')':'');
 
 let showAll=false;
 function render(){
@@ -353,6 +388,9 @@ function render(){
     if(drugOnly!==b) ins.push('교통비를 빼면 '+drugOnly.c.name+' ('+modeLabel(drugOnly)+')이 '+man(drugOnly.drug+drugOnly.fee)+'으로 가장 쌉니다.');
     if(b.c.blocked) ins.push('1위 병원은 현재 "'+b.c.blocked+'" 상태입니다.'+(clean&&clean!==b?' 지금 예약 가능하고 비용이 모두 확인된 곳 중에서는 '+clean.c.name+' ('+modeLabel(clean)+', '+man(clean.total)+')이 가장 쌉니다.':''));
     else if(b.c.flag||b.unk.length) ins.push('1위는 '+(b.c.flag?b.c.flag:b.unk.join('·')+' 미확인')+' 상태입니다.'+(clean&&clean!==b?' 비용이 모두 확인된 곳 중에서는 '+clean.c.name+' ('+modeLabel(clean)+', '+man(clean.total)+')이 가장 쌉니다.':''));
+    const tsu=options(st.m,'tsu').list.filter(o=>o.city==='tsu')[0];
+    if(tsu&&tsu!==b&&!(b.city==='tsu')) ins.push('대마도에서 받는 최저 조합은 '+tsu.c.name+' ('+man(tsu.total)+')으로, 1위보다 '+man(Math.abs(tsu.total-b.total))+(tsu.total>b.total?' 비쌉니다.':' 쌉니다.'));
+    if(b.city==='tsu') ins.push('대마도는 교통비가 가장 싸지만 배송 2~3일과 결항 위험이 있습니다. 방문 1주 전까지 온라인 진료를 끝내야 합니다.');
     if(b.bundle) ins.push('12펜 묶음가를 적용했습니다. 4펜씩 따로 사는 것보다 쌉니다.');
     V.innerHTML='<span class="eyebrow">'+pens+'펜 기준 최저 조합</span>'
       +'<p class="who">'+b.c.name+' · '+modeLabel(b)+'</p>'
@@ -378,6 +416,13 @@ function render(){
   }
   $('excluded').textContent=skipped.length?'선택한 용량의 가격을 공개하지 않아 빠진 곳: '+skipped.join(', '):'';
 
+  // 배송 비교
+  const doses=st.d.slice(0,st.m);
+  $('deliv').innerHTML='<thead><tr><th>병원</th><th class="n">배송비</th><th>받는 곳</th><th>소요 · 신청 시점</th><th>대마도 수령</th><th class="n">'+pens+'펜 결제액</th><th>상태</th></tr></thead><tbody>'
+    +CL.filter(c=>c.hotel&&c.tourist!=='no').map(c=>{const h=c.hotel,dr=drugYen(c,doses);
+      const y=dr?dr.yen+(c.consult||0)+(h.docIncl?0:((st.withDoc||c.docReq)?(c.doc||0):0))+(h.fee||0):null;
+      return {c,h,y};}).sort((a,b)=>(a.y==null)-(b.y==null)||a.y-b.y).map(({c,h,y})=>'<tr><td class="nm"><a href="'+c.src+'" target="_blank" rel="noopener">'+c.name+'</a><small>'+(c.city==='online'?'온라인 전용':CITY[c.city]+' 소재')+(c.ko?' · '+c.ko:'')+'</small></td><td class="n">'+(h.fee==null?'<span class="mute">미확인</span>':h.fee.toLocaleString('ko-KR')+'엔')+(h.docIncl?'<br><span class="mute">처방전 포함</span>':'')+'</td><td class="note">'+h.place+'</td><td class="note">'+h.lead+'</td><td class="note">'+(h.tsu?'<span class="chip ok">가능</span><br>':'')+h.tsuNote+'</td><td class="n">'+(y==null?'<span class="mute">용량 가격 미공개</span>':'<b>'+won(y*st.fx/100)+'</b><br><span class="mute">'+yen(y)+'</span>')+'</td><td>'+chips(c)+'</td></tr>').join('')+'</tbody>';
+
   // 손익분기
   $('be').innerHTML='<thead><tr><th>사오는 양</th><th>최저 조합</th><th class="n">일본 총비용</th><th class="n">한국 같은 양</th><th class="n">차액</th></tr></thead><tbody>'
     +[1,2,3].map(m=>{const r=options(m).list[0],k=krCost(m); if(!r) return '<tr><td>'+m*4+'펜</td><td colspan="4" class="mute">가격 공개 병원 없음</td></tr>';
@@ -393,7 +438,7 @@ function chips(c,o){
 }
 function catalog(){
   const groups=[['fuk','후쿠오카'],['osa','오사카'],['tyo','도쿄'],['online','온라인 전용']];
-  let h='<thead><tr><th>병원</th>'+DOSES.map(d=>'<th class="n">'+d+'mg</th>').join('')+'<th class="n">진료비</th><th class="n">영문 서류</th><th class="n">호텔 배송</th><th>상태 · 메모</th></tr></thead><tbody>';
+  let h='<thead><tr><th>병원</th>'+DOSES.map(d=>'<th class="n">'+d+'mg</th>').join('')+'<th class="n">진료비</th><th class="n">영문 서류</th><th class="n">배송비</th><th>상태 · 메모</th></tr></thead><tbody>';
   const f=v=>v==null?'<span class="mute">미확인</span>':v===0?'0':v.toLocaleString('ko-KR');
   for(const [k,nm] of groups){
     h+='<tr><th colspan="'+(DOSES.length+5)+'">'+nm+'</th></tr>';
@@ -412,7 +457,7 @@ function fill(){
   ['d1','d2','d3'].forEach((id,i)=>{const e=$(id); if(!e.options.length) e.innerHTML=DOSES.map(d=>'<option value="'+d+'">'+d+'mg</option>').join(''); e.value=st.d[i]; e.parentElement.style.visibility=i<st.m?'visible':'hidden';});
   document.querySelectorAll('#monthsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.m===st.m)));
   document.querySelectorAll('#originSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.o===st.origin)));
-  $('t_fuk').value=st.t.fuk;$('t_osa').value=st.t.osa;$('t_tyo').value=st.t.tyo;$('nights').value=st.nights;$('nightRate').value=st.nightRate;$('fx').value=st.fx;
+  Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0);$('dest').value=st.dest;$('nights').value=st.nights;$('nightRate').value=st.nightRate;$('fx').value=st.fx;
   $('noTravel').checked=st.noTravel;$('onlyOk').checked=st.onlyOk;$('hideBlocked').checked=st.hideBlocked;$('withDoc').checked=st.withDoc;
   if(!$('krInputs').children.length) $('krInputs').innerHTML=DOSES.map(d=>'<label class="f"><span>'+d+'mg</span><input type="number" id="kr_'+String(d).replace('.','_')+'" data-d="'+d+'" min="0" step="10000"></label>').join('');
   $('krInputs').querySelectorAll('input').forEach(e=>e.value=st.kr[e.dataset.d]);
@@ -422,6 +467,7 @@ $('controls').addEventListener('input',ev=>{
   const e=ev.target;
   if(e.id==='d1'||e.id==='d2'||e.id==='d3') st.d[+e.id[1]-1]=+e.value;
   else if(e.id.startsWith('t_')){st.t[e.id.slice(2)]=numv(e);st.origin='custom';}
+  else if(e.id==='dest') st.dest=e.value;
   else if(e.id==='nights') st.nights=Math.round(numv(e));
   else if(e.id==='nightRate') st.nightRate=numv(e);
   else if(e.id==='fx') st.fx=numv(e)||DEF.fx;
