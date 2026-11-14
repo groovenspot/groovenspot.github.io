@@ -172,7 +172,12 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
         <label class="f"><span>숙박 박수 (0 = 당일치기)</span><input type="number" id="nights" min="0" max="14" step="1"></label>
         <label class="f"><span>1박 요금</span><input type="number" id="nightRate" min="0" step="1000"></label>
         <label class="c"><input type="checkbox" id="noTravel"><span>어차피 갈 여행이라 교통·숙박비는 빼고 계산</span></label>
-        <p class="small mute">도시마다 항공과 배 중 싼 쪽을 자동으로 고릅니다. 0을 넣으면 그 교통편은 제외합니다. 배 요금은 유류할증료·터미널 이용료·일본 출국세를 더한 추정 총액이고, 특가와 정상가 차이가 크니 실제 결제 금액으로 바꾸세요.</p>
+        <div class="fares" style="font-size:12.5px"><div><b style="min-width:0">부산 출발 항공 기본값은 12월 5일(토) 당일 왕복 조회가입니다</b></div>
+          <div>후쿠오카 53.2만원: 제주항공 07:00 출발, 15:10 귀국 ($397.90)</div>
+          <div>오사카 50.5만원: 제주항공 08:20 출발, 19:15 귀국 ($377.80)</div>
+          <div>도쿄 84.3만원: 제주항공 07:10 출발, 대한항공 19:40 귀국 ($631.20)</div>
+          <div class="mute">11월 14일 익스피디아 편도 2장 합산, 1달러 1,336원 환산. 항공사 직판이나 국내 여행사가 더 쌀 수 있으니 위 링크로 확인하세요. 서울 출발과 배 요금은 추정치입니다.</div></div>
+        <p class="small mute">도시마다 항공과 배 중 싼 쪽을 자동으로 고릅니다. 0을 넣으면 그 교통편은 제외합니다. 후쿠오카 배는 1박 이상, 오사카 배는 2박 이상 일정에서만 계산하고 선내에서 자는 밤은 숙박비에서 뺍니다. 배 요금은 유류할증료·터미널 이용료·일본 출국세를 더한 추정 총액이고, 특가와 정상가 차이가 크니 실제 결제 금액으로 바꾸세요.</p>
       </fieldset>
       <hr>
       <fieldset>
@@ -275,7 +280,7 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
 const DOSES=[2.5,5,7.5,10,12.5,15];
 const CITY={tsu:'대마도',fuk:'후쿠오카',osa:'오사카',tyo:'도쿄'};
 const LOCAL_YEN={tsu:0,fuk:600,osa:2000,tyo:3000}; // 터미널–시내 왕복 추정
-const ORIGIN={pus:{tsu_sea:110000,fuk_air:170000,fuk_sea:240000,osa_air:230000,osa_sea:230000,tyo_air:300000,toBusan:0},sel:{tsu_sea:110000,fuk_air:220000,fuk_sea:240000,osa_air:240000,osa_sea:230000,tyo_air:300000,toBusan:120000}};
+const ORIGIN={pus:{tsu_sea:110000,fuk_air:532000,fuk_sea:240000,osa_air:505000,osa_sea:230000,tyo_air:843000,toBusan:0},sel:{tsu_sea:110000,fuk_air:220000,fuk_sea:240000,osa_air:240000,osa_sea:230000,tyo_air:300000,toBusan:120000}};
 const KR_DEFAULT={2.5:300000,5:380000,7.5:550000,10:550000,12.5:700000,15:700000};
 const S={
  weblioF:'https://care.weblio.jp/mounjaro-fukuoka-ko/', weblioT:'https://care.weblio.jp/mounjaro-tokyo-ko/',
@@ -321,12 +326,12 @@ const SOURCES=[
 
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const addDays=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return iso(d)};
-const D0=addDays(iso(new Date()),21);
+const D0=iso(new Date())<='2026-12-05'?'2026-12-05':addDays(iso(new Date()),21); // 항공 기본값을 조회한 날짜
 const DEF={m:3,d:[2.5,5,5],origin:'pus',dest:'auto',dep:D0,ret:D0,t:Object.assign({},ORIGIN.pus),nights:0,nightRate:70000,noTravel:false,onlyOk:true,hideBlocked:false,withDoc:true,fx:840,kr:Object.assign({},KR_DEFAULT)};
 let st=JSON.parse(JSON.stringify(DEF));
-try{const s=JSON.parse(localStorage.getItem('mj-calc-v2')||'null'); if(s&&s.d&&s.t&&s.kr) st=Object.assign(st,s);}catch(e){}
+try{const s=JSON.parse(localStorage.getItem('mj-calc-v3')||'null'); if(s&&s.d&&s.t&&s.kr) st=Object.assign(st,s);}catch(e){}
 if(!st.dep||st.dep<iso(new Date())){st.dep=D0;st.ret=addDays(D0,st.nights||0);}
-const save=()=>{try{localStorage.setItem('mj-calc-v2',JSON.stringify(st))}catch(e){}};
+const save=()=>{try{localStorage.setItem('mj-calc-v3',JSON.stringify(st))}catch(e){}};
 const $=id=>document.getElementById(id);
 const won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
 const man=n=>{const v=Math.round(n/1000)/10;return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+'만원'};
@@ -338,13 +343,13 @@ function drugYen(c,doses){
   let s=0; for(const d of doses){ if(!c.p4||!c.p4[d]) return null; s+=c.p4[d]; }
   return {yen:s,bundle:false};
 }
+const SEA_NIGHTS={tsu:0,fuk:1,osa:2}; // 배에서 보내는 밤 수. 이보다 짧은 일정은 배로 불가
 function travel(city,deliv,depot){
   if(st.noTravel) return {won:0,how:''};
-  const nights=(deliv&&!depot)?Math.max(st.nights,1):st.nights;
-  const air=st.t[city+'_air']||0, sea=st.t[city+'_sea']?st.t[city+'_sea']+(st.t.toBusan||0):0;
-  if(!air&&!sea) return null;
-  const useSea=sea&&(!air||sea<air);
-  return {won:(useSea?sea:air)+LOCAL_YEN[city]*st.fx/100+nights*st.nightRate,how:useSea?'배':'항공'};
+  const need=(deliv&&!depot)?1:0, local=LOCAL_YEN[city]*st.fx/100, c=[];
+  if(st.t[city+'_air']>0) c.push({won:st.t[city+'_air']+local+Math.max(st.nights,need)*st.nightRate,how:'항공'});
+  if(st.t[city+'_sea']>0&&st.nights>=SEA_NIGHTS[city]) c.push({won:st.t[city+'_sea']+(st.t.toBusan||0)+local+Math.max(st.nights-SEA_NIGHTS[city],need)*st.nightRate,how:'배'});
+  return c.sort((x,y)=>x.won-y.won)[0]||null;
 }
 function options(months,dest){
   dest=dest||st.dest;
