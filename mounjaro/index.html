@@ -188,7 +188,7 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
           <div id="seaState" class="small"></div>
         </div>
         <div class="fares" id="fares" aria-label="선택한 날짜로 요금 검색"></div>
-        <p class="small mute">날짜를 바꾸면 익스피디아에서 항공 요금을 다시 조회해 아래 칸과 순위에 반영합니다. 대마도 배는 대아고속해운 공개 특가표에서 그 날짜의 가장 싼 승선권을 찾아 넣습니다. 칸을 직접 고치면 그 날짜는 고친 값을 씁니다.</p>
+        <p class="small mute">날짜를 바꾸면 그 날짜의 항공·배 요금을 요금표에서 찾아 아래 칸과 순위에 반영합니다. Claude 안에서 열면 익스피디아 실시간 조회도 함께 합니다. 대마도 배는 대아고속해운 공개 특가표에서 그 날짜의 가장 싼 승선권을 찾아 넣습니다. 칸을 직접 고치면 그 날짜는 고친 값을 씁니다.</p>
         <label class="f"><span>달러 환율 (1달러당 원)</span><input type="number" id="usd" min="1" step="1"></label>
         <label class="f"><span>대마도 배 (히타카츠)</span><input type="number" id="t_tsu_sea" min="0" step="1000"></label>
         <label class="f"><span>후쿠오카 항공</span><input type="number" id="t_fuk_air" min="0" step="1000"></label>
@@ -314,7 +314,7 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
 const DOSES=[2.5,5,7.5,10,12.5,15];
 const CITY={tsu:'대마도',fuk:'후쿠오카',osa:'오사카',tyo:'도쿄'};
 const LOCAL_YEN={tsu:0,fuk:600,osa:2000,tyo:3000}; // 터미널–시내 왕복 추정
-const ORIGIN={pus:{tsu_sea:110000,fuk_air:532000,fuk_sea:240000,osa_air:505000,osa_sea:230000,tyo_air:843000,toBusan:0},sel:{tsu_sea:110000,fuk_air:220000,fuk_sea:240000,osa_air:240000,osa_sea:230000,tyo_air:300000,toBusan:120000}};
+const ORIGIN={pus:{tsu_sea:110000,fuk_air:170000,fuk_sea:240000,osa_air:230000,osa_sea:398000,tyo_air:300000,toBusan:0},sel:{tsu_sea:110000,fuk_air:220000,fuk_sea:240000,osa_air:240000,osa_sea:230000,tyo_air:300000,toBusan:120000}};
 const KR_DEFAULT={2.5:300000,5:380000,7.5:550000,10:550000,12.5:700000,15:700000};
 const S={
  weblioF:'https://care.weblio.jp/mounjaro-fukuoka-ko/', weblioT:'https://care.weblio.jp/mounjaro-tokyo-ko/',
@@ -367,7 +367,8 @@ let st=JSON.parse(JSON.stringify(DEF));
 try{const s=JSON.parse(localStorage.getItem('mj-calc-v6')||'null'); if(s&&s.d&&s.t&&s.kr) st=Object.assign(st,s);}catch(e){}
 if(!st.dep||st.dep<iso(new Date())){st.dep=D0;st.ret=addDays(D0,st.nights||0);}
 // 대아고속해운 공개 특가 승선권: [출발일, 항구, 최대 체류일, 왕복 요금(원), 잔여석, 이름]. update-ferry.mjs 가 채운다
-const FERRY={at:"2026-11-14",rows:[["2026-11-16","hit",3,24900,20,"특가승선권"],["2026-11-17","izu",1,24900,19,"당일특가승선권"],["2026-11-17","izu",3,39000,11,"착한승선권39"],["2026-11-18","hit",1,24900,17,"당일특가승선권"],["2026-11-18","hit",3,39000,18,"착한승선권39"],["2026-11-19","izu",2,39000,12,"특가승선권"],["2026-11-21","hit",2,79000,19,"착한승선권79"],["2026-11-21","hit",5,129000,14,"실속승선권"],["2026-11-23","hit",3,39000,12,"착한승선권39"],["2026-11-24","izu",1,24900,20,"당일특가승선권"],["2026-11-24","izu",3,24900,20,"특가승선권"],["2026-11-25","hit",1,24900,16,"당일특가승선권"],["2026-11-25","hit",3,39000,13,"착한승선권39"],["2026-11-26","izu",1,24900,20,"당일특가승선권"],["2026-11-26","izu",2,39000,16,"특가승선권"],["2026-11-27","hit",3,99000,19,"알뜰승선권99"],["2026-11-28","hit",2,69000,20,"특가승선권"],["2026-11-28","hit",3,109000,20,"알뜰승선권109"],["2026-11-28","hit",3,109000,15,"알뜰승선권109"],["2026-11-29","hit",3,59000,16,"착한승선권59(당일X)"],["2026-11-30","hit",3,24900,12,"특가승선권"],["2026-12-01","izu",3,30900,20,"특가승선권30"],["2026-12-02","hit",1,24900,19,"당일특가승선권"],["2026-12-02","hit",3,30900,20,"특가승선권30"],["2026-12-03","izu",1,24900,20,"당일특가승선권"],["2026-12-03","izu",3,49000,20,"착한승선권49"],["2026-12-04","hit",3,99000,13,"알뜰승선권99"],["2026-12-05","hit",1,59000,18,"당일알뜰승선권"],["2026-12-05","hit",3,99000,16,"알뜰승선권99"],["2026-12-05","hit",3,109000,17,"알뜰승선권109"],["2026-12-06","hit",2,49000,20,"특가승선권"],["2026-12-06","hit",1,59000,20,"당일알뜰승선권"],["2026-12-07","hit",1,24900,20,"당일특가승선권"],["2026-12-07","hit",3,24900,18,"특가승선권"],["2026-12-09","hit",1,24900,20,"당일특가승선권"],["2026-12-09","hit",3,30900,16,"특가승선권30"],["2026-12-10","izu",1,24900,20,"당일특가승선권"],["2026-12-10","izu",3,49000,20,"착한승선권49"],["2026-12-11","hit",3,99000,17,"알뜰승선권99"],["2026-12-12","hit",1,59000,20,"당일알뜰승선권"],["2026-12-12","hit",3,99000,20,"알뜰승선권99"],["2026-12-12","hit",3,109000,18,"알뜰승선권109"],["2026-12-13","hit",3,49000,20,"착한승선권49"],["2026-12-13","hit",1,59000,19,"당일알뜰승선권"],["2026-12-14","hit",2,29000,20,"특가승선권"],["2026-12-15","izu",3,30900,20,"특가승선권30"],["2026-12-16","hit",1,24900,20,"당일특가승선권"],["2026-12-16","hit",3,30900,20,"특가승선권30"],["2026-12-17","izu",1,24900,20,"당일특가승선권"],["2026-12-17","izu",3,49000,20,"착한승선권49"],["2026-12-18","hit",3,99000,20,"알뜰승선권99"],["2026-12-19","hit",1,59000,17,"당일알뜰승선권"],["2026-12-19","hit",3,88000,18,"알뜰승선권88"],["2026-12-19","hit",3,99000,18,"알뜰승선권99"],["2026-12-20","hit",3,49000,20,"착한승선권49"],["2026-12-20","hit",1,59000,20,"당일알뜰승선권"],["2026-12-21","hit",2,29000,20,"특가승선권"],["2026-12-22","izu",3,30900,20,"특가승선권30"],["2026-12-23","hit",1,24900,20,"당일특가승선권"],["2026-12-23","hit",3,49000,18,"착한승선권49"],["2026-12-24","izu",1,24900,20,"당일특가승선권"],["2026-12-24","izu",3,49000,14,"착한승선권49"],["2026-12-26","hit",3,99000,13,"알뜰승선권99"],["2026-12-26","hit",3,109000,20,"알뜰승선권109"],["2026-12-28","hit",3,49000,16,"착한승선권49"],["2026-12-29","izu",1,29000,20,"당일특가승선권"],["2026-12-29","izu",3,49000,18,"착한승선권49"],["2026-12-30","hit",1,39000,18,"당일특가승선권"],["2026-12-31","izu",3,69000,20,"착한승선권69"],["2027-01-01","hit",2,69000,20,"특가승선권"],["2027-01-01","hit",2,79000,20,"착한승선권79"],["2027-01-01","hit",3,88000,19,"알뜰승선권88"],["2027-01-01","hit",3,99000,13,"알뜰승선권99"]]};
+let AIRCAL=null; // fares.json 의 항공 요금표 (웹에 올렸을 때)
+let FERRY={at:"2026-11-14",rows:[["2026-11-16","hit",3,24900,20,"특가승선권"],["2026-11-17","izu",1,24900,19,"당일특가승선권"],["2026-11-17","izu",3,39000,11,"착한승선권39"],["2026-11-18","hit",1,24900,17,"당일특가승선권"],["2026-11-18","hit",3,39000,18,"착한승선권39"],["2026-11-19","izu",2,39000,12,"특가승선권"],["2026-11-21","hit",2,79000,19,"착한승선권79"],["2026-11-21","hit",5,129000,14,"실속승선권"],["2026-11-23","hit",3,39000,12,"착한승선권39"],["2026-11-24","izu",1,24900,20,"당일특가승선권"],["2026-11-24","izu",3,24900,20,"특가승선권"],["2026-11-25","hit",1,24900,16,"당일특가승선권"],["2026-11-25","hit",3,39000,13,"착한승선권39"],["2026-11-26","izu",1,24900,20,"당일특가승선권"],["2026-11-26","izu",2,39000,16,"특가승선권"],["2026-11-27","hit",3,99000,19,"알뜰승선권99"],["2026-11-28","hit",2,69000,20,"특가승선권"],["2026-11-28","hit",3,109000,20,"알뜰승선권109"],["2026-11-28","hit",3,109000,15,"알뜰승선권109"],["2026-11-29","hit",3,59000,16,"착한승선권59(당일X)"],["2026-11-30","hit",3,24900,12,"특가승선권"],["2026-12-01","izu",3,30900,20,"특가승선권30"],["2026-12-02","hit",1,24900,19,"당일특가승선권"],["2026-12-02","hit",3,30900,20,"특가승선권30"],["2026-12-03","izu",1,24900,20,"당일특가승선권"],["2026-12-03","izu",3,49000,20,"착한승선권49"],["2026-12-04","hit",3,99000,13,"알뜰승선권99"],["2026-12-05","hit",1,59000,18,"당일알뜰승선권"],["2026-12-05","hit",3,99000,16,"알뜰승선권99"],["2026-12-05","hit",3,109000,17,"알뜰승선권109"],["2026-12-06","hit",2,49000,20,"특가승선권"],["2026-12-06","hit",1,59000,20,"당일알뜰승선권"],["2026-12-07","hit",1,24900,20,"당일특가승선권"],["2026-12-07","hit",3,24900,18,"특가승선권"],["2026-12-09","hit",1,24900,20,"당일특가승선권"],["2026-12-09","hit",3,30900,16,"특가승선권30"],["2026-12-10","izu",1,24900,20,"당일특가승선권"],["2026-12-10","izu",3,49000,20,"착한승선권49"],["2026-12-11","hit",3,99000,17,"알뜰승선권99"],["2026-12-12","hit",1,59000,20,"당일알뜰승선권"],["2026-12-12","hit",3,99000,20,"알뜰승선권99"],["2026-12-12","hit",3,109000,18,"알뜰승선권109"],["2026-12-13","hit",3,49000,20,"착한승선권49"],["2026-12-13","hit",1,59000,19,"당일알뜰승선권"],["2026-12-14","hit",2,29000,20,"특가승선권"],["2026-12-15","izu",3,30900,20,"특가승선권30"],["2026-12-16","hit",1,24900,20,"당일특가승선권"],["2026-12-16","hit",3,30900,20,"특가승선권30"],["2026-12-17","izu",1,24900,20,"당일특가승선권"],["2026-12-17","izu",3,49000,20,"착한승선권49"],["2026-12-18","hit",3,99000,20,"알뜰승선권99"],["2026-12-19","hit",1,59000,17,"당일알뜰승선권"],["2026-12-19","hit",3,88000,18,"알뜰승선권88"],["2026-12-19","hit",3,99000,18,"알뜰승선권99"],["2026-12-20","hit",3,49000,20,"착한승선권49"],["2026-12-20","hit",1,59000,20,"당일알뜰승선권"],["2026-12-21","hit",2,29000,20,"특가승선권"],["2026-12-22","izu",3,30900,20,"특가승선권30"],["2026-12-23","hit",1,24900,20,"당일특가승선권"],["2026-12-23","hit",3,49000,18,"착한승선권49"],["2026-12-24","izu",1,24900,20,"당일특가승선권"],["2026-12-24","izu",3,49000,14,"착한승선권49"],["2026-12-26","hit",3,99000,13,"알뜰승선권99"],["2026-12-26","hit",3,109000,20,"알뜰승선권109"],["2026-12-28","hit",3,49000,16,"착한승선권49"],["2026-12-29","izu",1,29000,20,"당일특가승선권"],["2026-12-29","izu",3,49000,18,"착한승선권49"],["2026-12-30","hit",1,39000,18,"당일특가승선권"],["2026-12-31","izu",3,69000,20,"착한승선권69"],["2027-01-01","hit",2,69000,20,"특가승선권"],["2027-01-01","hit",2,79000,20,"착한승선권79"],["2027-01-01","hit",3,88000,19,"알뜰승선권88"],["2027-01-01","hit",3,99000,13,"알뜰승선권99"]]};
 // 배 공시 운임 (편도). 부산발은 원, 일본발은 엔
 const SEA_BASE={hit:{krw:90000,jpy:9000,fuelK:16000,fuelJ:1600},izu:{krw:110000,jpy:11000,fuelK:27000,fuelJ:2700}};
 const SEA_TAX={k:7000,j:3500}; // 부산 터미널 이용료+출국세 / 대마도 부두세 500엔+출국세 3,000엔
@@ -379,7 +380,15 @@ function seaTsu(dep,ret){
   return out.sort((a,b)=>a.won-b.won)[0];
 }
 const seaOsa=()=>360000+7000+3700*st.fx/100; // 팬스타 미라클 그룹실 왕복 + 부산 7,000원 + 오사카 700엔·여객세 3,000엔
+// 요금표에서 그 날짜 항공 왕복 최저가. 당일치기는 오전 출발 + 오후 귀국 편만
+function calAir(city){
+  const R=AIRCAL&&AIRCAL.routes&&AIRCAL.routes[st.origin==='sel'?'sel':'pus']; if(!R||!R[city]) return null;
+  const o=(R[city].out||{})[st.dep], b=(R[city].back||{})[st.ret], day=st.dep===st.ret;
+  const A=o&&(day?o.am:o.any), B=b&&(day?b.pm:b.any); if(!A||!B) return null;
+  return {won:A[0]+B[0],txt:A[1]+' '+A[2]+' 출발, '+B[1]+' '+B[2]+' 귀국'};
+}
 function autoSea(){ const k=dkey(); if(!st.man) st.man={}; const m=st.man[k]||{};
+  if(AIRCAL&&!st.live[k]) ['fuk','osa','tyo'].forEach(c=>{ if(m[c+'_air']) return; const x=calAir(c); if(x) st.t[c+'_air']=Math.round(x.won/100)*100; });
   if(!m.tsu_sea) st.t.tsu_sea=Math.round(seaTsu(st.dep,st.ret).won/100)*100;
   if(!m.osa_sea) st.t.osa_sea=Math.round(seaOsa()/100)*100; }
 function seaShow(){ const x=seaTsu(st.dep,st.ret), m=(st.man&&st.man[dkey()])||{};
@@ -541,13 +550,15 @@ function catalog(){
 
 const kdate=x=>{const d=new Date(x+'T00:00:00');return (d.getMonth()+1)+'월 '+d.getDate()+'일('+'일월화수목금토'[d.getDay()]+')'};
 const tripLabel=(dep,ret)=>{const n=Math.round((new Date(ret)-new Date(dep))/864e5);return kdate(dep)+' 출발 · '+(n?n+'박 '+(n+1)+'일':'당일치기')};
-function loadFares(){const f=stored(dkey()); if(f) st.t=Object.assign({},f); autoSea(); Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0); fareState(); seaShow();}
+function loadFares(){st.t=Object.assign({},stored(dkey())||ORIGIN[st.origin==='sel'?'sel':'pus']); autoSea(); Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0); fareState(); seaShow();}
 function fareState(){
   const k=dkey(), el=$('fareState');
-  if(st.live[k]) el.innerHTML='<span class="chip ok">실시간 조회</span>'+tripLabel(st.dep,st.ret)+' 항공 요금을 조회해 넣었습니다.';
+  const cal=AIRCAL&&['fuk','osa','tyo'].some(c=>calAir(c));
+  if(cal&&!st.live[k]&&!st.saved[k]) el.innerHTML='<span class="chip ok">요금표</span>'+tripLabel(st.dep,st.ret)+' 항공·배 요금을 '+AIRCAL.at.slice(5).replace('-','/')+' 요금표에서 넣었습니다.';
+  else if(st.live[k]) el.innerHTML='<span class="chip ok">실시간 조회</span>'+tripLabel(st.dep,st.ret)+' 항공 요금을 조회해 넣었습니다.';
   else if(st.saved[k]) el.innerHTML='<span class="chip ok">저장됨</span>'+tripLabel(st.dep,st.ret)+' 요금으로 계산 중입니다.';
   else if(stored(k)) el.innerHTML='<span class="chip ok">조회가</span>'+tripLabel(st.dep,st.ret)+' 요금으로 계산 중입니다.';
-  else el.innerHTML='<span class="chip wn">요금 확인 전</span>'+tripLabel(st.dep,st.ret)+' 요금이 아직 없습니다. 아래 값은 다른 날짜의 요금이니 링크로 확인해 고쳐 주세요.';
+  else el.innerHTML='<span class="chip wn">요금 확인 전</span>'+tripLabel(st.dep,st.ret)+' 요금이 아직 없습니다. 항공은 평소 시세 추정값으로 계산 중이니 링크로 확인해 고쳐 주세요.';
 }
 // 한 조합의 이동 순서
 const LEG={
@@ -643,7 +654,7 @@ $('chart').addEventListener('mouseleave',()=>tip.hidden=true);
 $('chart').addEventListener('focusin',e=>{const r=e.target.closest('.row'); if(r){const b=r.getBoundingClientRect();showTip(r,b.left+40,b.bottom-10);}});
 $('chart').addEventListener('focusout',()=>tip.hidden=true);
 
-autoSea();fill();fareState();seaShow();catalog();render();
+st.t=Object.assign({},stored(dkey())||st.t);autoSea();fill();fareState();seaShow();catalog();render();
 // 실시간 항공 요금: 보는 사람의 Expedia 커넥터를 호출한다 (Claude 안에서 열었을 때만 동작)
 let mcp=null, liveTok=0, liveTimer=0, liveBusy=false;
 const AIRCITY={fuk:'Fukuoka, Japan',osa:'Osaka, Japan',tyo:'Tokyo, Japan'};
@@ -677,7 +688,9 @@ const LIVE_ERR={server_not_connected:'Expedia 커넥터가 연결되어 있지 �
 function liveShow(msg){
   const L=st.live[dkey()], el=$('liveState');
   if(msg){el.innerHTML=msg;return;}
-  if(!L){el.textContent=mcp?'':'실시간 조회는 Claude에서 이 페이지를 열고 Expedia 커넥터를 허용했을 때 동작합니다.';return;}
+  if(!L){
+    if(AIRCAL){el.innerHTML='<ul>'+['fuk','osa','tyo'].map(c=>{const x=calAir(c);return '<li><b>'+CITY[c]+' 항공'+(x?' '+man(x.won):'')+'</b> '+(x?x.txt:'이 날짜 요금이 요금표에 없어 이전 값을 씁니다.')+'</li>';}).join('')+'</ul><span class="mute">'+AIRCAL.at.slice(5).replace('-','/')+' 갱신 요금표 (최근 검색된 직항 최저가). 예매 전 링크로 확인하세요.</span>';return;}
+    el.textContent=mcp?'':'항공 요금표가 아직 없습니다. 링크로 확인한 요금을 아래 칸에 넣으세요.';return;}
   el.innerHTML='<ul>'+Object.keys(AIRCITY).map(c=>{const x=L[c]; return x?'<li><b>'+CITY[c]+(x.won?' '+man(x.won):'')+'</b> '+(x.err?'<span class="chip wn">조회 실패</span>':'')+x.txt+'</li>':'';}).join('')+'</ul><span class="mute">'+new Date(L.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 익스피디아 조회, 1달러 '+st.usd.toLocaleString('ko-KR')+'원 환산</span>';
 }
 async function liveFetch(){
@@ -697,6 +710,10 @@ async function liveFetch(){
 }
 function liveSoon(){ liveShow(); if(!mcp) return; clearTimeout(liveTimer); liveTok++; if(st.live[dkey()]&&Date.now()-st.live[dkey()].at<18e5) return; liveTimer=setTimeout(liveFetch,900); }
 $('liveBtn').addEventListener('click',()=>{delete st.live[dkey()];liveFetch();});
+// 요금표 파일이 있으면 읽어 온다 (웹에 올렸을 때와 Claude 안 모두)
+fetch('fares.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(d=>{ if(!d) return;
+  if(d.ferry&&d.ferry.rows&&d.ferry.rows.length) FERRY=d.ferry; if(d.air&&d.air.routes) AIRCAL=d.air;
+  autoSea(); Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0); fareState(); seaShow(); render(); liveShow(); }).catch(()=>{});
 if(window.claude&&window.claude.use) window.claude.use('mcp').then(m=>{ if(!m) {liveShow();return;} mcp=m; $('liveBtn').hidden=false; liveShow(); }).catch(()=>{});
 liveShow();
 })();
