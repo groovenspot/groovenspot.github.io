@@ -26,6 +26,7 @@
   color-scheme:dark }
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;margin:0}
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
 h1{font-size:clamp(24px,4vw,34px);line-height:1.2;margin:0;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
@@ -115,6 +116,20 @@ ol.route .amt{font-family:var(--mono);font-size:13.5px;white-space:nowrap;text-a
 .live ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
 .live li b{font-weight:600}
 .btn:disabled{opacity:.6;cursor:default}
+.steps{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px}
+.steps button{font:inherit;font-size:13.5px;display:flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink2);cursor:pointer}
+.steps button i{font-style:normal;font-family:var(--mono);font-size:12px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--ink2)}
+.steps button[aria-current=step]{border-color:var(--accent);color:var(--ink);font-weight:600}
+.steps button[aria-current=step] i{background:var(--accent);color:var(--accent-ink)}
+.steps button.done i{background:var(--good-bg);color:var(--good)}
+.steps button:disabled{opacity:.5;cursor:default}
+.step{display:flex;flex-direction:column;gap:24px;min-width:0}
+.stepnav{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600;padding:9px 16px;font-size:14px}
+.panel.narrow{max-width:560px}
+.ack{border-top:3px solid var(--accent)}
+.sumbar{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 14px;font-size:13.5px;color:var(--ink2)}
+.sumbar b{color:var(--ink);font-weight:600}
 .btn{font:inherit;font-size:13px;padding:6px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:4px;cursor:pointer;align-self:flex-start}
 
 .scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px}
@@ -140,10 +155,10 @@ table.t td.note{min-width:240px;color:var(--ink2)}
 footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);padding-top:16px;max-width:80ch}
 </style>
 
-<div class="wrap">
+<div class="wrap" id="controls">
   <header class="top">
     <h1>일본 마운자로 원정 계산기</h1>
-    <p class="lede">약값, 진료·서류비, 병원 배송비, 배·항공 왕복 교통비를 합쳐 어디서 받는 것이 가장 싼지 계산합니다. 병원 가격은 2026년 11월 14일에 공개 자료로 확인한 값이고, 교통비와 한국 가격은 직접 고칠 수 있습니다.</p>
+    <p class="lede">주의사항을 확인한 뒤 용량과 날짜를 정하면, 약값·진료비·배송비·교통비를 합쳐 가장 싼 경로를 찾아 줍니다. 병원 가격은 2026년 11월 14일 공개 자료 기준입니다.</p>
     <div class="rule" aria-label="한국 반입 기준">
       <div><b>12펜</b><span>1인 휴대 반입 한도 (주 1회, 3개월분)</span></div>
       <div><b>11월 12일~</b><span>식약처·관세청 허용 시행</span></div>
@@ -152,8 +167,31 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
     </div>
   </header>
 
-  <div class="grid">
-    <form class="panel controls" id="controls" onsubmit="return false">
+  <nav class="steps" id="steps" aria-label="진행 단계">
+    <button type="button" data-go="notice"><i>1</i>주의사항</button>
+    <button type="button" data-go="plan"><i>2</i>용량과 조건</button>
+    <button type="button" data-go="travel"><i>3</i>날짜와 교통</button>
+    <button type="button" data-go="result"><i>4</i>최저가 결과</button>
+    <button type="button" data-go="prep"><i>5</i>준비 체크</button>
+  </nav>
+
+  <div class="step" data-step="notice">
+  <section class="sec">
+    <h2>사기 전에 알아야 할 것</h2>
+    <div class="cols two">
+      <div class="panel"><h3>규정</h3><ul><li>허용된 것은 본인이 처방받아 본인이 들고 오는 경우뿐이다. 해외 직구, 우편·특송, 대리 구매, 재판매는 지금도 불법이다.</li><li>한도는 6개가 기본이고, 넘으면 용법상 3개월분까지다. 주 1회 주사라 12펜으로 본다. 일본에서 이미 맞은 펜도 3개월분에 넣어 세는 것이 안전하다.</li><li>여러 번 다녀오며 반복해서 들여오면 세관이 자가 사용이 아니라고 볼 수 있다. 식약처도 시행 후 반입 양상을 지켜보겠다고 했다.</li><li>일본 후생노동성 장관은 10월 9일 여행자에게 과도한 기간분을 처방하는 것은 적절하지 않다고 말했다. 일본 쪽에서 처방 개수를 줄일 가능성이 있다.</li></ul></div>
+      <div class="panel"><h3>약에 대해</h3><ul><li>일본에서 마운자로는 2형 당뇨병 치료제로만 허가됐다. 체중 감량 목적 처방은 허가 외 사용이고 전액 본인 부담이다.</li><li>문제가 생기면 구제받기 어렵다. 한국의 의약품 부작용 피해구제는 해외 구입 약을 다루지 않는다.</li><li>국내 허가사항 기준으로 갑상선 수질암 병력·가족력, 다발성 내분비선종 2형이 있으면 쓰면 안 되고, 임신 중이거나 계획 중이어도 쓰지 않는다. 췌장염 병력이 있으면 의사와 먼저 상의한다.</li><li>먹는 피임약 효과가 떨어질 수 있다. 시작 후와 증량 후 4주 동안은 다른 피임법을 함께 쓴다.</li><li>일본 제품은 1회용 펜(아테오스)이다. 한 펜을 나눠 맞을 수 없고 용량 조절은 펜을 바꿔야만 된다.</li></ul></div>
+      <div class="panel"><h3>돈 계산</h3><ul><li>싼 가격은 대부분 조건이 붙는다. 12펜 묶음, 첫 방문 한정, 2펜 1박스 가격을 4펜 가격처럼 적은 곳이 있다. 최종 결제액으로 비교한다.</li><li>초진료, 영문 서류, 배송비, 보냉백, 혈액검사, 구역 방지약이 따로 붙을 수 있다. 재팬넷클리닉은 서류·진료비만 11,000엔이다.</li><li>교통비를 넣으면 4펜만 사 오는 것은 거의 남지 않는다. 8펜 이상부터 차이가 난다.</li><li>용량을 올리면 중간에 남는 펜이 생긴다. 12펜을 한 용량으로 사기 전에 증량 계획을 국내 의사와 정한다.</li><li>해외 병원에 낸 의료비는 연말정산 의료비 세액공제 대상이 아니고 국내 실손보험도 받을 수 없다.</li></ul></div>
+      <div class="panel"><h3>배송 수령의 위험</h3><ul><li>배송에 2~3일이 걸리고 날씨로 배나 항공편이 끊기면 약이 제때 오지 않는다. 대마도 배편은 파도가 높은 날 결항한다.</li><li>숙소가 냉장 택배를 실온에 두면 약이 상할 수 있다. 도착 시각과 보관 방법을 숙소와 미리 정한다.</li><li>한국에 있는 상태에서 일본 병원의 온라인 진료를 받는 것은 병원마다 안내가 다르다. 예약 전에 가능한지 확인한다.</li><li>일본 거주자 전용 온라인 클리닉은 값이 싸도 여행자는 대상이 아니다. 거주지를 속여 주문하지 않는다.</li><li>병원 공식 채널이 아닌 구매 대행, 중고 거래, 오픈채팅 판매는 정품 여부와 보관 상태를 확인할 길이 없다.</li></ul></div>
+    </div>
+  </section>
+    <div class="panel ack" id="ack"><h3>확인하고 시작하기</h3><div class="chk"><label class="c"><input type="checkbox" id="ack1"><span>본인이 처방받아 본인이 직접 들고 오는 경우만 허용되고, 해외 직구·국제 배송·대리 구매·재판매는 불법이라는 점을 확인했습니다.</span></label><label class="c"><input type="checkbox" id="ack2"><span>반입 한도는 1인 12펜(3개월분)이고, 처방 여부·용량·개수는 일본 의사가 진료 후 정한다는 점을 확인했습니다.</span></label><label class="c"><input type="checkbox" id="ack3"><span>해외에서 산 약은 한국 부작용 피해구제 대상이 아니며, 쓰면 안 되는 경우(갑상선 수질암 병력·가족력, 임신 등)를 읽었습니다.</span></label><label class="c"><input type="checkbox" id="ack4"><span>이 계산기의 가격은 공개 자료 기준이며, 결제 전에 병원·선사·항공사에서 다시 확인해야 한다는 점을 확인했습니다.</span></label></div><p class="small mute" id="ackHint">네 가지를 모두 확인하면 다음 단계로 갈 수 있습니다.</p></div>
+    <div class="stepnav"><span></span><button type="button" class="btn primary" data-go="plan" id="ackNext">용량과 조건 정하기 →</button></div>
+  </div>
+
+  <div class="step" data-step="plan" hidden>
+    <div class="cols two">
+      <div class="panel">
       <fieldset>
         <legend>사올 양과 용량</legend>
         <div class="seg" id="monthsSeg" role="group" aria-label="개월 수">
@@ -166,7 +204,30 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
         </div>
         <p class="small mute">용량은 의사가 정합니다. 처음이면 보통 2.5mg으로 4주 시작합니다.</p>
       </fieldset>
-      <hr>
+      </div>
+      <div class="panel">
+      <fieldset>
+        <legend>조건</legend>
+        <label class="c"><input type="checkbox" id="onlyOk"><span>관광객 처방이 공식 확인된 곳만</span></label>
+        <label class="c"><input type="checkbox" id="hideBlocked"><span>예약 중단·마감·품절인 곳 제외</span></label>
+        <label class="c"><input type="checkbox" id="withDoc"><span>영문 처방 증명서 발급비 포함 (세관 대비 권장)</span></label>
+        <label class="f"><span>배송 수령지</span><select id="dest"><option value="auto">가장 싼 곳 자동</option><option value="tsu">대마도</option><option value="fuk">후쿠오카</option><option value="osa">오사카</option><option value="tyo">도쿄</option></select></label>
+        <label class="f"><span>환율 (100엔당 원)</span><input type="number" id="fx" min="1" step="1"></label>
+      </fieldset>
+      </div>
+      <div class="panel">
+      <fieldset>
+        <legend>한국 가격 (4펜, 원)</legend>
+        <div id="krInputs" style="display:flex;flex-direction:column;gap:8px"></div>
+        <p class="small mute">2.5·5mg은 국내 비급여 판매가 범위의 중간값, 7.5mg 이상은 공급가 기준 추정입니다. 다니는 병원 가격으로 바꾸세요.</p>
+      </fieldset>
+      </div>
+    </div>
+    <div class="stepnav"><button type="button" class="btn" data-go="notice">← 주의사항</button><button type="button" class="btn primary" data-go="travel">날짜와 교통 정하기 →</button></div>
+  </div>
+
+  <div class="step" data-step="travel" hidden>
+    <div class="panel narrow">
       <fieldset>
         <legend>출발지와 교통비 (왕복, 원)</legend>
         <div class="seg" id="originSeg" role="group" aria-label="출발지">
@@ -195,24 +256,25 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
         <label class="c"><input type="checkbox" id="noTravel"><span>어차피 갈 여행이라 교통·숙박비는 빼고 계산</span></label>
         <p class="small mute">도시마다 항공과 배 중 싼 쪽을 자동으로 고릅니다. 0을 넣으면 그 교통편은 제외합니다. 후쿠오카 배는 1박 이상, 오사카 배는 2박 이상 일정에서만 계산하고 선내에서 자는 밤은 숙박비에서 뺍니다. 배 요금은 유류할증료·터미널 이용료·일본 출국세를 더한 추정 총액이고, 특가와 정상가 차이가 크니 실제 결제 금액으로 바꾸세요.</p>
       </fieldset>
-      <hr>
-      <fieldset>
-        <legend>조건</legend>
-        <label class="c"><input type="checkbox" id="onlyOk"><span>관광객 처방이 공식 확인된 곳만</span></label>
-        <label class="c"><input type="checkbox" id="hideBlocked"><span>예약 중단·마감·품절인 곳 제외</span></label>
-        <label class="c"><input type="checkbox" id="withDoc"><span>영문 처방 증명서 발급비 포함 (세관 대비 권장)</span></label>
-        <label class="f"><span>배송 수령지</span><select id="dest"><option value="auto">가장 싼 곳 자동</option><option value="tsu">대마도</option><option value="fuk">후쿠오카</option><option value="osa">오사카</option><option value="tyo">도쿄</option></select></label>
-        <label class="f"><span>환율 (100엔당 원)</span><input type="number" id="fx" min="1" step="1"></label>
-      </fieldset>
-      <hr>
-      <fieldset>
-        <legend>한국 가격 (4펜, 원)</legend>
-        <div id="krInputs" style="display:flex;flex-direction:column;gap:8px"></div>
-        <p class="small mute">2.5·5mg은 국내 비급여 판매가 범위의 중간값, 7.5mg 이상은 공급가 기준 추정입니다. 다니는 병원 가격으로 바꾸세요.</p>
-      </fieldset>
-      <button type="button" class="btn" id="reset">기본값으로 되돌리기</button>
-    </form>
+    </div>
+  <section class="sec">
+    <div class="sec-h"><h2>부산에서 배로 가는 법</h2><span class="small mute">부산항 국제여객터미널 출발. 시간표는 요일·계절에 따라 바뀝니다.</span></div>
+    <div class="scroll"><table class="t">
+      <thead><tr><th>노선</th><th>배</th><th>소요</th><th>대표 시간</th><th class="n">왕복 총액 (추정)</th><th>약 받기</th></tr></thead>
+      <tbody>
+        <tr><td class="nm">대마도 히타카츠<small>북부, 부산에서 가장 가까움</small></td><td>팬스타 쓰시마링크, 씨플라워, 노바</td><td>1시간 10~30분</td><td>부산 08:40 → 09:50<br>히타카츠 17:10 → 18:20</td><td class="n">9만~25만원</td><td class="note">당일치기 가능 (체류 약 7시간). 현지에 처방 병원이 없어 배송 수령만 됩니다. 숙박 없이 받으려면 야마토 영업소 수령.</td></tr>
+        <tr><td class="nm">대마도 이즈하라<small>남부, 중심 시가지</small></td><td>팬스타 쓰시마링크, 씨플라워</td><td>2시간 10분 이상</td><td>부산 09:20 → 11:40<br>이즈하라 15:30 → 17:50</td><td class="n">12만~30만원</td><td class="note">당일 체류 약 4시간. 숙소가 많아 호텔 수령에 유리.</td></tr>
+        <tr><td class="nm">후쿠오카 하카타항<small>시내까지 버스 약 20분</small></td><td>뉴카멜리아</td><td>갈 때 9시간 (야간), 올 때 6시간</td><td>부산 22:30 → 07:30<br>하카타 12:30 → 18:30</td><td class="n">15만~27만원</td><td class="note">배에서 1박하므로 숙박비가 줄지만, 아침 도착 당일 12:30 배로 돌아오려면 병원 문 여는 10시 직후 진료뿐이라 빠듯합니다. 1박 권장.</td></tr>
+        <tr><td class="nm">오사카 난코<small>시내까지 지하철 약 40분</small></td><td>팬스타 미라클</td><td>약 19시간 (선내 1박)</td><td>운항 요일은 선사에 확인</td><td class="n">약 40만원 (그룹실 36만원 + 세금)</td><td class="note">왕복만 이틀이 걸립니다. 비용만 보면 항공과 비슷하거나 비쌉니다.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small mute">대마도 왕복 총액 계산 예: 특가 왕복권 + 부산발 유류할증료 16,000원 + 대마도발 유류할증료 1,600엔 + 부산 터미널 이용료·출국세 7,000원 + 현지 부두세 500엔 + 일본 출국세 3,000엔. 특가는 평일 24,900원부터 주말 10만원 안팎이고, 특가가 없는 날은 정상 운임(부산발 9만원 + 대마도발 9,000엔)으로 계산합니다.</p>
+  </section>
+    <div class="stepnav"><button type="button" class="btn" data-go="plan">← 용량과 조건</button><button type="button" class="btn primary" data-go="result">최저가 결과 보기 →</button></div>
+  </div>
 
+  <div class="step" data-step="result" hidden>
+    <div class="sumbar" id="sumbar"></div>
     <div class="results">
       <section class="verdict" id="verdict" aria-live="polite"></section>
 
@@ -246,32 +308,18 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
         <div class="scroll"><table class="t" id="rank"></table></div>
       </section>
     </div>
-  </div>
-
   <section class="sec">
     <div class="sec-h"><h2>병원 배송 비교</h2><span class="small mute">결제액은 왼쪽에서 고른 양 기준 (약값 + 진료비 + 서류비 + 배송비)</span></div>
     <div class="scroll"><table class="t" id="deliv"></table></div>
   </section>
-
-  <section class="sec">
-    <div class="sec-h"><h2>부산에서 배로 가는 법</h2><span class="small mute">부산항 국제여객터미널 출발. 시간표는 요일·계절에 따라 바뀝니다.</span></div>
-    <div class="scroll"><table class="t">
-      <thead><tr><th>노선</th><th>배</th><th>소요</th><th>대표 시간</th><th class="n">왕복 총액 (추정)</th><th>약 받기</th></tr></thead>
-      <tbody>
-        <tr><td class="nm">대마도 히타카츠<small>북부, 부산에서 가장 가까움</small></td><td>팬스타 쓰시마링크, 씨플라워, 노바</td><td>1시간 10~30분</td><td>부산 08:40 → 09:50<br>히타카츠 17:10 → 18:20</td><td class="n">9만~25만원</td><td class="note">당일치기 가능 (체류 약 7시간). 현지에 처방 병원이 없어 배송 수령만 됩니다. 숙박 없이 받으려면 야마토 영업소 수령.</td></tr>
-        <tr><td class="nm">대마도 이즈하라<small>남부, 중심 시가지</small></td><td>팬스타 쓰시마링크, 씨플라워</td><td>2시간 10분 이상</td><td>부산 09:20 → 11:40<br>이즈하라 15:30 → 17:50</td><td class="n">12만~30만원</td><td class="note">당일 체류 약 4시간. 숙소가 많아 호텔 수령에 유리.</td></tr>
-        <tr><td class="nm">후쿠오카 하카타항<small>시내까지 버스 약 20분</small></td><td>뉴카멜리아</td><td>갈 때 9시간 (야간), 올 때 6시간</td><td>부산 22:30 → 07:30<br>하카타 12:30 → 18:30</td><td class="n">15만~27만원</td><td class="note">배에서 1박하므로 숙박비가 줄지만, 아침 도착 당일 12:30 배로 돌아오려면 병원 문 여는 10시 직후 진료뿐이라 빠듯합니다. 1박 권장.</td></tr>
-        <tr><td class="nm">오사카 난코<small>시내까지 지하철 약 40분</small></td><td>팬스타 미라클</td><td>약 19시간 (선내 1박)</td><td>운항 요일은 선사에 확인</td><td class="n">약 40만원 (그룹실 36만원 + 세금)</td><td class="note">왕복만 이틀이 걸립니다. 비용만 보면 항공과 비슷하거나 비쌉니다.</td></tr>
-      </tbody>
-    </table></div>
-    <p class="small mute">대마도 왕복 총액 계산 예: 특가 왕복권 + 부산발 유류할증료 16,000원 + 대마도발 유류할증료 1,600엔 + 부산 터미널 이용료·출국세 7,000원 + 현지 부두세 500엔 + 일본 출국세 3,000엔. 특가는 평일 24,900원부터 주말 10만원 안팎이고, 특가가 없는 날은 정상 운임(부산발 9만원 + 대마도발 9,000엔)으로 계산합니다.</p>
-  </section>
-
   <section class="sec">
     <div class="sec-h"><h2>병원별 공개 가격 (4펜, 엔, 세금 포함)</h2><span class="small mute">빈칸은 가격 미공개. 12펜 묶음가가 있는 곳은 계산에 자동 반영합니다.</span></div>
     <div class="scroll"><table class="t" id="catalog"></table></div>
   </section>
+    <div class="stepnav"><button type="button" class="btn" data-go="travel">← 날짜와 교통</button><button type="button" class="btn primary" data-go="prep">준비 체크리스트 →</button></div>
+  </div>
 
+  <div class="step" data-step="prep" hidden>
   <section class="sec">
     <div class="sec-h"><h2>준비 순서</h2><span class="small mute">체크한 항목은 이 기기에 저장됩니다.</span></div>
     <div class="cols two" id="todo">
@@ -282,21 +330,12 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
       <div class="panel"><h3>귀국 후</h3><div class="chk"><label class="c"><input type="checkbox" id="todo18"><span>바로 냉장고(2~8℃)에 넣는다. 문 쪽이나 냉기 나오는 곳처럼 얼 수 있는 자리는 피한다.</span></label><label class="c"><input type="checkbox" id="todo19"><span>국내 병원에 일본에서 처방받은 사실과 용량을 알리고 경과를 본다.</span></label><label class="c"><input type="checkbox" id="todo20"><span>심한 복통이 계속되거나 구토가 멈추지 않으면 주사를 중단하고 바로 진료를 받는다.</span></label><label class="c"><input type="checkbox" id="todo21"><span>다 쓴 펜은 일반 쓰레기에 버리지 말고 단단한 용기에 모아 두고 다니는 병원이나 약국에 폐기 방법을 묻는다.</span></label></div></div>
     </div>
   </section>
-
-  <section class="sec">
-    <h2>사기 전에 알아야 할 것</h2>
-    <div class="cols two">
-      <div class="panel"><h3>규정</h3><ul><li>허용된 것은 본인이 처방받아 본인이 들고 오는 경우뿐이다. 해외 직구, 우편·특송, 대리 구매, 재판매는 지금도 불법이다.</li><li>한도는 6개가 기본이고, 넘으면 용법상 3개월분까지다. 주 1회 주사라 12펜으로 본다. 일본에서 이미 맞은 펜도 3개월분에 넣어 세는 것이 안전하다.</li><li>여러 번 다녀오며 반복해서 들여오면 세관이 자가 사용이 아니라고 볼 수 있다. 식약처도 시행 후 반입 양상을 지켜보겠다고 했다.</li><li>일본 후생노동성 장관은 10월 9일 여행자에게 과도한 기간분을 처방하는 것은 적절하지 않다고 말했다. 일본 쪽에서 처방 개수를 줄일 가능성이 있다.</li></ul></div>
-      <div class="panel"><h3>약에 대해</h3><ul><li>일본에서 마운자로는 2형 당뇨병 치료제로만 허가됐다. 체중 감량 목적 처방은 허가 외 사용이고 전액 본인 부담이다.</li><li>문제가 생기면 구제받기 어렵다. 한국의 의약품 부작용 피해구제는 해외 구입 약을 다루지 않는다.</li><li>국내 허가사항 기준으로 갑상선 수질암 병력·가족력, 다발성 내분비선종 2형이 있으면 쓰면 안 되고, 임신 중이거나 계획 중이어도 쓰지 않는다. 췌장염 병력이 있으면 의사와 먼저 상의한다.</li><li>먹는 피임약 효과가 떨어질 수 있다. 시작 후와 증량 후 4주 동안은 다른 피임법을 함께 쓴다.</li><li>일본 제품은 1회용 펜(아테오스)이다. 한 펜을 나눠 맞을 수 없고 용량 조절은 펜을 바꿔야만 된다.</li></ul></div>
-      <div class="panel"><h3>돈 계산</h3><ul><li>싼 가격은 대부분 조건이 붙는다. 12펜 묶음, 첫 방문 한정, 2펜 1박스 가격을 4펜 가격처럼 적은 곳이 있다. 최종 결제액으로 비교한다.</li><li>초진료, 영문 서류, 배송비, 보냉백, 혈액검사, 구역 방지약이 따로 붙을 수 있다. 재팬넷클리닉은 서류·진료비만 11,000엔이다.</li><li>교통비를 넣으면 4펜만 사 오는 것은 거의 남지 않는다. 8펜 이상부터 차이가 난다.</li><li>용량을 올리면 중간에 남는 펜이 생긴다. 12펜을 한 용량으로 사기 전에 증량 계획을 국내 의사와 정한다.</li><li>해외 병원에 낸 의료비는 연말정산 의료비 세액공제 대상이 아니고 국내 실손보험도 받을 수 없다.</li></ul></div>
-      <div class="panel"><h3>배송 수령의 위험</h3><ul><li>배송에 2~3일이 걸리고 날씨로 배나 항공편이 끊기면 약이 제때 오지 않는다. 대마도 배편은 파도가 높은 날 결항한다.</li><li>숙소가 냉장 택배를 실온에 두면 약이 상할 수 있다. 도착 시각과 보관 방법을 숙소와 미리 정한다.</li><li>한국에 있는 상태에서 일본 병원의 온라인 진료를 받는 것은 병원마다 안내가 다르다. 예약 전에 가능한지 확인한다.</li><li>일본 거주자 전용 온라인 클리닉은 값이 싸도 여행자는 대상이 아니다. 거주지를 속여 주문하지 않는다.</li><li>병원 공식 채널이 아닌 구매 대행, 중고 거래, 오픈채팅 판매는 정품 여부와 보관 상태를 확인할 길이 없다.</li></ul></div>
-    </div>
-  </section>
-
   <section class="sec">
     <h2>출처</h2>
     <ol class="src" id="sources"></ol>
   </section>
+    <div class="stepnav"><button type="button" class="btn" data-go="result">← 최저가 결과</button><button type="button" class="btn" id="reset">기본값으로 되돌리기</button></div>
+  </div>
 
   <footer>이 페이지는 가격 비교용 정보이며 의료 조언이 아닙니다. 처방 여부, 용량, 처방 개수는 일본 의사가 진료 후 결정합니다. 가격·재고·예약 상태는 자주 바뀌므로 결제 전에 각 병원 공식 채널에서 다시 확인하세요. 진료비·배송비가 "미확인"인 항목은 0원으로 계산했습니다.</footer>
 </div>
@@ -603,7 +642,7 @@ function fill(){
 }
 const numv=e=>Math.max(0,+e.value||0);
 $('controls').addEventListener('input',ev=>{
-  const e=ev.target; sel=0;
+  const e=ev.target; if(!e.closest('fieldset')) return; sel=0;
   if(e.id==='d1'||e.id==='d2'||e.id==='d3') st.d[+e.id[1]-1]=+e.value;
   else if(e.id.startsWith('t_')){const f=e.id.slice(2);st.t[f]=numv(e);if(!st.man)st.man={};(st.man[dkey()]=st.man[dkey()]||{})[f]=1;st.saved[dkey()]=Object.assign({},st.t);fareState();seaShow();}
   else if(e.id==='dest') st.dest=e.value;
@@ -733,7 +772,36 @@ fetch('fares.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(d=>{ if(
   autoSea(); Object.keys(ORIGIN.pus).forEach(k=>$('t_'+k).value=st.t[k]||0); fareState(); seaShow(); render(); liveShow(); }).catch(()=>{});
 if(window.claude&&window.claude.use) window.claude.use('mcp').then(m=>{ if(!m) {liveShow();return;} mcp=m; $('liveBtn').hidden=false; liveShow(); }).catch(()=>{});
 liveShow();
+// 단계 이동: 주의사항 확인 → 용량·조건 → 날짜·교통 → 결과 → 준비
+(function(){
+  const ORDER=['notice','plan','travel','result','prep'], acks=[...document.querySelectorAll('#ack input')];
+  let ok={}; try{ok=JSON.parse(localStorage.getItem('mj-ack-v1')||'{}')}catch(e){}
+  acks.forEach(a=>a.checked=!!ok[a.id]);
+  const allAck=()=>acks.every(a=>a.checked);
+  let cur='notice';
+  function sum(){
+    $('sumbar').innerHTML='<span><b>'+st.m*4+'펜</b> '+st.d.slice(0,st.m).map(d=>d+'mg').join(' → ')+'</span><span><b>'+tripLabel(st.dep,st.ret)+'</b></span><span>'+(st.origin==='sel'?'서울':'부산')+' 출발</span><span>'+(st.onlyOk?'관광객 처방 확인된 곳만':'모든 병원')+'</span><button type="button" class="btn" data-go="plan">조건 바꾸기</button><button type="button" class="btn" data-go="travel">날짜 바꾸기</button>';
+  }
+  function show(name,push){
+    if(!ORDER.includes(name)) name='notice';
+    if(name!=='notice'&&!allAck()){ name='notice'; $('ackHint').textContent='아직 확인하지 않은 항목이 있습니다. 네 가지를 모두 체크해 주세요.'; }
+    cur=name;
+    document.querySelectorAll('.step').forEach(e=>e.hidden=e.dataset.step!==name);
+    document.querySelectorAll('#steps button').forEach(b=>{const i=ORDER.indexOf(b.dataset.go), c=ORDER.indexOf(name);
+      if(b.dataset.go===name) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current');
+      b.classList.toggle('done',i<c); b.disabled=i>0&&!allAck();});
+    $('ackNext').disabled=!allAck();
+    if(name==='result'){sum();render();}
+    document.querySelector('.rule').hidden=name!=='notice';
+    if(push){ try{history.replaceState(null,'','#'+name)}catch(e){ location.hash=name; } window.scrollTo(0,0); }
+  }
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-go]'); if(b&&!b.disabled) show(b.dataset.go,true);});
+  acks.forEach(a=>a.addEventListener('change',()=>{ok[a.id]=a.checked;try{localStorage.setItem('mj-ack-v1',JSON.stringify(ok))}catch(e){} $('ackHint').textContent=allAck()?'모두 확인했습니다. 다음 단계로 가세요.':'네 가지를 모두 확인하면 다음 단계로 갈 수 있습니다.'; show(cur);}));
+  window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+  show(location.hash.slice(1)||'notice');
 })();
+})();
+
 // 준비 체크리스트
 (function(){let td={};try{td=JSON.parse(localStorage.getItem('mj-todo-v1')||'{}')}catch(e){}
 document.querySelectorAll('#todo input').forEach(e=>{e.checked=!!td[e.id];e.addEventListener('change',()=>{td[e.id]=e.checked;try{localStorage.setItem('mj-todo-v1',JSON.stringify(td))}catch(x){}})});})();
