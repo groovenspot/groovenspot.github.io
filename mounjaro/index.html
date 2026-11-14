@@ -188,7 +188,7 @@ footer{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);paddi
           <div id="seaState" class="small"></div>
         </div>
         <div class="fares" id="fares" aria-label="선택한 날짜로 요금 검색"></div>
-        <p class="small mute">날짜를 바꾸면 그 날짜의 항공·배 요금을 요금표에서 찾아 아래 칸과 순위에 반영합니다. Claude 안에서 열면 익스피디아 실시간 조회도 함께 합니다. 대마도 배는 대아고속해운 공개 특가표에서 그 날짜의 가장 싼 승선권을 찾아 넣습니다. 칸을 직접 고치면 그 날짜는 고친 값을 씁니다.</p>
+        <p class="small mute">날짜를 바꾸면 그 날짜의 항공·배 요금을 요금표에서 찾아 아래 칸과 순위에 반영합니다. Claude 안에서 열면 익스피디아와 키위를 실시간으로 함께 조회해 더 싼 쪽을 넣습니다. 대마도 배는 대아고속해운 공개 특가표에서 그 날짜의 가장 싼 승선권을 찾아 넣습니다. 칸을 직접 고치면 그 날짜는 고친 값을 씁니다.</p>
         <label class="f"><span>달러 환율 (1달러당 원)</span><input type="number" id="usd" min="1" step="1"></label>
         <label class="f"><span>대마도 배 (히타카츠)</span><input type="number" id="t_tsu_sea" min="0" step="1000"></label>
         <label class="f"><span>후쿠오카 항공</span><input type="number" id="t_fuk_air" min="0" step="1000"></label>
@@ -669,7 +669,31 @@ async function expedia(input){
 }
 const leg=o=>o.slices.map(sl=>({dep:tmin(sl.departure_time),arr:tmin(sl.arrival_time),air:(sl.legs&&sl.legs[0]&&sl.legs[0].operating_airline_name)||'',seats:sl.seats_left}));
 const hasSeat=o=>o.slices.every(sl=>sl.seats_left!==0)&&o.price&&o.price.total_price;
+const KIWICITY={fuk:'FUK',osa:'Osaka',tyo:'Tokyo'};
+const dmy=x=>x.slice(8)+'/'+x.slice(5,7)+'/'+x.slice(0,4);
+const isoMin=t=>{const m=/T(\d\d):(\d\d)/.exec(t||'');return m?+m[1]*60+ +m[2]:null;};
+async function kiwiCity(city){
+  const day=st.dep===st.ret, input={flyFrom:st.origin==='sel'?'Seoul':'PUS',flyTo:KIWICITY[city],departureDate:dmy(st.dep),returnDate:dmy(st.ret),currency:'KRW',max_sector_stopovers:0,sort:'price'};
+  if(day){input.atime_to=11;input.ret_dtime_from=13;}
+  const call=()=>mcp.callTool('Kiwi.com','search-flight',input,{cache:{staleTime:18e5,gcTime:36e5}});
+  let r; try{r=await call();}catch(e){ if(e&&e.retryable){await new Promise(z=>setTimeout(z,Math.min(e.retryAfterMs||1500,8000)+Math.random()*500)); r=await call();} else throw e; }
+  let pl=r.payload; if(typeof pl==='string'){try{pl=JSON.parse(pl)}catch(x){pl=null}}
+  const its=((pl&&pl.itineraries)||[]).filter(i=>i.outbound&&i.inbound&&i.price>0).map(i=>({won:i.price,od:isoMin(i.outbound.departureTime),oa:isoMin(i.outbound.arrivalTime),bd:isoMin(i.inbound.departureTime),oair:(i.outbound.segments&&i.outbound.segments[0]&&i.outbound.segments[0].carrierName)||'',bair:(i.inbound.segments&&i.inbound.segments[0]&&i.inbound.segments[0].carrierName)||''}))
+    .filter(i=>!day||(i.oa!=null&&i.bd!=null&&i.oa<=690&&i.bd>=i.oa+300)).sort((a,b)=>a.won-b.won);
+  if(!its.length) return {won:0,txt:day?'당일 왕복이 되는 편이 없습니다 (오전 도착, 현지 5시간 이상 기준)':'직항 왕복편을 찾지 못했습니다'};
+  const b=its[0]; return {won:b.won,txt:b.oair+' '+hhmm(b.od)+' 출발, '+b.bair+' '+hhmm(b.bd)+' 귀국'+(day?' (현지 '+Math.floor((b.bd-b.oa)/60)+'시간)':'')};
+}
+// 두 곳을 함께 조회해 더 싼 쪽을 쓴다. 한쪽이 실패해도 다른 쪽 결과로 진행
 async function liveCity(city){
+  const [e,k]=await Promise.all([expCity(city).then(v=>({v}),err=>({err})),kiwiCity(city).then(v=>({v}),err=>({err}))]);
+  if(e.err&&k.err) throw e.err;
+  const c=[]; if(e.v) c.push(Object.assign({src:'익스피디아'},e.v)); if(k.v) c.push(Object.assign({src:'키위'},k.v));
+  const ok=c.filter(x=>x.won>0).sort((a,b)=>a.won-b.won);
+  if(!ok.length) return {won:0,txt:c[0].txt};
+  const other=c.find(x=>x!==ok[0]);
+  return {won:ok[0].won,txt:'<span class="chip ok">'+ok[0].src+' 최저</span>'+ok[0].txt+(other?' · '+other.src+' '+(other.won?man(other.won):'해당 편 없음'):(e.err||k.err?' · '+(e.err?'익스피디아':'키위')+' 조회 실패':''))};
+}
+async function expCity(city){
   const from=st.origin==='sel'?'Seoul, South Korea':'Busan, South Korea', base={number_of_stops:0,user_locale:'en-US',client_device_info:{device_type:'desktop',agent_name:'ClaudeAI'}};
   if(st.dep===st.ret){ // 당일치기: 편도 두 장을 조합. 오전 도착 + 현지 5시간 이상
     const [o,r]=await Promise.all([expedia(Object.assign({origin:from,destination:AIRCITY[city],departure_date:st.dep,limit:12},base)),expedia(Object.assign({origin:AIRCITY[city],destination:from,departure_date:st.dep,limit:12},base))]);
@@ -684,24 +708,24 @@ async function liveCity(city){
   const b=o.reduce((x,y)=>toWon(y.price.total_price)<toWon(x.price.total_price)?y:x), L=leg(b);
   return {won:toWon(b.price.total_price),txt:L[0].air+' '+hhmm(L[0].dep)+' 출발, '+(L[1]?L[1].air+' '+hhmm(L[1].dep)+' 귀국':'')};
 }
-const LIVE_ERR={server_not_connected:'Expedia 커넥터가 연결되어 있지 않습니다. claude.ai 설정 → 커넥터에서 Expedia를 추가한 뒤 다시 조회하세요.',needs_reauth:'Expedia 커넥터 로그인이 만료됐습니다. claude.ai 설정 → 커넥터에서 다시 연결하세요.',selection_required:'Expedia 커넥터가 여러 개입니다. Claude가 묻는 창에서 하나를 고른 뒤 다시 조회하세요.',not_in_manifest:'이 페이지에서 Expedia 사용이 허용되지 않았습니다. 페이지의 권한 메뉴에서 허용하면 조회됩니다.',approval_required:'조회하려면 Expedia 사용을 허용해야 합니다. 버튼을 다시 눌러 허용하세요.',consent_required:'조회하려면 Expedia 사용을 허용해야 합니다. 버튼을 다시 눌러 허용하세요.',blocked_by_policy:'조직 정책으로 Expedia 조회가 막혀 있습니다. 링크로 확인해 직접 넣으세요.',not_granted:'이 화면에서는 실시간 조회를 쓸 수 없습니다. 링크로 확인해 직접 넣으세요.',capability_disabled:'이 화면에서는 실시간 조회를 쓸 수 없습니다. 링크로 확인해 직접 넣으세요.',rate_limited:'조회가 너무 잦습니다. 잠시 뒤 다시 눌러 주세요.'};
+const LIVE_ERR={server_not_connected:'항공 조회 커넥터(Expedia, Kiwi.com)가 연결되어 있지 않습니다. claude.ai 설정 → 커넥터에서 추가한 뒤 다시 조회하세요.',needs_reauth:'Expedia 커넥터 로그인이 만료됐습니다. claude.ai 설정 → 커넥터에서 다시 연결하세요.',selection_required:'Expedia 커넥터가 여러 개입니다. Claude가 묻는 창에서 하나를 고른 뒤 다시 조회하세요.',not_in_manifest:'이 페이지에서 Expedia 사용이 허용되지 않았습니다. 페이지의 권한 메뉴에서 허용하면 조회됩니다.',approval_required:'조회하려면 Expedia 사용을 허용해야 합니다. 버튼을 다시 눌러 허용하세요.',consent_required:'조회하려면 Expedia 사용을 허용해야 합니다. 버튼을 다시 눌러 허용하세요.',blocked_by_policy:'조직 정책으로 Expedia 조회가 막혀 있습니다. 링크로 확인해 직접 넣으세요.',not_granted:'이 화면에서는 실시간 조회를 쓸 수 없습니다. 링크로 확인해 직접 넣으세요.',capability_disabled:'이 화면에서는 실시간 조회를 쓸 수 없습니다. 링크로 확인해 직접 넣으세요.',rate_limited:'조회가 너무 잦습니다. 잠시 뒤 다시 눌러 주세요.'};
 function liveShow(msg){
   const L=st.live[dkey()], el=$('liveState');
   if(msg){el.innerHTML=msg;return;}
   if(!L){
     if(AIRCAL){el.innerHTML='<ul>'+['fuk','osa','tyo'].map(c=>{const x=calAir(c);return '<li><b>'+CITY[c]+' 항공'+(x?' '+man(x.won):'')+'</b> '+(x?x.txt:'이 날짜 요금이 요금표에 없어 이전 값을 씁니다.')+'</li>';}).join('')+'</ul><span class="mute">'+AIRCAL.at.slice(5).replace('-','/')+' 갱신 요금표 (최근 검색된 직항 최저가). 예매 전 링크로 확인하세요.</span>';return;}
     el.textContent=mcp?'':'항공 요금표가 아직 없습니다. 링크로 확인한 요금을 아래 칸에 넣으세요.';return;}
-  el.innerHTML='<ul>'+Object.keys(AIRCITY).map(c=>{const x=L[c]; return x?'<li><b>'+CITY[c]+(x.won?' '+man(x.won):'')+'</b> '+(x.err?'<span class="chip wn">조회 실패</span>':'')+x.txt+'</li>':'';}).join('')+'</ul><span class="mute">'+new Date(L.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 익스피디아 조회, 1달러 '+st.usd.toLocaleString('ko-KR')+'원 환산</span>';
+  el.innerHTML='<ul>'+Object.keys(AIRCITY).map(c=>{const x=L[c]; return x?'<li><b>'+CITY[c]+(x.won?' '+man(x.won):'')+'</b> '+(x.err?'<span class="chip wn">조회 실패</span>':'')+x.txt+'</li>':'';}).join('')+'</ul><span class="mute">'+new Date(L.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 익스피디아·키위 조회, 1달러 '+st.usd.toLocaleString('ko-KR')+'원 환산</span>';
 }
 async function liveFetch(){
   if(!mcp||liveBusy) return;
   const tok=++liveTok, key=dkey(); liveBusy=true; $('liveBtn').disabled=true;
-  liveShow('<span class="chip nt">조회 중</span>'+tripLabel(st.dep,st.ret)+' 항공 요금을 익스피디아에서 찾고 있습니다. 30초쯤 걸립니다.');
+  liveShow('<span class="chip nt">조회 중</span>'+tripLabel(st.dep,st.ret)+' 항공 요금을 익스피디아와 키위에서 찾고 있습니다. 30초쯤 걸립니다.');
   const cities=Object.keys(AIRCITY), res=await Promise.all(cities.map(c=>liveCity(c).then(v=>({v}),e=>({e}))));
   liveBusy=false; $('liveBtn').disabled=false;
   if(tok!==liveTok||key!==dkey()) { liveSoon(); return; } // 조회 중에 날짜가 바뀜
   const errs=res.filter(r=>r.e);
-  if(errs.length===cities.length){const c=errs[0].e&&errs[0].e.code; liveShow('<span class="chip wn">조회 실패</span>'+(LIVE_ERR[c]||'익스피디아가 응답하지 않았습니다. 잠시 뒤 다시 누르거나 링크로 확인해 직접 넣으세요.')+(c==='tool_error'&&errs[0].e.message?' ('+String(errs[0].e.message).slice(0,80)+')':'')); return;}
+  if(errs.length===cities.length){const c=errs[0].e&&errs[0].e.code; liveShow('<span class="chip wn">조회 실패</span>'+(LIVE_ERR[c]||'익스피디아와 키위가 응답하지 않았습니다. 잠시 뒤 다시 누르거나 링크로 확인해 직접 넣으세요.')+(c==='tool_error'&&errs[0].e.message?' ('+String(errs[0].e.message).slice(0,80)+')':'')); return;}
   const L={at:Date.now()};
   res.forEach((r,i)=>{const c=cities[i]; if(r.e){L[c]={won:0,err:1,txt:'이 구간만 조회하지 못해 이전 값을 그대로 둡니다.'};return;}
     L[c]=r.v; st.t[c+'_air']=Math.round(r.v.won/1000)*1000;});
