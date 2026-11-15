@@ -286,6 +286,9 @@ img { max-width: 100%; display: block; }
 .sc + .sc, .yt + .sc { margin-top: 10px; }
 .yt-play { width: 46px; height: 32px; border-radius: 9px; background: #ff0033; position: relative; flex: 0 0 auto; }
 .yt-play::after { content: ""; position: absolute; left: 18px; top: 9px; border-left: 13px solid #fff; border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
+.ytm-ic { width: 34px; height: 34px; border-radius: 50%; background: #ff0033; position: relative; flex: 0 0 auto; margin: 0 6px; }
+.ytm-ic::before { content: ""; position: absolute; inset: 8px; border-radius: 50%; border: 2px solid #fff; }
+.ytm-ic::after { content: ""; position: absolute; left: 14px; top: 12px; border-left: 8px solid #fff; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
 
 /* display type: Unbounded (Latin) + Black Han Sans (Korean) + Dela Gothic One (Japanese); these ship one weight, so no faux bold */
 .brand, .hero-title, .sec-h, .phead h1, .now-card .dj, .ev-art .gd, .ev-art .gt, .floor-no, .floor-name, .fbig-name, .evd h1, .lineup ul:not(.tt) li, .artist-ph, .artist-b h3, .gate-badge { font-synthesis: none; }
