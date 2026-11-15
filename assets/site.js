@@ -65,7 +65,7 @@
     else if (h.indexOf('tel:') === 0) track('call_click', { location: at });
     else if (/google\.com\/maps|map\.naver|map\.kakao/.test(h)) track('directions_click', { map: /google/.test(h) ? 'google' : /naver/.test(h) ? 'naver' : 'kakao', location: at });
     else if (/instagram\.com/.test(h)) track('instagram_click', { location: at });
-    else if (/youtube\.com|soundcloud/.test(h)) track('media_click', { site: /youtube/.test(h) ? 'youtube' : 'soundcloud', location: at });
+    else if (/youtube\.com|soundcloud/.test(h)) track('media_click', { site: /music\.youtube/.test(h) ? 'youtube_music' : /youtube/.test(h) ? 'youtube' : 'soundcloud', location: at });
   });
 
   /* ---------- 휴대폰 메뉴 (☰) ---------- */

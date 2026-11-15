@@ -17,6 +17,7 @@ const SITE = 'https://xn--2i0bl1s25d.site'; // 그루브.site
 const INSTAGRAM = 'https://www.instagram.com/groovenspot/';
 const SOUNDCLOUD = 'https://on.soundcloud.com/IWtEmqOHfTecbn1cBI';
 const YOUTUBE = 'https://www.youtube.com/@GROOVEBUSAN';
+const YTMUSIC = 'https://music.youtube.com/channel/UCdS6A_RNPeys5ZBkvFSwuQg';
 const XHS = 'https://www.xiaohongshu.com/user/profile/679dc482000000000e01e057';
 const TRIPADVISOR = 'https://www.tripadvisor.com/Attraction_Review-g297884-d34781588-Reviews-Groove_Spot-Busan.html';
 // 신청곡 전달용 ntfy 토픽 (assets/admin.js 의 TOPIC 과 같아야 함)
@@ -127,7 +128,7 @@ ${bare ? '' : `<footer class="ftr">
     </div>
     <div>
       <h2 class="ftr-h">${L('sec.contact')}</h2>
-      <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a><br><a href="${TRIPADVISOR}" rel="noopener">Tripadvisor</a><br><a href="${XHS}" rel="noopener">小红书 Xiaohongshu</a></p>
+      <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${YTMUSIC}" rel="noopener">YouTube Music</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a><br><a href="${TRIPADVISOR}" rel="noopener">Tripadvisor</a><br><a href="${XHS}" rel="noopener">小红书 Xiaohongshu</a></p>
     </div>
   </div>
   <p class="ftr-small muted"><a href="${href(lang, 'guide/')}">${GUIDE[lang].t}</a> · <a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="${href(lang, 'privacy/')}"><b>${PRIVACY[lang].link}</b></a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
@@ -200,7 +201,7 @@ const BODIES = {
       { k: 'request', en: 'SONG REQUEST', u: href(lang, 'request/'), t: L('cta.request') },
       { k: 'guestdj', en: 'GUEST DJ', u: 'https://ig.me/m/groovenspot', t: L('lk.dj'), s: L('lk.dj.s'), ext: 1 },
     ];
-    const soc = [['Instagram', INSTAGRAM], ['YouTube', YOUTUBE], ['SoundCloud', SOUNDCLOUD], ['Threads', 'https://www.threads.com/@groovenspot'], ['Tripadvisor', TRIPADVISOR], ['小红书', XHS]];
+    const soc = [['Instagram', INSTAGRAM], ['YouTube', YOUTUBE], ['YouTube Music', YTMUSIC], ['SoundCloud', SOUNDCLOUD], ['Threads', 'https://www.threads.com/@groovenspot'], ['Tripadvisor', TRIPADVISOR], ['小红书', XHS]];
     return `<section class="hero">
   <img class="hero-bg" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" fetchpriority="high">
   <div class="hero-in wrap">
@@ -274,6 +275,7 @@ const BODIES = {
   <h2 class="sec-h" id="sets-h">${L('sec.sets')}</h2>
   <div class="videos" data-videos data-limit="6"></div>
   <a class="sc yt" href="${YOUTUBE}" rel="noopener"><span class="yt-play" aria-hidden="true"></span><span>${L('more.yt')} →</span></a>
+  <a class="sc ytm" href="${YTMUSIC}" rel="noopener"><span class="ytm-ic" aria-hidden="true"></span><span>${L('more.ytm')} →</span></a>
   <a class="sc" href="${SOUNDCLOUD}" rel="noopener"><span class="sc-wave" aria-hidden="true">${bars(28)}</span><span>${L('more.sc')} →</span></a>
 </section>
 <section class="wrap sec" aria-labelledby="ig-h" data-ig-sec hidden>
@@ -457,7 +459,7 @@ ${ARTICLES.length ? `<section class="wrap sec" aria-labelledby="g-more"><h2 clas
     <ul class="checks"><li>${L('pol.age')}</li><li>${L('pol.dress')}</li><li>${L('pol.respect')}</li></ul>
   </div>
   <div class="panel"><h2 class="sec-h">${L('sec.contact')}</h2>
-    <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a><br><a href="${TRIPADVISOR}" rel="noopener">Tripadvisor</a><br><a href="${XHS}" rel="noopener">小红书 Xiaohongshu</a></p>
+    <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${YTMUSIC}" rel="noopener">YouTube Music</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a><br><a href="${TRIPADVISOR}" rel="noopener">Tripadvisor</a><br><a href="${XHS}" rel="noopener">小红书 Xiaohongshu</a></p>
   </div>
 </section>
 <section class="wrap sec" aria-label="${L('map.embed')}"><div class="gmap gmap-lg"><iframe src="${GMAP_EMBED(lang)}" title="${L('map.embed')} · Groove &amp; Spot" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div></section>
