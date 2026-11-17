@@ -468,6 +468,9 @@ body.hasfab main { padding-bottom: 110px; }
 .pg { border-top: 1px solid var(--line-2); padding: 4px 0; }
 .pg summary { font-weight: 800; font-size: 15px; padding: 10px 0; cursor: pointer; }
 .pg .steps { font-size: 14px; }
+.pg ul.steps { padding-left: 18px; line-height: 1.7; }
+.pg ul.steps li { margin: 0 0 6px; }
+.pg code { background: var(--card-2); border-radius: 6px; padding: 1px 5px; font-size: 13px; }
 .pgf { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 10px 0 8px; }
 #pgOn { width: 100%; margin-top: 8px; }
 .me-card { border: 1px solid rgba(255,122,26,.55); background: rgba(255,122,26,.08); border-radius: 16px; padding: 14px 16px; margin: 0 0 14px; font-size: 15px; }
@@ -1080,7 +1083,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'table') return renderTable(area);
     if (state.tab === 'yc') return renderYc(area);
     if (state.tab === 'lost') return renderLost(area);
-    var list = state.tab === 'edu' ? edu : notes, guide = state.tab === 'edu' ? pushGuideHtml() : '';
+    var list = state.tab === 'edu' ? edu : notes, guide = state.tab === 'edu' ? pushGuideHtml() + eduGuideHtml() : '';
     if (!list.length) { area.innerHTML = guide + '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; bindPushGuide(); return; }
     area.innerHTML = guide + '<div class="list">' + list.map(function (n) {
       return '<button type="button" class="item' + (n.read ? '' : ' unread') + '" data-id="' + esc(n.id) + '">' +
@@ -1110,6 +1113,58 @@ body.hasfab main { padding-bottom: 110px; }
         '오른쪽 위 <b>🔕</b> 를 누르고 <b>허용</b>을 눌러요. <b>🔔</b> 로 바뀌면 끝이에요.'
       ], ['· 사파리 화면에서는 알림이 안 와요. 꼭 <b>홈 화면 아이콘</b>으로 열어 주세요.', '· <b>설정 → 알림 → GROOVE STAFF</b> 에서 알림 허용을 켜요.', '· <b>설정 → 일반 → 소프트웨어 업데이트</b>로 iOS 16.4 이상인지 확인해요.', '· 집중 모드·방해 금지가 켜져 있으면 꺼 주세요.']) +
       '<button class="btn btn-ok" type="button" id="pgOn">🔔 지금 이 폰 알림 켜기</button><p class="note" id="pgSt" style="margin:6px 0 0"></p></div>';
+  }
+  // 📘 신규 교육: 스태프 앱 사용법·매장 기본 (대표 승인 2026-11-18). 칸마다 접혀 있음.
+  function eduGuideHtml() {
+    var sec = function (title, items) { return '<details class="pg"><summary>' + title + '</summary><ul class="steps">' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></details>'; };
+    return '<div class="pgw"><h2 class="sec" style="margin:0 0 6px">📘 처음 오신 분 · 스태프 앱 사용법</h2><p class="note" style="margin:0 0 8px">눌러서 펼쳐 보세요.</p>' +
+      sec('🏠 매장 기본', [
+        '영업시간: <b>일~목 21:30~06:00</b>, <b>금·토·공휴일 전날 21:00~07:00</b>',
+        '<b>2층 GROOVE(힙합)</b> · <b>3층 SPOT(EDM)</b>, 내부 계단으로 연결',
+        '입장료 없음. 트레이닝복·슬리퍼(스포츠 샌들) 같은 너무 편한 복장은 입장 제한',
+        '위치 <b>서면역 3번 출구</b> · 공개 번호 <b>0507-1301-5970</b> · 인스타 <b>@groovenspot</b>',
+        '매장은 직접 예약을 받지 않아요. 예약은 <b>MD(영업진)</b>를 통해서만'
+      ]) +
+      sec('🔑 가입·로그인', [
+        '<b>그루브.site/staff</b>에서 이름·전화번호·비밀번호(6자 이상)·팀을 넣고 신청 → 대표나 팀장이 승인하면 써요',
+        '비밀번호 5번 틀리면 30분 잠겨요. 로그인은 30일 유지',
+        '비밀번호를 잊으면 탈퇴 후 <b>같은 이름</b>으로 다시 가입 (킵 손님은 이름으로 다시 이어져요)',
+        '알림(푸시)은 위 <b>📲 알림 받는 법</b>대로 꼭 켜 두세요'
+      ]) +
+      sec('🪑 테이블', [
+        '영업진이 자기 손님을 넣으면 <b>승인 대기</b> → 대표·김동기·양진호·팀장(그날 권한 받은 직원 포함)이 승인, 또는 코멘트 달아 거절 → 고쳐서 다시 신청',
+        '💬 대화창에 카톡처럼 써도 돼요: <code>3-2 민성 남4(동기)ㅇ</code> · <code>3층 DB7 아웃</code> · <code>3L3 → 3L5</code>',
+        '도면·목록 보기, <b>📋 카톡용 복사</b>',
+        '주말 자리(SPOT B·V, GROOVE Bar)는 금·토에만 보여요'
+      ]) +
+      sec('🎆 연출', [
+        '<b>+ 연출 요청</b>: 자리(또는 📺 전광만 + 층) · 순서(바로/준비되는 대로/시간/○○ 다음) · 영상·홀로·피켓·망치·VVIP · 전광판 문구 · 노래 · 메모 · 사진·영상',
+        '노래는 <b>발매곡만</b>: 멜론 링크, 또는 다운로드 되는 사운드클라우드 곡 (⬇️ 다운 버튼으로 조명실에서 받아요)',
+        '<b>전광 준비</b>(DJ팀·팀장·대표) + <b>술 준비</b>(운영팀)가 되면 요청한 사람에게 알림 → <b>ㄱㄱ 시작</b> → 끝나면 <b>컷</b>',
+        '바쁠 때는 ㄱㄱ·컷·순서(▲▼)를 누구나 대신 눌러도 돼요',
+        '요청을 고치면 전광 준비가 다시 풀리고 카드에 <b>✏️ 수정됨</b>이 떠요',
+        '대화창 줄임말: <code>ㅈㄱㅈㅂㅇ</code> 전광 준비 · <code>ㅅㅈㅂㅇ</code> 술 준비 · <code>ㄱㄱ</code> · <code>컷</code> · 전광만은 <code>2 전광만 바로</code> / <code>3 전광만 바로</code>'
+      ]) +
+      sec('🍾 킵', [
+        '맡기기·꺼내기는 담당이 요청 → <b>대표·김동기·양진호</b>가 승인하면 반영',
+        '보관 <b>30일</b>. 잘못 눌렀으면 15분 안에 되돌리기',
+        '손님 링크를 보내면 손님이 자기 킵을 직접 볼 수 있어요'
+      ]) +
+      sec('👥 게스트 현황', [
+        '순위는 모두 볼 수 있어요',
+        '입력은 팀장 이상: 게스트 대화창에 날짜·팀·이름+숫자 양식으로 올리면 반영'
+      ]) +
+      sec('💬 대화창', [
+        '오른쪽 아래 💬 · 방은 <b>테이블·연출·게스트</b>',
+        '<b>@호출</b>은 성 빼고·초성만 써도 찾아져요 (예: <code>@동기</code> <code>@ㄷㄱ</code>)',
+        '말풍선 <b>두 번 누르기 = ✅ 확인</b> · <b>꾹 누르기 = ↩️ 답장·📋 복사</b>',
+        '📷 사진·영상 올리기 (큰 영상은 자동으로 줄여서, 5분까지)'
+      ]) +
+      sec('🔎 분실물 · 그 밖의 탭', [
+        '분실물은 운영팀·대표가 올리고 홈페이지 /lost/ 에 날짜별로 올라가요. 10일 지나면 자동 삭제',
+        '게시판(팀·전체), 1:1 메시지',
+        '회의록·결정사항은 부팀장 이상'
+      ]) + '</div>';
   }
   function bindPushGuide() {
     var b = $('pgOn'); if (!b) return;
