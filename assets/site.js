@@ -910,9 +910,11 @@
       if (d.length === 3) d = '0' + d;
       return d.length === 4 && +d.slice(0, 2) >= 1 && +d.slice(0, 2) <= 12 && +d.slice(2) >= 1 && +d.slice(2) <= 31 ? d.slice(0, 2) + '-' + d.slice(2) : '';
     }
-    // 그루브 구글 시트에 저장(응답을 기다리지 않음 — 실패해도 DM 은 그대로 간다)
+    // 그루브 구글 시트에 저장하고 결과({ok, code} 또는 {error})를 돌려준다. 응답이 없으면 null(최대 8초).
+    // 예전에는 저장 요청과 동시에 인스타를 열어서, 인스타 앱 안 브라우저처럼 화면이 바로 닫히는 곳에서는
+    // 요청이 출발하지 못하고 사라졌다(2026-11-17 G1116-JN7T). 이제 저장이 끝난 뒤 DM 버튼을 따로 누른다.
     function saveBooking(b, channel) {
-      if (!GS.bookApi) return;
+      if (!GS.bookApi) return Promise.resolve(null);
       var TYPE = { guest: '게스트', table: '테이블', bottle: '바틀', h: 'H존' };
       var body = JSON.stringify({
         code: b.code, name: form.name.value.trim(), phone: form.phone.value.trim(), date: form.date.value,
@@ -920,27 +922,69 @@
         req: form.req.value.trim(), bday: normBday(form.bday.value), promo: form.promo.checked, consent: form.consent.checked,
         channel: channel, lang: GS.lang, hp: form.website ? form.website.value : ''
       });
-      try { fetch(GS.bookApi, { method: 'POST', mode: 'no-cors', keepalive: true, body: body }); } catch (e) {}
+      var req;
+      // text/plain 단순 요청이라 사전 확인(preflight) 없이 가고, Apps Script 응답은 CORS 로 읽을 수 있다
+      try { req = fetch(GS.bookApi, { method: 'POST', keepalive: true, body: body }).then(function (r) { return r.json(); }); }
+      catch (e) { req = Promise.reject(e); }
+      var late = new Promise(function (res) { setTimeout(function () { res(null); }, 8000); });
+      return Promise.race([req, late]).catch(function () { return null; });
     }
 
-    form.addEventListener('submit', function (ev) {
-      ev.preventDefault();
-      var b = bookText(true); if (!b) return;
-      // 팝업 차단을 피하려고 복사 완료를 기다리지 않고 바로 연다
-      copy(b.text);
-      saveBooking(b, 'instagram');
-      track('reserve_submit', { type: form.type.value, floor: b.floor, party: form.party.value });
-      toast(T.copied);
-      window.open(GS.instagram, '_blank', 'noopener');
+    var done = $('[data-rv-done]', form), go = $('[data-rv-go]', form), busy = false, last = null;
+    var mains = Array.prototype.slice.call(form.querySelectorAll('[data-rv-main]'));
+    function openChannel() {
+      if (!last) return;
+      if (last.channel === 'whatsapp') {
+        window.open((GS.whatsapp || 'https://wa.me/groovenspot') + '?text=' + encodeURIComponent(last.b.text), '_blank', 'noopener');
+      } else {
+        copy(last.b.text);
+        toast(T.copied);
+        window.open(GS.instagram, '_blank', 'noopener');
+      }
+      track('reserve_open_' + last.channel, { saved: last.ok });
+    }
+    if (go) go.addEventListener('click', openChannel);
+    // 접수 뒤 내용을 고치면 원래 보내기 버튼을 다시 보여 준다
+    form.addEventListener('input', function () {
+      if (!last || busy || !done) return;
+      last = null; done.hidden = true;
+      mains.forEach(function (x) { x.hidden = false; });
     });
 
+    function start(channel) {
+      if (busy) return;
+      var b = bookText(channel === 'instagram'); if (!b) return;
+      if (channel === 'instagram') copy(b.text); // 누른 순간에도 복사해 둔다(브라우저가 복사를 허락하는 때)
+      track(channel === 'instagram' ? 'reserve_submit' : 'reserve_whatsapp', { type: form.type.value, floor: b.floor, party: form.party.value });
+      // 예전 화면(결과 칸 없음)이 캐시로 남아 있으면 예전처럼 바로 연다
+      if (!done || !go) { saveBooking(b, channel); last = { b: b, channel: channel, ok: false }; return openChannel(); }
+      busy = true;
+      mains.forEach(function (x) { x.disabled = true; });
+      done.hidden = false; done.classList.remove('is-warn');
+      $('[data-rv-h]', done).textContent = T.rvSaving;
+      $('[data-rv-sub]', done).textContent = ''; $('[data-rv-code]', done).textContent = '';
+      go.hidden = true;
+      saveBooking(b, channel).then(function (res) {
+        var ok = !!(res && res.ok);
+        // 서버가 예약코드를 바꿨으면(같은 코드가 이미 있을 때) DM 문장도 맞춘다
+        if (ok && res.code && res.code !== b.code) { b.text = b.text.split(b.code).join(res.code); b.code = res.code; }
+        last = { b: b, channel: channel, ok: ok };
+        track('reserve_saved', { ok: ok, channel: channel, error: res && res.error ? String(res.error) : '' });
+        mains.forEach(function (x) { x.disabled = false; x.hidden = true; });
+        done.classList.toggle('is-warn', !ok);
+        $('[data-rv-h]', done).textContent = ok ? T.rvSaved : T.rvUnsure;
+        $('[data-rv-sub]', done).textContent = ok ? T.rvSavedSub : T.rvUnsureSub;
+        $('[data-rv-code]', done).textContent = T['bk.code'] + ': ' + b.code;
+        go.textContent = channel === 'whatsapp' ? T.rvOpenWa : T.rvOpenIg;
+        go.className = 'btn btn-lg ' + (channel === 'whatsapp' ? 'btn-wa' : 'btn-hot');
+        go.hidden = false;
+        try { done.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+      }).then(function () { busy = false; });
+    }
+
+    form.addEventListener('submit', function (ev) { ev.preventDefault(); start('instagram'); });
     // WhatsApp: 사용자 이름(@groovenspot) 링크라 전화번호가 노출되지 않는다. 연락처는 WhatsApp에 있으니 이름만 필수.
     var wa = $('[data-wa]', form);
-    if (wa) wa.addEventListener('click', function () {
-      var b = bookText(false); if (!b) return;
-      saveBooking(b, 'whatsapp');
-      track('reserve_whatsapp', { type: form.type.value, floor: b.floor, party: form.party.value });
-      window.open((GS.whatsapp || 'https://wa.me/groovenspot') + '?text=' + encodeURIComponent(b.text), '_blank', 'noopener');
-    });
+    if (wa) wa.addEventListener('click', function () { start('whatsapp'); });
   }
 })();
