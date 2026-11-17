@@ -450,12 +450,42 @@ details.all .list { margin-top: 8px; }
 .tbsx, .tbliq, .tbtg, .tbblk { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; align-items: center; }
 .sheet-in button.chip { font: inherit; font-size: 14px; font-weight: 800; padding: 6px 14px; min-height: 38px; background: none; color: var(--txt); cursor: pointer; }
 .sheet-in button.chip.on { background: var(--g); border-color: var(--g); color: #120800; }
+/* 🎆 연출 */
+.ycq { display: grid; gap: 10px; margin: 0 0 12px; }
+.yc { background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 12px; }
+.yc.ready { border-color: var(--ok); }
+.yc.go { border-color: #ff4fa0; box-shadow: 0 0 0 1px rgba(255,79,160,.35), 0 0 18px rgba(255,79,160,.18); }
+.yc.end { opacity: .6; }
+.ych { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ych b { font-size: 17px; }
+.ych .row { margin-left: auto; font-size: 12px; }
+.ycw { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+.ycw .chip { font-weight: 800; }
+.yct { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: #111; border: 1px solid var(--line); font-size: 15px; font-weight: 700; line-height: 1.4; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
+.ycs { margin: 6px 0 0; font-size: 13px; word-break: break-all; }
+.ycs a { color: #7cc0ff; }
+.ycp { display: flex; gap: 6px; margin: 8px 0 0; }
+.ycp img { width: 74px; height: 74px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line-2); background: #000; }
+.ycst { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 10px 0 0; font-size: 13px; color: var(--muted); font-weight: 700; }
+.ycst .on { color: var(--ok); }
+.ycst .live { color: #ff6fb4; }
+.ycb { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }
+.ycb .btn { flex: 1 1 40%; min-height: 44px; }
+.ycl { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 0; }
+.ycl .link { font-size: 13px; }
+.ycc { margin: 10px 0 0; border-top: 1px solid var(--line); padding-top: 8px; }
+.ycc p { margin: 0 0 4px; font-size: 13px; }
+.ycc small { color: var(--muted); }
+.yccf { display: flex; gap: 6px; margin: 4px 0 0; }
+.yccf input { flex: 1; min-height: 38px; padding: 6px 10px; font-size: 14px; }
+.yccf .btn { width: auto; min-height: 38px; padding: 0 12px; font-size: 13px; }
+.ycg { margin-top: 6px; max-height: 120px; overflow-y: auto; }
 /* 도면 보기 (홈페이지 배치도 기준, 좌표는 배치도 픽셀) */
 .tbvw { display: inline-flex; border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; margin: 0 0 10px; }
 .tbvw button { min-height: 38px; padding: 0 16px; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
 .tbvw button[aria-pressed="true"] { background: var(--g); color: #120800; }
-.tbmapw { overflow-x: auto; margin: 6px 0 10px; padding: 0 0 6px; -webkit-overflow-scrolling: touch; width: min(1100px, calc(100vw - 24px)); position: relative; left: 50%; transform: translateX(-50%); }
-.tbmap { position: relative; width: max(100%, 980px); border: 1px solid var(--line-2); border-radius: 16px; background: #0d0d0f; }
+.tbmapw { overflow-x: auto; margin: 6px 0 10px; padding: 0 0 6px; -webkit-overflow-scrolling: touch; width: min(1280px, calc(100vw - 24px)); position: relative; left: 50%; transform: translateX(-50%); }
+.tbmap { position: relative; border: 1px solid var(--line-2); border-radius: 16px; background: #0d0d0f; }
 .tbmap .lm { position: absolute; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 8px; background: #1b1b1f; border: 1px solid #2a2a30; color: #6d6d78; font-size: 11px; font-weight: 800; letter-spacing: .04em; pointer-events: none; }
 .tbmap .lm.dj { background: #26262c; color: #a9a9b4; font-size: 18px; border-radius: 40px; }
 .tbmap .lm.bar { background: #2a2416; border-color: #4a3d20; color: #c9a65a; }
@@ -463,11 +493,11 @@ details.all .list { margin-top: 8px; }
 .tbmap .lm.room { background: none; border: 1px dashed #34343c; }
 .tbmap .lm.st { background: repeating-linear-gradient(0deg, #2b1a0e 0 6px, #3a2412 6px 9px); border-color: #5a3418; color: #ff9a4a; writing-mode: vertical-rl; }
 .tbmap .zl { position: absolute; font-size: 10px; font-weight: 800; color: #6d6d78; pointer-events: none; }
-.tbt.tbm { position: absolute; min-height: 0; padding: 3px 4px; border-radius: 8px; gap: 0; justify-content: flex-start; }
+.tbt.tbm { position: absolute; min-height: 0; padding: 4px 6px; border-radius: 10px; gap: 0; justify-content: flex-start; }
 .tbt.tbm.rd { border-radius: 50%; align-items: center; justify-content: center; text-align: center; padding: 2px; }
-.tbt.tbm > i { font-size: 10px; line-height: 1.1; }
-.tbt.tbm b { font-size: 11px; line-height: 1.15; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: clip; }
-.tbt.tbm span { font-size: 10px; line-height: 1.1; white-space: nowrap; }
+.tbt.tbm > i { font-size: 11px; line-height: 1.15; }
+.tbt.tbm b { font-size: 13px; line-height: 1.2; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.tbt.tbm span { font-size: 11px; line-height: 1.15; white-space: nowrap; }
 .tbt.tbm small, .tbt.tbm em { display: none; }
 .tbt.tbm .tbmore { display: block; top: 1px; right: 3px; font-size: 9px; }
 .tbt.tbm.empty { border-style: dashed; }
@@ -538,6 +568,7 @@ details.all .list { margin-top: 8px; }
     <nav class="tabs" role="tablist" aria-label="스태프 메뉴" id="tabs">
       <button type="button" role="tab" data-tab="guest" aria-selected="true">게스트 현황</button>
       <button type="button" role="tab" data-tab="table" aria-selected="false" hidden>🪑 테이블</button>
+      <button type="button" role="tab" data-tab="yc" aria-selected="false" hidden>🎆 연출</button>
       <button type="button" role="tab" data-tab="board" aria-selected="false">게시판</button>
       <button type="button" role="tab" data-tab="dm" aria-selected="false">메시지</button>
       <button type="button" role="tab" data-tab="keep" aria-selected="false" hidden>🍾 킵</button>
@@ -670,6 +701,7 @@ details.all .list { margin-top: 8px; }
     saveData(null); stopPoll(); swToken('');
     state.s = null; state.data = null; state.tab = 'guest'; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
     state.tb = null; state.tbDay = ''; state.tbMsg = ''; state.tbErr = ''; state.tbFly = 0;
+    state.yc = null; state.ycMsg = ''; state.ycErr = ''; state.ycFly = 0;
     state.keep = null; state.kview = 'list'; state.kcur = null; state.kq = ''; state.kf = ''; state.kadd = null; state.kundo = null; state.kstale = false; state.kfly = 0; state.kmulti = false; state.kopt = {}; state.ktmp = {};
     try { localStorage.removeItem(KKEY); } catch (e) {}
     state.bview = 'list'; state.btag = ''; state.bpost = null; state.comp = null; state.cdraft = {}; state.dm = null; state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.dmDraft = {}; state.dmPick = false;
@@ -750,13 +782,14 @@ details.all .list { margin-top: 8px; }
   function openApp() {
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
-    if (['guest', 'table', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep'].indexOf(h) >= 0) state.tab = h;
+    if (['guest', 'table', 'yc', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep'].indexOf(h) >= 0) state.tab = h;
     swToken(state.s.token); paintBell();
     if (!state.keep) { var kc = kLoad(); if (kc) { state.keep = kc; state.kstale = true; } }
     var c = loadData();
     if (c) { state.data = c; render(); refresh(true); } else refresh();
     if (state.tab === 'dm') enterDm();
     if (state.tab === 'table') loadTb();
+    if (state.tab === 'yc') loadYc();
     if (state.tab === 'keep') loadKeep();
     else setTimeout(function () { if (state.s && state.tab !== 'keep' && (!state.keep || state.kstale)) loadKeep(); }, 1500);   // 킵 탭을 누르기 전에 미리 받아 둔다
   }
@@ -800,6 +833,7 @@ details.all .list { margin-top: 8px; }
       render(); window.scrollTo(0, 0);
       if (state.tab === 'keep') loadKeep();
       if (state.tab === 'table') loadTb();
+      if (state.tab === 'yc') loadYc();
       if (state.tab === 'board' && state.bview !== 'edit') refresh(true);
       if (state.tab === 'dm') enterDm();
     });
@@ -818,13 +852,15 @@ details.all .list { margin-top: 8px; }
       dec: ['결정사항', d.decisions.filter(function (x) { return x.mine && x.status !== '완료'; }).length],
       acc: ['가입 승인', pending],
       keep: ['🍾 킵', keepDue()],
-      table: ['🪑 테이블', d.tableApprove ? (d.tablePending || 0) : 0]
+      table: ['🪑 테이블', d.tableApprove ? (d.tablePending || 0) : 0],
+      yc: ['🎆 연출', d.ycWaiting || 0]
     };
     var LEAD_TABS = { notes: 1, dec: 1 }, hasBoard = !!(d.board && d.board.teams && d.board.teams.length), canAcc = !!(d.admin || d.approver);
     if (!labels[state.tab] || (state.tab === 'acc' && !canAcc) || (state.tab === 'board' && !hasBoard)) state.tab = 'guest';
     if (LEAD_TABS[state.tab] && !d.lead) state.tab = 'guest';
     if (state.tab === 'keep' && !d.keep) state.tab = 'guest';
     if (state.tab === 'table' && !d.table) state.tab = 'guest';
+    if (state.tab === 'yc' && !d.yc) state.tab = 'guest';
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
       if (b.dataset.tab === 'acc') b.hidden = !canAcc;
@@ -832,6 +868,7 @@ details.all .list { margin-top: 8px; }
       if (LEAD_TABS[b.dataset.tab]) b.hidden = !d.lead;
       if (b.dataset.tab === 'keep') b.hidden = !d.keep;
       if (b.dataset.tab === 'table') b.hidden = !d.table;
+      if (b.dataset.tab === 'yc') b.hidden = !d.yc;
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
@@ -851,6 +888,7 @@ details.all .list { margin-top: 8px; }
     if (state.tab === 'dm') return renderDm(area, d);
     if (state.tab === 'keep') return renderKeep(area, d);
     if (state.tab === 'table') return renderTable(area);
+    if (state.tab === 'yc') return renderYc(area);
     var list = state.tab === 'edu' ? edu : notes;
     if (!list.length) { area.innerHTML = '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; return; }
     area.innerHTML = '<div class="list">' + list.map(function (n) {
@@ -2086,7 +2124,7 @@ details.all .list { margin-top: 8px; }
     s.addEventListener('click', function (e) { if (e.target === s) { s.hidden = true; s.innerHTML = ''; } }, { once: true });
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
-    var t = e.data && e.data.tab; if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); }
+    var t = e.data && e.data.tab; if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); }
   });
 
   // ── 🪑 테이블 현황 (2026-11-18) ─────────────────────────
@@ -2174,37 +2212,228 @@ details.all .list { margin-top: 8px; }
     else if (mp && !v) body = '';
     return '<button type="button" class="' + cls + '" data-seat="' + esc(seat) + '"' + (mp ? ' style="' + mp.style + '"' : '') + '><i>' + esc(seat) + (mp && v && v.sold ? ' <span class="tbsold">★</span>' : '') + '</i>' + body + badge + more + '</button>';
   }
+  // ── 🎆 연출 요청 (2026-11-18, 카톡 '불꽃놀이' 방) ─────────────────
+  // 영업진이 요청 → DJ팀 전광 준비(ㅈㄱㅈㅂㅇ) · 운영팀 술 준비(ㅅㅈㅂㅇ) → ㄱㄱ(시작) → 컷(끝). ㄱㄱ·컷·순서는 바쁠 때 대신 눌러 주므로 누구나.
+  function ycErr(r) {
+    return { seat: '자리를 골라 주세요.', when: '순서를 다시 골라 주세요.', empty: '연출 내용을 하나 이상 넣어 주세요.', text: '<, >, " 는 쓸 수 없어요.', long: '문구는 300자까지예요.', song: '노래 링크가 이상해요.',
+      forbidden: '이건 할 수 없어요.', state: '이미 바뀌었어요. 새로고침했어요.', notfound: '이미 지워졌어요.', busy: '잠시 후 다시 해 주세요.', photo: '사진은 3장까지, jpg·png만 돼요.' }[r.error] || '저장이 안 됐어요. 잠시 후 다시 해 주세요.';
+  }
+  function loadYc(quiet) {
+    if (!state.s || state.ycFly) return;
+    if (!state.yc && state.tab === 'yc') $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
+    state.ycFly = 1;
+    return call({ a: 'yc_get', token: state.s.token }).then(function (r) {
+      state.ycFly = 0;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) { state.ycErr = '연출 목록을 못 불러왔어요.'; if (state.tab === 'yc' && !quiet) renderSoon(); return; }
+      ycPut(r);
+    }).catch(function () { state.ycFly = 0; state.ycErr = '연결이 안 돼요.'; if (state.tab === 'yc' && !quiet) renderSoon(); });
+  }
+  function ycPut(r) {
+    var same = state.yc && JSON.stringify(state.yc.list) === JSON.stringify(r.list);
+    state.yc = r; state.ycErr = ''; state.ycAt = Date.now();
+    if (state.data) { state.data.ycWaiting = r.waiting; renderTabsOnly(); }
+    if (state.tab === 'yc' && !same && $('sheet').hidden) renderSoon();
+  }
+  setInterval(function () { if (state.s && state.tab === 'yc' && !document.hidden && $('sheet').hidden && !ycTyping() && Date.now() - (state.ycAt || 0) > 7000) loadYc(true); }, 8000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'yc') loadYc(true); });
+  function ycTyping() { var a = document.activeElement; return !!(a && a.dataset && a.dataset.yccmt); }
+  function ycCall(body, after) {
+    body.token = state.s.token; state.ycFly = 1;
+    return call(body).then(function (r) {
+      state.ycFly = 0;
+      if (r.error === 'auth') { toLogin(AUTH_OUT); return r; }
+      if (r.ok && r.list) { state.yc = r; state.ycAt = Date.now(); if (state.data) state.data.ycWaiting = r.waiting; flushPush(); }
+      else if (r.error === 'state' || r.error === 'notfound') loadYc(true);
+      if (after) after(r);
+      return r;
+    }).catch(function () { state.ycFly = 0; var r = { error: 'net' }; if (after) after(r); return r; });
+  }
+  function ycWhen(x) {
+    var w = x.when || 'now';
+    if (w === 'now') return '바로';
+    if (w === 'ready') return '준비되는 대로';
+    if (w.indexOf('after:') === 0) { var p = (state.yc.list || []).filter(function (y) { return y.id === w.slice(6); })[0]; return (p ? p.floor + ' ' + p.seat : '앞 연출') + ' 다음'; }
+    return w;
+  }
+  function ycWhat(v) {
+    return [v.video ? v.video + '영상' : '', v.holo ? '홀로 ' + v.holo : '', v.picket ? v.picket + '피켓' : '', v.hammer ? '망치' : '', v.vvip ? 'VVIP 입장' : ''].filter(Boolean);
+  }
+  function ycCard(x, i, n) {
+    var y = state.yc, can = y.canEdit, mine = x.mine, boss = y.boss, ready = x.jg && x.sul, cls = 'yc' + (x.status === '진행' ? ' go' : x.status === '끝' ? ' end' : ready ? ' ready' : '');
+    var h = '<div class="' + cls + '" data-ycid="' + esc(x.id) + '"><div class="ych"><b>' + (x.status === '끝' ? '' : '#' + (i + 1) + ' ') + esc(x.floor) + ' ' + esc(x.seat) + '</b><span class="chip">' + esc(ycWhen(x)) + '</span>' +
+      '<span class="row">' + esc(x.by) + ' · ' + esc(x.at) + '</span></div>';
+    var what = ycWhat(x.v);
+    if (what.length) h += '<div class="ycw">' + what.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>';
+    if (x.text) h += '<p class="yct">' + esc(x.text).replace(/\n/g, '<br>') + '</p>';
+    if (x.song) h += '<p class="ycs">🎵 ' + (/^https:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(x.song.replace(/^https:\/\//, '').slice(0, 40)) + '</a>' : esc(x.song)) + '</p>';
+    if (x.photos.length) h += '<div class="ycp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') + '</div>';
+    if (x.status === '끝') return h + '<p class="note" style="margin:6px 0 0">✂️ 컷 ' + esc(x.endAt) + (x.cutBy ? ' ' + esc(x.cutBy) : '') + (x.goAt ? ' · ㄱㄱ ' + esc(x.goAt) + (x.goBy ? ' ' + esc(x.goBy) : '') : '') + '</p></div>';
+    h += '<div class="ycst"><span class="' + (x.jg ? 'on' : '') + '">전광 ' + (x.jg ? '✅ ' + esc(x.jg) + ' ' + esc(x.jgAt) : '⏳') + '</span><span class="' + (x.sul ? 'on' : '') + '">술 ' + (x.sul ? '✅ ' + esc(x.sul) + ' ' + esc(x.sulAt) : '⏳') + '</span>' +
+      (x.status === '진행' ? '<span class="live">● 진행 중 ' + esc(x.goAt) + (x.goBy && x.goBy !== x.by ? ' · ' + esc(x.goBy) : '') + '</span>' : ready ? '<span class="on">준비 완료 · ㄱㄱ 기다리는 중</span>' : '') + '</div>';
+    if (can) {
+      var b = [];
+      if (y.dj && x.status === '요청') b.push('<button class="btn' + (x.jg ? '' : ' btn-ok') + '" type="button" data-ycr="jg" data-on="' + (x.jg ? 0 : 1) + '">' + (x.jg ? '전광 준비 취소' : '📺 전광 준비') + '</button>');
+      if (y.sul && x.status === '요청') b.push('<button class="btn' + (x.sul ? '' : ' btn-ok') + '" type="button" data-ycr="sul" data-on="' + (x.sul ? 0 : 1) + '">' + (x.sul ? '술 준비 취소' : '🍾 술 준비') + '</button>');
+      if (x.status === '요청') b.push('<button class="btn btn-hot ycgo" type="button" data-ycgo="1">ㄱㄱ 시작</button>');
+      if (x.status === '진행') b.push('<button class="btn btn-bad ycgo" type="button" data-yccut="1">✂️ 컷</button>');
+      if (b.length) h += '<div class="ycb">' + b.join('') + '</div>';
+      var s = [];
+      if (x.status === '요청' && n > 1) s.push('<button class="link" type="button" data-ycmv="-1"' + (i === 0 ? ' disabled' : '') + '>▲ 앞으로</button><button class="link" type="button" data-ycmv="1"' + (i === n - 1 ? ' disabled' : '') + '>▼ 뒤로</button>');
+      if ((mine || boss) && x.status !== '끝') s.push('<button class="link" type="button" data-yced="1">고치기</button><button class="link" type="button" data-yccx="1">요청 취소</button>');
+      if (s.length) h += '<div class="ycl">' + s.join('') + '</div>';
+    }
+    h += '<div class="ycc">' + x.cmts.map(function (c) { return '<p><b>' + esc(c.who) + '</b> ' + esc(c.text) + ' <small>' + esc(c.hm) + '</small></p>'; }).join('') +
+      (can ? '<form class="yccf" data-yccf="1"><input data-yccmt="1" maxlength="100" placeholder="댓글 (예: 시작시간 알려주세요)" autocomplete="off"><button class="btn" type="submit">보내기</button></form>' : '') + '</div>';
+    return h + '</div>';
+  }
+  function renderYc(area) {
+    if (!state.yc) { area.innerHTML = state.ycErr ? '<p class="empty">' + esc(state.ycErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.ycFly) loadYc(); return; }
+    var y = state.yc, act = y.list.filter(function (x) { return x.status !== '끝'; }), end = y.list.filter(function (x) { return x.status === '끝'; });
+    var go = act.filter(function (x) { return x.status === '진행'; }).length;
+    var h = '<div class="tbh"><div><h1>🎆 연출</h1><p class="sub">' + esc(tbDayLabel(y.day)) + ' · 대기 ' + (act.length - go) + ' · 진행 ' + go + ' · 끝 ' + end.length + '</p></div>' +
+      (y.canEdit ? '<button class="btn btn-hot" type="button" id="ycNew" style="width:auto;flex:none;padding:0 18px">+ 연출 요청</button>' : '') + '</div>';
+    h += '<p class="msg ok" id="ycBox"' + (state.ycMsg ? '' : ' hidden') + '>' + esc(state.ycMsg || '') + '</p>'; state.ycMsg = '';
+    if (y.canEdit && act.length) h += '<p class="note" style="margin:0 0 10px">' + (y.dj || y.sul ? [y.dj ? '📺 전광 준비' : '', y.sul ? '🍾 술 준비' : ''].filter(Boolean).join(' · ') + ' 버튼을 눌러 주세요. ' : '') + 'ㄱㄱ·컷·순서(▲▼)는 바쁠 때 누구나 대신 눌러도 돼요.</p>';
+    h += act.length ? '<div class="ycq">' + act.map(function (x, i) { return ycCard(x, i, act.length); }).join('') + '</div>' : '<p class="empty">지금 기다리는 연출이 없어요.</p>';
+    if (end.length) h += '<details class="all"><summary>끝난 연출 ' + end.length + '건</summary><div class="ycq">' + end.slice().reverse().map(function (x, i) { return ycCard(x, i, 0); }).join('') + '</div></details>';
+    if (state.ycErr) h += '<p class="msg">' + esc(state.ycErr) + '</p>';
+    area.innerHTML = h;
+    hydrateImgs(area);
+    if ($('ycNew')) $('ycNew').addEventListener('click', function () { ycForm(null); });
+    area.querySelectorAll('[data-ycid]').forEach(function (card) {
+      var id = card.dataset.ycid, x = y.list.filter(function (q) { return q.id === id; })[0];
+      card.querySelectorAll('[data-ycr]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; ycCall({ a: 'yc_ready', id: id, part: b.dataset.ycr, on: b.dataset.on === '1' }, function (r) { if (!r.ok) state.ycErr = ycErr(r); render(); }); }); });
+      var g = card.querySelector('[data-ycgo]'); if (g) g.addEventListener('click', function () { if ((!(x.jg && x.sul) || !x.mine) && !armed(g, 'ㄱㄱ 시작')) return; g.disabled = true; ycCall({ a: 'yc_go', id: id }, function (r) { state.ycMsg = r.ok ? 'ㄱㄱ! DJ에게 알렸어요.' : ''; if (!r.ok) state.ycErr = ycErr(r); render(); }); });
+      var c = card.querySelector('[data-yccut]'); if (c) c.addEventListener('click', function () { c.disabled = true; ycCall({ a: 'yc_cut', id: id }, function (r) { state.ycMsg = r.ok ? '컷! 끝난 연출로 옮겼어요.' : ''; if (!r.ok) state.ycErr = ycErr(r); render(); }); });
+      card.querySelectorAll('[data-ycmv]').forEach(function (b) { b.addEventListener('click', function () {
+        var ids = act.map(function (q) { return q.id; }), k = ids.indexOf(id), j = k + +b.dataset.ycmv; if (j < 0 || j >= ids.length) return;
+        ids.splice(k, 1); ids.splice(j, 0, id); ycCall({ a: 'yc_order', ids: ids }, function (r) { if (!r.ok) state.ycErr = ycErr(r); render(); });
+      }); });
+      var e = card.querySelector('[data-yced]'); if (e) e.addEventListener('click', function () { ycForm(x); });
+      var cx = card.querySelector('[data-yccx]'); if (cx) cx.addEventListener('click', function () { if (!armed(cx, '요청 취소')) return; ycCall({ a: 'yc_cancel', id: id }, function (r) { state.ycMsg = r.ok ? '연출 요청을 취소했어요.' : ''; if (!r.ok) state.ycErr = ycErr(r); render(); }); });
+      var f = card.querySelector('[data-yccf]'); if (f) f.addEventListener('submit', function (ev) {
+        ev.preventDefault(); var i = f.querySelector('input'), t = i.value.trim(); if (!t) return; i.disabled = true;
+        ycCall({ a: 'yc_cmt', id: id, text: t }, function (r) { if (!r.ok) { i.disabled = false; state.ycErr = ycErr(r); } render(); });
+      });
+    });
+  }
+  // 요청 입력 창 (새로 / 고치기)
+  function ycForm(x) {
+    var y = state.yc, v = x ? JSON.parse(JSON.stringify(x.v)) : {}, fl = x ? x.floor : (state.tbFloor || tbFloorPref()), seat = x ? x.seat : '', when = x ? x.when : 'now', photos = [];
+    var mineSeats = [];
+    if (state.tb && state.tb.rows) state.tb.rows.forEach(function (r) { var c = r.cur || r.req; if (c && c.seat && !c.blk && key(c.st) === key(y.me)) mineSeats.push({ fl: r.floor, seat: c.seat, g: c.g || c.liq || '' }); });
+    var act = y.list.filter(function (q) { return q.status !== '끝' && (!x || q.id !== x.id); });
+    function seatsOf(f) { var z = (y.floors || []).filter(function (q) { return q.id === f; })[0]; return z ? z.seats : []; }
+    var h = '<h2>' + (x ? '연출 고치기' : '🎆 연출 요청') + '</h2>';
+    if (mineSeats.length && !x) h += '<div class="tbsx"><span class="note" style="margin:0 6px 0 0">내 테이블</span>' + mineSeats.map(function (m) { return '<button type="button" class="chip" data-ycms="' + esc(m.fl + '|' + m.seat) + '">' + esc(m.fl + ' ' + m.seat + (m.g ? ' ' + m.g : '')) + '</button>'; }).join('') + '</div>';
+    h += '<div class="tbfl" style="margin:0 0 10px">' + (y.floors || []).map(function (f) { return '<button type="button" data-ycfl="' + esc(f.id) + '" aria-pressed="' + (f.id === fl) + '">' + esc(f.name) + ' <small>' + esc(f.floor) + '</small></button>'; }).join('') + '</div>';
+    h += '<label>자리<select id="ycSeat"></select></label>';
+    h += '<label>순서</label><div class="tbsx" id="ycWhen">' + [['now', '바로'], ['ready', '준비되는 대로'], ['time', '시간'], ['after', '○○ 다음']].map(function (o) { return '<button type="button" class="chip" data-ycwhen="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>' +
+      '<div id="ycWhenX"></div>';
+    h += '<label>영상</label><div class="tbsx">' + (y.teams || []).map(function (t) { return '<button type="button" class="chip" data-ycv="' + esc(t) + '">' + esc(t) + '팀</button>'; }).join('') + '<button type="button" class="chip" data-ycv="">없음</button></div>' +
+      '<input id="ycVQ" maxlength="20" autocomplete="off" placeholder="손님 영상 · 킵 손님 이름 찾기 (예: 범야)" value="' + esc(v.video || '') + '"><div class="tbsx ycg" id="ycG"></div>';
+    h += '<label>홀로</label><div class="tbsx">' + ['ㅇ', '따로', '없이'].map(function (t) { return '<button type="button" class="chip" data-ycholo="' + t + '">' + t + '</button>'; }).join('') + '</div>';
+    h += '<label>피켓<input id="ycPk" maxlength="20" autocomplete="off" placeholder="예: 생일 · 범야" value="' + esc(v.picket || '') + '"></label><div class="tbsx" style="margin-top:-6px"><button type="button" class="chip" data-ycpk="생일">생일</button></div>';
+    h += '<div class="tbtg"><button type="button" class="chip" data-yctg="hammer">🔨 망치</button><button type="button" class="chip" data-yctg="vvip">👑 VVIP 입장</button></div>';
+    h += '<label>전광판 문구<textarea id="ycT" rows="3" maxlength="300" placeholder="예) 엄마보다 더 자주 보는 거 같다&#10;-뱃사공-">' + esc(x ? x.text : '') + '</textarea></label>';
+    h += '<label>노래 (링크나 제목)<input id="ycS" maxlength="300" autocomplete="off" value="' + esc(x ? x.song : '') + '" placeholder="https://kko.to/… 또는 체포하겠어 - 아일릿"></label>';
+    if (!x) h += '<div class="ephotos" id="ycPh"></div>';
+    h += '<p class="msg" id="ycMsg"></p><button class="btn btn-hot" type="button" id="ycSave">' + (x ? '저장' : '요청 보내기') + '</button>';
+    showSheet(h);
+    var s = $('sheet');
+    function paintSeats() {
+      var opts = seatsOf(fl); if (seat && opts.indexOf(seat) < 0) seat = '';
+      $('ycSeat').innerHTML = '<option value="">자리 고르기</option>' + opts.map(function (q) { return '<option' + (q === seat ? ' selected' : '') + '>' + esc(q) + '</option>'; }).join('');
+      s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.ycfl === fl); });
+    }
+    function paintWhen() {
+      var k = when === 'now' || when === 'ready' ? when : when.indexOf('after:') === 0 ? 'after' : 'time';
+      s.querySelectorAll('[data-ycwhen]').forEach(function (b) { b.classList.toggle('on', b.dataset.ycwhen === k); });
+      var box = $('ycWhenX');
+      if (k === 'time') box.innerHTML = '<input id="ycTime" type="time" value="' + esc(/^\d{2}:\d{2}$/.test(when) ? when : '') + '">';
+      else if (k === 'after') box.innerHTML = act.length ? '<select id="ycAfter">' + act.map(function (q) { return '<option value="' + esc(q.id) + '"' + ('after:' + q.id === when ? ' selected' : '') + '>' + esc(q.floor + ' ' + q.seat + ' · ' + q.by + ' 다음') + '</option>'; }).join('') + '</select>' : '<p class="note" style="margin:0">앞에 기다리는 연출이 없어요.</p>';
+      else box.innerHTML = '';
+      if ($('ycTime')) $('ycTime').addEventListener('change', function () { when = this.value || 'now'; });
+      if ($('ycAfter')) { if (when.indexOf('after:') !== 0) when = 'after:' + $('ycAfter').value; $('ycAfter').addEventListener('change', function () { when = 'after:' + this.value; }); }
+    }
+    function paintV() {
+      var q = key($('ycVQ').value), list = (y.guests || []).filter(function (n) { return !q || key(n).indexOf(q) >= 0; }).slice(0, q ? 20 : Math.max(8, Math.min(12, y.mineGuests || 0)));
+      $('ycG').innerHTML = list.map(function (n) { return '<button type="button" class="chip' + (n === v.video ? ' on' : '') + '" data-ycg="' + esc(n) + '">' + esc(n) + '</button>'; }).join('') + (q && !list.length ? '<span class="note" style="margin:0">킵 장부에 없는 이름이에요 · 그대로 저장돼요</span>' : '');
+      s.querySelectorAll('[data-ycv]').forEach(function (b) { b.classList.toggle('on', b.dataset.ycv === (v.video || '') && (b.dataset.ycv !== '' || !v.video)); });
+      $('ycG').querySelectorAll('[data-ycg]').forEach(function (b) { b.addEventListener('click', function () { v.video = b.dataset.ycg; $('ycVQ').value = v.video; paintV(); }); });
+    }
+    function paintTg() {
+      s.querySelectorAll('[data-ycholo]').forEach(function (b) { b.classList.toggle('on', b.dataset.ycholo === v.holo); });
+      s.querySelectorAll('[data-yctg]').forEach(function (b) { b.classList.toggle('on', !!v[b.dataset.yctg]); });
+    }
+    function paintPh() {
+      var box = $('ycPh'); if (!box) return;
+      box.innerHTML = photos.map(function (p, i) { return '<span class="ph"><img src="' + p.url + '" alt=""><button type="button" data-ycrm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
+        (photos.length < 3 ? '<label class="addph">📷 사진<input type="file" id="ycFile" accept="image/*" multiple hidden></label>' : '');
+      box.querySelectorAll('[data-ycrm]').forEach(function (b) { b.addEventListener('click', function () { photos.splice(+b.dataset.ycrm, 1); paintPh(); }); });
+      if ($('ycFile')) $('ycFile').addEventListener('change', function () {
+        var files = Array.prototype.slice.call(this.files || []).slice(0, 3 - photos.length);
+        Promise.all(files.map(shrink)).then(function (xs) { photos = photos.concat(xs).slice(0, 3); paintPh(); }).catch(function () { $('ycMsg').textContent = '사진을 못 읽었어요.'; });
+      });
+    }
+    paintSeats(); paintWhen(); paintV(); paintTg(); paintPh();
+    s.querySelectorAll('[data-ycms]').forEach(function (b) { b.addEventListener('click', function () { var p = b.dataset.ycms.split('|'); fl = p[0]; seat = p[1]; paintSeats(); }); });
+    s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.ycfl; paintSeats(); }); });
+    $('ycSeat').addEventListener('change', function () { seat = this.value; });
+    s.querySelectorAll('[data-ycwhen]').forEach(function (b) { b.addEventListener('click', function () { var k = b.dataset.ycwhen; when = k === 'time' ? (/^\d{2}:\d{2}$/.test(when) ? when : '') : k === 'after' ? (when.indexOf('after:') === 0 ? when : 'after:') : k; paintWhen(); }); });
+    s.querySelectorAll('[data-ycv]').forEach(function (b) { b.addEventListener('click', function () { v.video = b.dataset.ycv; $('ycVQ').value = v.video; paintV(); }); });
+    $('ycVQ').addEventListener('input', function () { v.video = this.value.trim(); paintV(); });
+    s.querySelectorAll('[data-ycholo]').forEach(function (b) { b.addEventListener('click', function () { v.holo = v.holo === b.dataset.ycholo ? '' : b.dataset.ycholo; paintTg(); }); });
+    s.querySelectorAll('[data-yctg]').forEach(function (b) { b.addEventListener('click', function () { v[b.dataset.yctg] = !v[b.dataset.yctg]; paintTg(); }); });
+    s.querySelector('[data-ycpk]').addEventListener('click', function () { $('ycPk').value = '생일'; });
+    $('ycSave').addEventListener('click', function () {
+      var b = this, m = $('ycMsg');
+      v.picket = $('ycPk').value.trim(); v.video = $('ycVQ').value.trim();
+      if (!seat) { m.textContent = '자리를 골라 주세요.'; return; }
+      if (!when || when === 'after:') { m.textContent = '순서를 골라 주세요.'; return; }
+      b.disabled = true; m.textContent = '';
+      var body = { a: x ? 'yc_edit' : 'yc_add', floor: fl, seat: seat, when: when, v: v, text: $('ycT').value.trim(), song: $('ycS').value.trim() };
+      if (x) body.id = x.id; else if (photos.length) body.photos = photos.map(function (p) { return { type: p.type, data: p.data }; });
+      ycCall(body, function (r) { if (!r.ok) { b.disabled = false; m.textContent = ycErr(r); return; } var sh = $('sheet'); sh.hidden = true; sh.innerHTML = ''; state.ycMsg = x ? '고쳤어요.' : '연출 요청을 보냈어요. DJ·술 준비되면 알려 드려요.'; render(); });
+    });
+  }
+
   // ── 도면 보기 (2026-11-18): 홈페이지 배치도(assets/img/table-layout.webp) 위치 그대로. 좌표 = 배치도 픽셀(층마다 원점 옮김).
   // 대표 확인: 3층 도면 D3 = 표 S3 · 2층 도면 L4~L18 = 표 L1~L15(L19~L21 안 씀) · 주말 자리 SPOT B = 바, V = 흡연실 앞 바, GROOVE Bar B = 메인바.
+  // 대표 결정(2026-11-18): 계단·WC·락커·다트·포토존은 빼고, 자리를 크게(최소 52px) 꽉 채운다. 좌표 단위 = 화면 px(폰은 옆으로 밀어서 봄).
+  // 주말 자리: SPOT V1~V5 = 바(흡연실 위), SPOT B1~B9 = 메인바, GROOVE B1~B6 = 메인바 앞. 주말 자리를 숨기면 그 자리에 바 이름만.
   var TB_MAP = {
-    SPOT: { w: 1080, h: 570, lm: [
-        ['WC', 262, 20, 66, 72], ['BAR', 15, 132, 175, 46, 'bar'], ['흡연실', 15, 200, 175, 320, 'room'], ['', 257, 160, 12, 380, 'thin'],
-        ['DJ', 430, 200, 75, 165, 'dj'], ['MAIN BAR', 775, 188, 115, 195, 'bar'], ['계단', 905, 4, 80, 560, 'st'], ['WC', 998, 50, 60, 72], ['PHOTO', 1000, 440, 70, 110]],
-      zl: [['주말 · 바', 15, 14], ['주말 · 흡연실 앞 바', 196, 145]],
-      seats: { '9': [340, 38, 80, 64], '10': [547, 40, 74, 64], '11': [624, 40, 74, 64], '12': [701, 40, 74, 64], '13': [778, 40, 74, 64],
-        '4': [532, 450, 76, 70], '3': [611, 450, 76, 70], '2': [690, 450, 76, 70], '1': [769, 450, 76, 70],
-        D2: [285, 205, 62, 75], D1: [285, 285, 62, 85],
-        S4: [395, 197, 'r'], S3: [392, 255, 'r'], S2: [390, 317, 'r'], S1: [387, 383, 'r'], DB8: [446, 155, 'r'], DB7: [502, 155, 'r'], DB1: [440, 410, 'r'], DB2: [498, 410, 'r'],
-        S7: [545, 217, 'r'], S6: [545, 277, 'r'], S5: [545, 338, 'r'],
-        L9: [580, 188, 43, 44], L10: [626, 188, 43, 44], L11: [672, 188, 43, 44], L12: [718, 188, 43, 44],
-        L5: [580, 256, 43, 44], L6: [626, 256, 43, 44], L7: [672, 256, 43, 44], L8: [718, 256, 43, 44],
-        L1: [580, 324, 43, 44], L2: [626, 324, 43, 44], L3: [672, 324, 43, 44], L4: [718, 324, 43, 44],
-        B1: [14, 30, 44, 46], B2: [61, 30, 44, 46], B3: [108, 30, 44, 46], B4: [155, 30, 44, 46], B5: [202, 30, 44, 46],
-        B6: [14, 80, 44, 46], B7: [61, 80, 44, 46], B8: [108, 80, 44, 46], B9: [155, 80, 44, 46],
-        V1: [196, 160, 56, 70], V2: [196, 236, 56, 70], V3: [196, 312, 56, 70], V4: [196, 388, 56, 70], V5: [196, 464, 56, 70] } },
-    GROOVE: { w: 1080, h: 520, lm: [
-        ['LOCKER', 62, 70, 188, 75], ['WC', 277, 52, 70, 85], ['계단', 762, 30, 50, 170, 'st'], ['다트', 922, 85, 55, 55], ['DJ', 487, 330, 135, 175, 'dj'], ['MAIN BAR', 663, 445, 337, 60, 'bar']],
-      zl: [['H · 혼술바존', 40, 236], ['주말 · 메인바', 668, 352]],
-      seats: { '2': [370, 60, 70, 70], '3': [444, 60, 70, 70], '4': [517, 60, 70, 70], '5': [590, 60, 70, 70], '6': [663, 60, 70, 70], '7': [828, 60, 70, 70], '1': [402, 410, 72, 75],
-        S3: [455, 203, 'r'], S4: [511, 203, 'r'], S5: [567, 203, 'r'], S6: [622, 203, 'r'], S1: [420, 273, 'r'], S2: [471, 273, 'r'], S7: [571, 273, 'r'], S8: [622, 273, 'r'], S9: [674, 273, 'r'],
-        L4: [707, 246, 37, 40], L5: [745, 246, 37, 40], L6: [783, 246, 37, 40], L10: [828, 246, 37, 40], L11: [866, 246, 37, 40], L12: [904, 246, 37, 40],
-        L1: [707, 288, 37, 40], L2: [745, 288, 37, 40], L3: [783, 288, 37, 40], L7: [828, 288, 37, 40], L8: [866, 288, 37, 40], L9: [904, 288, 37, 40],
-        L13: [950, 288, 37, 40], L14: [988, 288, 37, 40], L15: [1026, 288, 37, 40],
-        B1: [668, 368, 51, 48], B2: [723, 368, 51, 48], B3: [778, 368, 51, 48], B4: [833, 368, 51, 48], B5: [888, 368, 51, 48], B6: [943, 368, 51, 48] } }
+    SPOT: { w: 942, h: 492,
+      lm: [['흡연실', 10, 100, 100, 380, 'room'], ['DJ', 294, 160, 92, 224, 'dj']],
+      wkoff: [['BAR', 10, 22, 280, 64, 'bar'], ['MAIN BAR', 756, 150, 176, 230, 'bar']],
+      zl: [['주말 · 바', 10, 6, 1], ['주말 · 메인바', 756, 134, 1]],
+      seats: { '9': [300, 22, 85, 66], '10': [476, 22, 60, 70], '11': [542, 22, 60, 70], '12': [608, 22, 60, 70], '13': [674, 22, 60, 70],
+        '4': [476, 412, 60, 70], '3': [542, 412, 60, 70], '2': [608, 412, 60, 70], '1': [674, 412, 60, 70],
+        D2: [125, 140, 75, 110], D1: [125, 260, 75, 110],
+        S4: [245, 150, 'r'], S3: [245, 225, 'r'], S2: [245, 300, 'r'], S1: [245, 375, 'r'],
+        DB8: [328, 124, 'r'], DB7: [390, 124, 'r'], DB1: [328, 424, 'r'], DB2: [390, 424, 'r'],
+        S7: [436, 185, 'r'], S6: [436, 265, 'r'], S5: [436, 345, 'r'] } },
+    GROOVE: { w: 1246, h: 452,
+      lm: [['DJ', 520, 252, 130, 180, 'dj'], ['MAIN BAR', 690, 402, 370, 44, 'bar']],
+      wkoff: [],
+      zl: [['H · 혼술바존', 10, 94], ['주말 · 메인바 앞', 690, 314, 1]],
+      seats: { '2': [380, 22, 70, 75], '3': [456, 22, 70, 75], '4': [532, 22, 70, 75], '5': [608, 22, 70, 75], '6': [684, 22, 70, 75], '7': [860, 22, 70, 75], '1': [418, 340, 76, 80],
+        S3: [476, 135, 'r'], S4: [538, 135, 'r'], S5: [600, 135, 'r'], S6: [662, 135, 'r'],
+        S1: [444, 205, 'r'], S2: [506, 205, 'r'], S7: [610, 205, 'r'], S8: [672, 205, 'r'], S9: [734, 205, 'r'] } }
   };
-  (function () {   // H 석: 4줄 × 8칸
-    var rows = [[25, 26, 27, 28, 29, 30, 31, 32], [24, 23, 22, 21, 20, 19, 18, 17], [9, 10, 11, 12, 13, 14, 15, 16], [8, 7, 6, 5, 4, 3, 2, 1]];
-    rows.forEach(function (r, i) { r.forEach(function (n, j) { TB_MAP.GROOVE.seats['H' + n] = [40 + j * 44, 250 + i * 62, 42, 46]; }); });
+  (function () {
+    var S = TB_MAP.SPOT.seats, G = TB_MAP.GROOVE.seats, i;
+    // SPOT L: 3줄 × 4칸 (S7·S6·S5 줄과 나란히)
+    [[9, 10, 11, 12], [5, 6, 7, 8], [1, 2, 3, 4]].forEach(function (r, y) { r.forEach(function (n, x) { S['L' + n] = [476 + x * 66, 150 + y * 80, 60, 70]; }); });
+    for (i = 0; i < 5; i++) S['V' + (i + 1)] = [10 + i * 57, 22, 52, 64];                       // 바
+    for (i = 0; i < 9; i++) S['B' + (i + 1)] = [756 + (i % 3) * 60, 150 + Math.floor(i / 3) * 80, 56, 70];   // 메인바 3×3
+    // GROOVE H: 4줄 × 8칸
+    [[25, 26, 27, 28, 29, 30, 31, 32], [24, 23, 22, 21, 20, 19, 18, 17], [9, 10, 11, 12, 13, 14, 15, 16], [8, 7, 6, 5, 4, 3, 2, 1]].forEach(function (r, y) { r.forEach(function (n, x) { G['H' + n] = [10 + x * 50, 110 + y * 81, 46, 75]; }); });
+    // GROOVE L: 도면 3칸씩 세 묶음 (위 L4~6·L10~12, 아래 L1~3·L7~9·L13~15)
+    [[4, 5, 6], [10, 11, 12], null].forEach(function (g, k) { if (g) g.forEach(function (n, x) { G['L' + n] = [778 + k * 156 + x * 50, 176, 46, 60]; }); });
+    [[1, 2, 3], [7, 8, 9], [13, 14, 15]].forEach(function (g, k) { g.forEach(function (n, x) { G['L' + n] = [778 + k * 156 + x * 50, 242, 46, 60]; }); });
+    for (i = 0; i < 6; i++) G['B' + (i + 1)] = [690 + i * 62, 330, 56, 64];
   })();
   function tbView() { if (!state.tbView) { try { state.tbView = localStorage.getItem('gs_tb_view'); } catch (e) {} } return state.tbView === 'list' ? 'list' : 'map'; }
   function tbMapHtml(fl, ix) {
@@ -2213,13 +2442,13 @@ details.all .list { margin-top: 8px; }
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend) z.rows.forEach(function (r) { r.forEach(function (x) { wk[x] = 1; }); }); });
     function pct(x, w) { return (x / w * 100).toFixed(3) + '%'; }
     function box(x, y, w, h) { return 'left:' + pct(x, m.w) + ';top:' + pct(y, m.h) + ';width:' + pct(w, m.w) + ';height:' + pct(h, m.h); }
-    var h = '<div class="tbmapw"><div class="tbmap" style="aspect-ratio:' + m.w + '/' + m.h + '">';
-    m.lm.forEach(function (l) { h += '<div class="lm' + (l[5] ? ' ' + l[5] : '') + '" style="' + box(l[1], l[2], l[3], l[4]) + '">' + esc(l[0]) + '</div>'; });
-    m.zl.forEach(function (z) { if (/^주말/.test(z[0]) && !show) return; h += '<div class="zl" style="left:' + pct(z[1], m.w) + ';top:' + pct(z[2], m.h) + '">' + esc(z[0]) + '</div>'; });
+    var h = '<div class="tbmapw"><div class="tbmap" style="width:max(100%,' + m.w + 'px);aspect-ratio:' + m.w + '/' + m.h + '">';
+    m.lm.concat(show ? [] : m.wkoff).forEach(function (l) { h += '<div class="lm' + (l[5] ? ' ' + l[5] : '') + '" style="' + box(l[1], l[2], l[3], l[4]) + '">' + esc(l[0]) + '</div>'; });
+    m.zl.forEach(function (z) { if (z[3] && !show) return; h += '<div class="zl" style="left:' + pct(z[1], m.w) + ';top:' + pct(z[2], m.h) + '">' + esc(z[0]) + '</div>'; });
     var known = {};
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !show) return; z.rows.forEach(function (r) { r.forEach(function (sid) {
       var p = m.seats[sid]; if (!p) return; known[sid] = 1;
-      var rect = p[2] === 'r' ? [p[0] - 25, p[1] - 25, 50, 50] : p;
+      var rect = p[2] === 'r' ? [p[0] - 30, p[1] - 30, 60, 60] : p;
       h += tbTile(sid, ix.at[sid], { style: box(rect[0], rect[1], rect[2], rect[3]), round: p[2] === 'r', wk: !!wk[sid] });
     }); }); });
     h += '</div></div>';
