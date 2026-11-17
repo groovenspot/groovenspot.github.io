@@ -1,5 +1,530 @@
 [
  {
+  "id": "2026-10-30-halloween",
+  "date": "2026-10-30",
+  "title": "HALLOWEEN · 할로윈",
+  "ig": [],
+  "event": "2026-10-30-halloween-weekend",
+  "photos": [
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-01.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-01.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-02.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-02.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-03.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-03.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-04.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-04.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-05.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-05.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-06.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-06.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-07.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-07.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-08.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-08.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-09.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-09.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-10.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-10.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-11.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-11.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-12.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-12.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-13.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-13.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-14.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-14.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-15.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-15.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-16.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-16.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-17.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-17.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-18.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-18.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-19.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-19.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-20.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-20.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-21.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-21.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-22.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-22.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-23.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-23.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-24.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-24.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-25.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-25.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-26.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-26.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-27.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-27.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-28.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-28.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-29.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-29.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-30.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-30.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-31.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-31.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-32.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-32.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-33.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-33.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-34.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-34.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-35.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-35.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-36.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-36.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-37.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-37.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-38.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-38.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-39.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-39.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-40.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-40.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-41.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-41.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-42.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-42.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-43.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-43.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-44.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-44.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-45.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-45.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-46.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-46.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-47.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-47.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-48.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-48.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-49.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-49.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-50.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-50.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-51.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-51.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-52.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-52.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-53.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-53.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-54.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-54.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-55.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-55.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-56.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-56.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-57.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-57.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-58.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-58.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-59.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-59.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-60.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-60.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-61.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-61.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-62.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-62.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-63.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-63.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-64.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-64.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-65.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-65.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-66.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-66.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-67.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-67.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-68.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-68.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-69.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-69.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-70.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-70.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-71.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-71.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-72.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-72.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-73.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-73.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-74.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-74.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-75.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-75.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-76.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-76.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-77.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-77.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-78.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-78.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-79.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-79.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-80.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-80.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-81.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-81.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-82.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-82.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-83.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-83.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-84.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-84.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-85.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-85.jpg",
+    "w": 1080,
+    "h": 809
+   },
+   {
+    "src": "/assets/gallery/2026-10-30-halloween/halloween-86.jpg",
+    "thumb": "/assets/gallery/2026-10-30-halloween/t/halloween-86.jpg",
+    "w": 1080,
+    "h": 809
+   }
+  ]
+ },
+ {
   "id": "2026-09-18-girls-night-party",
   "date": "2026-09-18",
   "title": "GIRLS NIGHT PARTY",
