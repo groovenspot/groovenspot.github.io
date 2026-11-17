@@ -450,6 +450,31 @@ details.all .list { margin-top: 8px; }
 .tbsx, .tbliq, .tbtg, .tbblk { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; align-items: center; }
 .sheet-in button.chip { font: inherit; font-size: 14px; font-weight: 800; padding: 6px 14px; min-height: 38px; background: none; color: var(--txt); cursor: pointer; }
 .sheet-in button.chip.on { background: var(--g); border-color: var(--g); color: #120800; }
+/* 도면 보기 (홈페이지 배치도 기준, 좌표는 배치도 픽셀) */
+.tbvw { display: inline-flex; border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; margin: 0 0 10px; }
+.tbvw button { min-height: 38px; padding: 0 16px; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
+.tbvw button[aria-pressed="true"] { background: var(--g); color: #120800; }
+.tbmapw { overflow-x: auto; margin: 6px 0 10px; padding: 0 0 6px; -webkit-overflow-scrolling: touch; width: min(1100px, calc(100vw - 24px)); position: relative; left: 50%; transform: translateX(-50%); }
+.tbmap { position: relative; width: max(100%, 980px); border: 1px solid var(--line-2); border-radius: 16px; background: #0d0d0f; }
+.tbmap .lm { position: absolute; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 8px; background: #1b1b1f; border: 1px solid #2a2a30; color: #6d6d78; font-size: 11px; font-weight: 800; letter-spacing: .04em; pointer-events: none; }
+.tbmap .lm.dj { background: #26262c; color: #a9a9b4; font-size: 18px; border-radius: 40px; }
+.tbmap .lm.bar { background: #2a2416; border-color: #4a3d20; color: #c9a65a; }
+.tbmap .lm.thin { border-radius: 4px; background: #2a2416; border-color: #4a3d20; }
+.tbmap .lm.room { background: none; border: 1px dashed #34343c; }
+.tbmap .lm.st { background: repeating-linear-gradient(0deg, #2b1a0e 0 6px, #3a2412 6px 9px); border-color: #5a3418; color: #ff9a4a; writing-mode: vertical-rl; }
+.tbmap .zl { position: absolute; font-size: 10px; font-weight: 800; color: #6d6d78; pointer-events: none; }
+.tbt.tbm { position: absolute; min-height: 0; padding: 3px 4px; border-radius: 8px; gap: 0; justify-content: flex-start; }
+.tbt.tbm.rd { border-radius: 50%; align-items: center; justify-content: center; text-align: center; padding: 2px; }
+.tbt.tbm > i { font-size: 10px; line-height: 1.1; }
+.tbt.tbm b { font-size: 11px; line-height: 1.15; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: clip; }
+.tbt.tbm span { font-size: 10px; line-height: 1.1; white-space: nowrap; }
+.tbt.tbm small, .tbt.tbm em { display: none; }
+.tbt.tbm .tbmore { display: block; top: 1px; right: 3px; font-size: 9px; }
+.tbt.tbm.empty { border-style: dashed; }
+.tbt.tbm.wait::after { content: ''; position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
+.tbt.tbm.wk { box-shadow: inset 0 -2px 0 rgba(201,166,90,.6); }
+.tbmleg { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--muted); margin: 0 0 4px; }
+.tbmleg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; border: 1px solid var(--line-2); }
 /* 성별: 남자 파랑 · 여자 분홍 · 혼성 보라 */
 .sheet-in button.chip.sx-m { border-color: rgba(77,154,255,.6); color: #8cc2ff; }
 .sheet-in button.chip.sx-f { border-color: rgba(255,92,168,.6); color: #ff9ccb; }
@@ -2131,8 +2156,8 @@ details.all .list { margin-top: 8px; }
     var t = (v.sx || '') + (v.n || ''); if (!t) return '';
     return '<span class="sxc sx-' + ({ '남': 'm', '여': 'f', '혼': 'x' }[v.sx] || 'n') + '">' + esc(t) + '</span>';
   }
-  function tbTile(seat, list) {
-    var r = list && list[0], g = r && r.ghost, v = r && !g ? (r.cur || r.req) : null, cls = 'tbt', badge = '';
+  function tbTile(seat, list, mp) {
+    var r = list && list[0], g = r && r.ghost, v = r && !g ? (r.cur || r.req) : null, cls = 'tbt' + (mp ? ' tbm' + (mp.round ? ' rd' : '') + (mp.wk ? ' wk' : '') : ''), badge = '';
     if (!r) cls += ' empty';
     else if (g) { cls += ' ghost'; v = g.req; badge = '<em>옮기기 대기</em>'; }
     else if (v.blk) cls += ' blk';
@@ -2145,7 +2170,65 @@ details.all .list { margin-top: 8px; }
     var more = list && list.length > 1 ? '<i class="tbmore">+' + (list.length - 1) + '</i>' : '';
     var body = !v ? '<span class="tbplus">+</span>' : v.blk ? '<b>' + esc(v.blk) + '</b>' :
       '<b>' + (v.sold ? '<span class="tbsold">★</span>' : '') + esc(v.g || v.liq || '손님') + '</b><span>' + [tbSxHtml(v), v.g && v.liq ? esc(v.liq) : ''].filter(Boolean).join(' · ') + (v.keep ? ' 🍾' : '') + '</span><small>' + esc(tbShort(v.st)) + '</small>';
-    return '<button type="button" class="' + cls + '" data-seat="' + esc(seat) + '"><i>' + esc(seat) + '</i>' + body + badge + more + '</button>';
+    if (mp && v && !v.blk) body = '<b>' + esc(v.g || v.liq || '손님') + '</b>' + (v.sx || v.n ? '<span>' + tbSxHtml(v) + (v.keep ? '🍾' : '') + '</span>' : '');
+    else if (mp && !v) body = '';
+    return '<button type="button" class="' + cls + '" data-seat="' + esc(seat) + '"' + (mp ? ' style="' + mp.style + '"' : '') + '><i>' + esc(seat) + (mp && v && v.sold ? ' <span class="tbsold">★</span>' : '') + '</i>' + body + badge + more + '</button>';
+  }
+  // ── 도면 보기 (2026-11-18): 홈페이지 배치도(assets/img/table-layout.webp) 위치 그대로. 좌표 = 배치도 픽셀(층마다 원점 옮김).
+  // 대표 확인: 3층 도면 D3 = 표 S3 · 2층 도면 L4~L18 = 표 L1~L15(L19~L21 안 씀) · 주말 자리 SPOT B = 바, V = 흡연실 앞 바, GROOVE Bar B = 메인바.
+  var TB_MAP = {
+    SPOT: { w: 1080, h: 570, lm: [
+        ['WC', 262, 20, 66, 72], ['BAR', 15, 132, 175, 46, 'bar'], ['흡연실', 15, 200, 175, 320, 'room'], ['', 257, 160, 12, 380, 'thin'],
+        ['DJ', 430, 200, 75, 165, 'dj'], ['MAIN BAR', 775, 188, 115, 195, 'bar'], ['계단', 905, 4, 80, 560, 'st'], ['WC', 998, 50, 60, 72], ['PHOTO', 1000, 440, 70, 110]],
+      zl: [['주말 · 바', 15, 14], ['주말 · 흡연실 앞 바', 196, 145]],
+      seats: { '9': [340, 38, 80, 64], '10': [547, 40, 74, 64], '11': [624, 40, 74, 64], '12': [701, 40, 74, 64], '13': [778, 40, 74, 64],
+        '4': [532, 450, 76, 70], '3': [611, 450, 76, 70], '2': [690, 450, 76, 70], '1': [769, 450, 76, 70],
+        D2: [285, 205, 62, 75], D1: [285, 285, 62, 85],
+        S4: [395, 197, 'r'], S3: [392, 255, 'r'], S2: [390, 317, 'r'], S1: [387, 383, 'r'], DB8: [446, 155, 'r'], DB7: [502, 155, 'r'], DB1: [440, 410, 'r'], DB2: [498, 410, 'r'],
+        S7: [545, 217, 'r'], S6: [545, 277, 'r'], S5: [545, 338, 'r'],
+        L9: [580, 188, 43, 44], L10: [626, 188, 43, 44], L11: [672, 188, 43, 44], L12: [718, 188, 43, 44],
+        L5: [580, 256, 43, 44], L6: [626, 256, 43, 44], L7: [672, 256, 43, 44], L8: [718, 256, 43, 44],
+        L1: [580, 324, 43, 44], L2: [626, 324, 43, 44], L3: [672, 324, 43, 44], L4: [718, 324, 43, 44],
+        B1: [14, 30, 44, 46], B2: [61, 30, 44, 46], B3: [108, 30, 44, 46], B4: [155, 30, 44, 46], B5: [202, 30, 44, 46],
+        B6: [14, 80, 44, 46], B7: [61, 80, 44, 46], B8: [108, 80, 44, 46], B9: [155, 80, 44, 46],
+        V1: [196, 160, 56, 70], V2: [196, 236, 56, 70], V3: [196, 312, 56, 70], V4: [196, 388, 56, 70], V5: [196, 464, 56, 70] } },
+    GROOVE: { w: 1080, h: 520, lm: [
+        ['LOCKER', 62, 70, 188, 75], ['WC', 277, 52, 70, 85], ['계단', 762, 30, 50, 170, 'st'], ['다트', 922, 85, 55, 55], ['DJ', 487, 330, 135, 175, 'dj'], ['MAIN BAR', 663, 445, 337, 60, 'bar']],
+      zl: [['H · 혼술바존', 40, 236], ['주말 · 메인바', 668, 352]],
+      seats: { '2': [370, 60, 70, 70], '3': [444, 60, 70, 70], '4': [517, 60, 70, 70], '5': [590, 60, 70, 70], '6': [663, 60, 70, 70], '7': [828, 60, 70, 70], '1': [402, 410, 72, 75],
+        S3: [455, 203, 'r'], S4: [511, 203, 'r'], S5: [567, 203, 'r'], S6: [622, 203, 'r'], S1: [420, 273, 'r'], S2: [471, 273, 'r'], S7: [571, 273, 'r'], S8: [622, 273, 'r'], S9: [674, 273, 'r'],
+        L4: [707, 246, 37, 40], L5: [745, 246, 37, 40], L6: [783, 246, 37, 40], L10: [828, 246, 37, 40], L11: [866, 246, 37, 40], L12: [904, 246, 37, 40],
+        L1: [707, 288, 37, 40], L2: [745, 288, 37, 40], L3: [783, 288, 37, 40], L7: [828, 288, 37, 40], L8: [866, 288, 37, 40], L9: [904, 288, 37, 40],
+        L13: [950, 288, 37, 40], L14: [988, 288, 37, 40], L15: [1026, 288, 37, 40],
+        B1: [668, 368, 51, 48], B2: [723, 368, 51, 48], B3: [778, 368, 51, 48], B4: [833, 368, 51, 48], B5: [888, 368, 51, 48], B6: [943, 368, 51, 48] } }
+  };
+  (function () {   // H 석: 4줄 × 8칸
+    var rows = [[25, 26, 27, 28, 29, 30, 31, 32], [24, 23, 22, 21, 20, 19, 18, 17], [9, 10, 11, 12, 13, 14, 15, 16], [8, 7, 6, 5, 4, 3, 2, 1]];
+    rows.forEach(function (r, i) { r.forEach(function (n, j) { TB_MAP.GROOVE.seats['H' + n] = [40 + j * 44, 250 + i * 62, 42, 46]; }); });
+  })();
+  function tbView() { if (!state.tbView) { try { state.tbView = localStorage.getItem('gs_tb_view'); } catch (e) {} } return state.tbView === 'list' ? 'list' : 'map'; }
+  function tbMapHtml(fl, ix) {
+    var m = TB_MAP[fl]; if (!m) return '';
+    var wk = {}, show = tbShowWeekend();
+    tbSeatsOf(fl).forEach(function (z) { if (z.weekend) z.rows.forEach(function (r) { r.forEach(function (x) { wk[x] = 1; }); }); });
+    function pct(x, w) { return (x / w * 100).toFixed(3) + '%'; }
+    function box(x, y, w, h) { return 'left:' + pct(x, m.w) + ';top:' + pct(y, m.h) + ';width:' + pct(w, m.w) + ';height:' + pct(h, m.h); }
+    var h = '<div class="tbmapw"><div class="tbmap" style="aspect-ratio:' + m.w + '/' + m.h + '">';
+    m.lm.forEach(function (l) { h += '<div class="lm' + (l[5] ? ' ' + l[5] : '') + '" style="' + box(l[1], l[2], l[3], l[4]) + '">' + esc(l[0]) + '</div>'; });
+    m.zl.forEach(function (z) { if (/^주말/.test(z[0]) && !show) return; h += '<div class="zl" style="left:' + pct(z[1], m.w) + ';top:' + pct(z[2], m.h) + '">' + esc(z[0]) + '</div>'; });
+    var known = {};
+    tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !show) return; z.rows.forEach(function (r) { r.forEach(function (sid) {
+      var p = m.seats[sid]; if (!p) return; known[sid] = 1;
+      var rect = p[2] === 'r' ? [p[0] - 25, p[1] - 25, 50, 50] : p;
+      h += tbTile(sid, ix.at[sid], { style: box(rect[0], rect[1], rect[2], rect[3]), round: p[2] === 'r', wk: !!wk[sid] });
+    }); }); });
+    h += '</div></div>';
+    // 배치도에 자리가 없는 칸(혹시 새로 생긴 자리)은 아래에 목록으로
+    var extra = [];
+    tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !show) return; z.rows.forEach(function (r) { r.forEach(function (sid) { if (!known[sid]) extra.push(sid); }); }); });
+    if (extra.length) h += '<div class="tbrow">' + extra.map(function (sid) { return tbTile(sid, ix.at[sid]); }).join('') + '</div>';
+    h += '<div class="tbmleg"><span><i style="background:rgba(60,207,145,.25);border-color:var(--ok)"></i>입장</span><span><i style="border-color:var(--warn);border-style:dashed"></i>승인 대기</span><span><i style="border-style:dashed"></i>빈자리</span><span>★ 판매</span></div>';
+    return h;
   }
   function renderTable(area) {
     if (!state.tb) { area.innerHTML = state.tbErr ? '<p class="empty">' + esc(state.tbErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.tbFly) loadTb(); return; }
@@ -2168,7 +2251,10 @@ details.all .list { margin-top: 8px; }
     }
     h += '<div class="tbtools">' + (edit ? '<button class="btn btn-hot" type="button" id="tbAdd">+ 손님 넣기</button>' : '') + '<button class="btn" type="button" id="tbCopy">📋 카톡용 복사</button>' +
       (t.weekend ? '' : '<button class="btn" type="button" id="tbWk" aria-pressed="' + !!state.tbWk + '">' + (state.tbWk ? '주말 자리 숨기기' : '주말 자리 보기') + '</button>') + '</div>';
-    tbSeatsOf(fl).forEach(function (z) {
+    var view = tbView();
+    h += '<div class="tbvw" role="group" aria-label="보기"><button type="button" data-tbv="map" aria-pressed="' + (view === 'map') + '">🗺 도면</button><button type="button" data-tbv="list" aria-pressed="' + (view === 'list') + '">☰ 목록</button></div>';
+    if (view === 'map') h += tbMapHtml(fl, ix);
+    else tbSeatsOf(fl).forEach(function (z) {
       if (z.weekend && !tbShowWeekend()) return;
       h += '<h2 class="sec tbz">' + esc(z.name) + (z.weekend ? ' <span class="chip">주말</span>' : '') + '</h2>';
       z.rows.forEach(function (row) { h += '<div class="tbrow"' + (row.length <= 5 ? ' style="grid-template-columns:repeat(' + row.length + ',minmax(0,1fr))"' : '') + '>' + row.map(function (s) { return tbTile(s, ix.at[s]); }).join('') + '</div>'; });
@@ -2187,6 +2273,7 @@ details.all .list { margin-top: 8px; }
     if ($('tbOkAll')) $('tbOkAll').addEventListener('click', function () { if (!armed(this, '모두 승인')) return; tbJudge(pend.map(function (r) { return r.id; }), true, '', this); });
     if ($('tbAdd')) $('tbAdd').addEventListener('click', function () { tbOpen(null, ''); });
     if ($('tbWk')) $('tbWk').addEventListener('click', function () { state.tbWk = !state.tbWk; render(); });
+    area.querySelectorAll('[data-tbv]').forEach(function (b) { b.addEventListener('click', function () { state.tbView = b.dataset.tbv; try { localStorage.setItem('gs_tb_view', state.tbView); } catch (e) {} render(); }); });
     $('tbCopy').addEventListener('click', tbCopy);
   }
   function tbAddDay(d, n) { var p = d.split('-'), x = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n)); return x.toISOString().slice(0, 10); }
