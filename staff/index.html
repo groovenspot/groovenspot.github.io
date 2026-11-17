@@ -468,6 +468,15 @@ details.all .list { margin-top: 8px; }
 .ycsong.ok { color: var(--ok); }
 .ycsong.bad { color: #ff8199; }
 .ycp { display: flex; gap: 6px; margin: 8px 0 0; }
+.ycv { display: grid; gap: 8px; margin: 8px 0 0; }
+.ycvbtn { min-height: 42px; }
+.ycvp video { width: 100%; max-height: 60vh; border-radius: 10px; background: #000; }
+.ycvp a { display: inline-block; margin-top: 4px; font-size: 13px; }
+.ephotos .vph .vbox { display: grid; place-items: center; width: 100%; height: 100%; background: #101014; font-size: 24px; }
+.ephotos .vph .vbox small { font-size: 11px; color: var(--muted); }
+.ephotos .vph .vbox b { font-size: 13px; }
+.ephotos .vph.bad { border-color: var(--bad); }
+.ephotos .addph { text-align: center; line-height: 1.5; }
 .ycp img { width: 74px; height: 74px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line-2); background: #000; }
 .ycst { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 10px 0 0; font-size: 13px; color: var(--muted); font-weight: 700; }
 .ycst .on { color: var(--ok); }
@@ -2245,7 +2254,7 @@ details.all .list { margin-top: 8px; }
   // ── 🎆 연출 요청 (2026-11-18, 카톡 '불꽃놀이' 방) ─────────────────
   // 영업진이 요청 → DJ팀 전광 준비(ㅈㄱㅈㅂㅇ) · 운영팀 술 준비(ㅅㅈㅂㅇ) → ㄱㄱ(시작) → 컷(끝). ㄱㄱ·컷·순서는 바쁠 때 대신 눌러 주므로 누구나.
   function ycErr(r) {
-    return { seat: '자리를 골라 주세요.', when: '순서를 다시 골라 주세요.', empty: '연출 내용을 하나 이상 넣어 주세요.', text: '<, >, " 는 쓸 수 없어요.', long: '문구는 300자까지예요.', songlink: '노래는 멜론 곡 링크나 사운드클라우드 곡 링크로 넣어 주세요.', songsite: '멜론이나 사운드클라우드 링크만 돼요.', unreleased: '사운드클라우드에 다운로드 링크가 없는 곡이에요 · 미발매곡은 안 돼요.', sctrack: '사운드클라우드 곡(트랙) 하나의 링크를 넣어 주세요.', check: '노래 링크를 확인하지 못했어요. 잠시 후 다시 해 주세요.',
+    return { seat: '자리를 골라 주세요.', when: '순서를 다시 골라 주세요.', empty: '연출 내용을 하나 이상 넣어 주세요.', text: '<, >, " 는 쓸 수 없어요.', long: '문구는 300자까지예요.', songlink: '노래는 멜론 곡 링크나 사운드클라우드 곡 링크로 넣어 주세요.', video: '영상을 다시 올려 주세요.', songsite: '멜론이나 사운드클라우드 링크만 돼요.', unreleased: '사운드클라우드에 다운로드 링크가 없는 곡이에요 · 미발매곡은 안 돼요.', sctrack: '사운드클라우드 곡(트랙) 하나의 링크를 넣어 주세요.', check: '노래 링크를 확인하지 못했어요. 잠시 후 다시 해 주세요.',
       forbidden: '이건 할 수 없어요.', state: '이미 바뀌었어요. 새로고침했어요.', notfound: '이미 지워졌어요.', busy: '잠시 후 다시 해 주세요.', photo: '사진은 3장까지, jpg·png만 돼요.' }[r.error] || '저장이 안 됐어요. 잠시 후 다시 해 주세요.';
   }
   function loadYc(quiet) {
@@ -2286,6 +2295,45 @@ details.all .list { margin-top: 8px; }
     if (w.indexOf('after:') === 0) { var p = (state.yc.list || []).filter(function (y) { return y.id === w.slice(6); })[0]; return (p ? p.floor + ' ' + p.seat : '앞 연출') + ' 다음'; }
     return w;
   }
+  // ── 영상: 2,025,000바이트씩 나눠 올리고(vid_up), 나눠 받아(vid_get) 붙인다 ──
+  function ycIsVideo(f) { return /^video\//.test(f.type || '') || /\.(mov|mp4|m4v|webm|3gp)$/i.test(f.name || ''); }
+  function ycVidType(f) { if (/^video\/(mp4|quicktime|webm|x-m4v|3gpp)$/.test(f.type || '')) return f.type; var e = (String(f.name || '').match(/\.(\w+)$/) || [0, ''])[1].toLowerCase(); return { mov: 'video/quicktime', mp4: 'video/mp4', m4v: 'video/x-m4v', webm: 'video/webm', '3gp': 'video/3gpp' }[e] || 'video/mp4'; }
+  function ycB64(blob) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(String(r.result).split(',')[1] || ''); }; r.onerror = rej; r.readAsDataURL(blob); }); }
+  function ycUpload(v, paint) {
+    var CH = 2025000, n = Math.ceil(v.size / CH), type = ycVidType(v.file), i = 0, tries = 0;
+    function next() {
+      if (v.gone) return;
+      if (i >= n) { v.done = true; paint(); return; }
+      ycB64(v.file.slice(i * CH, (i + 1) * CH)).then(function (d) {
+        return call({ a: 'vid_up', token: state.s.token, vid: v.vid, part: i, size: v.size, type: type, data: d });
+      }).then(function (r) {
+        if (!r.ok) throw new Error(r.error || 'up');
+        v.vid = r.vid; i++; tries = 0; v.prog = i / n; paint(); next();
+      }).catch(function (e) {
+        if (++tries <= 3 && !/vtype|vbig|auth/.test(String(e && e.message))) return setTimeout(next, 1500 * tries);
+        v.err = String(e && e.message || 'up'); paint();
+      });
+    }
+    next();
+  }
+  function ycLoadVid(id, b) {
+    state.vidUrl = state.vidUrl || {};
+    var parts = [], total = 1, type = 'video/mp4', i = 0;
+    b.disabled = true; b.textContent = '🎬 받는 중…';
+    function next() {
+      call({ a: 'vid_get', token: state.s.token, vid: id, part: i }).then(function (r) {
+        if (!r.ok) throw new Error(r.error || 'get');
+        total = r.parts; type = r.type;
+        var bin = atob(r.data), u = new Uint8Array(bin.length); for (var k = 0; k < bin.length; k++) u[k] = bin.charCodeAt(k);
+        parts.push(u); i++; b.textContent = '🎬 받는 중… ' + Math.floor(i / total * 100) + '%';
+        if (i < total) return next();
+        var url = URL.createObjectURL(new Blob(parts, { type: type }));
+        state.vidUrl[id] = { url: url, ext: type === 'video/quicktime' ? '.mov' : type === 'video/webm' ? '.webm' : '.mp4' };
+        renderSoon();
+      }).catch(function () { b.disabled = false; b.textContent = '🎬 다시 받기 (실패)'; });
+    }
+    next();
+  }
   function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
   function ycWhat(v) {
     return [v.video ? v.video + '영상' : '', v.holo ? '홀로 ' + v.holo : '', v.picket ? v.picket + '피켓' : '', v.hammer ? '망치' : '', v.vvip ? 'VVIP 입장' : ''].filter(Boolean);
@@ -2299,6 +2347,7 @@ details.all .list { margin-top: 8px; }
     if (x.text) h += '<p class="yct">' + esc(x.text).replace(/\n/g, '<br>') + '</p>';
     if (x.song) h += '<p class="ycs">🎵 ' + (/^https?:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(ycSongLabel(x)) + '</a>' : esc(x.song)) + '</p>';
     if (x.photos.length) h += '<div class="ycp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') + '</div>';
+    if (x.videos && x.videos.length) h += '<div class="ycv">' + x.videos.map(function (id, i) { var u = (state.vidUrl || {})[id]; return u ? '<div class="ycvp"><video src="' + u.url + '" controls playsinline preload="metadata"></video><a class="link" href="' + u.url + '" download="연출영상' + (i + 1) + u.ext + '">⬇️ 저장</a></div>' : '<button type="button" class="btn ycvbtn" data-ycvid="' + esc(id) + '">🎬 영상 ' + (i + 1) + ' 보기</button>'; }).join('') + '</div>';
     if (x.status === '끝') return h + '<p class="note" style="margin:6px 0 0">✂️ 컷 ' + esc(x.endAt) + (x.cutBy ? ' ' + esc(x.cutBy) : '') + (x.goAt ? ' · ㄱㄱ ' + esc(x.goAt) + (x.goBy ? ' ' + esc(x.goBy) : '') : '') + '</p></div>';
     h += '<div class="ycst"><span class="' + (x.jg ? 'on' : '') + '">전광 ' + (x.jg ? '✅ ' + esc(x.jg) + ' ' + esc(x.jgAt) : '⏳') + '</span><span class="' + (x.sul ? 'on' : '') + '">술 ' + (x.sul ? '✅ ' + esc(x.sul) + ' ' + esc(x.sulAt) : '⏳') + '</span>' +
       (x.status === '진행' ? '<span class="live">● 진행 중 ' + esc(x.goAt) + (x.goBy && x.goBy !== x.by ? ' · ' + esc(x.goBy) : '') + '</span>' : ready ? '<span class="on">준비 완료 · ㄱㄱ 기다리는 중</span>' : '') + '</div>';
@@ -2331,6 +2380,7 @@ details.all .list { margin-top: 8px; }
     if (state.ycErr) h += '<p class="msg">' + esc(state.ycErr) + '</p>';
     area.innerHTML = h;
     hydrateImgs(area);
+    area.querySelectorAll('[data-ycvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.ycvid, b); }); });
     if ($('ycNew')) $('ycNew').addEventListener('click', function () { ycForm(null); });
     area.querySelectorAll('[data-ycid]').forEach(function (card) {
       var id = card.dataset.ycid, x = y.list.filter(function (q) { return q.id === id; })[0];
@@ -2351,7 +2401,7 @@ details.all .list { margin-top: 8px; }
   }
   // 요청 입력 창 (새로 / 고치기)
   function ycForm(x) {
-    var y = state.yc, v = x ? JSON.parse(JSON.stringify(x.v)) : {}, fl = x ? x.floor : (state.tbFloor || tbFloorPref()), seat = x ? x.seat : '', when = x ? x.when : 'now', photos = [];
+    var y = state.yc, v = x ? JSON.parse(JSON.stringify(x.v)) : {}, fl = x ? x.floor : (state.tbFloor || tbFloorPref()), seat = x ? x.seat : '', when = x ? x.when : 'now', photos = [], vids = [];
     var mineSeats = [];
     if (state.tb && state.tb.rows) state.tb.rows.forEach(function (r) { var c = r.cur || r.req; if (c && c.seat && !c.blk && key(c.st) === key(y.me)) mineSeats.push({ fl: r.floor, seat: c.seat, g: c.g || c.liq || '' }); });
     var act = y.list.filter(function (q) { return q.status !== '끝' && (!x || q.id !== x.id); });
@@ -2401,11 +2451,20 @@ details.all .list { margin-top: 8px; }
     function paintPh() {
       var box = $('ycPh'); if (!box) return;
       box.innerHTML = photos.map(function (p, i) { return '<span class="ph"><img src="' + p.url + '" alt=""><button type="button" data-ycrm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
-        (photos.length < 3 ? '<label class="addph">📷 사진<input type="file" id="ycFile" accept="image/*" multiple hidden></label>' : '');
+        vids.map(function (v, i) { return '<span class="ph vph' + (v.err ? ' bad' : '') + '"><span class="vbox">🎬<small>' + (v.size / 1048576).toFixed(1) + 'MB</small><b>' + (v.err ? '실패' : v.done ? '✅' : Math.floor(v.prog * 100) + '%') + '</b></span><button type="button" data-ycrv="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('') +
+        (photos.length < 3 || vids.length < 2 ? '<label class="addph">📷 사진<br>🎬 영상<input type="file" id="ycFile" accept="image/*,video/*" multiple hidden></label>' : '');
       box.querySelectorAll('[data-ycrm]').forEach(function (b) { b.addEventListener('click', function () { photos.splice(+b.dataset.ycrm, 1); paintPh(); }); });
+      box.querySelectorAll('[data-ycrv]').forEach(function (b) { b.addEventListener('click', function () { var v = vids.splice(+b.dataset.ycrv, 1)[0]; if (v) v.gone = true; paintPh(); }); });
       if ($('ycFile')) $('ycFile').addEventListener('change', function () {
-        var files = Array.prototype.slice.call(this.files || []).slice(0, 3 - photos.length);
-        Promise.all(files.map(shrink)).then(function (xs) { photos = photos.concat(xs).slice(0, 3); paintPh(); }).catch(function () { $('ycMsg').textContent = '사진을 못 읽었어요.'; });
+        var all = Array.prototype.slice.call(this.files || []), m = $('ycMsg'); m.textContent = '';
+        var ims = all.filter(function (f) { return !ycIsVideo(f); }).slice(0, 3 - photos.length);
+        all.filter(ycIsVideo).forEach(function (f) {
+          if (vids.length >= 2) { m.textContent = '영상은 2개까지예요.'; return; }
+          if (f.size > 60 * 1048576) { m.textContent = '영상은 60MB까지예요. (' + (f.size / 1048576).toFixed(0) + 'MB)'; return; }
+          var v = { file: f, size: f.size, prog: 0, vid: '', done: false, err: '' }; vids.push(v); ycUpload(v, paintPh);
+        });
+        paintPh();
+        if (ims.length) Promise.all(ims.map(shrink)).then(function (xs) { photos = photos.concat(xs).slice(0, 3); paintPh(); }).catch(function () { m.textContent = '사진을 못 읽었어요.'; });
       });
     }
     paintSeats(); paintWhen(); paintV(); paintTg(); paintPh();
@@ -2438,8 +2497,10 @@ details.all .list { margin-top: 8px; }
       if (!seat) { m.textContent = '자리를 골라 주세요.'; return; }
       if (!when || when === 'after:') { m.textContent = '순서를 골라 주세요.'; return; }
       b.disabled = true; m.textContent = '';
+      if (vids.some(function (q) { return q.err; })) { b.disabled = false; m.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
+      if (vids.some(function (q) { return !q.done; })) { m.textContent = '영상 올리는 중이에요… 다 올라가면 바로 보내요.'; var w = setInterval(function () { if (!$('ycSave')) return clearInterval(w); if (vids.some(function (q) { return q.err; })) { clearInterval(w); b.disabled = false; m.textContent = '영상을 못 올렸어요. 다시 넣어 주세요.'; } else if (vids.every(function (q) { return q.done; })) { clearInterval(w); b.disabled = false; $('ycSave').click(); } }, 500); return; }
       var body = { a: x ? 'yc_edit' : 'yc_add', floor: fl, seat: seat, when: when, v: v, text: $('ycT').value.trim(), song: $('ycS').value.trim() };
-      if (x) body.id = x.id; else if (photos.length) body.photos = photos.map(function (p) { return { type: p.type, data: p.data }; });
+      if (x) body.id = x.id; else { if (photos.length) body.photos = photos.map(function (p) { return { type: p.type, data: p.data }; }); if (vids.length) body.videos = vids.map(function (q) { return q.vid; }); }
       ycCall(body, function (r) { if (!r.ok) { b.disabled = false; m.textContent = ycErr(r); return; } var sh = $('sheet'); sh.hidden = true; sh.innerHTML = ''; state.ycMsg = x ? '고쳤어요.' : '연출 요청을 보냈어요. DJ·술 준비되면 알려 드려요.'; render(); });
     });
   }
