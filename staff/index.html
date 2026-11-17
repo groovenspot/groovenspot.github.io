@@ -594,6 +594,7 @@ body.hasfab main { padding-bottom: 110px; }
 .ycsong { margin: -6px 0 12px; font-size: 13px; }
 .ycsong.ok { color: var(--ok); }
 .ycsong.bad { color: #ff8199; }
+.ycsong.warn { color: var(--warn); }
 .ycp { display: flex; gap: 6px; margin: 8px 0 0; }
 .ycv { display: grid; gap: 8px; margin: 8px 0 0; }
 .ycvbtn { min-height: 42px; }
@@ -2655,10 +2656,10 @@ body.hasfab main { padding-bottom: 110px; }
     var v = x.v || {}, sc = v.songKind === 'sc' || /^https?:\/\/([\w-]+\.)*(soundcloud\.com|snd\.sc)\//i.test(x.song || '');
     if (!sc || !/^https?:\/\//.test(x.song || '')) return '';
     var u = /^https?:\/\/[^\s<>"']+$/.test(v.songDlUrl || '') ? v.songDlUrl : '', host = u ? u.replace(/^https?:\/\/(www\.)?/, '').split(/[\/?#]/)[0] : '';
-    var tip = u ? host + ' 프리 다운로드 페이지' : v.songDl === 'SoundCloud 다운로드' ? '싸클 페이지 ··· (More) → Download file' : '싸클 페이지에서 Free Download 찾기';
+    var tip = u ? host + ' 프리 다운로드 페이지' : v.songWarn ? '확인 못 한 곡 · 싸클 페이지에서 Free Download 있는지 확인' : v.songDl === 'SoundCloud 다운로드' ? '싸클 페이지 ··· (More) → Download file' : '싸클 페이지에서 Free Download 찾기';
     return ' <a class="ycdl" href="' + esc(u || x.song) + '" target="_blank" rel="noopener noreferrer" title="' + esc(tip) + '">⬇️ 다운</a><span class="ycdlh">' + esc(tip) + '</span>';
   }
-  function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
+  function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songWarn ? ' · ⚠️ 확인 못 한 곡' : v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
   function ycWhatK(v) {
     return [['parade', v.parade ? v.parade + ' 퍼레' : ''], ['video', v.video ? v.video + '영상' : ''], ['holo', v.holo ? '홀로 ' + v.holo : ''], ['picket', v.picket ? v.picket + '피켓' : ''], ['hammer', v.hammer ? '망치' : ''], ['vvip', v.vvip ? 'VVIP 입장' : '']].filter(function (p) { return p[1]; });
   }
@@ -2821,6 +2822,7 @@ body.hasfab main { padding-bottom: 110px; }
       call({ a: 'song_check', token: state.s.token, song: u }).then(function (r) {
         if (my !== songSeq) return;
         if (r.ok) { box.className = 'note ycsong ok'; box.textContent = '✅ ' + (r.kind === 'melon' ? '멜론 곡' : '사운드클라우드' + (r.title ? ' · ' + r.title : '') + ' · ' + r.dl); }
+        else if (r.soft) { box.className = 'note ycsong warn'; box.textContent = '⚠️ 사운드클라우드를 지금 확인하지 못했어요 · 요청은 돼요 (조명실에서 다운로드 되는지 확인해 주세요)'; }
         else { box.className = 'note ycsong bad'; box.textContent = '❌ ' + ycErr(r) + (r.title ? ' (' + r.title + ')' : ''); }
       }).catch(function () { if (my === songSeq) { box.className = 'note ycsong bad'; box.textContent = '❌ ' + ycErr({ error: 'check' }); } });
     }
