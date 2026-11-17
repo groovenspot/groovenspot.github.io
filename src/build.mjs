@@ -454,7 +454,7 @@ ${ARTICLES.length ? `<section class="wrap sec" aria-labelledby="g-more"><h2 clas
     const L = (k) => t(lang, k);
     return `${pageHead(lang, 'lost')}
 <section class="wrap sec">
-  <div class="panel lost-note"><p><b>${L('lost.note1')}</b></p><p class="muted">${L('lost.note2')}</p>
+  <div class="panel lost-note"><p class="muted">${L('lost.note2')}</p>
     <div class="row-btns"><a class="btn btn-hot" href="tel:${PHONE.replace(/-/g, '')}">📞 ${PHONE}</a><a class="btn" href="${INSTAGRAM}" rel="noopener">Instagram DM</a></div></div>
 </section>
 <section class="wrap sec"><div id="lost" class="lost" aria-live="polite"><p class="muted">${L('rt.lostLoad')}</p></div></section>
