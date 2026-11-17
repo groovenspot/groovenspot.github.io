@@ -1,6 +1,6 @@
 /* GROOVE STAFF 알림 (웹 푸시). 서버는 내용 없는 신호만 보내고, 여기서 로그인 토큰으로 무엇이 왔는지(peek) 받아 보여 준다.
    페이지 캐시는 하지 않는다(항상 새 화면). */
-var API = 'https://script.google.com/macros/s/AKfycbxIlEiy7MjZnPSgeQuTvim-iXvIbdD2E1a_VG7cbrqRgFxGHCy_zmOqW5QrWwjxTsMkQA/exec';
+var API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
 self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
 function token() {

@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<link rel="preconnect" href="https://script.google.com" crossorigin>
-<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+<link rel="preconnect" href="https://groove-staff-api.groovenspotbusan.workers.dev" crossorigin>
 <title>GROOVE STAFF</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
 <link rel="manifest" href="/staff/manifest.webmanifest">
@@ -480,7 +479,8 @@ details.all .list { margin-top: 8px; }
 (function () {
   'use strict';
   // 그루브 구글 계정의 'GROOVE 직원 API' (Apps Script 웹 앱). 내용은 대표님이 승인한 직원에게만 여기서 내려온다.
-  var API = 'https://script.google.com/macros/s/AKfycbxIlEiy7MjZnPSgeQuTvim-iXvIbdD2E1a_VG7cbrqRgFxGHCy_zmOqW5QrWwjxTsMkQA/exec';
+  // 서버: Cloudflare (2026-11-18 이사, 저장소 groovenspot/groove-staff-api). 예전 구글 주소로 오는 요청도 여기로 넘어온다.
+  var API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
   var KEY = 'gs_staff';
   var DKEY = 'gs_staff_data'; // 지난번 받은 목록 — 열자마자 먼저 보여 주고 뒤에서 새로 받는다
   var TEAMS = ['운영팀', '클로버', '아룬', '고트', 'DJ팀'];
@@ -1030,6 +1030,7 @@ details.all .list { margin-top: 8px; }
       var id = im.dataset.img;
       if (state.imgs[id]) { im.src = state.imgs[id]; return; }
       im.referrerPolicy = 'no-referrer'; im.decoding = 'async';
+      if (/^cf/.test(id)) { viaApi(im, id); return; }   // 이사 뒤 올린 사진은 서버(Cloudflare)에만 있다
       im.onerror = function () { im.onerror = null; viaApi(im, id); };
       im.src = photoUrl(id, 1200);
     });
