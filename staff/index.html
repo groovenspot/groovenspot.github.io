@@ -400,6 +400,13 @@ body.hasfab main { padding-bottom: 110px; }
 .sheet-in h2 { margin: 0 0 10px; font-size: 18px; }
 .sheet-in .btn { width: 100%; margin-top: 14px; }
 .steps { margin: 0; padding-left: 20px; line-height: 1.9; }
+/* 📲 알림 받는 법 (신규 교육) */
+.pgw { background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 14px; margin: 0 0 16px; }
+.pg { border-top: 1px solid var(--line-2); padding: 4px 0; }
+.pg summary { font-weight: 800; font-size: 15px; padding: 10px 0; cursor: pointer; }
+.pg .steps { font-size: 14px; }
+.pgf { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 10px 0 8px; }
+#pgOn { width: 100%; margin-top: 8px; }
 .me-card { border: 1px solid rgba(255,122,26,.55); background: rgba(255,122,26,.08); border-radius: 16px; padding: 14px 16px; margin: 0 0 14px; font-size: 15px; }
 .me-card b { color: var(--g); font-size: 18px; }
 .rk { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px; }
@@ -995,9 +1002,9 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'table') return renderTable(area);
     if (state.tab === 'yc') return renderYc(area);
     if (state.tab === 'lost') return renderLost(area);
-    var list = state.tab === 'edu' ? edu : notes;
-    if (!list.length) { area.innerHTML = '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; return; }
-    area.innerHTML = '<div class="list">' + list.map(function (n) {
+    var list = state.tab === 'edu' ? edu : notes, guide = state.tab === 'edu' ? pushGuideHtml() : '';
+    if (!list.length) { area.innerHTML = guide + '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; bindPushGuide(); return; }
+    area.innerHTML = guide + '<div class="list">' + list.map(function (n) {
       return '<button type="button" class="item' + (n.read ? '' : ' unread') + '" data-id="' + esc(n.id) + '">' +
         '<span class="row"><span class="chip k-' + esc(n.kind) + '">' + esc(n.kind) + '</span>' + esc(n.date) +
         (n.read ? '<span class="chip done">✓ 읽음</span>' : '<span class="chip new">안 읽음</span>') + '</span>' +
@@ -1005,6 +1012,32 @@ body.hasfab main { padding-bottom: 110px; }
         '<span class="row">읽은 사람 ' + n.readers + ' / ' + n.total + '</span></button>';
     }).join('') + '</div>';
     area.querySelectorAll('.item').forEach(function (b) { b.addEventListener('click', function () { openDoc(b.dataset.id); }); });
+    bindPushGuide();
+  }
+  // 📲 신규 교육 맨 위: 안드로이드·아이폰 알림(푸시) 켜는 법 (대표 요청 2026-11-18). 지금 폰에 맞는 쪽이 펼쳐져 있음.
+  function pushGuideHtml() {
+    var first = IOS ? 'ios' : 'and';
+    var sec = function (k, title, steps, fix) { return '<details class="pg" data-pg="' + k + '"' + (k === first ? ' open' : '') + '><summary>' + title + '</summary><ol class="steps">' + steps.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol><p class="pgf"><b>알림이 안 오면</b><br>' + fix.join('<br>') + '</p></details>'; };
+    return '<div class="pgw"><h2 class="sec" style="margin:0 0 6px">📲 알림(푸시) 받는 법</h2>' +
+      '<p class="note" style="margin:0 0 8px">테이블 승인·연출·@호출·메시지 알림이 폰으로 와요. <b>폰마다 한 번</b> 켜 두세요. <b>카톡 안에서 연 화면에서는 알림을 못 받아요</b> — 안드로이드는 크롬, 아이폰은 사파리로 열어 주세요.</p>' +
+      sec('and', '🤖 안드로이드 (갤럭시 등)', [
+        '<b>크롬</b>으로 <b>그루브.site/staff</b> 를 열고 로그인해요.',
+        '크롬 오른쪽 위 <b>⋮</b> → <b>홈 화면에 추가</b>(또는 <b>앱 설치</b>) → 홈 화면에 생긴 <b>GROOVE STAFF</b> 아이콘으로 열어요. (알림이 더 잘 와요)',
+        '오른쪽 위 <b>🔕</b> 를 누르고 <b>허용</b>을 눌러요. <b>🔔</b> 로 바뀌면 끝이에요.'
+      ], ['· 휴대폰 <b>설정 → 애플리케이션 → Chrome → 알림</b>을 켜요.', '· 크롬 <b>⋮ → 설정 → 사이트 설정 → 알림</b>에서 <b>그루브.site</b> 를 허용해요.', '· <b>설정 → 배터리</b>에서 Chrome 을 절전(잠자는 앱)에서 빼 주세요.', '· 삼성 인터넷 말고 <b>크롬</b>으로 열어 주세요.']) +
+      sec('ios', '🍎 아이폰', [
+        '<b>사파리</b>로 <b>그루브.site/staff</b> 를 열어요. (iOS 16.4 이상)',
+        '아래쪽 <b>공유 버튼(□↑)</b> → <b>홈 화면에 추가</b> → <b>추가</b>를 눌러요.',
+        '홈 화면에 생긴 <b>GROOVE STAFF</b> 아이콘으로 열고 로그인해요.',
+        '오른쪽 위 <b>🔕</b> 를 누르고 <b>허용</b>을 눌러요. <b>🔔</b> 로 바뀌면 끝이에요.'
+      ], ['· 사파리 화면에서는 알림이 안 와요. 꼭 <b>홈 화면 아이콘</b>으로 열어 주세요.', '· <b>설정 → 알림 → GROOVE STAFF</b> 에서 알림 허용을 켜요.', '· <b>설정 → 일반 → 소프트웨어 업데이트</b>로 iOS 16.4 이상인지 확인해요.', '· 집중 모드·방해 금지가 켜져 있으면 꺼 주세요.']) +
+      '<button class="btn btn-ok" type="button" id="pgOn">🔔 지금 이 폰 알림 켜기</button><p class="note" id="pgSt" style="margin:6px 0 0"></p></div>';
+  }
+  function bindPushGuide() {
+    var b = $('pgOn'); if (!b) return;
+    var paint = function () { bellState().then(function (st) { var t = { on: '✅ 이 폰은 알림이 켜져 있어요.', off: '이 폰은 아직 알림이 꺼져 있어요.', denied: '알림이 막혀 있어요. 위 \'알림이 안 오면\'을 따라 허용해 주세요.', ios: '아이폰은 먼저 홈 화면에 추가해야 해요 (위 순서대로).', no: '이 브라우저는 알림을 못 받아요. 크롬(안드로이드)·사파리(아이폰)로 열어 주세요.' }[st] || ''; if ($('pgSt')) $('pgSt').textContent = t; if ($('pgOn')) $('pgOn').hidden = st === 'on'; }); };
+    b.addEventListener('click', function () { bellClick(); setTimeout(paint, 4000); });
+    paint();
   }
 
   function renderDec(area, d) {
