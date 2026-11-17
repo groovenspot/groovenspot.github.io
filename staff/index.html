@@ -466,7 +466,6 @@ details.all .list { margin-top: 8px; }
           w.rows.map(function (r) { return rankCard(r, ti); }).join('') + '</div></details>';
       }
     }
-    h += '<p class="how">인스타 게스트 방에 <code>이름 게스트 5</code>처럼 올리면 매일 아침 9시쯤 반영돼요. 새벽에 올리면 전날 영업분, 같은 날 다시 올리면 마지막 숫자로 고쳐져요. 팀별 합계는 스태프 페이지에 가입한 이름 기준이에요.</p>';
     area.innerHTML = h;
     area.querySelectorAll('[data-w]').forEach(function (b) { b.addEventListener('click', function () { state.week = b.dataset.w; render(); }); });
   }
