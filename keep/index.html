@@ -26,9 +26,12 @@
 <link rel="stylesheet" href="/assets/shell.css?v=mwkn628f">
 <style>
 .kp-items { display: grid; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); padding: 4px 18px; }
-.kp-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+.kp-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
 .kp-row:first-child { border-top: 0; }
-.kp-row .nm { min-width: 0; font-size: 17px; font-weight: 700; word-break: keep-all; overflow-wrap: anywhere; }
+.kp-row .nm { flex: 1; min-width: 0; font-size: 17px; font-weight: 700; word-break: keep-all; overflow-wrap: anywhere; }
+.kp-pic { flex: none; width: 54px; height: 94px; border-radius: 12px; overflow: hidden; background: #0a0a0c; border: 1px solid var(--line); display: grid; place-items: center; }
+.kp-pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.kp-pic.none { font-size: 24px; opacity: .55; }
 .kp-row .nm small { display: block; color: var(--muted); font-size: 12px; font-weight: 600; margin-top: 2px; }
 .kp-row .q { flex: none; font: 900 24px/1 var(--body); color: var(--g); font-variant-numeric: tabular-nums; text-align: right; }
 .kp-row .q small { font-size: 14px; color: var(--muted); font-weight: 700; margin-left: 2px; }
@@ -143,6 +146,17 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function md(s) { var p = String(s).split('-'); return p.length === 3 ? +p[1] + '/' + +p[2] : ''; }
   function ymd(s) { var p = String(s).split('-'); return p.length === 3 ? p[0] + '. ' + +p[1] + '. ' + +p[2] + '.' : ''; }
+  // 술 사진 (매장 메뉴판 사진에서 병만 잘라 씀, /assets/keep/). 없는 술은 빈 칸
+  var KIMG = { '딥 루미너스': 'deep', '킹': 'king', '퀸': 'queen', '오로라': 'aurora', '오페라 프리마 브뤼': 'opera', '모엣 샹동': 'moet', '모엣 니르': 'moet-nir',
+    '모엣 샹동 골든 라이트업': 'moet-golden', '페리에주에 루미너스': 'perrier', '돔페리뇽 루미너스': 'dom', '아르망디 골드': 'armand-gold', '아르망디 골드 매그넘 1.5L': 'armand-gold-magnum',
+    '아르망디 드미섹': 'armand-demisec', '아르망디 로제': 'armand-rose', '아르망디 블랑 드 누아': 'armand-bdn', '예거마이스터': 'jager', '말리부': 'malibu', '콰이 페리치': 'kwai',
+    '쿠엘보 모히토': 'cuervo-mojito', '코카레로': 'cocalero', '파이어볼': 'fireball', '아그와': 'agwa', '힙노틱': 'hpnotiq', '엑스레이티드': 'xrated', '앱솔루트': 'absolut',
+    '앱솔루트 어피치': 'absolut', '스미노프': 'smirnoff', '그레이구스': 'greygoose', '봄베이': 'bombay', '핸드릭스': 'hendricks', '론디아즈 151': 'landiaz', '헤네시 VSOP': 'hennessy',
+    '씨에라': 'sierra', '호세 쿠엘보': 'jose', '제임슨': 'jameson', '조니워커 블랙': 'jw-black', '잭다니엘스': 'jd', '잭다니엘스 허니': 'jd-honey', '잭다니엘스 애플': 'jd-apple', '조니워커 블루라벨': 'jw-blue' };
+  function pic(liq) {
+    var f = Object.prototype.hasOwnProperty.call(KIMG, liq) ? KIMG[liq] : '';
+    return f ? '<div class="kp-pic"><img src="/assets/keep/' + f + '.webp" width="54" height="94" alt="" loading="lazy" decoding="async"></div>' : '<div class="kp-pic none" aria-hidden="true">🍾</div>';
+  }
   var k = '';
   try { k = new URLSearchParams(location.search).get('k') || ''; } catch (e) {}
   // 담당 직원 번호가 있으면 '담당에게 전화하기', 없으면 가게 번호
@@ -168,7 +182,7 @@
     else h += '<div class="kp-items">' + r.items.map(function (i) {
       var x = days(i.exp), dd = x === null || x > 7 ? '' : '<span class="kp-dd' + (x < 0 ? ' late' : x <= 7 ? ' soon' : '') + '">' + (x < 0 ? '기간 지남' : x === 0 ? '오늘까지' : 'D-' + x) + '</span>';
       var sm = [i.memo, i.exp ? '보관 ' + ymd(i.exp) + '까지' : ''].filter(String).join(' · ');
-      return '<div class="kp-row"><div class="nm">' + esc(i.liq) + dd + (sm ? '<small>' + esc(sm) + '</small>' : '') + '</div>' +
+      return '<div class="kp-row">' + pic(i.liq) + '<div class="nm">' + esc(i.liq) + dd + (sm ? '<small>' + esc(sm) + '</small>' : '') + '</div>' +
         (i.kind === '병' ? '<div class="q">' + i.n + '<small>병</small></div>' : '<div class="q op">' + esc(i.amt) + ' 남음</div>') + '</div>';
     }).join('') + '</div>';
     if (r.log.length) h += '<h2 class="kp-h">최근 기록</h2><ul class="kp-hist">' + r.log.map(function (l) {
