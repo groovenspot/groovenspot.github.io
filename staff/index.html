@@ -373,6 +373,11 @@ body.hasfab main { padding-bottom: 110px; }
 .chatl .cm.hit p { box-shadow: 0 0 0 2px #ffb02e; }
 .chatl .cm .creq { display: block; font-style: normal; font-size: 12px; font-weight: 700; color: var(--ok); margin: 3px 4px 0; }
 .chatl .cm .creq.bad { color: #ffb02e; }
+.chatl { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+.chatl .cm .cack { display: block; font-style: normal; font-size: 12px; font-weight: 800; color: #7cc0ff; margin: 3px 4px 0; }
+.chatl .cm.acked p { box-shadow: 0 0 0 2px #3b8bff; }
+.chatl .cm p.acking { opacity: .5; }
+.chatl .chint { align-self: center; font-size: 11px; color: var(--muted); margin: 2px 0 6px; }
 .chatf { display: flex; gap: 8px; align-items: flex-end; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
 .chatf textarea { flex: 1; min-height: 42px; max-height: 120px; padding: 10px 12px; font-size: 16px; resize: none; }
 .chatf .btn { width: auto; min-height: 42px; padding: 0 16px; }
@@ -2583,6 +2588,10 @@ body.hasfab main { padding-bottom: 110px; }
     var seen = chatSeen(room), n = chatTail(room).filter(function (t) { return !t[1] && t[0] > seen; }).length;
     $('chatN').hidden = !n; $('chatN').textContent = n > 99 ? '99+' : n;
   }
+  function chatAck(id, p) {
+    p.classList.add('acking');
+    call({ a: 'chat_ack', token: state.s.token, id: id }).then(function (r) { p.classList.remove('acking'); if (r.ok) { chatPaint(r, false, true); flushPush(); } }).catch(function () { p.classList.remove('acking'); });
+  }
   function chatOpen(room) {
     state.chatRoom = room; state.chat = null;
     $('chatT').textContent = CHAT_NAME[room]; $('chatL').innerHTML = '<p class="cempty">불러오는 중…</p>';
@@ -2597,17 +2606,24 @@ body.hasfab main { padding-bottom: 110px; }
     state.chatFly = 1;
     call({ a: 'chat_get', token: state.s.token, room: room }).then(function (r) { state.chatFly = 0; if (r.ok && r.room === state.chatRoom) chatPaint(r, first); }).catch(function () { state.chatFly = 0; });
   }
-  function chatPaint(r, toEnd) {
-    var L = $('chatL'), same = state.chat && JSON.stringify(state.chat.list) === JSON.stringify(r.list);
+  function chatPaint(r, toEnd, force) {
+    var L = $('chatL'), same = !force && state.chat && JSON.stringify(state.chat.list) === JSON.stringify(r.list);
     state.chat = r; state.chatTail = state.chatTail || {}; state.chatTail[r.room] = r.list.slice(-30).map(function (m) { return [m.at, m.mine ? 1 : 0]; });
     if (r.list.length) chatSeen(r.room, r.list[r.list.length - 1].at);
     if (same && !toEnd) return;
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '';
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + '">' + (m.mine ? '' : '<i>' + esc(m.who) + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '<p>' + chatText(m) + '</p>' + (m.req ? '<em class="creq' + (/^⚠️/.test(m.req) ? ' bad' : '') + '">' + esc(m.req) + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '<p>' + chatText(m) + '</p>' + (m.req ? '<em class="creq' + (/^⚠️/.test(m.req) ? ' bad' : '') + '">' + esc(m.req) + '</em>' : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
-    L.innerHTML = h || '<p class="cempty">아직 대화가 없어요. 첫 메시지를 남겨 보세요.</p>';
+    L.innerHTML = h ? '<p class="chint">메시지를 두 번 누르면 ✅ 확인 · 담당 표시</p>' + h : '<p class="cempty">아직 대화가 없어요. 첫 메시지를 남겨 보세요.</p>';
+    L.querySelectorAll('[data-cmid] p').forEach(function (p) {   // 두 번 누르면 확인(담당)
+      p.addEventListener('click', function () {
+        var id = p.parentNode.dataset.cmid, now = Date.now();
+        if (state.chatTap && state.chatTap.id === id && now - state.chatTap.t < 400) { state.chatTap = null; chatAck(id, p); }
+        else state.chatTap = { id: id, t: now };
+      });
+    });
     L.querySelectorAll('[data-chdel]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '✕')) return; call({ a: 'chat_del', token: state.s.token, id: b.dataset.chdel }).then(function (x) { if (x.ok) chatPaint(x, false); }); }); });
     if (toEnd || near) L.scrollTop = L.scrollHeight;
     paintChatFab();
