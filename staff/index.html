@@ -450,6 +450,17 @@ details.all .list { margin-top: 8px; }
 .tbsx, .tbliq, .tbtg, .tbblk { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; align-items: center; }
 .sheet-in button.chip { font: inherit; font-size: 14px; font-weight: 800; padding: 6px 14px; min-height: 38px; background: none; color: var(--txt); cursor: pointer; }
 .sheet-in button.chip.on { background: var(--g); border-color: var(--g); color: #120800; }
+/* 성별: 남자 파랑 · 여자 분홍 · 혼성 보라 */
+.sheet-in button.chip.sx-m { border-color: rgba(77,154,255,.6); color: #8cc2ff; }
+.sheet-in button.chip.sx-f { border-color: rgba(255,92,168,.6); color: #ff9ccb; }
+.sheet-in button.chip.sx-x { border-color: rgba(168,112,255,.6); color: #c9a6ff; }
+.sheet-in button.chip.sx-m.on { background: #3b8bff; border-color: #3b8bff; color: #fff; }
+.sheet-in button.chip.sx-f.on { background: #ff4fa0; border-color: #ff4fa0; color: #fff; }
+.sheet-in button.chip.sx-x.on { background: #9a5cff; border-color: #9a5cff; color: #fff; }
+.tbt .sxc { font-weight: 800; }
+.tbt .sxc.sx-m, .tbw .sxc.sx-m { color: #6fb0ff; }
+.tbt .sxc.sx-f, .tbw .sxc.sx-f { color: #ff7fbb; }
+.tbt .sxc.sx-x, .tbw .sxc.sx-x { color: #b98cff; }
 .tbn { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; font-weight: 800; }
 .tbn b { min-width: 26px; text-align: center; font-size: 18px; }
 .tbblk span { font-size: 13px; color: var(--muted); font-weight: 800; margin-right: 4px; }
@@ -2116,6 +2127,10 @@ details.all .list { margin-top: 8px; }
     var who = [v.g, v.liq].filter(Boolean).join(' '), sn = (v.sx || '') + (v.n || '');
     return (v.sold ? '*' : '') + [who, sn].filter(Boolean).join(' ') + (v.keep ? ' 킵' : '') + (v.st ? '(' + tbShort(v.st) + ')' : '') + (v.inn ? 'ㅇ' : '');
   }
+  function tbSxHtml(v) {   // 남2 / 여3 / 혼2 를 성별 색으로
+    var t = (v.sx || '') + (v.n || ''); if (!t) return '';
+    return '<span class="sxc sx-' + ({ '남': 'm', '여': 'f', '혼': 'x' }[v.sx] || 'n') + '">' + esc(t) + '</span>';
+  }
   function tbTile(seat, list) {
     var r = list && list[0], g = r && r.ghost, v = r && !g ? (r.cur || r.req) : null, cls = 'tbt', badge = '';
     if (!r) cls += ' empty';
@@ -2129,7 +2144,7 @@ details.all .list { margin-top: 8px; }
     }
     var more = list && list.length > 1 ? '<i class="tbmore">+' + (list.length - 1) + '</i>' : '';
     var body = !v ? '<span class="tbplus">+</span>' : v.blk ? '<b>' + esc(v.blk) + '</b>' :
-      '<b>' + (v.sold ? '<span class="tbsold">★</span>' : '') + esc(v.g || v.liq || '손님') + '</b><span>' + esc([(v.sx || '') + (v.n || ''), v.g && v.liq ? v.liq : ''].filter(Boolean).join(' · ')) + (v.keep ? ' 🍾' : '') + '</span><small>' + esc(tbShort(v.st)) + '</small>';
+      '<b>' + (v.sold ? '<span class="tbsold">★</span>' : '') + esc(v.g || v.liq || '손님') + '</b><span>' + [tbSxHtml(v), v.g && v.liq ? esc(v.liq) : ''].filter(Boolean).join(' · ') + (v.keep ? ' 🍾' : '') + '</span><small>' + esc(tbShort(v.st)) + '</small>';
     return '<button type="button" class="' + cls + '" data-seat="' + esc(seat) + '"><i>' + esc(seat) + '</i>' + body + badge + more + '</button>';
   }
   function renderTable(area) {
@@ -2233,10 +2248,10 @@ details.all .list { margin-top: 8px; }
     if (ap && !(r && r.cur && !r.cur.blk && (r.cur.g || r.cur.n))) h += '<div class="tbblk"><span>자리 막기</span>' + TB_BLK.map(function (x) { return '<button type="button" class="chip' + (v.blk === x ? ' on' : '') + '" data-tbblk="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>';
     h += '<div id="tbForm"' + (v.blk ? ' hidden' : '') + '>' +
       '<label>손님<input id="tbG" maxlength="20" autocomplete="off" value="' + esc(v.g || '') + '" placeholder="예) 수빈 · 순번 · 현장"></label>' +
-      '<div class="tbsx">' + ['남', '여', '혼'].map(function (x) { return '<button type="button" class="chip' + (v.sx === x ? ' on' : '') + '" data-tbsx="' + x + '">' + x + '</button>'; }).join('') +
+      '<div class="tbsx">' + [['남', '남자', 'm'], ['여', '여자', 'f'], ['혼', '혼성', 'x']].map(function (x) { return '<button type="button" class="chip sx-' + x[2] + (v.sx === x[0] ? ' on' : '') + '" data-tbsx="' + x[0] + '">' + x[1] + '</button>'; }).join('') +
       '<span class="tbn"><button type="button" class="chip" data-tbn="-1" aria-label="인원 빼기">−</button><b id="tbN">' + (v.n || 0) + '</b>명<button type="button" class="chip" data-tbn="1" aria-label="인원 더하기">＋</button></span></div>' +
-      '<label>술<input id="tbL" maxlength="20" autocomplete="off" value="' + esc(v.liq || '') + '" placeholder="카마 · 포션 · 오페라"></label><div class="tbliq">' + (t.liqs || []).map(function (x) { return '<button type="button" class="chip" data-tbliq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>' +
-      '<div class="tbtg">' + [['sold', '★ 판매'], ['keep', '🍾 킵'], ['inn', 'ㅇ 입장']].map(function (x) { return '<button type="button" class="chip' + (v[x[0]] ? ' on' : '') + '" data-tbtg="' + x[0] + '" aria-pressed="' + !!v[x[0]] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<label>술<input id="tbL" maxlength="20" autocomplete="off" value="' + esc(v.liq || '') + '" placeholder="카마 · 포션 · 오페라 · 레몬드랍"></label><div class="tbliq">' + (t.liqs || []).map(function (x) { return '<button type="button" class="chip" data-tbliq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>' +
+      '<div class="tbtg">' + [['sold', '★ 판매'], ['keep', '🍾 킵'], ['inn', '입장']].map(function (x) { return '<button type="button" class="chip' + (v[x[0]] ? ' on' : '') + '" data-tbtg="' + x[0] + '" aria-pressed="' + !!v[x[0]] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
       (ap ? '<label>담당<select id="tbS"><option value="">담당 고르기</option>' + (t.staffs || []).map(function (n) { return '<option' + (n === v.st ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + (v.st && (t.staffs || []).indexOf(v.st) < 0 ? '<option selected>' + esc(v.st) + '</option>' : '') + '</select></label>' : '<p class="note" style="margin:8px 0 0">담당 · ' + esc(t.me) + '</p>') +
       '<label>메모<input id="tbM" maxlength="40" autocomplete="off" value="' + esc(v.memo || '') + '"></label></div>' +
       '<label>자리<select id="tbSeat">' + free.map(function (s) { return '<option value="' + esc(s) + '"' + (s === (v.seat || '') ? ' selected' : '') + '>' + esc(s || '대기 명단 (자리 없음)') + '</option>'; }).join('') + '</select></label>' +
