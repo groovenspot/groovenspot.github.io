@@ -2156,7 +2156,7 @@ details.all .list { margin-top: 8px; }
     tbSeatsOf(fl).forEach(function (z) {
       if (z.weekend && !tbShowWeekend()) return;
       h += '<h2 class="sec tbz">' + esc(z.name) + (z.weekend ? ' <span class="chip">주말</span>' : '') + '</h2>';
-      z.rows.forEach(function (row) { h += '<div class="tbrow">' + row.map(function (s) { return tbTile(s, ix.at[s]); }).join('') + '</div>'; });
+      z.rows.forEach(function (row) { h += '<div class="tbrow"' + (row.length <= 5 ? ' style="grid-template-columns:repeat(' + row.length + ',minmax(0,1fr))"' : '') + '>' + row.map(function (s) { return tbTile(s, ix.at[s]); }).join('') + '</div>'; });
     });
     h += '<h2 class="sec tbz">대기 명단 <span class="row">' + ix.wait.length + '팀</span></h2><div class="tbwait">' +
       (ix.wait.length ? ix.wait.map(function (r) { var g = r.ghost, x = g || r, v = g ? g.req : (x.cur || x.req); return '<button type="button" class="tbw' + (x.status ? ' wait' : '') + (x.status === '거절' ? ' no' : '') + '" data-tbid="' + esc(x.id) + '"><span>' + esc(tbLine(v)) + '</span>' + (x.status ? '<em>' + esc(g ? '옮기기 대기' : x.status === '거절' ? '거절됨' : '승인 대기') + '</em>' : '') + '</button>'; }).join('') : '<p class="empty" style="margin:6px 0">대기 손님이 없어요.</p>') + '</div>';
