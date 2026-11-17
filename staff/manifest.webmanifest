@@ -1,0 +1,16 @@
+{
+  "name": "GROOVE STAFF",
+  "short_name": "GROOVE STAFF",
+  "description": "그루브 직원 전용 — 게스트 현황·게시판·메시지",
+  "start_url": "/staff/",
+  "scope": "/staff/",
+  "display": "standalone",
+  "background_color": "#0a0909",
+  "theme_color": "#0a0909",
+  "lang": "ko",
+  "icons": [
+    { "src": "/staff/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/staff/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/staff/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
