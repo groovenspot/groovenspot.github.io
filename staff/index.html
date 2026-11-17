@@ -134,6 +134,7 @@ details.all { margin-top: 14px; }
 .gin .rmsg { margin: 6px 0 0; }
 .gin .rmsg.ok { color: var(--ok); }
 .chip.ros { border-style: dashed; color: var(--muted); }
+.pitem.sending { opacity: .7; border-style: dashed; cursor: default; }
 .rk.ph { opacity: .45; border-style: dashed; }
 .rk.ph .nm strong { color: var(--muted); font-weight: 700; }
 details.all summary { cursor: pointer; color: var(--muted); font-weight: 800; font-size: 14px; padding: 8px 0; }
@@ -382,7 +383,7 @@ details.all .list { margin-top: 8px; }
   var DOW = ['월', '화', '수', '목', '금', '토', '일'];
   var $ = function (id) { return document.getElementById(id); };
   var state = { s: null, data: null, tab: 'guest', week: 'week', bteam: '', draft: '', gday: '', gteam: '', gdraft: {}, gmsg: '', rmsg: '', rbad: false, rarm: '',
-    bview: 'list', btag: '', bpost: null, comp: null, cdraft: {}, imgs: {}, dm: null, dmView: 'list', dmWith: '', chat: null, dmDraft: {}, dmPick: false, poll: null, lastSync: 0 };
+    bview: 'list', btag: '', bpost: null, comp: null, cdraft: {}, imgs: {}, dm: null, dmView: 'list', dmWith: '', chat: null, dmDraft: {}, dmPick: false, poll: null, lastSync: 0, pcache: {}, sending: null, sendErr: '' };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function load() { try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && v.token && v.exp > Date.now() ? v : null; } catch (e) { return null; } }
@@ -415,6 +416,10 @@ details.all .list { margin-top: 8px; }
     // text/plain 단순 요청 → 사전 확인 없이 가고, 응답은 CORS 로 읽힌다
     return fetch(API, { method: 'POST', body: JSON.stringify(body) }).then(function (r) { return r.json(); });
   }
+  // 알림은 서버 줄에 넣어 두고, 화면이 따로 '보내기'를 불러 준다(기다리지 않음)
+  function flushPush() { try { fetch(API, { method: 'POST', body: JSON.stringify({ a: 'flush' }), keepalive: true }).catch(function () {}); } catch (e) {} }
+  // 사진은 구글 드라이브 이미지 서버에서 바로 받는다(링크 공유 사진). 안 되면 예전처럼 서버로 받는다.
+  function photoUrl(id, w) { return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + (w || 1200); }
   function busy(on) { $('loading').hidden = !on; }
   function show(view) { ['loginView', 'appView', 'docView'].forEach(function (id) { $(id).hidden = id !== view; }); window.scrollTo(0, 0); }
   function today() { var d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); }
@@ -560,6 +565,7 @@ details.all .list { margin-top: 8px; }
       }
       $('sync').textContent = ''; state.lastSync = Date.now();
       state.data = r; saveData(r);
+      if (r.pq) flushPush();
       state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; state.s.role = r.role || ''; save(state.s); setWho();
       renderSoon();
     }).catch(function () {
@@ -831,6 +837,8 @@ details.all .list { margin-top: 8px; }
     h += '<div class="btags" role="group" aria-label="말머리">' + [''].concat(TAGS).map(function (g) {
       return '<button type="button" data-tag="' + esc(g) + '" aria-pressed="' + (g === state.btag) + '">' + (g ? esc(g) : '전체') + '</button>';
     }).join('') + '</div>';
+    if (state.sending && state.sending.team === t) h += '<div class="list" style="margin-bottom:8px"><div class="pitem sending"><span class="pt"><strong>' + esc(state.sending.title) + '</strong></span><span class="row">⏳ 올리는 중…</span></div></div>';
+    if (state.sendErr && state.comp) h += '<p class="msg" style="margin:0 0 10px">' + esc(state.sendErr) + ' <button type="button" class="btn" id="bRetry">쓰던 글 열기</button></p>';
     if (!posts.length) h += '<p class="empty">' + (state.btag ? '[' + esc(state.btag) + '] 글이 없어요.' : '아직 글이 없어요.') + '</p>';
     else h += '<div class="list">' + posts.map(function (p) {
       return '<button type="button" class="pitem' + (p.read ? '' : ' unread') + (p.pin ? ' pinned' : '') + '" data-pid="' + esc(p.id) + '">' +
@@ -844,28 +852,36 @@ details.all .list { margin-top: 8px; }
     area.querySelectorAll('[data-bt]').forEach(function (x) { x.addEventListener('click', function () { state.bteam = x.dataset.bt; render(); }); });
     area.querySelectorAll('[data-tag]').forEach(function (x) { x.addEventListener('click', function () { state.btag = x.dataset.tag; render(); }); });
     area.querySelectorAll('[data-pid]').forEach(function (x) { x.addEventListener('click', function () { openPost(x.dataset.pid); }); });
+    if ($('bRetry')) $('bRetry').addEventListener('click', function () { state.bview = 'edit'; render(); if ($('eMsg')) $('eMsg').textContent = state.sendErr; });
     if ($('bNew')) $('bNew').addEventListener('click', function () {
       state.comp = { team: t, tag: t === '전체' ? '공지' : '자유', title: '', text: '', pin: false, must: false, keep: [], add: [], editId: '' };
       state.bview = 'edit'; render(); window.scrollTo(0, 0);
     });
   }
   function openPost(id) {
-    var s = bFind(id);
-    state.bview = 'post'; state.bpost = { post: s || { id: id, title: '', name: '', at: '', can: {} }, comments: null, loading: true };
+    var s = bFind(id), pc = state.pcache[id];
+    state.bview = 'post';
+    if (pc && (!s || (pc.post.edited || '') === (s.edited || '') && pc.post.comments === s.comments)) state.bpost = { post: pc.post, comments: pc.comments, fresh: true };   // 한 번 연 글: 바로
+    else if (s && s.body != null) {   // 목록에 본문이 같이 왔으면 바로 보여 주고 댓글만 뒤에서
+      var q = {}; Object.keys(s).forEach(function (k) { q[k] = s[k]; }); q.text = s.body; q.photoIds = s.pids || [];
+      state.bpost = { post: q, comments: null, partial: true };
+    } else state.bpost = { post: s || { id: id, title: '', name: '', at: '', can: {} }, comments: null, loading: true };
     if (s && !s.read) { s.read = true; if (state.data.board.unread) state.data.board.unread--; }
     render(); window.scrollTo(0, 0);
     call({ a: 'post_get', token: state.s.token, id: id }).then(function (r) {
       if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (r.ok) state.pcache[id] = { post: r.post, comments: r.comments };
       if (state.bview !== 'post' || !state.bpost || state.bpost.post.id !== id) return;
-      if (!r.ok) { state.bpost.loading = false; state.bpost.err = bErr(r); return renderSoon(); }
+      if (!r.ok) { state.bpost.loading = false; state.bpost.partial = false; state.bpost.err = bErr(r); return renderSoon(); }
+      var same = state.bpost.fresh && JSON.stringify(state.bpost.comments) === JSON.stringify(r.comments) && state.bpost.post.text === r.post.text;
       state.bpost = { post: r.post, comments: r.comments };
+      if (same) { saveData(state.data); return; }
       saveData(state.data);
       if (state.tab === 'board') renderSoon();
     }).catch(function () { if (state.bpost) { state.bpost.loading = false; state.bpost.err = '연결이 안 돼요. 다시 열어 주세요.'; renderSoon(); } });
   }
   function hydrateImgs(root) {
-    root.querySelectorAll('img[data-img]').forEach(function (im) {
-      var id = im.dataset.img;
+    function viaApi(im, id) {
       if (state.imgs[id]) { im.src = state.imgs[id]; return; }
       call({ a: 'img', token: state.s.token, id: id }).then(function (r) {
         if (!r.ok) { im.alt = '사진을 못 불러왔어요'; return; }
@@ -874,9 +890,20 @@ details.all .list { margin-top: 8px; }
         state.imgs[id] = URL.createObjectURL(new Blob([u8], { type: r.type || 'image/jpeg' }));
         document.querySelectorAll('img[data-img="' + id + '"]').forEach(function (x) { x.src = state.imgs[id]; });
       }).catch(function () { im.alt = '사진을 못 불러왔어요'; });
+    }
+    root.querySelectorAll('img[data-img]').forEach(function (im) {
+      var id = im.dataset.img;
+      if (state.imgs[id]) { im.src = state.imgs[id]; return; }
+      im.referrerPolicy = 'no-referrer'; im.decoding = 'async';
+      im.onerror = function () { im.onerror = null; viaApi(im, id); };
+      im.src = photoUrl(id, 1200);
     });
     root.querySelectorAll('img[data-img], img.pv-local').forEach(function (im) {
-      im.addEventListener('click', function () { if (im.src) showSheet('<img class="full" src="' + esc(im.src) + '" alt="">', true); });
+      im.addEventListener('click', function () {
+        if (!im.src) return;
+        var big = im.dataset.img && im.src.indexOf('drive.google.com/thumbnail') >= 0 ? photoUrl(im.dataset.img, 2000) : im.src;
+        showSheet('<img class="full" referrerpolicy="no-referrer" src="' + esc(big) + '" alt="">', true);
+      });
     });
   }
   function renderPost(area, d) {
@@ -885,9 +912,11 @@ details.all .list { margin-top: 8px; }
     h += '<article class="pview"><div class="pt">' + (p.pin ? '<span class="pin">📌</span>' : '') + tagChip(p.tag) + (p.must ? '<span class="chip must">필독</span>' : '') + '</div>' +
       '<h1>' + esc(p.title) + '</h1><p class="meta">' + esc(p.name) + (p.at ? ' · ' + esc(p.at) : '') + (p.editedAt ? ' · 수정 ' + esc(p.editedAt.slice(5)) : '') + '</p>';
     if (bp.err) h += '<p class="msg">' + esc(bp.err) + '</p>';
+    if (bp.sending) h += '<p class="load">⏳ 올리는 중… 다른 화면으로 가도 괜찮아요.</p>';
     if (bp.loading) h += '<p class="load">불러오는 중…</p>';
     else if (!bp.err) {
       h += '<div class="ptx">' + esc(p.text) + '</div>';
+      if (p.localPhotos && p.localPhotos.length) h += '<div class="pphotos">' + p.localPhotos.map(function (u) { return '<img class="pv-local" src="' + esc(u) + '" alt="사진">'; }).join('') + '</div>';
       if (p.photoIds && p.photoIds.length) h += '<div class="pphotos">' + p.photoIds.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') + '</div>';
       if (p.readers) h += '<p class="must-box">필독 · 읽음 <b>' + p.readers.n + '/' + p.readers.total + '</b>' +
         (p.unreadNames ? (p.unreadNames.length ? '<br><span>안 읽은 사람: ' + p.unreadNames.map(esc).join(', ') + '</span>' : '<br><span>모두 읽었어요 ✓</span>') : '') + '</p>';
@@ -899,7 +928,8 @@ details.all .list { margin-top: 8px; }
       if (acts) h += '<div class="pacts">' + acts + '</div>';
     }
     h += '<p class="msg" id="pMsg" role="alert"></p></article>';
-    if (!bp.loading && !bp.err) {
+    if (bp.partial && !bp.err) h += '<h2 class="sec">댓글 ' + (p.comments || 0) + '</h2><p class="load">댓글 불러오는 중…</p>';
+    else if (!bp.loading && !bp.err && !bp.sending) {
       var cs = bp.comments || [];
       h += '<h2 class="sec">댓글 ' + cs.length + '</h2><div class="cmts">' + cs.map(function (c) {
         return '<div class="cmt' + (c.mine ? ' mine' : '') + '" data-cid="' + esc(c.id) + '"><div class="ch"><strong>' + esc(c.name) + '</strong>' + esc(c.at.slice(5)) +
@@ -956,7 +986,7 @@ details.all .list { margin-top: 8px; }
         var text = ta.value.trim(); if (!text) { msg.textContent = '댓글 내용을 넣어 주세요.'; return ta.focus(); }
         $('cBtn').disabled = true; msg.textContent = '';
         call({ a: 'cmt_add', token: state.s.token, post: p.id, text: text }).then(function (r) {
-          if (r.ok) { state.cdraft[p.id] = ''; bumpCount(p.id, r.comments.length); }
+          if (r.ok) { state.cdraft[p.id] = ''; bumpCount(p.id, r.comments.length); state.pcache[p.id] = { post: r.post, comments: r.comments }; flushPush(); }
           apply(r);
         }).catch(function () { msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; $('cBtn').disabled = false; });
       });
@@ -967,10 +997,10 @@ details.all .list { margin-top: 8px; }
     return new Promise(function (res, rej) {
       var url = URL.createObjectURL(file), im = new Image();
       im.onload = function () {
-        var w = im.naturalWidth, h = im.naturalHeight, k = Math.min(1, 1600 / Math.max(w, h)), c = document.createElement('canvas');
+        var w = im.naturalWidth, h = im.naturalHeight, k = Math.min(1, 1280 / Math.max(w, h)), c = document.createElement('canvas');
         c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
         c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
-        var du = c.toDataURL('image/jpeg', 0.8); res({ type: 'image/jpeg', data: du.split(',')[1], url: du });
+        var du = c.toDataURL('image/jpeg', 0.78); res({ type: 'image/jpeg', data: du.split(',')[1], url: du });
       };
       im.onerror = function () { URL.revokeObjectURL(url); rej(new Error('img')); };
       im.src = url;
@@ -1022,6 +1052,7 @@ details.all .list { margin-top: 8px; }
       var body = isNew ? { a: 'post', team: c.team, tag: c.tag, title: c.title, text: c.text, pin: !!c.pin, must: !!c.must, photos: photos }
         : { a: 'post_edit', id: c.editId, tag: c.tag, title: c.title, text: c.text, keep: c.keep, photos: photos };
       body.token = state.s.token;
+      if (isNew) return sendNew(c, body);
       call(body).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
         if (!r.ok) { msg.textContent = bErr(r); $('eBtn').disabled = false; return; }
@@ -1029,6 +1060,27 @@ details.all .list { margin-top: 8px; }
         openPost(isNew ? r.id : c.editId);
       }).catch(function () { msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; $('eBtn').disabled = false; });
     });
+  }
+
+  // 새 글: 누르자마자 화면에 먼저 띄우고(올리는 중), 저장은 뒤에서. 실패하면 쓰던 글로 돌아간다.
+  function sendNew(c, body) {
+    var first = (c.text.trim().split('\n')[0] || '').slice(0, 40);
+    var temp = { id: '_sending', team: c.team, tag: c.tag, title: c.title.trim() || first, name: state.s.name, at: '', text: c.text, pin: !!c.pin, must: !!c.must,
+      localPhotos: c.add.map(function (x) { return x.url; }), can: {} };
+    state.sending = temp; state.sendErr = ''; state.comp = null; state.bteam = c.team;
+    state.bview = 'post'; state.bpost = { post: temp, comments: [], sending: true };
+    render(); window.scrollTo(0, 0);
+    function fail(m) {
+      state.sending = null; state.comp = c; state.sendErr = m;
+      if (state.tab === 'board' && state.bpost && state.bpost.post.id === '_sending') { state.bview = 'edit'; state.bpost = null; render(); if ($('eMsg')) $('eMsg').textContent = m; }
+      else render();
+    }
+    call(body).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) return fail(bErr(r));
+      state.sending = null; state.data.board = r.board; saveData(state.data); flushPush();
+      if (state.tab === 'board' && state.bpost && state.bpost.post.id === '_sending') openPost(r.id); else render();
+    }).catch(function () { fail('연결이 안 돼서 못 올렸어요. 다시 올려 주세요.'); });
   }
 
   // ── 메시지 (직원끼리 1:1) ─────────────────────────────
@@ -1112,7 +1164,7 @@ details.all .list { margin-top: 8px; }
       call({ a: 'dm_send', token: state.s.token, to: w, text: text }).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
         if (!r.ok) { $('dMsg').textContent = bErr(r); $('dBtn').disabled = false; return; }
-        state.dmDraft[w] = ''; state.chat = r; render(); if ($('dText')) $('dText').focus();
+        state.dmDraft[w] = ''; state.chat = r; render(); flushPush(); if ($('dText')) $('dText').focus();
       }).catch(function () { $('dMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; $('dBtn').disabled = false; });
     });
   }
