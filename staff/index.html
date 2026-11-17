@@ -11,6 +11,7 @@
 :root {
   --bg: #0a0909; --card: #171414; --card-2: #1f1b1b; --line: rgba(255,255,255,.09); --line-2: rgba(255,255,255,.16);
   --txt: #f6efeb; --muted: #a59a96; --g: #ff7a1a; --s: #a15bff; --ok: #3ccf91; --warn: #ffb020; --bad: #ff3b5c;
+  --gold: #ffcc4d; --silver: #d6dbe3; --bronze: #e0915a;
   --body: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
   color-scheme: dark;
 }
@@ -18,30 +19,44 @@
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--txt); font: 16px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
 [hidden] { display: none !important; }
-button { font: inherit; color: inherit; }
+button, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--g); outline-offset: 2px; border-radius: 8px; }
 .top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: calc(10px + env(safe-area-inset-top)) 16px 10px; background: rgba(10,9,9,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .brand { font-weight: 900; letter-spacing: .08em; font-size: 15px; }
 .brand b { color: var(--g); }
-.who { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+.who { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); min-width: 0; }
 .who strong { color: var(--txt); }
 .link { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; padding: 6px 2px; font-size: 13px; }
 main { width: 100%; max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
 h1 { font-size: 22px; line-height: 1.3; margin: 0 0 6px; }
+h2.sec { font-size: 15px; margin: 22px 0 10px; color: var(--muted); font-weight: 800; }
+h2.sec:first-child { margin-top: 0; }
 .sub { color: var(--muted); margin: 0 0 18px; font-size: 14px; }
 label { display: grid; gap: 6px; font-weight: 700; font-size: 14px; margin-bottom: 14px; }
-input { width: 100%; font: inherit; color: var(--txt); background: var(--bg); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 14px; min-height: 48px; }
-input:focus { outline: none; border-color: var(--g); }
-.pin { letter-spacing: .5em; font-size: 20px; text-align: center; }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; border-radius: 999px; border: 1px solid var(--line-2);
-  background: var(--card-2); cursor: pointer; font-weight: 800; }
-.btn-hot { background: var(--g); border-color: var(--g); color: #120800; width: 100%; }
+input, select { width: 100%; font: inherit; color: var(--txt); background: var(--bg); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 14px; min-height: 48px; }
+input:focus, select:focus { outline: none; border-color: var(--g); }
+.pw { position: relative; }
+.pw input { padding-right: 64px; }
+.pw button { position: absolute; right: 6px; top: 6px; height: 36px; padding: 0 12px; border: 0; border-radius: 9px; background: var(--card-2); color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--line-2);
+  background: var(--card-2); cursor: pointer; font-weight: 800; font-size: 14px; }
+.btn-hot { background: var(--g); border-color: var(--g); color: #120800; width: 100%; min-height: 48px; font-size: 16px; }
+.btn-ok { border-color: var(--ok); color: var(--ok); }
+.btn-bad { border-color: rgba(255,59,92,.6); color: #ff8199; }
+.btn-bad.arm { background: var(--bad); border-color: var(--bad); color: #fff; }
 .btn:disabled { opacity: .55; cursor: default; }
 .msg { min-height: 22px; font-size: 14px; color: var(--bad); margin: 10px 0 0; }
+.msg.ok { color: var(--ok); }
 .note { color: var(--muted); font-size: 13px; margin: 14px 0 0; }
-.tabs { display: flex; gap: 6px; margin: 0 0 16px; overflow-x: auto; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 0 18px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line); }
+.seg button { min-height: 42px; border: 0; border-radius: 10px; background: none; color: var(--muted); font-weight: 800; cursor: pointer; }
+.seg button[aria-selected="true"] { background: var(--card-2); color: var(--txt); }
+.done-box { border: 1px solid rgba(60,207,145,.45); background: rgba(60,207,145,.08); border-radius: 14px; padding: 14px 16px; margin: 0 0 16px; font-size: 14px; }
+.done-box b { color: var(--ok); }
+.tabs { display: flex; gap: 6px; margin: 0 0 16px; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
 .tabs button { flex: none; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-2); background: none; color: var(--muted); font-weight: 800; font-size: 14px; cursor: pointer; }
 .tabs button[aria-selected="true"] { color: var(--g); border-color: var(--g); background: rgba(255,122,26,.12); }
 .tabs .n { display: inline-block; min-width: 18px; margin-left: 6px; padding: 0 5px; border-radius: 9px; background: var(--g); color: #120800; font-size: 11px; line-height: 18px; }
@@ -50,19 +65,62 @@ input:focus { outline: none; border-color: var(--g); }
 .item:hover { border-color: var(--line-2); }
 .item.unread { border-color: rgba(255,122,26,.55); }
 .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
-.chip { font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--txt); }
+.chip { font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--txt); white-space: nowrap; }
 .chip.k-회의 { border-color: var(--g); color: var(--g); }
 .chip.k-기획 { border-color: var(--s); color: #c9a3ff; }
 .chip.k-규칙 { border-color: var(--ok); color: var(--ok); }
 .chip.new { background: var(--g); border-color: var(--g); color: #120800; }
 .chip.done { border-color: transparent; color: var(--ok); padding-left: 0; }
+.chip.t-운영팀 { border-color: #4da3ff; color: #8cc4ff; }
+.chip.t-영업팀 { border-color: var(--g); color: #ffad70; }
+.chip.t-DJ팀 { border-color: var(--s); color: #c9a3ff; }
+.chip.adm { background: var(--g); border-color: var(--g); color: #120800; }
 .title { font-size: 17px; font-weight: 800; line-height: 1.4; }
-.empty { border: 1px dashed var(--line-2); border-radius: 16px; padding: 24px 20px; color: var(--muted); text-align: center; }
+.empty { border: 1px dashed var(--line-2); border-radius: 16px; padding: 24px 20px; color: var(--muted); text-align: center; margin: 0; }
 .dec { display: grid; gap: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
 .dec.mine { border-color: rgba(255,122,26,.55); }
 .dec .what { font-weight: 700; }
 .st { font-weight: 800; }
 .st.완료 { color: var(--ok); } .st.대기, .st.진행 { color: var(--warn); } .st.late { color: var(--bad); }
+/* 게스트 현황 */
+.gh { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 14px; }
+.gh h1 { margin: 0; }
+.gh .range { color: var(--muted); font-size: 14px; }
+.wk { display: inline-grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
+.wk button { min-height: 36px; padding: 0 14px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-weight: 800; font-size: 13px; cursor: pointer; }
+.wk button[aria-selected="true"] { background: var(--card-2); color: var(--txt); }
+.sum { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 0 14px; }
+.sum div { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+.sum small { display: block; color: var(--muted); font-size: 12px; font-weight: 700; }
+.sum b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.me-card { border: 1px solid rgba(255,122,26,.55); background: rgba(255,122,26,.08); border-radius: 16px; padding: 14px 16px; margin: 0 0 14px; font-size: 15px; }
+.me-card b { color: var(--g); font-size: 18px; }
+.rk { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px; }
+.rk.mine { border-color: rgba(255,122,26,.65); }
+.rk .no { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 17px; background: var(--card-2); color: var(--muted); font-variant-numeric: tabular-nums; }
+.rk.r1 .no { background: var(--gold); color: #2a1d00; }
+.rk.r2 .no { background: var(--silver); color: #1d2129; }
+.rk.r3 .no { background: var(--bronze); color: #2a1200; }
+.rk .nm { min-width: 0; }
+.rk .nm strong { font-size: 16px; margin-right: 6px; }
+.rk .tot { text-align: right; font-weight: 900; font-size: 22px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.rk .tot small { display: block; font-size: 11px; color: var(--muted); font-weight: 700; }
+.days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; margin-top: 6px; max-width: 300px; }
+.days span { text-align: center; font-size: 11px; line-height: 1.25; padding: 3px 0; border-radius: 6px; background: rgba(255,255,255,.04); color: var(--muted); font-variant-numeric: tabular-nums; }
+.days span.on { background: rgba(255,122,26,.18); color: var(--txt); font-weight: 800; }
+.days span i { display: block; font-style: normal; font-size: 10px; opacity: .7; }
+.how { color: var(--muted); font-size: 13px; margin: 16px 0 0; }
+.how code { color: var(--txt); background: var(--card-2); padding: 1px 6px; border-radius: 6px; }
+/* 가입 승인 */
+.acc { display: grid; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+.acc.wait { border-color: rgba(255,176,32,.6); }
+.acc .hd { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.acc .hd strong { font-size: 17px; }
+.acc .hd a { color: var(--muted); font-size: 14px; text-decoration: none; }
+.acc .ctl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.acc .ctl select { width: auto; min-width: 120px; min-height: 44px; padding: 8px 12px; }
+.acc .ctl .btn { min-height: 44px; }
+.acc .err { color: var(--bad); font-size: 13px; }
 .back { margin-bottom: 14px; }
 .doc { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px 20px; word-break: keep-all; overflow-wrap: break-word; }
 .doc h1 { font-size: 21px; margin: 0 0 8px; }
@@ -80,6 +138,12 @@ input:focus { outline: none; border-color: var(--g); }
 .doc tr:last-child td { border-bottom: 0; }
 .meta { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
 .load { color: var(--muted); padding: 30px 0; text-align: center; }
+@media (max-width: 420px) {
+  .card { padding: 18px 16px; }
+  .sum { grid-template-columns: repeat(2, 1fr); }
+  .rk { grid-template-columns: 38px 1fr auto; gap: 10px; padding: 12px; }
+  .rk .no { width: 36px; height: 36px; font-size: 15px; }
+}
 </style>
 </head>
 <body>
@@ -90,22 +154,43 @@ input:focus { outline: none; border-color: var(--g); }
 
 <main>
   <section id="loginView" hidden>
-    <form class="card" id="loginForm" autocomplete="off" novalidate>
-      <h1>직원 로그인</h1>
-      <p class="sub">이름과 PIN 4자리를 넣어 주세요. 한 번 로그인하면 이 폰에서 30일 동안 유지돼요.</p>
-      <label>이름<input id="name" name="name" autocomplete="username" placeholder="예) 진호" maxlength="20" required></label>
-      <label>PIN 4자리<input id="pin" class="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="current-password" placeholder="••••" required></label>
-      <button class="btn btn-hot" id="loginBtn" type="submit">로그인</button>
-      <p class="msg" id="loginMsg" role="alert"></p>
-      <p class="note">PIN을 모르면 대표님께 물어봐 주세요. 5번 틀리면 30분 동안 잠겨요.</p>
-    </form>
+    <div class="card">
+      <div class="seg" role="tablist" aria-label="로그인 또는 가입 신청">
+        <button type="button" role="tab" id="segLogin" aria-selected="true">로그인</button>
+        <button type="button" role="tab" id="segJoin" aria-selected="false">가입 신청</button>
+      </div>
+
+      <form id="loginForm" autocomplete="on" novalidate>
+        <div class="done-box" id="joinDone" hidden><b>가입 신청 완료.</b> 대표님이 승인하면 바로 로그인할 수 있어요.</div>
+        <h1>직원 로그인</h1>
+        <p class="sub">한 번 로그인하면 이 폰에서 30일 동안 유지돼요.</p>
+        <label>이름 또는 전화번호<input id="lid" name="username" autocomplete="username" placeholder="예) 진호 또는 010-1234-5678" maxlength="20" required></label>
+        <label>비밀번호<span class="pw"><input id="lpw" name="password" type="password" autocomplete="current-password" maxlength="40" required><button type="button" data-eye="lpw">보기</button></span></label>
+        <button class="btn btn-hot" id="loginBtn" type="submit">로그인</button>
+        <p class="msg" id="loginMsg" role="alert"></p>
+        <p class="note">처음이면 위의 <b>가입 신청</b>을 눌러 주세요. 비밀번호를 5번 틀리면 30분 동안 잠겨요.</p>
+      </form>
+
+      <form id="joinForm" autocomplete="on" novalidate hidden>
+        <h1>가입 신청</h1>
+        <p class="sub">이름·전화번호·비밀번호를 넣으면 대표님이 확인하고 승인해요. 승인되면 회의록과 게스트 현황을 볼 수 있어요.</p>
+        <label>이름<input id="jname" name="name" autocomplete="name" placeholder="예) 진호" maxlength="12" required></label>
+        <label>전화번호<input id="jphone" name="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" maxlength="13" required></label>
+        <label>비밀번호 (6자 이상)<span class="pw"><input id="jpw" name="new-password" type="password" autocomplete="new-password" minlength="6" maxlength="40" required><button type="button" data-eye="jpw">보기</button></span></label>
+        <button class="btn btn-hot" id="joinBtn" type="submit">가입 신청</button>
+        <p class="msg" id="joinMsg" role="alert"></p>
+        <p class="note">같은 이름이 이미 있으면 뒤에 한 글자를 붙여 주세요. 예) 민수B</p>
+      </form>
+    </div>
   </section>
 
   <section id="appView" hidden>
-    <nav class="tabs" role="tablist" aria-label="스태프 메뉴">
+    <nav class="tabs" role="tablist" aria-label="스태프 메뉴" id="tabs">
       <button type="button" role="tab" data-tab="notes" aria-selected="true">회의록</button>
       <button type="button" role="tab" data-tab="rules" aria-selected="false">규칙</button>
       <button type="button" role="tab" data-tab="dec" aria-selected="false">결정사항</button>
+      <button type="button" role="tab" data-tab="guest" aria-selected="false">게스트 현황</button>
+      <button type="button" role="tab" data-tab="acc" aria-selected="false" hidden>가입 승인</button>
     </nav>
     <div id="listArea"></div>
   </section>
@@ -122,11 +207,13 @@ input:focus { outline: none; border-color: var(--g); }
 <script>
 (function () {
   'use strict';
-  // 그루브 구글 계정의 'GROOVE 직원 API' (Apps Script 웹 앱). 회의 내용은 로그인한 직원에게만 여기서 내려온다.
+  // 그루브 구글 계정의 'GROOVE 직원 API' (Apps Script 웹 앱). 내용은 대표님이 승인한 직원에게만 여기서 내려온다.
   var API = 'https://script.google.com/macros/s/AKfycbxIlEiy7MjZnPSgeQuTvim-iXvIbdD2E1a_VG7cbrqRgFxGHCy_zmOqW5QrWwjxTsMkQA/exec';
   var KEY = 'gs_staff';
+  var TEAMS = ['운영팀', '영업팀', 'DJ팀'];
+  var DOW = ['월', '화', '수', '목', '금', '토', '일'];
   var $ = function (id) { return document.getElementById(id); };
-  var state = { s: null, data: null, tab: 'notes' };
+  var state = { s: null, data: null, tab: 'notes', week: 'week' };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function load() { try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && v.token && v.exp > Date.now() ? v : null; } catch (e) { return null; } }
@@ -138,31 +225,87 @@ input:focus { outline: none; border-color: var(--g); }
   function busy(on) { $('loading').hidden = !on; }
   function show(view) { ['loginView', 'appView', 'docView'].forEach(function (id) { $(id).hidden = id !== view; }); window.scrollTo(0, 0); }
   function today() { var d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); }
+  function md(s) { var p = String(s).split('-'); return +p[1] + '/' + +p[2]; }
+  function teamChip(t) { return t ? '<span class="chip t-' + esc(t) + '">' + esc(t) + '</span>' : ''; }
+  function fmtPhone(v) {
+    var d = String(v).replace(/\D/g, '').slice(0, 11);
+    if (d.length < 4) return d;
+    if (d.length < 8) return d.slice(0, 3) + '-' + d.slice(3);
+    return d.length === 11 ? d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7) : d.slice(0, 3) + '-' + d.slice(3, 6) + '-' + d.slice(6);
+  }
+  var AUTH_OUT = '로그인이 끝났어요. 다시 로그인해 주세요.';
+
+  // ── 로그인 / 가입 신청 ─────────────────────────
+  function seg(join) {
+    $('segLogin').setAttribute('aria-selected', join ? 'false' : 'true');
+    $('segJoin').setAttribute('aria-selected', join ? 'true' : 'false');
+    $('loginForm').hidden = join; $('joinForm').hidden = !join;
+    $('loginMsg').textContent = ''; $('joinMsg').textContent = '';
+    setTimeout(function () { (join ? $('jname') : $('lid')).focus(); }, 50);
+  }
+  $('segLogin').addEventListener('click', function () { seg(false); });
+  $('segJoin').addEventListener('click', function () { $('joinDone').hidden = true; seg(true); });
+  document.querySelectorAll('[data-eye]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var i = $(b.dataset.eye), on = i.type === 'password';
+      i.type = on ? 'text' : 'password'; b.textContent = on ? '숨기기' : '보기';
+    });
+  });
+  $('jphone').addEventListener('input', function () { this.value = fmtPhone(this.value); });
 
   function toLogin(msg) {
     state.s = null; state.data = null; save(null);
     $('who').hidden = true; show('loginView'); busy(false);
+    seg(false);
     $('loginMsg').textContent = msg || '';
-    setTimeout(function () { $('name').focus(); }, 50);
   }
 
   $('loginForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
-    var name = $('name').value.trim(), pin = $('pin').value.replace(/\D/g, '');
-    if (!name) { $('loginMsg').textContent = '이름을 넣어 주세요.'; return $('name').focus(); }
-    if (pin.length !== 4) { $('loginMsg').textContent = 'PIN 4자리를 넣어 주세요.'; return $('pin').focus(); }
+    var id = $('lid').value.trim(), pw = $('lpw').value;
+    if (!id) { $('loginMsg').textContent = '이름이나 전화번호를 넣어 주세요.'; return $('lid').focus(); }
+    if (!pw) { $('loginMsg').textContent = '비밀번호를 넣어 주세요.'; return $('lpw').focus(); }
     $('loginBtn').disabled = true; $('loginMsg').textContent = '';
-    call({ a: 'login', name: name, pin: pin }).then(function (r) {
+    call({ a: 'login', id: id, password: pw }).then(function (r) {
       if (r.ok) {
-        state.s = { token: r.token, name: r.name, team: r.team, exp: r.exp }; save(state.s);
-        $('pin').value = ''; return openApp();
+        state.s = { token: r.token, name: r.name, team: r.team, admin: !!r.admin, exp: r.exp }; save(state.s);
+        $('lpw').value = ''; $('joinDone').hidden = true; return openApp();
       }
-      $('pin').value = '';
-      if (r.error === 'locked') $('loginMsg').textContent = 'PIN을 여러 번 틀려서 잠겼어요. ' + (r.minutes || 30) + '분 뒤에 다시 해 주세요.';
-      else if (r.error === 'busy') $('loginMsg').textContent = '잠시 후 다시 해 주세요.';
-      else $('loginMsg').textContent = '이름이나 PIN이 맞지 않아요.' + (typeof r.left === 'number' ? ' (남은 기회 ' + r.left + '번)' : '');
+      $('lpw').value = '';
+      var m = $('loginMsg');
+      if (r.error === 'pending') m.textContent = '아직 승인 전이에요. 대표님이 승인하면 들어올 수 있어요.';
+      else if (r.error === 'denied') m.textContent = '지금은 쓸 수 없는 계정이에요. 대표님께 물어봐 주세요.';
+      else if (r.error === 'locked') m.textContent = '비밀번호를 여러 번 틀려서 잠겼어요. ' + (r.minutes || 30) + '분 뒤에 다시 해 주세요.';
+      else if (r.error === 'busy') m.textContent = '잠시 후 다시 해 주세요.';
+      else m.textContent = '이름(전화번호)이나 비밀번호가 맞지 않아요.' + (typeof r.left === 'number' ? ' (남은 기회 ' + r.left + '번)' : '');
     }).catch(function () { $('loginMsg').textContent = '연결이 안 돼요. 인터넷을 확인하고 다시 해 주세요.'; })
       .then(function () { $('loginBtn').disabled = false; });
+  });
+
+  $('joinForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var name = $('jname').value.trim().replace(/\s+/g, ' '), phone = $('jphone').value.replace(/\D/g, ''), pw = $('jpw').value, m = $('joinMsg');
+    if (name.length < 2) { m.textContent = '이름을 2글자 이상 넣어 주세요.'; return $('jname').focus(); }
+    if (!/^01[016789]\d{7,8}$/.test(phone)) { m.textContent = '전화번호를 010-0000-0000 모양으로 넣어 주세요.'; return $('jphone').focus(); }
+    if (pw.length < 6) { m.textContent = '비밀번호는 6자 이상으로 해 주세요.'; return $('jpw').focus(); }
+    $('joinBtn').disabled = true; m.textContent = '';
+    call({ a: 'signup', name: name, phone: phone, password: pw }).then(function (r) {
+      if (r.ok) {
+        $('jpw').value = ''; $('jname').value = ''; $('jphone').value = '';
+        seg(false); $('lid').value = name; $('joinDone').hidden = false;
+        setTimeout(function () { $('lpw').focus(); }, 60);
+        return;
+      }
+      m.textContent = {
+        name: '이름은 2~12글자로, 특수문자 없이 넣어 주세요.',
+        phone: '전화번호를 다시 확인해 주세요.',
+        pw: '비밀번호는 6~40자로 해 주세요.',
+        taken: '같은 이름이 이미 있어요. 뒤에 한 글자를 붙여 주세요. 예) ' + name + 'B',
+        phone_taken: '이 전화번호로 이미 신청했어요. 로그인 탭에서 들어가 보세요.',
+        busy: '신청이 몰려 있어요. 1분 뒤에 다시 해 주세요.'
+      }[r.error] || '신청이 안 됐어요. 잠시 후 다시 해 주세요.';
+    }).catch(function () { m.textContent = '연결이 안 돼요. 인터넷을 확인하고 다시 해 주세요.'; })
+      .then(function () { $('joinBtn').disabled = false; });
   });
 
   $('logout').addEventListener('click', function () {
@@ -171,38 +314,52 @@ input:focus { outline: none; border-color: var(--g); }
     toLogin('로그아웃했어요.');
   });
 
-  function openApp() {
-    $('whoName').textContent = state.s.name; $('whoTeam').textContent = state.s.team ? '· ' + state.s.team : '';
-    $('who').hidden = false; show('appView'); refresh();
+  // ── 앱 ─────────────────────────────────────────
+  function setWho() {
+    var s = state.s;
+    $('whoName').textContent = s.name;
+    $('whoTeam').innerHTML = (s.admin ? '<span class="chip adm">대표</span>' : '') + (s.team ? ' ' + teamChip(s.team) : '');
   }
+  function openApp() { setWho(); $('who').hidden = false; show('appView'); refresh(); }
 
-  function refresh() {
-    busy(true); $('listArea').innerHTML = '';
+  function refresh(keepScroll) {
+    if (!keepScroll) { busy(true); $('listArea').innerHTML = ''; }
     return call({ a: 'list', token: state.s.token }).then(function (r) {
       busy(false);
-      if (r.error === 'auth') return toLogin('로그인이 끝났어요. 다시 로그인해 주세요.');
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok) { $('listArea').innerHTML = '<p class="empty">목록을 못 불러왔어요. 잠시 후 다시 열어 주세요.</p>'; return; }
-      state.data = r; render();
+      state.data = r;
+      state.s.team = r.team; state.s.admin = !!r.admin; save(state.s); setWho();
+      render();
     }).catch(function () { busy(false); $('listArea').innerHTML = '<p class="empty">연결이 안 돼요. 인터넷을 확인해 주세요.</p>'; });
   }
 
-  document.querySelectorAll('.tabs button').forEach(function (b) {
+  document.querySelectorAll('#tabs button').forEach(function (b) {
     b.addEventListener('click', function () { state.tab = b.dataset.tab; render(); });
   });
 
   function render() {
     var d = state.data; if (!d) return;
     var notes = d.notes.filter(function (n) { return n.kind !== '규칙'; }), rules = d.notes.filter(function (n) { return n.kind === '규칙'; });
-    var unreadN = notes.filter(function (n) { return !n.read; }).length, unreadR = rules.filter(function (n) { return !n.read; }).length;
-    var myOpen = d.decisions.filter(function (x) { return x.mine && x.status !== '완료'; }).length;
-    var labels = { notes: ['회의록', unreadN], rules: ['규칙', unreadR], dec: ['결정사항', myOpen] };
-    document.querySelectorAll('.tabs button').forEach(function (b) {
+    var pending = (d.accounts || []).filter(function (a) { return a.status === '대기'; }).length;
+    var labels = {
+      notes: ['회의록', notes.filter(function (n) { return !n.read; }).length],
+      rules: ['규칙', rules.filter(function (n) { return !n.read; }).length],
+      dec: ['결정사항', d.decisions.filter(function (x) { return x.mine && x.status !== '완료'; }).length],
+      guest: ['게스트 현황', 0],
+      acc: ['가입 승인', pending]
+    };
+    if (state.tab === 'acc' && !d.admin) state.tab = 'notes';
+    document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
+      if (b.dataset.tab === 'acc') b.hidden = !d.admin;
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + l[1] + '</span>' : '');
     });
     var area = $('listArea');
     if (state.tab === 'dec') return renderDec(area, d);
+    if (state.tab === 'guest') return renderGuest(area, d);
+    if (state.tab === 'acc') return renderAcc(area, d);
     var list = state.tab === 'rules' ? rules : notes;
     if (!list.length) { area.innerHTML = '<p class="empty">아직 올라온 문서가 없어요.</p>'; return; }
     area.innerHTML = '<div class="list">' + list.map(function (n) {
@@ -227,11 +384,118 @@ input:focus { outline: none; border-color: var(--g); }
     }).join('') + '</div>';
   }
 
+  // ── 게스트 현황 (영업일 월~일, 같은 수는 같은 등수) ──
+  function renderGuest(area, d) {
+    var g = d.guests || {}, w = g[state.week] || { rows: [], total: 0 };
+    var isNow = state.week === 'week', ti = isNow && w.start ? Math.round((Date.parse(g.today) - Date.parse(w.start)) / 864e5) : -1;
+    var teamSum = {}; TEAMS.forEach(function (t) { teamSum[t] = 0; });
+    w.rows.forEach(function (r) { if (teamSum[r.team] != null) teamSum[r.team] += r.total; });
+    var me = w.rows.filter(function (r) { return r.mine; })[0];
+    var h = '<div class="gh"><div><h1>' + (isNow ? '이번 주' : '지난주') + ' 게스트 순위</h1>' +
+      (w.start ? '<span class="range">' + md(w.start) + '(월) ~ ' + md(w.end) + '(일) 영업일</span>' : '') + '</div>' +
+      '<div class="wk" role="tablist" aria-label="주 선택"><button type="button" data-w="week" aria-selected="' + isNow + '">이번 주</button>' +
+      '<button type="button" data-w="prev" aria-selected="' + !isNow + '">지난주</button></div></div>';
+    h += '<div class="sum"><div><small>전체</small><b>' + w.total + '</b></div>' + TEAMS.map(function (t) {
+      return '<div><small>' + esc(t) + '</small><b>' + teamSum[t] + '</b></div>';
+    }).join('') + '</div>';
+    if (me) h += '<div class="me-card">내 순위 <b>' + me.rank + '위</b> · 게스트 <b>' + me.total + '명</b>' +
+      (me.rank > 1 && w.rows.length ? ' · 1위와 ' + (w.rows[0].total - me.total) + '명 차이' : '') + '</div>';
+    if (!w.rows.length) {
+      h += '<p class="empty">' + (isNow ? '이번 주 아직 올라온 게스트가 없어요.' : '지난주 기록이 없어요.') + '</p>';
+    } else {
+      h += '<div class="list">' + w.rows.map(function (r) {
+        var days = r.days.map(function (n, i) {
+          var cls = n ? 'on' : '';
+          return '<span class="' + cls + '"' + (i === ti ? ' style="outline:1px solid var(--g)"' : '') + '><i>' + DOW[i] + '</i>' + (n || '·') + '</span>';
+        }).join('');
+        return '<div class="rk r' + r.rank + (r.mine ? ' mine' : '') + '"><span class="no">' + r.rank + '</span>' +
+          '<div class="nm"><strong>' + esc(r.name) + '</strong>' + teamChip(r.team) + (r.mine ? ' <span class="chip new">나</span>' : '') +
+          '<div class="days">' + days + '</div></div>' +
+          '<div class="tot">' + r.total + '<small>명</small></div></div>';
+      }).join('') + '</div>';
+    }
+    h += '<p class="how">인스타 게스트 방에 <code>이름 게스트 5</code>처럼 올리면 매시간 반영돼요. 새벽에 올리면 전날 영업분, 같은 날 다시 올리면 마지막 숫자로 고쳐져요.</p>';
+    area.innerHTML = h;
+    area.querySelectorAll('[data-w]').forEach(function (b) { b.addEventListener('click', function () { state.week = b.dataset.w; render(); }); });
+  }
+
+  // ── 가입 승인 (대표만) ─────────────────────────
+  function renderAcc(area, d) {
+    var acc = d.accounts || [];
+    var groups = [
+      ['승인 대기', acc.filter(function (a) { return a.status === '대기'; })],
+      ['승인됨', acc.filter(function (a) { return a.status === '승인'; })],
+      ['거절 · 중지', acc.filter(function (a) { return a.status === '거절' || a.status === '중지'; })]
+    ];
+    function teamSel(a) {
+      return '<select data-team aria-label="' + esc(a.name) + ' 팀"><option value="">팀 선택</option>' + TEAMS.map(function (t) {
+        return '<option' + (a.team === t ? ' selected' : '') + '>' + esc(t) + '</option>';
+      }).join('') + '</select>';
+    }
+    var h = '';
+    groups.forEach(function (gp) {
+      h += '<h2 class="sec">' + gp[0] + ' ' + gp[1].length + '</h2>';
+      if (!gp[1].length) { h += '<p class="empty">' + (gp[0] === '승인 대기' ? '새 가입 신청이 없어요.' : '없어요.') + '</p>'; return; }
+      h += '<div class="list">' + gp[1].map(function (a) {
+        var tel = String(a.phone || '').replace(/\D/g, '');
+        var ctl;
+        if (a.self) ctl = teamSel(a) + '<span class="note" style="margin:0">내 계정 · 대표</span>';
+        else if (a.status === '대기') ctl = teamSel(a) + '<button class="btn btn-ok" data-op="approve">승인</button><button class="btn btn-bad" data-op="reject">거절</button>';
+        else if (a.status === '승인') ctl = teamSel(a) + '<button class="btn" data-op="stop">중지</button><button class="btn btn-bad" data-op="delete">삭제</button>';
+        else ctl = teamSel(a) + '<button class="btn btn-ok" data-op="approve">다시 승인</button><button class="btn btn-bad" data-op="delete">삭제</button>';
+        return '<div class="acc' + (a.status === '대기' ? ' wait' : '') + '" data-name="' + esc(a.name) + '">' +
+          '<div class="hd"><strong>' + esc(a.name) + '</strong>' + (a.role === '관리자' ? '<span class="chip adm">대표</span>' : '') + teamChip(a.team) +
+          (tel ? '<a href="tel:' + esc(tel) + '">' + esc(a.phone) + '</a>' : '') + '</div>' +
+          '<div class="row">신청 ' + esc(a.at || '-') + (a.status !== '대기' && a.status !== '승인' ? ' · ' + esc(a.status) : '') + '</div>' +
+          '<div class="ctl">' + ctl + '</div><div class="err" role="alert"></div></div>';
+      }).join('') + '</div>';
+    });
+    h += '<p class="how">승인할 때 팀을 꼭 골라 주세요. 중지하면 그 사람은 바로 로그아웃돼요. 비밀번호를 잊은 직원은 삭제 후 다시 가입 신청하면 돼요.</p>';
+    area.innerHTML = h;
+
+    area.querySelectorAll('.acc').forEach(function (box) {
+      var name = box.dataset.name, sel = box.querySelector('[data-team]'), err = box.querySelector('.err');
+      function run(op, team, btn) {
+        err.textContent = '';
+        box.querySelectorAll('button,select').forEach(function (x) { x.disabled = true; });
+        call({ a: 'admin', token: state.s.token, op: op, name: name, team: team || '' }).then(function (r) {
+          if (r.error === 'auth') return toLogin(AUTH_OUT);
+          if (!r.ok) {
+            err.textContent = { team: '팀을 골라 주세요.', self: '내 계정은 바꿀 수 없어요.', notfound: '이미 지워진 계정이에요.', forbidden: '대표만 할 수 있어요.' }[r.error] || '처리가 안 됐어요. 다시 해 주세요.';
+            box.querySelectorAll('button,select').forEach(function (x) { x.disabled = false; });
+            return;
+          }
+          refresh(true);
+        }).catch(function () {
+          err.textContent = '연결이 안 돼요. 다시 해 주세요.';
+          box.querySelectorAll('button,select').forEach(function (x) { x.disabled = false; });
+        });
+      }
+      box.querySelectorAll('[data-op]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var op = b.dataset.op;
+          if (op === 'approve' && !sel.value) { err.textContent = '승인하려면 팀을 먼저 골라 주세요.'; return sel.focus(); }
+          if (op === 'delete' || op === 'reject') {
+            if (!b.classList.contains('arm')) {
+              b.classList.add('arm'); var t0 = b.textContent; b.textContent = '한 번 더 누르면 ' + t0;
+              setTimeout(function () { b.classList.remove('arm'); b.textContent = t0; }, 3500);
+              return;
+            }
+          }
+          run(op, op === 'approve' ? sel.value : '', b);
+        });
+      });
+      // 이미 승인된 사람(또는 나)은 팀만 바꾸면 바로 저장
+      var acc0 = (state.data.accounts || []).filter(function (a) { return a.name === name; })[0];
+      if (acc0 && (acc0.status === '승인')) sel.addEventListener('change', function () { if (sel.value) run('team', sel.value); });
+    });
+  }
+
   function openDoc(id) {
     busy(true); show('docView'); $('docBody').innerHTML = ''; $('docMeta').textContent = '';
     call({ a: 'note', token: state.s.token, id: id }).then(function (r) {
       busy(false);
-      if (r.error === 'auth') return toLogin('로그인이 끝났어요. 다시 로그인해 주세요.');
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok) { $('docBody').innerHTML = '<p>문서를 못 불러왔어요.</p>'; return; }
       $('docMeta').textContent = r.kind + ' · ' + r.date;
       $('docBody').innerHTML = r.html; // 서버가 글자를 모두 이스케이프해서 만든 제목·문단·목록·표만 들어 있다
