@@ -464,6 +464,9 @@ details.all .list { margin-top: 8px; }
 .yct { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: #111; border: 1px solid var(--line); font-size: 15px; font-weight: 700; line-height: 1.4; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
 .ycs { margin: 6px 0 0; font-size: 13px; word-break: break-all; }
 .ycs a { color: #7cc0ff; }
+.ycsong { margin: -6px 0 12px; font-size: 13px; }
+.ycsong.ok { color: var(--ok); }
+.ycsong.bad { color: #ff8199; }
 .ycp { display: flex; gap: 6px; margin: 8px 0 0; }
 .ycp img { width: 74px; height: 74px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line-2); background: #000; }
 .ycst { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 10px 0 0; font-size: 13px; color: var(--muted); font-weight: 700; }
@@ -2242,7 +2245,7 @@ details.all .list { margin-top: 8px; }
   // ── 🎆 연출 요청 (2026-11-18, 카톡 '불꽃놀이' 방) ─────────────────
   // 영업진이 요청 → DJ팀 전광 준비(ㅈㄱㅈㅂㅇ) · 운영팀 술 준비(ㅅㅈㅂㅇ) → ㄱㄱ(시작) → 컷(끝). ㄱㄱ·컷·순서는 바쁠 때 대신 눌러 주므로 누구나.
   function ycErr(r) {
-    return { seat: '자리를 골라 주세요.', when: '순서를 다시 골라 주세요.', empty: '연출 내용을 하나 이상 넣어 주세요.', text: '<, >, " 는 쓸 수 없어요.', long: '문구는 300자까지예요.', song: '노래 링크가 이상해요.',
+    return { seat: '자리를 골라 주세요.', when: '순서를 다시 골라 주세요.', empty: '연출 내용을 하나 이상 넣어 주세요.', text: '<, >, " 는 쓸 수 없어요.', long: '문구는 300자까지예요.', songlink: '노래는 멜론 곡 링크나 사운드클라우드 곡 링크로 넣어 주세요.', songsite: '멜론이나 사운드클라우드 링크만 돼요.', unreleased: '사운드클라우드에 다운로드 링크가 없는 곡이에요 · 미발매곡은 안 돼요.', sctrack: '사운드클라우드 곡(트랙) 하나의 링크를 넣어 주세요.', check: '노래 링크를 확인하지 못했어요. 잠시 후 다시 해 주세요.',
       forbidden: '이건 할 수 없어요.', state: '이미 바뀌었어요. 새로고침했어요.', notfound: '이미 지워졌어요.', busy: '잠시 후 다시 해 주세요.', photo: '사진은 3장까지, jpg·png만 돼요.' }[r.error] || '저장이 안 됐어요. 잠시 후 다시 해 주세요.';
   }
   function loadYc(quiet) {
@@ -2283,6 +2286,7 @@ details.all .list { margin-top: 8px; }
     if (w.indexOf('after:') === 0) { var p = (state.yc.list || []).filter(function (y) { return y.id === w.slice(6); })[0]; return (p ? p.floor + ' ' + p.seat : '앞 연출') + ' 다음'; }
     return w;
   }
+  function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
   function ycWhat(v) {
     return [v.video ? v.video + '영상' : '', v.holo ? '홀로 ' + v.holo : '', v.picket ? v.picket + '피켓' : '', v.hammer ? '망치' : '', v.vvip ? 'VVIP 입장' : ''].filter(Boolean);
   }
@@ -2293,7 +2297,7 @@ details.all .list { margin-top: 8px; }
     var what = ycWhat(x.v);
     if (what.length) h += '<div class="ycw">' + what.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>';
     if (x.text) h += '<p class="yct">' + esc(x.text).replace(/\n/g, '<br>') + '</p>';
-    if (x.song) h += '<p class="ycs">🎵 ' + (/^https:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(x.song.replace(/^https:\/\//, '').slice(0, 40)) + '</a>' : esc(x.song)) + '</p>';
+    if (x.song) h += '<p class="ycs">🎵 ' + (/^https?:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(ycSongLabel(x)) + '</a>' : esc(x.song)) + '</p>';
     if (x.photos.length) h += '<div class="ycp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') + '</div>';
     if (x.status === '끝') return h + '<p class="note" style="margin:6px 0 0">✂️ 컷 ' + esc(x.endAt) + (x.cutBy ? ' ' + esc(x.cutBy) : '') + (x.goAt ? ' · ㄱㄱ ' + esc(x.goAt) + (x.goBy ? ' ' + esc(x.goBy) : '') : '') + '</p></div>';
     h += '<div class="ycst"><span class="' + (x.jg ? 'on' : '') + '">전광 ' + (x.jg ? '✅ ' + esc(x.jg) + ' ' + esc(x.jgAt) : '⏳') + '</span><span class="' + (x.sul ? 'on' : '') + '">술 ' + (x.sul ? '✅ ' + esc(x.sul) + ' ' + esc(x.sulAt) : '⏳') + '</span>' +
@@ -2364,7 +2368,7 @@ details.all .list { margin-top: 8px; }
     h += '<label>피켓<input id="ycPk" maxlength="20" autocomplete="off" placeholder="예: 생일 · 범야" value="' + esc(v.picket || '') + '"></label><div class="tbsx" style="margin-top:-6px"><button type="button" class="chip" data-ycpk="생일">생일</button></div>';
     h += '<div class="tbtg"><button type="button" class="chip" data-yctg="hammer">🔨 망치</button><button type="button" class="chip" data-yctg="vvip">👑 VVIP 입장</button></div>';
     h += '<label>전광판 문구<textarea id="ycT" rows="3" maxlength="300" placeholder="예) 엄마보다 더 자주 보는 거 같다&#10;-뱃사공-">' + esc(x ? x.text : '') + '</textarea></label>';
-    h += '<label>노래 (링크나 제목)<input id="ycS" maxlength="300" autocomplete="off" value="' + esc(x ? x.song : '') + '" placeholder="https://kko.to/… 또는 체포하겠어 - 아일릿"></label>';
+    h += '<label>노래 (발매곡만)<input id="ycS" maxlength="300" autocomplete="off" inputmode="url" value="' + esc(x ? x.song : '') + '" placeholder="멜론 공유 링크 · 사운드클라우드(다운로드 있는 곡)"></label><p class="note ycsong" id="ycSongOk">멜론 곡 링크, 또는 프리 다운로드 링크가 있는 사운드클라우드 곡만 돼요. 싸클에 다운로드가 없으면 미발매곡이라 안 돼요.</p>';
     if (!x) h += '<div class="ephotos" id="ycPh"></div>';
     h += '<p class="msg" id="ycMsg"></p><button class="btn btn-hot" type="button" id="ycSave">' + (x ? '저장' : '요청 보내기') + '</button>';
     showSheet(h);
@@ -2414,6 +2418,20 @@ details.all .list { margin-top: 8px; }
     s.querySelectorAll('[data-ycholo]').forEach(function (b) { b.addEventListener('click', function () { v.holo = v.holo === b.dataset.ycholo ? '' : b.dataset.ycholo; paintTg(); }); });
     s.querySelectorAll('[data-yctg]').forEach(function (b) { b.addEventListener('click', function () { v[b.dataset.yctg] = !v[b.dataset.yctg]; paintTg(); }); });
     s.querySelector('[data-ycpk]').addEventListener('click', function () { $('ycPk').value = '생일'; });
+    var songT = null, songSeq = 0;
+    function songCheck() {
+      var u = $('ycS').value.trim(), box = $('ycSongOk'), my = ++songSeq;
+      if (!u) { box.className = 'note ycsong'; box.textContent = '멜론 곡 링크, 또는 프리 다운로드 링크가 있는 사운드클라우드 곡만 돼요. 싸클에 다운로드가 없으면 미발매곡이라 안 돼요.'; return; }
+      if (!/^https?:\/\/\S+$/.test(u)) { box.className = 'note ycsong bad'; box.textContent = '❌ ' + ycErr({ error: 'songlink' }); return; }
+      box.className = 'note ycsong'; box.textContent = '확인하는 중…';
+      call({ a: 'song_check', token: state.s.token, song: u }).then(function (r) {
+        if (my !== songSeq) return;
+        if (r.ok) { box.className = 'note ycsong ok'; box.textContent = '✅ ' + (r.kind === 'melon' ? '멜론 곡' : '사운드클라우드' + (r.title ? ' · ' + r.title : '') + ' · ' + r.dl); }
+        else { box.className = 'note ycsong bad'; box.textContent = '❌ ' + ycErr(r) + (r.title ? ' (' + r.title + ')' : ''); }
+      }).catch(function () { if (my === songSeq) { box.className = 'note ycsong bad'; box.textContent = '❌ ' + ycErr({ error: 'check' }); } });
+    }
+    $('ycS').addEventListener('input', function () { clearTimeout(songT); songT = setTimeout(songCheck, 700); });
+    if ($('ycS').value.trim()) songCheck();
     $('ycSave').addEventListener('click', function () {
       var b = this, m = $('ycMsg');
       v.picket = $('ycPk').value.trim(); v.video = $('ycVQ').value.trim();
