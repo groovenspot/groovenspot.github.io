@@ -579,6 +579,7 @@ body.hasfab main { padding-bottom: 110px; }
 .ych .row { margin-left: auto; font-size: 12px; }
 .ycw { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
 .ycw .chip { font-weight: 800; }
+.ycmemo { margin: 6px 0 0; font-size: 13px; color: var(--muted); word-break: keep-all; overflow-wrap: anywhere; }
 .yct { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: #111; border: 1px solid var(--line); font-size: 15px; font-weight: 700; line-height: 1.4; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
 .ycs { margin: 6px 0 0; font-size: 13px; word-break: break-all; }
 .ycs a { color: #7cc0ff; }
@@ -2653,7 +2654,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
   function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
   function ycWhat(v) {
-    return [v.parade ? v.parade + ' 퍼레' : '', v.video ? v.video + '영상' : '', v.holo ? '홀로 ' + v.holo : '', v.picket ? v.picket + '피켓' : '', v.hammer ? '망치' : '', v.vvip ? 'VVIP 입장' : '', v.note || ''].filter(Boolean);
+    return [v.parade ? v.parade + ' 퍼레' : '', v.video ? v.video + '영상' : '', v.holo ? '홀로 ' + v.holo : '', v.picket ? v.picket + '피켓' : '', v.hammer ? '망치' : '', v.vvip ? 'VVIP 입장' : ''].filter(Boolean);
   }
   function ycCard(x, i, n) {
     var y = state.yc, can = y.canEdit, mine = x.mine, boss = y.boss, ready = x.jg && x.sul, cls = 'yc' + (x.status === '진행' ? ' go' : x.status === '끝' ? ' end' : ready ? ' ready' : '');
@@ -2663,6 +2664,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (what.length) h += '<div class="ycw">' + what.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>';
     if (x.text) h += '<p class="yct">' + esc(x.text).replace(/\n/g, '<br>') + '</p>';
     if (x.song) h += '<p class="ycs">🎵 ' + (/^https?:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(ycSongLabel(x)) + '</a>' : esc(x.song)) + ycDlBtn(x) + '</p>';
+    if (x.v && x.v.note) h += '<p class="ycmemo">📝 ' + esc(x.v.note) + '</p>';
     if (x.photos.length) h += '<div class="ycp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') + '</div>';
     if (x.videos && x.videos.length) h += '<div class="ycv">' + x.videos.map(function (id, i) { var u = (state.vidUrl || {})[id]; return u ? '<div class="ycvp"><video src="' + u.url + '" controls playsinline preload="metadata"></video><button type="button" class="link" data-ycsv="' + esc(id) + '">⬇️ 영상 저장</button></div>' : '<button type="button" class="btn ycvbtn" data-ycvid="' + esc(id) + '">🎬 영상 ' + (i + 1) + ' 보기</button>'; }).join('') + '</div>';
     if (x.status === '끝') return h + '<p class="note" style="margin:6px 0 0">✂️ 컷 ' + esc(x.endAt) + (x.cutBy ? ' ' + esc(x.cutBy) : '') + (x.goAt ? ' · ㄱㄱ ' + esc(x.goAt) + (x.goBy ? ' ' + esc(x.goBy) : '') : '') + '</p></div>';
@@ -2738,6 +2740,7 @@ body.hasfab main { padding-bottom: 110px; }
     h += '<div class="tbtg"><button type="button" class="chip" data-yctg="hammer">🔨 망치</button><button type="button" class="chip" data-yctg="vvip">👑 VVIP 입장</button></div>';
     h += '<label>전광판 문구<textarea id="ycT" rows="3" maxlength="300" placeholder="예) 엄마보다 더 자주 보는 거 같다&#10;-뱃사공-">' + esc(x ? x.text : '') + '</textarea></label>';
     h += '<label>노래 (발매곡만)<input id="ycS" maxlength="300" autocomplete="off" inputmode="url" value="' + esc(x ? x.song : '') + '" placeholder="멜론 공유 링크 · 사운드클라우드(다운로드 있는 곡)"></label><p class="note ycsong" id="ycSongOk">멜론 곡 링크, 또는 프리 다운로드 링크가 있는 사운드클라우드 곡만 돼요. 싸클에 다운로드가 없으면 미발매곡이라 안 돼요.</p>';
+    h += '<label>메모 (선택)<input id="ycNote" maxlength="100" autocomplete="off" placeholder="예) 케이크 들고 갈게요 · 생일자 빨간 옷" value="' + esc(v.note || '') + '"></label>';
     if (!x) h += '<div class="ephotos" id="ycPh"></div>';
     h += '<p class="msg" id="ycMsg"></p><button class="btn btn-hot" type="button" id="ycSave">' + (x ? '저장' : '요청 보내기') + '</button>';
     showSheet(h);
@@ -2813,7 +2816,7 @@ body.hasfab main { padding-bottom: 110px; }
     if ($('ycS').value.trim()) songCheck();
     $('ycSave').addEventListener('click', function () {
       var b = this, m = $('ycMsg');
-      v.picket = $('ycPk').value.trim(); v.video = $('ycVQ').value.trim();
+      v.picket = $('ycPk').value.trim(); v.video = $('ycVQ').value.trim(); v.note = $('ycNote').value.trim();
       if (!seat) { m.textContent = '자리를 골라 주세요.'; return; }
       if (!when || when === 'after:') { m.textContent = '순서를 골라 주세요.'; return; }
       b.disabled = true; m.textContent = '';
