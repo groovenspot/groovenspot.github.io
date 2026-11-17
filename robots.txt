@@ -1,4 +1,5 @@
 User-agent: *
 Disallow: /admin/
 Disallow: /staff/
+Disallow: /keep/
 Sitemap: https://xn--2i0bl1s25d.site/sitemap.xml

@@ -135,6 +135,92 @@ details.all { margin-top: 14px; }
 .gin .rmsg.ok { color: var(--ok); }
 .chip.ros { border-style: dashed; color: var(--muted); }
 .pitem.sending { opacity: .7; border-style: dashed; cursor: default; }
+/* 킵 장부 */
+.kh { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+.kh h1 { margin: 0; }
+.kh .sub { margin: 2px 0 0; }
+.kh .btn-hot { width: auto; flex: none; min-height: 44px; font-size: 15px; padding: 0 18px; }
+.ksearch { position: relative; margin: 0 0 10px; }
+.ksearch input { padding-left: 40px; }
+.ksearch span { position: absolute; left: 14px; top: 12px; font-size: 16px; opacity: .7; }
+.ksum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 0 0 10px; }
+.ksum div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.ksum small { display: block; color: var(--muted); font-size: 11px; font-weight: 700; }
+.ksum b { font-size: 19px; font-variant-numeric: tabular-nums; }
+.ksum div.w b { color: var(--warn); }
+.ksum div.x b { color: var(--bad); }
+.kfil { display: flex; gap: 6px; margin: 0 0 12px; overflow-x: auto; scrollbar-width: none; }
+.kfil::-webkit-scrollbar { display: none; }
+.kfil button { flex: none; min-height: 34px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--line); background: none; color: var(--muted); font-weight: 700; font-size: 13px; cursor: pointer; }
+.kfil button[aria-pressed="true"] { color: var(--txt); background: var(--card-2); border-color: var(--line-2); }
+.kalert { border: 1px solid rgba(255,176,32,.55); background: rgba(255,176,32,.08); border-radius: 14px; padding: 10px 14px; font-size: 14px; margin: 0 0 12px; }
+.kalert b { color: var(--warn); }
+.kg { display: flex; align-items: center; gap: 8px; margin: 18px 0 8px; }
+.kg strong { font-size: 16px; }
+.kg .chip { cursor: pointer; background: none; font: inherit; font-size: 12px; font-weight: 800; }
+.kg .chip.none { border-style: dashed; color: var(--muted); }
+.kg .row { margin-left: auto; }
+.kc { display: grid; gap: 8px; text-align: left; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; color: var(--txt); font: inherit; cursor: pointer; }
+.kc.soon { border-color: rgba(255,176,32,.6); }
+.kc.late { border-color: rgba(255,59,92,.6); }
+.kc .nm { display: flex; align-items: center; gap: 8px; }
+.kc .nm strong { font-size: 16px; }
+.kc .nm .tot { margin-left: auto; color: var(--muted); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.its { display: flex; flex-wrap: wrap; gap: 6px; }
+.it { display: inline-flex; align-items: baseline; gap: 4px; padding: 3px 10px; border-radius: 999px; background: var(--card-2); border: 1px solid var(--line-2); font-size: 14px; font-weight: 700; }
+.it b { color: var(--g); font-variant-numeric: tabular-nums; }
+.it.op b { color: #c9a3ff; }
+.it small { color: var(--muted); font-weight: 600; font-size: 12px; }
+.chip.dd { border-color: var(--line-2); color: var(--muted); }
+.chip.dd.soon { border-color: var(--warn); color: var(--warn); }
+.chip.dd.late { background: var(--bad); border-color: var(--bad); color: #fff; }
+.kv { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+.kv h1 { margin: 8px 0 2px; word-break: keep-all; overflow-wrap: anywhere; }
+.kv h1 small { font-size: 14px; color: var(--muted); font-weight: 700; }
+.kv .meta { margin: 0 0 8px; }
+.kv .meta a { color: var(--txt); }
+.stp { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+.stp .ln { min-width: 0; }
+.stp .ln strong { font-size: 17px; word-break: keep-all; overflow-wrap: anywhere; }
+.stp .ln small { display: block; color: var(--muted); font-size: 12px; }
+.stp .ctl { display: flex; align-items: center; gap: 6px; }
+.stp .ctl button { min-width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--bg); color: var(--txt); font-size: 22px; font-weight: 800; cursor: pointer; padding: 0 8px; }
+.stp .ctl button.q { min-width: 48px; border-color: transparent; background: none; font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.stp .ctl button.q.op { color: #c9a3ff; font-size: 19px; }
+.stp .ctl button.out { font-size: 14px; border-color: var(--ok); color: var(--ok); }
+.ktoast { display: flex; align-items: center; gap: 10px; margin: 10px 0 0; border-radius: 12px; padding: 8px 8px 8px 12px; background: rgba(60,207,145,.1); border: 1px solid rgba(60,207,145,.45); font-size: 14px; }
+.ktoast span { flex: 1; min-width: 0; }
+.ktoast b { color: var(--ok); }
+.ktoast .btn { min-height: 36px; padding: 0 12px; font-size: 13px; }
+.kacts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 0; }
+.kacts .btn { min-height: 48px; }
+.tl { display: grid; margin: 0; padding: 0; list-style: none; }
+.tl li { position: relative; padding: 0 0 12px 20px; font-size: 14px; }
+.tl li::before { content: ""; position: absolute; left: 4px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--g); }
+.tl li.o::before { background: var(--s); }
+.tl li.u { opacity: .5; text-decoration: line-through; }
+.tl small { display: block; color: var(--muted); font-size: 12px; }
+.kirow { display: grid; grid-template-columns: 1fr 1fr 36px; gap: 6px 8px; align-items: end; margin: 0 0 10px; padding: 0 0 10px; border-bottom: 1px dashed var(--line); }
+.kirow > label:first-child { grid-column: 1 / -1; }
+.kirow label { margin: 0; font-size: 12px; color: var(--muted); }
+.kirow input, .kirow select { min-height: 46px; padding: 8px 10px; }
+.kirow .x { height: 46px; border: 0; background: none; color: var(--muted); font-size: 18px; cursor: pointer; }
+.knum { display: grid; grid-template-columns: 32px 1fr 32px; align-items: center; border: 1px solid var(--line-2); border-radius: 12px; min-height: 46px; background: var(--bg); }
+.knum button { height: 44px; border: 0; background: none; color: var(--txt); font-size: 20px; cursor: pointer; }
+.knum input { border: 0; min-height: 44px; padding: 0; text-align: center; font-weight: 900; font-size: 17px; background: none; }
+.knum input:disabled { opacity: .5; }
+.kchips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.kchips button { min-height: 32px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--line-2); background: none; color: var(--txt); font-weight: 700; font-size: 13px; cursor: pointer; }
+.kpick { display: grid; gap: 6px; margin: -6px 0 14px; }
+.kpick button { text-align: left; min-height: 44px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--txt); font: inherit; font-size: 14px; cursor: pointer; }
+.kpick button small { color: var(--muted); }
+.kfixed { display: flex; align-items: center; gap: 8px; padding: 10px 12px; margin: 0 0 14px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--card-2); }
+.kfixed .link { margin-left: auto; }
+.amtb { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 10px 0 0; }
+.amtb button { min-height: 48px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--bg); color: var(--txt); font-weight: 800; cursor: pointer; }
+.amtb button[aria-pressed="true"] { border-color: var(--s); color: #d6bcff; background: rgba(161,91,255,.12); }
+.kgrp { display: grid; gap: 8px; margin: 10px 0 0; }
+.klink { width: 100%; font-size: 13px; }
 .rk.ph { opacity: .45; border-style: dashed; }
 .rk.ph .nm strong { color: var(--muted); font-weight: 700; }
 details.all summary { cursor: pointer; color: var(--muted); font-weight: 800; font-size: 14px; padding: 8px 0; }
@@ -352,6 +438,7 @@ details.all .list { margin-top: 8px; }
       <button type="button" role="tab" data-tab="guest" aria-selected="true">게스트 현황</button>
       <button type="button" role="tab" data-tab="board" aria-selected="false">게시판</button>
       <button type="button" role="tab" data-tab="dm" aria-selected="false">메시지</button>
+      <button type="button" role="tab" data-tab="keep" aria-selected="false" hidden>🍾 킵</button>
       <button type="button" role="tab" data-tab="edu" aria-selected="false">신규 교육</button>
       <button type="button" role="tab" data-tab="notes" aria-selected="false" hidden>회의록</button>
       <button type="button" role="tab" data-tab="dec" aria-selected="false" hidden>결정사항</button>
@@ -383,7 +470,8 @@ details.all .list { margin-top: 8px; }
   var DOW = ['월', '화', '수', '목', '금', '토', '일'];
   var $ = function (id) { return document.getElementById(id); };
   var state = { s: null, data: null, tab: 'guest', week: 'week', bteam: '', draft: '', gday: '', gteam: '', gdraft: {}, gmsg: '', rmsg: '', rbad: false, rarm: '',
-    bview: 'list', btag: '', bpost: null, comp: null, cdraft: {}, imgs: {}, dm: null, dmView: 'list', dmWith: '', chat: null, dmDraft: {}, dmPick: false, poll: null, lastSync: 0, pcache: {}, sending: null, sendErr: '' };
+    bview: 'list', btag: '', bpost: null, comp: null, cdraft: {}, imgs: {}, dm: null, dmView: 'list', dmWith: '', chat: null, dmDraft: {}, dmPick: false, poll: null, lastSync: 0, pcache: {}, sending: null, sendErr: '',
+    keep: null, kview: 'list', kcur: null, kq: '', kf: '', kadd: null, kundo: null, kerr: '' };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function load() { try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && v.token && v.exp > Date.now() ? v : null; } catch (e) { return null; } }
@@ -461,6 +549,7 @@ details.all .list { margin-top: 8px; }
   function toLogin(msg) {
     saveData(null); stopPoll(); swToken('');
     state.s = null; state.data = null; state.tab = 'guest'; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
+    state.keep = null; state.kview = 'list'; state.kcur = null; state.kq = ''; state.kf = ''; state.kadd = null; state.kundo = null;
     state.bview = 'list'; state.btag = ''; state.bpost = null; state.comp = null; state.cdraft = {}; state.dm = null; state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.dmDraft = {}; state.dmPick = false;
     Object.keys(state.imgs).forEach(function (k) { try { URL.revokeObjectURL(state.imgs[k]); } catch (e) {} }); state.imgs = {};
     if ($('bell')) $('bell').hidden = true;
@@ -581,7 +670,9 @@ details.all .list { margin-top: 8px; }
       if (prev === 'dm' && state.tab !== 'dm') stopPoll();
       if (state.tab === 'board') { state.bview = state.bview === 'edit' ? 'edit' : 'list'; state.bpost = null; }
       if (state.tab === 'dm') { state.dmView = 'list'; state.dmWith = ''; state.chat = null; }
+      if (state.tab === 'keep' && state.kview !== 'add') { state.kview = 'list'; state.kcur = null; }
       render(); window.scrollTo(0, 0);
+      if (state.tab === 'keep') loadKeep();
       if (state.tab === 'board' && state.bview !== 'edit') refresh(true);
       if (state.tab === 'dm') enterDm();
     });
@@ -598,16 +689,19 @@ details.all .list { margin-top: 8px; }
       edu: ['신규 교육', edu.filter(function (n) { return !n.read; }).length],
       notes: ['회의록', notes.filter(function (n) { return !n.read; }).length],
       dec: ['결정사항', d.decisions.filter(function (x) { return x.mine && x.status !== '완료'; }).length],
-      acc: ['가입 승인', pending]
+      acc: ['가입 승인', pending],
+      keep: ['🍾 킵', keepDue()]
     };
     var LEAD_TABS = { notes: 1, dec: 1 }, hasBoard = !!(d.board && d.board.teams && d.board.teams.length), canAcc = !!(d.admin || d.approver);
     if (!labels[state.tab] || (state.tab === 'acc' && !canAcc) || (state.tab === 'board' && !hasBoard)) state.tab = 'guest';
     if (LEAD_TABS[state.tab] && !d.lead) state.tab = 'guest';
+    if (state.tab === 'keep' && !d.keep) state.tab = 'guest';
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
       if (b.dataset.tab === 'acc') b.hidden = !canAcc;
       if (b.dataset.tab === 'board') b.hidden = !hasBoard;
       if (LEAD_TABS[b.dataset.tab]) b.hidden = !d.lead;
+      if (b.dataset.tab === 'keep') b.hidden = !d.keep;
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
@@ -625,6 +719,7 @@ details.all .list { margin-top: 8px; }
     if (state.tab === 'acc') return renderAcc(area, d);
     if (state.tab === 'board') return renderBoard(area, d);
     if (state.tab === 'dm') return renderDm(area, d);
+    if (state.tab === 'keep') return renderKeep(area, d);
     var list = state.tab === 'edu' ? edu : notes;
     if (!list.length) { area.innerHTML = '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; return; }
     area.innerHTML = '<div class="list">' + list.map(function (n) {
@@ -1166,6 +1261,374 @@ details.all .list { margin-top: 8px; }
         if (!r.ok) { $('dMsg').textContent = bErr(r); $('dBtn').disabled = false; return; }
         state.dmDraft[w] = ''; state.chat = r; render(); flushPush(); if ($('dText')) $('dText').focus();
       }).catch(function () { $('dMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; $('dBtn').disabled = false; });
+    });
+  }
+
+  // ── 킵 장부 (대표·팀장) ─────────────────────────────
+  // 담당 → 손님(닉네임) → 술 × 병 수. 일부만 남은 병은 남은 양(¾ ½ ⅓ ¼). 보관 30일.
+  var KGROUPS = ['영업진', '스텝·DJ', '퇴사자'];
+  function kErr(r) {
+    return { forbidden: '대표님·팀장님만 볼 수 있어요.', notfound: '지워졌거나 없는 손님이에요.', items: '술 이름과 병 수를 확인해 주세요.', name: '손님 이름을 넣어 주세요. (< > " 는 못 써요)',
+      staff: '담당을 넣어 주세요.', phone: '연락처를 확인해 주세요.', n: '병 수를 확인해 주세요.', amt: '남은 양을 골라 주세요.', memo: '메모에 < > " 는 못 써요.', late: '되돌리기는 15분 안에, 직접 한 것만 돼요.',
+      changed: '그 사이 바뀌어서 되돌릴 수 없어요.', dup: '같은 담당에 같은 이름 손님이 이미 있어요.', busy: '잠깐 사이에 너무 많이 눌렀어요. 잠시 후 다시 해 주세요.', group: '구분을 확인해 주세요.' }[r.error] || '처리가 안 됐어요. 다시 해 주세요.';
+  }
+  function kDays(day) {
+    if (!day || !state.keep) return null;
+    var a = Date.parse(day + 'T00:00:00Z'), b = Date.parse(state.keep.today + 'T00:00:00Z');
+    return isNaN(a) || isNaN(b) ? null : Math.round((a - b) / 864e5);
+  }
+  function kExpOf(c) { var m = null; c.items.forEach(function (i) { if (i.exp && (m === null || i.exp < m)) m = i.exp; }); return m; }
+  function kDD(exp) {
+    var d = kDays(exp); if (d === null) return '';
+    var cls = d < 0 ? 'late' : d <= 7 ? 'soon' : '';
+    return '<span class="chip dd ' + cls + '">' + (d < 0 ? '만료 ' + (-d) + '일 지남' : d === 0 ? '오늘 만료' : 'D-' + d) + '</span>';
+  }
+  function kBottles(c) { return c.items.reduce(function (s, i) { return s + (i.kind === '병' ? i.n : 0); }, 0); }
+  function kOpens(c) { return c.items.filter(function (i) { return i.kind !== '병'; }).length; }
+  function kTot(c) { var b = kBottles(c), o = kOpens(c); return [b ? b + '병' : '', o ? '남은 병 ' + o : ''].filter(String).join(' · ') || '비어 있음'; }
+  function kChip(i) {
+    return i.kind === '병' ? '<span class="it">' + esc(i.liq) + ' <b>' + i.n + '</b>' + (i.memo ? ' <small>' + esc(i.memo) + '</small>' : '') + '</span>'
+      : '<span class="it op">' + esc(i.liq) + ' <b>' + esc(i.amt) + '</b>' + (i.memo ? ' <small>' + esc(i.memo) + '</small>' : '') + '</span>';
+  }
+  function keepDue() {
+    var k = state.keep; if (!k) return 0;
+    return k.custs.filter(function (c) { var d = kDays(kExpOf(c)); return d !== null && d <= 3; }).length;
+  }
+  function kGroupOf(name) { var s = (state.keep.staffs || []).filter(function (x) { return x.name === name; })[0]; return s ? s.group : ''; }
+  function kPut(cust) {
+    var k = state.keep; if (!k || !cust) return;
+    var i = k.custs.map(function (c) { return c.id; }).indexOf(cust.id), lite = JSON.parse(JSON.stringify(cust)); lite.phone = '';
+    if (i >= 0) k.custs[i] = lite; else k.custs.push(lite);
+    cust.items.forEach(function (it) { if (k.liqs.indexOf(it.liq) < 0) k.liqs.push(it.liq); });
+    if (!k.staffs.some(function (x) { return x.name === cust.staff; })) k.staffs.push({ name: cust.staff, group: cust.group || '', team: '' });
+  }
+  function loadKeep() {
+    if (!state.keep) $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
+    call({ a: 'keep_list', token: state.s.token }).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) { state.kerr = kErr(r); if (state.tab === 'keep') renderSoon(); return; }
+      state.keep = r; state.kerr = '';
+      if (state.tab === 'keep') { renderTabsOnly(); if (state.kview === 'list') renderSoon(); }
+    }).catch(function () { state.kerr = '연결이 안 돼요. 인터넷을 확인해 주세요.'; if (state.tab === 'keep' && !state.keep) renderSoon(); });
+  }
+  function renderKeep(area, d) {
+    if (!state.keep) { area.innerHTML = state.kerr ? '<p class="empty">' + esc(state.kerr) + '</p>' : '<p class="load">불러오는 중…</p>'; return; }
+    if (state.kview === 'cust' && state.kcur) return renderKCust(area);
+    if (state.kview === 'add' && state.kadd) return renderKAdd(area);
+    state.kview = 'list';
+    var k = state.keep, f = state.kf;
+    var all = k.custs, bottles = 0, soon = 0, late = 0;
+    all.forEach(function (c) { bottles += kBottles(c) + kOpens(c); var x = kDays(kExpOf(c)); if (x !== null && x < 0) late++; else if (x !== null && x <= 7) soon++; });
+    var retired = all.filter(function (c) { return kGroupOf(c.staff) === '퇴사자'; });
+    var h = '<div class="kh"><div><h1>🍾 킵 장부</h1><p class="sub">손님 ' + all.length + ' · 보관 ' + k.days + '일</p></div><button class="btn btn-hot" type="button" id="kNew">+ 맡기기</button></div>';
+    h += '<div class="ksearch"><span aria-hidden="true">🔎</span><input id="kQ" type="search" placeholder="손님 · 담당 · 술 · 연락처 뒤 4자리" value="' + esc(state.kq) + '" aria-label="킵 찾기"></div>';
+    h += '<div class="ksum"><div><small>보관 중</small><b>' + bottles + '</b></div><div class="w"><small>7일 안 만료</small><b>' + soon + '</b></div><div class="x"><small>만료 지남</small><b>' + late + '</b></div></div>';
+    var hasNone = all.some(function (c) { return !kGroupOf(c.staff); });
+    h += '<div class="kfil">' + [['', '전체'], ['exp', '⏰ 만료 임박']].concat(KGROUPS.map(function (g) { return [g, g]; })).concat(hasNone ? [['none', '구분 없음']] : []).map(function (x) {
+      return '<button type="button" data-kf="' + esc(x[0]) + '" aria-pressed="' + (f === x[0]) + '">' + esc(x[1]) + '</button>';
+    }).join('') + '</div>';
+    if (retired.length && f !== '퇴사자') h += '<p class="kalert"><b>⚠️ 퇴사자 담당 손님 ' + retired.length + '명</b> · 손님을 눌러 담당을 바꿔 주세요.</p>';
+    area.innerHTML = h + '<div id="kList"></div>';
+    $('kNew').addEventListener('click', function () { kOpenAdd(null); });
+    $('kQ').addEventListener('input', function () { state.kq = this.value; kListPaint(); });
+    area.querySelectorAll('[data-kf]').forEach(function (b) { b.addEventListener('click', function () { state.kf = b.dataset.kf; render(); }); });
+    kListPaint();
+  }
+  function kListPaint() {
+    var k = state.keep, q = key(state.kq), f = state.kf, all = k.custs, box = $('kList'); if (!box) return;
+    var shown = all.filter(function (c) {
+      var g = kGroupOf(c.staff);
+      if (f === 'exp') { var x = kDays(kExpOf(c)); if (x === null || x > 7) return false; }
+      else if (f === 'none') { if (g) return false; }
+      else if (f && g !== f) return false;
+      if (!q) return true;
+      return key(c.name).indexOf(q) >= 0 || key(c.staff).indexOf(q) >= 0 || c.items.some(function (i) { return key(i.liq).indexOf(q) >= 0; }) || (c.p4 && c.p4.indexOf(q) >= 0);
+    });
+    var h = '';
+    if (!shown.length) h += '<p class="empty">' + (all.length ? '맞는 손님이 없어요.' : '아직 맡긴 술이 없어요. 위의 <b>+ 맡기기</b>로 시작해요.') + '</p>';
+    // 담당별로 묶기 (영업진 → 스텝·DJ → 퇴사자 → 구분 없음, 같은 구분 안에서는 처음 나온 순서)
+    var order = [], by = {};
+    shown.forEach(function (c) { if (!by[c.staff]) { by[c.staff] = []; order.push(c.staff); } by[c.staff].push(c); });
+    order.sort(function (a, b) { var ga = KGROUPS.indexOf(kGroupOf(a)), gb = KGROUPS.indexOf(kGroupOf(b)); return (ga < 0 ? 9 : ga) - (gb < 0 ? 9 : gb); });
+    order.forEach(function (s) {
+      var g = kGroupOf(s), list = by[s], n = list.reduce(function (t, c) { return t + kBottles(c) + kOpens(c); }, 0);
+      h += '<div class="kg"><strong>' + esc(s) + '</strong><button type="button" class="chip' + (g ? '' : ' none') + '" data-kgs="' + esc(s) + '">' + esc(g || '구분 정하기') + '</button><span class="row">손님 ' + list.length + ' · ' + n + '병</span></div><div class="list">';
+      h += list.map(function (c) {
+        var x = kDays(kExpOf(c));
+        return '<button type="button" class="kc' + (x !== null && x < 0 ? ' late' : x !== null && x <= 7 ? ' soon' : '') + '" data-kc="' + esc(c.id) + '"><span class="nm"><strong>' + esc(c.name) + '</strong>' +
+          (x !== null && x <= 7 ? kDD(kExpOf(c)) : '') + '<span class="tot">' + esc(kTot(c)) + '</span></span>' +
+          (c.items.length ? '<span class="its">' + c.items.map(kChip).join('') + '</span>' : '') + '</button>';
+      }).join('') + '</div>';
+    });
+    box.innerHTML = h;
+    box.querySelectorAll('[data-kc]').forEach(function (b) { b.addEventListener('click', function () { kOpen(b.dataset.kc); }); });
+    box.querySelectorAll('[data-kgs]').forEach(function (b) { b.addEventListener('click', function () { kGroupSheet(b.dataset.kgs); }); });
+  }
+  function key(s) { return String(s || '').replace(/\s+/g, '').toLowerCase(); }
+  function kGroupSheet(name) {
+    var cur = kGroupOf(name);
+    showSheet('<h2>' + esc(name) + ' · 구분</h2><p class="note" style="margin:0">목록을 묶는 기준이에요. 퇴사하면 \'퇴사자\'로 바꾸고 손님 담당을 넘겨 주세요.</p><div class="kgrp">' +
+      KGROUPS.concat(['']).map(function (g) { return '<button type="button" class="btn' + (g === cur ? ' btn-ok' : '') + '" data-g="' + esc(g) + '">' + esc(g || '구분 없음') + (g === cur ? ' ✓' : '') + '</button>'; }).join('') +
+      '</div><p class="msg" id="kgM" role="alert"></p>');
+    document.querySelectorAll('#sheet [data-g]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        b.disabled = true;
+        call({ a: 'keep_staff', token: state.s.token, name: name, group: b.dataset.g }).then(function (r) {
+          if (r.error === 'auth') return toLogin(AUTH_OUT);
+          if (!r.ok) { b.disabled = false; $('kgM').textContent = kErr(r); return; }
+          state.keep = r; $('sheet').hidden = true; $('sheet').innerHTML = ''; render();
+        }).catch(function () { b.disabled = false; $('kgM').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+      });
+    });
+  }
+  function kOpen(id) {
+    var c = state.keep.custs.filter(function (x) { return x.id === id; })[0];
+    state.kview = 'cust'; state.kcur = { cust: c || { id: id, name: '', staff: '', items: [] }, log: null, full: false };
+    if (!state.kundo || state.kundo.cid !== id) state.kundo = null;
+    render(); window.scrollTo(0, 0);
+    call({ a: 'keep_get', token: state.s.token, id: id }).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (state.kview !== 'cust' || !state.kcur || state.kcur.cust.id !== id) return;
+      if (!r.ok) { state.kcur.err = kErr(r); return renderSoon(); }
+      state.kcur = { cust: r.cust, log: r.log, full: true }; kPut(r.cust); renderSoon();
+    }).catch(function () { if (state.kcur) { state.kcur.err = '연결이 안 돼요. 다시 열어 주세요.'; renderSoon(); } });
+  }
+  // 서버 응답(손님 + 기록)으로 화면 바꾸기
+  function kApply(r, undoText) {
+    if (!r.ok || !r.cust) return;
+    kPut(r.cust);
+    state.kcur = { cust: r.cust, log: r.log, full: true };
+    state.kundo = r.undo && undoText ? { cid: r.cust.id, log: r.undo, text: undoText, at: Date.now() } : (undoText === null ? null : state.kundo);
+    renderSoon();
+  }
+  function kCall(body, undoText, btn, errEl) {
+    if (btn) btn.disabled = true;
+    body.token = state.s.token;
+    return call(body).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) { if (btn) btn.disabled = false; var m = kErr(r); if (errEl) errEl.textContent = m; else { $('kMsg') && ($('kMsg').textContent = m); } return r; }
+      kApply(r, undoText); return r;
+    }).catch(function () { if (btn) btn.disabled = false; var m = '연결이 안 돼요. 다시 해 주세요.'; if (errEl) errEl.textContent = m; else if ($('kMsg')) $('kMsg').textContent = m; });
+  }
+  function kDate(s) { return s ? md(s) : ''; }
+  function renderKCust(area) {
+    var kc = state.kcur, c = kc.cust, g = kGroupOf(c.staff) || c.group;
+    var h = '<button class="btn back" type="button" id="kBack">← 킵 장부</button><div class="kv">';
+    h += '<div class="row"><span class="chip">담당 ' + esc(c.staff || '-') + '</span>' + (g ? '<span class="chip">' + esc(g) + '</span>' : '') + (g === '퇴사자' ? '<b style="color:var(--warn)">담당을 바꿔 주세요</b>' : '') + '</div>';
+    h += '<h1>' + esc(c.name) + ' <small>· ' + esc(kTot(c)) + '</small></h1>';
+    h += '<p class="meta">' + (kc.full ? (c.phone ? '<a href="tel:' + esc(c.phone.replace(/\D/g, '')) + '">' + esc(c.phone) + '</a>' : '연락처 없음') : (c.p4 ? '연락처 …' + esc(c.p4) : '')) + (c.memo ? ' · ' + esc(c.memo) : '') + '</p>';
+    if (kc.err) h += '<p class="msg">' + esc(kc.err) + '</p>';
+    if (!c.items.length) h += '<p class="empty" style="margin:8px 0">맡긴 술이 없어요.</p>';
+    c.items.forEach(function (i) {
+      var sub = [i.memo, i.day ? kDate(i.day) + ' 맡김' : '', i.exp ? '만료 ' + kDate(i.exp) : ''].filter(String).join(' · ');
+      var dl = kDays(i.exp);
+      h += '<div class="stp"><div class="ln"><strong>' + esc(i.liq) + '</strong> ' + (dl !== null && dl <= 7 ? kDD(i.exp) : '') + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div><div class="ctl">';
+      if (i.kind === '병') h += '<button type="button" data-kt="' + esc(i.id) + '" aria-label="' + esc(i.liq) + ' 1병 꺼내기">−</button><button type="button" class="q" data-kn="' + esc(i.id) + '" aria-label="병 수 고치기">' + i.n + '</button><button type="button" data-kp="' + esc(i.id) + '" aria-label="' + esc(i.liq) + ' 1병 더 맡기기">+</button>';
+      else h += '<button type="button" class="q op" data-ka="' + esc(i.id) + '" aria-label="남은 양 고치기">' + esc(i.amt) + '</button><button type="button" class="out" data-kt="' + esc(i.id) + '">다 마심</button>';
+      h += '</div></div>';
+    });
+    var u = state.kundo;
+    if (u && u.cid === c.id && Date.now() - u.at < 15 * 60e3) h += '<div class="ktoast"><span>' + u.text + '</span><button class="btn" type="button" id="kUndo">되돌리기</button></div>';
+    h += '<p class="msg" id="kMsg" role="alert"></p>';
+    h += '<div class="kacts"><button class="btn btn-ok" type="button" id="kMore">+ 술 맡기기</button><button class="btn" type="button" id="kLink">📱 손님에게 링크</button></div>';
+    h += '<div class="kacts" style="margin-top:8px"><button class="btn" type="button" id="kEdit">✏️ 손님 정보 · 담당</button><button class="btn btn-bad" type="button" id="kDel">손님 지우기</button></div>';
+    h += '</div>';
+    h += '<h2 class="sec">기록</h2>';
+    if (!kc.log) h += '<p class="load">불러오는 중…</p>';
+    else if (!kc.log.length) h += '<p class="empty">기록이 없어요.</p>';
+    else h += '<ul class="tl">' + kc.log.map(function (l) {
+      var ch = l.col === '병' ? l.from + ' → ' + l.to + '병' : l.col === '남은 양' ? (l.from || '-') + ' → ' + (l.to === '0' ? '없음' : l.to) : '';
+      return '<li class="' + (/^(꺼냄|다 마심)$/.test(l.what) ? 'o' : '') + (l.undone ? ' u' : '') + '"><b>' + esc(l.what) + '</b>' + (l.liq ? ' · ' + esc(l.liq) : '') + (ch ? ' · ' + esc(ch) : '') + (l.memo ? ' · ' + esc(l.memo) : '') +
+        '<small>' + esc(l.at) + ' · ' + esc(l.who) + (l.undone ? ' · 되돌림' : '') + '</small></li>';
+    }).join('') + '</ul>';
+    area.innerHTML = h;
+    $('kBack').addEventListener('click', function () { state.kview = 'list'; state.kcur = null; render(); window.scrollTo(0, 0); });
+    function item(id) { return c.items.filter(function (x) { return x.id === id; })[0]; }
+    area.querySelectorAll('[data-kt]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var it = item(b.dataset.kt); if (!it) return;
+        var txt = it.kind === '병' ? '<b>' + esc(it.liq) + ' 1병 꺼냄</b> · ' + it.n + ' → ' + (it.n - 1) : '<b>' + esc(it.liq) + ' 다 마심</b>';
+        kCall({ a: 'keep_set', item: it.id, op: 'take', n: 1 }, txt, b);
+      });
+    });
+    area.querySelectorAll('[data-kp]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var it = item(b.dataset.kp); if (!it) return;
+        kCall({ a: 'keep_add', id: c.id, items: [{ liq: it.liq, n: 1 }] }, null, b);
+      });
+    });
+    area.querySelectorAll('[data-kn]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var it = item(b.dataset.kn); if (!it) return;
+        showSheet('<h2>' + esc(it.liq) + ' · 병 수 고치기</h2><p class="note" style="margin:0 0 10px">장부와 다를 때만 고쳐요. 꺼낼 때는 − 를 눌러요.</p><label>병 수<input id="kNv" type="number" inputmode="numeric" min="0" max="999" value="' + it.n + '"></label><button class="btn btn-hot" type="button" id="kNs">저장</button><p class="msg" id="kNm" role="alert"></p>');
+        $('kNs').addEventListener('click', function () {
+          var v = Number($('kNv').value);
+          if (!(Math.floor(v) === v && v >= 0 && v <= 999)) { $('kNm').textContent = '0~999 사이 숫자로 넣어 주세요.'; return; }
+          kCall({ a: 'keep_set', item: it.id, op: 'n', n: v }, '<b>' + esc(it.liq) + ' 병 수 고침</b> · ' + it.n + ' → ' + v, this, $('kNm')).then(function (r) { if (r && r.ok) { $('sheet').hidden = true; $('sheet').innerHTML = ''; } });
+        });
+      });
+    });
+    area.querySelectorAll('[data-ka]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var it = item(b.dataset.ka); if (!it) return;
+        showSheet('<h2>' + esc(it.liq) + ' · 남은 양</h2><div class="amtb">' + state.keep.amts.map(function (a) { return '<button type="button" data-am="' + esc(a) + '" aria-pressed="' + (a === it.amt) + '">' + esc(a) + '</button>'; }).join('') + '</div><p class="msg" id="kAm" role="alert"></p>');
+        document.querySelectorAll('#sheet [data-am]').forEach(function (x) {
+          x.addEventListener('click', function () {
+            kCall({ a: 'keep_set', item: it.id, op: 'amt', amt: x.dataset.am }, '<b>' + esc(it.liq) + ' 남은 양</b> · ' + esc(it.amt) + ' → ' + esc(x.dataset.am), x, $('kAm')).then(function (r) { if (r && r.ok) { $('sheet').hidden = true; $('sheet').innerHTML = ''; } });
+          });
+        });
+      });
+    });
+    if ($('kUndo')) $('kUndo').addEventListener('click', function () { kCall({ a: 'keep_undo', log: state.kundo.log }, null, this); });
+    $('kMore').addEventListener('click', function () { kOpenAdd(c); });
+    $('kLink').addEventListener('click', function () { kLink(c, this); });
+    $('kEdit').addEventListener('click', function () { kEditSheet(c); });
+    $('kDel').addEventListener('click', function () {
+      if (!armed(this, '손님 지우기')) return;
+      var btn = this; btn.disabled = true;
+      call({ a: 'keep_cust', token: state.s.token, id: c.id, del: true }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (!r.ok) { btn.disabled = false; $('kMsg').textContent = kErr(r); return; }
+        state.keep.custs = state.keep.custs.filter(function (x) { return x.id !== c.id; });
+        state.kview = 'list'; state.kcur = null; state.kundo = null; render(); window.scrollTo(0, 0);
+      }).catch(function () { btn.disabled = false; $('kMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+    });
+  }
+  function kStaffList(id) {
+    return '<datalist id="' + id + '">' + (state.keep.staffs || []).map(function (s) { return '<option value="' + esc(s.name) + '">' + esc(s.group || s.team || '') + '</option>'; }).join('') + '</datalist>';
+  }
+  function kEditSheet(c) {
+    showSheet('<h2>손님 정보 · 담당</h2>' +
+      '<label>손님 이름<input id="keN" maxlength="20" value="' + esc(c.name) + '"></label>' +
+      '<label>담당<input id="keS" maxlength="12" list="keSl" value="' + esc(c.staff) + '">' + kStaffList('keSl') + '</label>' +
+      '<label>연락처 (선택)<input id="keP" type="tel" inputmode="numeric" maxlength="13" value="' + esc(c.phone || '') + '" placeholder="010-0000-0000"></label>' +
+      '<label>메모 (선택)<input id="keM" maxlength="60" value="' + esc(c.memo || '') + '"></label>' +
+      '<button class="btn btn-hot" type="button" id="keGo">저장</button><p class="msg" id="keMsg" role="alert"></p>');
+    $('keP').addEventListener('input', function () { this.value = fmtPhone(this.value); });
+    $('keGo').addEventListener('click', function () {
+      var body = { a: 'keep_cust', id: c.id, name: $('keN').value.trim(), staff: $('keS').value.trim(), memo: $('keM').value.trim() };
+      if (state.kcur && state.kcur.full) body.phone = $('keP').value.trim();
+      kCall(body, null, this, $('keMsg')).then(function (r) { if (r && r.ok) { $('sheet').hidden = true; $('sheet').innerHTML = ''; } });
+    });
+  }
+  function kLink(c, btn) {
+    btn.disabled = true;
+    call({ a: 'keep_link', token: state.s.token, id: c.id }).then(function (r) {
+      btn.disabled = false;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) { $('kMsg').textContent = kErr(r); return; }
+      var text = c.name + '님, 그루브앤스팟에 맡기신 술을 여기서 확인하실 수 있어요 🍾';
+      if (navigator.share) { navigator.share({ title: '그루브 킵', text: text, url: r.url }).catch(function () {}); return; }
+      var ph = (state.kcur && state.kcur.cust.phone || '').replace(/\D/g, '');
+      showSheet('<h2>📱 손님 확인 링크</h2><p class="note" style="margin:0 0 10px">카톡이나 문자로 손님에게 보내 주세요. 링크를 아는 사람만 이 손님의 킵을 볼 수 있어요.</p>' +
+        '<input class="klink" id="kLk" readonly value="' + esc(r.url) + '"><button class="btn btn-hot" type="button" id="kCp" style="margin-top:10px">링크 복사</button>' +
+        (ph ? '<a class="btn" style="width:100%;margin-top:8px" href="sms:' + esc(ph) + '?&body=' + encodeURIComponent(text + ' ' + r.url) + '">문자로 보내기</a>' : '') +
+        '<button class="btn btn-bad" type="button" id="kRs" style="margin-top:8px">링크 새로 만들기 (예전 링크는 안 열림)</button><p class="msg ok" id="kLm" role="status"></p>');
+      $('kCp').addEventListener('click', function () {
+        var i = $('kLk'); i.select();
+        (navigator.clipboard ? navigator.clipboard.writeText(r.url) : Promise.reject()).then(function () { $('kLm').textContent = '복사했어요.'; }).catch(function () { try { document.execCommand('copy'); $('kLm').textContent = '복사했어요.'; } catch (e) { $('kLm').textContent = '길게 눌러 복사해 주세요.'; } });
+      });
+      $('kRs').addEventListener('click', function () {
+        if (!armed(this, '링크 새로 만들기 (예전 링크는 안 열림)')) return;
+        var b = this; b.disabled = true;
+        call({ a: 'keep_link', token: state.s.token, id: c.id, reset: true }).then(function (x) {
+          b.disabled = false; if (x.ok) { $('kLk').value = x.url; r.url = x.url; $('kLm').textContent = '새 링크를 만들었어요. 예전 링크는 이제 안 열려요.'; }
+        }).catch(function () { b.disabled = false; });
+      });
+    }).catch(function () { btn.disabled = false; $('kMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+  }
+  // 맡기기: 손님(있으면 고르기 / 없으면 새로) + 술 여러 줄
+  function kOpenAdd(c) {
+    state.kadd = { id: c ? c.id : '', name: c ? c.name : '', staff: c ? c.staff : '', phone: '', memo: '', fixed: !!c, rows: [{ liq: '', n: 1, amt: '' }], msg: '' };
+    state.kview = 'add'; render(); window.scrollTo(0, 0);
+    setTimeout(function () { var i = c ? document.querySelector('[data-kr="0"][data-f="liq"]') : $('kaN'); if (i) i.focus(); }, 50);
+  }
+  function renderKAdd(area) {
+    var a = state.kadd, k = state.keep;
+    var h = '<button class="btn back" type="button" id="kaBack">← ' + (a.fixed ? '손님' : '킵 장부') + '</button><div class="card"><h1>🍾 맡기기</h1><p class="sub">손님 → 술 · 병 수 → 저장. 보관은 오늘부터 ' + k.days + '일이에요.</p>';
+    if (a.fixed || a.id) {
+      var cc = k.custs.filter(function (x) { return x.id === a.id; })[0];
+      h += '<div class="kfixed"><span>✓ <b>' + esc(a.name) + '</b> · 담당 ' + esc(a.staff) + (cc ? ' <small class="note">(' + esc(kTot(cc)) + ')</small>' : '') + '</span>' + (a.fixed ? '' : '<button class="link" type="button" id="kaUn">다른 손님</button>') + '</div>';
+    } else {
+      h += '<label>손님 (닉네임)<input id="kaN" maxlength="20" autocomplete="off" value="' + esc(a.name) + '" placeholder="장부에 쓰는 이름"></label>';
+      h += '<div class="kpick" id="kaPick"></div>';
+      h += '<label>담당<input id="kaS" maxlength="12" list="kaSl" autocomplete="off" value="' + esc(a.staff) + '" placeholder="담당 직원 이름">' + kStaffList('kaSl') + '</label>';
+      h += '<label>연락처 (선택)<input id="kaP" type="tel" inputmode="numeric" maxlength="13" value="' + esc(a.phone) + '" placeholder="비워도 돼요"></label>';
+    }
+    h += '<p class="lab" style="font-weight:700;font-size:14px;margin:4px 0 6px">술</p>';
+    h += a.rows.map(function (r, i) {
+      var part = !!r.amt;
+      return '<div class="kirow"><label>술 이름<input data-kr="' + i + '" data-f="liq" maxlength="20" list="kaLl" autocomplete="off" value="' + esc(r.liq) + '"></label>' +
+        '<label>병 수<span class="knum"><button type="button" data-kr="' + i + '" data-f="dn" aria-label="한 병 빼기"' + (part ? ' disabled' : '') + '>−</button><input data-kr="' + i + '" data-f="n" type="number" inputmode="numeric" min="1" max="999" value="' + (part ? 1 : r.n) + '"' + (part ? ' disabled' : '') + ' aria-label="병 수"><button type="button" data-kr="' + i + '" data-f="up" aria-label="한 병 더하기"' + (part ? ' disabled' : '') + '>+</button></span></label>' +
+        '<label>남은 양<select data-kr="' + i + '" data-f="amt"><option value="">그대로</option>' + k.amts.filter(function (x) { return x !== '가득'; }).map(function (x) { return '<option' + (x === r.amt ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></label>' +
+        (a.rows.length > 1 ? '<button class="x" type="button" data-kr="' + i + '" data-f="del" aria-label="이 줄 빼기">✕</button>' : '<span></span>') + '</div>';
+    }).join('');
+    h += '<datalist id="kaLl">' + k.liqs.map(function (x) { return '<option value="' + esc(x) + '">'; }).join('') + '</datalist>';
+    h += '<div class="kchips">' + k.liqs.slice(0, 10).map(function (x) { return '<button type="button" data-kq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '<button type="button" id="kaRow">+ 술 한 줄 더</button></div>';
+    h += '<p class="note" style="margin:-6px 0 12px">일부만 남은 병은 \'남은 양\'을 골라요 (한 병씩).</p>';
+    if (!a.fixed && !a.id) h += '<label>메모 (선택)<input id="kaM" maxlength="60" value="' + esc(a.memo) + '"></label>';
+    var tot = a.rows.reduce(function (s, r) { return s + (r.liq.trim() ? (r.amt ? 1 : (+r.n || 0)) : 0); }, 0);
+    h += '<button class="btn btn-hot" type="button" id="kaGo">' + (tot ? tot + '병 맡기기' : '맡기기') + '</button><p class="msg" id="kaMsg" role="alert">' + esc(a.msg || '') + '</p></div>';
+    area.innerHTML = h;
+    function sync() {
+      if ($('kaN')) a.name = $('kaN').value; if ($('kaS')) a.staff = $('kaS').value; if ($('kaP')) a.phone = $('kaP').value; if ($('kaM')) a.memo = $('kaM').value;
+      area.querySelectorAll('[data-kr]').forEach(function (el) {
+        var r = a.rows[+el.dataset.kr]; if (!r) return;
+        if (el.dataset.f === 'liq') r.liq = el.value; else if (el.dataset.f === 'n' && !el.disabled) r.n = Math.max(1, Math.min(999, Math.floor(+el.value || 1))); else if (el.dataset.f === 'amt') r.amt = el.value;
+      });
+    }
+    function redraw() { sync(); a.msg = ''; render(); }
+    $('kaBack').addEventListener('click', function () {
+      if (a.fixed) { state.kview = 'cust'; state.kadd = null; render(); } else { state.kview = 'list'; state.kadd = null; render(); }
+      window.scrollTo(0, 0);
+    });
+    if ($('kaUn')) $('kaUn').addEventListener('click', function () { sync(); a.id = ''; a.name = ''; a.staff = ''; render(); });
+    function picks() {
+      var box = $('kaPick'); if (!box) return;
+      var q = key($('kaN').value), hits = q ? k.custs.filter(function (x) { return key(x.name).indexOf(q) >= 0; }).slice(0, 6) : [];
+      box.innerHTML = hits.length ? '<p class="note" style="margin:0">이미 있는 손님이면 눌러서 골라요</p>' + hits.map(function (x) { return '<button type="button" data-kpick="' + esc(x.id) + '">' + esc(x.name) + ' · 담당 ' + esc(x.staff) + ' <small>' + esc(kTot(x)) + '</small></button>'; }).join('') : '';
+      box.querySelectorAll('[data-kpick]').forEach(function (b) {
+        b.addEventListener('click', function () { sync(); var x = k.custs.filter(function (y) { return y.id === b.dataset.kpick; })[0]; if (!x) return; a.id = x.id; a.name = x.name; a.staff = x.staff; render(); });
+      });
+    }
+    if ($('kaN')) { $('kaN').addEventListener('input', picks); picks(); }
+    if ($('kaP')) $('kaP').addEventListener('input', function () { this.value = fmtPhone(this.value); });
+    area.querySelectorAll('[data-f="dn"], [data-f="up"]').forEach(function (b) {
+      b.addEventListener('click', function () { sync(); var r = a.rows[+b.dataset.kr]; r.n = Math.max(1, Math.min(999, (+r.n || 1) + (b.dataset.f === 'up' ? 1 : -1))); render(); });
+    });
+    area.querySelectorAll('[data-f="amt"]').forEach(function (s) { s.addEventListener('change', function () { redraw(); }); });
+    area.querySelectorAll('[data-f="n"]').forEach(function (s) { s.addEventListener('change', function () { redraw(); }); });
+    area.querySelectorAll('[data-f="del"]').forEach(function (b) { b.addEventListener('click', function () { sync(); a.rows.splice(+b.dataset.kr, 1); render(); }); });
+    area.querySelectorAll('[data-kq]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        sync();
+        var r = a.rows.filter(function (x) { return !x.liq.trim(); })[0];
+        if (!r) { if (a.rows.length >= 20) return; r = { liq: '', n: 1, amt: '' }; a.rows.push(r); }
+        r.liq = b.dataset.kq; render();
+      });
+    });
+    $('kaRow').addEventListener('click', function () { sync(); if (a.rows.length < 20) a.rows.push({ liq: '', n: 1, amt: '' }); render(); var l = document.querySelectorAll('[data-f="liq"]'); if (l.length) l[l.length - 1].focus(); });
+    $('kaGo').addEventListener('click', function () {
+      sync();
+      var items = a.rows.filter(function (r) { return r.liq.trim(); }).map(function (r) { return r.amt ? { liq: r.liq.trim(), kind: '딴 병', amt: r.amt } : { liq: r.liq.trim(), kind: '병', n: +r.n || 1 }; });
+      var m = $('kaMsg');
+      if (!a.id && !a.name.trim()) { m.textContent = '손님 이름을 넣어 주세요.'; return; }
+      if (!a.id && !a.staff.trim()) { m.textContent = '담당을 넣어 주세요.'; return; }
+      if (!items.length) { m.textContent = '술 이름을 넣어 주세요.'; return; }
+      var body = { a: 'keep_add', token: state.s.token, items: items };
+      if (a.id) body.id = a.id; else { body.name = a.name.trim(); body.staff = a.staff.trim(); body.phone = a.phone.trim(); body.memo = a.memo.trim(); }
+      var btn = this; btn.disabled = true; m.textContent = '';
+      call(body).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (!r.ok) { btn.disabled = false; a.msg = kErr(r); m.textContent = a.msg; return; }
+        state.kadd = null; state.kview = 'cust';
+        var n = items.reduce(function (s, x) { return s + (x.n || 1); }, 0);
+        kApply(r, null);
+        state.kundo = null;
+        state.kcur.saved = n + '병 맡겼어요';
+        render(); window.scrollTo(0, 0);
+        if ($('kMsg')) { $('kMsg').className = 'msg ok'; $('kMsg').textContent = '✓ ' + n + '병 맡겼어요.'; }
+      }).catch(function () { btn.disabled = false; m.textContent = '연결이 안 돼서 못 맡겼어요. 다시 해 주세요.'; });
     });
   }
 
