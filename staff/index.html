@@ -371,6 +371,8 @@ body.hasfab main { padding-bottom: 110px; }
 .chatl .cm p b.at { color: #7cc0ff; font-weight: 800; }
 .chatl .cm.me p b.at { color: #3a1d00; text-decoration: underline; }
 .chatl .cm.hit p { box-shadow: 0 0 0 2px #ffb02e; }
+.chatl .cm .creq { display: block; font-style: normal; font-size: 12px; font-weight: 700; color: var(--ok); margin: 3px 4px 0; }
+.chatl .cm .creq.bad { color: #ffb02e; }
 .chatf { display: flex; gap: 8px; align-items: flex-end; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
 .chatf textarea { flex: 1; min-height: 42px; max-height: 120px; padding: 10px 12px; font-size: 16px; resize: none; }
 .chatf .btn { width: auto; min-height: 42px; padding: 0 16px; }
@@ -2584,6 +2586,7 @@ body.hasfab main { padding-bottom: 110px; }
   function chatOpen(room) {
     state.chatRoom = room; state.chat = null;
     $('chatT').textContent = CHAT_NAME[room]; $('chatL').innerHTML = '<p class="cempty">불러오는 중…</p>';
+    $('chatIn').placeholder = room === 'table' ? "메시지 · '13 아웃'·'3디1 추원호 섭몬' 처럼 쓰면 자리 신청" : '메시지';
     $('chatBox').hidden = false; $('chatFab').hidden = true;
     chatLoad(true);
     clearInterval(state.chatTimer); state.chatTimer = setInterval(function () { if (!document.hidden && !$('chatBox').hidden) chatLoad(); }, 3000);
@@ -2602,7 +2605,7 @@ body.hasfab main { padding-bottom: 110px; }
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '';
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + '">' + (m.mine ? '' : '<i>' + esc(m.who) + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '<p>' + chatText(m) + '</p>' + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + '">' + (m.mine ? '' : '<i>' + esc(m.who) + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '<p>' + chatText(m) + '</p>' + (m.req ? '<em class="creq' + (/^⚠️/.test(m.req) ? ' bad' : '') + '">' + esc(m.req) + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
     L.innerHTML = h || '<p class="cempty">아직 대화가 없어요. 첫 메시지를 남겨 보세요.</p>';
     L.querySelectorAll('[data-chdel]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '✕')) return; call({ a: 'chat_del', token: state.s.token, id: b.dataset.chdel }).then(function (x) { if (x.ok) chatPaint(x, false); }); }); });
@@ -2619,9 +2622,9 @@ body.hasfab main { padding-bottom: 110px; }
     $('chatF').addEventListener('submit', function (e) {
       e.preventDefault(); var t = ta.value.trim(), room = state.chatRoom; if (!t || !room) return;
       var btn = this.querySelector('button'); btn.disabled = true;
-      call({ a: 'chat_send', token: state.s.token, room: room, text: t }).then(function (r) {
+      call({ a: 'chat_send', token: state.s.token, room: room, text: t, floor: state.tbFloor || tbFloorPref() }).then(function (r) {
         btn.disabled = false;
-        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
+        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.req && room === 'table') { loadTb(true); flushPush(); } if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
         else if (r.error === 'auth') toLogin(AUTH_OUT);
         else alertBox(r.error === 'busy' ? '너무 빨리 보내고 있어요. 잠시 후에 보내 주세요.' : '못 보냈어요. 다시 해 주세요.');
       }).catch(function () { btn.disabled = false; alertBox('연결이 안 돼요.'); });
