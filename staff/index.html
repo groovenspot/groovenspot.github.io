@@ -413,6 +413,10 @@ body.hasfab main { padding-bottom: 110px; }
 .chatl .cm .cph img { width: 124px; height: 124px; object-fit: cover; border-radius: 12px; background: #000; cursor: zoom-in; }
 .chatl .cm .cph video { width: 252px; max-width: 100%; max-height: 320px; border-radius: 12px; background: #000; }
 .chatl .cm .cph .cvid { width: auto; min-height: 40px; padding: 0 14px; font-size: 14px; }
+.chatl .cm .cphi { position: relative; display: inline-block; }
+.chatl .cm .csave { position: absolute; right: 5px; bottom: 5px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 15px; cursor: pointer; }
+.chatl .cm .cphv { display: grid; gap: 2px; justify-items: end; }
+.chatl .cm .csavev { font-size: 13px; padding: 4px 2px; }
 .imgview { width: 100%; border-radius: 12px; display: block; }
 .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.72); display: grid; place-items: end center; padding: 16px; }
 .sheet-in { width: 100%; max-width: 520px; background: var(--card); border: 1px solid var(--line-2); border-radius: 18px; padding: 20px; margin-bottom: env(safe-area-inset-bottom); max-height: 90vh; overflow: auto; }
@@ -1315,7 +1319,8 @@ body.hasfab main { padding-bottom: 110px; }
         if (!r.ok) { im.alt = '사진을 못 불러왔어요'; return; }
         var bin = atob(r.data), u8 = new Uint8Array(bin.length);
         for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-        state.imgs[id] = URL.createObjectURL(new Blob([u8], { type: r.type || 'image/jpeg' }));
+        var bl = new Blob([u8], { type: r.type || 'image/jpeg' }); state.imgBlob = state.imgBlob || {}; state.imgBlob[id] = bl;
+        state.imgs[id] = URL.createObjectURL(bl);
         document.querySelectorAll('img[data-img="' + id + '"]').forEach(function (x) { x.src = state.imgs[id]; });
       }).catch(function () { im.alt = '사진을 못 불러왔어요'; });
     }
@@ -2517,7 +2522,7 @@ body.hasfab main { padding-bottom: 110px; }
         var bin = atob(r.data), u = new Uint8Array(bin.length); for (var k = 0; k < bin.length; k++) u[k] = bin.charCodeAt(k);
         parts.push(u); i++; b.textContent = '🎬 받는 중… ' + Math.floor(i / total * 100) + '%';
         if (i < total) return next();
-        var url = URL.createObjectURL(new Blob(parts, { type: type }));
+        var vb = new Blob(parts, { type: type }), url = URL.createObjectURL(vb); state.vidBlob = state.vidBlob || {}; state.vidBlob[id] = vb;
         state.vidUrl[id] = { url: url, ext: type === 'video/quicktime' ? '.mov' : type === 'video/webm' ? '.webm' : '.mp4' };
         if (done) done(); else renderSoon();
       }).catch(function () { b.disabled = false; b.textContent = '🎬 다시 받기 (실패)'; });
@@ -2537,7 +2542,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (x.text) h += '<p class="yct">' + esc(x.text).replace(/\n/g, '<br>') + '</p>';
     if (x.song) h += '<p class="ycs">🎵 ' + (/^https?:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(ycSongLabel(x)) + '</a>' : esc(x.song)) + '</p>';
     if (x.photos.length) h += '<div class="ycp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') + '</div>';
-    if (x.videos && x.videos.length) h += '<div class="ycv">' + x.videos.map(function (id, i) { var u = (state.vidUrl || {})[id]; return u ? '<div class="ycvp"><video src="' + u.url + '" controls playsinline preload="metadata"></video><a class="link" href="' + u.url + '" download="연출영상' + (i + 1) + u.ext + '">⬇️ 저장</a></div>' : '<button type="button" class="btn ycvbtn" data-ycvid="' + esc(id) + '">🎬 영상 ' + (i + 1) + ' 보기</button>'; }).join('') + '</div>';
+    if (x.videos && x.videos.length) h += '<div class="ycv">' + x.videos.map(function (id, i) { var u = (state.vidUrl || {})[id]; return u ? '<div class="ycvp"><video src="' + u.url + '" controls playsinline preload="metadata"></video><button type="button" class="link" data-ycsv="' + esc(id) + '">⬇️ 영상 저장</button></div>' : '<button type="button" class="btn ycvbtn" data-ycvid="' + esc(id) + '">🎬 영상 ' + (i + 1) + ' 보기</button>'; }).join('') + '</div>';
     if (x.status === '끝') return h + '<p class="note" style="margin:6px 0 0">✂️ 컷 ' + esc(x.endAt) + (x.cutBy ? ' ' + esc(x.cutBy) : '') + (x.goAt ? ' · ㄱㄱ ' + esc(x.goAt) + (x.goBy ? ' ' + esc(x.goBy) : '') : '') + '</p></div>';
     h += '<div class="ycst"><span class="' + (x.jg ? 'on' : '') + '">전광 ' + (x.jg ? '✅ ' + esc(x.jg) + ' ' + esc(x.jgAt) : '⏳') + '</span><span class="' + (x.sul ? 'on' : '') + '">술 ' + (x.sul ? '✅ ' + esc(x.sul) + ' ' + esc(x.sulAt) : '⏳') + '</span>' +
       (x.status === '진행' ? '<span class="live">● 진행 중 ' + esc(x.goAt) + (x.goBy && x.goBy !== x.by ? ' · ' + esc(x.goBy) : '') + '</span>' : ready ? '<span class="on">준비 완료 · ㄱㄱ 기다리는 중</span>' : '') + '</div>';
@@ -2571,6 +2576,8 @@ body.hasfab main { padding-bottom: 110px; }
     area.innerHTML = h;
     hydrateImgs(area);
     area.querySelectorAll('[data-ycvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.ycvid, b); }); });
+    area.querySelectorAll('[data-ycsv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.ycsv); }); });
+    area.querySelectorAll('.ycp img[data-img]').forEach(function (im) { im.style.cursor = 'zoom-in'; im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });   // 연출 사진: 누르면 크게 + 저장
     if ($('ycNew')) $('ycNew').addEventListener('click', function () { ycForm(null); });
     area.querySelectorAll('[data-ycid]').forEach(function (card) {
       var id = card.dataset.ycid, x = y.list.filter(function (q) { return q.id === id; })[0];
@@ -2893,10 +2900,26 @@ body.hasfab main { padding-bottom: 110px; }
     state.chatFly = 1;
     call({ a: 'chat_get', token: state.s.token, room: room }).then(function (r) { state.chatFly = 0; if (r.ok && r.room === state.chatRoom) chatPaint(r, first); }).catch(function () { state.chatFly = 0; });
   }
+  // ⬇️ 사진·영상 저장 (대표 요청 2026-11-18): 폰은 공유 창(사진 앱에 저장), 컴퓨터는 파일로 내려받기
+  function mediaExt(t) { return /png/.test(t) ? '.png' : /webp/.test(t) ? '.webp' : /quicktime/.test(t) ? '.mov' : /webm/.test(t) ? '.webm' : /video/.test(t) ? '.mp4' : '.jpg'; }
+  function mediaSave(blob, base, url) {
+    if (!blob && !url) return;
+    var name = base + (blob ? mediaExt(blob.type || '') : ''), f = null;
+    try { if (blob && /iPhone|iPad|iPod|Android/.test(navigator.userAgent) && navigator.canShare) { f = new File([blob], name, { type: blob.type }); if (!navigator.canShare({ files: [f] })) f = null; } } catch (e) { f = null; }
+    if (f) return navigator.share({ files: [f] }).catch(function () {});
+    var a = document.createElement('a'), u = blob ? URL.createObjectURL(blob) : url; a.href = u; a.download = name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove();
+    if (blob) setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+  }
+  function saveImg(id) { mediaSave((state.imgBlob || {})[id], 'groove_photo_' + String(id).slice(-6), state.imgs && state.imgs[id]); }
+  function saveVid(id) { mediaSave((state.vidBlob || {})[id], 'groove_video_' + String(id).slice(-6)); }
+  function photoView(id, src) {
+    showSheet('<img class="imgview" src="' + src + '" alt="사진"><button class="btn" type="button" id="pvSave" style="margin-top:10px">⬇️ 사진 저장</button>', true);
+    $('pvSave').addEventListener('click', function () { saveImg(id); });
+  }
   function chatMedia(m) {
     var ph = m.photos || [], vd = m.videos || []; if (!ph.length && !vd.length) return '';
-    return '<div class="cph">' + ph.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') +
-      vd.map(function (id) { var u = state.vidUrl && state.vidUrl[id]; return u ? '<video controls playsinline preload="metadata" src="' + u.url + '"></video>' : '<button type="button" class="btn cvid" data-cvid="' + esc(id) + '">🎬 영상 보기</button>'; }).join('') + '</div>';
+    return '<div class="cph">' + ph.map(function (id) { return '<span class="cphi"><img data-img="' + esc(id) + '" alt="사진"><button type="button" class="csave" data-csi="' + esc(id) + '" aria-label="사진 저장">⬇️</button></span>'; }).join('') +
+      vd.map(function (id) { var u = state.vidUrl && state.vidUrl[id]; return u ? '<span class="cphv"><video controls playsinline preload="metadata" src="' + u.url + '"></video><button type="button" class="link csavev" data-csv="' + esc(id) + '">⬇️ 영상 저장</button></span>' : '<button type="button" class="btn cvid" data-cvid="' + esc(id) + '">🎬 영상 보기</button>'; }).join('') + '</div>';
   }
   function chatPaint(r, toEnd, force) {
     var L = $('chatL'), same = !force && state.chat && JSON.stringify(state.chat.list) === JSON.stringify(r.list);
@@ -2910,7 +2933,9 @@ body.hasfab main { padding-bottom: 110px; }
     });
     L.innerHTML = h ? '<p class="chint">메시지를 두 번 누르면 ✅ 확인 · 담당 표시</p>' + h : '<p class="cempty">아직 대화가 없어요. 첫 메시지를 남겨 보세요.</p>';
     hydrateImgs(L);
-    L.querySelectorAll('.cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) showSheet('<img class="imgview" src="' + im.src + '" alt="사진">', true); }); });
+    L.querySelectorAll('.cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });
+    L.querySelectorAll('[data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
+    L.querySelectorAll('[data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
     L.querySelectorAll('[data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { chatPaint(state.chat, false, true); }); }); });
     L.querySelectorAll('[data-cmid] > p').forEach(function (p) {   // 두 번 누르면 확인(담당)
       p.addEventListener('click', function () {
