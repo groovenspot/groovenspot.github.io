@@ -1103,14 +1103,14 @@ body.hasfab main { padding-bottom: 110px; }
     if (!today || !first) return '';
     var days = []; for (var x = today; x >= first; x = addDays(x, -1)) days.push(x);
     if (days.indexOf(state.gday) < 0) state.gday = today;
-    var team = d.admin ? (TEAMS.indexOf(state.gteam) >= 0 ? state.gteam : (state.gteam = SALES[0])) : d.team;
+    var allT = !!(d.admin || d.gall), team = allT ? (TEAMS.indexOf(state.gteam) >= 0 ? state.gteam : (state.gteam = SALES.indexOf(d.team) >= 0 ? d.team : SALES[0])) : d.team;   // 대표·김동기·양진호·팀장은 모든 팀 (대표 결정 2026-11-18)
     var nk = function (x) { return String(x || '').replace(/\s+/g, '').toLowerCase(); }, ak = {};
-    var mem = (d.accounts || []).filter(function (a) { return a.status === '승인' && a.team === team; }).map(function (a) { ak[nk(a.name)] = 1; return { name: a.name, role: a.role }; });
+    var mem = (d.gmem ? d.gmem.map(function (a) { return { name: a.name, team: a.team, role: a.role, status: '승인' }; }) : (d.accounts || [])).filter(function (a) { return a.status === '승인' && a.team === team; }).map(function (a) { ak[nk(a.name)] = 1; return { name: a.name, role: a.role }; });
     (d.roster || []).forEach(function (r) { if (r.team === team && !ak[nk(r.name)]) mem.push({ name: r.name, ros: true }); });
     mem.sort(function (a, b) { return String(a.name).localeCompare(String(b.name), 'ko'); });   // 가나다 순 (대표 결정 2026-11-17)
     state.gteamCur = team;
     var h = '<details class="gin" open><summary>✏️ 게스트 입력 · ' + esc(team) + '</summary>';
-    if (d.admin) h += '<div class="bteams" role="group" aria-label="팀 고르기" style="margin:12px 0 0">' + [SALES[0], SALES[1], SALES[2], '운영팀', 'DJ팀'].map(function (t) {
+    if (allT) h += '<div class="bteams" role="group" aria-label="팀 고르기" style="margin:12px 0 0">' + [SALES[0], SALES[1], SALES[2], '운영팀', 'DJ팀'].map(function (t) {
       return '<button type="button" data-gt="' + esc(t) + '" aria-pressed="' + (t === team) + '">' + esc(t) + '</button>';
     }).join('') + '</div>';
     h += '<div class="gday"><select id="gDay" aria-label="영업일">' + days.map(function (x) {
@@ -1198,7 +1198,7 @@ body.hasfab main { padding-bottom: 110px; }
     var best = Math.max.apply(null, SALES.map(function (t) { return teamSum[t]; }));
     var me = w.rows.filter(function (r) { return r.mine; })[0];
     var top = w.rows.filter(function (r) { return r.rank <= 3; });
-    var canIn = !!(d.admin || (d.approver && d.team));
+    var canIn = !!(d.admin || d.gall || (d.approver && d.team));
     var h = (canIn ? ginHtml(d) : '') + '<div class="gh"><div><h1>' + (isNow ? '이번 주' : '지난주') + ' 게스트 순위</h1>' +
       (w.start ? '<span class="range">' + md(w.start) + '(월) ~ ' + md(w.end) + '(일) 영업일</span>' : '') + '</div>' +
       '<div class="wk" role="tablist" aria-label="주 선택"><button type="button" data-w="week" aria-selected="' + isNow + '">이번 주</button>' +
@@ -1214,8 +1214,8 @@ body.hasfab main { padding-bottom: 110px; }
     if (!w.rows.length) {
       h += '<p class="empty" style="margin-top:12px">' + (isNow ? '이번 주 아직 올라온 게스트가 없어요.' : '지난주 기록이 없어요.') + '</p>';
     } else {
-      if (d.admin && w.rows.length > top.length) {
-        h += '<details class="all"><summary>전체 순위 보기 (' + w.rows.length + '명, 대표만)</summary><div class="list">' +
+      if ((d.admin || d.guestAll) && w.rows.length > top.length) {   // 승인하는 사람(대표·김동기·양진호·팀장)은 모든 직원 (대표 결정 2026-11-18)
+        h += '<details class="all" open><summary>전체 순위 (' + w.rows.length + '명 · 승인하는 사람만 보여요)</summary><div class="list">' +
           w.rows.map(function (r) { return rankCard(r, ti); }).join('') + '</div></details>';
       }
     }
@@ -2815,9 +2815,13 @@ body.hasfab main { padding-bottom: 110px; }
     });
   }
   // ── 💬 탭 대화 (2026-11-18): 테이블·연출 탭에서 오른쪽 아래 버튼 → 그 탭 대화방. 안 읽은 수는 탭 목록 응답의 꼬리(chat)로.
-  var CHAT_NAME = { table: '🪑 테이블 대화', yc: '🎆 연출 대화' };
+  var CHAT_NAME = { table: '🪑 테이블 대화', yc: '🎆 연출 대화', guest: '👥 게스트 대화' };
   // 카톡처럼 쓰면 알아듣는 말 (카톡 테이블방·불꽃놀이방 대화를 보고 만든 규칙, 2026-11-18)
   var CHAT_HELP = {
+    guest: '<p><b>카톡에 올리던 게스트 집계 그대로</b> 쓰면 게스트 현황에 바로 들어가요.</p>' +
+      '<pre>11/17\n고트\n건호3\n수연4\n요셉5\n\n아룬\n성원1\n\n클로버\n지현1\n은호1</pre>' +
+      '<p>첫 줄 날짜(없으면 오늘 영업일, 이번 주·지난주만) · 팀 줄 · 이름숫자. 이름은 줄여 써도 그 팀에서 한 명이면 알아봐요(<code>건호</code> → 김건호).</p>' +
+      '<p>넣을 수 있는 사람: 대표·김동기·양진호·팀장 (모든 팀). 같은 날 같은 사람을 다시 쓰면 고쳐져요. 못 찾은 이름은 ⚠️ 로 알려 줘요(팀원 명단에 넣어 주세요).</p>',
     table: '<p><b>카톡에 쓰던 그대로</b> 쓰면 자리표에 들어가요. 직원은 승인 요청, 팀장·대표·승인 권한 받은 사람은 바로 반영돼요.</p>' +
       '<p>넣기 <code>3l6 태훈 남2 섭레</code> <code>3ㅅ1 태라여3 넣을게요</code> <code>3-3 백원만 담당 성민 예약</code></p>' +
       '<p>표시 <code>3-4 입장완</code> <code>3l8 판매전환</code> <code>3-4 개모임킵</code></p>' +
@@ -2834,7 +2838,7 @@ body.hasfab main { padding-bottom: 110px; }
       '<p>한 줄로 쓸 때는 <code>문구</code> 뒤가 전광판 문구예요: <code>3디2 홀로 망치 문구 오늘달려요 바로</code></p>' +
       '<p>📷 로 사진(3장)·영상(2개)을 같이 보내면 그 연출에 붙어요. 사진만 보내면 내가 올린 연출(ㄱㄱ 전·진행 중)에 붙어요. 같은 자리에 내가 올린 요청이 아직 ㄱㄱ 전이면 다시 쓰면 고쳐져요.</p>'
   };
-  function chatRoom() { return state.tab === 'table' || state.tab === 'yc' ? state.tab : ''; }
+  function chatRoom() { return state.tab === 'table' || state.tab === 'yc' || state.tab === 'guest' ? state.tab : ''; }
   function chatSeen(room, at) { var o = {}; try { o = JSON.parse(localStorage.getItem('gs_chat_seen') || '{}'); } catch (e) {} if (at === undefined) return o[room] || ''; if (at > (o[room] || '')) { o[room] = at; try { localStorage.setItem('gs_chat_seen', JSON.stringify(o)); } catch (e) {} } }
   function chatTail(room) { var src = room === 'table' ? state.tb : room === 'yc' ? state.yc : null; return (state.chatTail && state.chatTail[room]) || (src && src.chat) || []; }
   function chatText(m) {   // @이름 은 굵게
@@ -2862,6 +2866,10 @@ body.hasfab main { padding-bottom: 110px; }
     document.body.classList.toggle('hasfab', !!room && !!state.s);
     if (!room) { if (!box.hidden) chatClose(); return; }
     if (!box.hidden && state.chatRoom !== room) chatOpen(room);
+    if (room === 'guest' && Date.now() - (state.guestTailAt || 0) > 30000) {   // 게스트 탭은 따로 받아서 안 읽은 수
+      state.guestTailAt = Date.now();
+      call({ a: 'chat_get', token: state.s.token, room: 'guest' }).then(function (r) { if (r.ok) { state.chatTail = state.chatTail || {}; state.chatTail.guest = r.list.slice(-30).map(function (m) { return [m.at, m.mine ? 1 : 0]; }); paintChatFab(); } }).catch(function () {});
+    }
     var seen = chatSeen(room), n = chatTail(room).filter(function (t) { return !t[1] && t[0] > seen; }).length;
     $('chatN').hidden = !n; $('chatN').textContent = n > 99 ? '99+' : n;
   }
@@ -2872,7 +2880,7 @@ body.hasfab main { padding-bottom: 110px; }
   function chatOpen(room) {
     state.chatRoom = room; state.chat = null;
     $('chatT').textContent = CHAT_NAME[room]; $('chatL').innerHTML = '<p class="cempty">불러오는 중…</p>';
-    $('chatIn').placeholder = room === 'table' ? '메시지 · 카톡처럼 쓰면 자리 신청' : '메시지 · 카톡처럼 쓰면 연출 요청';
+    $('chatIn').placeholder = room === 'table' ? '메시지 · 카톡처럼 쓰면 자리 신청' : room === 'guest' ? '메시지 · 카톡처럼 쓰면 게스트 반영' : '메시지 · 카톡처럼 쓰면 연출 요청';
     $('chatHelp').innerHTML = CHAT_HELP[room] || ''; $('chatHelp').hidden = true; $('chatQ').setAttribute('aria-expanded', 'false');
     if (state.chatMediaReset) state.chatMediaReset();
     $('chatBox').hidden = false; $('chatFab').hidden = true;
@@ -2962,7 +2970,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (md.vids.length) body.videos = md.vids.map(function (v) { return v.vid; });
       call(body).then(function (r) {
         btn.disabled = false;
-        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; md = { photos: [], vids: [] }; paintMd(); chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.req && room === 'table') { loadTb(true); flushPush(); } if (c && c.req && room === 'yc') loadYc(true); if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
+        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; md = { photos: [], vids: [] }; paintMd(); chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.req && room === 'table') { loadTb(true); flushPush(); } if (c && c.req && room === 'yc') loadYc(true); if (c && /^👥/.test(c.req || '') && room === 'guest') refresh(true); if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
         else if (r.error === 'auth') toLogin(AUTH_OUT);
         else alertBox(r.error === 'busy' ? '너무 빨리 보내고 있어요. 잠시 후에 보내 주세요.' : r.error === 'photo' ? '사진은 jpg·png 3장까지예요.' : r.error === 'video' ? '영상을 다시 올려 주세요.' : '못 보냈어요. 다시 해 주세요.');
       }).catch(function () { btn.disabled = false; alertBox('연결이 안 돼요.'); });
@@ -3253,7 +3261,7 @@ body.hasfab main { padding-bottom: 110px; }
       }).join('') + '</div>';
     });
     h += boss
-      ? '<p class="how">가입할 때 고른 팀이 미리 골라져 있어요. 승인할 때 팀과 권한을 확인해 주세요. <b>직원</b>은 게스트 현황·신규 교육·팀 게시판, <b>부팀장</b>은 직원 권한에 회의록·결정사항 보기가 더해지고, <b>팀장</b>은 회의록·결정사항까지 보고 자기 팀 가입 승인·퇴사자 탈퇴·게스트 입력·팀 게시판 관리도 할 수 있어요. 손님 문의 메시지는 영업팀 팀장에게만 가요. 중지·탈퇴하면 그 사람은 바로 로그아웃돼요. 비밀번호를 잊은 직원은 탈퇴 후 다시 가입 신청하면 돼요.</p>'
+      ? '<p class="how">가입할 때 고른 팀이 미리 골라져 있어요. 승인할 때 팀과 권한을 확인해 주세요. <b>직원</b>은 게스트 현황·신규 교육·팀 게시판, <b>부팀장</b>은 직원 권한에 회의록·결정사항 보기가 더해지고, <b>팀장</b>은 회의록·결정사항까지 보고 자기 팀 가입 승인·퇴사자 탈퇴·팀 게시판 관리, 모든 팀 게스트 입력도 할 수 있어요. 손님 문의 메시지는 영업팀 팀장에게만 가요. 중지·탈퇴하면 그 사람은 바로 로그아웃돼요. 비밀번호를 잊은 직원은 탈퇴 후 다시 가입 신청하면 돼요.</p>'
       : '<p class="how">' + esc(d.team) + ' 팀으로 가입 신청한 사람만 보여요. 승인하면 직원 권한으로 들어와요. 퇴사한 직원은 <b>퇴사 · 탈퇴</b>를 두 번 누르면 계정이 지워지고 바로 로그아웃돼요. 팀장 지정·중지·전화번호는 대표님만 볼 수 있어요.</p>';
     area.innerHTML = h;
 
