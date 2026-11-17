@@ -155,7 +155,7 @@
     if (soon !== null && soon <= 3) h += '<p class="kp-warn">⏰ ' + (soon < 0 ? '보관 기간이 지난 술이 있어요. 담당 직원에게 연락해 주세요.' : soon === 0 ? '오늘 보관 기간이 끝나는 술이 있어요.' : '보관 기간이 ' + soon + '일 남은 술이 있어요.') + '</p>';
     if (!r.items.length) h += '<p class="kp-empty">지금 맡겨 두신 술이 없어요.</p>';
     else h += '<div class="kp-items">' + r.items.map(function (i) {
-      var x = days(i.exp), dd = x === null ? '' : '<span class="kp-dd' + (x < 0 ? ' late' : x <= 7 ? ' soon' : '') + '">' + (x < 0 ? '기간 지남' : x === 0 ? '오늘까지' : 'D-' + x) + '</span>';
+      var x = days(i.exp), dd = x === null || x > 7 ? '' : '<span class="kp-dd' + (x < 0 ? ' late' : x <= 7 ? ' soon' : '') + '">' + (x < 0 ? '기간 지남' : x === 0 ? '오늘까지' : 'D-' + x) + '</span>';
       var sm = [i.memo, i.exp ? '보관 ' + ymd(i.exp) + '까지' : ''].filter(String).join(' · ');
       return '<div class="kp-row"><div class="nm">' + esc(i.liq) + dd + (sm ? '<small>' + esc(sm) + '</small>' : '') + '</div>' +
         (i.kind === '병' ? '<div class="q">' + i.n + '<small>병</small></div>' : '<div class="q op">' + esc(i.amt) + ' 남음</div>') + '</div>';
