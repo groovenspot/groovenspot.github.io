@@ -174,7 +174,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
       <form id="joinForm" autocomplete="on" novalidate hidden>
         <h1>가입 신청</h1>
         <p class="sub">이름·전화번호·비밀번호를 넣으면 대표님이 확인하고 승인해요. 로그인은 이름 + 비밀번호로 하고, 전화번호는 비상 연락망으로 대표님만 봐요.</p>
-        <label>이름<input id="jname" name="name" autocomplete="name" placeholder="예) 진호" maxlength="12" required></label>
+        <label>이름<input id="jname" name="name" autocomplete="name" placeholder="예) 홍길동" maxlength="12" required></label>
         <label>전화번호 (비상 연락망)<input id="jphone" name="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" maxlength="13" required></label>
         <label>비밀번호 (6자 이상)<span class="pw"><input id="jpw" name="new-password" type="password" autocomplete="new-password" minlength="6" maxlength="40" required><button type="button" data-eye="jpw">보기</button></span></label>
         <button class="btn btn-hot" id="joinBtn" type="submit">가입 신청</button>
