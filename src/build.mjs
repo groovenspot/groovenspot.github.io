@@ -626,7 +626,7 @@ ${smPages.flatMap((p) => LANGS.map((l) => `  <url><loc>${SITE}${href(l, p)}</loc
   <url><loc>${SITE}/partners/</loc><lastmod>${today}</lastmod></url>
 </urlset>
 `);
-write('robots.txt', `User-agent: *\nDisallow: /admin/\nSitemap: ${SITE}/sitemap.xml\n`);
+write('robots.txt', `User-agent: *\nDisallow: /admin/\nDisallow: /staff/\nSitemap: ${SITE}/sitemap.xml\n`);
 
 console.log(`built ${LANGS.length * PAGES.length + 1} pages`);
 
