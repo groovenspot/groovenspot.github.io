@@ -3216,9 +3216,11 @@ body.hasfab main { padding-bottom: 110px; }
     for (i = 0; i < 9; i++) S['B' + (i + 1)] = [756 + (i % 3) * 60, 150 + Math.floor(i / 3) * 80, 56, 70];   // 메인바 3×3
     // GROOVE H: 4줄 × 8칸
     [[25, 26, 27, 28, 29, 30, 31, 32], [24, 23, 22, 21, 20, 19, 18, 17], [9, 10, 11, 12, 13, 14, 15, 16], [8, 7, 6, 5, 4, 3, 2, 1]].forEach(function (r, y) { r.forEach(function (n, x) { G['H' + n] = [10 + x * 50, 110 + y * 81, 46, 75]; }); });
-    // GROOVE L: 도면 3칸씩 세 묶음 (위 L4~6·L10~12, 아래 L1~3·L7~9·L13~15)
-    [[4, 5, 6], [10, 11, 12], null].forEach(function (g, k) { if (g) g.forEach(function (n, x) { G['L' + n] = [778 + k * 156 + x * 50, 176, 46, 60]; }); });
-    [[1, 2, 3], [7, 8, 9], [13, 14, 15]].forEach(function (g, k) { g.forEach(function (n, x) { G['L' + n] = [778 + k * 156 + x * 50, 242, 46, 60]; }); });
+    // GROOVE L (운영팀 김경철 2026-11-18): 네 묶음 — 위 L1·2·3 / L6·7 / L10·11 / L14·15, 아래 L4·5 / L8·9 / L12·13 (각각 위 묶음 밑)
+    [[[1, 2, 3]], [[6, 7], [4, 5]], [[10, 11], [8, 9]], [[14, 15], [12, 13]]].reduce(function (x0, g) {
+      g.forEach(function (row, y) { row.forEach(function (n, x) { G['L' + n] = [x0 + x * 48, 176 + y * 66, 44, 60]; }); });
+      return x0 + g[0].length * 48 + 12;
+    }, 772);
     for (i = 0; i < 6; i++) G['B' + (6 - i)] = [690 + i * 62, 330, 56, 64];   // 메인바 앞: 왼쪽부터 B6 → B1 (대표 확인 2026-11-18)
   })();
   function tbView() { if (!state.tbView) { try { state.tbView = localStorage.getItem('gs_tb_view'); } catch (e) {} } return state.tbView === 'list' ? 'list' : 'map'; }
