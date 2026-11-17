@@ -2589,7 +2589,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (state.tab === 'lost' && !same && $('sheet').hidden) renderSoon();
     }).catch(function () { state.lfFly = 0; state.lfErr = '연결이 안 돼요.'; if (state.tab === 'lost' && !quiet) renderSoon(); });
   }
-  function lfErr(r) { return { photo: '사진을 한 장 이상 넣어 주세요. (jpg·png, 3장까지)', date: '날짜는 오늘부터 10일 전까지만 돼요.', text: '<, > 는 쓸 수 없어요.', busy: '잠시 후 다시 해 주세요.', notfound: '이미 지워졌어요.' }[r.error] || '저장이 안 됐어요. 다시 해 주세요.'; }
+  function lfErr(r) { return { photo: '사진을 한 장 이상 넣어 주세요. (jpg·png, 3장까지)', date: '날짜는 오늘부터 10일 전까지만 돼요.', text: '<, > 는 쓸 수 없어요.', busy: '잠시 후 다시 해 주세요.', notfound: '이미 지워졌어요.', forbidden: '분실물 올리기·지우기는 운영팀만 할 수 있어요.' }[r.error] || '저장이 안 됐어요. 다시 해 주세요.'; }
   function renderLost(area) {
     if (!state.lf) { area.innerHTML = state.lfErr ? '<p class="empty">' + esc(state.lfErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.lfFly) loadLost(); return; }
     var L = state.lf, groups = {}, days = [];
@@ -2597,22 +2597,23 @@ body.hasfab main { padding-bottom: 110px; }
     var h = '<div class="tbh"><div><h1>🔎 분실물</h1><p class="sub">보관 ' + L.list.length + '개 · 홈페이지에 날짜별로 올라가요</p></div>' +
       '<a class="btn" href="/lost/" target="_blank" rel="noopener" style="width:auto;flex:none;padding:0 14px">홈페이지 보기</a></div>';
     h += '<p class="msg ok" id="lfBox"' + (state.lfMsg ? '' : ' hidden') + '>' + esc(state.lfMsg || '') + '</p>'; state.lfMsg = '';
-    h += '<button class="btn btn-hot lfadd" type="button" id="lfNew">📷 분실물 사진 올리기</button>';
-    h += '<p class="note" style="margin:8px 0 14px">10일이 지난 분실물은 자동으로 삭제돼요. 신분증·카드 번호는 가리고 찍어 주세요. 메모는 직원만 봐요.</p>';
+    var ed = !!L.canEdit;   // 올리기·지우기는 운영팀·대표만
+    if (ed) h += '<button class="btn btn-hot lfadd" type="button" id="lfNew">📷 분실물 사진 올리기</button>';
+    h += '<p class="note" style="margin:8px 0 14px">' + (ed ? '' : '분실물 올리기·찾아감 처리는 운영팀이 해요. 손님이 찾으면 운영팀에 알려 주세요. ') + '10일이 지난 분실물은 자동으로 삭제돼요. 신분증·카드 번호는 가리고 찍어 주세요. 메모는 직원만 봐요.</p>';
     if (!days.length) h += '<p class="empty">보관 중인 분실물이 없어요.</p>';
     days.forEach(function (d) {
       h += '<h2 class="sec tbz">' + esc(tbDayLabel(d)) + ' <span class="row">' + groups[d].length + '개</span></h2><div class="lfq">';
       groups[d].forEach(function (x) {
         h += '<div class="lfi" data-lfid="' + esc(x.id) + '"><div class="lfp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="분실물">'; }).join('') + '</div>' +
           '<div class="lfm">' + (x.memo ? '<b>' + esc(x.memo) + '</b>' : '') + '<span>' + esc(x.by) + ' · ' + esc(String(x.at).slice(5, 16).replace('-', '/')) + '</span></div>' +
-          '<div class="lfb"><button class="btn btn-ok" type="button" data-lfgo="1">✅ 찾아감 · 삭제</button><button class="link" type="button" data-lfx="1">잘못 올림 · 지우기</button></div></div>';
+          (ed ? '<div class="lfb"><button class="btn btn-ok" type="button" data-lfgo="1">✅ 찾아감 · 삭제</button><button class="link" type="button" data-lfx="1">잘못 올림 · 지우기</button></div>' : '') + '</div>';
       });
       h += '</div>';
     });
     if (state.lfErr) h += '<p class="msg">' + esc(state.lfErr) + '</p>';
     area.innerHTML = h;
     hydrateImgs(area);
-    $('lfNew').addEventListener('click', lfForm);
+    if (ed) $('lfNew').addEventListener('click', lfForm);
     area.querySelectorAll('[data-lfid]').forEach(function (card) {
       var id = card.dataset.lfid;
       card.querySelectorAll('[data-lfgo],[data-lfx]').forEach(function (b) { b.addEventListener('click', function () {
