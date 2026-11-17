@@ -2427,6 +2427,68 @@ body.hasfab main { padding-bottom: 110px; }
   function ycIsVideo(f) { return /^video\//.test(f.type || '') || /\.(mov|mp4|m4v|webm|3gp)$/i.test(f.name || ''); }
   function ycVidType(f) { if (/^video\/(mp4|quicktime|webm|x-m4v|3gpp)$/.test(f.type || '')) return f.type; var e = (String(f.name || '').match(/\.(\w+)$/) || [0, ''])[1].toLowerCase(); return { mov: 'video/quicktime', mp4: 'video/mp4', m4v: 'video/x-m4v', webm: 'video/webm', '3gp': 'video/3gpp' }[e] || 'video/mp4'; }
   function ycB64(blob) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(String(r.result).split(',')[1] || ''); }; r.onerror = rej; r.readAsDataURL(blob); }); }
+  // ── 큰 영상은 폰에서 줄여서 올림 (대표 요청 2026-11-18) ──
+  // 20MB 넘으면 긴 변 1280px·초당 최대 2.5Mb(60MB 안에 들게)로 다시 녹화한다. 영상 길이만큼 걸리고 이 화면이 켜져 있어야 한다.
+  // 못 줄이는 폰(예전 브라우저)은 60MB까지 원본 그대로. 원본은 2GB·5분까지.
+  var VID_SHRINK_AT = 20 * 1048576, VID_UP_MAX = 60 * 1048576, VID_IN_MAX = 2048 * 1048576, VID_MAX_SEC = 300;
+  function vidShrinkOk() { try { return typeof MediaRecorder !== 'undefined' && !!HTMLCanvasElement.prototype.captureStream; } catch (e) { return false; } }
+  function vidMime() {
+    var c = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+    for (var i = 0; i < c.length; i++) { try { if (MediaRecorder.isTypeSupported(c[i])) return c[i]; } catch (e) {} }
+    return '';
+  }
+  function vidShrink(file, prog) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), v = document.createElement('video'), ac = null, done = false, timer = null;
+      v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto'; v.src = url;
+      function cleanup() { done = true; clearTimeout(timer); try { v.pause(); } catch (e) {} try { v.removeAttribute('src'); v.load(); } catch (e) {} URL.revokeObjectURL(url); if (ac) try { ac.close(); } catch (e) {} }
+      function fail(e) { if (done) return; cleanup(); rej(e instanceof Error ? e : new Error(String(e))); }
+      v.onerror = function () { fail(new Error('read')); };
+      v.onloadedmetadata = function () {
+        var dur = v.duration;
+        if (!isFinite(dur) || dur <= 0) return fail(new Error('dur'));
+        if (dur > VID_MAX_SEC) return fail(new Error('long'));
+        var w = v.videoWidth || 1280, h = v.videoHeight || 720, k = Math.min(1, 1280 / Math.max(w, h)), cw = Math.max(2, Math.round(w * k / 2) * 2), ch = Math.max(2, Math.round(h * k / 2) * 2);
+        var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch; var g = cv.getContext('2d'), stream = cv.captureStream(30);
+        try { var AC = window.AudioContext || window.webkitAudioContext, src, dst; ac = new AC(); src = ac.createMediaElementSource(v); dst = ac.createMediaStreamDestination(); src.connect(dst); dst.stream.getAudioTracks().forEach(function (t) { stream.addTrack(t); }); }
+        catch (e) { v.muted = true; }   // 소리를 못 잡으면 소리 없이
+        var bps = Math.max(700000, Math.min(2500000, Math.floor((VID_UP_MAX * 0.9 * 8) / dur - 96000))), mime = vidMime(), rec, chunks = [];
+        try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: bps, audioBitsPerSecond: 96000 } : { videoBitsPerSecond: bps }); } catch (e) { return fail(e); }
+        rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        rec.onstop = function () { if (done) return; var type = String(rec.mimeType || mime || 'video/webm').split(';')[0], blob = new Blob(chunks, { type: type }); cleanup(); res(blob); };
+        function frame() { if (done || v.ended) return; try { g.drawImage(v, 0, 0, cw, ch); } catch (e) {} prog(Math.min(0.99, v.currentTime / dur)); if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(frame); else setTimeout(frame, 33); }
+        v.onended = function () { try { g.drawImage(v, 0, 0, cw, ch); } catch (e) {} setTimeout(function () { try { if (rec.state !== 'inactive') rec.stop(); } catch (e) { fail(e); } }, 150); };
+        timer = setTimeout(function () { try { if (rec.state !== 'inactive') rec.stop(); } catch (e) { fail(e); } }, (dur * 1.6 + 20) * 1000);   // 멈춰 버린 경우
+        try { if (ac && ac.resume) ac.resume(); } catch (e) {}
+        rec.start(1000);
+        var pl = v.play(); if (pl && pl.catch) pl.catch(function () { v.muted = true; v.play().catch(fail); });
+        frame();
+      };
+    });
+  }
+  // 영상 하나 준비: 작으면 바로 올리고, 크면 줄인 뒤 올린다 (v.squeeze = 줄이는 진행률)
+  function vidPrep(v, paint) {
+    var at = window.__vidShrinkAt || VID_SHRINK_AT;
+    if (v.size <= at) return ycUpload(v, paint);
+    if (!vidShrinkOk()) { if (v.size <= VID_UP_MAX) return ycUpload(v, paint); v.err = 'big'; return paint(); }
+    v.squeeze = 0.001; paint();
+    vidShrink(v.file, function (p) { if (!v.gone) { v.squeeze = Math.max(0.001, p); paint(); } }).then(function (blob) {
+      if (v.gone) return;
+      v.squeeze = 0;
+      if (blob.size > 1000 && blob.size < v.size && blob.size <= VID_UP_MAX) { v.orig = v.size; v.file = blob; v.size = blob.size; }
+      else if (v.size > VID_UP_MAX) { v.err = 'big'; return paint(); }
+      paint(); ycUpload(v, paint);
+    }).catch(function (e) {
+      if (v.gone) return;
+      v.squeeze = 0;
+      if (/long/.test(e && e.message)) { v.err = 'long'; return paint(); }
+      if (v.size <= VID_UP_MAX) return ycUpload(v, paint);
+      v.err = 'big'; paint();
+    });
+  }
+  function vidBadge(v) { return v.err ? (v.err === 'long' ? '5분 넘음' : v.err === 'big' ? '못 줄임' : '실패') : v.squeeze ? '줄이는 중 ' + Math.floor(v.squeeze * 100) + '%' : v.done ? '✅' : Math.floor(v.prog * 100) + '%'; }
+  function vidTooBig(f) { return f.size > (vidShrinkOk() ? VID_IN_MAX : VID_UP_MAX); }
+  function vidSizeMsg(f) { return vidShrinkOk() ? '영상은 5분까지 올릴 수 있어요.' : '이 폰에서는 영상을 60MB까지 올릴 수 있어요. (' + (f.size / 1048576).toFixed(0) + 'MB)'; }
   function ycUpload(v, paint) {
     var CH = 2025000, n = Math.ceil(v.size / CH), type = ycVidType(v.file), i = 0, tries = 0;
     function next() {
@@ -2579,7 +2641,7 @@ body.hasfab main { padding-bottom: 110px; }
     function paintPh() {
       var box = $('ycPh'); if (!box) return;
       box.innerHTML = photos.map(function (p, i) { return '<span class="ph"><img src="' + p.url + '" alt=""><button type="button" data-ycrm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
-        vids.map(function (v, i) { return '<span class="ph vph' + (v.err ? ' bad' : '') + '"><span class="vbox">🎬<small>' + (v.size / 1048576).toFixed(1) + 'MB</small><b>' + (v.err ? '실패' : v.done ? '✅' : Math.floor(v.prog * 100) + '%') + '</b></span><button type="button" data-ycrv="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('') +
+        vids.map(function (v, i) { return '<span class="ph vph' + (v.err ? ' bad' : '') + '"><span class="vbox">🎬<small>' + (v.size / 1048576).toFixed(1) + 'MB</small><b>' + vidBadge(v) + '</b></span><button type="button" data-ycrv="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('') +
         (photos.length < 3 || vids.length < 2 ? '<label class="addph addbig">📷 사진 · 🎬 영상 올리기<input type="file" id="ycFile" accept="image/*,video/*" multiple hidden></label>' : '');
       box.querySelectorAll('[data-ycrm]').forEach(function (b) { b.addEventListener('click', function () { photos.splice(+b.dataset.ycrm, 1); paintPh(); }); });
       box.querySelectorAll('[data-ycrv]').forEach(function (b) { b.addEventListener('click', function () { var v = vids.splice(+b.dataset.ycrv, 1)[0]; if (v) v.gone = true; paintPh(); }); });
@@ -2588,8 +2650,9 @@ body.hasfab main { padding-bottom: 110px; }
         var ims = all.filter(function (f) { return !ycIsVideo(f); }).slice(0, 3 - photos.length);
         all.filter(ycIsVideo).forEach(function (f) {
           if (vids.length >= 2) { m.textContent = '영상은 2개까지예요.'; return; }
-          if (f.size > 60 * 1048576) { m.textContent = '영상은 60MB까지예요. (' + (f.size / 1048576).toFixed(0) + 'MB)'; return; }
-          var v = { file: f, size: f.size, prog: 0, vid: '', done: false, err: '' }; vids.push(v); ycUpload(v, paintPh);
+          if (vidTooBig(f)) { m.textContent = vidSizeMsg(f); return; }
+          var v = { file: f, size: f.size, prog: 0, vid: '', done: false, err: '' }; vids.push(v); vidPrep(v, paintPh);
+          if (v.squeeze) m.textContent = '큰 영상은 줄여서 올려요. 영상 길이만큼 걸리니 이 화면을 켜 두세요.';
         });
         paintPh();
         if (ims.length) Promise.all(ims.map(shrink)).then(function (xs) { photos = photos.concat(xs).slice(0, 3); paintPh(); }).catch(function () { m.textContent = '사진을 못 읽었어요.'; });
@@ -2866,7 +2929,7 @@ body.hasfab main { padding-bottom: 110px; }
     function paintMd() {
       var box = $('chatPh'); box.hidden = !md.photos.length && !md.vids.length;
       box.innerHTML = md.photos.map(function (p, i) { return '<span class="ph"><img src="' + p.url + '" alt=""><button type="button" data-cprm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
-        md.vids.map(function (v, i) { return '<span class="ph' + (v.err ? ' bad' : '') + '">🎬<b>' + (v.err ? '실패' : v.done ? '✅' : Math.floor(v.prog * 100) + '%') + '</b><button type="button" data-cvrm="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('');
+        md.vids.map(function (v, i) { return '<span class="ph' + (v.err ? ' bad' : '') + '">🎬<b>' + vidBadge(v) + '</b><button type="button" data-cvrm="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('');
       box.querySelectorAll('[data-cprm]').forEach(function (b) { b.addEventListener('click', function () { md.photos.splice(+b.dataset.cprm, 1); paintMd(); }); });
       box.querySelectorAll('[data-cvrm]').forEach(function (b) { b.addEventListener('click', function () { var v = md.vids.splice(+b.dataset.cvrm, 1)[0]; if (v) v.gone = true; paintMd(); }); });
     }
@@ -2877,8 +2940,9 @@ body.hasfab main { padding-bottom: 110px; }
       ims = ims.slice(0, Math.max(0, 3 - md.photos.length));
       all.filter(ycIsVideo).forEach(function (f) {
         if (md.vids.length >= 2) return alertBox('영상은 2개까지예요.');
-        if (f.size > 60 * 1048576) return alertBox('영상은 60MB까지예요. (' + (f.size / 1048576).toFixed(0) + 'MB)');
-        var v = { file: f, size: f.size, prog: 0, vid: '', done: false, err: '' }; md.vids.push(v); ycUpload(v, paintMd);
+        if (vidTooBig(f)) return alertBox(vidSizeMsg(f));
+        var v = { file: f, size: f.size, prog: 0, vid: '', done: false, err: '' }; md.vids.push(v); vidPrep(v, paintMd);
+        if (v.squeeze) alertBox('큰 영상은 줄여서 올려요. 영상 길이만큼 걸리니 이 화면을 켜 두세요.', true);
       });
       paintMd();
       if (ims.length) Promise.all(ims.map(shrink)).then(function (xs) { if (room !== md) return; md.photos = md.photos.concat(xs).slice(0, 3); paintMd(); }).catch(function () { alertBox('사진을 못 읽었어요.'); });
