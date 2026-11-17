@@ -346,6 +346,28 @@ details.all .list { margin-top: 8px; }
 .meform:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
 .meform .btn { margin-top: 0 !important; }
 .bell { background: none; border: 0; font-size: 18px; line-height: 1; padding: 6px; cursor: pointer; }
+/* 💬 탭 대화 (테이블·연출) */
+body.hasfab main { padding-bottom: 110px; }
+.chatfab { position: fixed; right: 16px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 15; width: 58px; height: 58px; border-radius: 50%; border: 0; background: var(--g); color: #120800; font-size: 26px; box-shadow: 0 6px 20px rgba(0,0,0,.5); cursor: pointer; }
+.chatfab .n { position: absolute; top: -4px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #ff3b5c; color: #fff; font-size: 12px; font-weight: 900; line-height: 22px; }
+.chatbox { position: fixed; z-index: 16; right: 16px; bottom: calc(86px + env(safe-area-inset-bottom)); width: min(400px, calc(100vw - 32px)); height: min(600px, calc(100vh - 140px)); display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line-2); border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.6); overflow: hidden; }
+@media (max-width: 600px) { .chatbox { left: 0; right: 0; bottom: 0; width: auto; height: 78vh; border-radius: 18px 18px 0 0; } }
+.chath { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.chath b { font-size: 16px; }
+.chath .link { font-size: 18px; padding: 4px 8px; }
+.chatl { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; -webkit-overflow-scrolling: touch; }
+.chatl .cday { align-self: center; font-size: 11px; color: var(--muted); margin: 6px 0; }
+.chatl .cm { max-width: 82%; align-self: flex-start; }
+.chatl .cm.me { align-self: flex-end; text-align: right; }
+.chatl .cm i { display: block; font-style: normal; font-size: 11px; color: var(--muted); margin: 0 4px 2px; }
+.chatl .cm p { display: inline-block; margin: 0; padding: 8px 11px; border-radius: 14px; background: #2a2a30; font-size: 15px; line-height: 1.4; white-space: pre-wrap; word-break: break-word; text-align: left; }
+.chatl .cm.me p { background: var(--g); color: #120800; }
+.chatl .cm small { font-size: 10px; color: var(--muted); margin: 0 4px; }
+.chatl .cm button { border: 0; background: none; color: var(--muted); font-size: 11px; cursor: pointer; padding: 0 2px; }
+.chatl .cempty { margin: auto; color: var(--muted); font-size: 13px; }
+.chatf { display: flex; gap: 8px; align-items: flex-end; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
+.chatf textarea { flex: 1; min-height: 42px; max-height: 120px; padding: 10px 12px; font-size: 16px; resize: none; }
+.chatf .btn { width: auto; min-height: 42px; padding: 0 16px; }
 .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.72); display: grid; place-items: end center; padding: 16px; }
 .sheet-in { width: 100%; max-width: 520px; background: var(--card); border: 1px solid var(--line-2); border-radius: 18px; padding: 20px; margin-bottom: env(safe-area-inset-bottom); max-height: 90vh; overflow: auto; }
 .sheet-in.plain { background: #000; padding: 8px; text-align: center; }
@@ -609,6 +631,12 @@ details.all .list { margin-top: 8px; }
   <p class="load" id="loading" hidden>불러오는 중…</p>
 </main>
 <div class="sheet" id="sheet" hidden></div>
+<button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
+<section class="chatbox" id="chatBox" hidden aria-label="대화">
+  <div class="chath"><b id="chatT">대화</b><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></div>
+  <div class="chatl" id="chatL"></div>
+  <form class="chatf" id="chatF"><textarea id="chatIn" rows="1" maxlength="500" placeholder="메시지" autocomplete="off"></textarea><button class="btn btn-hot" type="submit">보내기</button></form>
+</section>
 
 <script>
 (function () {
@@ -721,6 +749,7 @@ details.all .list { margin-top: 8px; }
     state.s = null; state.data = null; state.tab = 'guest'; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
     state.tb = null; state.tbDay = ''; state.tbMsg = ''; state.tbErr = ''; state.tbFly = 0;
     state.yc = null; state.ycMsg = ''; state.ycErr = ''; state.ycFly = 0;
+    try { chatClose(); state.chatTail = {}; $('chatFab').hidden = true; } catch (e) {}
     state.keep = null; state.kview = 'list'; state.kcur = null; state.kq = ''; state.kf = ''; state.kadd = null; state.kundo = null; state.kstale = false; state.kfly = 0; state.kmulti = false; state.kopt = {}; state.ktmp = {};
     try { localStorage.removeItem(KKEY); } catch (e) {}
     state.bview = 'list'; state.btag = ''; state.bpost = null; state.comp = null; state.cdraft = {}; state.dm = null; state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.dmDraft = {}; state.dmPick = false;
@@ -919,6 +948,7 @@ details.all .list { margin-top: 8px; }
   function renderTabsOnly() { if (state.data) paintTabs(state.data); }
   function render() {
     var d = state.data; if (!d) return;
+    try { paintChatFab(); } catch (e) {}
     var L = paintTabs(d), edu = L.edu, notes = L.notes;
     var area = $('listArea');
     if (state.tab === 'dec') return renderDec(area, d);
@@ -2191,6 +2221,7 @@ details.all .list { margin-top: 8px; }
   function tbPut(r) {
     var same = state.tb && JSON.stringify(state.tb.rows) === JSON.stringify(r.rows) && state.tb.day === r.day && state.tb.pending === r.pending;
     state.tb = r; state.tbErr = ''; state.tbAt = Date.now();
+    if (state.chatTail) delete state.chatTail.table; try { paintChatFab(); } catch (e) {}
     if (state.data && r.approver) { state.data.tablePending = r.pending; renderTabsOnly(); }
     if (state.tab === 'table' && !same && $('sheet').hidden) renderSoon();
   }
@@ -2271,6 +2302,7 @@ details.all .list { margin-top: 8px; }
   function ycPut(r) {
     var same = state.yc && JSON.stringify(state.yc.list) === JSON.stringify(r.list);
     state.yc = r; state.ycErr = ''; state.ycAt = Date.now();
+    if (state.chatTail) delete state.chatTail.yc; try { paintChatFab(); } catch (e) {}
     if (state.data) { state.data.ycWaiting = r.waiting; renderTabsOnly(); }
     if (state.tab === 'yc' && !same && $('sheet').hidden) renderSoon();
   }
@@ -2505,6 +2537,67 @@ details.all .list { margin-top: 8px; }
     });
   }
 
+  // ── 💬 탭 대화 (2026-11-18): 테이블·연출 탭에서 오른쪽 아래 버튼 → 그 탭 대화방. 안 읽은 수는 탭 목록 응답의 꼬리(chat)로.
+  var CHAT_NAME = { table: '🪑 테이블 대화', yc: '🎆 연출 대화' };
+  function chatRoom() { return state.tab === 'table' || state.tab === 'yc' ? state.tab : ''; }
+  function chatSeen(room, at) { var o = {}; try { o = JSON.parse(localStorage.getItem('gs_chat_seen') || '{}'); } catch (e) {} if (at === undefined) return o[room] || ''; if (at > (o[room] || '')) { o[room] = at; try { localStorage.setItem('gs_chat_seen', JSON.stringify(o)); } catch (e) {} } }
+  function chatTail(room) { var src = room === 'table' ? state.tb : room === 'yc' ? state.yc : null; return (state.chatTail && state.chatTail[room]) || (src && src.chat) || []; }
+  function paintChatFab() {
+    var room = chatRoom(), fab = $('chatFab'), box = $('chatBox');
+    if (!fab) return;
+    fab.hidden = !state.s || !room || !box.hidden;
+    document.body.classList.toggle('hasfab', !!room && !!state.s);
+    if (!room) { if (!box.hidden) chatClose(); return; }
+    if (!box.hidden && state.chatRoom !== room) chatOpen(room);
+    var seen = chatSeen(room), n = chatTail(room).filter(function (t) { return !t[1] && t[0] > seen; }).length;
+    $('chatN').hidden = !n; $('chatN').textContent = n > 99 ? '99+' : n;
+  }
+  function chatOpen(room) {
+    state.chatRoom = room; state.chat = null;
+    $('chatT').textContent = CHAT_NAME[room]; $('chatL').innerHTML = '<p class="cempty">불러오는 중…</p>';
+    $('chatBox').hidden = false; $('chatFab').hidden = true;
+    chatLoad(true);
+    clearInterval(state.chatTimer); state.chatTimer = setInterval(function () { if (!document.hidden && !$('chatBox').hidden) chatLoad(); }, 3000);
+  }
+  function chatClose() { $('chatBox').hidden = true; clearInterval(state.chatTimer); state.chatRoom = ''; paintChatFab(); }
+  function chatLoad(first) {
+    var room = state.chatRoom; if (!room || state.chatFly) return;
+    state.chatFly = 1;
+    call({ a: 'chat_get', token: state.s.token, room: room }).then(function (r) { state.chatFly = 0; if (r.ok && r.room === state.chatRoom) chatPaint(r, first); }).catch(function () { state.chatFly = 0; });
+  }
+  function chatPaint(r, toEnd) {
+    var L = $('chatL'), same = state.chat && JSON.stringify(state.chat.list) === JSON.stringify(r.list);
+    state.chat = r; state.chatTail = state.chatTail || {}; state.chatTail[r.room] = r.list.slice(-30).map(function (m) { return [m.at, m.mine ? 1 : 0]; });
+    if (r.list.length) chatSeen(r.room, r.list[r.list.length - 1].at);
+    if (same && !toEnd) return;
+    var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '';
+    r.list.forEach(function (m) {
+      if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
+      h += '<div class="cm' + (m.mine ? ' me' : '') + '">' + (m.mine ? '' : '<i>' + esc(m.who) + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '<p>' + esc(m.text) + '</p>' + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+    });
+    L.innerHTML = h || '<p class="cempty">아직 대화가 없어요. 첫 메시지를 남겨 보세요.</p>';
+    L.querySelectorAll('[data-chdel]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '✕')) return; call({ a: 'chat_del', token: state.s.token, id: b.dataset.chdel }).then(function (x) { if (x.ok) chatPaint(x, false); }); }); });
+    if (toEnd || near) L.scrollTop = L.scrollHeight;
+    paintChatFab();
+  }
+  (function () {
+    $('chatFab').addEventListener('click', function () { var room = chatRoom(); if (room) chatOpen(room); });
+    $('chatX').addEventListener('click', chatClose);
+    var ta = $('chatIn');
+    ta.addEventListener('input', function () { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; });
+    ta.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && window.matchMedia('(min-width: 601px)').matches) { e.preventDefault(); $('chatF').requestSubmit(); } });
+    $('chatF').addEventListener('submit', function (e) {
+      e.preventDefault(); var t = ta.value.trim(), room = state.chatRoom; if (!t || !room) return;
+      var btn = this.querySelector('button'); btn.disabled = true;
+      call({ a: 'chat_send', token: state.s.token, room: room, text: t }).then(function (r) {
+        btn.disabled = false;
+        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; chatPaint(r, true); }
+        else if (r.error === 'auth') toLogin(AUTH_OUT);
+        else alertBox(r.error === 'busy' ? '너무 빨리 보내고 있어요. 잠시 후에 보내 주세요.' : '못 보냈어요. 다시 해 주세요.');
+      }).catch(function () { btn.disabled = false; alertBox('연결이 안 돼요.'); });
+    });
+    function alertBox(m) { var L = $('chatL'), p = document.createElement('p'); p.className = 'cempty'; p.style.color = '#ff8199'; p.textContent = m; L.appendChild(p); L.scrollTop = L.scrollHeight; }
+  })();
   // ── 도면 보기 (2026-11-18): 홈페이지 배치도(assets/img/table-layout.webp) 위치 그대로. 좌표 = 배치도 픽셀(층마다 원점 옮김).
   // 대표 확인: 3층 도면 D3 = 표 S3 · 2층 도면 L4~L18 = 표 L1~L15(L19~L21 안 씀) · 주말 자리 SPOT B = 바, V = 흡연실 앞 바, GROOVE Bar B = 메인바.
   // 대표 결정(2026-11-18): 계단·WC·락커·다트·포토존은 빼고, 자리를 크게(최소 52px) 꽉 채운다. 좌표 단위 = 화면 px(폰은 옆으로 밀어서 봄).
