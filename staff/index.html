@@ -2853,11 +2853,28 @@ body.hasfab main { padding-bottom: 110px; }
     (m.at2 || []).forEach(function (n) { var e = esc(n); t = t.split('@' + e).join('<b class="at">@' + e + '</b>'); });
     return t;
   }
+  // 한글 이름 찾기: 자모로 풀어서 비교 → 쓰는 중인 글자('ㄷ'·'도'·'동')도, 가운데 글자('동기')도, 초성('ㄷㄱ')도 (대표 요청 2026-11-18)
+  var HJ_CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ', HJ_JUNG = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅗㅏ', 'ㅗㅐ', 'ㅗㅣ', 'ㅛ', 'ㅜ', 'ㅜㅓ', 'ㅜㅔ', 'ㅜㅣ', 'ㅠ', 'ㅡ', 'ㅡㅣ', 'ㅣ'],
+    HJ_JONG = ['', 'ㄱ', 'ㄲ', 'ㄱㅅ', 'ㄴ', 'ㄴㅈ', 'ㄴㅎ', 'ㄷ', 'ㄹ', 'ㄹㄱ', 'ㄹㅁ', 'ㄹㅂ', 'ㄹㅅ', 'ㄹㅌ', 'ㄹㅍ', 'ㄹㅎ', 'ㅁ', 'ㅂ', 'ㅂㅅ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'],
+    HJ_SPLIT = { 'ㅘ': 'ㅗㅏ', 'ㅙ': 'ㅗㅐ', 'ㅚ': 'ㅗㅣ', 'ㅝ': 'ㅜㅓ', 'ㅞ': 'ㅜㅔ', 'ㅟ': 'ㅜㅣ', 'ㅢ': 'ㅡㅣ', 'ㄳ': 'ㄱㅅ', 'ㄵ': 'ㄴㅈ', 'ㄶ': 'ㄴㅎ', 'ㄺ': 'ㄹㄱ', 'ㄻ': 'ㄹㅁ', 'ㄼ': 'ㄹㅂ', 'ㄽ': 'ㄹㅅ', 'ㄾ': 'ㄹㅌ', 'ㄿ': 'ㄹㅍ', 'ㅀ': 'ㄹㅎ', 'ㅄ': 'ㅂㅅ' };
+  function hjamo(s) { return Array.prototype.map.call(key(s), function (ch) { var c = ch.charCodeAt(0) - 0xAC00; if (c < 0 || c > 11171) return HJ_SPLIT[ch] || ch; return HJ_CHO[Math.floor(c / 588)] + HJ_JUNG[Math.floor(c % 588 / 28)] + HJ_JONG[c % 28]; }).join(''); }
+  function hcho(s) { return Array.prototype.map.call(key(s), function (ch) { var c = ch.charCodeAt(0) - 0xAC00; return c < 0 || c > 11171 ? ch : HJ_CHO[Math.floor(c / 588)]; }).join(''); }
+  // 이름이 q 와 맞으면 점수(작을수록 앞): 글자 그대로 0 이름 처음 · 1 성 뗀 이름 처음 · 2 가운데 / 쓰는 중 글자(자모) 3·4·5 / 초성 6 / 안 맞으면 -1
+  function nameHit(name, q) {
+    if (!q) return 0;
+    var k = key(name), kq = key(q), w = k.indexOf(kq);
+    if (w === 0) return 0; if (w === 1) return 1; if (w > 1) return 2;
+    var nj = hjamo(name), qj = hjamo(q), i = nj.indexOf(qj);
+    if (i === 0) return 3; if (hjamo(k.slice(1)).indexOf(qj) === 0) return 4; if (i > 0) return 5;
+    if (/^[ㄱ-ㅎ]+$/.test(kq) && hcho(name).indexOf(kq) >= 0) return 6;
+    return -1;
+  }
   function chatAtPaint() {   // 입력 중 '@' 뒤 글자로 직원 고르기
     var ta = $('chatIn'), box = $('chatAt'), before = ta.value.slice(0, ta.selectionStart), m = before.match(/@([^\s@]{0,12})$/);
     var staff = (state.chat && state.chat.staff) || [];
     if (!m || !staff.length) { box.hidden = true; return; }
-    var q = key(m[1]), me = state.chat.me, list = staff.filter(function (n) { return n !== me && (!q || key(n).indexOf(q) >= 0); }).slice(0, 30);
+    var q = key(m[1]), me = state.chat.me, list = staff.filter(function (n) { return n !== me && nameHit(n, q) >= 0; })
+      .sort(function (a, b) { return nameHit(a, q) - nameHit(b, q) || String(a).localeCompare(String(b), 'ko'); }).slice(0, 30);
     if (!list.length) { box.hidden = true; return; }
     box.innerHTML = list.map(function (n) { return '<button type="button" data-at="' + esc(n) + '">@' + esc(n) + '</button>'; }).join('');
     box.hidden = false;
@@ -2955,6 +2972,7 @@ body.hasfab main { padding-bottom: 110px; }
     var ta = $('chatIn');
     ta.addEventListener('input', function () { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; chatAtPaint(); });
     ta.addEventListener('click', chatAtPaint);
+    ta.addEventListener('compositionend', chatAtPaint); ta.addEventListener('keyup', chatAtPaint);   // 한글 입력이 끝났을 때도 다시
     ta.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && window.matchMedia('(min-width: 601px)').matches) { e.preventDefault(); $('chatF').requestSubmit(); } });
     // 📷 사진(3장)·🎬 영상(2개, 60MB) — 고르면 아래에 미리 보기, 영상은 바로 나눠 올리기 시작
     var md = { photos: [], vids: [] };
