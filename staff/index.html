@@ -75,6 +75,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 .chip.t-영업팀 { border-color: var(--g); color: #ffad70; }
 .chip.t-DJ팀 { border-color: var(--s); color: #c9a3ff; }
 .chip.adm { background: var(--g); border-color: var(--g); color: #120800; }
+.chip.lead { background: rgba(161,91,255,.18); border-color: var(--s); color: #d6bcff; }
 .title { font-size: 17px; font-weight: 800; line-height: 1.4; }
 .empty { border: 1px dashed var(--line-2); border-radius: 16px; padding: 24px 20px; color: var(--muted); text-align: center; margin: 0; }
 .dec { display: grid; gap: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
@@ -164,7 +165,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
         <div class="done-box" id="joinDone" hidden><b>가입 신청 완료.</b> 대표님이 승인하면 바로 로그인할 수 있어요.</div>
         <h1>직원 로그인</h1>
         <p class="sub">한 번 로그인하면 이 폰에서 30일 동안 유지돼요.</p>
-        <label>이름 또는 전화번호<input id="lid" name="username" autocomplete="username" placeholder="예) 진호 또는 010-1234-5678" maxlength="20" required></label>
+        <label>이름<input id="lid" name="username" autocomplete="username" placeholder="가입할 때 넣은 이름" maxlength="20" required></label>
         <label>비밀번호<span class="pw"><input id="lpw" name="password" type="password" autocomplete="current-password" maxlength="40" required><button type="button" data-eye="lpw">보기</button></span></label>
         <button class="btn btn-hot" id="loginBtn" type="submit">로그인</button>
         <p class="msg" id="loginMsg" role="alert"></p>
@@ -173,9 +174,9 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 
       <form id="joinForm" autocomplete="on" novalidate hidden>
         <h1>가입 신청</h1>
-        <p class="sub">이름·전화번호·비밀번호를 넣으면 대표님이 확인하고 승인해요. 승인되면 회의록과 게스트 현황을 볼 수 있어요.</p>
-        <label>이름<input id="jname" name="name" autocomplete="name" placeholder="예) 진호" maxlength="12" required></label>
-        <label>전화번호<input id="jphone" name="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" maxlength="13" required></label>
+        <p class="sub">이름·전화번호·비밀번호를 넣으면 대표님이 확인하고 승인해요. 로그인은 이름 + 비밀번호로 하고, 전화번호는 비상 연락망으로 대표님만 봐요.</p>
+        <label>이름<input id="jname" name="name" autocomplete="name" placeholder="예) 홍길동" maxlength="12" required></label>
+        <label>전화번호 (비상 연락망)<input id="jphone" name="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" maxlength="13" required></label>
         <label>비밀번호 (6자 이상)<span class="pw"><input id="jpw" name="new-password" type="password" autocomplete="new-password" minlength="6" maxlength="40" required><button type="button" data-eye="jpw">보기</button></span></label>
         <button class="btn btn-hot" id="joinBtn" type="submit">가입 신청</button>
         <p class="msg" id="joinMsg" role="alert"></p>
@@ -263,12 +264,12 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
   $('loginForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var id = $('lid').value.trim(), pw = $('lpw').value;
-    if (!id) { $('loginMsg').textContent = '이름이나 전화번호를 넣어 주세요.'; return $('lid').focus(); }
+    if (!id) { $('loginMsg').textContent = '이름을 넣어 주세요.'; return $('lid').focus(); }
     if (!pw) { $('loginMsg').textContent = '비밀번호를 넣어 주세요.'; return $('lpw').focus(); }
     $('loginBtn').disabled = true; $('loginMsg').textContent = '';
     call({ a: 'login', id: id, password: pw }).then(function (r) {
       if (r.ok) {
-        state.s = { token: r.token, name: r.name, team: r.team, admin: !!r.admin, exp: r.exp }; save(state.s);
+        state.s = { token: r.token, name: r.name, team: r.team, admin: !!r.admin, lead: !!r.lead, exp: r.exp }; save(state.s);
         $('lpw').value = ''; $('joinDone').hidden = true; return openApp();
       }
       $('lpw').value = '';
@@ -277,7 +278,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
       else if (r.error === 'denied') m.textContent = '지금은 쓸 수 없는 계정이에요. 대표님께 물어봐 주세요.';
       else if (r.error === 'locked') m.textContent = '비밀번호를 여러 번 틀려서 잠겼어요. ' + (r.minutes || 30) + '분 뒤에 다시 해 주세요.';
       else if (r.error === 'busy') m.textContent = '잠시 후 다시 해 주세요.';
-      else m.textContent = '이름(전화번호)이나 비밀번호가 맞지 않아요.' + (typeof r.left === 'number' ? ' (남은 기회 ' + r.left + '번)' : '');
+      else m.textContent = '이름이나 비밀번호가 맞지 않아요.' + (typeof r.left === 'number' ? ' (남은 기회 ' + r.left + '번)' : '');
     }).catch(function () { $('loginMsg').textContent = '연결이 안 돼요. 인터넷을 확인하고 다시 해 주세요.'; })
       .then(function () { $('loginBtn').disabled = false; });
   });
@@ -318,7 +319,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
   function setWho() {
     var s = state.s;
     $('whoName').textContent = s.name;
-    $('whoTeam').innerHTML = (s.admin ? '<span class="chip adm">대표</span>' : '') + (s.team ? ' ' + teamChip(s.team) : '');
+    $('whoTeam').innerHTML = (s.admin ? '<span class="chip adm">대표</span>' : s.lead ? '<span class="chip lead">팀장</span>' : '') + (s.team ? ' ' + teamChip(s.team) : '');
   }
   function openApp() { setWho(); $('who').hidden = false; show('appView'); refresh(); }
 
@@ -329,7 +330,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok) { $('listArea').innerHTML = '<p class="empty">목록을 못 불러왔어요. 잠시 후 다시 열어 주세요.</p>'; return; }
       state.data = r;
-      state.s.team = r.team; state.s.admin = !!r.admin; save(state.s); setWho();
+      state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; save(state.s); setWho();
       render();
     }).catch(function () { busy(false); $('listArea').innerHTML = '<p class="empty">연결이 안 돼요. 인터넷을 확인해 주세요.</p>'; });
   }
@@ -349,10 +350,13 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
       guest: ['게스트 현황', 0],
       acc: ['가입 승인', pending]
     };
-    if (state.tab === 'acc' && !d.admin) state.tab = 'notes';
+    var LEAD_TABS = { notes: 1, rules: 1, dec: 1 };
+    if (state.tab === 'acc' && !d.admin) state.tab = d.lead ? 'notes' : 'guest';
+    if (LEAD_TABS[state.tab] && !d.lead) state.tab = 'guest';
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
       if (b.dataset.tab === 'acc') b.hidden = !d.admin;
+      if (LEAD_TABS[b.dataset.tab]) b.hidden = !d.lead;
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + l[1] + '</span>' : '');
     });
@@ -414,7 +418,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
           '<div class="tot">' + r.total + '<small>명</small></div></div>';
       }).join('') + '</div>';
     }
-    h += '<p class="how">인스타 게스트 방에 <code>이름 게스트 5</code>처럼 올리면 매시간 반영돼요. 새벽에 올리면 전날 영업분, 같은 날 다시 올리면 마지막 숫자로 고쳐져요.</p>';
+    h += '<p class="how">인스타 게스트 방에 <code>이름 게스트 5</code>처럼 올리면 매일 아침 9시쯤 반영돼요. 새벽에 올리면 전날 영업분, 같은 날 다시 올리면 마지막 숫자로 고쳐져요.</p>';
     area.innerHTML = h;
     area.querySelectorAll('[data-w]').forEach(function (b) { b.addEventListener('click', function () { state.week = b.dataset.w; render(); }); });
   }
@@ -432,6 +436,11 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
         return '<option' + (a.team === t ? ' selected' : '') + '>' + esc(t) + '</option>';
       }).join('') + '</select>';
     }
+    function roleSel(a) {
+      return '<select data-role aria-label="' + esc(a.name) + ' 권한">' + ['직원', '팀장'].map(function (r) {
+        return '<option' + (a.role === r ? ' selected' : '') + '>' + r + '</option>';
+      }).join('') + '</select>';
+    }
     var h = '';
     groups.forEach(function (gp) {
       h += '<h2 class="sec">' + gp[0] + ' ' + gp[1].length + '</h2>';
@@ -440,28 +449,28 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
         var tel = String(a.phone || '').replace(/\D/g, '');
         var ctl;
         if (a.self) ctl = teamSel(a) + '<span class="note" style="margin:0">내 계정 · 대표</span>';
-        else if (a.status === '대기') ctl = teamSel(a) + '<button class="btn btn-ok" data-op="approve">승인</button><button class="btn btn-bad" data-op="reject">거절</button>';
-        else if (a.status === '승인') ctl = teamSel(a) + '<button class="btn" data-op="stop">중지</button><button class="btn btn-bad" data-op="delete">삭제</button>';
-        else ctl = teamSel(a) + '<button class="btn btn-ok" data-op="approve">다시 승인</button><button class="btn btn-bad" data-op="delete">삭제</button>';
+        else if (a.status === '대기') ctl = teamSel(a) + roleSel(a) + '<button class="btn btn-ok" data-op="approve">승인</button><button class="btn btn-bad" data-op="reject">거절</button>';
+        else if (a.status === '승인') ctl = teamSel(a) + roleSel(a) + '<button class="btn" data-op="stop">중지</button><button class="btn btn-bad" data-op="delete">삭제</button>';
+        else ctl = teamSel(a) + roleSel(a) + '<button class="btn btn-ok" data-op="approve">다시 승인</button><button class="btn btn-bad" data-op="delete">삭제</button>';
         return '<div class="acc' + (a.status === '대기' ? ' wait' : '') + '" data-name="' + esc(a.name) + '">' +
-          '<div class="hd"><strong>' + esc(a.name) + '</strong>' + (a.role === '관리자' ? '<span class="chip adm">대표</span>' : '') + teamChip(a.team) +
+          '<div class="hd"><strong>' + esc(a.name) + '</strong>' + (a.role === '관리자' ? '<span class="chip adm">대표</span>' : a.role === '팀장' ? '<span class="chip lead">팀장</span>' : '') + teamChip(a.team) +
           (tel ? '<a href="tel:' + esc(tel) + '">' + esc(a.phone) + '</a>' : '') + '</div>' +
           '<div class="row">신청 ' + esc(a.at || '-') + (a.status !== '대기' && a.status !== '승인' ? ' · ' + esc(a.status) : '') + '</div>' +
           '<div class="ctl">' + ctl + '</div><div class="err" role="alert"></div></div>';
       }).join('') + '</div>';
     });
-    h += '<p class="how">승인할 때 팀을 꼭 골라 주세요. 중지하면 그 사람은 바로 로그아웃돼요. 비밀번호를 잊은 직원은 삭제 후 다시 가입 신청하면 돼요.</p>';
+    h += '<p class="how">승인할 때 팀과 권한을 골라 주세요. <b>직원</b>은 게스트 현황만, <b>팀장</b>은 회의록·규칙·결정사항까지 볼 수 있어요. 중지하면 그 사람은 바로 로그아웃돼요. 비밀번호를 잊은 직원은 삭제 후 다시 가입 신청하면 돼요.</p>';
     area.innerHTML = h;
 
     area.querySelectorAll('.acc').forEach(function (box) {
-      var name = box.dataset.name, sel = box.querySelector('[data-team]'), err = box.querySelector('.err');
-      function run(op, team, btn) {
+      var name = box.dataset.name, sel = box.querySelector('[data-team]'), rsel = box.querySelector('[data-role]'), err = box.querySelector('.err');
+      function run(op, team, role) {
         err.textContent = '';
         box.querySelectorAll('button,select').forEach(function (x) { x.disabled = true; });
-        call({ a: 'admin', token: state.s.token, op: op, name: name, team: team || '' }).then(function (r) {
+        call({ a: 'admin', token: state.s.token, op: op, name: name, team: team || '', role: role || '' }).then(function (r) {
           if (r.error === 'auth') return toLogin(AUTH_OUT);
           if (!r.ok) {
-            err.textContent = { team: '팀을 골라 주세요.', self: '내 계정은 바꿀 수 없어요.', notfound: '이미 지워진 계정이에요.', forbidden: '대표만 할 수 있어요.' }[r.error] || '처리가 안 됐어요. 다시 해 주세요.';
+            err.textContent = { team: '팀을 골라 주세요.', role: '권한을 골라 주세요.', admin: '대표 계정은 바꿀 수 없어요.', self: '내 계정은 바꿀 수 없어요.', notfound: '이미 지워진 계정이에요.', forbidden: '대표만 할 수 있어요.' }[r.error] || '처리가 안 됐어요. 다시 해 주세요.';
             box.querySelectorAll('button,select').forEach(function (x) { x.disabled = false; });
             return;
           }
@@ -482,12 +491,15 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
               return;
             }
           }
-          run(op, op === 'approve' ? sel.value : '', b);
+          run(op, op === 'approve' ? sel.value : '', op === 'approve' && rsel ? rsel.value : '');
         });
       });
       // 이미 승인된 사람(또는 나)은 팀만 바꾸면 바로 저장
       var acc0 = (state.data.accounts || []).filter(function (a) { return a.name === name; })[0];
-      if (acc0 && (acc0.status === '승인')) sel.addEventListener('change', function () { if (sel.value) run('team', sel.value); });
+      if (acc0 && (acc0.status === '승인')) {
+        sel.addEventListener('change', function () { if (sel.value) run('team', sel.value); });
+        if (rsel) rsel.addEventListener('change', function () { run('role', '', rsel.value); });
+      }
     });
   }
 
