@@ -39,7 +39,8 @@
 .kp-warn { margin: 0 0 14px; padding: 12px 14px; border-radius: 14px; background: rgba(255,176,32,.1); border: 1px solid rgba(255,176,32,.45); font-size: 15px; }
 .kp-hist { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
 .kp-act { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-.kp-act .btn { justify-content: center; }
+.kp-act.staff { grid-template-columns: 2fr 3fr; }
+.kp-act .btn { justify-content: center; white-space: nowrap; padding-left: 10px; padding-right: 10px; }
 .kp-h { font-size: 15px; font-weight: 800; color: var(--muted); margin: 24px 0 8px; }
 .kp-empty { border: 1px dashed var(--line-2); border-radius: var(--radius); padding: 28px 20px; text-align: center; color: var(--muted); }
 </style>
@@ -144,10 +145,15 @@
   function ymd(s) { var p = String(s).split('-'); return p.length === 3 ? p[0] + '. ' + +p[1] + '. ' + +p[2] + '.' : ''; }
   var k = '';
   try { k = new URLSearchParams(location.search).get('k') || ''; } catch (e) {}
-  var ACTS = '<div class="kp-act"><a class="btn btn-hot" href="/reserve/">예약하기</a><a class="btn" href="tel:050713015970">📞 전화하기</a></div>';
+  // 담당 직원 번호가 있으면 '담당에게 전화하기', 없으면 가게 번호
+  function acts(ph) {
+    var d = String(ph || '').replace(/\D/g, '');
+    var ok = /^01\d{8,9}$/.test(d);
+    return '<div class="kp-act' + (ok ? ' staff' : '') + '"><a class="btn btn-hot" href="/reserve/">예약하기</a>' + (ok ? '<a class="btn" href="tel:' + d + '">📞 담당에게 전화하기</a>' : '<a class="btn" href="tel:050713015970">📞 전화하기</a>') + '</div>';
+  }
   function fail(msg) {
     sub.textContent = '';
-    box.innerHTML = '<p class="kp-empty">' + msg + '</p>' + ACTS;
+    box.innerHTML = '<p class="kp-empty">' + msg + '</p>' + acts('');
   }
   if (!/^[A-Za-z0-9]{24,40}$/.test(k)) return fail('담당 직원이 보내 드린 링크로 열어 주세요.<br>링크가 없으면 담당 직원에게 다시 보내 달라고 하세요.');
   fetch(API, { method: 'POST', body: JSON.stringify({ a: 'keep_view', k: k }) }).then(function (r) { return r.json(); }).then(function (r) {
@@ -170,7 +176,7 @@
         : l.what === '꺼냄' ? '꺼내 드심 · ' + l.liq + ' ' + Math.max(1, (+l.from || 0) - (+l.to || 0)) + '병' : '다 드심 · ' + l.liq;
       return '<li>' + esc(md(l.at)) + ' ' + esc(t) + '</li>';
     }).join('') + '</ul>';
-    h += ACTS + '<p class="muted small" style="margin-top:14px">보관 기간은 맡기신 날부터 ' + r.days + '일이에요. 이 페이지는 링크를 가진 분만 볼 수 있어요. 링크가 다른 사람에게 갔다면 담당 직원에게 새 링크를 요청해 주세요.</p>';
+    h += acts(r.staffPhone) + '<p class="muted small" style="margin-top:14px">보관 기간은 맡기신 날부터 ' + r.days + '일이에요. 이 페이지는 링크를 가진 분만 볼 수 있어요. 링크가 다른 사람에게 갔다면 담당 직원에게 새 링크를 요청해 주세요.</p>';
     box.innerHTML = h;
   }).catch(function () { fail('지금 연결이 안 돼요. 잠시 후 다시 열어 주세요.'); });
 })();
