@@ -367,11 +367,18 @@ body.hasfab main { padding-bottom: 110px; }
 .chath { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
 .chath b { font-size: 16px; }
 .chath .link { font-size: 18px; padding: 4px 8px; }
+.chath .chq { font-size: 13px; text-decoration: none; font-weight: 700; }
+.chathelp { max-height: 45%; overflow: auto; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 13px; line-height: 1.65; color: var(--muted); }
+.chathelp b { color: var(--txt); }
+.chathelp code { color: var(--txt); background: rgba(255,255,255,.06); border-radius: 6px; padding: 1px 5px; font-family: inherit; }
+.chathelp pre { margin: 4px 0 8px; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.06); color: var(--txt); font: inherit; white-space: pre-wrap; }
+.chathelp p { margin: 0 0 6px; }
 .chatl { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; -webkit-overflow-scrolling: touch; }
 .chatl .cday { align-self: center; font-size: 11px; color: var(--muted); margin: 6px 0; }
 .chatl .cm { max-width: 82%; align-self: flex-start; }
 .chatl .cm.me { align-self: flex-end; text-align: right; }
-.chatl .cm i { display: block; font-style: normal; font-size: 11px; color: var(--muted); margin: 0 4px 2px; }
+.chatl .cm i { display: block; font-style: normal; font-size: 12px; font-weight: 700; color: var(--txt); margin: 0 4px 3px; }
+.org { font-size: 11px; font-weight: 700; color: var(--g); margin-left: 4px; }
 .chatl .cm p { display: inline-block; margin: 0; padding: 8px 11px; border-radius: 14px; background: #2a2a30; font-size: 15px; line-height: 1.4; white-space: pre-wrap; word-break: break-word; text-align: left; }
 .chatl .cm.me p { background: var(--g); color: #120800; }
 .chatl .cm small { font-size: 10px; color: var(--muted); margin: 0 4px; }
@@ -667,7 +674,8 @@ body.hasfab main { padding-bottom: 110px; }
 <div class="sheet" id="sheet" hidden></div>
 <button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
 <section class="chatbox" id="chatBox" hidden aria-label="대화">
-  <div class="chath"><b id="chatT">대화</b><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></div>
+  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
+  <div class="chathelp" id="chatHelp" hidden></div>
   <div class="chatl" id="chatL"></div>
   <div class="chatat" id="chatAt" hidden></div>
   <form class="chatf" id="chatF"><textarea id="chatIn" rows="1" maxlength="500" placeholder="메시지" autocomplete="off"></textarea><button class="btn btn-hot" type="submit">보내기</button></form>
@@ -1531,7 +1539,7 @@ body.hasfab main { padding-bottom: 110px; }
     }
     if (!m.convs.length) h += '<p class="empty">아직 대화가 없어요. ＋ 새 대화로 시작해 보세요.</p>';
     else h += '<div class="list">' + m.convs.map(function (c) {
-      return '<button type="button" class="conv' + (c.unread ? ' unread' : '') + (c.with === '손님 문의' ? ' inq' : '') + '" data-with="' + esc(c.with) + '"><span class="cn"><strong>' + (c.with === '손님 문의' ? '📩 ' : '') + esc(c.with) + '</strong><span class="at">' + esc(c.at.slice(5)) + '</span></span>' +
+      return '<button type="button" class="conv' + (c.unread ? ' unread' : '') + (c.with === '손님 문의' ? ' inq' : '') + '" data-with="' + esc(c.with) + '"><span class="cn"><strong>' + (c.with === '손님 문의' ? '📩 ' : '') + esc(c.with) + (c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</strong><span class="at">' + esc(c.at.slice(5)) + '</span></span>' +
         '<span class="cl">' + (c.mine ? '나: ' : '') + esc(c.last) + '</span>' + (c.unread ? '<span class="n">' + c.unread + '</span>' : '') + '</button>';
     }).join('') + '</div>';
     area.innerHTML = h;
@@ -1545,7 +1553,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
   function renderChat(area) {
     var c = state.chat, w = state.dmWith;
-    var h = '<div class="chead"><button class="btn back" id="dBack" type="button">←</button><strong>' + esc(w) + '</strong></div>';
+    var h = '<div class="chead"><button class="btn back" id="dBack" type="button">←</button><strong>' + esc(w) + (c && c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</strong></div>';
     if (!c) h += '<p class="load">불러오는 중…</p>';
     else {
       h += '<div class="chat" id="chatBox">' + (c.msgs.length ? c.msgs.map(function (m) {
@@ -2392,11 +2400,12 @@ body.hasfab main { padding-bottom: 110px; }
       return r;
     }).catch(function () { state.ycFly = 0; var r = { error: 'net' }; if (after) after(r); return r; });
   }
+  function ycSeatTxt(x) { return x.seat ? x.floor + ' ' + x.seat : '📺 전광만'; }
   function ycWhen(x) {
     var w = x.when || 'now';
     if (w === 'now') return '바로';
     if (w === 'ready') return '준비되는 대로';
-    if (w.indexOf('after:') === 0) { var p = (state.yc.list || []).filter(function (y) { return y.id === w.slice(6); })[0]; return (p ? p.floor + ' ' + p.seat : '앞 연출') + ' 다음'; }
+    if (w.indexOf('after:') === 0) { var p = (state.yc.list || []).filter(function (y) { return y.id === w.slice(6); })[0]; return (p ? ycSeatTxt(p) : '앞 연출') + ' 다음'; }
     return w;
   }
   // ── 영상: 2,025,000바이트씩 나눠 올리고(vid_up), 나눠 받아(vid_get) 붙인다 ──
@@ -2440,11 +2449,11 @@ body.hasfab main { padding-bottom: 110px; }
   }
   function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
   function ycWhat(v) {
-    return [v.video ? v.video + '영상' : '', v.holo ? '홀로 ' + v.holo : '', v.picket ? v.picket + '피켓' : '', v.hammer ? '망치' : '', v.vvip ? 'VVIP 입장' : ''].filter(Boolean);
+    return [v.parade ? v.parade + ' 퍼레' : '', v.video ? v.video + '영상' : '', v.holo ? '홀로 ' + v.holo : '', v.picket ? v.picket + '피켓' : '', v.hammer ? '망치' : '', v.vvip ? 'VVIP 입장' : '', v.note || ''].filter(Boolean);
   }
   function ycCard(x, i, n) {
     var y = state.yc, can = y.canEdit, mine = x.mine, boss = y.boss, ready = x.jg && x.sul, cls = 'yc' + (x.status === '진행' ? ' go' : x.status === '끝' ? ' end' : ready ? ' ready' : '');
-    var h = '<div class="' + cls + '" data-ycid="' + esc(x.id) + '"><div class="ych"><b>' + (x.status === '끝' ? '' : '#' + (i + 1) + ' ') + esc(x.floor) + ' ' + esc(x.seat) + '</b><span class="chip">' + esc(ycWhen(x)) + '</span>' +
+    var h = '<div class="' + cls + '" data-ycid="' + esc(x.id) + '"><div class="ych"><b>' + (x.status === '끝' ? '' : '#' + (i + 1) + ' ') + esc(ycSeatTxt(x)) + '</b><span class="chip">' + esc(ycWhen(x)) + '</span>' +
       '<span class="row">' + esc(x.by) + ' · ' + esc(x.at) + '</span></div>';
     var what = ycWhat(x.v);
     if (what.length) h += '<div class="ycw">' + what.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>';
@@ -2467,7 +2476,7 @@ body.hasfab main { padding-bottom: 110px; }
       if ((mine || boss) && x.status !== '끝') s.push('<button class="link" type="button" data-yced="1">고치기</button><button class="link" type="button" data-yccx="1">요청 취소</button>');
       if (s.length) h += '<div class="ycl">' + s.join('') + '</div>';
     }
-    h += '<div class="ycc">' + x.cmts.map(function (c) { return '<p><b>' + esc(c.who) + '</b> ' + esc(c.text) + ' <small>' + esc(c.hm) + '</small></p>'; }).join('') +
+    h += '<div class="ycc">' + x.cmts.map(function (c) { return '<p><b>' + esc(c.who) + (c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</b> ' + esc(c.text) + ' <small>' + esc(c.hm) + '</small></p>'; }).join('') +
       (can ? '<form class="yccf" data-yccf="1"><input data-yccmt="1" maxlength="100" placeholder="댓글 (예: 시작시간 알려주세요)" autocomplete="off"><button class="btn" type="submit">보내기</button></form>' : '') + '</div>';
     return h + '</div>';
   }
@@ -2505,7 +2514,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
   // 요청 입력 창 (새로 / 고치기)
   function ycForm(x) {
-    var y = state.yc, v = x ? JSON.parse(JSON.stringify(x.v)) : {}, fl = x ? x.floor : (state.tbFloor || tbFloorPref()), seat = x ? x.seat : '', when = x ? x.when : 'now', photos = [], vids = [];
+    var y = state.yc, v = x ? JSON.parse(JSON.stringify(x.v)) : {}, fl = x ? x.floor : (state.tbFloor || tbFloorPref()), seat = x ? (x.seat || (x.v && x.v.only ? '전광만' : '')) : '', when = x ? x.when : 'now', photos = [], vids = [];
     var mineSeats = [];
     if (state.tb && state.tb.rows) state.tb.rows.forEach(function (r) { var c = r.cur || r.req; if (c && c.seat && !c.blk && key(c.st) === key(y.me)) mineSeats.push({ fl: r.floor, seat: c.seat, g: c.g || c.liq || '' }); });
     var act = y.list.filter(function (q) { return q.status !== '끝' && (!x || q.id !== x.id); });
@@ -2528,8 +2537,8 @@ body.hasfab main { padding-bottom: 110px; }
     showSheet(h);
     var s = $('sheet');
     function paintSeats() {
-      var opts = seatsOf(fl); if (seat && opts.indexOf(seat) < 0) seat = '';
-      $('ycSeat').innerHTML = '<option value="">자리 고르기</option>' + opts.map(function (q) { return '<option' + (q === seat ? ' selected' : '') + '>' + esc(q) + '</option>'; }).join('');
+      var opts = seatsOf(fl).slice(); if (x && x.floor === fl && /,/.test(x.seat)) opts.unshift(x.seat); if (seat && seat !== '전광만' && opts.indexOf(seat) < 0) seat = '';
+      $('ycSeat').innerHTML = '<option value="">자리 고르기</option><option value="전광만"' + (seat === '전광만' ? ' selected' : '') + '>📺 전광만 (자리 없이)</option>' + opts.map(function (q) { return '<option' + (q === seat ? ' selected' : '') + '>' + esc(q) + '</option>'; }).join('');
       s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.ycfl === fl); });
     }
     function paintWhen() {
@@ -2537,7 +2546,7 @@ body.hasfab main { padding-bottom: 110px; }
       s.querySelectorAll('[data-ycwhen]').forEach(function (b) { b.classList.toggle('on', b.dataset.ycwhen === k); });
       var box = $('ycWhenX');
       if (k === 'time') box.innerHTML = '<input id="ycTime" type="time" value="' + esc(/^\d{2}:\d{2}$/.test(when) ? when : '') + '">';
-      else if (k === 'after') box.innerHTML = act.length ? '<select id="ycAfter">' + act.map(function (q) { return '<option value="' + esc(q.id) + '"' + ('after:' + q.id === when ? ' selected' : '') + '>' + esc(q.floor + ' ' + q.seat + ' · ' + q.by + ' 다음') + '</option>'; }).join('') + '</select>' : '<p class="note" style="margin:0">앞에 기다리는 연출이 없어요.</p>';
+      else if (k === 'after') box.innerHTML = act.length ? '<select id="ycAfter">' + act.map(function (q) { return '<option value="' + esc(q.id) + '"' + ('after:' + q.id === when ? ' selected' : '') + '>' + esc(ycSeatTxt(q) + ' · ' + q.by + ' 다음') + '</option>'; }).join('') + '</select>' : '<p class="note" style="margin:0">앞에 기다리는 연출이 없어요.</p>';
       else box.innerHTML = '';
       if ($('ycTime')) $('ycTime').addEventListener('change', function () { when = this.value || 'now'; });
       if ($('ycAfter')) { if (when.indexOf('after:') !== 0) when = 'after:' + $('ycAfter').value; $('ycAfter').addEventListener('change', function () { when = 'after:' + this.value; }); }
@@ -2603,7 +2612,8 @@ body.hasfab main { padding-bottom: 110px; }
       b.disabled = true; m.textContent = '';
       if (vids.some(function (q) { return q.err; })) { b.disabled = false; m.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
       if (vids.some(function (q) { return !q.done; })) { m.textContent = '영상 올리는 중이에요… 다 올라가면 바로 보내요.'; var w = setInterval(function () { if (!$('ycSave')) return clearInterval(w); if (vids.some(function (q) { return q.err; })) { clearInterval(w); b.disabled = false; m.textContent = '영상을 못 올렸어요. 다시 넣어 주세요.'; } else if (vids.every(function (q) { return q.done; })) { clearInterval(w); b.disabled = false; $('ycSave').click(); } }, 500); return; }
-      var body = { a: x ? 'yc_edit' : 'yc_add', floor: fl, seat: seat, when: when, v: v, text: $('ycT').value.trim(), song: $('ycS').value.trim() };
+      v.only = seat === '전광만';
+      var body = { a: x ? 'yc_edit' : 'yc_add', floor: fl, seat: v.only ? '' : seat, when: when, v: v, text: $('ycT').value.trim(), song: $('ycS').value.trim() };
       if (x) body.id = x.id; else { if (photos.length) body.photos = photos.map(function (p) { return { type: p.type, data: p.data }; }); if (vids.length) body.videos = vids.map(function (q) { return q.vid; }); }
       ycCall(body, function (r) { if (!r.ok) { b.disabled = false; m.textContent = ycErr(r); return; } var sh = $('sheet'); sh.hidden = true; sh.innerHTML = ''; state.ycMsg = x ? '고쳤어요.' : '연출 요청을 보냈어요. DJ·술 준비되면 알려 드려요.'; render(); });
     });
@@ -2728,6 +2738,23 @@ body.hasfab main { padding-bottom: 110px; }
   }
   // ── 💬 탭 대화 (2026-11-18): 테이블·연출 탭에서 오른쪽 아래 버튼 → 그 탭 대화방. 안 읽은 수는 탭 목록 응답의 꼬리(chat)로.
   var CHAT_NAME = { table: '🪑 테이블 대화', yc: '🎆 연출 대화' };
+  // 카톡처럼 쓰면 알아듣는 말 (카톡 테이블방·불꽃놀이방 대화를 보고 만든 규칙, 2026-11-18)
+  var CHAT_HELP = {
+    table: '<p><b>카톡에 쓰던 그대로</b> 쓰면 자리표에 들어가요. 직원은 승인 요청, 팀장·대표·승인 권한 받은 사람은 바로 반영돼요.</p>' +
+      '<p>넣기 <code>3l6 태훈 남2 섭레</code> <code>3ㅅ1 태라여3 넣을게요</code> <code>3-3 백원만 담당 성민 예약</code></p>' +
+      '<p>표시 <code>3-4 입장완</code> <code>3l8 판매전환</code> <code>3-4 개모임킵</code></p>' +
+      '<p>아웃 <code>2s2 아웃클</code> <code>2s7,8,9 아웃</code> <code>3l4 조판 지워주세요</code></p>' +
+      '<p>이동 <code>3l4->3l2</code> <code>3ㅣ9에서 3ㅣ10 이동</code> <code>2s5 3l5로 이동</code></p>' +
+      '<p>배정(승인하는 사람) <code>@이정훈 엘4</code> <code>3l5,6 @이성민 @경철</code></p>' +
+      '<p>층: 앞의 3 = SPOT, 2 = GROOVE (없으면 보고 있는 층). 자리 글자: ㅅ·스·s = S, ㅣ·엘·l = L, 디·d = D, 디비·db = DB</p>' +
+      '<p>섭몬 = 카마 · 섭레 = 레몬드랍 · 섭샴·짭몬은 메모. 흡연·화장실·부킹·얼음·방향제·N출 같은 말은 그냥 대화예요.</p>',
+    yc: '<p><b>불꽃놀이방에 쓰던 그대로</b> 쓰면 연출 요청이 올라가요.</p>' +
+      '<p>첫 줄 = 자리·순서(<code>바로</code> <code>준비되는대로</code> <code>12:10</code> <code>3-12 다음</code>), 다음 줄 = 영상·홀로·피켓·망치·퍼레·노래, <b>빈 줄 뒤 = 전광판 문구</b></p>' +
+      '<pre>3s7 바로 구형딥퍼레 호철이형 컨펌완\n고트영상0 홀로0 생일피켓\n\n다은아 생일축하해\n-서빈 하연-</pre>' +
+      '<p>전광만 <code>전광만 바로</code> 다음 줄 <code>범야영상</code>, 빈 줄 뒤 <code>VVIP 범야 입장</code> · 노래는 멜론·사운드클라우드(다운로드 있는 곡) 링크를 같이 붙여요.</p>' +
+      '<p><code>ㅈㄱㅈㅂㅇ</code> 전광 준비(DJ팀·팀장) · <code>ㅅㅈㅂㅇ</code> 술 준비(운영팀) · <code>ㄱㄱ</code> · <code>컷</code> — 먼저 올라온 요청부터, 자리를 붙이면 그 자리(<code>3-9 ㄱㄱ</code>)</p>' +
+      '<p>같은 자리에 내가 올린 요청이 아직 ㄱㄱ 전이면 다시 쓰면 고쳐져요. 사진·영상은 연출 탭 요청 화면에서 올려요.</p>'
+  };
   function chatRoom() { return state.tab === 'table' || state.tab === 'yc' ? state.tab : ''; }
   function chatSeen(room, at) { var o = {}; try { o = JSON.parse(localStorage.getItem('gs_chat_seen') || '{}'); } catch (e) {} if (at === undefined) return o[room] || ''; if (at > (o[room] || '')) { o[room] = at; try { localStorage.setItem('gs_chat_seen', JSON.stringify(o)); } catch (e) {} } }
   function chatTail(room) { var src = room === 'table' ? state.tb : room === 'yc' ? state.yc : null; return (state.chatTail && state.chatTail[room]) || (src && src.chat) || []; }
@@ -2766,7 +2793,8 @@ body.hasfab main { padding-bottom: 110px; }
   function chatOpen(room) {
     state.chatRoom = room; state.chat = null;
     $('chatT').textContent = CHAT_NAME[room]; $('chatL').innerHTML = '<p class="cempty">불러오는 중…</p>';
-    $('chatIn').placeholder = room === 'table' ? "메시지 · '13 아웃'·'3디1 추원호 섭몬' 처럼 쓰면 자리 신청" : '메시지';
+    $('chatIn').placeholder = room === 'table' ? "메시지 · 카톡처럼 '3l6 태훈 남2 섭레'·'2s2 아웃' 쓰면 자리 신청" : "메시지 · 카톡처럼 쓰면 연출 요청 · ㅈㄱㅈㅂㅇ·ㅅㅈㅂㅇ·ㄱㄱ·컷";
+    $('chatHelp').innerHTML = CHAT_HELP[room] || ''; $('chatHelp').hidden = true; $('chatQ').setAttribute('aria-expanded', 'false');
     $('chatBox').hidden = false; $('chatFab').hidden = true;
     chatLoad(true);
     clearInterval(state.chatTimer); state.chatTimer = setInterval(function () { if (!document.hidden && !$('chatBox').hidden) chatLoad(); }, 3000);
@@ -2785,7 +2813,7 @@ body.hasfab main { padding-bottom: 110px; }
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '';
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '<p>' + chatText(m) + '</p>' + (m.req ? '<em class="creq' + (/^⚠️/.test(m.req) ? ' bad' : '') + '">' + esc(m.req) + '</em>' : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '<p>' + chatText(m) + '</p>' + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
     L.innerHTML = h ? '<p class="chint">메시지를 두 번 누르면 ✅ 확인 · 담당 표시</p>' + h : '<p class="cempty">아직 대화가 없어요. 첫 메시지를 남겨 보세요.</p>';
     L.querySelectorAll('[data-cmid] p').forEach(function (p) {   // 두 번 누르면 확인(담당)
@@ -2802,6 +2830,7 @@ body.hasfab main { padding-bottom: 110px; }
   (function () {
     $('chatFab').addEventListener('click', function () { var room = chatRoom(); if (room) chatOpen(room); });
     $('chatX').addEventListener('click', chatClose);
+    $('chatQ').addEventListener('click', function () { var h = $('chatHelp'); h.hidden = !h.hidden; this.setAttribute('aria-expanded', String(!h.hidden)); });
     var ta = $('chatIn');
     ta.addEventListener('input', function () { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; chatAtPaint(); });
     ta.addEventListener('click', chatAtPaint);
