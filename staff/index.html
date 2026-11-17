@@ -101,6 +101,22 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 .sumcap { color: var(--muted); font-size: 12px; font-weight: 800; margin: 0 0 6px; }
 .rk .medal { font-size: 26px; line-height: 1; text-align: center; }
 details.all { margin-top: 14px; }
+/* 게스트 입력 (팀장·대표) */
+.gin { background: var(--card); border: 1px solid rgba(255,122,26,.45); border-radius: 16px; padding: 14px 16px; margin: 0 0 16px; }
+.gin > summary { cursor: pointer; font-weight: 900; font-size: 16px; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.gin > summary::-webkit-details-marker { display: none; }
+.gin > summary::after { content: "접기"; color: var(--muted); font-size: 12px; font-weight: 700; }
+.gin:not([open]) > summary::after { content: "펼치기"; }
+.gin .gday { margin: 12px 0 10px; }
+.gin .gday select { min-height: 44px; }
+.gin .grow { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+.gin .grow .gn { flex: 1; min-width: 0; font-weight: 800; }
+.gin .grow .gn .chip { margin-left: 6px; }
+.gin .grow input { width: 88px; min-height: 44px; padding: 8px 10px; text-align: right; font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.gin .grow .u { color: var(--muted); font-size: 13px; width: 14px; }
+.gin .gbar { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.gin .gbar .btn-hot { width: auto; padding: 0 24px; }
+.gin .gbar .msg { margin: 0; }
 details.all summary { cursor: pointer; color: var(--muted); font-weight: 800; font-size: 14px; padding: 8px 0; }
 details.all .list { margin-top: 8px; }
 /* 팀 게시판 */
@@ -165,6 +181,10 @@ details.all .list { margin-top: 8px; }
 .meta { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
 .load { color: var(--muted); padding: 30px 0; text-align: center; }
 @media (max-width: 420px) {
+  .brand { font-size: 13px; letter-spacing: .05em; white-space: nowrap; }
+  .who { gap: 6px; font-size: 13px; }
+  .who .link { white-space: nowrap; }
+  .who .chip { font-size: 11px; padding: 1px 7px; }
   .card { padding: 18px 16px; }
   .sum { grid-template-columns: repeat(2, 1fr); }
   .rk { grid-template-columns: 38px 1fr auto; gap: 10px; padding: 12px; }
@@ -242,7 +262,7 @@ details.all .list { margin-top: 8px; }
   var SALES = ['클로버', '아룬', '고트']; // 영업팀
   var DOW = ['월', '화', '수', '목', '금', '토', '일'];
   var $ = function (id) { return document.getElementById(id); };
-  var state = { s: null, data: null, tab: 'guest', week: 'week', bteam: '', draft: '' };
+  var state = { s: null, data: null, tab: 'guest', week: 'week', bteam: '', draft: '', gday: '', gteam: '', gdraft: {}, gmsg: '' };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function load() { try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && v.token && v.exp > Date.now() ? v : null; } catch (e) { return null; } }
@@ -289,7 +309,7 @@ details.all .list { margin-top: 8px; }
   $('jteam').innerHTML = '<option value="">팀을 골라 주세요</option>' + teamOptions('');
 
   function toLogin(msg) {
-    state.s = null; state.data = null; state.tab = 'guest'; state.bteam = ''; state.draft = ''; save(null);
+    state.s = null; state.data = null; state.tab = 'guest'; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
     $('who').hidden = true; show('loginView'); busy(false);
     seg(false);
     $('loginMsg').textContent = msg || '';
@@ -440,6 +460,68 @@ details.all .list { margin-top: 8px; }
       '<div class="days">' + days + '</div></div>' +
       '<div class="tot">' + r.total + '<small>명</small></div></div>';
   }
+  // ── 게스트 입력 (팀장: 자기 팀, 대표: 모든 팀 · 이번 주·지난주 영업일) ──
+  function addDays(s, n) { var x = new Date(s + 'T00:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); }
+  function dowOf(s) { return DOW[(new Date(s + 'T00:00:00Z').getUTCDay() + 6) % 7]; }
+  function guestOf(g, day, name) {
+    var w = g.week && day >= g.week.start ? g.week : g.prev;
+    if (!w || !w.start) return null;
+    var r = (w.rows || []).filter(function (x) { return x.name === name; })[0], i = Math.round((Date.parse(day) - Date.parse(w.start)) / 864e5);
+    return r && i >= 0 && i < 7 ? r.days[i] : null;
+  }
+  function ginHtml(d) {
+    var g = d.guests || {}, today = g.today, first = (g.prev && g.prev.start) || (g.week && g.week.start);
+    if (!today || !first) return '';
+    var days = []; for (var x = today; x >= first; x = addDays(x, -1)) days.push(x);
+    if (days.indexOf(state.gday) < 0) state.gday = today;
+    var team = d.admin ? (TEAMS.indexOf(state.gteam) >= 0 ? state.gteam : (state.gteam = SALES[0])) : d.team;
+    var mem = (d.accounts || []).filter(function (a) { return a.status === '승인' && a.team === team; });
+    var h = '<details class="gin" open><summary>✏️ 게스트 입력 · ' + esc(team) + '</summary>';
+    if (d.admin) h += '<div class="bteams" role="group" aria-label="팀 고르기" style="margin:12px 0 0">' + [SALES[0], SALES[1], SALES[2], '운영팀', 'DJ팀'].map(function (t) {
+      return '<button type="button" data-gt="' + esc(t) + '" aria-pressed="' + (t === team) + '">' + esc(t) + '</button>';
+    }).join('') + '</div>';
+    h += '<div class="gday"><select id="gDay" aria-label="영업일">' + days.map(function (x) {
+      return '<option value="' + x + '"' + (x === state.gday ? ' selected' : '') + '>' + md(x) + '(' + dowOf(x) + ') 영업' + (x === today ? ' · 오늘' : '') + '</option>';
+    }).join('') + '</select></div>';
+    if (!mem.length) h += '<p class="empty">' + esc(team) + ' 팀에 승인된 직원이 없어요.</p>';
+    else h += mem.map(function (a) {
+      var cur = guestOf(g, state.gday, a.name), k = state.gday + '|' + a.name, v = state.gdraft[k] != null ? state.gdraft[k] : (cur == null ? '' : String(cur));
+      return '<div class="grow"><span class="gn">' + esc(a.name) + (a.role === '팀장' ? '<span class="chip lead">팀장</span>' : '') + '</span>' +
+        '<input type="number" inputmode="numeric" min="0" max="500" step="1" placeholder="0" data-gn="' + esc(a.name) + '" data-cur="' + (cur == null ? '' : cur) + '" value="' + esc(v) + '" aria-label="' + esc(a.name) + ' 게스트 수"><span class="u">명</span></div>';
+    }).join('') + '<div class="gbar"><button class="btn btn-hot" id="gSave" type="button">저장</button><p class="msg' + (state.gmsg ? ' ok' : '') + '" id="gMsg" role="alert">' + esc(state.gmsg) + '</p></div>';
+    return h + '</details>';
+  }
+  function bindGin(area, d) {
+    var box = area.querySelector('.gin'); if (!box) return;
+    area.querySelectorAll('[data-gt]').forEach(function (b) { b.addEventListener('click', function () { state.gteam = b.dataset.gt; state.gmsg = ''; render(); }); });
+    var sel = $('gDay'); if (sel) sel.addEventListener('change', function () { state.gday = sel.value; state.gmsg = ''; render(); });
+    box.querySelectorAll('[data-gn]').forEach(function (i) { i.addEventListener('input', function () { state.gdraft[state.gday + '|' + i.dataset.gn] = i.value; state.gmsg = ''; $('gMsg').textContent = ''; }); });
+    var btn = $('gSave'); if (!btn) return;
+    btn.addEventListener('click', function () {
+      var msg = $('gMsg'), rows = [], bad = '';
+      msg.className = 'msg';
+      box.querySelectorAll('[data-gn]').forEach(function (i) {
+        var raw = i.value.trim(), cur = i.dataset.cur === '' ? null : +i.dataset.cur, v = raw === '' ? null : Number(raw);
+        if (v != null && !(Math.floor(v) === v && v >= 0 && v <= 500)) { bad = bad || i.dataset.gn; return; }
+        if (v === cur || (v == null && cur == null)) return;
+        rows.push({ name: i.dataset.gn, n: v == null ? 0 : v });
+      });
+      if (bad) { msg.textContent = bad + ' — 0~500 사이 숫자로 넣어 주세요.'; return; }
+      if (!rows.length) { msg.textContent = '바뀐 숫자가 없어요.'; return; }
+      btn.disabled = true; msg.textContent = '';
+      call({ a: 'guest_set', token: state.s.token, day: state.gday, rows: rows }).then(function (r) {
+        btn.disabled = false;
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (!r.ok) {
+          msg.textContent = { day: '이번 주·지난주 영업일만 넣을 수 있어요.', member: (r.name || '') + '님은 우리 팀 승인된 직원이 아니에요. 새로고침해 주세요.', n: (r.name || '') + ' — 0~500 사이 숫자로 넣어 주세요.', forbidden: '팀장만 넣을 수 있어요.', empty: '바뀐 숫자가 없어요.' }[r.error] || '저장이 안 됐어요. 다시 해 주세요.';
+          return;
+        }
+        rows.forEach(function (x) { delete state.gdraft[state.gday + '|' + x.name]; });
+        state.data.guests = r.guests; state.gmsg = '저장했어요 · ' + rows.length + '명';
+        render();
+      }).catch(function () { btn.disabled = false; msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+    });
+  }
   function renderGuest(area, d) {
     var g = d.guests || {}, w = g[state.week] || { rows: [], total: 0 };
     var isNow = state.week === 'week', ti = isNow && w.start ? Math.round((Date.parse(g.today) - Date.parse(w.start)) / 864e5) : -1;
@@ -448,7 +530,8 @@ details.all .list { margin-top: 8px; }
     var best = Math.max.apply(null, SALES.map(function (t) { return teamSum[t]; }));
     var me = w.rows.filter(function (r) { return r.mine; })[0];
     var top = w.rows.filter(function (r) { return r.rank <= 3; });
-    var h = '<div class="gh"><div><h1>' + (isNow ? '이번 주' : '지난주') + ' 게스트 순위</h1>' +
+    var canIn = !!(d.admin || (d.approver && d.team));
+    var h = (canIn ? ginHtml(d) : '') + '<div class="gh"><div><h1>' + (isNow ? '이번 주' : '지난주') + ' 게스트 순위</h1>' +
       (w.start ? '<span class="range">' + md(w.start) + '(월) ~ ' + md(w.end) + '(일) 영업일</span>' : '') + '</div>' +
       '<div class="wk" role="tablist" aria-label="주 선택"><button type="button" data-w="week" aria-selected="' + isNow + '">이번 주</button>' +
       '<button type="button" data-w="prev" aria-selected="' + !isNow + '">지난주</button></div></div>';
@@ -466,8 +549,9 @@ details.all .list { margin-top: 8px; }
           w.rows.map(function (r) { return rankCard(r, ti); }).join('') + '</div></details>';
       }
     }
-    h += '<p class="how">인스타 게스트 방에 <code>이름 게스트 5</code>처럼 올리면 매일 아침 9시쯤 반영돼요. 새벽에 올리면 전날 영업분, 같은 날 다시 올리면 마지막 숫자로 고쳐져요. 팀별 합계는 스태프 페이지에 가입한 이름 기준이에요.</p>';
+    h += '<p class="how">' + (canIn ? '위 <b>게스트 입력</b>에서 영업일을 고르고 팀원별 숫자를 넣은 뒤 저장하면 바로 순위에 반영돼요. 낮 12시 전은 전날 영업으로 잡혀요. 이번 주·지난주까지 고칠 수 있어요.' : '게스트 수는 팀장님이 스태프 페이지에서 넣고, 넣는 즉시 순위에 반영돼요.') + '</p>';
     area.innerHTML = h;
+    bindGin(area, d);
     area.querySelectorAll('[data-w]').forEach(function (b) { b.addEventListener('click', function () { state.week = b.dataset.w; render(); }); });
   }
 
