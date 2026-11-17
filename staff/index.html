@@ -2170,7 +2170,7 @@ details.all .list { margin-top: 8px; }
     }).catch(function () { state.tbFly = 0; var r = { error: 'net' }; if (after) after(r); return r; });
   }
   function tbSeatsOf(fl) { var f = (state.tb.floors || []).filter(function (x) { return x.id === fl; })[0]; return f ? f.zones : []; }
-  function tbShowWeekend() { return !!(state.tb && (state.tb.weekend || state.tbWk)); }
+  function tbShowWeekend() { return true; }   // 주말 자리도 항상 보이게 (대표 결정 2026-11-18)
   // 자리별로: 승인된 줄(cur.seat) 먼저, 없으면 내 요청/대기 요청(req.seat)
   function tbIndex(fl) {
     var at = {}, wait = [];
@@ -2478,8 +2478,7 @@ details.all .list { margin-top: 8px; }
       var mine = t.rows.filter(function (r) { return r.mine && r.status; });
       if (mine.length) h += '<div class="kqueue mine"><h2 class="sec" style="margin:0 0 8px">⏳ 내 요청 ' + mine.length + '건</h2>' + mine.map(tbReqCard).join('') + '</div>';
     }
-    h += '<div class="tbtools">' + (edit ? '<button class="btn btn-hot" type="button" id="tbAdd">+ 손님 넣기</button>' : '') + '<button class="btn" type="button" id="tbCopy">📋 카톡용 복사</button>' +
-      (t.weekend ? '' : '<button class="btn" type="button" id="tbWk" aria-pressed="' + !!state.tbWk + '">' + (state.tbWk ? '주말 자리 숨기기' : '주말 자리 보기') + '</button>') + '</div>';
+    h += '<div class="tbtools">' + (edit ? '<button class="btn btn-hot" type="button" id="tbAdd">+ 손님 넣기</button>' : '') + '<button class="btn" type="button" id="tbCopy">📋 카톡용 복사</button>' + '</div>';
     var view = tbView();
     h += '<div class="tbvw" role="group" aria-label="보기"><button type="button" data-tbv="map" aria-pressed="' + (view === 'map') + '">🗺 도면</button><button type="button" data-tbv="list" aria-pressed="' + (view === 'list') + '">☰ 목록</button></div>';
     if (view === 'map') h += tbMapHtml(fl, ix);
@@ -2501,7 +2500,6 @@ details.all .list { margin-top: 8px; }
     area.querySelectorAll('[data-tbedit]').forEach(function (b) { b.addEventListener('click', function () { var r = tbFind(b.dataset.tbedit); tbOpen(r, r && (r.req || r.cur) ? (r.req || r.cur).seat : ''); }); });
     if ($('tbOkAll')) $('tbOkAll').addEventListener('click', function () { if (!armed(this, '모두 승인')) return; tbJudge(pend.map(function (r) { return r.id; }), true, '', this); });
     if ($('tbAdd')) $('tbAdd').addEventListener('click', function () { tbOpen(null, ''); });
-    if ($('tbWk')) $('tbWk').addEventListener('click', function () { state.tbWk = !state.tbWk; render(); });
     area.querySelectorAll('[data-tbv]').forEach(function (b) { b.addEventListener('click', function () { state.tbView = b.dataset.tbv; try { localStorage.setItem('gs_tb_view', state.tbView); } catch (e) {} render(); }); });
     $('tbCopy').addEventListener('click', tbCopy);
   }
