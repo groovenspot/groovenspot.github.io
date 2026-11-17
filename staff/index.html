@@ -798,6 +798,27 @@ details.all .list { margin-top: 8px; }
   function quietSync() { if (state.s && state.data && !document.hidden && state.bview !== 'edit' && Date.now() - state.lastSync > 30000) refresh(true); }
   setInterval(quietSync, 90000);
   document.addEventListener('visibilitychange', quietSync);
+  // 새 버전 자동 반영 (2026-11-18): 머지한 화면이 폰에 옛날 것으로 남지 않게. 앱을 다시 볼 때·5분마다 이 페이지를 새로 받아 보고,
+  // 처음과 달라졌으면 입력 중이 아닐 때 새로고침한다(입력 창이 열려 있으면 닫힌 뒤에).
+  var PAGE_V = null, PAGE_NEW = false;
+  function pageHash(t) { var h = 0; for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return h; }
+  function checkPage() {
+    if (PAGE_NEW) return tryReload();
+    try {
+      fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : null; }).then(function (t) {
+        if (!t || t.length < 1000) return;
+        var h = pageHash(t);
+        if (PAGE_V === null) PAGE_V = h; else if (h !== PAGE_V) { PAGE_NEW = true; tryReload(); }
+      }).catch(function () {});
+    } catch (e) {}
+  }
+  function tryReload() {
+    var a = document.activeElement, typing = a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
+    if ($('sheet').hidden && !typing) location.reload();
+  }
+  checkPage();
+  setInterval(function () { if (!document.hidden) checkPage(); }, 300000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) checkPage(); });
 
   function refresh(keepScroll) {
     var soft = keepScroll && state.data;
