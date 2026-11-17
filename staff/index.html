@@ -87,6 +87,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 .chip.t-DJ팀 { border-color: var(--s); color: #c9a3ff; }
 .chip.adm { background: var(--g); border-color: var(--g); color: #120800; }
 .chip.lead { background: rgba(161,91,255,.18); border-color: var(--s); color: #d6bcff; }
+.chip.vice { border-color: var(--s); color: #d6bcff; }
 .title { font-size: 17px; font-weight: 800; line-height: 1.4; }
 .empty { border: 1px dashed var(--line-2); border-radius: 16px; padding: 24px 20px; color: var(--muted); text-align: center; margin: 0; }
 .dec { display: grid; gap: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
@@ -418,6 +419,7 @@ details.all .list { margin-top: 8px; }
   function show(view) { ['loginView', 'appView', 'docView'].forEach(function (id) { $(id).hidden = id !== view; }); window.scrollTo(0, 0); }
   function today() { var d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); }
   function md(s) { var p = String(s).split('-'); return +p[1] + '/' + +p[2]; }
+  function roleChip(r) { return r === '관리자' ? '<span class="chip adm">대표</span>' : r === '팀장' ? '<span class="chip lead">팀장</span>' : r === '부팀장' ? '<span class="chip vice">부팀장</span>' : ''; }
   function teamChip(t) { return t ? '<span class="chip t-' + esc(t) + '">' + esc(t) + '</span>' : ''; }
   // 운영팀 / 영업팀(클로버·아룬·고트) / DJ팀
   function teamOptions(cur) {
@@ -470,7 +472,7 @@ details.all .list { margin-top: 8px; }
     $('loginBtn').disabled = true; $('loginMsg').textContent = '';
     call({ a: 'login', id: id, password: pw }).then(function (r) {
       if (r.ok) {
-        state.s = { token: r.token, name: r.name, team: r.team, admin: !!r.admin, lead: !!r.lead, exp: r.exp }; save(state.s);
+        state.s = { token: r.token, name: r.name, team: r.team, admin: !!r.admin, lead: !!r.lead, role: r.role || '', exp: r.exp }; save(state.s);
         $('lpw').value = ''; $('joinDone').hidden = true; return openApp();
       }
       $('lpw').value = '';
@@ -527,7 +529,7 @@ details.all .list { margin-top: 8px; }
   function setWho() {
     var s = state.s;
     $('whoName').textContent = s.name;
-    $('whoTeam').innerHTML = (s.admin ? '<span class="chip adm">대표</span>' : s.lead ? '<span class="chip lead">팀장</span>' : '') + (s.team ? ' ' + teamChip(s.team) : '');
+    $('whoTeam').innerHTML = (s.admin ? roleChip('관리자') : roleChip(s.role || (s.lead ? '팀장' : ''))) + (s.team ? ' ' + teamChip(s.team) : '');
   }
   function openApp() {
     setWho(); $('who').hidden = false; show('appView');
@@ -558,7 +560,7 @@ details.all .list { margin-top: 8px; }
       }
       $('sync').textContent = ''; state.lastSync = Date.now();
       state.data = r; saveData(r);
-      state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; save(state.s); setWho();
+      state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; state.s.role = r.role || ''; save(state.s); setWho();
       renderSoon();
     }).catch(function () {
       busy(false);
@@ -670,7 +672,7 @@ details.all .list { margin-top: 8px; }
     if (days.indexOf(state.gday) < 0) state.gday = today;
     var team = d.admin ? (TEAMS.indexOf(state.gteam) >= 0 ? state.gteam : (state.gteam = SALES[0])) : d.team;
     var nk = function (x) { return String(x || '').replace(/\s+/g, '').toLowerCase(); }, ak = {};
-    var mem = (d.accounts || []).filter(function (a) { return a.status === '승인' && a.team === team; }).map(function (a) { ak[nk(a.name)] = 1; return { name: a.name, lead: a.role === '팀장' }; });
+    var mem = (d.accounts || []).filter(function (a) { return a.status === '승인' && a.team === team; }).map(function (a) { ak[nk(a.name)] = 1; return { name: a.name, role: a.role }; });
     (d.roster || []).forEach(function (r) { if (r.team === team && !ak[nk(r.name)]) mem.push({ name: r.name, ros: true }); });
     state.gteamCur = team;
     var h = '<details class="gin" open><summary>✏️ 게스트 입력 · ' + esc(team) + '</summary>';
@@ -683,7 +685,7 @@ details.all .list { margin-top: 8px; }
     if (!mem.length) h += '<p class="empty">아직 ' + esc(team) + ' 팀원이 없어요. 아래에 팀원 이름을 추가하면 게스트 수를 넣을 수 있어요.</p>';
     else h += mem.map(function (a) {
       var cur = guestOf(g, state.gday, a.name), k = state.gday + '|' + a.name, v = state.gdraft[k] != null ? state.gdraft[k] : (cur == null ? '' : String(cur));
-      return '<div class="grow"><span class="gn">' + esc(a.name) + (a.lead ? '<span class="chip lead">팀장</span>' : '') + (a.ros ? '<span class="chip ros">명단</span>' : '') + '</span>' +
+      return '<div class="grow"><span class="gn">' + esc(a.name) + roleChip(a.role) + (a.ros ? '<span class="chip ros">명단</span>' : '') + '</span>' +
         (a.ros ? '<button type="button" class="btn btn-bad rdel' + (state.rarm === a.name ? ' arm' : '') + '" data-rdel="' + esc(a.name) + '">' + (state.rarm === a.name ? '빼기' : '✕') + '</button>' : '') +
         '<input type="number" inputmode="numeric" min="0" max="500" step="1" placeholder="0" data-gn="' + esc(a.name) + '" data-cur="' + (cur == null ? '' : cur) + '" value="' + esc(v) + '" aria-label="' + esc(a.name) + ' 게스트 수"><span class="u">명</span></div>';
     }).join('') + '<div class="gbar"><button class="btn btn-hot" id="gSave" type="button">저장</button><p class="msg' + (state.gmsg ? ' ok' : '') + '" id="gMsg" role="alert">' + esc(state.gmsg) + '</p></div>';
@@ -1066,7 +1068,7 @@ details.all .list { margin-top: 8px; }
       '<button class="btn btn-hot" id="dNew" type="button">＋ 새 대화</button></div>';
     if (state.dmPick) {
       h += '<div class="pick"><input id="dFind" placeholder="이름 찾기" autocomplete="off"><div class="plist">' + m.people.map(function (p) {
-        return '<button type="button" class="pp" data-to="' + esc(p.name) + '"><strong>' + esc(p.name) + '</strong>' + (p.role === '관리자' ? '<span class="chip adm">대표</span>' : p.role === '팀장' ? '<span class="chip lead">팀장</span>' : '') + teamChip(p.team) + '</button>';
+        return '<button type="button" class="pp" data-to="' + esc(p.name) + '"><strong>' + esc(p.name) + '</strong>' + roleChip(p.role) + teamChip(p.team) + '</button>';
       }).join('') + (m.people.length ? '' : '<p class="empty">다른 직원이 아직 없어요.</p>') + '</div></div>';
     }
     if (!m.convs.length) h += '<p class="empty">아직 대화가 없어요. ＋ 새 대화로 시작해 보세요.</p>';
@@ -1172,7 +1174,7 @@ details.all .list { margin-top: 8px; }
   // ── 내 정보 (이름·전화번호·비밀번호) ──
   function openMe() {
     if (!state.s) return;
-    var d = state.data || {}, me = d.me || {}, role = state.s.admin ? '대표' : state.s.lead ? '팀장' : '직원';
+    var d = state.data || {}, me = d.me || {}, role = state.s.admin ? '대표' : state.s.role === '부팀장' ? '부팀장' : state.s.lead ? '팀장' : '직원';
     showSheet('<h2>내 정보</h2><p class="note" style="margin:0 0 14px">' + esc(state.s.team || '팀 없음') + ' · ' + role + ' — 팀·권한은 대표님이 정해요.</p>' +
       '<form class="meform" id="mName" novalidate><label>이름 (로그인할 때 써요)<input id="mNameI" maxlength="12" autocomplete="off" value="' + esc(state.s.name) + '"></label>' +
       '<button class="btn btn-ok" type="submit">이름 바꾸기</button><p class="msg" id="mNameM" role="alert"></p></form>' +
@@ -1245,7 +1247,7 @@ details.all .list { margin-top: 8px; }
       return '<select data-team aria-label="' + esc(a.name) + ' 팀"><option value="">팀 선택</option>' + teamOptions(a.team) + '</select>';
     }
     function roleSel(a) {
-      return '<select data-role aria-label="' + esc(a.name) + ' 권한">' + ['직원', '팀장'].map(function (r) {
+      return '<select data-role aria-label="' + esc(a.name) + ' 권한">' + ['직원', '부팀장', '팀장'].map(function (r) {
         return '<option' + (a.role === r ? ' selected' : '') + '>' + r + '</option>';
       }).join('') + '</select>';
     }
@@ -1265,17 +1267,17 @@ details.all .list { margin-top: 8px; }
           if (a.status === '대기') ctl = '<button class="btn btn-ok" data-op="approve">승인</button><button class="btn btn-bad" data-op="reject">거절</button>';
           else if (a.self) ctl = '<span class="note" style="margin:0">내 계정</span>';
           else if (a.role === '직원') ctl = '<button class="btn btn-bad" data-op="delete">퇴사 · 탈퇴</button>';
-          else ctl = '<span class="note" style="margin:0">팀장 계정은 대표님만 바꿀 수 있어요</span>';
+          else ctl = '<span class="note" style="margin:0">팀장·부팀장 계정은 대표님만 바꿀 수 있어요</span>';
         }
         return '<div class="acc' + (a.status === '대기' ? ' wait' : '') + '" data-name="' + esc(a.name) + '">' +
-          '<div class="hd"><strong>' + esc(a.name) + '</strong>' + (a.role === '관리자' ? '<span class="chip adm">대표</span>' : a.role === '팀장' ? '<span class="chip lead">팀장</span>' : '') + teamChip(a.team) +
+          '<div class="hd"><strong>' + esc(a.name) + '</strong>' + roleChip(a.role) + teamChip(a.team) +
           (tel ? '<a href="tel:' + esc(tel) + '">' + esc(a.phone) + '</a>' : '') + '</div>' +
           '<div class="row">신청 ' + esc(a.at || '-') + (a.status !== '대기' && a.status !== '승인' ? ' · ' + esc(a.status) : '') + '</div>' +
           '<div class="ctl">' + ctl + '</div><div class="err" role="alert"></div></div>';
       }).join('') + '</div>';
     });
     h += boss
-      ? '<p class="how">가입할 때 고른 팀이 미리 골라져 있어요. 승인할 때 팀과 권한을 확인해 주세요. <b>직원</b>은 게스트 현황·신규 교육·팀 게시판, <b>팀장</b>은 회의록·결정사항까지 보고 자기 팀 가입 승인·퇴사자 탈퇴도 할 수 있어요. 중지·탈퇴하면 그 사람은 바로 로그아웃돼요. 비밀번호를 잊은 직원은 탈퇴 후 다시 가입 신청하면 돼요.</p>'
+      ? '<p class="how">가입할 때 고른 팀이 미리 골라져 있어요. 승인할 때 팀과 권한을 확인해 주세요. <b>직원</b>은 게스트 현황·신규 교육·팀 게시판, <b>부팀장</b>은 직원 권한에 회의록·결정사항 보기가 더해지고, <b>팀장</b>은 회의록·결정사항까지 보고 자기 팀 가입 승인·퇴사자 탈퇴·게스트 입력·팀 게시판 관리도 할 수 있어요. 손님 문의 메시지는 영업팀 팀장에게만 가요. 중지·탈퇴하면 그 사람은 바로 로그아웃돼요. 비밀번호를 잊은 직원은 탈퇴 후 다시 가입 신청하면 돼요.</p>'
       : '<p class="how">' + esc(d.team) + ' 팀으로 가입 신청한 사람만 보여요. 승인하면 직원 권한으로 들어와요. 퇴사한 직원은 <b>퇴사 · 탈퇴</b>를 두 번 누르면 계정이 지워지고 바로 로그아웃돼요. 팀장 지정·중지·전화번호는 대표님만 볼 수 있어요.</p>';
     area.innerHTML = h;
 
