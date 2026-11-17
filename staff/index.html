@@ -346,6 +346,18 @@ details.all .list { margin-top: 8px; }
 .meform:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
 .meform .btn { margin-top: 0 !important; }
 .bell { background: none; border: 0; font-size: 18px; line-height: 1; padding: 6px; cursor: pointer; }
+/* 🔎 분실물 */
+.lfadd { width: 100%; min-height: 56px; font-size: 17px; }
+.lfq { display: grid; gap: 10px; margin: 0 0 12px; }
+.lfi { background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 10px; }
+.lfp { display: flex; gap: 6px; overflow-x: auto; }
+.lfp img { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; background: #000; border: 1px solid var(--line-2); flex: none; }
+.lfm { display: grid; gap: 2px; margin: 8px 2px 0; }
+.lfm b { font-size: 15px; }
+.lfm span { font-size: 12px; color: var(--muted); }
+.lfb { display: flex; align-items: center; gap: 12px; margin: 8px 0 0; }
+.lfb .btn { flex: 1; min-height: 44px; }
+.lfb .link { font-size: 12px; }
 /* 💬 탭 대화 (테이블·연출) */
 body.hasfab main { padding-bottom: 110px; }
 .chatfab { position: fixed; right: 16px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 15; width: 58px; height: 58px; border-radius: 50%; border: 0; background: var(--g); color: #120800; font-size: 26px; box-shadow: 0 6px 20px rgba(0,0,0,.5); cursor: pointer; }
@@ -623,6 +635,7 @@ body.hasfab main { padding-bottom: 110px; }
       <button type="button" role="tab" data-tab="guest" aria-selected="true">게스트 현황</button>
       <button type="button" role="tab" data-tab="table" aria-selected="false" hidden>🪑 테이블</button>
       <button type="button" role="tab" data-tab="yc" aria-selected="false" hidden>🎆 연출</button>
+      <button type="button" role="tab" data-tab="lost" aria-selected="false" hidden>🔎 분실물</button>
       <button type="button" role="tab" data-tab="board" aria-selected="false">게시판</button>
       <button type="button" role="tab" data-tab="dm" aria-selected="false">메시지</button>
       <button type="button" role="tab" data-tab="keep" aria-selected="false" hidden>🍾 킵</button>
@@ -763,6 +776,7 @@ body.hasfab main { padding-bottom: 110px; }
     state.s = null; state.data = null; state.tab = 'guest'; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
     state.tb = null; state.tbDay = ''; state.tbMsg = ''; state.tbErr = ''; state.tbFly = 0;
     state.yc = null; state.ycMsg = ''; state.ycErr = ''; state.ycFly = 0;
+    state.lf = null; state.lfMsg = ''; state.lfErr = ''; state.lfFly = 0;
     try { chatClose(); state.chatTail = {}; $('chatFab').hidden = true; } catch (e) {}
     state.keep = null; state.kview = 'list'; state.kcur = null; state.kq = ''; state.kf = ''; state.kadd = null; state.kundo = null; state.kstale = false; state.kfly = 0; state.kmulti = false; state.kopt = {}; state.ktmp = {};
     try { localStorage.removeItem(KKEY); } catch (e) {}
@@ -845,7 +859,7 @@ body.hasfab main { padding-bottom: 110px; }
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
     if (/^chat:(table|yc)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
-    if (['guest', 'table', 'yc', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep'].indexOf(h) >= 0) state.tab = h;
+    if (['guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep'].indexOf(h) >= 0) state.tab = h;
     swToken(state.s.token); paintBell();
     if (!state.keep) { var kc = kLoad(); if (kc) { state.keep = kc; state.kstale = true; } }
     var c = loadData();
@@ -853,6 +867,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'dm') enterDm();
     if (state.tab === 'table') loadTb();
     if (state.tab === 'yc') loadYc();
+    if (state.tab === 'lost') loadLost();
     if (state.tab === 'keep') loadKeep();
     if (state.chatOpenNext) { var co = state.chatOpenNext; state.chatOpenNext = ''; setTimeout(function () { chatOpen(co); }, 400); }
     else setTimeout(function () { if (state.s && state.tab !== 'keep' && (!state.keep || state.kstale)) loadKeep(); }, 1500);   // 킵 탭을 누르기 전에 미리 받아 둔다
@@ -919,6 +934,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (state.tab === 'keep') loadKeep();
       if (state.tab === 'table') loadTb();
       if (state.tab === 'yc') loadYc();
+      if (state.tab === 'lost') loadLost();
       if (state.tab === 'board' && state.bview !== 'edit') refresh(true);
       if (state.tab === 'dm') enterDm();
     });
@@ -938,7 +954,8 @@ body.hasfab main { padding-bottom: 110px; }
       acc: ['가입 승인', pending],
       keep: ['🍾 킵', keepDue()],
       table: ['🪑 테이블', d.tableApprove ? (d.tablePending || 0) : 0],
-      yc: ['🎆 연출', d.ycWaiting || 0]
+      yc: ['🎆 연출', d.ycWaiting || 0],
+      lost: ['🔎 분실물', 0]
     };
     var LEAD_TABS = { notes: 1, dec: 1 }, hasBoard = !!(d.board && d.board.teams && d.board.teams.length), canAcc = !!(d.admin || d.approver);
     if (!labels[state.tab] || (state.tab === 'acc' && !canAcc) || (state.tab === 'board' && !hasBoard)) state.tab = 'guest';
@@ -946,6 +963,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'keep' && !d.keep) state.tab = 'guest';
     if (state.tab === 'table' && !d.table) state.tab = 'guest';
     if (state.tab === 'yc' && !d.yc) state.tab = 'guest';
+    if (state.tab === 'lost' && !d.lost) state.tab = 'guest';
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
       if (b.dataset.tab === 'acc') b.hidden = !canAcc;
@@ -954,6 +972,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (b.dataset.tab === 'keep') b.hidden = !d.keep;
       if (b.dataset.tab === 'table') b.hidden = !d.table;
       if (b.dataset.tab === 'yc') b.hidden = !d.yc;
+      if (b.dataset.tab === 'lost') b.hidden = !d.lost;
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
@@ -975,6 +994,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'keep') return renderKeep(area, d);
     if (state.tab === 'table') return renderTable(area);
     if (state.tab === 'yc') return renderYc(area);
+    if (state.tab === 'lost') return renderLost(area);
     var list = state.tab === 'edu' ? edu : notes;
     if (!list.length) { area.innerHTML = '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; return; }
     area.innerHTML = '<div class="list">' + list.map(function (n) {
@@ -2212,7 +2232,7 @@ body.hasfab main { padding-bottom: 110px; }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
     var t = e.data && e.data.tab, ct = /^chat:(table|yc)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
-    if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); }
+    if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); }
   });
 
   // ── 🪑 테이블 현황 (2026-11-18) ─────────────────────────
@@ -2555,6 +2575,122 @@ body.hasfab main { padding-bottom: 110px; }
     });
   }
 
+  // ── 🔎 분실물 (2026-11-18): 사진 올리면 홈페이지 /lost/ 에 그 날짜로. 찾아가면 '찾아감'. 10일 지나면 자동 삭제.
+  function loadLost(quiet) {
+    if (!state.s || state.lfFly) return;
+    if (!state.lf && state.tab === 'lost') $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
+    state.lfFly = 1;
+    return call({ a: 'lf_get', token: state.s.token }).then(function (r) {
+      state.lfFly = 0;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) { state.lfErr = '분실물을 못 불러왔어요.'; if (state.tab === 'lost') renderSoon(); return; }
+      var same = state.lf && JSON.stringify(state.lf.list) === JSON.stringify(r.list);
+      state.lf = r; state.lfErr = '';
+      if (state.tab === 'lost' && !same && $('sheet').hidden) renderSoon();
+    }).catch(function () { state.lfFly = 0; state.lfErr = '연결이 안 돼요.'; if (state.tab === 'lost' && !quiet) renderSoon(); });
+  }
+  function lfErr(r) { return { photo: '사진을 한 장 이상 넣어 주세요. (jpg·png, 3장까지)', date: '날짜는 오늘부터 10일 전까지만 돼요.', text: '<, > 는 쓸 수 없어요.', busy: '잠시 후 다시 해 주세요.', notfound: '이미 지워졌어요.' }[r.error] || '저장이 안 됐어요. 다시 해 주세요.'; }
+  function renderLost(area) {
+    if (!state.lf) { area.innerHTML = state.lfErr ? '<p class="empty">' + esc(state.lfErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.lfFly) loadLost(); return; }
+    var L = state.lf, groups = {}, days = [];
+    L.list.forEach(function (x) { if (!groups[x.date]) { groups[x.date] = []; days.push(x.date); } groups[x.date].push(x); });
+    var h = '<div class="tbh"><div><h1>🔎 분실물</h1><p class="sub">보관 ' + L.list.length + '개 · 홈페이지에 날짜별로 올라가요</p></div>' +
+      '<a class="btn" href="/lost/" target="_blank" rel="noopener" style="width:auto;flex:none;padding:0 14px">홈페이지 보기</a></div>';
+    h += '<p class="msg ok" id="lfBox"' + (state.lfMsg ? '' : ' hidden') + '>' + esc(state.lfMsg || '') + '</p>'; state.lfMsg = '';
+    h += '<button class="btn btn-hot lfadd" type="button" id="lfNew">📷 분실물 사진 올리기</button>';
+    h += '<p class="note" style="margin:8px 0 14px">10일이 지난 분실물은 자동으로 삭제돼요. 신분증·카드 번호는 가리고 찍어 주세요. 메모는 직원만 봐요.</p>';
+    if (!days.length) h += '<p class="empty">보관 중인 분실물이 없어요.</p>';
+    days.forEach(function (d) {
+      h += '<h2 class="sec tbz">' + esc(tbDayLabel(d)) + ' <span class="row">' + groups[d].length + '개</span></h2><div class="lfq">';
+      groups[d].forEach(function (x) {
+        h += '<div class="lfi" data-lfid="' + esc(x.id) + '"><div class="lfp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="분실물">'; }).join('') + '</div>' +
+          '<div class="lfm">' + (x.memo ? '<b>' + esc(x.memo) + '</b>' : '') + '<span>' + esc(x.by) + ' · ' + esc(String(x.at).slice(5, 16).replace('-', '/')) + '</span></div>' +
+          '<div class="lfb"><button class="btn btn-ok" type="button" data-lfgo="1">✅ 찾아감 · 삭제</button><button class="link" type="button" data-lfx="1">잘못 올림 · 지우기</button></div></div>';
+      });
+      h += '</div>';
+    });
+    if (state.lfErr) h += '<p class="msg">' + esc(state.lfErr) + '</p>';
+    area.innerHTML = h;
+    hydrateImgs(area);
+    $('lfNew').addEventListener('click', lfForm);
+    area.querySelectorAll('[data-lfid]').forEach(function (card) {
+      var id = card.dataset.lfid;
+      card.querySelectorAll('[data-lfgo],[data-lfx]').forEach(function (b) { b.addEventListener('click', function () {
+        var gone = !!b.dataset.lfx; if (!armed(b, gone ? '잘못 올림 · 지우기' : '✅ 찾아감 · 삭제')) return; b.disabled = true;
+        call({ a: 'lf_del', token: state.s.token, id: id, gone: gone ? 1 : 0 }).then(function (r) { if (r.ok) { state.lf = r; state.lfMsg = gone ? '지웠어요.' : '찾아감으로 처리하고 홈페이지에서도 내렸어요.'; } else state.lfErr = lfErr(r); render(); });
+      }); });
+    });
+  }
+  // 사진 찍은 날짜(EXIF) → 영업일(낮 12시 전이면 전날). 없으면 파일 날짜.
+  function lfExifDate(file) {
+    return new Promise(function (res) {
+      if (!/jpe?g/i.test(file.type || '') && !/\.jpe?g$/i.test(file.name || '')) return res(null);
+      var fr = new FileReader();
+      fr.onload = function () {
+        try {
+          var v = new DataView(fr.result), o = 2;
+          if (v.getUint16(0) !== 0xFFD8) return res(null);
+          while (o < v.byteLength - 4) {
+            var mk = v.getUint16(o), len = v.getUint16(o + 2);
+            if (mk === 0xFFE1 && v.getUint32(o + 4) === 0x45786966) {
+              var t = o + 10, le = v.getUint16(t) === 0x4949, u16 = function (p) { return v.getUint16(t + p, le); }, u32 = function (p) { return v.getUint32(t + p, le); };
+              var str = function (p, n) { var x = ''; for (var i = 0; i < n - 1; i++) x += String.fromCharCode(v.getUint8(t + p + i)); return x; };
+              var find = function (ifd, tag) { var n = u16(ifd); for (var i = 0; i < n; i++) { var e = ifd + 2 + i * 12; if (u16(e) === tag) return e; } return 0; };
+              var ifd0 = u32(4), ex = find(ifd0, 0x8769), e = ex ? find(u32(ex + 8), 0x9003) : 0;
+              if (!e) e = find(ifd0, 0x0132);
+              if (e) { var d = str(u32(e + 8), 20); if (/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}/.test(d)) return res(d); }
+              return res(null);
+            }
+            if ((mk & 0xFF00) !== 0xFF00) break;
+            o += 2 + len;
+          }
+        } catch (e) {}
+        res(null);
+      };
+      fr.onerror = function () { res(null); };
+      fr.readAsArrayBuffer(file.slice(0, 262144));
+    });
+  }
+  function lfBizDay(y, mo, d, hh) { var x = new Date(Date.UTC(y, mo - 1, d)); if (hh < 12) x = new Date(x.getTime() - 864e5); return x.toISOString().slice(0, 10); }
+  function lfForm() {
+    var L = state.lf || {}, photos = [], date = L.today || '', picked = false;
+    var h = '<h2>📷 분실물 올리기</h2><div class="ephotos" id="lfPh"></div>' +
+      '<label>날짜 (사진 찍은 날 · 영업일)<input id="lfDate" type="date" value="' + esc(date) + '" min="' + esc(L.lim || '') + '" max="' + esc(L.today || '') + '"></label>' +
+      '<label>메모 (선택 · 직원만 봐요)<input id="lfMemo" maxlength="60" autocomplete="off" placeholder="예: 검정 카드지갑 · 3층 L5"></label>' +
+      '<p class="msg" id="lfMsg"></p><button class="btn btn-hot" type="button" id="lfSave">홈페이지에 올리기</button>';
+    showSheet(h);
+    function paint() {
+      var box = $('lfPh'); if (!box) return;
+      box.innerHTML = photos.map(function (p, i) { return '<span class="ph"><img src="' + p.url + '" alt=""><button type="button" data-lfrm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
+        (photos.length < 3 ? '<label class="addph addbig">📷 사진 찍기 · 고르기<input type="file" id="lfFile" accept="image/*" multiple hidden></label>' : '');
+      box.querySelectorAll('[data-lfrm]').forEach(function (b) { b.addEventListener('click', function () { photos.splice(+b.dataset.lfrm, 1); paint(); }); });
+      if ($('lfFile')) $('lfFile').addEventListener('change', function () {
+        var files = Array.prototype.slice.call(this.files || []).slice(0, 3 - photos.length);
+        if (files[0] && !picked) {   // 첫 사진의 날짜로
+          var f0 = files[0];
+          lfExifDate(f0).then(function (ex) {
+            var y, mo, d, hh;
+            if (ex) { y = +ex.slice(0, 4); mo = +ex.slice(5, 7); d = +ex.slice(8, 10); hh = +ex.slice(11, 13); }
+            else { var t = new Date(f0.lastModified || Date.now()), k = new Date(t.getTime() + 9 * 3600e3); y = k.getUTCFullYear(); mo = k.getUTCMonth() + 1; d = k.getUTCDate(); hh = k.getUTCHours(); }
+            var bd = lfBizDay(y, mo, d, hh);
+            if (L.lim && bd < L.lim) bd = L.lim; if (L.today && bd > L.today) bd = L.today;
+            if ($('lfDate')) { $('lfDate').value = bd; picked = true; }
+          });
+        }
+        Promise.all(files.map(shrink)).then(function (xs) { photos = photos.concat(xs).slice(0, 3); paint(); }).catch(function () { $('lfMsg').textContent = '사진을 못 읽었어요.'; });
+      });
+    }
+    paint();
+    $('lfSave').addEventListener('click', function () {
+      var b = this, m = $('lfMsg');
+      if (!photos.length) { m.textContent = lfErr({ error: 'photo' }); return; }
+      b.disabled = true; m.textContent = '올리는 중…';
+      call({ a: 'lf_add', token: state.s.token, photos: photos.map(function (p) { return { type: p.type, data: p.data }; }), date: $('lfDate').value, memo: $('lfMemo').value.trim() }).then(function (r) {
+        if (!r.ok) { b.disabled = false; m.textContent = lfErr(r); return; }
+        state.lf = r; var sh = $('sheet'); sh.hidden = true; sh.innerHTML = ''; state.lfMsg = '올렸어요. 홈페이지 분실물에 바로 보여요.'; render();
+      }).catch(function () { b.disabled = false; m.textContent = '연결이 안 돼요.'; });
+    });
+  }
   // ── 💬 탭 대화 (2026-11-18): 테이블·연출 탭에서 오른쪽 아래 버튼 → 그 탭 대화방. 안 읽은 수는 탭 목록 응답의 꼬리(chat)로.
   var CHAT_NAME = { table: '🪑 테이블 대화', yc: '🎆 연출 대화' };
   function chatRoom() { return state.tab === 'table' || state.tab === 'yc' ? state.tab : ''; }

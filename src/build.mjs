@@ -40,7 +40,7 @@ const GMAP_EMBED = (lang) => `https://maps.google.com/maps?q=${encodeURIComponen
 const VERSION = Date.now().toString(36);
 
 const FAQ_N = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6];
-const PAGES = ['', 'links/', 'events/', 'event/', 'floors/', 'seats/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/', 'privacy/'];
+const PAGES = ['', 'links/', 'events/', 'event/', 'floors/', 'seats/', 'menu/', 'gallery/', 'artists/', 'reserve/', 'info/', 'request/', 'guide/', 'privacy/', 'lost/'];
 const prefix = (lang) => (lang === 'ko' ? '' : `/${lang}`);
 const href = (lang, page) => `${prefix(lang)}/${page}`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -111,6 +111,7 @@ ${GA_TAG}
   ${nav.map(([p, k]) => `<a href="${p === '/partners/' && lang !== 'ko' ? p + '?lang=' + lang : p[0] === '/' ? p : href(lang, p)}"${active === p ? ' aria-current="page"' : ''}>${L(k)}</a>`).join('\n  ')}
   <a href="${href(lang, 'artists/')}"${active === 'artists/' ? ' aria-current="page"' : ''}>${L('nav.artists')}</a>
   <a href="${href(lang, 'guide/')}"${active === 'guide/' ? ' aria-current="page"' : ''}>${GUIDE[lang].t}</a>
+  <a href="${href(lang, 'lost/')}"${active === 'lost/' ? ' aria-current="page"' : ''}>${L('nav.lost')}</a>
   <a class="btn btn-hot mnav-cta" href="${href(lang, 'reserve/')}">${L('cta.reserve')}</a>
 </nav>
 <main id="main">
@@ -131,7 +132,7 @@ ${bare ? '' : `<footer class="ftr">
       <p><a href="tel:${PHONE.replace(/-/g, '')}">${PHONE}</a><br><a href="${INSTAGRAM}" rel="noopener">Instagram @groovenspot</a><br><a href="${YTMUSIC}" rel="noopener">YouTube Music</a><br><a href="${SOUNDCLOUD}" rel="noopener">SoundCloud</a><br><a href="${YOUTUBE}" rel="noopener">YouTube @GROOVEBUSAN</a><br><a href="${TRIPADVISOR}" rel="noopener">Tripadvisor</a><br><a href="${XHS}" rel="noopener">小红书 Xiaohongshu</a></p>
     </div>
   </div>
-  <p class="ftr-small muted"><a href="${href(lang, 'guide/')}">${GUIDE[lang].t}</a> · <a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="${href(lang, 'privacy/')}"><b>${PRIVACY[lang].link}</b></a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
+  <p class="ftr-small muted"><a href="${href(lang, 'guide/')}">${GUIDE[lang].t}</a> · <a href="${href(lang, 'artists/')}">${L('nav.artists')}</a> · <a href="${href(lang, 'lost/')}">${L('nav.lost')}</a> · <a href="${href(lang, 'privacy/')}"><b>${PRIVACY[lang].link}</b></a> · <a href="/admin/" rel="nofollow">Staff</a> · ${L('ft.age')} · © 2026 Groove &amp; Spot</p>
 </footer>
 <nav class="dock" aria-label="Quick actions">
   <a href="${href(lang, 'events/')}">${L('cta.tonight')}</a>
@@ -449,6 +450,29 @@ ${ARTICLES.length ? `<section class="wrap sec" aria-labelledby="g-more"><h2 clas
 <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'Article', headline: G.h1, description: G.s, inLanguage: HTML_LANG[lang], author: { '@type': 'Organization', name: 'Groove & Spot' }, publisher: { '@type': 'Organization', name: 'Groove & Spot', logo: { '@type': 'ImageObject', url: SITE + '/assets/icon-512.png' } }, image: SITE + '/assets/og.png', mainEntityOfPage: SITE + href(lang, 'guide/'), about: { '@type': 'NightClub', name: 'Groove & Spot', url: SITE + '/' } }).replace(/</g, '\\u003c')}</script>`;
   },
 
+  'lost/': (lang) => {
+    const L = (k) => t(lang, k);
+    return `${pageHead(lang, 'lost')}
+<section class="wrap sec">
+  <div class="panel lost-note"><p><b>${L('lost.note1')}</b></p><p class="muted">${L('lost.note2')}</p>
+    <div class="row-btns"><a class="btn btn-hot" href="tel:${PHONE.replace(/-/g, '')}">📞 ${PHONE}</a><a class="btn" href="${INSTAGRAM}" rel="noopener">Instagram DM</a></div></div>
+</section>
+<section class="wrap sec"><div id="lost" class="lost" aria-live="polite"><p class="muted">${L('rt.lostLoad')}</p></div></section>
+<div class="lost-lb" id="lostLb" hidden role="dialog" aria-modal="true"><button type="button" class="lost-x" aria-label="${L('rt.close')}">✕</button><img alt=""></div>
+<style>
+.lost-note p { margin: 0 0 8px; }
+.lost-day { margin: 22px 0 10px; font-size: 18px; }
+.lost-day small { color: var(--muted, #999); font-weight: 600; margin-left: 6px; font-size: 13px; }
+.lost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.lost-grid button { padding: 0; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; overflow: hidden; background: #0c0c10; aspect-ratio: 1; cursor: zoom-in; }
+.lost-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lost-lb { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.92); display: grid; place-items: center; padding: 16px; }
+.lost-lb img { max-width: 100%; max-height: 90vh; border-radius: 10px; }
+.lost-x { position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.15); color: #fff; font-size: 20px; cursor: pointer; }
+</style>
+<script src="/assets/lost.js?v=${VERSION}" defer></script>`;
+  },
+
   'info/': (lang) => {
     const L = (k) => t(lang, k);
     return `${pageHead(lang, 'info')}
@@ -481,7 +505,7 @@ ${ARTICLES.length ? `<section class="wrap sec" aria-labelledby="g-more"><h2 clas
   },
 };
 
-const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'seats/': 'page.seats.t', 'links/': 'page.links.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t', 'gallery/': 'page.gallery.t' };
+const TITLES = { '': null, 'events/': 'page.events.t', 'event/': 'page.event.t', 'floors/': 'page.floors.t', 'seats/': 'page.seats.t', 'links/': 'page.links.t', 'artists/': 'page.artists.t', 'reserve/': 'page.reserve.t', 'info/': 'page.info.t', 'lost/': 'page.lost.t', 'request/': 'page.request.t', 'menu/': 'page.menu.t', 'gallery/': 'page.gallery.t' };
 
 function write(rel, html) {
   const file = join(ROOT, rel);
