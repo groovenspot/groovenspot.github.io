@@ -579,6 +579,12 @@ body.hasfab main { padding-bottom: 110px; }
 .ych .row { margin-left: auto; font-size: 12px; }
 .ycw { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
 .ycw .chip { font-weight: 800; }
+.ych b.chg { color: var(--warn); }
+.ych .chip.chg, .ycw .chip.chg { color: var(--warn); border-color: var(--warn); }
+.ycchg { margin: 6px 0 0; color: var(--warn); font-size: 13px; font-weight: 800; }
+.yct.chg { border-color: var(--warn); box-shadow: inset 0 0 0 1px var(--warn); }
+.ycold { margin: 4px 0 0; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.chgt { display: inline-block; margin-left: 6px; padding: 1px 7px; border: 1px solid var(--warn); border-radius: 999px; color: var(--warn); font-size: 11px; font-weight: 800; white-space: nowrap; }
 .ycmemo { margin: 6px 0 0; font-size: 13px; color: var(--muted); word-break: keep-all; overflow-wrap: anywhere; }
 .yct { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: #111; border: 1px solid var(--line); font-size: 15px; font-weight: 700; line-height: 1.4; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
 .ycs { margin: 6px 0 0; font-size: 13px; word-break: break-all; }
@@ -2653,18 +2659,24 @@ body.hasfab main { padding-bottom: 110px; }
     return ' <a class="ycdl" href="' + esc(u || x.song) + '" target="_blank" rel="noopener noreferrer" title="' + esc(tip) + '">⬇️ 다운</a><span class="ycdlh">' + esc(tip) + '</span>';
   }
   function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
-  function ycWhat(v) {
-    return [v.parade ? v.parade + ' 퍼레' : '', v.video ? v.video + '영상' : '', v.holo ? '홀로 ' + v.holo : '', v.picket ? v.picket + '피켓' : '', v.hammer ? '망치' : '', v.vvip ? 'VVIP 입장' : ''].filter(Boolean);
+  function ycWhatK(v) {
+    return [['parade', v.parade ? v.parade + ' 퍼레' : ''], ['video', v.video ? v.video + '영상' : ''], ['holo', v.holo ? '홀로 ' + v.holo : ''], ['picket', v.picket ? v.picket + '피켓' : ''], ['hammer', v.hammer ? '망치' : ''], ['vvip', v.vvip ? 'VVIP 입장' : '']].filter(function (p) { return p[1]; });
   }
+  function ycWhat(v) { return ycWhatK(v).map(function (p) { return p[1]; }); }
+  // 요청 뒤에 바뀐 것: 위에 '✏️ 수정됨 · 문구·노래', 바뀐 칸은 노란색, 문구는 바로 전 문구도
+  var YC_CHG_L = { seat: '자리', when: '순서', text: '문구', song: '노래', video: '영상', holo: '홀로', picket: '피켓', hammer: '망치', vvip: 'VVIP', parade: '퍼레이드', note: '메모', media: '사진·영상' };
   function ycCard(x, i, n) {
     var y = state.yc, can = y.canEdit, mine = x.mine, boss = y.boss, ready = x.jg && x.sul, cls = 'yc' + (x.status === '진행' ? ' go' : x.status === '끝' ? ' end' : ready ? ' ready' : '');
-    var h = '<div class="' + cls + '" data-ycid="' + esc(x.id) + '"><div class="ych"><b>' + (x.status === '끝' ? '' : '#' + (i + 1) + ' ') + esc(ycSeatTxt(x)) + '</b><span class="chip">' + esc(ycWhen(x)) + '</span>' +
+    var cg = x.chg && x.chg.f && x.chg.f.length ? x.chg : null, ch = function (k) { return !!cg && cg.f.indexOf(k) >= 0; }, tag = '<span class="chgt">✏️ 바뀜</span>';
+    var h = '<div class="' + cls + '" data-ycid="' + esc(x.id) + '"><div class="ych"><b' + (ch('seat') ? ' class="chg"' : '') + '>' + (x.status === '끝' ? '' : '#' + (i + 1) + ' ') + esc(ycSeatTxt(x)) + '</b><span class="chip' + (ch('when') ? ' chg' : '') + '">' + esc(ycWhen(x)) + '</span>' +
       '<span class="row">' + esc(x.by) + ' · ' + esc(x.at) + '</span></div>';
-    var what = ycWhat(x.v);
-    if (what.length) h += '<div class="ycw">' + what.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>';
-    if (x.text) h += '<p class="yct">' + esc(x.text).replace(/\n/g, '<br>') + '</p>';
-    if (x.song) h += '<p class="ycs">🎵 ' + (/^https?:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(ycSongLabel(x)) + '</a>' : esc(x.song)) + ycDlBtn(x) + '</p>';
-    if (x.v && x.v.note) h += '<p class="ycmemo">📝 ' + esc(x.v.note) + '</p>';
+    if (cg) h += '<p class="ycchg">✏️ 수정됨 ' + esc(cg.at) + (cg.by && cg.by !== x.by ? ' · ' + esc(cg.by) : '') + (cg.n > 1 ? ' · ' + cg.n + '번' : '') + ' · ' + cg.f.map(function (k) { return esc(YC_CHG_L[k] || k); }).join(' · ') + '</p>';
+    var what = ycWhatK(x.v);
+    if (what.length) h += '<div class="ycw">' + what.map(function (t) { return '<span class="chip' + (ch(t[0]) ? ' chg' : '') + '">' + esc(t[1]) + '</span>'; }).join('') + '</div>';
+    if (x.text) h += '<p class="yct' + (ch('text') ? ' chg' : '') + '">' + esc(x.text).replace(/\n/g, '<br>') + '</p>';
+    if (ch('text') && cg.oldText != null) h += '<p class="ycold">' + (x.text ? '이전 문구' : '문구 지움') + ' · ' + (cg.oldText ? '<s>' + esc(cg.oldText).replace(/\n/g, ' / ') + '</s>' : '(없었음)') + '</p>';
+    if (x.song) h += '<p class="ycs">🎵 ' + (/^https?:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(ycSongLabel(x)) + '</a>' : esc(x.song)) + ycDlBtn(x) + (ch('song') ? tag : '') + '</p>';
+    if (x.v && x.v.note) h += '<p class="ycmemo">📝 ' + esc(x.v.note) + (ch('note') ? tag : '') + '</p>';
     if (x.photos.length) h += '<div class="ycp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') + '</div>';
     if (x.videos && x.videos.length) h += '<div class="ycv">' + x.videos.map(function (id, i) { var u = (state.vidUrl || {})[id]; return u ? '<div class="ycvp"><video src="' + u.url + '" controls playsinline preload="metadata"></video><button type="button" class="link" data-ycsv="' + esc(id) + '">⬇️ 영상 저장</button></div>' : '<button type="button" class="btn ycvbtn" data-ycvid="' + esc(id) + '">🎬 영상 ' + (i + 1) + ' 보기</button>'; }).join('') + '</div>';
     if (x.status === '끝') return h + '<p class="note" style="margin:6px 0 0">✂️ 컷 ' + esc(x.endAt) + (x.cutBy ? ' ' + esc(x.cutBy) : '') + (x.goAt ? ' · ㄱㄱ ' + esc(x.goAt) + (x.goBy ? ' ' + esc(x.goBy) : '') : '') + '</p></div>';
