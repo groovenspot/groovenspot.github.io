@@ -1436,7 +1436,7 @@ details.all .list { margin-top: 8px; }
     var all = k.custs, bottles = 0, soon = 0, late = 0;
     all.forEach(function (c) { bottles += kBottles(c) + kOpens(c); var x = kDays(kExpOf(c)); if (x !== null && x < 0) late++; else if (x !== null && x <= 7) soon++; });
     var retired = all.filter(function (c) { return kGroupOf(c.staff) === '퇴사자'; });
-    var h = '<div class="kh"><div><h1>' + (k.all ? '🍾 킵 장부' : '🍾 내 킵 손님') + '</h1><p class="sub">' + (k.all ? '손님 ' : '내 담당 손님 ') + all.length + ' · 보관 ' + k.days + '일' +
+    var h = '<div class="kh"><div><h1>' + (k.all || k.see ? '🍾 킵 장부' : '🍾 내 킵 손님') + '</h1><p class="sub">' + (k.all || k.see ? '손님 ' : '내 담당 손님 ') + all.length + ' · 보관 ' + k.days + '일' +
       (state.kstale ? ' · <span class="ksync">' + (state.kerr ? '연결이 안 돼요 · 저장된 목록' : '새로 불러오는 중…') + '</span>' : '') +
       (kDirect(k) ? '' : '<br>맡기기·꺼내기는 ' + APPROVERS_TXT + ' 승인 후 반영돼요') + '</p></div><button class="btn btn-hot" type="button" id="kNew">+ 맡기기</button></div>';
     var km = state.kmsg || (state.kwarn && Date.now() - state.kwarn.at < 8000 ? state.kwarn.m : '');   // 승인 실패 안내는 목록을 다시 받아도 8초 동안 남긴다
@@ -1453,7 +1453,7 @@ details.all .list { margin-top: 8px; }
     h += '<div class="ksearch"><span aria-hidden="true">🔎</span><input id="kQ" type="search" placeholder="손님 · 담당 · 술 · 연락처 뒤 4자리" value="' + esc(state.kq) + '" aria-label="킵 찾기"></div>';
     h += '<div class="ksum"><div><small>보관 중</small><b>' + bottles + '</b></div><div class="w"><small>7일 안 만료</small><b>' + soon + '</b></div><div class="x"><small>만료 지남</small><b>' + late + '</b></div></div>';
     var hasNone = all.some(function (c) { return !kGroupOf(c.staff); });
-    h += '<div class="kfil">' + [['', '전체'], ['exp', '⏰ 만료 임박']].concat(k.all ? KGROUPS.map(function (g) { return [g, g]; }) : []).concat(k.all && hasNone ? [['none', '구분 없음']] : []).map(function (x) {
+    h += '<div class="kfil">' + [['', '전체'], ['exp', '⏰ 만료 임박']].concat(k.all || k.see ? KGROUPS.map(function (g) { return [g, g]; }) : []).concat((k.all || k.see) && hasNone ? [['none', '구분 없음']] : []).map(function (x) {
       return '<button type="button" data-kf="' + esc(x[0]) + '" aria-pressed="' + (f === x[0]) + '">' + esc(x[1]) + '</button>';
     }).join('') + '</div>';
     if (k.all && retired.length && f !== '퇴사자') h += '<p class="kalert"><b>⚠️ 퇴사자 담당 손님 ' + retired.length + '명</b> · 손님을 눌러 담당을 바꿔 주세요.</p>';
