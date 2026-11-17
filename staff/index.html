@@ -223,6 +223,21 @@ details.all { margin-top: 14px; }
 .klink { width: 100%; font-size: 13px; }
 .kshare { white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; background: var(--bg); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 14px; margin: 0 0 12px; }
 .kshare b { font-weight: 600; color: var(--muted); font-size: 12px; }
+.kqueue { display: grid; gap: 8px; margin: 0 0 14px; padding: 12px; border-radius: 16px; border: 1px solid rgba(60,207,145,.45); background: rgba(60,207,145,.06); }
+.kqueue.mine { border-color: rgba(255,176,32,.5); background: rgba(255,176,32,.06); }
+.kqh { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.kqh .btn { min-height: 38px; padding: 0 14px; font-size: 13px; }
+.kreq { display: grid; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.kreq .row { font-size: 12px; }
+.kreq-t { font-size: 15px; font-weight: 700; word-break: keep-all; overflow-wrap: anywhere; }
+.kreq-b { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.kreq-b .btn { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.kreq-b .note { margin-right: auto; }
+.kpend { display: block; color: var(--warn) !important; font-size: 12px; margin: 2px 0 0; }
+p.kpend { margin: 0 0 6px; font-size: 13px; }
+.ktoast.pend { background: rgba(255,176,32,.1); border-color: rgba(255,176,32,.45); }
+.ktoast.pend b { color: var(--warn); }
+.kdone { margin: -6px 0 12px; }
 .rk.ph { opacity: .45; border-style: dashed; }
 .rk.ph .nm strong { color: var(--muted); font-weight: 700; }
 details.all summary { cursor: pointer; color: var(--muted); font-weight: 800; font-size: 14px; padding: 8px 0; }
@@ -473,7 +488,7 @@ details.all .list { margin-top: 8px; }
   var $ = function (id) { return document.getElementById(id); };
   var state = { s: null, data: null, tab: 'guest', week: 'week', bteam: '', draft: '', gday: '', gteam: '', gdraft: {}, gmsg: '', rmsg: '', rbad: false, rarm: '',
     bview: 'list', btag: '', bpost: null, comp: null, cdraft: {}, imgs: {}, dm: null, dmView: 'list', dmWith: '', chat: null, dmDraft: {}, dmPick: false, poll: null, lastSync: 0, pcache: {}, sending: null, sendErr: '',
-    keep: null, kview: 'list', kcur: null, kq: '', kf: '', kadd: null, kundo: null, kerr: '' };
+    keep: null, kview: 'list', kcur: null, kq: '', kf: '', kadd: null, kundo: null, kerr: '', kmsg: '' };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function load() { try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && v.token && v.exp > Date.now() ? v : null; } catch (e) { return null; } }
@@ -630,11 +645,12 @@ details.all .list { margin-top: 8px; }
   function openApp() {
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
-    if (['guest', 'board', 'dm', 'edu', 'notes', 'dec', 'acc'].indexOf(h) >= 0) state.tab = h;
+    if (['guest', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep'].indexOf(h) >= 0) state.tab = h;
     swToken(state.s.token); paintBell();
     var c = loadData();
     if (c) { state.data = c; render(); refresh(true); } else refresh();
     if (state.tab === 'dm') enterDm();
+    if (state.tab === 'keep') loadKeep();
   }
   function enterDm() { state.dmView = state.dmWith ? state.dmView : 'list'; loadDm(); startPoll(loadDm, 20000); }
   // 열어 둔 동안 90초마다, 다시 화면에 돌아오면 바로 새로 받기 (글쓰기 중에는 쉬기)
@@ -1270,7 +1286,7 @@ details.all .list { margin-top: 8px; }
   // 담당 → 손님(닉네임) → 술 × 병 수. 일부만 남은 병은 남은 양(¾ ½ ⅓ ¼). 보관 30일.
   var KGROUPS = ['영업진', '스텝·DJ', '퇴사자'];
   function kErr(r) {
-    return { forbidden: '권한이 없어요. 맡기기·꺼내기는 팀장님·대표님만, 담당 직원은 자기 손님만 볼 수 있어요.', notfound: '지워졌거나 없는 손님이에요.', items: '술 이름과 병 수를 확인해 주세요.', name: '손님 이름을 넣어 주세요. (< > " 는 못 써요)',
+    return { forbidden: '권한이 없어요. 자기 담당 손님만 볼 수 있어요.', notfound: '지워졌거나 없는 손님이에요.', items: '술 이름과 병 수를 확인해 주세요.', name: '손님 이름을 넣어 주세요. (< > " 는 못 써요)',
       staff: '담당을 넣어 주세요.', phone: '연락처를 확인해 주세요.', n: '병 수를 확인해 주세요.', amt: '남은 양을 골라 주세요.', memo: '메모에 < > " 는 못 써요.', late: '되돌리기는 15분 안에, 직접 한 것만 돼요.',
       changed: '그 사이 바뀌어서 되돌릴 수 없어요.', dup: '같은 담당에 같은 이름 손님이 이미 있어요.', busy: '잠깐 사이에 너무 많이 눌렀어요. 잠시 후 다시 해 주세요.', group: '구분을 확인해 주세요.' }[r.error] || '처리가 안 됐어요. 다시 해 주세요.';
   }
@@ -1293,8 +1309,52 @@ details.all .list { margin-top: 8px; }
       : '<span class="it op">' + esc(i.liq) + ' <b>' + esc(i.amt) + '</b>' + (i.memo ? ' <small>' + esc(i.memo) + '</small>' : '') + '</span>';
   }
   function keepDue() {
-    var k = state.keep; if (!k) return 0;
-    return k.custs.filter(function (c) { var d = kDays(kExpOf(c)); return d !== null && d <= 3; }).length;
+    var k = state.keep;
+    if (!k) return (state.data && state.data.keepPending) || 0;
+    return k.approver ? (k.reqs || []).filter(function (r) { return r.status === '대기'; }).length : 0;
+  }
+  var APPROVERS_TXT = '대표님·김동기·양진호';
+  function kDirect(k) { k = k || state.keep; return !!(k && (k.all || k.approver)); }
+  function kPend(cid) { return ((state.keep && state.keep.reqs) || []).filter(function (r) { return r.status === '대기' && (!cid || r.cid === cid); }); }
+  // 승인 요청 카드 (승인할 사람: 승인·거절 / 요청한 사람: 취소)
+  function kReqCard(r, mode) {
+    var st = r.status === '대기' ? '' : r.status === '승인' ? '<span class="chip" style="border-color:var(--ok);color:var(--ok)">승인 · ' + esc(r.who) + '</span>'
+      : r.status === '거절' ? '<span class="chip" style="border-color:var(--bad);color:#ff8199">거절 · ' + esc(r.who) + '</span>' : '<span class="chip">' + esc(r.status) + '</span>';
+    var h = '<div class="kreq"><div class="row"><b style="color:var(--txt)">' + esc(r.cust) + '</b><span>담당 ' + esc(r.staff) + '</span>' + (mode === 'ap' ? '<span>· 요청 ' + esc(r.by) + '</span>' : '') + '<span style="margin-left:auto">' + esc(r.at.slice(5)) + '</span></div>' +
+      '<div class="kreq-t"><span class="chip">' + esc(r.kind) + '</span> ' + esc(r.text) + ' ' + st + '</div>' + (r.reason ? '<div class="note" style="margin:0">사유: ' + esc(r.reason) + '</div>' : '');
+    if (r.status === '대기' && mode === 'ap') h += '<div class="kreq-b"><button class="btn btn-ok" type="button" data-kok="' + esc(r.id) + '">승인</button><button class="btn btn-bad" type="button" data-kno="' + esc(r.id) + '">거절</button></div>';
+    if (r.status === '대기' && mode === 'me') h += '<div class="kreq-b"><span class="note" style="margin:0">⏳ ' + APPROVERS_TXT + ' 승인 기다리는 중</span><button class="btn" type="button" data-kcx="' + esc(r.id) + '">요청 취소</button></div>';
+    return h + '</div>';
+  }
+  function kReq(id, op, reason, btn) {
+    if (btn) btn.disabled = true;
+    return call({ a: 'keep_req', token: state.s.token, id: id, op: op, reason: reason || '' }).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) {
+        if (btn) btn.disabled = false;
+        var m = { done: '이미 처리된 요청이에요.', changed: '그 사이 병 수가 바뀌어 반영할 수 없어요. 거절하고 다시 요청받아 주세요.' }[r.error] || kErr(r);
+        if ($('kMsg')) $('kMsg').textContent = m; else alertBox(m);
+        if (r.error === 'done') loadKeep();
+        return r;
+      }
+      state.keep.reqs = r.reqs || state.keep.reqs;
+      if (r.cust) { kPut(r.cust); if (state.kcur && state.kcur.cust.id === r.cust.id) state.kcur.cust = r.cust; }
+      if (state.kundo && state.kundo.req === id) state.kundo = null;
+      flushPush(); renderTabsOnly(); render();
+      return r;
+    }).catch(function () { if (btn) btn.disabled = false; alertBox('연결이 안 돼요. 다시 해 주세요.'); });
+  }
+  function alertBox(m) { var b = $('kBox'); if (b) { b.textContent = m; b.hidden = false; } }
+  function kBindReqs(root) {
+    root.querySelectorAll('[data-kok]').forEach(function (b) { b.addEventListener('click', function () { kReq(b.dataset.kok, 'ok', '', b); }); });
+    root.querySelectorAll('[data-kcx]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '요청 취소')) return; kReq(b.dataset.kcx, 'cancel', '', b); }); });
+    root.querySelectorAll('[data-kno]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var r = (state.keep.reqs || []).filter(function (x) { return x.id === b.dataset.kno; })[0]; if (!r) return;
+        showSheet('<h2>거절</h2><p class="note" style="margin:0 0 10px">' + esc(r.cust) + ' · ' + esc(r.text) + ' (요청 ' + esc(r.by) + ')</p><label>사유 (선택)<input id="kNoR" maxlength="60" placeholder="예) 병 확인 안 됨"></label><button class="btn btn-bad" type="button" id="kNoGo">거절하기</button>');
+        $('kNoGo').addEventListener('click', function () { var v = $('kNoR').value.trim(); $('sheet').hidden = true; $('sheet').innerHTML = ''; kReq(r.id, 'no', v, b); });
+      });
+    });
   }
   function kGroupOf(name) {
     var s = (state.keep.staffs || []).filter(function (x) { return x.name === name; })[0]; if (s) return s.group;
@@ -1319,15 +1379,24 @@ details.all .list { margin-top: 8px; }
   function renderKeep(area, d) {
     if (!state.keep) { area.innerHTML = state.kerr ? '<p class="empty">' + esc(state.kerr) + '</p>' : '<p class="load">불러오는 중…</p>'; return; }
     if (state.kview === 'cust' && state.kcur) return renderKCust(area);
-    if (state.kview === 'add' && state.kadd && state.keep.edit) return renderKAdd(area);
+    if (state.kview === 'add' && state.kadd) return renderKAdd(area);
     state.kview = 'list';
     var k = state.keep, f = state.kf;
     var all = k.custs, bottles = 0, soon = 0, late = 0;
     all.forEach(function (c) { bottles += kBottles(c) + kOpens(c); var x = kDays(kExpOf(c)); if (x !== null && x < 0) late++; else if (x !== null && x <= 7) soon++; });
     var retired = all.filter(function (c) { return kGroupOf(c.staff) === '퇴사자'; });
-    var h = k.all ? '<div class="kh"><div><h1>🍾 킵 장부</h1><p class="sub">손님 ' + all.length + ' · 보관 ' + k.days + '일</p></div><button class="btn btn-hot" type="button" id="kNew">+ 맡기기</button></div>'
-      : k.edit ? '<div class="kh"><div><h1>🍾 내 킵 손님</h1><p class="sub">내 담당 손님 ' + all.length + ' · 보관 ' + k.days + '일</p></div><button class="btn btn-hot" type="button" id="kNew">+ 맡기기</button></div>'
-      : '<div class="kh"><div><h1>🍾 내 담당 킵</h1><p class="sub">손님 ' + all.length + ' · 보관 ' + k.days + '일 · 보기만 돼요 (맡기기·꺼내기는 팀장님)</p></div></div>';
+    var h = '<div class="kh"><div><h1>' + (k.all ? '🍾 킵 장부' : '🍾 내 킵 손님') + '</h1><p class="sub">' + (k.all ? '손님 ' : '내 담당 손님 ') + all.length + ' · 보관 ' + k.days + '일' +
+      (kDirect(k) ? '' : '<br>맡기기·꺼내기는 ' + APPROVERS_TXT + ' 승인 후 반영돼요') + '</p></div><button class="btn btn-hot" type="button" id="kNew">+ 맡기기</button></div>';
+    h += '<p class="msg ok" id="kBox"' + (state.kmsg ? '' : ' hidden') + '>' + esc(state.kmsg || '') + '</p>'; state.kmsg = '';
+    var pend = kPend(), meK = key(k.me);
+    if (k.approver && pend.length) {
+      h += '<div class="kqueue"><div class="kqh"><h2 class="sec" style="margin:0">✅ 승인 대기 ' + pend.length + '건</h2>' + (pend.length > 1 ? '<button class="btn btn-ok" type="button" id="kOkAll">모두 승인</button>' : '') + '</div>' +
+        pend.map(function (r) { return kReqCard(r, 'ap'); }).join('') + '</div>';
+    }
+    var mine = (k.reqs || []).filter(function (r) { return key(r.by) === meK && !(k.approver && r.status === '대기'); });
+    var mp = mine.filter(function (r) { return r.status === '대기'; }), md2 = mine.filter(function (r) { return r.status !== '대기'; });
+    if (mp.length) h += '<div class="kqueue mine"><h2 class="sec" style="margin:0 0 8px">⏳ 내 요청 · 승인 기다리는 중 ' + mp.length + '건</h2>' + mp.map(function (r) { return kReqCard(r, 'me'); }).join('') + '</div>';
+    if (md2.length) h += '<details class="all kdone"><summary>최근 3일 처리된 내 요청 ' + md2.length + '건</summary><div class="list">' + md2.map(function (r) { return kReqCard(r, 'me'); }).join('') + '</div></details>';
     h += '<div class="ksearch"><span aria-hidden="true">🔎</span><input id="kQ" type="search" placeholder="손님 · 담당 · 술 · 연락처 뒤 4자리" value="' + esc(state.kq) + '" aria-label="킵 찾기"></div>';
     h += '<div class="ksum"><div><small>보관 중</small><b>' + bottles + '</b></div><div class="w"><small>7일 안 만료</small><b>' + soon + '</b></div><div class="x"><small>만료 지남</small><b>' + late + '</b></div></div>';
     var hasNone = all.some(function (c) { return !kGroupOf(c.staff); });
@@ -1336,7 +1405,13 @@ details.all .list { margin-top: 8px; }
     }).join('') + '</div>';
     if (k.all && retired.length && f !== '퇴사자') h += '<p class="kalert"><b>⚠️ 퇴사자 담당 손님 ' + retired.length + '명</b> · 손님을 눌러 담당을 바꿔 주세요.</p>';
     area.innerHTML = h + '<div id="kList"></div>';
-    if ($('kNew')) $('kNew').addEventListener('click', function () { kOpenAdd(null); });
+    $('kNew').addEventListener('click', function () { kOpenAdd(null); });
+    kBindReqs(area);
+    if ($('kOkAll')) $('kOkAll').addEventListener('click', function () {
+      if (!armed(this, '모두 승인')) return;
+      var ids = kPend().map(function (r) { return r.id; }), btn = this; btn.disabled = true;
+      (function next(i) { if (i >= ids.length) return; kReq(ids[i], 'ok', '').then(function () { next(i + 1); }); })(0);
+    });
     $('kQ').addEventListener('input', function () { state.kq = this.value; kListPaint(); });
     area.querySelectorAll('[data-kf]').forEach(function (b) { b.addEventListener('click', function () { state.kf = b.dataset.kf; render(); }); });
     kListPaint();
@@ -1352,7 +1427,7 @@ details.all .list { margin-top: 8px; }
       return key(c.name).indexOf(q) >= 0 || key(c.staff).indexOf(q) >= 0 || c.items.some(function (i) { return key(i.liq).indexOf(q) >= 0; }) || (c.p4 && c.p4.indexOf(q) >= 0);
     });
     var h = '';
-    if (!shown.length) h += '<p class="empty">' + (all.length ? '맞는 손님이 없어요.' : k.edit ? '아직 내 담당 손님 킵이 없어요. 위의 <b>+ 맡기기</b>로 시작해요.' : '아직 담당 손님 킵이 없어요.') + '</p>';
+    if (!shown.length) h += '<p class="empty">' + (all.length ? '맞는 손님이 없어요.' : '아직 내 담당 손님 킵이 없어요. 위의 <b>+ 맡기기</b>로 시작해요.') + '</p>';
     // 담당별로 묶기 (영업진 → 스텝·DJ → 퇴사자 → 구분 없음, 같은 구분 안에서는 처음 나온 순서)
     var order = [], by = {};
     shown.forEach(function (c) { if (!by[c.staff]) { by[c.staff] = []; order.push(c.staff); } by[c.staff].push(c); });
@@ -1363,7 +1438,7 @@ details.all .list { margin-top: 8px; }
       h += list.map(function (c) {
         var x = kDays(kExpOf(c));
         return '<button type="button" class="kc' + (x !== null && x < 0 ? ' late' : x !== null && x <= 7 ? ' soon' : '') + '" data-kc="' + esc(c.id) + '"><span class="nm"><strong>' + esc(c.name) + '</strong>' +
-          (x !== null && x <= 7 ? kDD(kExpOf(c)) : '') + '<span class="tot">' + esc(kTot(c)) + '</span></span>' +
+          (x !== null && x <= 7 ? kDD(kExpOf(c)) : '') + (kPend(c.id).length ? '<span class="chip" style="border-color:var(--warn);color:var(--warn)">⏳ 승인 대기 ' + kPend(c.id).length + '</span>' : '') + '<span class="tot">' + esc(kTot(c)) + '</span></span>' +
           (c.items.length ? '<span class="its">' + c.items.map(kChip).join('') + '</span>' : '') + '</button>';
       }).join('') + '</div>';
     });
@@ -1397,16 +1472,19 @@ details.all .list { margin-top: 8px; }
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (state.kview !== 'cust' || !state.kcur || state.kcur.cust.id !== id) return;
       if (!r.ok) { state.kcur.err = kErr(r); return renderSoon(); }
-      state.kcur = { cust: r.cust, log: r.log, full: true, edit: r.edit }; kPut(r.cust); renderSoon();
+      state.kcur = { cust: r.cust, log: r.log, full: true, can: r.can, direct: r.direct }; if (r.reqs) state.keep.reqs = r.reqs; kPut(r.cust); renderSoon();
     }).catch(function () { if (state.kcur) { state.kcur.err = '연결이 안 돼요. 다시 열어 주세요.'; renderSoon(); } });
   }
   // 서버 응답(손님 + 기록)으로 화면 바꾸기
   function kApply(r, undoText) {
     if (!r.ok || !r.cust) return;
     kPut(r.cust);
-    state.kcur = { cust: r.cust, log: r.log, full: true, edit: r.edit };
-    state.kundo = r.undo && undoText ? { cid: r.cust.id, log: r.undo, text: undoText, at: Date.now() } : (undoText === null ? null : state.kundo);
-    renderSoon();
+    if (r.reqs) state.keep.reqs = r.reqs;
+    state.kcur = { cust: r.cust, log: r.log, full: true, can: r.can, direct: r.direct };
+    state.kundo = r.pending && undoText ? { cid: r.cust.id, req: r.pending, text: undoText, at: Date.now() }
+      : r.undo && undoText ? { cid: r.cust.id, log: r.undo, text: undoText, at: Date.now() } : (undoText === null && !r.pending ? null : state.kundo);
+    if (r.pending) flushPush();
+    renderTabsOnly(); renderSoon();
   }
   function kCall(body, undoText, btn, errEl) {
     if (btn) btn.disabled = true;
@@ -1419,31 +1497,37 @@ details.all .list { margin-top: 8px; }
   }
   function kDate(s) { return s ? md(s) : ''; }
   function renderKCust(area) {
-    var kc = state.kcur, c = kc.cust, g = kGroupOf(c.staff) || c.group, edit = kc.edit != null ? !!kc.edit : !!state.keep.edit, boss = !!state.keep.all;
+    var kc = state.kcur, c = kc.cust, g = kGroupOf(c.staff) || c.group, edit = kc.can != null ? !!kc.can : true, direct = kc.direct != null ? !!kc.direct : kDirect(), boss = !!state.keep.all;
+    var cp = kPend(c.id);
     var h = '<button class="btn back" type="button" id="kBack">← 킵 장부</button><div class="kv">';
     h += '<div class="row"><span class="chip">담당 ' + esc(c.staff || '-') + '</span>' + (g ? '<span class="chip">' + esc(g) + '</span>' : '') + (g === '퇴사자' ? '<b style="color:var(--warn)">담당을 바꿔 주세요</b>' : '') + '</div>';
     h += '<h1>' + esc(c.name) + ' <small>· ' + esc(kTot(c)) + '</small></h1>';
-    h += '<p class="meta">' + (kc.full && edit ? (c.phone ? '<a href="tel:' + esc(c.phone.replace(/\D/g, '')) + '">' + esc(c.phone) + '</a>' : '연락처 없음') : (c.p4 ? '연락처 …' + esc(c.p4) : '')) + (c.memo ? ' · ' + esc(c.memo) : '') + '</p>';
+    h += '<p class="meta">' + (kc.full ? (c.phone ? '<a href="tel:' + esc(c.phone.replace(/\D/g, '')) + '">' + esc(c.phone) + '</a>' : '연락처 없음') : (c.p4 ? '연락처 …' + esc(c.p4) : '')) + (c.memo ? ' · ' + esc(c.memo) : '') + '</p>';
     if (kc.err) h += '<p class="msg">' + esc(kc.err) + '</p>';
+    if (!direct) h += '<p class="note" style="margin:0 0 6px">− · + · 숫자를 누르면 승인 요청이 가요. ' + APPROVERS_TXT + ' 승인 후 반영돼요.</p>';
+    cp.filter(function (r) { return r.kind === '맡기기'; }).forEach(function (r) { h += '<p class="kpend">⏳ 맡기기 승인 대기 · ' + esc(r.text) + ' <small>(요청 ' + esc(r.by) + ')</small></p>'; });
     if (!c.items.length) h += '<p class="empty" style="margin:8px 0">맡긴 술이 없어요.</p>';
     c.items.forEach(function (i) {
       var sub = [i.memo, i.day ? kDate(i.day) + ' 맡김' : '', i.exp ? '만료 ' + kDate(i.exp) : ''].filter(String).join(' · ');
-      var dl = kDays(i.exp);
-      h += '<div class="stp"><div class="ln"><strong>' + esc(i.liq) + '</strong> ' + (dl !== null && dl <= 7 ? kDD(i.exp) : '') + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div><div class="ctl">';
+      var dl = kDays(i.exp), ip = cp.filter(function (r) { return r.item === i.id; });
+      h += '<div class="stp"><div class="ln"><strong>' + esc(i.liq) + '</strong> ' + (dl !== null && dl <= 7 ? kDD(i.exp) : '') + (sub ? '<small>' + esc(sub) + '</small>' : '') +
+        ip.map(function (r) { return '<small class="kpend">⏳ 승인 대기 · ' + esc(r.text) + '</small>'; }).join('') + '</div><div class="ctl">';
       if (!edit) h += '<span class="q' + (i.kind === '병' ? '' : ' op') + '" style="font-size:22px;font-weight:900;padding:0 6px">' + (i.kind === '병' ? i.n + '<small style="font-size:13px;color:var(--muted)">병</small>' : esc(i.amt)) + '</span>';
       else if (i.kind === '병') h += '<button type="button" data-kt="' + esc(i.id) + '" aria-label="' + esc(i.liq) + ' 1병 꺼내기">−</button><button type="button" class="q" data-kn="' + esc(i.id) + '" aria-label="병 수 고치기">' + i.n + '</button><button type="button" data-kp="' + esc(i.id) + '" aria-label="' + esc(i.liq) + ' 1병 더 맡기기">+</button>';
       else h += '<button type="button" class="q op" data-ka="' + esc(i.id) + '" aria-label="남은 양 고치기">' + esc(i.amt) + '</button><button type="button" class="out" data-kt="' + esc(i.id) + '">다 마심</button>';
       h += '</div></div>';
     });
     var u = state.kundo;
-    if (edit && u && u.cid === c.id && Date.now() - u.at < 15 * 60e3) h += '<div class="ktoast"><span>' + u.text + '</span><button class="btn" type="button" id="kUndo">되돌리기</button></div>';
+    if (edit && u && u.cid === c.id && Date.now() - u.at < 15 * 60e3) h += u.req ? '<div class="ktoast pend"><span>' + u.text + '</span><button class="btn" type="button" id="kUndo">요청 취소</button></div>'
+      : '<div class="ktoast"><span>' + u.text + '</span><button class="btn" type="button" id="kUndo">되돌리기</button></div>';
     if (edit && kc.saved) h += '<div class="ktoast"><span><b>✓ ' + esc(kc.saved) + '</b> · 손님에게 알려 주세요</span><button class="btn" type="button" id="kShareNow">📤 공유</button></div>';
+    if (edit && kc.asked) h += '<div class="ktoast pend"><span><b>⏳ ' + esc(kc.asked) + '</b> · ' + APPROVERS_TXT + ' 승인 후 반영돼요</span></div>';
     h += '<p class="msg" id="kMsg" role="alert"></p>';
     if (edit) {
       h += '<div class="kacts"><button class="btn btn-ok" type="button" id="kMore">+ 술 맡기기</button><button class="btn" type="button" id="kLink">📤 손님에게 공유</button></div>';
       h += boss ? '<div class="kacts" style="margin-top:8px"><button class="btn" type="button" id="kEdit">✏️ 손님 정보 · 담당</button><button class="btn btn-bad" type="button" id="kDel">손님 지우기</button></div>'
         : '<div class="kacts" style="margin-top:8px;grid-template-columns:1fr"><button class="btn" type="button" id="kEdit">✏️ 손님 정보 (이름·연락처·메모)</button></div>';
-    } else h += '<div class="kacts" style="grid-template-columns:1fr"><button class="btn btn-hot" type="button" id="kLink">📤 손님에게 공유하기</button></div><p class="note">맡기기·꺼내기·수정은 팀장님이 해요.</p>';
+    } else h += '<div class="kacts" style="grid-template-columns:1fr"><button class="btn btn-hot" type="button" id="kLink">📤 손님에게 공유하기</button></div>';
     h += '</div>';
     h += '<h2 class="sec">기록</h2>';
     if (!kc.log) h += '<p class="load">불러오는 중…</p>';
@@ -1459,14 +1543,14 @@ details.all .list { margin-top: 8px; }
     area.querySelectorAll('[data-kt]').forEach(function (b) {
       b.addEventListener('click', function () {
         var it = item(b.dataset.kt); if (!it) return;
-        var txt = it.kind === '병' ? '<b>' + esc(it.liq) + ' 1병 꺼냄</b> · ' + it.n + ' → ' + (it.n - 1) : '<b>' + esc(it.liq) + ' 다 마심</b>';
+        var txt = it.kind === '병' ? '<b>' + esc(it.liq) + ' 1병 꺼냄' + (direct ? '' : ' 요청') + '</b> · ' + it.n + ' → ' + (it.n - 1) : '<b>' + esc(it.liq) + ' 다 마심' + (direct ? '' : ' 요청') + '</b>';
         kCall({ a: 'keep_set', item: it.id, op: 'take', n: 1 }, txt, b);
       });
     });
     area.querySelectorAll('[data-kp]').forEach(function (b) {
       b.addEventListener('click', function () {
         var it = item(b.dataset.kp); if (!it) return;
-        kCall({ a: 'keep_add', id: c.id, items: [{ liq: it.liq, n: 1 }] }, null, b);
+        kCall({ a: 'keep_add', id: c.id, items: [{ liq: it.liq, n: 1 }] }, direct ? null : '<b>' + esc(it.liq) + ' 1병 맡기기 요청</b>', b);
       });
     });
     area.querySelectorAll('[data-kn]').forEach(function (b) {
@@ -1476,7 +1560,7 @@ details.all .list { margin-top: 8px; }
         $('kNs').addEventListener('click', function () {
           var v = Number($('kNv').value);
           if (!(Math.floor(v) === v && v >= 0 && v <= 999)) { $('kNm').textContent = '0~999 사이 숫자로 넣어 주세요.'; return; }
-          kCall({ a: 'keep_set', item: it.id, op: 'n', n: v }, '<b>' + esc(it.liq) + ' 병 수 고침</b> · ' + it.n + ' → ' + v, this, $('kNm')).then(function (r) { if (r && r.ok) { $('sheet').hidden = true; $('sheet').innerHTML = ''; } });
+          kCall({ a: 'keep_set', item: it.id, op: 'n', n: v }, '<b>' + esc(it.liq) + ' 병 수 고침' + (direct ? '' : ' 요청') + '</b> · ' + it.n + ' → ' + v, this, $('kNm')).then(function (r) { if (r && r.ok) { $('sheet').hidden = true; $('sheet').innerHTML = ''; } });
         });
       });
     });
@@ -1486,12 +1570,12 @@ details.all .list { margin-top: 8px; }
         showSheet('<h2>' + esc(it.liq) + ' · 남은 양</h2><div class="amtb">' + state.keep.amts.map(function (a) { return '<button type="button" data-am="' + esc(a) + '" aria-pressed="' + (a === it.amt) + '">' + esc(a) + '</button>'; }).join('') + '</div><p class="msg" id="kAm" role="alert"></p>');
         document.querySelectorAll('#sheet [data-am]').forEach(function (x) {
           x.addEventListener('click', function () {
-            kCall({ a: 'keep_set', item: it.id, op: 'amt', amt: x.dataset.am }, '<b>' + esc(it.liq) + ' 남은 양</b> · ' + esc(it.amt) + ' → ' + esc(x.dataset.am), x, $('kAm')).then(function (r) { if (r && r.ok) { $('sheet').hidden = true; $('sheet').innerHTML = ''; } });
+            kCall({ a: 'keep_set', item: it.id, op: 'amt', amt: x.dataset.am }, '<b>' + esc(it.liq) + ' 남은 양' + (direct ? '' : ' 요청') + '</b> · ' + esc(it.amt) + ' → ' + esc(x.dataset.am), x, $('kAm')).then(function (r) { if (r && r.ok) { $('sheet').hidden = true; $('sheet').innerHTML = ''; } });
           });
         });
       });
     });
-    if ($('kUndo')) $('kUndo').addEventListener('click', function () { kCall({ a: 'keep_undo', log: state.kundo.log }, null, this); });
+    if ($('kUndo')) $('kUndo').addEventListener('click', function () { if (state.kundo.req) kReq(state.kundo.req, 'cancel', '', this); else kCall({ a: 'keep_undo', log: state.kundo.log }, null, this); });
     $('kLink').addEventListener('click', function () { kLink(c, this); });
     if ($('kShareNow')) $('kShareNow').addEventListener('click', function () { kLink(c, this); });
     if (!edit) return;
@@ -1548,7 +1632,7 @@ details.all .list { margin-top: 8px; }
         (ph ? '<a class="btn" style="width:100%;margin-top:8px" id="kSms" href="sms:' + esc(ph) + '?&body=' + encodeURIComponent(text + '\n' + r.url) + '">💬 문자로 보내기 (' + esc(fmtPhone(ph)) + ')</a>' : '') +
         '<button class="btn' + (navigator.share ? '' : ' btn-hot') + '" type="button" id="kCp" style="width:100%;margin-top:8px">📋 글·링크 복사 (카톡에 붙여넣기)</button>' +
         '<input class="klink" id="kLk" readonly value="' + esc(r.url) + '" style="margin-top:10px" aria-label="확인 링크">' +
-        (state.keep.edit ? '<button class="btn btn-bad" type="button" id="kRs" style="margin-top:8px">링크 새로 만들기 (예전 링크는 안 열림)</button>' : '') + '<p class="msg ok" id="kLm" role="status"></p>');
+        '<button class="btn btn-bad" type="button" id="kRs" style="margin-top:8px">링크 새로 만들기 (예전 링크는 안 열림)</button>' + '<p class="msg ok" id="kLm" role="status"></p>');
       function copy(v) {
         return (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).catch(function () {
           var t = document.createElement('textarea'); t.value = v; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select();
@@ -1603,8 +1687,9 @@ details.all .list { margin-top: 8px; }
     h += '<div class="kchips">' + k.liqs.slice(0, 10).map(function (x) { return '<button type="button" data-kq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '<button type="button" id="kaRow">+ 술 한 줄 더</button></div>';
     h += '<p class="note" style="margin:-6px 0 12px">일부만 남은 병은 \'남은 양\'을 골라요 (한 병씩).</p>';
     if (!a.fixed && !a.id) h += '<label>메모 (선택)<input id="kaM" maxlength="60" value="' + esc(a.memo) + '"></label>';
-    var tot = a.rows.reduce(function (s, r) { return s + (r.liq.trim() ? (r.amt ? 1 : (+r.n || 0)) : 0); }, 0);
-    h += '<button class="btn btn-hot" type="button" id="kaGo">' + (tot ? tot + '병 맡기기' : '맡기기') + '</button><p class="msg" id="kaMsg" role="alert">' + esc(a.msg || '') + '</p></div>';
+    var tot = a.rows.reduce(function (s, r) { return s + (r.liq.trim() ? (r.amt ? 1 : (+r.n || 0)) : 0); }, 0), dir = kDirect(k);
+    if (!dir) h += '<p class="note" style="margin:0 0 10px">⏳ 저장하면 ' + APPROVERS_TXT + '에게 승인 요청이 가고, 승인되면 반영돼요.</p>';
+    h += '<button class="btn btn-hot" type="button" id="kaGo">' + (tot ? tot + '병 맡기기' : '맡기기') + (dir ? '' : ' 요청') + '</button><p class="msg" id="kaMsg" role="alert">' + esc(a.msg || '') + '</p></div>';
     area.innerHTML = h;
     function sync() {
       if ($('kaN')) a.name = $('kaN').value; if ($('kaS')) a.staff = $('kaS').value; if ($('kaP')) a.phone = $('kaP').value; if ($('kaM')) a.memo = $('kaM').value;
@@ -1657,11 +1742,17 @@ details.all .list { margin-top: 8px; }
       call(body).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
         if (!r.ok) { btn.disabled = false; a.msg = kErr(r); m.textContent = a.msg; return; }
-        state.kadd = null; state.kview = 'cust';
+        state.kadd = null;
         var n = items.reduce(function (s, x) { return s + (x.n || 1); }, 0);
+        if (r.reqs) state.keep.reqs = r.reqs;
+        if (!r.cust) {   // 새 손님 요청: 승인되면 목록에 생긴다
+          state.kview = 'list'; state.kcur = null; state.kmsg = '⏳ 새 손님 ' + body.name + ' · ' + n + '병 맡기기 요청했어요. 승인되면 목록에 나와요.';
+          flushPush(); renderTabsOnly(); render(); window.scrollTo(0, 0); return;
+        }
+        state.kview = 'cust';
         kApply(r, null);
         state.kundo = null;
-        state.kcur.saved = n + '병 맡겼어요';
+        if (r.pending) state.kcur.asked = n + '병 맡기기 요청했어요'; else state.kcur.saved = n + '병 맡겼어요';
         render(); window.scrollTo(0, 0);
       }).catch(function () { btn.disabled = false; m.textContent = '연결이 안 돼서 못 맡겼어요. 다시 해 주세요.'; });
     });
@@ -1779,7 +1870,7 @@ details.all .list { margin-top: 8px; }
     s.addEventListener('click', function (e) { if (e.target === s) { s.hidden = true; s.innerHTML = ''; } }, { once: true });
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
-    var t = e.data && e.data.tab; if (t && state.data) { state.tab = t; render(); }
+    var t = e.data && e.data.tab; if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); }
   });
 
   // ── 가입 승인 (대표: 전체 / 팀장: 자기 팀 신청 승인·거절, 퇴사자 탈퇴) ──
