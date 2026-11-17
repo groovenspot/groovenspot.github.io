@@ -396,6 +396,22 @@ body.hasfab main { padding-bottom: 110px; }
 .chatl .cm .cack { display: block; font-style: normal; font-size: 12px; font-weight: 800; color: #7cc0ff; margin: 3px 4px 0; }
 .chatl .cm.acked p { box-shadow: 0 0 0 2px #3b8bff; }
 .chatl .cm p.acking { opacity: .5; }
+/* ↩️ 꾹 눌러 답장 (2026-11-18) */
+.chatl .cm p, .chatl .cm .cph { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.chatl .cm p .crep { display: block; margin: 0 0 6px; padding: 0 0 6px; border-bottom: 1px solid rgba(255,255,255,.18); font-size: 13px; line-height: 1.35; cursor: pointer; }
+.chatl .cm.me p .crep { border-bottom-color: rgba(0,0,0,.2); }
+.chatl .cm p .crep b { display: block; font-size: 12px; }
+.chatl .cm p .crep span { display: block; opacity: .8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 230px; }
+.chatl .cm.flash p { outline: 2px solid var(--ok); outline-offset: 2px; }
+.chatl .cm.pressing p { opacity: .7; }
+.chatrep { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 13px; }
+.chatrep div { flex: 1; min-width: 0; }
+.chatrep b { display: block; font-size: 12px; color: var(--g); }
+.chatrep span { display: block; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chatrep button { flex: none; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(255,255,255,.08); color: var(--txt); cursor: pointer; }
+.cmenu { position: fixed; z-index: 30; display: flex; gap: 4px; padding: 6px; border-radius: 14px; background: #2b2b31; border: 1px solid var(--line-2); box-shadow: 0 8px 28px rgba(0,0,0,.6); }
+.cmenu button { min-height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: none; color: var(--txt); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.cmenu button:active, .cmenu button:hover { background: rgba(255,255,255,.08); }
 .chatl .chint { align-self: center; font-size: 11px; color: var(--muted); margin: 2px 0 6px; }
 .chatf { display: flex; gap: 8px; align-items: flex-end; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
 .chatf textarea { flex: 1; min-height: 42px; max-height: 120px; padding: 10px 12px; font-size: 16px; resize: none; }
@@ -697,6 +713,8 @@ body.hasfab main { padding-bottom: 110px; }
   <div class="chatl" id="chatL"></div>
   <div class="chatat" id="chatAt" hidden></div>
   <div class="chatph" id="chatPh" hidden></div>
+  <div class="chatrep" id="chatRep" hidden></div>
+  <div class="cmenu" id="chatMenu" hidden></div>
   <form class="chatf" id="chatF"><label class="chatpic" aria-label="사진·영상 올리기" title="사진·영상">📷<input type="file" id="chatFile" accept="image/*,video/*" multiple hidden></label><textarea id="chatIn" rows="1" maxlength="500" placeholder="메시지" autocomplete="off"></textarea><button class="btn btn-hot" type="submit">보내기</button></form>
 </section>
 
@@ -2853,11 +2871,28 @@ body.hasfab main { padding-bottom: 110px; }
     (m.at2 || []).forEach(function (n) { var e = esc(n); t = t.split('@' + e).join('<b class="at">@' + e + '</b>'); });
     return t;
   }
+  // 한글 이름 찾기: 자모로 풀어서 비교 → 쓰는 중인 글자('ㄷ'·'도'·'동')도, 가운데 글자('동기')도, 초성('ㄷㄱ')도 (대표 요청 2026-11-18)
+  var HJ_CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ', HJ_JUNG = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅗㅏ', 'ㅗㅐ', 'ㅗㅣ', 'ㅛ', 'ㅜ', 'ㅜㅓ', 'ㅜㅔ', 'ㅜㅣ', 'ㅠ', 'ㅡ', 'ㅡㅣ', 'ㅣ'],
+    HJ_JONG = ['', 'ㄱ', 'ㄲ', 'ㄱㅅ', 'ㄴ', 'ㄴㅈ', 'ㄴㅎ', 'ㄷ', 'ㄹ', 'ㄹㄱ', 'ㄹㅁ', 'ㄹㅂ', 'ㄹㅅ', 'ㄹㅌ', 'ㄹㅍ', 'ㄹㅎ', 'ㅁ', 'ㅂ', 'ㅂㅅ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'],
+    HJ_SPLIT = { 'ㅘ': 'ㅗㅏ', 'ㅙ': 'ㅗㅐ', 'ㅚ': 'ㅗㅣ', 'ㅝ': 'ㅜㅓ', 'ㅞ': 'ㅜㅔ', 'ㅟ': 'ㅜㅣ', 'ㅢ': 'ㅡㅣ', 'ㄳ': 'ㄱㅅ', 'ㄵ': 'ㄴㅈ', 'ㄶ': 'ㄴㅎ', 'ㄺ': 'ㄹㄱ', 'ㄻ': 'ㄹㅁ', 'ㄼ': 'ㄹㅂ', 'ㄽ': 'ㄹㅅ', 'ㄾ': 'ㄹㅌ', 'ㄿ': 'ㄹㅍ', 'ㅀ': 'ㄹㅎ', 'ㅄ': 'ㅂㅅ' };
+  function hjamo(s) { return Array.prototype.map.call(key(s), function (ch) { var c = ch.charCodeAt(0) - 0xAC00; if (c < 0 || c > 11171) return HJ_SPLIT[ch] || ch; return HJ_CHO[Math.floor(c / 588)] + HJ_JUNG[Math.floor(c % 588 / 28)] + HJ_JONG[c % 28]; }).join(''); }
+  function hcho(s) { return Array.prototype.map.call(key(s), function (ch) { var c = ch.charCodeAt(0) - 0xAC00; return c < 0 || c > 11171 ? ch : HJ_CHO[Math.floor(c / 588)]; }).join(''); }
+  // 이름이 q 와 맞으면 점수(작을수록 앞): 글자 그대로 0 이름 처음 · 1 성 뗀 이름 처음 · 2 가운데 / 쓰는 중 글자(자모) 3·4·5 / 초성 6 / 안 맞으면 -1
+  function nameHit(name, q) {
+    if (!q) return 0;
+    var k = key(name), kq = key(q), w = k.indexOf(kq);
+    if (w === 0) return 0; if (w === 1) return 1; if (w > 1) return 2;
+    var nj = hjamo(name), qj = hjamo(q), i = nj.indexOf(qj);
+    if (i === 0) return 3; if (hjamo(k.slice(1)).indexOf(qj) === 0) return 4; if (i > 0) return 5;
+    if (/^[ㄱ-ㅎ]+$/.test(kq) && hcho(name).indexOf(kq) >= 0) return 6;
+    return -1;
+  }
   function chatAtPaint() {   // 입력 중 '@' 뒤 글자로 직원 고르기
     var ta = $('chatIn'), box = $('chatAt'), before = ta.value.slice(0, ta.selectionStart), m = before.match(/@([^\s@]{0,12})$/);
     var staff = (state.chat && state.chat.staff) || [];
     if (!m || !staff.length) { box.hidden = true; return; }
-    var q = key(m[1]), me = state.chat.me, list = staff.filter(function (n) { return n !== me && (!q || key(n).indexOf(q) >= 0); }).slice(0, 30);
+    var q = key(m[1]), me = state.chat.me, list = staff.filter(function (n) { return n !== me && nameHit(n, q) >= 0; })
+      .sort(function (a, b) { return nameHit(a, q) - nameHit(b, q) || String(a).localeCompare(String(b), 'ko'); }).slice(0, 30);
     if (!list.length) { box.hidden = true; return; }
     box.innerHTML = list.map(function (n) { return '<button type="button" data-at="' + esc(n) + '">@' + esc(n) + '</button>'; }).join('');
     box.hidden = false;
@@ -2890,11 +2925,12 @@ body.hasfab main { padding-bottom: 110px; }
     $('chatIn').placeholder = room === 'table' ? '메시지 · 카톡처럼 쓰면 자리 신청' : room === 'guest' ? '메시지 · 카톡처럼 쓰면 게스트 반영' : '메시지 · 카톡처럼 쓰면 연출 요청';
     $('chatHelp').innerHTML = CHAT_HELP[room] || ''; $('chatHelp').hidden = true; $('chatQ').setAttribute('aria-expanded', 'false');
     if (state.chatMediaReset) state.chatMediaReset();
+    chatReplyTo(null); chatMenuClose();
     $('chatBox').hidden = false; $('chatFab').hidden = true;
     chatLoad(true);
     clearInterval(state.chatTimer); state.chatTimer = setInterval(function () { if (!document.hidden && !$('chatBox').hidden) chatLoad(); }, 3000);
   }
-  function chatClose() { $('chatBox').hidden = true; $('chatAt').hidden = true; clearInterval(state.chatTimer); state.chatRoom = ''; paintChatFab(); }
+  function chatClose() { chatMenuClose(); $('chatBox').hidden = true; $('chatAt').hidden = true; clearInterval(state.chatTimer); state.chatRoom = ''; paintChatFab(); }
   function chatLoad(first) {
     var room = state.chatRoom; if (!room || state.chatFly) return;
     state.chatFly = 1;
@@ -2921,6 +2957,45 @@ body.hasfab main { padding-bottom: 110px; }
     return '<div class="cph">' + ph.map(function (id) { return '<span class="cphi"><img data-img="' + esc(id) + '" alt="사진"><button type="button" class="csave" data-csi="' + esc(id) + '" aria-label="사진 저장">⬇️</button></span>'; }).join('') +
       vd.map(function (id) { var u = state.vidUrl && state.vidUrl[id]; return u ? '<span class="cphv"><video controls playsinline preload="metadata" src="' + u.url + '"></video><button type="button" class="link csavev" data-csv="' + esc(id) + '">⬇️ 영상 저장</button></span>' : '<button type="button" class="btn cvid" data-cvid="' + esc(id) + '">🎬 영상 보기</button>'; }).join('') + '</div>';
   }
+  // ↩️ 꾹 누르기(0.45초) 또는 오른쪽 클릭 → 답장·복사·확인 메뉴 (대표 요청 2026-11-18)
+  function chatPress(el, id) {
+    var t = null, x0 = 0, y0 = 0;
+    function cancel() { if (t) { clearTimeout(t); t = null; } el.parentNode && el.parentNode.classList.remove('pressing'); }
+    el.addEventListener('touchstart', function (e) { var p = e.touches[0]; x0 = p.clientX; y0 = p.clientY; cancel(); el.parentNode.classList.add('pressing'); t = setTimeout(function () { t = null; el.parentNode.classList.remove('pressing'); chatMenu(id, el); }, 450); }, { passive: true });
+    el.addEventListener('touchmove', function (e) { var p = e.touches[0]; if (Math.abs(p.clientX - x0) > 10 || Math.abs(p.clientY - y0) > 10) cancel(); }, { passive: true });
+    el.addEventListener('touchend', cancel); el.addEventListener('touchcancel', cancel);
+    el.addEventListener('contextmenu', function (e) { e.preventDefault(); chatMenu(id, el); });
+  }
+  function chatMenu(id, el) {
+    if (Date.now() - (state.cmenuAt || 0) < 700) return; state.cmenuAt = Date.now();
+    var m = state.chat && state.chat.list.filter(function (x) { return x.id === id; })[0]; if (!m) return;
+    try { if (navigator.vibrate) navigator.vibrate(15); } catch (e) {}
+    var box = $('chatMenu');
+    box.innerHTML = '<button type="button" data-cmr="1">↩️ 답장</button>' + (m.text ? '<button type="button" data-cmc="1">📋 복사</button>' : '') + '<button type="button" data-cma="1">' + (m.acked ? '✅ 확인 취소' : '✅ 확인') + '</button>';
+    box.hidden = false;
+    var r = el.getBoundingClientRect(), w = box.offsetWidth, h = box.offsetHeight, top = r.top - h - 6;
+    if (top < 8) top = r.bottom + 6;
+    box.style.top = Math.max(8, Math.min(window.innerHeight - h - 8, top)) + 'px';
+    box.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, (m.mine ? r.right - w : r.left))) + 'px';
+    box.querySelector('[data-cmr]').addEventListener('click', function () { chatMenuClose(); chatReplyTo(m); });
+    if (box.querySelector('[data-cmc]')) box.querySelector('[data-cmc]').addEventListener('click', function () { chatMenuClose(); copyText(m.text); });
+    box.querySelector('[data-cma]').addEventListener('click', function () { chatMenuClose(); var p = $('chatL').querySelector('[data-cmid="' + id + '"] > p') || el; chatAck(id, p); });
+    setTimeout(function () { document.addEventListener('touchstart', chatMenuOut, { passive: true }); document.addEventListener('mousedown', chatMenuOut); $('chatL').addEventListener('scroll', chatMenuClose, { once: true }); }, 0);
+  }
+  function chatMenuOut(e) { if (!$('chatMenu').contains(e.target)) chatMenuClose(); }
+  function chatMenuClose() { $('chatMenu').hidden = true; document.removeEventListener('touchstart', chatMenuOut); document.removeEventListener('mousedown', chatMenuOut); }
+  function copyText(t) {
+    var done = function () { var L = $('chatL'), p = document.createElement('p'); p.className = 'cempty'; p.style.color = 'var(--ok)'; p.textContent = '복사했어요.'; L.appendChild(p); setTimeout(function () { p.remove(); }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () {}); else { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); done(); } catch (e) {} a.remove(); }
+  }
+  function chatReplyTo(m) {
+    state.chatReply = m ? { id: m.id, who: m.who, text: m.text || (m.videos && m.videos.length ? '🎬 영상' : m.photos && m.photos.length ? '📷 사진' : '') } : null;
+    var bar = $('chatRep');
+    if (!state.chatReply) { bar.hidden = true; bar.innerHTML = ''; return; }
+    bar.innerHTML = '<div><b>↩️ ' + esc(state.chatReply.who) + '에게 답장</b><span>' + esc(state.chatReply.text) + '</span></div><button type="button" id="chatRepX" aria-label="답장 취소">✕</button>';
+    bar.hidden = false; $('chatRepX').addEventListener('click', function () { chatReplyTo(null); });
+    $('chatIn').focus();
+  }
   function chatPaint(r, toEnd, force) {
     var L = $('chatL'), same = !force && state.chat && JSON.stringify(state.chat.list) === JSON.stringify(r.list);
     state.chat = r; state.chatTail = state.chatTail || {}; state.chatTail[r.room] = r.list.slice(-30).map(function (m) { return [m.at, m.mine ? 1 : 0]; });
@@ -2929,14 +3004,16 @@ body.hasfab main { padding-bottom: 110px; }
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '';
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + (m.text ? '<p>' + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
-    L.innerHTML = h ? '<p class="chint">메시지를 두 번 누르면 ✅ 확인 · 담당 표시</p>' + h : '<p class="cempty">아직 대화가 없어요. 첫 메시지를 남겨 보세요.</p>';
+    L.innerHTML = h ? '<p class="chint">두 번 누르면 ✅ 확인 · 꾹 누르면 ↩️ 답장</p>' + h : '<p class="cempty">아직 대화가 없어요. 첫 메시지를 남겨 보세요.</p>';
     hydrateImgs(L);
     L.querySelectorAll('.cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });
     L.querySelectorAll('[data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
     L.querySelectorAll('[data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
     L.querySelectorAll('[data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { chatPaint(state.chat, false, true); }); }); });
+    L.querySelectorAll('[data-cmid] > p, [data-cmid] > .cph').forEach(function (el) { chatPress(el, el.parentNode.dataset.cmid); });   // 꾹 누르면 답장·복사·확인
+    L.querySelectorAll('.crep[data-goto]').forEach(function (q) { q.addEventListener('click', function (e) { var t = L.querySelector('[data-cmid="' + q.dataset.goto + '"]'); if (!t) return; e.stopPropagation(); t.scrollIntoView({ block: 'center', behavior: 'smooth' }); t.classList.add('flash'); setTimeout(function () { t.classList.remove('flash'); }, 1400); }); });
     L.querySelectorAll('[data-cmid] > p').forEach(function (p) {   // 두 번 누르면 확인(담당)
       p.addEventListener('click', function () {
         var id = p.parentNode.dataset.cmid, now = Date.now();
@@ -2955,6 +3032,7 @@ body.hasfab main { padding-bottom: 110px; }
     var ta = $('chatIn');
     ta.addEventListener('input', function () { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; chatAtPaint(); });
     ta.addEventListener('click', chatAtPaint);
+    ta.addEventListener('compositionend', chatAtPaint); ta.addEventListener('keyup', chatAtPaint);   // 한글 입력이 끝났을 때도 다시
     ta.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && window.matchMedia('(min-width: 601px)').matches) { e.preventDefault(); $('chatF').requestSubmit(); } });
     // 📷 사진(3장)·🎬 영상(2개, 60MB) — 고르면 아래에 미리 보기, 영상은 바로 나눠 올리기 시작
     var md = { photos: [], vids: [] };
@@ -2993,11 +3071,12 @@ body.hasfab main { padding-bottom: 110px; }
       var body = { a: 'chat_send', token: state.s.token, room: room, text: t, floor: state.tbFloor || tbFloorPref() };
       if (md.photos.length) body.photos = md.photos.map(function (p) { return { type: p.type, data: p.data }; });
       if (md.vids.length) body.videos = md.vids.map(function (v) { return v.vid; });
+      if (state.chatReply) body.reply = state.chatReply.id;
       call(body).then(function (r) {
         btn.disabled = false;
-        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; md = { photos: [], vids: [] }; paintMd(); chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.req && room === 'table') { loadTb(true); flushPush(); } if (c && c.req && room === 'yc') loadYc(true); if (c && /^👥/.test(c.req || '') && room === 'guest') refresh(true); if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
+        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; md = { photos: [], vids: [] }; paintMd(); chatReplyTo(null); chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.req && room === 'table') { loadTb(true); flushPush(); } if (c && c.req && room === 'yc') loadYc(true); if (c && /^👥/.test(c.req || '') && room === 'guest') refresh(true); if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
         else if (r.error === 'auth') toLogin(AUTH_OUT);
-        else alertBox(r.error === 'busy' ? '너무 빨리 보내고 있어요. 잠시 후에 보내 주세요.' : r.error === 'photo' ? '사진은 jpg·png 3장까지예요.' : r.error === 'video' ? '영상을 다시 올려 주세요.' : '못 보냈어요. 다시 해 주세요.');
+        else alertBox(r.error === 'busy' ? '너무 빨리 보내고 있어요. 잠시 후에 보내 주세요.' : r.error === 'photo' ? '사진은 jpg·png 3장까지예요.' : r.error === 'video' ? '영상을 다시 올려 주세요.' : r.error === 'reply' ? '답장할 글이 지워졌어요.' : '못 보냈어요. 다시 해 주세요.');
       }).catch(function () { btn.disabled = false; alertBox('연결이 안 돼요.'); });
     });
     function alertBox(m, good) { var L = $('chatL'), p = document.createElement('p'); p.className = 'cempty'; p.style.color = good ? 'var(--ok)' : '#ff8199'; p.textContent = m; L.appendChild(p); L.scrollTop = L.scrollHeight; }
@@ -3036,7 +3115,7 @@ body.hasfab main { padding-bottom: 110px; }
     // GROOVE L: 도면 3칸씩 세 묶음 (위 L4~6·L10~12, 아래 L1~3·L7~9·L13~15)
     [[4, 5, 6], [10, 11, 12], null].forEach(function (g, k) { if (g) g.forEach(function (n, x) { G['L' + n] = [778 + k * 156 + x * 50, 176, 46, 60]; }); });
     [[1, 2, 3], [7, 8, 9], [13, 14, 15]].forEach(function (g, k) { g.forEach(function (n, x) { G['L' + n] = [778 + k * 156 + x * 50, 242, 46, 60]; }); });
-    for (i = 0; i < 6; i++) G['B' + (i + 1)] = [690 + i * 62, 330, 56, 64];
+    for (i = 0; i < 6; i++) G['B' + (6 - i)] = [690 + i * 62, 330, 56, 64];   // 메인바 앞: 왼쪽부터 B6 → B1 (대표 확인 2026-11-18)
   })();
   function tbView() { if (!state.tbView) { try { state.tbView = localStorage.getItem('gs_tb_view'); } catch (e) {} } return state.tbView === 'list' ? 'list' : 'map'; }
   function tbMapHtml(fl, ix) {
