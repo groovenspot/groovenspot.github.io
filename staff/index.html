@@ -164,7 +164,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
         <div class="done-box" id="joinDone" hidden><b>가입 신청 완료.</b> 대표님이 승인하면 바로 로그인할 수 있어요.</div>
         <h1>직원 로그인</h1>
         <p class="sub">한 번 로그인하면 이 폰에서 30일 동안 유지돼요.</p>
-        <label>이름 또는 전화번호<input id="lid" name="username" autocomplete="username" placeholder="예) 진호 또는 010-1234-5678" maxlength="20" required></label>
+        <label>이름<input id="lid" name="username" autocomplete="username" placeholder="가입할 때 넣은 이름" maxlength="20" required></label>
         <label>비밀번호<span class="pw"><input id="lpw" name="password" type="password" autocomplete="current-password" maxlength="40" required><button type="button" data-eye="lpw">보기</button></span></label>
         <button class="btn btn-hot" id="loginBtn" type="submit">로그인</button>
         <p class="msg" id="loginMsg" role="alert"></p>
@@ -173,9 +173,9 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 
       <form id="joinForm" autocomplete="on" novalidate hidden>
         <h1>가입 신청</h1>
-        <p class="sub">이름·전화번호·비밀번호를 넣으면 대표님이 확인하고 승인해요. 승인되면 회의록과 게스트 현황을 볼 수 있어요.</p>
+        <p class="sub">이름·전화번호·비밀번호를 넣으면 대표님이 확인하고 승인해요. 로그인은 이름 + 비밀번호로 하고, 전화번호는 비상 연락망으로 대표님만 봐요.</p>
         <label>이름<input id="jname" name="name" autocomplete="name" placeholder="예) 진호" maxlength="12" required></label>
-        <label>전화번호<input id="jphone" name="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" maxlength="13" required></label>
+        <label>전화번호 (비상 연락망)<input id="jphone" name="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" maxlength="13" required></label>
         <label>비밀번호 (6자 이상)<span class="pw"><input id="jpw" name="new-password" type="password" autocomplete="new-password" minlength="6" maxlength="40" required><button type="button" data-eye="jpw">보기</button></span></label>
         <button class="btn btn-hot" id="joinBtn" type="submit">가입 신청</button>
         <p class="msg" id="joinMsg" role="alert"></p>
@@ -263,7 +263,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
   $('loginForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var id = $('lid').value.trim(), pw = $('lpw').value;
-    if (!id) { $('loginMsg').textContent = '이름이나 전화번호를 넣어 주세요.'; return $('lid').focus(); }
+    if (!id) { $('loginMsg').textContent = '이름을 넣어 주세요.'; return $('lid').focus(); }
     if (!pw) { $('loginMsg').textContent = '비밀번호를 넣어 주세요.'; return $('lpw').focus(); }
     $('loginBtn').disabled = true; $('loginMsg').textContent = '';
     call({ a: 'login', id: id, password: pw }).then(function (r) {
@@ -277,7 +277,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
       else if (r.error === 'denied') m.textContent = '지금은 쓸 수 없는 계정이에요. 대표님께 물어봐 주세요.';
       else if (r.error === 'locked') m.textContent = '비밀번호를 여러 번 틀려서 잠겼어요. ' + (r.minutes || 30) + '분 뒤에 다시 해 주세요.';
       else if (r.error === 'busy') m.textContent = '잠시 후 다시 해 주세요.';
-      else m.textContent = '이름(전화번호)이나 비밀번호가 맞지 않아요.' + (typeof r.left === 'number' ? ' (남은 기회 ' + r.left + '번)' : '');
+      else m.textContent = '이름이나 비밀번호가 맞지 않아요.' + (typeof r.left === 'number' ? ' (남은 기회 ' + r.left + '번)' : '');
     }).catch(function () { $('loginMsg').textContent = '연결이 안 돼요. 인터넷을 확인하고 다시 해 주세요.'; })
       .then(function () { $('loginBtn').disabled = false; });
   });
