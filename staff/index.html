@@ -409,6 +409,54 @@ details.all .list { margin-top: 8px; }
   .rk { grid-template-columns: 38px 1fr auto; gap: 10px; padding: 12px; }
   .rk .no { width: 36px; height: 36px; font-size: 15px; }
 }
+/* 🪑 테이블 현황 */
+.tbh { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+.tbh h1 { margin: 0; }
+.tbh .sub { margin: 2px 0 0; }
+.tbh select { width: auto; max-width: 48%; min-height: 40px; padding: 6px 10px; font-size: 13px; }
+.tbfl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 12px; }
+.tbfl button { min-height: 46px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--card); color: var(--muted); font: inherit; font-weight: 900; font-size: 16px; cursor: pointer; }
+.tbfl button[aria-pressed="true"] { background: var(--g); border-color: var(--g); color: #120800; }
+.tbfl small { font-weight: 700; opacity: .8; }
+.tbtools { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 4px; }
+.tbtools .btn { flex: 1 1 auto; min-height: 42px; }
+.tbtools .btn-hot { flex: 1 1 100%; }
+.tbz { display: flex; align-items: center; gap: 8px; }
+.tbz .row { margin-left: auto; font-weight: 700; }
+.tbrow { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; margin: 0 0 6px; }
+.tbt { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-height: 74px; padding: 6px 8px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--card); color: var(--txt); text-align: left; cursor: pointer; overflow: hidden; font: inherit; }
+.tbt > i { font-style: normal; font-size: 11px; font-weight: 800; color: var(--muted); }
+.tbt b { font-size: 14px; line-height: 1.2; word-break: keep-all; overflow-wrap: anywhere; }
+.tbt span { font-size: 12px; color: var(--muted); line-height: 1.25; }
+.tbt small { font-size: 11px; color: #ffad70; font-weight: 700; }
+.tbt em { font-style: normal; font-size: 10px; font-weight: 800; color: var(--warn); }
+.tbt.empty { background: none; border-style: dashed; border-color: var(--line); }
+.tbt .tbplus { color: var(--line-2); font-size: 20px; margin: auto; }
+.tbt.in { border-color: var(--ok); background: rgba(60,207,145,.10); }
+.tbt.wait { border-color: var(--warn); border-style: dashed; }
+.tbt.no { border-color: var(--bad); }
+.tbt.no em { color: #ff8199; }
+.tbt.blk { background: #241f1f; border-color: var(--line); }
+.tbt.blk b { color: var(--muted); }
+.tbt.ghost { opacity: .55; border-style: dashed; border-color: var(--warn); }
+.tbt.mine { box-shadow: inset 0 0 0 1px rgba(255,122,26,.55); }
+.tbsold { color: var(--gold); margin-right: 2px; }
+.tbmore { position: absolute; top: 5px; right: 7px; font-style: normal; font-size: 10px; font-weight: 800; color: var(--warn); }
+.tbwait { display: grid; gap: 6px; }
+.tbw { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--card); color: var(--txt); text-align: left; cursor: pointer; font: inherit; }
+.tbw.wait { border-color: var(--warn); border-style: dashed; }
+.tbw.no { border-color: var(--bad); }
+.tbw em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--warn); }
+.tbsx, .tbliq, .tbtg, .tbblk { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; align-items: center; }
+.sheet-in button.chip { font: inherit; font-size: 14px; font-weight: 800; padding: 6px 14px; min-height: 38px; background: none; color: var(--txt); cursor: pointer; }
+.sheet-in button.chip.on { background: var(--g); border-color: var(--g); color: #120800; }
+.tbn { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; font-weight: 800; }
+.tbn b { min-width: 26px; text-align: center; font-size: 18px; }
+.tbblk span { font-size: 13px; color: var(--muted); font-weight: 800; margin-right: 4px; }
+.tbno { color: #ff8199; font-size: 14px; margin: 4px 0 8px; }
+.tbbtns { display: flex; gap: 8px; }
+.tbbtns .btn { flex: 1; }
+.tbview p { font-size: 17px; font-weight: 800; margin: 8px 0; }
 </style>
 </head>
 <body>
@@ -453,6 +501,7 @@ details.all .list { margin-top: 8px; }
   <section id="appView" hidden>
     <nav class="tabs" role="tablist" aria-label="스태프 메뉴" id="tabs">
       <button type="button" role="tab" data-tab="guest" aria-selected="true">게스트 현황</button>
+      <button type="button" role="tab" data-tab="table" aria-selected="false" hidden>🪑 테이블</button>
       <button type="button" role="tab" data-tab="board" aria-selected="false">게시판</button>
       <button type="button" role="tab" data-tab="dm" aria-selected="false">메시지</button>
       <button type="button" role="tab" data-tab="keep" aria-selected="false" hidden>🍾 킵</button>
@@ -584,6 +633,7 @@ details.all .list { margin-top: 8px; }
   function toLogin(msg) {
     saveData(null); stopPoll(); swToken('');
     state.s = null; state.data = null; state.tab = 'guest'; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
+    state.tb = null; state.tbDay = ''; state.tbMsg = ''; state.tbErr = ''; state.tbFly = 0;
     state.keep = null; state.kview = 'list'; state.kcur = null; state.kq = ''; state.kf = ''; state.kadd = null; state.kundo = null; state.kstale = false; state.kfly = 0; state.kmulti = false; state.kopt = {}; state.ktmp = {};
     try { localStorage.removeItem(KKEY); } catch (e) {}
     state.bview = 'list'; state.btag = ''; state.bpost = null; state.comp = null; state.cdraft = {}; state.dm = null; state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.dmDraft = {}; state.dmPick = false;
@@ -664,12 +714,13 @@ details.all .list { margin-top: 8px; }
   function openApp() {
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
-    if (['guest', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep'].indexOf(h) >= 0) state.tab = h;
+    if (['guest', 'table', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep'].indexOf(h) >= 0) state.tab = h;
     swToken(state.s.token); paintBell();
     if (!state.keep) { var kc = kLoad(); if (kc) { state.keep = kc; state.kstale = true; } }
     var c = loadData();
     if (c) { state.data = c; render(); refresh(true); } else refresh();
     if (state.tab === 'dm') enterDm();
+    if (state.tab === 'table') loadTb();
     if (state.tab === 'keep') loadKeep();
     else setTimeout(function () { if (state.s && state.tab !== 'keep' && (!state.keep || state.kstale)) loadKeep(); }, 1500);   // 킵 탭을 누르기 전에 미리 받아 둔다
   }
@@ -712,6 +763,7 @@ details.all .list { margin-top: 8px; }
       if (state.tab === 'keep' && state.kview !== 'add') { state.kview = 'list'; state.kcur = null; }
       render(); window.scrollTo(0, 0);
       if (state.tab === 'keep') loadKeep();
+      if (state.tab === 'table') loadTb();
       if (state.tab === 'board' && state.bview !== 'edit') refresh(true);
       if (state.tab === 'dm') enterDm();
     });
@@ -729,18 +781,21 @@ details.all .list { margin-top: 8px; }
       notes: ['회의록', notes.filter(function (n) { return !n.read; }).length],
       dec: ['결정사항', d.decisions.filter(function (x) { return x.mine && x.status !== '완료'; }).length],
       acc: ['가입 승인', pending],
-      keep: ['🍾 킵', keepDue()]
+      keep: ['🍾 킵', keepDue()],
+      table: ['🪑 테이블', d.tableApprove ? (d.tablePending || 0) : 0]
     };
     var LEAD_TABS = { notes: 1, dec: 1 }, hasBoard = !!(d.board && d.board.teams && d.board.teams.length), canAcc = !!(d.admin || d.approver);
     if (!labels[state.tab] || (state.tab === 'acc' && !canAcc) || (state.tab === 'board' && !hasBoard)) state.tab = 'guest';
     if (LEAD_TABS[state.tab] && !d.lead) state.tab = 'guest';
     if (state.tab === 'keep' && !d.keep) state.tab = 'guest';
+    if (state.tab === 'table' && !d.table) state.tab = 'guest';
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
       if (b.dataset.tab === 'acc') b.hidden = !canAcc;
       if (b.dataset.tab === 'board') b.hidden = !hasBoard;
       if (LEAD_TABS[b.dataset.tab]) b.hidden = !d.lead;
       if (b.dataset.tab === 'keep') b.hidden = !d.keep;
+      if (b.dataset.tab === 'table') b.hidden = !d.table;
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
@@ -759,6 +814,7 @@ details.all .list { margin-top: 8px; }
     if (state.tab === 'board') return renderBoard(area, d);
     if (state.tab === 'dm') return renderDm(area, d);
     if (state.tab === 'keep') return renderKeep(area, d);
+    if (state.tab === 'table') return renderTable(area);
     var list = state.tab === 'edu' ? edu : notes;
     if (!list.length) { area.innerHTML = '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; return; }
     area.innerHTML = '<div class="list">' + list.map(function (n) {
@@ -1994,8 +2050,243 @@ details.all .list { margin-top: 8px; }
     s.addEventListener('click', function (e) { if (e.target === s) { s.hidden = true; s.innerHTML = ''; } }, { once: true });
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
-    var t = e.data && e.data.tab; if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); }
+    var t = e.data && e.data.tab; if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); }
   });
+
+  // ── 🪑 테이블 현황 (2026-11-18) ─────────────────────────
+  // 카톡방에 올리던 자리표. 영업진은 자기 손님을 직접 넣고(승인 대기), 대표·김동기·양진호·팀장이 승인하거나 코멘트 달아 거절한다.
+  var TB_DAYS = ['일', '월', '화', '수', '목', '금', '토'], TB_BLK = ['클로버', '고트', '아룬', '디텝', '직텝'];
+  function tbDayLabel(day) { var p = String(day).split('-'), w = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay(); return +p[1] + '월 ' + +p[2] + '일 ' + TB_DAYS[w] + '요일'; }
+  function tbShort(n) { n = String(n || ''); return /^[가-힣]{3}$/.test(n) ? n.slice(1) : n; }
+  function tbFloorPref() { try { return localStorage.getItem('gs_tb_floor') || 'SPOT'; } catch (e) { return 'SPOT'; } }
+  function tbErr(r) {
+    return { taken: '이미 다른 손님이 있는 자리예요' + (r.who ? ' (' + r.who + ')' : '') + '.', forbidden: '이 자리는 고칠 수 없어요.', day: '지난 영업일은 고칠 수 없어요.', seat: '자리를 다시 골라 주세요.',
+      empty: '손님 이름이나 인원을 넣어 주세요.', staff: '담당을 골라 주세요.', comment: '거절할 때는 이유를 적어 주세요.', text: '<, >, " 는 쓸 수 없어요.', notfound: '이미 바뀌었어요. 새로고침했어요.', state: '이미 처리된 요청이에요.' }[r.error] || '저장이 안 됐어요. 잠시 후 다시 해 주세요.';
+  }
+  function loadTb(quiet) {
+    if (!state.s || state.tbFly) return;
+    if (!state.tb && state.tab === 'table') $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
+    state.tbFly = 1;
+    var day = state.tbDay || '';
+    return call({ a: 'tb_get', token: state.s.token, day: day }).then(function (r) {
+      state.tbFly = 0;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) { state.tbErr = '자리표를 못 불러왔어요.'; if (state.tab === 'table' && !quiet) renderSoon(); return; }
+      tbPut(r);
+    }).catch(function () { state.tbFly = 0; state.tbErr = '연결이 안 돼요.'; if (state.tab === 'table' && !quiet) renderSoon(); });
+  }
+  function tbPut(r) {
+    var same = state.tb && JSON.stringify(state.tb.rows) === JSON.stringify(r.rows) && state.tb.day === r.day && state.tb.pending === r.pending;
+    state.tb = r; state.tbErr = ''; state.tbAt = Date.now();
+    if (state.data && r.approver) { state.data.tablePending = r.pending; renderTabsOnly(); }
+    if (state.tab === 'table' && !same && $('sheet').hidden) renderSoon();
+  }
+  // 열어 둔 동안 8초마다 새로 받기 (입력 창이 열려 있으면 쉰다)
+  setInterval(function () { if (state.s && state.tab === 'table' && !document.hidden && $('sheet').hidden && Date.now() - (state.tbAt || 0) > 7000) loadTb(true); }, 8000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'table') loadTb(true); });
+  function tbCall(body, after) {
+    body.token = state.s.token; state.tbFly = 1;
+    return call(body).then(function (r) {
+      state.tbFly = 0;
+      if (r.error === 'auth') { toLogin(AUTH_OUT); return r; }
+      if (r.ok && r.rows) { state.tb = r; state.tbAt = Date.now(); if (state.data && r.approver) state.data.tablePending = r.pending; if (body.a !== 'tb_get') flushPush(); }
+      else if (r.error === 'notfound' || r.error === 'state') loadTb(true);
+      if (after) after(r);
+      return r;
+    }).catch(function () { state.tbFly = 0; var r = { error: 'net' }; if (after) after(r); return r; });
+  }
+  function tbSeatsOf(fl) { var f = (state.tb.floors || []).filter(function (x) { return x.id === fl; })[0]; return f ? f.zones : []; }
+  function tbShowWeekend() { return !!(state.tb && (state.tb.weekend || state.tbWk)); }
+  // 자리별로: 승인된 줄(cur.seat) 먼저, 없으면 내 요청/대기 요청(req.seat)
+  function tbIndex(fl) {
+    var at = {}, wait = [];
+    state.tb.rows.forEach(function (r) {
+      if (r.floor !== fl) return;
+      var cs = r.cur && r.cur.seat, rs = r.req && !r.req.del ? r.req.seat : null;
+      if (cs) (at[cs] = at[cs] || []).unshift(r);
+      else if (rs) (at[rs] = at[rs] || []).push(r);
+      else wait.push(r);
+      if (cs && rs != null && rs !== cs && r.status) { if (rs) (at[rs] = at[rs] || []).push({ ghost: r }); else wait.push({ ghost: r }); }
+    });
+    return { at: at, wait: wait };
+  }
+  function tbLine(v) {   // 카톡 표 한 줄 내용: *이름 술 남2 킵(담당)ㅇ
+    if (!v) return '';
+    if (v.blk) return v.blk;
+    var who = [v.g, v.liq].filter(Boolean).join(' '), sn = (v.sx || '') + (v.n || '');
+    return (v.sold ? '*' : '') + [who, sn].filter(Boolean).join(' ') + (v.keep ? ' 킵' : '') + (v.st ? '(' + tbShort(v.st) + ')' : '') + (v.inn ? 'ㅇ' : '');
+  }
+  function tbTile(seat, list) {
+    var r = list && list[0], g = r && r.ghost, v = r && !g ? (r.cur || r.req) : null, cls = 'tbt', badge = '';
+    if (!r) cls += ' empty';
+    else if (g) { cls += ' ghost'; v = g.req; badge = '<em>옮기기 대기</em>'; }
+    else if (v.blk) cls += ' blk';
+    else {
+      if (v.inn) cls += ' in';
+      if (r.status === '대기') { cls += ' wait'; badge = '<em>' + (r.req && r.req.del ? '비우기 대기' : r.cur ? '변경 대기' : '승인 대기') + '</em>'; }
+      if (r.status === '거절') { cls += ' no'; badge = '<em>거절됨</em>'; }
+      if (r.mine) cls += ' mine';
+    }
+    var more = list && list.length > 1 ? '<i class="tbmore">+' + (list.length - 1) + '</i>' : '';
+    var body = !v ? '<span class="tbplus">+</span>' : v.blk ? '<b>' + esc(v.blk) + '</b>' :
+      '<b>' + (v.sold ? '<span class="tbsold">★</span>' : '') + esc(v.g || v.liq || '손님') + '</b><span>' + esc([(v.sx || '') + (v.n || ''), v.g && v.liq ? v.liq : ''].filter(Boolean).join(' · ')) + (v.keep ? ' 🍾' : '') + '</span><small>' + esc(tbShort(v.st)) + '</small>';
+    return '<button type="button" class="' + cls + '" data-seat="' + esc(seat) + '"><i>' + esc(seat) + '</i>' + body + badge + more + '</button>';
+  }
+  function renderTable(area) {
+    if (!state.tb) { area.innerHTML = state.tbErr ? '<p class="empty">' + esc(state.tbErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.tbFly) loadTb(); return; }
+    var t = state.tb, fl = state.tbFloor || tbFloorPref(), ix = tbIndex(fl), edit = t.canEdit;
+    state.tbFloor = fl;
+    var used = 0, total = 0;
+    tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !tbShowWeekend()) return; z.rows.forEach(function (row) { row.forEach(function (s) { total++; if (ix.at[s] && !ix.at[s][0].ghost) used++; }); }); });
+    var h = '<div class="tbh"><div><h1>🪑 테이블 현황</h1><p class="sub">' + esc(tbDayLabel(t.day)) + (t.day === t.today ? '' : ' · 지난 영업일') + ' · ' + esc(fl) + ' ' + used + '/' + total + '</p></div>' +
+      '<select id="tbDay" aria-label="영업일">' + [0, 1, 2, 3, 4, 5, 6].map(function (i) { var d = tbAddDay(t.today, -i); return '<option value="' + d + '"' + (d === t.day ? ' selected' : '') + '>' + (i ? esc(tbDayLabel(d)) : '오늘 · ' + esc(tbDayLabel(d))) + '</option>'; }).join('') + '</select></div>';
+    h += '<div class="tbfl">' + (t.floors || []).map(function (f) { return '<button type="button" data-tbf="' + esc(f.id) + '" aria-pressed="' + (f.id === fl) + '">' + esc(f.name) + ' <small>' + esc(f.floor) + '</small></button>'; }).join('') + '</div>';
+    h += '<p class="msg ok" id="tbBox"' + (state.tbMsg ? '' : ' hidden') + '>' + esc(state.tbMsg || '') + '</p>'; state.tbMsg = '';
+    var pend = t.rows.filter(function (r) { return r.status === '대기'; });
+    if (t.approver && pend.length && t.day === t.today) {
+      h += '<div class="kqueue"><div class="kqh"><h2 class="sec" style="margin:0">✅ 승인 대기 ' + pend.length + '건</h2>' + (pend.length > 1 ? '<button class="btn btn-ok" type="button" id="tbOkAll">모두 승인</button>' : '') + '</div>' +
+        pend.map(tbReqCard).join('') + '</div>';
+    }
+    if (!t.approver) {
+      var mine = t.rows.filter(function (r) { return r.mine && r.status; });
+      if (mine.length) h += '<div class="kqueue mine"><h2 class="sec" style="margin:0 0 8px">⏳ 내 요청 ' + mine.length + '건</h2>' + mine.map(tbReqCard).join('') + '</div>';
+    }
+    h += '<div class="tbtools">' + (edit ? '<button class="btn btn-hot" type="button" id="tbAdd">+ 손님 넣기</button>' : '') + '<button class="btn" type="button" id="tbCopy">📋 카톡용 복사</button>' +
+      (t.weekend ? '' : '<button class="btn" type="button" id="tbWk" aria-pressed="' + !!state.tbWk + '">' + (state.tbWk ? '주말 자리 숨기기' : '주말 자리 보기') + '</button>') + '</div>';
+    tbSeatsOf(fl).forEach(function (z) {
+      if (z.weekend && !tbShowWeekend()) return;
+      h += '<h2 class="sec tbz">' + esc(z.name) + (z.weekend ? ' <span class="chip">주말</span>' : '') + '</h2>';
+      z.rows.forEach(function (row) { h += '<div class="tbrow">' + row.map(function (s) { return tbTile(s, ix.at[s]); }).join('') + '</div>'; });
+    });
+    h += '<h2 class="sec tbz">대기 명단 <span class="row">' + ix.wait.length + '팀</span></h2><div class="tbwait">' +
+      (ix.wait.length ? ix.wait.map(function (r) { var g = r.ghost, x = g || r, v = g ? g.req : (x.cur || x.req); return '<button type="button" class="tbw' + (x.status ? ' wait' : '') + (x.status === '거절' ? ' no' : '') + '" data-tbid="' + esc(x.id) + '"><span>' + esc(tbLine(v)) + '</span>' + (x.status ? '<em>' + esc(g ? '옮기기 대기' : x.status === '거절' ? '거절됨' : '승인 대기') + '</em>' : '') + '</button>'; }).join('') : '<p class="empty" style="margin:6px 0">대기 손님이 없어요.</p>') + '</div>';
+    if (state.tbErr) h += '<p class="msg">' + esc(state.tbErr) + '</p>';
+    area.innerHTML = h;
+    $('tbDay').addEventListener('change', function () { state.tbDay = this.value === t.today ? '' : this.value; state.tb = null; render(); loadTb(); });
+    area.querySelectorAll('[data-tbf]').forEach(function (b) { b.addEventListener('click', function () { state.tbFloor = b.dataset.tbf; try { localStorage.setItem('gs_tb_floor', state.tbFloor); } catch (e) {} render(); }); });
+    area.querySelectorAll('[data-seat]').forEach(function (b) { b.addEventListener('click', function () { var l = ix.at[b.dataset.seat], r = l && l[0]; tbOpen(r && r.ghost ? r.ghost : r || null, b.dataset.seat); }); });
+    area.querySelectorAll('[data-tbid]').forEach(function (b) { b.addEventListener('click', function () { tbOpen(tbFind(b.dataset.tbid), ''); }); });
+    area.querySelectorAll('[data-tbok]').forEach(function (b) { b.addEventListener('click', function () { tbJudge([b.dataset.tbok], true, '', b); }); });
+    area.querySelectorAll('[data-tbno]').forEach(function (b) { b.addEventListener('click', function () { tbRejectSheet(tbFind(b.dataset.tbno)); }); });
+    area.querySelectorAll('[data-tbedit]').forEach(function (b) { b.addEventListener('click', function () { var r = tbFind(b.dataset.tbedit); tbOpen(r, r && (r.req || r.cur) ? (r.req || r.cur).seat : ''); }); });
+    if ($('tbOkAll')) $('tbOkAll').addEventListener('click', function () { if (!armed(this, '모두 승인')) return; tbJudge(pend.map(function (r) { return r.id; }), true, '', this); });
+    if ($('tbAdd')) $('tbAdd').addEventListener('click', function () { tbOpen(null, ''); });
+    if ($('tbWk')) $('tbWk').addEventListener('click', function () { state.tbWk = !state.tbWk; render(); });
+    $('tbCopy').addEventListener('click', tbCopy);
+  }
+  function tbAddDay(d, n) { var p = d.split('-'), x = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n)); return x.toISOString().slice(0, 10); }
+  function tbFind(id) { return state.tb && state.tb.rows.filter(function (r) { return r.id === id; })[0] || null; }
+  function tbWhere(r, v) { return r.floor + ' ' + (v && v.seat ? v.seat : '대기 명단'); }
+  function tbReqCard(r) {
+    var q = r.req || {}, c = r.cur, what;
+    if (q.del) what = '비우기 · ' + tbLine(c);
+    else if (c) what = (c.seat !== q.seat ? (c.seat || '대기') + ' → ' + (q.seat || '대기') + ' · ' : '') + tbLine(c) + ' → ' + tbLine(q);
+    else what = tbLine(q);
+    var h = '<div class="kreq"><div class="row"><b style="color:var(--txt)">' + esc(tbWhere(r, q.del ? c : q)) + '</b><span>요청 ' + esc(r.by) + '</span><span style="margin-left:auto">' + esc(r.at) + '</span></div><div class="kreq-t">' + esc(what) + '</div>';
+    if (r.status === '거절') h += '<div class="tbno">↩️ 거절 · ' + esc(r.okBy) + (r.comment ? ' · ' + esc(r.comment) : '') + '</div>';
+    if (state.tb.approver && r.status === '대기') h += '<div class="kreq-b"><button class="btn btn-ok" type="button" data-tbok="' + esc(r.id) + '">승인</button><button class="btn btn-bad" type="button" data-tbno="' + esc(r.id) + '">거절</button></div>';
+    else if (r.mine) h += '<div class="kreq-b"><span class="note" style="margin:0">' + (r.status === '거절' ? '' : '⏳ 승인 기다리는 중') + '</span><button class="btn" type="button" data-tbedit="' + esc(r.id) + '">' + (r.status === '거절' ? '고쳐서 다시 신청' : '고치기') + '</button></div>';
+    return h + '</div>';
+  }
+  function tbJudge(ids, ok, comment, btn) {
+    if (btn) btn.disabled = true;
+    return tbCall({ a: ok ? 'tb_ok' : 'tb_no', ids: ids, comment: comment, day: state.tb.day }, function (r) {
+      if (r.ok) state.tbMsg = ok ? '승인했어요' + (r.skip && r.skip.length ? ' · ' + r.skip.length + '건은 자리가 이미 차서 못 했어요' : '') + '.' : '거절하고 코멘트를 보냈어요.';
+      else state.tbErr = tbErr(r);
+      render();
+    });
+  }
+  function tbRejectSheet(r) {
+    if (!r) return;
+    showSheet('<h2>거절 · ' + esc(tbWhere(r, r.req)) + '</h2><p class="sub">' + esc(r.by) + ' · ' + esc(tbLine(r.req)) + '</p><label>코멘트 (담당이 보고 고쳐서 다시 신청해요)<input id="tbNoC" maxlength="80" placeholder="예) 인원 다시 확인해 주세요"></label><p class="msg" id="tbNoM"></p><button class="btn btn-bad" type="button" id="tbNoGo">거절하고 보내기</button>');
+    $('tbNoC').focus();
+    $('tbNoGo').addEventListener('click', function () {
+      var c = $('tbNoC').value.trim(), b = this; if (!c) { $('tbNoM').textContent = '이유를 적어 주세요.'; return; }
+      b.disabled = true;
+      tbCall({ a: 'tb_no', ids: [r.id], comment: c, day: state.tb.day }, function (x) { if (!x.ok) { b.disabled = false; $('tbNoM').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = '거절하고 코멘트를 보냈어요.'; render(); });
+    });
+  }
+  function tbCloseSheet() { var s = $('sheet'); s.hidden = true; s.innerHTML = ''; }
+  // 자리 누르기: 입력 창 (승인하는 사람은 바로 반영, 그 밖에는 승인 요청)
+  function tbOpen(r, seat) {
+    var t = state.tb, ap = t.approver, edit = t.canEdit, fl = r ? r.floor : state.tbFloor;
+    var v = r ? JSON.parse(JSON.stringify(r.req && !r.req.del ? r.req : r.cur || {})) : { seat: seat };
+    if (v.seat == null) v.seat = seat || '';
+    var mineOk = !r || r.mine || ap, blocked = r && r.cur && r.cur.blk && !ap, can = edit && mineOk && !blocked;
+    if (!v.st && !ap) v.st = t.me;
+    var free = [''], ix = tbIndex(fl);
+    tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !tbShowWeekend()) return; z.rows.forEach(function (row) { row.forEach(function (s) { var l = ix.at[s]; if (!l || s === v.seat || (r && l[0] && (l[0].id === r.id || (l[0].ghost && l[0].ghost.id === r.id)))) free.push(s); }); }); });
+    if (v.seat && free.indexOf(v.seat) < 0) free.push(v.seat);
+    var h = '<h2>' + esc(fl) + ' · ' + esc(v.seat || '대기 명단') + '</h2>';
+    if (r) {
+      h += '<p class="sub">' + (r.cur ? '✅ 승인됨' + (r.okBy ? ' · ' + esc(r.okBy) + ' ' + esc(r.okAt) : '') : '') + (r.status === '대기' ? (r.cur ? ' · ' : '') + '⏳ 승인 대기 · ' + esc(r.by) + ' ' + esc(r.at) : '') + '</p>';
+      if (r.status === '거절') h += '<p class="tbno">↩️ 거절 · ' + esc(r.okBy) + (r.comment ? ' · ' + esc(r.comment) : '') + '<br>고쳐서 다시 신청해 주세요.</p>';
+      if (r.req && r.req.del) h += '<p class="tbno">비우기 요청 중이에요.</p>';
+    }
+    if (!can) {
+      h += '<div class="tbview"><p>' + esc(tbLine(v) || '빈 자리') + '</p>' + (v.memo ? '<p class="sub">' + esc(v.memo) + '</p>' : '') + '</div>';
+      if (!edit) h += '<p class="note">지난 영업일은 보기만 할 수 있어요.</p>';
+      else if (blocked) h += '<p class="note">막아 둔 자리예요.</p>';
+      else if (r) h += '<p class="note">다른 담당 손님이에요. 고칠 수 없어요.</p>';
+      return showSheet(h);
+    }
+    if (ap && !(r && r.cur && !r.cur.blk && (r.cur.g || r.cur.n))) h += '<div class="tbblk"><span>자리 막기</span>' + TB_BLK.map(function (x) { return '<button type="button" class="chip' + (v.blk === x ? ' on' : '') + '" data-tbblk="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>';
+    h += '<div id="tbForm"' + (v.blk ? ' hidden' : '') + '>' +
+      '<label>손님<input id="tbG" maxlength="20" autocomplete="off" value="' + esc(v.g || '') + '" placeholder="예) 수빈 · 순번 · 현장"></label>' +
+      '<div class="tbsx">' + ['남', '여', '혼'].map(function (x) { return '<button type="button" class="chip' + (v.sx === x ? ' on' : '') + '" data-tbsx="' + x + '">' + x + '</button>'; }).join('') +
+      '<span class="tbn"><button type="button" class="chip" data-tbn="-1" aria-label="인원 빼기">−</button><b id="tbN">' + (v.n || 0) + '</b>명<button type="button" class="chip" data-tbn="1" aria-label="인원 더하기">＋</button></span></div>' +
+      '<label>술<input id="tbL" maxlength="20" autocomplete="off" value="' + esc(v.liq || '') + '" placeholder="카마 · 포션 · 오페라"></label><div class="tbliq">' + (t.liqs || []).map(function (x) { return '<button type="button" class="chip" data-tbliq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>' +
+      '<div class="tbtg">' + [['sold', '★ 판매'], ['keep', '🍾 킵'], ['inn', 'ㅇ 입장']].map(function (x) { return '<button type="button" class="chip' + (v[x[0]] ? ' on' : '') + '" data-tbtg="' + x[0] + '" aria-pressed="' + !!v[x[0]] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+      (ap ? '<label>담당<select id="tbS"><option value="">담당 고르기</option>' + (t.staffs || []).map(function (n) { return '<option' + (n === v.st ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + (v.st && (t.staffs || []).indexOf(v.st) < 0 ? '<option selected>' + esc(v.st) + '</option>' : '') + '</select></label>' : '<p class="note" style="margin:8px 0 0">담당 · ' + esc(t.me) + '</p>') +
+      '<label>메모<input id="tbM" maxlength="40" autocomplete="off" value="' + esc(v.memo || '') + '"></label></div>' +
+      '<label>자리<select id="tbSeat">' + free.map(function (s) { return '<option value="' + esc(s) + '"' + (s === (v.seat || '') ? ' selected' : '') + '>' + esc(s || '대기 명단 (자리 없음)') + '</option>'; }).join('') + '</select></label>' +
+      '<p class="msg" id="tbMsg"></p><button class="btn btn-hot" type="button" id="tbSave">' + (ap ? '저장' : r && r.status === '거절' ? '고쳐서 다시 신청' : '승인 요청') + '</button>';
+    if (r && ap && r.status === '대기') h += '<div class="tbbtns"><button class="btn btn-ok" type="button" id="tbOk1">요청 승인</button><button class="btn" type="button" id="tbNo1">거절</button></div>';
+    if (r && (r.cur || r.status)) h += '<div class="tbbtns">' + (r.mine && r.status && !ap ? '<button class="btn" type="button" id="tbCancel">요청 취소</button>' : '') + ((r.cur || ap) && !(r.req && r.req.del) ? '<button class="btn btn-bad" type="button" id="tbDel">' + (ap ? '자리 비우기' : '비우기 요청') + '</button>' : '') + '</div>';
+    showSheet(h);
+    var n = v.n || 0, tg = { sold: !!v.sold, keep: !!v.keep, inn: !!v.inn }, sx = v.sx || '', blk = v.blk || '';
+    var s = $('sheet');
+    s.querySelectorAll('[data-tbsx]').forEach(function (b) { b.addEventListener('click', function () { sx = sx === b.dataset.tbsx ? '' : b.dataset.tbsx; s.querySelectorAll('[data-tbsx]').forEach(function (x) { x.classList.toggle('on', x.dataset.tbsx === sx); }); }); });
+    s.querySelectorAll('[data-tbn]').forEach(function (b) { b.addEventListener('click', function () { n = Math.max(0, Math.min(50, n + +b.dataset.tbn)); $('tbN').textContent = n; }); });
+    s.querySelectorAll('[data-tbliq]').forEach(function (b) { b.addEventListener('click', function () { var i = $('tbL'), parts = i.value.split(/\s+/).filter(Boolean), k = parts.indexOf(b.dataset.tbliq); if (k >= 0) parts.splice(k, 1); else parts.push(b.dataset.tbliq); i.value = parts.join(' '); }); });
+    s.querySelectorAll('[data-tbtg]').forEach(function (b) { b.addEventListener('click', function () { var k = b.dataset.tbtg; tg[k] = !tg[k]; b.classList.toggle('on', tg[k]); b.setAttribute('aria-pressed', tg[k]); }); });
+    s.querySelectorAll('[data-tbblk]').forEach(function (b) { b.addEventListener('click', function () { blk = blk === b.dataset.tbblk ? '' : b.dataset.tbblk; s.querySelectorAll('[data-tbblk]').forEach(function (x) { x.classList.toggle('on', x.dataset.tbblk === blk); }); $('tbForm').hidden = !!blk; }); });
+    $('tbSave').addEventListener('click', function () {
+      var b = this, m = $('tbMsg');
+      var nv = blk ? { seat: $('tbSeat').value, blk: blk } : { seat: $('tbSeat').value, g: $('tbG').value.trim(), sx: sx, n: n, liq: $('tbL').value.trim(), memo: $('tbM').value.trim(), st: ap ? $('tbS').value : t.me, sold: tg.sold, keep: tg.keep, inn: tg.inn };
+      if (!blk && !nv.g && !nv.liq && !nv.n) { m.textContent = '손님 이름이나 인원을 넣어 주세요.'; return; }
+      if (!blk && ap && !nv.st) { m.textContent = '담당을 골라 주세요.'; return; }
+      if (blk && !nv.seat) { m.textContent = '막을 자리를 골라 주세요.'; return; }
+      b.disabled = true; m.textContent = '';
+      var body = { a: 'tb_set', day: t.day, floor: fl, v: nv }; if (r) body.id = r.id;
+      tbCall(body, function (x) { if (!x.ok) { b.disabled = false; m.textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = ap ? '저장했어요.' : '승인 요청을 보냈어요. 승인되면 표에 들어가요.'; render(); });
+    });
+    if ($('tbOk1')) $('tbOk1').addEventListener('click', function () { tbCloseSheet(); tbJudge([r.id], true, '', null); });
+    if ($('tbNo1')) $('tbNo1').addEventListener('click', function () { tbRejectSheet(r); });
+    if ($('tbCancel')) $('tbCancel').addEventListener('click', function () { var b = this; b.disabled = true; tbCall({ a: 'tb_cancel', id: r.id }, function (x) { if (!x.ok) { b.disabled = false; $('tbMsg').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = '요청을 취소했어요.'; render(); }); });
+    if ($('tbDel')) $('tbDel').addEventListener('click', function () {
+      if (!armed(this, ap ? '자리 비우기' : '비우기 요청')) return;
+      var b = this; b.disabled = true;
+      tbCall({ a: 'tb_del', id: r.id }, function (x) { if (!x.ok) { b.disabled = false; $('tbMsg').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = ap ? '자리를 비웠어요.' : '비우기 요청을 보냈어요.'; render(); });
+    });
+  }
+  // 카톡용 복사: 지금 쓰는 표 모양 그대로 (승인된 것만)
+  function tbText(fl) {
+    var t = state.tb, f = (t.floors || []).filter(function (x) { return x.id === fl; })[0]; if (!f) return '';
+    var cur = {}, wait = [];
+    t.rows.forEach(function (r) { if (r.floor !== fl || !r.cur) return; if (r.cur.seat) cur[r.cur.seat] = r.cur; else wait.push(r.cur); });
+    var out = [tbDayLabel(t.day), 'ㅡㅡㅡㅡㅡ ' + f.name + ' ㅡㅡㅡㅡㅡ', ''];
+    f.zones.forEach(function (z) {
+      if (z.weekend && !tbShowWeekend()) return;
+      z.rows.forEach(function (row) { row.forEach(function (s) { out.push(s + '- ' + tbLine(cur[s])); }); out.push(''); });
+    });
+    wait.forEach(function (v) { out.push(tbLine(v)); });
+    return out.join('\n').replace(/\n+$/, '');
+  }
+  function tbCopy() {
+    var txt = tbText(state.tbFloor), done = function (ok) { state.tbMsg = ok ? state.tbFloor + ' 표를 복사했어요. 카톡에 붙여 넣으세요.' : ''; render(); if (!ok) showSheet('<h2>카톡용 표</h2><textarea id="tbTxt" rows="14" style="width:100%">' + esc(txt) + '</textarea><p class="note">길게 눌러 전체 선택 → 복사</p>'); };
+    try { navigator.clipboard.writeText(txt).then(function () { done(true); }, function () { done(false); }); } catch (e) { done(false); }
+  }
 
   // ── 가입 승인 (대표: 전체 / 팀장: 자기 팀 신청 승인·거절, 퇴사자 탈퇴) ──
   function renderAcc(area, d) {
