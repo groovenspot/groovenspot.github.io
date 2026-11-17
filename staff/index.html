@@ -594,6 +594,7 @@ body.hasfab main { padding-bottom: 110px; }
 .ycsong { margin: -6px 0 12px; font-size: 13px; }
 .ycsong.ok { color: var(--ok); }
 .ycsong.bad { color: #ff8199; }
+.ycsong.warn { color: var(--warn); }
 .ycp { display: flex; gap: 6px; margin: 8px 0 0; }
 .ycv { display: grid; gap: 8px; margin: 8px 0 0; }
 .ycvbtn { min-height: 42px; }
@@ -2541,7 +2542,7 @@ body.hasfab main { padding-bottom: 110px; }
       return r;
     }).catch(function () { state.ycFly = 0; var r = { error: 'net' }; if (after) after(r); return r; });
   }
-  function ycSeatTxt(x) { return x.seat ? x.floor + ' ' + x.seat : '📺 전광만'; }
+  function ycSeatTxt(x) { return x.seat ? x.floor + ' ' + x.seat : '📺 ' + (x.floor ? x.floor + ' ' : '') + '전광만'; }   // 전광만도 층(GROOVE 2층·SPOT 3층)이 보이게
   function ycWhen(x) {
     var w = x.when || 'now';
     if (w === 'now') return '바로';
@@ -2655,10 +2656,10 @@ body.hasfab main { padding-bottom: 110px; }
     var v = x.v || {}, sc = v.songKind === 'sc' || /^https?:\/\/([\w-]+\.)*(soundcloud\.com|snd\.sc)\//i.test(x.song || '');
     if (!sc || !/^https?:\/\//.test(x.song || '')) return '';
     var u = /^https?:\/\/[^\s<>"']+$/.test(v.songDlUrl || '') ? v.songDlUrl : '', host = u ? u.replace(/^https?:\/\/(www\.)?/, '').split(/[\/?#]/)[0] : '';
-    var tip = u ? host + ' 프리 다운로드 페이지' : v.songDl === 'SoundCloud 다운로드' ? '싸클 페이지 ··· (More) → Download file' : '싸클 페이지에서 Free Download 찾기';
+    var tip = u ? host + ' 프리 다운로드 페이지' : v.songWarn ? '확인 못 한 곡 · 싸클 페이지에서 Free Download 있는지 확인' : v.songDl === 'SoundCloud 다운로드' ? '싸클 페이지 ··· (More) → Download file' : '싸클 페이지에서 Free Download 찾기';
     return ' <a class="ycdl" href="' + esc(u || x.song) + '" target="_blank" rel="noopener noreferrer" title="' + esc(tip) + '">⬇️ 다운</a><span class="ycdlh">' + esc(tip) + '</span>';
   }
-  function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
+  function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songWarn ? ' · ⚠️ 확인 못 한 곡' : v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
   function ycWhatK(v) {
     return [['parade', v.parade ? v.parade + ' 퍼레' : ''], ['video', v.video ? v.video + '영상' : ''], ['holo', v.holo ? '홀로 ' + v.holo : ''], ['picket', v.picket ? v.picket + '피켓' : ''], ['hammer', v.hammer ? '망치' : ''], ['vvip', v.vvip ? 'VVIP 입장' : '']].filter(function (p) { return p[1]; });
   }
@@ -2759,7 +2760,7 @@ body.hasfab main { padding-bottom: 110px; }
     var s = $('sheet');
     function paintSeats() {
       var opts = seatsOf(fl).slice(); if (x && x.floor === fl && /,/.test(x.seat)) opts.unshift(x.seat); if (seat && seat !== '전광만' && opts.indexOf(seat) < 0) seat = '';
-      $('ycSeat').innerHTML = '<option value="">자리 고르기</option><option value="전광만"' + (seat === '전광만' ? ' selected' : '') + '>📺 전광만 (자리 없이)</option>' + opts.map(function (q) { return '<option' + (q === seat ? ' selected' : '') + '>' + esc(q) + '</option>'; }).join('');
+      $('ycSeat').innerHTML = '<option value="">자리 고르기</option><option value="전광만"' + (seat === '전광만' ? ' selected' : '') + '>📺 ' + esc(fl) + ' 전광만 (자리 없이)</option>' + opts.map(function (q) { return '<option' + (q === seat ? ' selected' : '') + '>' + esc(q) + '</option>'; }).join('');
       s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.ycfl === fl); });
     }
     function paintWhen() {
@@ -2821,6 +2822,7 @@ body.hasfab main { padding-bottom: 110px; }
       call({ a: 'song_check', token: state.s.token, song: u }).then(function (r) {
         if (my !== songSeq) return;
         if (r.ok) { box.className = 'note ycsong ok'; box.textContent = '✅ ' + (r.kind === 'melon' ? '멜론 곡' : '사운드클라우드' + (r.title ? ' · ' + r.title : '') + ' · ' + r.dl); }
+        else if (r.soft) { box.className = 'note ycsong warn'; box.textContent = '⚠️ 사운드클라우드를 지금 확인하지 못했어요 · 요청은 돼요 (조명실에서 다운로드 되는지 확인해 주세요)'; }
         else { box.className = 'note ycsong bad'; box.textContent = '❌ ' + ycErr(r) + (r.title ? ' (' + r.title + ')' : ''); }
       }).catch(function () { if (my === songSeq) { box.className = 'note ycsong bad'; box.textContent = '❌ ' + ycErr({ error: 'check' }); } });
     }
@@ -2977,7 +2979,7 @@ body.hasfab main { padding-bottom: 110px; }
     yc: '<p><b>불꽃놀이방에 쓰던 그대로</b> 쓰면 연출 요청이 올라가요.</p>' +
       '<p>첫 줄 = 자리·순서(<code>바로</code> <code>준비되는대로</code> <code>12:10</code> <code>3-12 다음</code>), 다음 줄 = 영상·홀로·피켓·망치·퍼레·노래, <b>빈 줄 뒤 = 전광판 문구</b></p>' +
       '<pre>3s7 바로 구형딥퍼레 호철이형 컨펌완\n고트영상0 홀로0 생일피켓\n\n다은아 생일축하해\n-서빈 하연-</pre>' +
-      '<p>전광만 <code>전광만 바로</code> 다음 줄 <code>범야영상</code>, 빈 줄 뒤 <code>VVIP 범야 입장</code> · 노래는 멜론·사운드클라우드(다운로드 있는 곡) 링크를 같이 붙여요.</p>' +
+      '<p>전광만 <code>2 전광만 바로</code>(그루브 2층) · <code>3 전광만 바로</code>(스팟 3층) 다음 줄 <code>범야영상</code>, 빈 줄 뒤 <code>VVIP 범야 입장</code> · 노래는 멜론·사운드클라우드(다운로드 있는 곡) 링크를 같이 붙여요.</p>' +
       '<p><code>ㅈㄱㅈㅂㅇ</code> 전광 준비(DJ팀·팀장) · <code>ㅅㅈㅂㅇ</code> 술 준비(운영팀) · <code>ㄱㄱ</code> · <code>컷</code> — 먼저 올라온 요청부터, 자리를 붙이면 그 자리(<code>3-9 ㄱㄱ</code>)</p>' +
       '<p>한 줄로 쓸 때는 <code>문구</code> 뒤가 전광판 문구예요: <code>3디2 홀로 망치 문구 오늘달려요 바로</code></p>' +
       '<p>📷 로 사진(3장)·영상(2개)을 같이 보내면 그 연출에 붙어요. 사진만 보내면 내가 올린 연출(ㄱㄱ 전·진행 중)에 붙어요. 같은 자리에 내가 올린 요청이 아직 ㄱㄱ 전이면 다시 쓰면 고쳐져요.</p>'
