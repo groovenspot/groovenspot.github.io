@@ -188,6 +188,8 @@ details.all { margin-top: 14px; }
 .kg .chip { cursor: pointer; background: none; font: inherit; font-size: 12px; font-weight: 800; }
 .kg .chip.none { border-style: dashed; color: var(--muted); }
 .kg .row { margin-left: auto; }
+.kfold { background: none; border: 1px solid var(--line-2); color: var(--muted); border-radius: 999px; font: inherit; font-size: 12px; font-weight: 700; padding: 3px 10px; cursor: pointer; white-space: nowrap; }
+.kg.shut { opacity: .75; }
 .kc { display: grid; gap: 8px; text-align: left; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; color: var(--txt); font: inherit; cursor: pointer; }
 .kc.soon { border-color: rgba(255,176,32,.6); }
 .kc.late { border-color: rgba(255,59,92,.6); }
@@ -407,6 +409,12 @@ body.hasfab main { padding-bottom: 110px; }
 .chatl .cm.me { align-self: flex-end; text-align: right; }
 .chatl .cm i { display: block; font-style: normal; font-size: 12px; font-weight: 700; color: var(--txt); margin: 0 4px 3px; }
 .org { font-size: 11px; font-weight: 700; color: var(--g); margin-left: 4px; }
+.decadd { margin: 0 0 12px; border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 12px; background: var(--card); }
+.decadd summary { font-weight: 800; cursor: pointer; }
+.decadd form { margin-top: 10px; } .decadd label { margin-bottom: 10px; font-size: 13px; }
+.decadd textarea { width: 100%; box-sizing: border-box; font: inherit; color: var(--txt); background: var(--bg); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 14px; resize: vertical; }
+.decadd textarea:focus { outline: none; border-color: var(--g); }
+.nick { font-size: 11px; font-weight: 700; color: #c79bff; margin-left: 4px; white-space: nowrap; }
 .chatl .cm p { display: inline-block; margin: 0; padding: 8px 11px; border-radius: 14px; background: #2a2a30; font-size: 15px; line-height: 1.4; white-space: pre-wrap; word-break: break-word; text-align: left; }
 .chatl .cm.me p { background: var(--g); color: #120800; }
 .chatl .cm small { font-size: 10px; color: var(--muted); margin: 0 4px; }
@@ -847,6 +855,9 @@ body.hasfab main { padding-bottom: 110px; }
   function show(view) { ['loginView', 'appView', 'docView'].forEach(function (id) { $(id).hidden = id !== view; }); window.scrollTo(0, 0); }
   function today() { var d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); }
   function md(s) { var p = String(s).split('-'); return +p[1] + '/' + +p[2]; }
+  // 닉네임 (2026-11-18): 이름 옆에 작게. 목록 응답의 nicks(이름 key → 닉네임), 본인은 나 → 내 정보에서 정함
+  function nickOf(n) { var m = (state.data && state.data.nicks) || {}, k = key(n), x = m[k] || ''; return x && key(x) !== k ? x : ''; }
+  function nk(n) { var x = nickOf(n); return x ? '<span class="nick">' + esc(x) + '</span>' : ''; }
   function roleChip(r) { return r === '관리자' ? '<span class="chip adm">대표</span>' : r === '팀장' ? '<span class="chip lead">팀장</span>' : r === '부팀장' ? '<span class="chip vice">부팀장</span>' : ''; }
   function teamChip(t) { return t ? '<span class="chip t-' + esc(t) + '">' + esc(t) + '</span>' : ''; }
   // 운영팀 / 영업팀(클로버·아룬·고트) / DJ팀
@@ -1067,7 +1078,7 @@ body.hasfab main { padding-bottom: 110px; }
       yc: ['🎆 연출', d.ycWaiting || 0],
       lost: ['🔎 분실물', 0]
     };
-    var LEAD_TABS = { notes: 1 }, decOn = !!(d.lead || (d.decisions && d.decisions.length)), hasBoard = !!(d.board && d.board.teams && d.board.teams.length), canAcc = !!(d.admin || d.approver);
+    var LEAD_TABS = { notes: 1 }, decOn = !!(d.lead || d.decAdd || (d.decisions && d.decisions.length)), hasBoard = !!(d.board && d.board.teams && d.board.teams.length), canAcc = !!(d.admin || d.approver);
     if (!labels[state.tab] || (state.tab === 'acc' && !canAcc) || (state.tab === 'board' && !hasBoard)) state.tab = 'guest';
     if (LEAD_TABS[state.tab] && !d.lead) state.tab = 'guest';
     if (state.tab === 'dec' && !decOn) state.tab = 'guest';
@@ -1080,7 +1091,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (b.dataset.tab === 'acc') b.hidden = !canAcc;
       if (b.dataset.tab === 'board') b.hidden = !hasBoard;
       if (LEAD_TABS[b.dataset.tab]) b.hidden = !d.lead;
-      if (b.dataset.tab === 'dec') b.hidden = !decOn;   // 업무사항: 팀장·부팀장은 전부, 직원은 내 담당이 있을 때
+      if (b.dataset.tab === 'dec') b.hidden = !decOn;   // 업무사항: 모두(내 일 추가). 팀장·부팀장·김동기·양진호·대표는 전부, 직원은 내 이름이 나온 일
       if (b.dataset.tab === 'keep') b.hidden = !d.keep;
       if (b.dataset.tab === 'table') b.hidden = !d.table;
       if (b.dataset.tab === 'yc') b.hidden = !d.yc;
@@ -1114,7 +1125,7 @@ body.hasfab main { padding-bottom: 110px; }
         '<span class="row"><span class="chip k-' + esc(n.kind) + '">' + esc(n.kind) + '</span>' + esc(n.date) +
         (n.read ? '<span class="chip done">✓ 읽음</span>' : '<span class="chip new">안 읽음</span>') + '</span>' +
         '<span class="title">' + esc(n.title) + '</span>' +
-        '<span class="row">읽은 사람 ' + n.readers + ' / ' + n.total + '</span></button>';
+        (n.total != null ? '<span class="row">읽은 사람 ' + n.readers + ' / ' + n.total + '</span>' : '') + '</button>';
     }).join('') + '</div>';
     area.querySelectorAll('.item').forEach(function (b) { b.addEventListener('click', function () { openDoc(b.dataset.id); }); });
     bindPushGuide();
@@ -1159,7 +1170,7 @@ body.hasfab main { padding-bottom: 110px; }
         '영업진이 자기 손님을 넣으면 <b>승인 대기</b> → 대표·김동기·양진호·팀장(그날 권한 받은 직원 포함)이 승인, 또는 코멘트 달아 거절 → 고쳐서 다시 신청',
         '💬 대화창에 카톡처럼 써도 돼요: <code>3-2 민성 남4(동기)ㅇ</code> · <code>3층 DB7 아웃</code>(<code>캔슬</code>도 돼요) · <code>3L3 → 3L5</code> · 맞교환 <code>3L3 ↔ 3L5</code>(승인권자)',
         '도면·목록 보기, <b>📋 카톡용 복사</b> · 판매석은 <b>노란색</b>, 도면에 담당 이름 · <b>🟢 빈 자리</b> 목록',
-        '빠가 다 차면 <b>➕ 빠 확장</b>(3층 B10~15 · 2층 B7~12)',
+        '<b>➕ 빠 확장</b>을 누르면 확장 자리(3층 B10~15 · 2층 B7~12)가 열려요 · 손님 없으면 <b>➖ 닫기</b>',
         '대기 손님은 <b>💰 비딩</b>: 담당이 금액(만원)을 올리면 관리자가 자리를 골라 확정',
         '주말 자리(SPOT B·V, GROOVE Bar)는 금·토에만 보여요'
       ]) +
@@ -1204,31 +1215,59 @@ body.hasfab main { padding-bottom: 110px; }
   function renderDec(area, d) {
     var list = d.decisions || [], t = today(), f = state.decF || '';
     var h = '<div class="gh"><h1>📋 업무사항</h1></div>';
-    if (!list.length) { area.innerHTML = h + '<p class="empty">아직 업무가 없어요. 회의록이 올라오면 여기에 담당·마감이 나와요.</p>'; return; }
+    if (d.decAdd) h += '<details class="decadd"' + (state.decAddOpen ? ' open' : '') + '><summary>➕ 업무 추가</summary><form id="decAddF" novalidate>' +
+      '<label>할 일<textarea id="decAddW" maxlength="300" rows="2" placeholder="예: 우지랑 12월 파티 조명 견적 받기">' + esc(state.decAddDraft || '') + '</textarea></label>' +
+      (d.decAdd === 'all' ? '<label>담당 (이름·닉네임)<input id="decAddP" maxlength="60" autocomplete="off" placeholder="예: 김동기, 우지"></label>' : '') +
+      '<label>마감 (선택)<input id="decAddD" type="date"></label>' +
+      '<p class="note" style="margin:0 0 8px">' + (d.decAdd === 'all' ? '할 일·담당에 이름이나 닉네임을 쓰면 그 사람에게 알림이 가요.' : '<b>내 일</b>로 추가돼요. 다른 사람을 태그해서 추가하는 건 팀장·김동기·양진호·대표님만 해요.') + '</p>' +
+      '<button class="btn btn-ok" type="submit" style="width:100%">추가하기</button><p class="msg" id="decAddM" role="alert"></p></form></details>';
+    if (!list.length) {
+      area.innerHTML = h + '<p class="empty">아직 업무가 없어요. 회의록이 올라오면 여기에 담당·마감이 나와요.</p>';
+      bindDecAdd(); return;
+    }
     var cnt = { '': list.length, mine: list.filter(function (x) { return x.mine; }).length, open: list.filter(function (x) { return x.status !== '완료'; }).length, done: list.filter(function (x) { return x.status === '완료'; }).length };
     h += '<div class="kfil">' + [['', '전체'], ['open', '대기·진행'], ['mine', '내 일'], ['done', '완료']].map(function (o) { return '<button type="button" data-decf="' + o[0] + '" aria-pressed="' + (f === o[0]) + '">' + o[1] + ' ' + cnt[o[0]] + '</button>'; }).join('') + '</div>';
     var rows = list.filter(function (x) { return !f || (f === 'mine' ? x.mine : f === 'open' ? x.status !== '완료' : x.status === '완료'); })
       .sort(function (a, b) { return (DEC_ORD[a.status] - DEC_ORD[b.status]) || (b.mine - a.mine) || String(a.due || '9').localeCompare(String(b.due || '9')); });
+    h += '<p class="note" style="margin:0 0 10px">👤 업무에 이름·닉네임이 나온 사람에게 알림이 가고, 그 사람이 상태·코멘트를 바꿀 수 있어요.</p>';
     if (d.admin && cnt.done) h += '<p class="note" style="margin:0 0 10px">✅ 완료된 일은 확인한 뒤 <b>🗑 확인·지우기</b>로 정리해 주세요.</p>';
     h += '<p class="msg" id="decMsg"></p><div class="list">' + rows.map(function (x) {
       var late = x.status !== '완료' && x.due && x.due < t;
       var c = '<div class="dec' + (x.mine ? ' mine' : '') + (x.status === '완료' ? ' done' : '') + '" data-decid="' + esc(x.id) + '"><span class="what">' + esc(x.what) + '</span>' +
         '<span class="row">담당 ' + esc(x.who || '-') + ' · 마감 ' + esc(x.due || '-') + ' · <span class="st ' + esc(late ? 'late' : x.status) + '">' + esc(late ? '마감 지남 · ' + x.status : x.status) + '</span>' + (x.done ? ' · 완료 ' + esc(x.done.slice(5)) : '') +
-        (x.mine ? ' · <b>내 일</b>' : '') + '</span>';
+        (x.mine ? ' · <b>내 일</b>' : '') + '</span>' + (x.ppl && x.ppl.length ? '<span class="row decppl">👤 ' + x.ppl.map(function (n) { return esc(n) + nk(n); }).join(', ') + '</span>' : '');
       if (x.can) c += '<div class="decst" role="group" aria-label="상태">' + ['대기', '진행', '완료'].map(function (st) { return '<button type="button" data-decst="' + st + '" aria-pressed="' + (x.status === st) + '">' + (st === '완료' ? '✅ ' : st === '진행' ? '▶ ' : '') + st + '</button>'; }).join('') + '</div>';
-      if (x.cmts.length) c += '<div class="ycc">' + x.cmts.map(function (m) { return '<p' + (/^상태 → /.test(m.text) ? ' class="sys"' : '') + '><b>' + esc(m.who) + '</b> ' + esc(m.text) + ' <small>' + esc(m.at) + '</small></p>'; }).join('') + '</div>';
+      if (x.cmts.length) c += '<div class="ycc">' + x.cmts.map(function (m) { return '<p' + (/^상태 → /.test(m.text) ? ' class="sys"' : '') + '><b>' + esc(m.who) + nk(m.who) + '</b> ' + esc(m.text) + ' <small>' + esc(m.at) + '</small></p>'; }).join('') + '</div>';
       if (x.can) c += '<form class="yccf" data-deccf="1"><input data-deccmt="1" maxlength="200" placeholder="코멘트 (예: 내일까지 견적 받을게요)" autocomplete="off"><button class="btn" type="submit">보내기</button></form>';
       if (d.admin && x.status === '완료') c += '<button class="btn btn-bad" type="button" data-decdel="1" style="width:100%;margin-top:8px">🗑 확인·지우기</button>';
       return c + '</div>';
     }).join('') + '</div>';
     if (!rows.length) h += '<p class="empty">여기에 맞는 일이 없어요.</p>';
-    area.innerHTML = h;
+    area.innerHTML = h; bindDecAdd();
     area.querySelectorAll('[data-decf]').forEach(function (b) { b.addEventListener('click', function () { state.decF = b.dataset.decf; render(); }); });
+    function bindDecAdd() {
+      var f = $('decAddF'); if (!f) return;
+      f.parentNode.addEventListener('toggle', function () { state.decAddOpen = f.parentNode.open; });
+      $('decAddW').addEventListener('input', function () { state.decAddDraft = this.value; });
+      f.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var w = $('decAddW').value.trim(), m = $('decAddM'), btn = f.querySelector('button');
+        if (!w) { m.className = 'msg'; m.textContent = '할 일을 써 주세요.'; return; }
+        btn.disabled = true;
+        call({ a: 'dec_add', token: state.s.token, what: w, who: $('decAddP') ? $('decAddP').value.trim() : '', due: $('decAddD').value }).then(function (r) {
+          btn.disabled = false;
+          if (r.error === 'auth') return toLogin(AUTH_OUT);
+          if (!r.ok) { m.className = 'msg'; m.textContent = { forbidden: '추가할 수 없어요.', text: '< > 는 쓸 수 없어요.', due: '마감 날짜를 다시 골라 주세요.', empty: '할 일을 써 주세요.', busy: '잠시 후 다시 해 주세요.' }[r.error] || '추가가 안 됐어요. 다시 해 주세요.'; return; }
+          state.decAddDraft = ''; state.decAddOpen = false; state.decF = '';
+          state.data.decisions = r.decisions; saveData(state.data); render();
+        }).catch(function () { btn.disabled = false; m.className = 'msg'; m.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+      });
+    }
     function send(id, body, btn) {
       if (btn) btn.disabled = true;
       call(Object.assign({ a: body.del ? 'dec_del' : 'dec_set', token: state.s.token, id: id }, body.del ? {} : body)).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
-        if (!r.ok) { if (btn) btn.disabled = false; var m = $('decMsg'); if (m) m.textContent = { forbidden: '내 담당 일만 바꿀 수 있어요.', state: '완료된 일만 지울 수 있어요.', notfound: '그 사이 지워졌어요.', busy: '잠시 후 다시 해 주세요.', text: '<, > 는 못 써요.' }[r.error] || '안 됐어요. 다시 해 주세요.'; return; }
+        if (!r.ok) { if (btn) btn.disabled = false; var m = $('decMsg'); if (m) m.textContent = { forbidden: '내 이름·닉네임이 나온 일만 바꿀 수 있어요.', state: '완료된 일만 지울 수 있어요.', notfound: '그 사이 지워졌어요.', busy: '잠시 후 다시 해 주세요.', text: '<, > 는 못 써요.' }[r.error] || '안 됐어요. 다시 해 주세요.'; return; }
         state.data.decisions = r.decisions; render();
       }).catch(function () { if (btn) btn.disabled = false; var m = $('decMsg'); if (m) m.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
     }
@@ -1249,7 +1288,7 @@ body.hasfab main { padding-bottom: 110px; }
     var medal = ['', '🥇', '🥈', '🥉'][r.rank];
     return '<div class="rk r' + r.rank + (r.mine ? ' mine' : '') + '">' +
       (medal ? '<span class="medal" aria-label="' + r.rank + '등">' + medal + '</span>' : '<span class="no">' + r.rank + '</span>') +
-      '<div class="nm"><strong>' + esc(r.name) + '</strong>' + teamChip(r.team) + (r.mine ? ' <span class="chip new">나</span>' : '') +
+      '<div class="nm"><strong>' + esc(r.name) + nk(r.name) + '</strong>' + teamChip(r.team) + (r.mine ? ' <span class="chip new">나</span>' : '') +
       '<div class="days">' + days + '</div></div>' +
       '<div class="tot">' + r.total + '<small>명</small></div></div>';
   }
@@ -1283,7 +1322,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (!mem.length) h += '<p class="empty">아직 ' + esc(team) + ' 팀원이 없어요. 아래에 팀원 이름을 추가하면 게스트 수를 넣을 수 있어요.</p>';
     else h += mem.map(function (a) {
       var cur = guestOf(g, state.gday, a.name), k = state.gday + '|' + a.name, v = state.gdraft[k] != null ? state.gdraft[k] : (cur == null ? '' : String(cur));
-      return '<div class="grow"><span class="gn">' + esc(a.name) + roleChip(a.role) + (a.ros ? '<span class="chip ros">명단</span>' : '') + '</span>' +
+      return '<div class="grow"><span class="gn">' + esc(a.name) + nk(a.name) + roleChip(a.role) + (a.ros ? '<span class="chip ros">명단</span>' : '') + '</span>' +
         (a.ros ? '<button type="button" class="btn btn-bad rdel' + (state.rarm === a.name ? ' arm' : '') + '" data-rdel="' + esc(a.name) + '">' + (state.rarm === a.name ? '빼기' : '✕') + '</button>' : '') +
         '<input type="number" inputmode="numeric" min="0" max="500" step="1" placeholder="0" data-gn="' + esc(a.name) + '" data-cur="' + (cur == null ? '' : cur) + '" value="' + esc(v) + '" aria-label="' + esc(a.name) + ' 게스트 수"><span class="u">명</span></div>';
     }).join('') + '<div class="gbar"><button class="btn btn-hot" id="gSave" type="button">저장</button><p class="msg' + (state.gmsg ? ' ok' : '') + '" id="gMsg" role="alert">' + esc(state.gmsg) + '</p></div>';
@@ -1437,7 +1476,7 @@ body.hasfab main { padding-bottom: 110px; }
         '<span class="pt">' + (p.pin ? '<span class="pin" aria-label="고정">📌</span>' : '') + tagChip(p.tag) + (p.must ? '<span class="chip must">필독</span>' : '') +
         '<strong>' + esc(p.title) + '</strong>' + (p.read ? '' : '<span class="dot" aria-label="안 읽음"></span>') + '</span>' +
         (p.preview && p.preview !== p.title ? '<span class="pv">' + esc(p.preview) + '</span>' : '') +
-        '<span class="row">' + esc(p.name) + ' · ' + esc(p.at.slice(5)) + (p.edited ? ' · 수정됨' : '') + (p.comments ? ' · 💬 ' + p.comments : '') + (p.photos ? ' · 📷 ' + p.photos : '') +
+        '<span class="row">' + esc(p.name) + nk(p.name) + ' · ' + esc(p.at.slice(5)) + (p.edited ? ' · 수정됨' : '') + (p.comments ? ' · 💬 ' + p.comments : '') + (p.photos ? ' · 📷 ' + p.photos : '') +
         (p.readers ? ' · 읽음 ' + p.readers.n + '/' + p.readers.total : '') + '</span></button>';
     }).join('') + '</div>';
     area.innerHTML = h;
@@ -1504,7 +1543,7 @@ body.hasfab main { padding-bottom: 110px; }
     var bp = state.bpost, p = bp.post, can = p.can || {};
     var h = '<button class="btn back" id="pBack" type="button">← ' + esc(bName(p.team || state.bteam)) + '</button>';
     h += '<article class="pview"><div class="pt">' + (p.pin ? '<span class="pin">📌</span>' : '') + tagChip(p.tag) + (p.must ? '<span class="chip must">필독</span>' : '') + '</div>' +
-      '<h1>' + esc(p.title) + '</h1><p class="meta">' + esc(p.name) + (p.at ? ' · ' + esc(p.at) : '') + (p.editedAt ? ' · 수정 ' + esc(p.editedAt.slice(5)) : '') + '</p>';
+      '<h1>' + esc(p.title) + '</h1><p class="meta">' + esc(p.name) + nk(p.name) + (p.at ? ' · ' + esc(p.at) : '') + (p.editedAt ? ' · 수정 ' + esc(p.editedAt.slice(5)) : '') + '</p>';
     if (bp.err) h += '<p class="msg">' + esc(bp.err) + '</p>';
     if (bp.sending) h += '<p class="load">⏳ 올리는 중… 다른 화면으로 가도 괜찮아요.</p>';
     if (bp.loading) h += '<p class="load">불러오는 중…</p>';
@@ -1526,7 +1565,7 @@ body.hasfab main { padding-bottom: 110px; }
     else if (!bp.loading && !bp.err && !bp.sending) {
       var cs = bp.comments || [];
       h += '<h2 class="sec">댓글 ' + cs.length + '</h2><div class="cmts">' + cs.map(function (c) {
-        return '<div class="cmt' + (c.mine ? ' mine' : '') + '" data-cid="' + esc(c.id) + '"><div class="ch"><strong>' + esc(c.name) + '</strong>' + esc(c.at.slice(5)) +
+        return '<div class="cmt' + (c.mine ? ' mine' : '') + '" data-cid="' + esc(c.id) + '"><div class="ch"><strong>' + esc(c.name) + nk(c.name) + '</strong>' + esc(c.at.slice(5)) +
           (c.del ? '<button type="button" class="btn btn-bad" data-cdel>지우기</button>' : '') + '</div><div class="ctx">' + esc(c.text) + '</div></div>';
       }).join('') + '</div>' +
         '<form class="compose" id="cForm" novalidate><textarea id="cText" maxlength="500" placeholder="댓글 달기" rows="2"></textarea>' +
@@ -1714,12 +1753,12 @@ body.hasfab main { padding-bottom: 110px; }
       '<button class="btn btn-hot" id="dNew" type="button">＋ 새 대화</button></div>';
     if (state.dmPick) {
       h += '<div class="pick"><input id="dFind" placeholder="이름 찾기" autocomplete="off"><div class="plist">' + m.people.map(function (p) {
-        return '<button type="button" class="pp" data-to="' + esc(p.name) + '"><strong>' + esc(p.name) + '</strong>' + roleChip(p.role) + teamChip(p.team) + '</button>';
+        return '<button type="button" class="pp" data-to="' + esc(p.name) + '"><strong>' + esc(p.name) + nk(p.name) + '</strong>' + roleChip(p.role) + teamChip(p.team) + '</button>';
       }).join('') + (m.people.length ? '' : '<p class="empty">다른 직원이 아직 없어요.</p>') + '</div></div>';
     }
     if (!m.convs.length) h += '<p class="empty">아직 대화가 없어요. ＋ 새 대화로 시작해 보세요.</p>';
     else h += '<div class="list">' + m.convs.map(function (c) {
-      return '<button type="button" class="conv' + (c.unread ? ' unread' : '') + (c.with === '손님 문의' ? ' inq' : '') + '" data-with="' + esc(c.with) + '"><span class="cn"><strong>' + (c.with === '손님 문의' ? '📩 ' : '') + esc(c.with) + (c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</strong><span class="at">' + esc(c.at.slice(5)) + '</span></span>' +
+      return '<button type="button" class="conv' + (c.unread ? ' unread' : '') + (c.with === '손님 문의' ? ' inq' : '') + '" data-with="' + esc(c.with) + '"><span class="cn"><strong>' + (c.with === '손님 문의' ? '📩 ' : '') + esc(c.with) + nk(c.with) + (c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</strong><span class="at">' + esc(c.at.slice(5)) + '</span></span>' +
         '<span class="cl">' + (c.mine ? '나: ' : '') + esc(c.last) + '</span>' + (c.unread ? '<span class="n">' + c.unread + '</span>' : '') + '</button>';
     }).join('') + '</div>';
     area.innerHTML = h;
@@ -1733,7 +1772,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
   function renderChat(area) {
     var c = state.chat, w = state.dmWith;
-    var h = '<div class="chead"><button class="btn back" id="dBack" type="button">←</button><strong>' + esc(w) + (c && c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</strong></div>';
+    var h = '<div class="chead"><button class="btn back" id="dBack" type="button">←</button><strong>' + esc(w) + nk(w) + (c && c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</strong></div>';
     if (!c) h += '<p class="load">불러오는 중…</p>';
     else {
       h += '<div class="chat" id="chatBox">' + (c.msgs.length ? c.msgs.map(function (m) {
@@ -1799,9 +1838,9 @@ body.hasfab main { padding-bottom: 110px; }
   function kPend(cid) { return ((state.keep && state.keep.reqs) || []).filter(function (r) { return r.status === '대기' && (!cid || r.cid === cid); }); }
   // 승인 요청 카드 (승인할 사람: 승인·거절 / 요청한 사람: 취소)
   function kReqCard(r, mode) {
-    var st = r.status === '대기' ? '' : r.status === '승인' ? '<span class="chip" style="border-color:var(--ok);color:var(--ok)">승인 · ' + esc(r.who) + '</span>'
-      : r.status === '거절' ? '<span class="chip" style="border-color:var(--bad);color:#ff8199">거절 · ' + esc(r.who) + '</span>' : '<span class="chip">' + esc(r.status) + '</span>';
-    var h = '<div class="kreq"><div class="row"><b style="color:var(--txt)">' + esc(r.cust) + '</b><span>담당 ' + esc(r.staff) + '</span>' + (mode === 'ap' ? '<span>· 요청 ' + esc(r.by) + '</span>' : '') + '<span style="margin-left:auto">' + esc(r.at.slice(5)) + '</span></div>' +
+    var st = r.status === '대기' ? '' : r.status === '승인' ? '<span class="chip" style="border-color:var(--ok);color:var(--ok)">승인 · ' + esc(r.who) + nk(r.who) + '</span>'
+      : r.status === '거절' ? '<span class="chip" style="border-color:var(--bad);color:#ff8199">거절 · ' + esc(r.who) + nk(r.who) + '</span>' : '<span class="chip">' + esc(r.status) + '</span>';
+    var h = '<div class="kreq"><div class="row"><b style="color:var(--txt)">' + esc(r.cust) + '</b><span>담당 ' + esc(r.staff) + nk(r.staff) + '</span>' + (mode === 'ap' ? '<span>· 요청 ' + esc(r.by) + nk(r.by) + '</span>' : '') + '<span style="margin-left:auto">' + esc(r.at.slice(5)) + '</span></div>' +
       '<div class="kreq-t"><span class="chip">' + esc(r.kind) + '</span> ' + esc(r.text) + ' ' + st + '</div>' + (r.reason ? '<div class="note" style="margin:0">사유: ' + esc(r.reason) + '</div>' : '');
     if (r.status === '대기' && mode === 'ap') h += '<div class="kreq-b"><button class="btn btn-ok" type="button" data-kok="' + esc(r.id) + '">승인</button><button class="btn btn-bad" type="button" data-kno="' + esc(r.id) + '">거절</button></div>';
     if (r.status === '대기' && mode === 'me') h += r.tmp ? '<div class="kreq-b"><span class="note" style="margin:0">⏳ 보내는 중…</span></div>'
@@ -1849,7 +1888,7 @@ body.hasfab main { padding-bottom: 110px; }
     root.querySelectorAll('[data-kno]').forEach(function (b) {
       b.addEventListener('click', function () {
         var r = (state.keep.reqs || []).filter(function (x) { return x.id === b.dataset.kno; })[0]; if (!r) return;
-        showSheet('<h2>거절</h2><p class="note" style="margin:0 0 10px">' + esc(r.cust) + ' · ' + esc(r.text) + ' (요청 ' + esc(r.by) + ')</p><label>사유 (선택)<input id="kNoR" maxlength="60" placeholder="예) 병 확인 안 됨"></label><button class="btn btn-bad" type="button" id="kNoGo">거절하기</button>');
+        showSheet('<h2>거절</h2><p class="note" style="margin:0 0 10px">' + esc(r.cust) + ' · ' + esc(r.text) + ' (요청 ' + esc(r.by) + nk(r.by) + ')</p><label>사유 (선택)<input id="kNoR" maxlength="60" placeholder="예) 병 확인 안 됨"></label><button class="btn btn-bad" type="button" id="kNoGo">거절하기</button>');
         $('kNoGo').addEventListener('click', function () { var v = $('kNoR').value.trim(); $('sheet').hidden = true; $('sheet').innerHTML = ''; kReq(r.id, 'no', v, b); });
       });
     });
@@ -1971,7 +2010,7 @@ body.hasfab main { padding-bottom: 110px; }
     else {
       h += '<h2 class="sec">술별</h2>' + kdTable(r.liqs, '술') + '<h2 class="sec">담당별</h2>' + kdTable(r.staffs, '담당');
       h += '<details class="all" style="margin-top:14px"><summary>기록 ' + r.list.length + '건</summary><div class="kdl">' + r.list.map(function (x) {
-        return '<div class="kdr"><span class="t">' + esc(x.at) + '</span><b>' + esc(x.cust) + '</b>' + (x.staff ? ' <small>담당 ' + esc(x.staff) + '</small>' : '') + ' · ' + kdWhat(x) + ' · ' + esc(x.who) + (x.memo ? ' <small>' + esc(x.memo) + '</small>' : '') + '</div>';
+        return '<div class="kdr"><span class="t">' + esc(x.at) + '</span><b>' + esc(x.cust) + '</b>' + (x.staff ? ' <small>담당 ' + esc(x.staff) + nk(x.staff) + '</small>' : '') + ' · ' + kdWhat(x) + ' · ' + esc(x.who) + nk(x.who) + (x.memo ? ' <small>' + esc(x.memo) + '</small>' : '') + '</div>';
       }).join('') + '</div></details>';
       if (moves) h += '<button class="btn" type="button" id="kdCopy">📋 카톡용 복사</button>';
     }
@@ -2017,9 +2056,13 @@ body.hasfab main { padding-bottom: 110px; }
     var order = [], by = {};
     shown.forEach(function (c) { if (!by[c.staff]) { by[c.staff] = []; order.push(c.staff); } by[c.staff].push(c); });
     order.sort(function (a, b) { var ga = KGROUPS.indexOf(kGroupOf(a)), gb = KGROUPS.indexOf(kGroupOf(b)); return (ga < 0 ? 9 : ga) - (gb < 0 ? 9 : gb); });
+    var fold = kFolds();
     order.forEach(function (s) {
-      var g = kGroupOf(s), list = by[s], n = list.reduce(function (t, c) { return t + kBottles(c) + kOpens(c); }, 0);
-      h += '<div class="kg"><strong>' + esc(s) + '</strong>' + (k.all ? '<button type="button" class="chip' + (g ? '' : ' none') + '" data-kgs="' + esc(s) + '">' + esc(g || '구분 정하기') + '</button>' : (g ? '<span class="chip">' + esc(g) + '</span>' : '')) + '<span class="row">손님 ' + list.length + ' · ' + n + '병</span></div><div class="list">';
+      var g = kGroupOf(s), list = by[s], n = list.reduce(function (t, c) { return t + kBottles(c) + kOpens(c); }, 0), shut = !state.kq && !!fold[key(s)];   // 찾는 중이면 다 펼침
+      h += '<div class="kg' + (shut ? ' shut' : '') + '"><strong>' + esc(s) + nk(s) + '</strong>' + (k.all ? '<button type="button" class="chip' + (g ? '' : ' none') + '" data-kgs="' + esc(s) + '">' + esc(g || '구분 정하기') + '</button>' : (g ? '<span class="chip">' + esc(g) + '</span>' : '')) +
+        '<button type="button" class="kfold" data-kfold="' + esc(s) + '" aria-expanded="' + !shut + '">' + (shut ? '펼치기 ▾' : '접기 ▴') + '</button>' +
+        '<span class="row">손님 ' + list.length + ' · ' + n + '병</span></div><div class="list">';
+      if (shut) { h += '</div>'; return; }
       h += list.map(function (c) {
         var x = kDays(kExpOf(c));
         return '<button type="button" class="kc' + (x !== null && x < 0 ? ' late' : x !== null && x <= 7 ? ' soon' : '') + '" data-kc="' + esc(c.id) + '"><span class="nm"><strong>' + esc(c.name) + '</strong>' +
@@ -2030,7 +2073,10 @@ body.hasfab main { padding-bottom: 110px; }
     box.innerHTML = h;
     box.querySelectorAll('[data-kc]').forEach(function (b) { b.addEventListener('click', function () { kOpen(b.dataset.kc); }); });
     box.querySelectorAll('[data-kgs]').forEach(function (b) { b.addEventListener('click', function () { kGroupSheet(b.dataset.kgs); }); });
+    box.querySelectorAll('[data-kfold]').forEach(function (b) { b.addEventListener('click', function () { var f = kFolds(), kk = key(b.dataset.kfold); if (f[kk]) delete f[kk]; else f[kk] = 1; try { localStorage.setItem('gs_kfold', JSON.stringify(f)); } catch (e) {} kListPaint(); }); });
   }
+  // 킵 장부 담당별 접기 (2026-11-18): 이 기기에 기억
+  function kFolds() { try { var o = JSON.parse(localStorage.getItem('gs_kfold') || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
   function key(s) { return String(s || '').replace(/\s+/g, '').toLowerCase(); }
   function kGroupSheet(name) {
     var cur = kGroupOf(name);
@@ -2157,7 +2203,7 @@ body.hasfab main { padding-bottom: 110px; }
     h += '<p class="meta">' + (kc.full ? (c.phone ? '<a href="tel:' + esc(c.phone.replace(/\D/g, '')) + '">' + esc(c.phone) + '</a>' : '연락처 없음') : (c.p4 ? '연락처 …' + esc(c.p4) : '')) + (c.memo ? ' · ' + esc(c.memo) : '') + '</p>';
     if (kc.err) h += '<p class="msg">' + esc(kc.err) + '</p>';
     if (!direct) h += '<p class="note" style="margin:0 0 6px">− · + · 숫자를 누르면 승인 요청이 가요. ' + APPROVERS_TXT + ' 승인 후 반영돼요.</p>';
-    cp.filter(function (r) { return r.kind === '맡기기'; }).forEach(function (r) { h += '<p class="kpend">⏳ 맡기기 승인 대기 · ' + esc(r.text) + ' <small>(요청 ' + esc(r.by) + ')</small></p>'; });
+    cp.filter(function (r) { return r.kind === '맡기기'; }).forEach(function (r) { h += '<p class="kpend">⏳ 맡기기 승인 대기 · ' + esc(r.text) + ' <small>(요청 ' + esc(r.by) + nk(r.by) + ')</small></p>'; });
     if (!c.items.length) h += '<p class="empty" style="margin:8px 0">맡긴 술이 없어요.</p>';
     c.items.forEach(function (i) {
       var sub = [i.memo, i.day ? kDate(i.day) + ' 맡김' : '', i.exp ? '만료 ' + kDate(i.exp) : ''].filter(String).join(' · ');
@@ -2188,7 +2234,7 @@ body.hasfab main { padding-bottom: 110px; }
     else h += '<ul class="tl">' + kc.log.map(function (l) {
       var ch = l.col === '병' ? l.from + ' → ' + l.to + '병' : l.col === '남은 양' ? (l.from || '-') + ' → ' + (l.to === '0' ? '없음' : l.to) : '';
       return '<li class="' + (/^(꺼냄|다 마심)$/.test(l.what) ? 'o' : '') + (l.undone ? ' u' : '') + '"><b>' + esc(l.what) + '</b>' + (l.liq ? ' · ' + esc(l.liq) : '') + (ch ? ' · ' + esc(ch) : '') + (l.memo ? ' · ' + esc(l.memo) : '') +
-        '<small>' + esc(l.at) + ' · ' + esc(l.who) + (l.undone ? ' · 되돌림' : '') + '</small></li>';
+        '<small>' + esc(l.at) + ' · ' + esc(l.who) + nk(l.who) + (l.undone ? ' · 되돌림' : '') + '</small></li>';
     }).join('') + '</ul>';
     area.innerHTML = h;
     $('kBack').addEventListener('click', function () { state.kview = 'list'; state.kcur = null; render(); window.scrollTo(0, 0); });
@@ -2320,7 +2366,7 @@ body.hasfab main { padding-bottom: 110px; }
     var h = '<button class="btn back" type="button" id="kaBack">← ' + (a.fixed ? '손님' : '킵 장부') + '</button><div class="card"><h1>🍾 맡기기</h1><p class="sub">손님 → 술 · 병 수 → 저장. 보관은 오늘부터 ' + k.days + '일이에요.</p>';
     if (a.fixed || a.id) {
       var cc = k.custs.filter(function (x) { return x.id === a.id; })[0];
-      h += '<div class="kfixed"><span>✓ <b>' + esc(a.name) + '</b> · 담당 ' + esc(a.staff) + (cc ? ' <small class="note">(' + esc(kTot(cc)) + ')</small>' : '') + '</span>' + (a.fixed ? '' : '<button class="link" type="button" id="kaUn">다른 손님</button>') + '</div>';
+      h += '<div class="kfixed"><span>✓ <b>' + esc(a.name) + '</b> · 담당 ' + esc(a.staff) + nk(a.staff) + (cc ? ' <small class="note">(' + esc(kTot(cc)) + ')</small>' : '') + '</span>' + (a.fixed ? '' : '<button class="link" type="button" id="kaUn">다른 손님</button>') + '</div>';
     } else {
       h += '<label>손님 (닉네임)<input id="kaN" maxlength="20" autocomplete="off" value="' + esc(a.name) + '" placeholder="장부에 쓰는 이름"></label>';
       h += '<div class="kpick" id="kaPick"></div>';
@@ -2360,7 +2406,7 @@ body.hasfab main { padding-bottom: 110px; }
     function picks() {
       var box = $('kaPick'); if (!box) return;
       var q = key($('kaN').value), hits = q ? k.custs.filter(function (x) { return key(x.name).indexOf(q) >= 0; }).slice(0, 6) : [];
-      box.innerHTML = hits.length ? '<p class="note" style="margin:0">이미 있는 손님이면 눌러서 골라요</p>' + hits.map(function (x) { return '<button type="button" data-kpick="' + esc(x.id) + '">' + esc(x.name) + ' · 담당 ' + esc(x.staff) + ' <small>' + esc(kTot(x)) + '</small></button>'; }).join('') : '';
+      box.innerHTML = hits.length ? '<p class="note" style="margin:0">이미 있는 손님이면 눌러서 골라요</p>' + hits.map(function (x) { return '<button type="button" data-kpick="' + esc(x.id) + '">' + esc(x.name) + ' · 담당 ' + esc(x.staff) + nk(x.staff) + ' <small>' + esc(kTot(x)) + '</small></button>'; }).join('') : '';
       box.querySelectorAll('[data-kpick]').forEach(function (b) {
         b.addEventListener('click', function () { sync(); var x = k.custs.filter(function (y) { return y.id === b.dataset.kpick; })[0]; if (!x) return; a.id = x.id; a.name = x.name; a.staff = x.staff; render(); });
       });
@@ -2473,6 +2519,8 @@ body.hasfab main { padding-bottom: 110px; }
     showSheet('<h2>내 정보</h2><p class="note" style="margin:0 0 14px">' + esc(state.s.team || '팀 없음') + ' · ' + role + ' — 팀·권한은 대표님이 정해요.</p>' +
       '<form class="meform" id="mName" novalidate><label>이름 (로그인할 때 써요)<input id="mNameI" maxlength="12" autocomplete="off" value="' + esc(state.s.name) + '"></label>' +
       '<button class="btn btn-ok" type="submit">이름 바꾸기</button><p class="msg" id="mNameM" role="alert"></p></form>' +
+      '<form class="meform" id="mNick" novalidate><label>닉네임 (이름 옆에 보여요 · 대화에서 @닉네임으로 불러도 돼요)<input id="mNickI" maxlength="10" autocomplete="off" placeholder="예: 우지 (비우면 지워요)" value="' + esc(me.nick || '') + '"></label>' +
+      '<button class="btn btn-ok" type="submit">닉네임 저장</button><p class="msg" id="mNickM" role="alert"></p></form>' +
       '<form class="meform" id="mPhone" novalidate><label>전화번호 (비상 연락망 · 대표님만 봐요)<input id="mPhoneI" type="tel" inputmode="numeric" maxlength="13" placeholder="010-1234-5678" value="' + esc(me.phone || '') + '"></label>' +
       '<button class="btn btn-ok" type="submit">전화번호 저장</button><p class="msg" id="mPhoneM" role="alert"></p></form>' +
       '<form class="meform" id="mPw" novalidate><label>현재 비밀번호<input id="mPwO" type="password" autocomplete="current-password" maxlength="40"></label>' +
@@ -2489,6 +2537,16 @@ body.hasfab main { padding-bottom: 110px; }
         m.className = 'msg ok'; m.textContent = ok(r);
       }).catch(function () { btn.disabled = false; m.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
     }
+    $('mNick').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var n = $('mNickI').value.replace(/\s+/g, ''), m = $('mNickM');
+      if (n === (((state.data && state.data.me) || {}).nick || '')) { m.className = 'msg'; m.textContent = n ? '지금 닉네임과 같아요.' : '닉네임이 없어요.'; return; }
+      go(this, { a: 'me_nick', nick: n }, m, function (r) {
+        if (state.data) { state.data.me = Object.assign({}, state.data.me, { nick: r.nick }); state.data.nicks = r.nicks || state.data.nicks; saveData(state.data); }
+        $('mNickI').value = r.nick; render();
+        return r.nick ? '닉네임을 ' + r.nick + '(으)로 정했어요.' : '닉네임을 지웠어요.';
+      }, { nick: '닉네임은 10글자까지, < > " \' & @ / 는 못 써요.', taken: '다른 사람의 이름이나 닉네임과 같아요.', busy: '잠시 후 다시 해 주세요.' });
+    });
     $('mName').addEventListener('submit', function (ev) {
       ev.preventDefault();
       var n = $('mNameI').value.trim().replace(/\s+/g, ' '), m = $('mNameM');
@@ -2572,13 +2630,13 @@ body.hasfab main { padding-bottom: 110px; }
     }).catch(function () { state.tbFly = 0; var r = { error: 'net' }; if (after) after(r); return r; });
   }
   function tbFloorOf(fl) { return (state.tb.floors || []).filter(function (x) { return x.id === fl; })[0] || null; }
-  // 빠 확장 (2026-11-18): 확장 자리(B10~15·Bar B7~12)는 손님이 있거나 '빠 확장'을 눌렀을 때만
-  function tbExtOn(fl) {
+  // 빠 확장 (2026-11-18): 확장 자리(B10~15·Bar B7~12)는 손님이 있거나 '빠 확장'을 눌렀을 때만. 버튼은 빠가 다 안 차도 늘 보임
+  function tbExtUsed(fl) {
     var f = tbFloorOf(fl), t = state.tb; if (!f || !t) return false;
-    if ((state.tbExt || {})[fl + '|' + t.day]) return true;
     var ext = {}; f.zones.forEach(function (z) { if (z.ext) z.rows.forEach(function (r) { r.forEach(function (x) { ext[x] = 1; }); }); });
     return t.rows.some(function (r) { return r.floor === fl && ((r.cur && ext[r.cur.seat]) || (r.req && !r.req.del && ext[r.req.seat])); });
   }
+  function tbExtOn(fl) { var t = state.tb; return !!t && (!!(state.tbExt || {})[fl + '|' + t.day] || tbExtUsed(fl)); }
   function tbSeatsOf(fl) { var f = tbFloorOf(fl); return f ? f.zones.filter(function (z) { return !z.ext || tbExtOn(fl); }) : []; }
   function tbShowWeekend() { return true; }   // 주말 자리도 항상 보이게 (대표 결정 2026-11-18)
   // 자리별로: 승인된 줄(cur.seat) 먼저, 없으면 내 요청/대기 요청(req.seat)
@@ -2789,8 +2847,8 @@ body.hasfab main { padding-bottom: 110px; }
     var y = state.yc, can = y.canEdit, mine = x.mine, boss = y.boss, ready = x.jg && x.sul, cls = 'yc' + (x.status === '진행' ? ' go' : x.status === '끝' ? ' end' : ready ? ' ready' : '');
     var cg = x.chg && x.chg.f && x.chg.f.length ? x.chg : null, ch = function (k) { return !!cg && cg.f.indexOf(k) >= 0; }, tag = '<span class="chgt">✏️ 바뀜</span>';
     var h = '<div class="' + cls + '" data-ycid="' + esc(x.id) + '"><div class="ych"><b' + (ch('seat') ? ' class="chg"' : '') + '>' + (x.status === '끝' ? '' : '#' + (i + 1) + ' ') + esc(ycSeatTxt(x)) + '</b><span class="chip' + (ch('when') ? ' chg' : '') + '">' + esc(ycWhen(x)) + '</span>' +
-      '<span class="row">' + esc(x.by) + ' · ' + esc(x.at) + '</span></div>';
-    if (cg) h += '<p class="ycchg">✏️ 수정됨 ' + esc(cg.at) + (cg.by && cg.by !== x.by ? ' · ' + esc(cg.by) : '') + (cg.n > 1 ? ' · ' + cg.n + '번' : '') + ' · ' + cg.f.map(function (k) { return esc(YC_CHG_L[k] || k); }).join(' · ') + '</p>';
+      '<span class="row">' + esc(x.by) + nk(x.by) + ' · ' + esc(x.at) + '</span></div>';
+    if (cg) h += '<p class="ycchg">✏️ 수정됨 ' + esc(cg.at) + (cg.by && cg.by !== x.by ? ' · ' + esc(cg.by) + nk(cg.by) : '') + (cg.n > 1 ? ' · ' + cg.n + '번' : '') + ' · ' + cg.f.map(function (k) { return esc(YC_CHG_L[k] || k); }).join(' · ') + '</p>';
     var what = ycWhatK(x.v);
     if (what.length) h += '<div class="ycw">' + what.map(function (t) { return '<span class="chip' + (ch(t[0]) ? ' chg' : '') + '">' + esc(t[1]) + '</span>'; }).join('') + '</div>';
     if (x.text) h += '<p class="yct' + (ch('text') ? ' chg' : '') + '">' + esc(x.text).replace(/\n/g, '<br>') + '</p>';
@@ -2799,9 +2857,9 @@ body.hasfab main { padding-bottom: 110px; }
     if (x.v && x.v.note) h += '<p class="ycmemo">📝 ' + esc(x.v.note) + (ch('note') ? tag : '') + '</p>';
     if (x.photos.length) h += '<div class="ycp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') + '</div>';
     if (x.videos && x.videos.length) h += '<div class="ycv">' + x.videos.map(function (id, i) { var u = (state.vidUrl || {})[id]; return u ? '<div class="ycvp"><video src="' + u.url + '" controls playsinline preload="metadata"></video><button type="button" class="link" data-ycsv="' + esc(id) + '">⬇️ 영상 저장</button></div>' : '<button type="button" class="btn ycvbtn" data-ycvid="' + esc(id) + '">🎬 영상 ' + (i + 1) + ' 보기</button>'; }).join('') + '</div>';
-    if (x.status === '끝') return h + '<p class="note" style="margin:6px 0 0">✂️ 컷 ' + esc(x.endAt) + (x.cutBy ? ' ' + esc(x.cutBy) : '') + (x.goAt ? ' · ㄱㄱ ' + esc(x.goAt) + (x.goBy ? ' ' + esc(x.goBy) : '') : '') + '</p></div>';
-    h += '<div class="ycst"><span class="' + (x.jg ? 'on' : '') + '">전광 ' + (x.jg ? '✅ ' + esc(x.jg) + ' ' + esc(x.jgAt) : '⏳') + '</span><span class="' + (x.sul ? 'on' : '') + '">술 ' + (x.sul ? '✅ ' + esc(x.sul) + ' ' + esc(x.sulAt) : '⏳') + '</span>' +
-      (x.status === '진행' ? '<span class="live">● 진행 중 ' + esc(x.goAt) + (x.goBy && x.goBy !== x.by ? ' · ' + esc(x.goBy) : '') + '</span>' : ready ? '<span class="on">준비 완료 · ㄱㄱ 기다리는 중</span>' : '') + '</div>';
+    if (x.status === '끝') return h + '<p class="note" style="margin:6px 0 0">✂️ 컷 ' + esc(x.endAt) + (x.cutBy ? ' ' + esc(x.cutBy) + nk(x.cutBy) : '') + (x.goAt ? ' · ㄱㄱ ' + esc(x.goAt) + (x.goBy ? ' ' + esc(x.goBy) + nk(x.goBy) : '') : '') + '</p></div>';
+    h += '<div class="ycst"><span class="' + (x.jg ? 'on' : '') + '">전광 ' + (x.jg ? '✅ ' + esc(x.jg) + nk(x.jg) + ' ' + esc(x.jgAt) : '⏳') + '</span><span class="' + (x.sul ? 'on' : '') + '">술 ' + (x.sul ? '✅ ' + esc(x.sul) + nk(x.sul) + ' ' + esc(x.sulAt) : '⏳') + '</span>' +
+      (x.status === '진행' ? '<span class="live">● 진행 중 ' + esc(x.goAt) + (x.goBy && x.goBy !== x.by ? ' · ' + esc(x.goBy) + nk(x.goBy) : '') + '</span>' : ready ? '<span class="on">준비 완료 · ㄱㄱ 기다리는 중</span>' : '') + '</div>';
     if (can) {
       var b = [];
       if (y.dj && x.status === '요청') b.push('<button class="btn' + (x.jg ? '' : ' btn-ok') + '" type="button" data-ycr="jg" data-on="' + (x.jg ? 0 : 1) + '">' + (x.jg ? '전광 준비 취소' : '📺 전광 준비') + '</button>');
@@ -2815,7 +2873,7 @@ body.hasfab main { padding-bottom: 110px; }
       if ((mine || boss) && x.status !== '끝') s.push('<button class="link" type="button" data-yced="1">고치기</button><button class="link" type="button" data-yccx="1">요청 취소</button>');
       if (s.length) h += '<div class="ycl">' + s.join('') + '</div>';
     }
-    h += '<div class="ycc">' + x.cmts.map(function (c) { return '<p><b>' + esc(c.who) + (c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</b> ' + esc(c.text) + ' <small>' + esc(c.hm) + '</small></p>'; }).join('') +
+    h += '<div class="ycc">' + x.cmts.map(function (c) { return '<p><b>' + esc(c.who) + nk(c.who) + (c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</b> ' + esc(c.text) + ' <small>' + esc(c.hm) + '</small></p>'; }).join('') +
       (can ? '<form class="yccf" data-yccf="1"><input data-yccmt="1" maxlength="100" placeholder="댓글 (예: 시작시간 알려주세요)" autocomplete="off"><button class="btn" type="submit">보내기</button></form>' : '') + '</div>';
     return h + '</div>';
   }
@@ -3002,7 +3060,7 @@ body.hasfab main { padding-bottom: 110px; }
       h += '<h2 class="sec tbz">' + esc(tbDayLabel(d)) + ' <span class="row">' + groups[d].length + '개</span></h2><div class="lfq">';
       groups[d].forEach(function (x) {
         h += '<div class="lfi" data-lfid="' + esc(x.id) + '"><div class="lfp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="분실물">'; }).join('') + '</div>' +
-          '<div class="lfm">' + (x.memo ? '<b>' + esc(x.memo) + '</b>' : '') + '<span>' + esc(x.by) + ' · ' + esc(String(x.at).slice(5, 16).replace('-', '/')) + '</span></div>' +
+          '<div class="lfm">' + (x.memo ? '<b>' + esc(x.memo) + '</b>' : '') + '<span>' + esc(x.by) + nk(x.by) + ' · ' + esc(String(x.at).slice(5, 16).replace('-', '/')) + '</span></div>' +
           (ed ? '<div class="lfb"><button class="btn btn-ok" type="button" data-lfgo="1">✅ 찾아감 · 삭제</button><button class="link" type="button" data-lfx="1">잘못 올림 · 지우기</button></div>' : '') + '</div>';
       });
       h += '</div>';
@@ -3118,7 +3176,7 @@ body.hasfab main { padding-bottom: 110px; }
   function chatTail(room) { var src = room === 'table' ? state.tb : room === 'yc' ? state.yc : null; return (state.chatTail && state.chatTail[room]) || (src && src.chat) || []; }
   function chatText(m) {   // @이름 은 굵게
     var t = esc(m.text);
-    (m.at2 || []).forEach(function (n) { var e = esc(n); t = t.split('@' + e).join('<b class="at">@' + e + '</b>'); });
+    (m.at2 || []).forEach(function (n) { [n, nickOf(n)].forEach(function (w) { if (!w) return; var e = esc(w); t = t.split('@' + e).join('<b class="at">@' + e + '</b>'); }); });
     return t;
   }
   // 한글 이름 찾기: 자모로 풀어서 비교 → 쓰는 중인 글자('ㄷ'·'도'·'동')도, 가운데 글자('동기')도, 초성('ㄷㄱ')도 (대표 요청 2026-11-18)
@@ -3141,10 +3199,11 @@ body.hasfab main { padding-bottom: 110px; }
     var ta = $('chatIn'), box = $('chatAt'), before = ta.value.slice(0, ta.selectionStart), m = before.match(/@([^\s@]{0,12})$/);
     var staff = (state.chat && state.chat.staff) || [];
     if (!m || !staff.length) { box.hidden = true; return; }
-    var q = key(m[1]), me = state.chat.me, list = staff.filter(function (n) { return n !== me && nameHit(n, q) >= 0; })
-      .sort(function (a, b) { return nameHit(a, q) - nameHit(b, q) || String(a).localeCompare(String(b), 'ko'); }).slice(0, 30);
+    function hit(n) { var a = nameHit(n, q), x = nickOf(n), b = x ? nameHit(x, q) : -1; return a < 0 ? b : b < 0 ? a : Math.min(a, b); }   // 이름·닉네임
+    var q = key(m[1]), me = state.chat.me, list = staff.filter(function (n) { return n !== me && hit(n) >= 0; })
+      .sort(function (a, b) { return hit(a) - hit(b) || String(a).localeCompare(String(b), 'ko'); }).slice(0, 30);
     if (!list.length) { box.hidden = true; return; }
-    box.innerHTML = list.map(function (n) { return '<button type="button" data-at="' + esc(n) + '">@' + esc(n) + '</button>'; }).join('');
+    box.innerHTML = list.map(function (n) { return '<button type="button" data-at="' + esc(n) + '">@' + esc(n) + nk(n) + '</button>'; }).join('');
     box.hidden = false;
     box.querySelectorAll('[data-at]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () {
       var pos = ta.selectionStart, pre = ta.value.slice(0, pos).replace(/@([^\s@]{0,12})$/, '@' + b.dataset.at + ' ');
@@ -3254,7 +3313,7 @@ body.hasfab main { padding-bottom: 110px; }
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '';
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nk(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nk(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
     L.innerHTML = h ? '<p class="chint">두 번 누르면 ✅ 확인 · 꾹 누르면 ↩️ 답장</p>' + h : '<p class="cempty">아직 대화가 없어요. 첫 메시지를 남겨 보세요.</p>';
     hydrateImgs(L);
@@ -3418,12 +3477,15 @@ body.hasfab main { padding-bottom: 110px; }
     var view = tbView();
     h += '<div class="tbvw" role="group" aria-label="보기"><button type="button" data-tbv="map" aria-pressed="' + (view === 'map') + '">🗺 도면</button><button type="button" data-tbv="list" aria-pressed="' + (view === 'list') + '">☰ 목록</button></div>';
     // 🟢 빈 자리 안내 + 빠 확장 버튼
-    var emp = [], fz = tbFloorOf(fl), barFull = false, extZ = fz ? fz.zones.filter(function (z) { return z.ext; }) : [];
+    var emp = [], fz = tbFloorOf(fl), extZ = fz ? fz.zones.filter(function (z) { return z.ext; }) : [];
     tbSeatsOf(fl).forEach(function (z) { var e = []; z.rows.forEach(function (row) { row.forEach(function (x) { if (!ix.at[x]) e.push(x); }); }); if (e.length) emp.push([z.name, e]); });
-    if (fz && extZ.length && !tbExtOn(fl)) { var bars = fz.zones.filter(function (z) { return !z.ext && z.rows.every(function (r) { return r.every(function (x) { return /^B\d+$/.test(x); }); }); }); barFull = bars.length && bars.every(function (z) { return z.rows.every(function (r) { return r.every(function (x) { return !!ix.at[x]; }); }); }); }
     h += '<details class="tbempty"' + (state.tbEmptyOpen ? ' open' : '') + '><summary>🟢 빈 자리 ' + emp.reduce(function (n, z) { return n + z[1].length; }, 0) + '곳</summary>' +
       (emp.length ? emp.map(function (z) { return '<div class="ez"><b>' + esc(z[0]) + '</b>' + z[1].map(function (x) { return '<button type="button" class="chip" data-eseat="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>'; }).join('') : '<p class="note" style="margin:0 0 10px">빈 자리가 없어요.</p>') + '</details>';
-    if (barFull) { var ez0 = extZ[0].rows[0]; h += '<button class="btn" type="button" id="tbExt" style="width:100%;margin:0 0 10px">➕ 빠 확장 (' + esc(ez0[0] + '~' + ez0[ez0.length - 1]) + ')</button>'; }
+    if (extZ.length) {
+      var ez0 = extZ[0].rows[0], rng = esc(ez0[0] + '~' + ez0[ez0.length - 1]);
+      if (!tbExtOn(fl)) h += '<button class="btn" type="button" id="tbExt" style="width:100%;margin:0 0 10px">➕ 빠 확장 (' + rng + ')</button>';
+      else if (!tbExtUsed(fl)) h += '<button class="btn" type="button" id="tbExtOff" style="width:100%;margin:0 0 10px">➖ 빠 확장 닫기 (' + rng + ')</button>';
+    }
     if (view === 'map') h += tbMapHtml(fl, ix);
     else tbSeatsOf(fl).forEach(function (z) {
       if (z.weekend && !tbShowWeekend()) return;
@@ -3434,7 +3496,7 @@ body.hasfab main { padding-bottom: 110px; }
     var bids = ix.wait.filter(function (r) { return !r.ghost; }).slice().sort(function (a, c) { return ((c.bid && c.bid.amt) || 0) - ((a.bid && a.bid.amt) || 0); });
     if (bids.length) h += '<div class="tbbid"><h2 class="sec">💰 비딩 <span class="row">대기 손님 금액 제시 · 높은 순</span></h2>' + bids.map(function (r) {
       var v = r.cur || r.req || {}, can = r.mine || t.approver;
-      return '<div class="bi"><div><span class="amt">' + (r.bid ? r.bid.amt + '만' : '—') + '</span> ' + esc(tbLine(v)) + (r.bid ? ' <small class="note">' + esc(r.bid.by) + ' ' + esc(r.bid.at) + '</small>' : '') + '</div><div class="bb">' +
+      return '<div class="bi"><div><span class="amt">' + (r.bid ? r.bid.amt + '만' : '—') + '</span> ' + esc(tbLine(v)) + (r.bid ? ' <small class="note">' + esc(r.bid.by) + nk(r.bid.by) + ' ' + esc(r.bid.at) + '</small>' : '') + '</div><div class="bb">' +
         (can ? '<button class="btn" type="button" data-tbbid="' + esc(r.id) + '">💰 금액</button>' : '') + (t.approver ? '<button class="btn btn-ok" type="button" data-tbwin="' + esc(r.id) + '">✅ 확정</button>' : '') + '</div></div>';
     }).join('') + '</div>';
     h += '<h2 class="sec tbz">대기 명단 <span class="row">' + ix.wait.length + '팀</span></h2><div class="tbwait">' +
@@ -3455,6 +3517,7 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-eseat]').forEach(function (b) { b.addEventListener('click', function () { tbOpen(null, b.dataset.eseat); }); });
     var ed = area.querySelector('.tbempty'); if (ed) ed.addEventListener('toggle', function () { state.tbEmptyOpen = ed.open; });
     if ($('tbExt')) $('tbExt').addEventListener('click', function () { state.tbExt = state.tbExt || {}; state.tbExt[fl + '|' + t.day] = 1; render(); });
+    if ($('tbExtOff')) $('tbExtOff').addEventListener('click', function () { delete (state.tbExt || {})[fl + '|' + t.day]; render(); });
     area.querySelectorAll('[data-tbbid]').forEach(function (b) { b.addEventListener('click', function () { tbBidSheet(tbFind(b.dataset.tbbid)); }); });
     area.querySelectorAll('[data-tbwin]').forEach(function (b) { b.addEventListener('click', function () { tbWinSheet(tbFind(b.dataset.tbwin), fl, ix); }); });
   }
@@ -3476,7 +3539,7 @@ body.hasfab main { padding-bottom: 110px; }
   function tbWinSheet(r, fl, ix) {
     if (!r) return; var v = r.cur || r.req || {}, empty = [];
     tbSeatsOf(fl).forEach(function (z) { z.rows.forEach(function (row) { row.forEach(function (x) { if (!ix.at[x]) empty.push(x); }); }); });
-    showSheet('<h2>✅ 비딩 확정</h2><p class="note" style="margin:0 0 10px">' + esc(tbLine(v)) + (r.bid ? ' · <b>' + r.bid.amt + '만</b> (' + esc(r.bid.by) + ')' : '') + '</p><label>들어갈 자리<select id="tbWinS"><option value="">자리 고르기</option>' +
+    showSheet('<h2>✅ 비딩 확정</h2><p class="note" style="margin:0 0 10px">' + esc(tbLine(v)) + (r.bid ? ' · <b>' + r.bid.amt + '만</b> (' + esc(r.bid.by) + nk(r.bid.by) + ')' : '') + '</p><label>들어갈 자리<select id="tbWinS"><option value="">자리 고르기</option>' +
       empty.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('') + '</select></label><p class="msg" id="tbWinM"></p><button class="btn btn-ok" type="button" id="tbWinGo">이 자리로 확정</button>');
     $('tbWinGo').addEventListener('click', function () {
       var seat = $('tbWinS').value, m = $('tbWinM'), b = this; if (!seat) { m.textContent = '자리를 골라 주세요.'; return; }
@@ -3495,9 +3558,9 @@ body.hasfab main { padding-bottom: 110px; }
       var g = state.tb.grants || [], on = g.filter(function (x) { return x.on; }), kq = key(q);
       var list = g.filter(function (x) { return x.on || !kq || key(x.name).indexOf(kq) >= 0 || key(x.team).indexOf(kq) >= 0; });
       showSheet('<h2>👥 테이블 승인 권한</h2><p class="sub">고른 직원은 <b>오늘 영업일 동안</b> 팀장처럼 손님을 바로 넣고 승인할 수 있어요. 영업일이 바뀌면 자동으로 끝나요.</p>' +
-        '<p class="note" style="margin:0 0 10px">지금 ' + on.length + '명' + (on.length ? ' · ' + on.map(function (x) { return esc(x.name) + (x.by ? '(' + esc(x.by) + ' ' + esc(x.at) + ')' : ''); }).join(', ') : '') + '</p>' +
+        '<p class="note" style="margin:0 0 10px">지금 ' + on.length + '명' + (on.length ? ' · ' + on.map(function (x) { return esc(x.name) + nk(x.name) + (x.by ? '(' + esc(x.by) + nk(x.by) + ' ' + esc(x.at) + ')' : ''); }).join(', ') : '') + '</p>' +
         '<input id="tbGQ" placeholder="이름·팀 찾기" value="' + esc(q) + '" style="margin:0 0 10px">' +
-        '<div class="tbgr">' + (list.length ? list.map(function (x) { return '<button type="button" class="chip' + (x.on ? ' on' : '') + '" data-tbg="' + esc(x.name) + '" aria-pressed="' + x.on + '">' + (x.on ? '✅ ' : '') + esc(x.name) + (x.team ? ' <small>' + esc(x.team) + '</small>' : '') + '</button>'; }).join('') : '<p class="empty">고를 직원이 없어요.</p>') + '</div>' +
+        '<div class="tbgr">' + (list.length ? list.map(function (x) { return '<button type="button" class="chip' + (x.on ? ' on' : '') + '" data-tbg="' + esc(x.name) + '" aria-pressed="' + x.on + '">' + (x.on ? '✅ ' : '') + esc(x.name) + nk(x.name) + (x.team ? ' <small>' + esc(x.team) + '</small>' : '') + '</button>'; }).join('') : '<p class="empty">고를 직원이 없어요.</p>') + '</div>' +
         '<p class="msg' + (msg && msg.ok ? ' ok' : '') + '" id="tbGM">' + esc(msg ? msg.t : '') + '</p>');
       var inp = $('tbGQ'); inp.addEventListener('input', function () { q = inp.value; var at = inp.selectionStart; draw(); var i2 = $('tbGQ'); i2.focus(); try { i2.setSelectionRange(at, at); } catch (e) {} });
       $('sheet').querySelectorAll('[data-tbg]').forEach(function (b) { b.addEventListener('click', function () {
@@ -3515,8 +3578,8 @@ body.hasfab main { padding-bottom: 110px; }
     if (q.del) what = '비우기 · ' + tbLine(c);
     else if (c) what = (c.seat !== q.seat ? (c.seat || '대기') + ' → ' + (q.seat || '대기') + ' · ' : '') + tbLine(c) + ' → ' + tbLine(q);
     else what = tbLine(q);
-    var h = '<div class="kreq"><div class="row"><b style="color:var(--txt)">' + esc(tbWhere(r, q.del ? c : q)) + '</b><span>요청 ' + esc(r.by) + '</span><span style="margin-left:auto">' + esc(r.at) + '</span></div><div class="kreq-t">' + esc(what) + '</div>';
-    if (r.status === '거절') h += '<div class="tbno">↩️ 거절 · ' + esc(r.okBy) + (r.comment ? ' · ' + esc(r.comment) : '') + '</div>';
+    var h = '<div class="kreq"><div class="row"><b style="color:var(--txt)">' + esc(tbWhere(r, q.del ? c : q)) + '</b><span>요청 ' + esc(r.by) + nk(r.by) + '</span><span style="margin-left:auto">' + esc(r.at) + '</span></div><div class="kreq-t">' + esc(what) + '</div>';
+    if (r.status === '거절') h += '<div class="tbno">↩️ 거절 · ' + esc(r.okBy) + nk(r.okBy) + (r.comment ? ' · ' + esc(r.comment) : '') + '</div>';
     if (state.tb.approver && r.status === '대기') h += '<div class="kreq-b"><button class="btn btn-ok" type="button" data-tbok="' + esc(r.id) + '">승인</button><button class="btn btn-bad" type="button" data-tbno="' + esc(r.id) + '">거절</button></div>';
     else if (r.mine) h += '<div class="kreq-b"><span class="note" style="margin:0">' + (r.status === '거절' ? '' : '⏳ 승인 기다리는 중') + '</span><button class="btn" type="button" data-tbedit="' + esc(r.id) + '">' + (r.status === '거절' ? '고쳐서 다시 신청' : '고치기') + '</button></div>';
     return h + '</div>';
@@ -3531,7 +3594,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
   function tbRejectSheet(r) {
     if (!r) return;
-    showSheet('<h2>거절 · ' + esc(tbWhere(r, r.req)) + '</h2><p class="sub">' + esc(r.by) + ' · ' + esc(tbLine(r.req)) + '</p><label>코멘트 (담당이 보고 고쳐서 다시 신청해요)<input id="tbNoC" maxlength="80" placeholder="예) 인원 다시 확인해 주세요"></label><p class="msg" id="tbNoM"></p><button class="btn btn-bad" type="button" id="tbNoGo">거절하고 보내기</button>');
+    showSheet('<h2>거절 · ' + esc(tbWhere(r, r.req)) + '</h2><p class="sub">' + esc(r.by) + nk(r.by) + ' · ' + esc(tbLine(r.req)) + '</p><label>코멘트 (담당이 보고 고쳐서 다시 신청해요)<input id="tbNoC" maxlength="80" placeholder="예) 인원 다시 확인해 주세요"></label><p class="msg" id="tbNoM"></p><button class="btn btn-bad" type="button" id="tbNoGo">거절하고 보내기</button>');
     $('tbNoC').focus();
     $('tbNoGo').addEventListener('click', function () {
       var c = $('tbNoC').value.trim(), b = this; if (!c) { $('tbNoM').textContent = '이유를 적어 주세요.'; return; }
@@ -3552,8 +3615,8 @@ body.hasfab main { padding-bottom: 110px; }
     if (v.seat && free.indexOf(v.seat) < 0) free.push(v.seat);
     var h = '<h2>' + esc(fl) + ' · ' + esc(v.seat || '대기 명단') + '</h2>';
     if (r) {
-      h += '<p class="sub">' + (r.cur ? '✅ 승인됨' + (r.okBy ? ' · ' + esc(r.okBy) + ' ' + esc(r.okAt) : '') : '') + (r.status === '대기' ? (r.cur ? ' · ' : '') + '⏳ 승인 대기 · ' + esc(r.by) + ' ' + esc(r.at) : '') + '</p>';
-      if (r.status === '거절') h += '<p class="tbno">↩️ 거절 · ' + esc(r.okBy) + (r.comment ? ' · ' + esc(r.comment) : '') + '<br>고쳐서 다시 신청해 주세요.</p>';
+      h += '<p class="sub">' + (r.cur ? '✅ 승인됨' + (r.okBy ? ' · ' + esc(r.okBy) + nk(r.okBy) + ' ' + esc(r.okAt) : '') : '') + (r.status === '대기' ? (r.cur ? ' · ' : '') + '⏳ 승인 대기 · ' + esc(r.by) + nk(r.by) + ' ' + esc(r.at) : '') + '</p>';
+      if (r.status === '거절') h += '<p class="tbno">↩️ 거절 · ' + esc(r.okBy) + nk(r.okBy) + (r.comment ? ' · ' + esc(r.comment) : '') + '<br>고쳐서 다시 신청해 주세요.</p>';
       if (r.req && r.req.del) h += '<p class="tbno">비우기 요청 중이에요.</p>';
     }
     if (!can) {
@@ -3659,7 +3722,7 @@ body.hasfab main { padding-bottom: 110px; }
           else ctl = '<span class="note" style="margin:0">팀장·부팀장 계정은 대표님만 바꿀 수 있어요</span>';
         }
         return '<div class="acc' + (a.status === '대기' ? ' wait' : '') + '" data-name="' + esc(a.name) + '">' +
-          '<div class="hd"><strong>' + esc(a.name) + '</strong>' + roleChip(a.role) + teamChip(a.team) +
+          '<div class="hd"><strong>' + esc(a.name) + nk(a.name) + '</strong>' + roleChip(a.role) + teamChip(a.team) +
           (tel ? '<a href="tel:' + esc(tel) + '">' + esc(a.phone) + '</a>' : '') + '</div>' +
           '<div class="row">신청 ' + esc(a.at || '-') + (a.status !== '대기' && a.status !== '승인' ? ' · ' + esc(a.status) : '') + '</div>' +
           '<div class="ctl">' + ctl + '</div><div class="err" role="alert"></div></div>';
@@ -3726,7 +3789,7 @@ body.hasfab main { padding-bottom: 110px; }
         if (Array.prototype.every.call(r0.cells, function (c) { return c.textContent.trim().length <= 10; })) r0.className = 'hd';
       });
       var n = state.data && state.data.notes.filter(function (x) { return x.id === id; })[0];
-      if (n && !n.read) { n.read = today(); n.readers += 1; }
+      if (n && !n.read) { n.read = today(); if (n.readers != null) n.readers += 1; }
     }).catch(function () { busy(false); $('docBody').innerHTML = '<p>연결이 안 돼요. 인터넷을 확인해 주세요.</p>'; });
   }
 
