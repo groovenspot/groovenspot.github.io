@@ -9,6 +9,13 @@
 <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <title>GROOVE STAFF</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="manifest" href="/staff/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/staff/icon-192.png">
+<meta name="theme-color" content="#0a0909">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="GROOVE STAFF">
 <style>
 :root {
   --bg: #0a0909; --card: #171414; --card-2: #1f1b1b; --line: rgba(255,255,255,.09); --line-2: rgba(255,255,255,.16);
@@ -137,6 +144,101 @@ details.all .list { margin-top: 8px; }
 .bteams { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 12px; }
 .bteams button { min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-2); background: none; color: var(--muted); font-weight: 800; font-size: 13px; cursor: pointer; }
 .bteams button[aria-pressed="true"] { color: var(--g); border-color: var(--g); background: rgba(255,122,26,.12); }
+.bteams { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.bteams::-webkit-scrollbar { display: none; }
+.bteams button { flex: none; white-space: nowrap; }
+.bteams .n, .conv .n { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--g); color: #120800; font-size: 11px; line-height: 18px; text-align: center; }
+.bhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 6px 0 10px; }
+.bhead h1 { margin: 0 0 2px; }
+.bhead .sub { margin: 0; }
+.bhead .btn-hot { width: auto; flex: none; min-height: 44px; font-size: 14px; padding: 0 16px; }
+.btags { display: flex; gap: 6px; margin: 0 0 12px; overflow-x: auto; scrollbar-width: none; }
+.btags::-webkit-scrollbar { display: none; }
+.btags button { flex: none; min-height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--line); background: none; color: var(--muted); font-weight: 700; font-size: 13px; cursor: pointer; }
+.btags button[aria-pressed="true"] { color: var(--txt); background: var(--card-2); border-color: var(--line-2); }
+.chip.g-공지 { border-color: var(--bad); color: #ff8199; }
+.chip.g-업무 { border-color: #4da3ff; color: #8cc4ff; }
+.chip.g-일정 { border-color: var(--ok); color: var(--ok); }
+.chip.g-자유 { border-color: var(--line-2); color: var(--muted); }
+.chip.must { background: rgba(255,59,92,.15); border-color: var(--bad); color: #ff8199; }
+.pitem { display: grid; gap: 5px; text-align: left; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; cursor: pointer; color: var(--txt); font: inherit; }
+.pitem.pinned { background: #1d1712; border-color: rgba(255,122,26,.35); }
+.pitem.unread { border-color: rgba(255,122,26,.6); }
+.pitem .pt, .pview .pt { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.pitem .pt strong { font-size: 16px; line-height: 1.35; word-break: keep-all; overflow-wrap: anywhere; }
+.pitem .pv { color: var(--muted); font-size: 14px; line-height: 1.45; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: pre-line; }
+.pitem .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--g); flex: none; }
+.pin { font-size: 14px; }
+.pview { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+.pview h1 { margin: 8px 0 4px; word-break: keep-all; overflow-wrap: anywhere; }
+.pview .meta { margin: 0 0 14px; }
+.ptx { white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; font-size: 16px; line-height: 1.7; }
+.pphotos { display: grid; gap: 8px; margin: 14px 0 0; }
+.pphotos img { width: 100%; max-height: 70vh; object-fit: contain; background: #000; border-radius: 12px; border: 1px solid var(--line); min-height: 80px; cursor: zoom-in; }
+.must-box { margin: 14px 0 0; padding: 10px 12px; border-radius: 12px; background: rgba(255,59,92,.08); border: 1px solid rgba(255,59,92,.35); font-size: 14px; }
+.must-box span { color: var(--muted); font-size: 13px; }
+.pacts { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 0; }
+.pacts .btn { min-height: 40px; font-size: 13px; padding: 0 14px; }
+.cmts { display: grid; gap: 8px; margin: 0 0 10px; }
+.cmt { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; }
+.cmt.mine { border-color: rgba(255,122,26,.35); }
+.cmt .ch { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.cmt .ch strong { color: var(--txt); font-size: 14px; }
+.cmt .ch .btn { margin-left: auto; min-height: 30px; padding: 0 10px; font-size: 12px; }
+.ctx { white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; font-size: 15px; margin-top: 2px; }
+.compose textarea[rows="2"] { min-height: 64px; }
+.eform textarea { width: 100%; font: inherit; color: var(--txt); background: var(--bg); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 14px; resize: vertical; min-height: 180px; }
+.eform textarea:focus { outline: none; border-color: var(--g); }
+.eform .cnt { color: var(--muted); font-size: 12px; text-align: right; margin: -8px 0 10px; }
+.ephotos { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+.ephotos .ph { position: relative; width: 92px; height: 92px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line-2); background: #000; }
+.ephotos .ph img { width: 100%; height: 100%; object-fit: cover; }
+.ephotos .ph button { position: absolute; top: 4px; right: 4px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: rgba(0,0,0,.7); color: #fff; cursor: pointer; font-size: 13px; }
+.ephotos .addph { width: 92px; height: 92px; margin: 0; display: grid; place-items: center; border: 1px dashed var(--line-2); border-radius: 12px; color: var(--muted); font-size: 13px; cursor: pointer; }
+.echk { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 14px; }
+.echk label { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 700; }
+.echk input { width: 20px; height: 20px; min-height: 0; accent-color: var(--g); }
+/* 메시지 */
+.conv { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; text-align: left; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px; cursor: pointer; color: var(--txt); font: inherit; }
+.conv.unread { border-color: rgba(255,122,26,.6); }
+.conv.inq { background: #17140f; }
+.conv .cn { display: flex; align-items: baseline; gap: 8px; grid-column: 1; }
+.conv .cn strong { font-size: 16px; }
+.conv .at { color: var(--muted); font-size: 12px; }
+.conv .cl { grid-column: 1; color: var(--muted); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv .n { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+.pick { background: var(--card); border: 1px solid var(--line-2); border-radius: 16px; padding: 12px; margin: 0 0 14px; }
+.pick input { margin-bottom: 8px; }
+.plist { display: grid; gap: 4px; max-height: 300px; overflow-y: auto; }
+.pp { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: none; color: var(--txt); font: inherit; cursor: pointer; text-align: left; }
+.pp:hover { background: var(--card-2); }
+.chead { position: sticky; top: calc(56px + env(safe-area-inset-top)); z-index: 3; display: flex; align-items: center; gap: 12px; padding: 6px 0 10px; background: var(--bg); }
+.chead .back { margin: 0; min-height: 40px; padding: 0 14px; }
+.chead strong { font-size: 18px; }
+.chat { display: flex; flex-direction: column; gap: 8px; padding: 6px 0 12px; }
+.bub { max-width: 80%; align-self: flex-start; }
+.bub .bt { background: var(--card-2); border: 1px solid var(--line); border-radius: 16px 16px 16px 4px; padding: 9px 13px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; font-size: 15px; }
+.bub.me { align-self: flex-end; text-align: right; }
+.bub.me .bt { background: var(--g); border-color: var(--g); color: #120800; border-radius: 16px 16px 4px 16px; text-align: left; }
+.bub .bat { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+.send { position: sticky; bottom: 0; display: flex; gap: 8px; align-items: flex-end; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
+.send textarea { flex: 1; min-height: 44px; max-height: 140px; resize: none; font: inherit; color: var(--txt); background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 12px; }
+.send textarea:focus { outline: none; border-color: var(--g); }
+.send .btn-hot { width: auto; min-height: 44px; padding: 0 16px; font-size: 15px; }
+/* 알림·시트 */
+.mebtn { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; background: none; border: 0; padding: 4px 2px; color: inherit; font: inherit; cursor: pointer; text-align: right; }
+.mebtn strong { text-decoration: underline dotted rgba(255,255,255,.35); text-underline-offset: 4px; }
+.meform { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
+.meform:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+.meform .btn { margin-top: 0 !important; }
+.bell { background: none; border: 0; font-size: 18px; line-height: 1; padding: 6px; cursor: pointer; }
+.sheet { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.72); display: grid; place-items: end center; padding: 16px; }
+.sheet-in { width: 100%; max-width: 520px; background: var(--card); border: 1px solid var(--line-2); border-radius: 18px; padding: 20px; margin-bottom: env(safe-area-inset-bottom); max-height: 90vh; overflow: auto; }
+.sheet-in.plain { background: #000; padding: 8px; text-align: center; }
+.sheet-in .full { width: 100%; max-height: 80vh; object-fit: contain; }
+.sheet-in h2 { margin: 0 0 10px; font-size: 18px; }
+.sheet-in .btn { width: 100%; margin-top: 14px; }
+.steps { margin: 0; padding-left: 20px; line-height: 1.9; }
 .me-card { border: 1px solid rgba(255,122,26,.55); background: rgba(255,122,26,.08); border-radius: 16px; padding: 14px 16px; margin: 0 0 14px; font-size: 15px; }
 .me-card b { color: var(--g); font-size: 18px; }
 .rk { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px; }
@@ -198,7 +300,7 @@ details.all .list { margin-top: 8px; }
 <body>
 <header class="top">
   <div class="brand">GROOVE <b>STAFF</b></div>
-  <div class="who" id="who" hidden><span><strong id="whoName"></strong> <span id="whoTeam"></span></span><button class="link" id="logout" type="button">로그아웃</button></div>
+  <div class="who" id="who" hidden><button class="mebtn" id="meBtn" type="button" aria-label="내 정보"><strong id="whoName"></strong> <span id="whoTeam"></span></button><button class="bell" id="bell" type="button" hidden aria-label="알림 켜기·끄기">🔕</button><button class="link" id="logout" type="button">로그아웃</button></div>
 </header>
 
 <main>
@@ -237,8 +339,9 @@ details.all .list { margin-top: 8px; }
   <section id="appView" hidden>
     <nav class="tabs" role="tablist" aria-label="스태프 메뉴" id="tabs">
       <button type="button" role="tab" data-tab="guest" aria-selected="true">게스트 현황</button>
+      <button type="button" role="tab" data-tab="board" aria-selected="false">게시판</button>
+      <button type="button" role="tab" data-tab="dm" aria-selected="false">메시지</button>
       <button type="button" role="tab" data-tab="edu" aria-selected="false">신규 교육</button>
-      <button type="button" role="tab" data-tab="board" aria-selected="false" hidden>팀 게시판</button>
       <button type="button" role="tab" data-tab="notes" aria-selected="false" hidden>회의록</button>
       <button type="button" role="tab" data-tab="dec" aria-selected="false" hidden>결정사항</button>
       <button type="button" role="tab" data-tab="acc" aria-selected="false" hidden>가입 승인</button>
@@ -255,6 +358,7 @@ details.all .list { margin-top: 8px; }
 
   <p class="load" id="loading" hidden>불러오는 중…</p>
 </main>
+<div class="sheet" id="sheet" hidden></div>
 
 <script>
 (function () {
@@ -267,7 +371,8 @@ details.all .list { margin-top: 8px; }
   var SALES = ['클로버', '아룬', '고트']; // 영업팀
   var DOW = ['월', '화', '수', '목', '금', '토', '일'];
   var $ = function (id) { return document.getElementById(id); };
-  var state = { s: null, data: null, tab: 'guest', week: 'week', bteam: '', draft: '', gday: '', gteam: '', gdraft: {}, gmsg: '' };
+  var state = { s: null, data: null, tab: 'guest', week: 'week', bteam: '', draft: '', gday: '', gteam: '', gdraft: {}, gmsg: '',
+    bview: 'list', btag: '', bpost: null, comp: null, cdraft: {}, imgs: {}, dm: null, dmView: 'list', dmWith: '', chat: null, dmDraft: {}, dmPick: false, poll: null, lastSync: 0 };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function load() { try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && v.token && v.exp > Date.now() ? v : null; } catch (e) { return null; } }
@@ -277,6 +382,7 @@ details.all .list { margin-top: 8px; }
       if (!d) return localStorage.removeItem(DKEY);
       var c = JSON.parse(JSON.stringify(d));
       (c.accounts || []).forEach(function (a) { a.phone = ''; }); // 전화번호는 기기에 남기지 않는다
+      if (c.me) c.me.phone = '';
       localStorage.setItem(DKEY, JSON.stringify({ name: state.s && state.s.name, at: Date.now(), d: c }));
     } catch (e) {}
   }
@@ -337,8 +443,11 @@ details.all .list { margin-top: 8px; }
   $('jteam').innerHTML = '<option value="">팀을 골라 주세요</option>' + teamOptions('');
 
   function toLogin(msg) {
-    saveData(null);
+    saveData(null); stopPoll(); swToken('');
     state.s = null; state.data = null; state.tab = 'guest'; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
+    state.bview = 'list'; state.btag = ''; state.bpost = null; state.comp = null; state.cdraft = {}; state.dm = null; state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.dmDraft = {}; state.dmPick = false;
+    Object.keys(state.imgs).forEach(function (k) { try { URL.revokeObjectURL(state.imgs[k]); } catch (e) {} }); state.imgs = {};
+    if ($('bell')) $('bell').hidden = true;
     $('who').hidden = true; show('loginView'); busy(false);
     seg(false);
     $('loginMsg').textContent = msg || '';
@@ -396,7 +505,12 @@ details.all .list { margin-top: 8px; }
 
   $('logout').addEventListener('click', function () {
     var t = state.s && state.s.token;
-    if (t) call({ a: 'logout', token: t }).catch(function () {});
+    // 이 기기 알림 끄기 → 로그아웃 순서로
+    var off = pushOk() ? swReg().then(function (reg) { return reg && reg.pushManager.getSubscription(); }).then(function (sub) {
+      if (!sub || !t) return;
+      return call({ a: 'push_unsub', token: t, endpoint: sub.endpoint }).catch(function () {}).then(function () { return sub.unsubscribe(); });
+    }).catch(function () {}) : Promise.resolve();
+    if (t) off.then(function () { return call({ a: 'logout', token: t }); }).catch(function () {});
     toLogin('로그아웃했어요.');
   });
 
@@ -408,9 +522,18 @@ details.all .list { margin-top: 8px; }
   }
   function openApp() {
     setWho(); $('who').hidden = false; show('appView');
+    var h = (location.hash || '').slice(1);
+    if (['guest', 'board', 'dm', 'edu', 'notes', 'dec', 'acc'].indexOf(h) >= 0) state.tab = h;
+    swToken(state.s.token); paintBell();
     var c = loadData();
     if (c) { state.data = c; render(); refresh(true); } else refresh();
+    if (state.tab === 'dm') enterDm();
   }
+  function enterDm() { state.dmView = state.dmWith ? state.dmView : 'list'; loadDm(); startPoll(loadDm, 20000); }
+  // 열어 둔 동안 90초마다, 다시 화면에 돌아오면 바로 새로 받기 (글쓰기 중에는 쉬기)
+  function quietSync() { if (state.s && state.data && !document.hidden && state.bview !== 'edit' && Date.now() - state.lastSync > 30000) refresh(true); }
+  setInterval(quietSync, 90000);
+  document.addEventListener('visibilitychange', quietSync);
 
   function refresh(keepScroll) {
     var soft = keepScroll && state.data;
@@ -424,7 +547,7 @@ details.all .list { margin-top: 8px; }
         else $('listArea').innerHTML = '<p class="empty">목록을 못 불러왔어요. 잠시 후 다시 열어 주세요.</p>';
         return;
       }
-      $('sync').textContent = '';
+      $('sync').textContent = ''; state.lastSync = Date.now();
       state.data = r; saveData(r);
       state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; save(state.s); setWho();
       renderSoon();
@@ -436,17 +559,26 @@ details.all .list { margin-top: 8px; }
   }
 
   document.querySelectorAll('#tabs button').forEach(function (b) {
-    b.addEventListener('click', function () { state.tab = b.dataset.tab; render(); if (state.tab === 'board') refresh(true); });
+    b.addEventListener('click', function () {
+      var prev = state.tab; state.tab = b.dataset.tab;
+      if (prev === 'dm' && state.tab !== 'dm') stopPoll();
+      if (state.tab === 'board') { state.bview = state.bview === 'edit' ? 'edit' : 'list'; state.bpost = null; }
+      if (state.tab === 'dm') { state.dmView = 'list'; state.dmWith = ''; state.chat = null; }
+      render(); window.scrollTo(0, 0);
+      if (state.tab === 'board' && state.bview !== 'edit') refresh(true);
+      if (state.tab === 'dm') enterDm();
+    });
   });
 
-  function render() {
-    var d = state.data; if (!d) return;
+  function paintTabs(d) {
     var edu = d.notes.filter(function (n) { return n.kind === '교육'; }), notes = d.notes.filter(function (n) { return n.kind !== '교육' && n.kind !== '규칙'; });
     var pending = (d.accounts || []).filter(function (a) { return a.status === '대기'; }).length;
+    var bu = d.board && d.board.unread || 0, du = d.dm && d.dm.unread || 0;
     var labels = {
       guest: ['게스트 현황', 0],
+      board: ['게시판', bu],
+      dm: ['메시지', du],
       edu: ['신규 교육', edu.filter(function (n) { return !n.read; }).length],
-      board: [d.admin || !d.team ? '팀 게시판' : d.team + ' 게시판', 0],
       notes: ['회의록', notes.filter(function (n) { return !n.read; }).length],
       dec: ['결정사항', d.decisions.filter(function (x) { return x.mine && x.status !== '완료'; }).length],
       acc: ['가입 승인', pending]
@@ -460,13 +592,22 @@ details.all .list { margin-top: 8px; }
       if (b.dataset.tab === 'board') b.hidden = !hasBoard;
       if (LEAD_TABS[b.dataset.tab]) b.hidden = !d.lead;
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
-      b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + l[1] + '</span>' : '');
+      b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
+    // 홈 화면 앱 아이콘 숫자 (지원하는 폰만)
+    try { var tot = bu + du + (canAcc ? pending : 0); if (navigator.setAppBadge) { if (tot) navigator.setAppBadge(tot); else navigator.clearAppBadge(); } } catch (e) {}
+    return { edu: edu, notes: notes };
+  }
+  function renderTabsOnly() { if (state.data) paintTabs(state.data); }
+  function render() {
+    var d = state.data; if (!d) return;
+    var L = paintTabs(d), edu = L.edu, notes = L.notes;
     var area = $('listArea');
     if (state.tab === 'dec') return renderDec(area, d);
     if (state.tab === 'guest') return renderGuest(area, d);
     if (state.tab === 'acc') return renderAcc(area, d);
     if (state.tab === 'board') return renderBoard(area, d);
+    if (state.tab === 'dm') return renderDm(area, d);
     var list = state.tab === 'edu' ? edu : notes;
     if (!list.length) { area.innerHTML = '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; return; }
     area.innerHTML = '<div class="list">' + list.map(function (n) {
@@ -599,62 +740,446 @@ details.all .list { margin-top: 8px; }
     area.querySelectorAll('[data-w]').forEach(function (b) { b.addEventListener('click', function () { state.week = b.dataset.w; render(); }); });
   }
 
-  // ── 팀 게시판 (자기 팀 글만 보고 쓴다. 대표는 모든 팀) ──
+  // ── 게시판 (전체 공지 · 전체 직원 · 팀) ─────────────────
+  var TAGS = ['공지', '업무', '일정', '자유'];
+  function bName(t) { return t === '전체' ? '📢 전체 공지' : t === '직원' ? '👥 전체 직원' : t + ' 팀'; }
+  function bDesc(t, d) {
+    if (t === '전체') return '대표님 공지예요. 모든 직원이 봐요.';
+    if (t === '직원') return '모든 직원이 보고 쓸 수 있어요.';
+    return d.admin && d.team !== t ? t + ' 팀 게시판이에요. 대표님은 모든 팀을 볼 수 있어요.' : t + ' 팀원만 보고 쓸 수 있어요.';
+  }
+  function tagChip(t) { return t ? '<span class="chip g-' + esc(t) + '">' + esc(t) + '</span>' : ''; }
+  function bErr(r) {
+    return { empty: '내용을 넣어 주세요.', long: '글자가 너무 길어요.', busy: '잠깐 사이에 너무 많이 올렸어요. 잠시 후 다시 해 주세요.', team: '이 게시판에는 쓸 수 없어요.', tag: '공지 말머리는 팀장님·대표님만 쓸 수 있어요.',
+      photo: '사진은 3장까지, jpg·png 만 올릴 수 있어요.', forbidden: '권한이 없어요.', notfound: '지워졌거나 볼 수 없는 글이에요.', to: '보낼 수 없는 사람이에요.' }[r.error] || '처리가 안 됐어요. 다시 해 주세요.';
+  }
+  function bFind(id) {
+    var b = state.data && state.data.board; if (!b) return null;
+    for (var i = 0; i < b.teams.length; i++) { var p = (b.posts[b.teams[i]] || []).filter(function (x) { return x.id === id; })[0]; if (p) return p; }
+    return null;
+  }
+  function armed(btn, label) {
+    if (btn.classList.contains('arm')) return true;
+    btn.classList.add('arm'); btn.textContent = '한 번 더 누르면 ' + label;
+    setTimeout(function () { btn.classList.remove('arm'); btn.textContent = label; }, 3500);
+    return false;
+  }
   function renderBoard(area, d) {
-    var b = d.board || { teams: [], posts: {} }, teams = b.teams;
-    if (teams.indexOf(state.bteam) < 0) state.bteam = teams[0] || '';
-    var t = state.bteam, posts = b.posts[t] || [];
-    var h = '<h1>' + esc(t) + ' 게시판</h1><p class="sub">' + (d.admin ? '대표님은 모든 팀 게시판을 볼 수 있어요.' : esc(t) + ' 팀원만 보고 쓸 수 있어요.') + '</p>';
-    if (teams.length > 1) h += '<div class="bteams" role="group" aria-label="팀 고르기">' + teams.map(function (x) {
-      return '<button type="button" data-bt="' + esc(x) + '" aria-pressed="' + (x === t) + '">' + esc(x) + (b.posts[x] && b.posts[x].length ? ' ' + b.posts[x].length : '') + '</button>';
+    if (state.bview === 'post' && state.bpost) return renderPost(area, d);
+    if (state.bview === 'edit' && state.comp) return renderCompose(area, d);
+    state.bview = 'list';
+    var b = d.board || { teams: [], posts: {}, write: [] }, teams = b.teams;
+    if (teams.indexOf(state.bteam) < 0) state.bteam = (teams.indexOf(d.team) >= 0 ? d.team : teams[0]) || '';
+    var t = state.bteam, all = b.posts[t] || [], posts = state.btag ? all.filter(function (p) { return p.tag === state.btag; }) : all;
+    var h = '<div class="bteams" role="group" aria-label="게시판 고르기">' + teams.map(function (x) {
+      var n = (b.posts[x] || []).filter(function (p) { return !p.read; }).length;
+      return '<button type="button" data-bt="' + esc(x) + '" aria-pressed="' + (x === t) + '">' + esc(bName(x)) + (n ? ' <span class="n">' + n + '</span>' : '') + '</button>';
     }).join('') + '</div>';
-    h += '<form class="compose" id="bForm" novalidate><textarea id="bText" maxlength="1000" placeholder="' + esc(t) + ' 팀에 남길 말"></textarea>' +
-      '<div class="bar"><span class="cnt" id="bCnt"></span><button class="btn btn-hot" id="bBtn" type="submit">올리기</button></div>' +
-      '<p class="msg" id="bMsg" role="alert" style="margin:0"></p></form>';
-    if (!posts.length) h += '<p class="empty">아직 글이 없어요. 첫 글을 남겨 보세요.</p>';
+    h += '<div class="bhead"><div><h1>' + esc(bName(t)) + '</h1><p class="sub">' + esc(bDesc(t, d)) + '</p></div>' +
+      ((b.write || []).indexOf(t) >= 0 ? '<button class="btn btn-hot" id="bNew" type="button">✏️ 글쓰기</button>' : '') + '</div>';
+    h += '<div class="btags" role="group" aria-label="말머리">' + [''].concat(TAGS).map(function (g) {
+      return '<button type="button" data-tag="' + esc(g) + '" aria-pressed="' + (g === state.btag) + '">' + (g ? esc(g) : '전체') + '</button>';
+    }).join('') + '</div>';
+    if (!posts.length) h += '<p class="empty">' + (state.btag ? '[' + esc(state.btag) + '] 글이 없어요.' : '아직 글이 없어요.') + '</p>';
     else h += '<div class="list">' + posts.map(function (p) {
-      return '<div class="post' + (p.mine ? ' mine' : '') + '" data-id="' + esc(p.id) + '"><div class="ph"><strong>' + esc(p.name) + '</strong>' + esc(p.at) +
-        (p.del ? '<button type="button" class="btn btn-bad" data-del>지우기</button>' : '') + '</div>' +
-        '<div class="tx">' + esc(p.text) + '</div></div>';
+      return '<button type="button" class="pitem' + (p.read ? '' : ' unread') + (p.pin ? ' pinned' : '') + '" data-pid="' + esc(p.id) + '">' +
+        '<span class="pt">' + (p.pin ? '<span class="pin" aria-label="고정">📌</span>' : '') + tagChip(p.tag) + (p.must ? '<span class="chip must">필독</span>' : '') +
+        '<strong>' + esc(p.title) + '</strong>' + (p.read ? '' : '<span class="dot" aria-label="안 읽음"></span>') + '</span>' +
+        (p.preview && p.preview !== p.title ? '<span class="pv">' + esc(p.preview) + '</span>' : '') +
+        '<span class="row">' + esc(p.name) + ' · ' + esc(p.at.slice(5)) + (p.edited ? ' · 수정됨' : '') + (p.comments ? ' · 💬 ' + p.comments : '') + (p.photos ? ' · 📷 ' + p.photos : '') +
+        (p.readers ? ' · 읽음 ' + p.readers.n + '/' + p.readers.total : '') + '</span></button>';
     }).join('') + '</div>';
     area.innerHTML = h;
-    var ta = $('bText'), cnt = $('bCnt'), msg = $('bMsg');
-    ta.value = state.draft || '';
-    function count() { cnt.textContent = ta.value.length + ' / 1000'; state.draft = ta.value; }
-    ta.addEventListener('input', count); count();
     area.querySelectorAll('[data-bt]').forEach(function (x) { x.addEventListener('click', function () { state.bteam = x.dataset.bt; render(); }); });
-    function done(r) {
-      if (r.error === 'auth') { toLogin(AUTH_OUT); return false; }
-      if (!r.ok) {
-        msg.textContent = { empty: '내용을 넣어 주세요.', long: '1000자까지 쓸 수 있어요.', busy: '10분에 10개까지 쓸 수 있어요. 잠시 후 다시 해 주세요.', team: '팀이 정해지지 않았어요. 대표님께 물어봐 주세요.', forbidden: '지울 수 없는 글이에요.', notfound: '이미 지워진 글이에요.' }[r.error] || '처리가 안 됐어요. 다시 해 주세요.';
-        return false;
-      }
-      if (r.board) state.data.board = r.board;
-      return true;
-    }
-    $('bForm').addEventListener('submit', function (ev) {
-      ev.preventDefault();
-      var text = ta.value.trim();
-      if (!text) { msg.textContent = '내용을 넣어 주세요.'; return ta.focus(); }
-      $('bBtn').disabled = true; msg.textContent = '';
-      call({ a: 'post', token: state.s.token, team: t, text: text }).then(function (r) {
-        if (done(r)) { state.draft = ''; render(); } else $('bBtn').disabled = false;
-      }).catch(function () { msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; $('bBtn').disabled = false; });
+    area.querySelectorAll('[data-tag]').forEach(function (x) { x.addEventListener('click', function () { state.btag = x.dataset.tag; render(); }); });
+    area.querySelectorAll('[data-pid]').forEach(function (x) { x.addEventListener('click', function () { openPost(x.dataset.pid); }); });
+    if ($('bNew')) $('bNew').addEventListener('click', function () {
+      state.comp = { team: t, tag: t === '전체' ? '공지' : '자유', title: '', text: '', pin: false, must: false, keep: [], add: [], editId: '' };
+      state.bview = 'edit'; render(); window.scrollTo(0, 0);
     });
-    area.querySelectorAll('[data-del]').forEach(function (x) {
+  }
+  function openPost(id) {
+    var s = bFind(id);
+    state.bview = 'post'; state.bpost = { post: s || { id: id, title: '', name: '', at: '', can: {} }, comments: null, loading: true };
+    if (s && !s.read) { s.read = true; if (state.data.board.unread) state.data.board.unread--; }
+    render(); window.scrollTo(0, 0);
+    call({ a: 'post_get', token: state.s.token, id: id }).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (state.bview !== 'post' || !state.bpost || state.bpost.post.id !== id) return;
+      if (!r.ok) { state.bpost.loading = false; state.bpost.err = bErr(r); return renderSoon(); }
+      state.bpost = { post: r.post, comments: r.comments };
+      saveData(state.data);
+      if (state.tab === 'board') renderSoon();
+    }).catch(function () { if (state.bpost) { state.bpost.loading = false; state.bpost.err = '연결이 안 돼요. 다시 열어 주세요.'; renderSoon(); } });
+  }
+  function hydrateImgs(root) {
+    root.querySelectorAll('img[data-img]').forEach(function (im) {
+      var id = im.dataset.img;
+      if (state.imgs[id]) { im.src = state.imgs[id]; return; }
+      call({ a: 'img', token: state.s.token, id: id }).then(function (r) {
+        if (!r.ok) { im.alt = '사진을 못 불러왔어요'; return; }
+        var bin = atob(r.data), u8 = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        state.imgs[id] = URL.createObjectURL(new Blob([u8], { type: r.type || 'image/jpeg' }));
+        document.querySelectorAll('img[data-img="' + id + '"]').forEach(function (x) { x.src = state.imgs[id]; });
+      }).catch(function () { im.alt = '사진을 못 불러왔어요'; });
+    });
+    root.querySelectorAll('img[data-img], img.pv-local').forEach(function (im) {
+      im.addEventListener('click', function () { if (im.src) showSheet('<img class="full" src="' + esc(im.src) + '" alt="">', true); });
+    });
+  }
+  function renderPost(area, d) {
+    var bp = state.bpost, p = bp.post, can = p.can || {};
+    var h = '<button class="btn back" id="pBack" type="button">← ' + esc(bName(p.team || state.bteam)) + '</button>';
+    h += '<article class="pview"><div class="pt">' + (p.pin ? '<span class="pin">📌</span>' : '') + tagChip(p.tag) + (p.must ? '<span class="chip must">필독</span>' : '') + '</div>' +
+      '<h1>' + esc(p.title) + '</h1><p class="meta">' + esc(p.name) + (p.at ? ' · ' + esc(p.at) : '') + (p.editedAt ? ' · 수정 ' + esc(p.editedAt.slice(5)) : '') + '</p>';
+    if (bp.err) h += '<p class="msg">' + esc(bp.err) + '</p>';
+    if (bp.loading) h += '<p class="load">불러오는 중…</p>';
+    else if (!bp.err) {
+      h += '<div class="ptx">' + esc(p.text) + '</div>';
+      if (p.photoIds && p.photoIds.length) h += '<div class="pphotos">' + p.photoIds.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') + '</div>';
+      if (p.readers) h += '<p class="must-box">필독 · 읽음 <b>' + p.readers.n + '/' + p.readers.total + '</b>' +
+        (p.unreadNames ? (p.unreadNames.length ? '<br><span>안 읽은 사람: ' + p.unreadNames.map(esc).join(', ') + '</span>' : '<br><span>모두 읽었어요 ✓</span>') : '') + '</p>';
+      var acts = '';
+      if (can.edit) acts += '<button class="btn" data-pa="edit" type="button">수정</button>';
+      if (can.mod) acts += '<button class="btn" data-pa="pin" type="button">' + (p.pin ? '📌 고정 풀기' : '📌 맨 위 고정') + '</button>' +
+        '<button class="btn" data-pa="must" type="button">' + (p.must ? '필독 풀기' : '필독 지정') + '</button>';
+      if (can.del) acts += '<button class="btn btn-bad" data-pa="del" type="button">삭제</button>';
+      if (acts) h += '<div class="pacts">' + acts + '</div>';
+    }
+    h += '<p class="msg" id="pMsg" role="alert"></p></article>';
+    if (!bp.loading && !bp.err) {
+      var cs = bp.comments || [];
+      h += '<h2 class="sec">댓글 ' + cs.length + '</h2><div class="cmts">' + cs.map(function (c) {
+        return '<div class="cmt' + (c.mine ? ' mine' : '') + '" data-cid="' + esc(c.id) + '"><div class="ch"><strong>' + esc(c.name) + '</strong>' + esc(c.at.slice(5)) +
+          (c.del ? '<button type="button" class="btn btn-bad" data-cdel>지우기</button>' : '') + '</div><div class="ctx">' + esc(c.text) + '</div></div>';
+      }).join('') + '</div>' +
+        '<form class="compose" id="cForm" novalidate><textarea id="cText" maxlength="500" placeholder="댓글 달기" rows="2"></textarea>' +
+        '<div class="bar"><span class="cnt" id="cCnt"></span><button class="btn btn-hot" id="cBtn" type="submit">등록</button></div></form>';
+    }
+    area.innerHTML = h;
+    hydrateImgs(area);
+    $('pBack').addEventListener('click', function () { state.bview = 'list'; state.bpost = null; render(); });
+    var msg = $('pMsg');
+    function apply(r) {
+      if (r.error === 'auth') { toLogin(AUTH_OUT); return; }
+      if (!r.ok) { msg.textContent = bErr(r); area.querySelectorAll('.pacts .btn, #cBtn').forEach(function (x) { x.disabled = false; }); return; }
+      if (r.board) { state.data.board = r.board; saveData(state.data); }
+      if (r.post) { state.bpost = { post: r.post, comments: r.comments }; }
+      else if (r.board) { var np = bFind(p.id); if (np) { Object.keys(np).forEach(function (k) { p[k] = np[k]; }); } }
+      render();
+    }
+    area.querySelectorAll('[data-pa]').forEach(function (x) {
       x.addEventListener('click', function () {
-        if (!x.classList.contains('arm')) {
-          x.classList.add('arm'); x.textContent = '한 번 더 누르면 지우기';
-          setTimeout(function () { x.classList.remove('arm'); x.textContent = '지우기'; }, 3500);
-          return;
+        var a = x.dataset.pa;
+        if (a === 'edit') {
+          state.comp = { team: p.team, tag: p.tag || '자유', title: p.title, text: p.text, keep: (p.photoIds || []).slice(), add: [], editId: p.id };
+          state.bview = 'edit'; render(); window.scrollTo(0, 0); return;
         }
-        x.disabled = true;
-        call({ a: 'post_del', token: state.s.token, id: x.closest('.post').dataset.id }).then(function (r) {
-          if (done(r)) render(); else x.disabled = false;
+        if (a === 'del' && !armed(x, '삭제')) return;
+        x.disabled = true; msg.textContent = '';
+        var body = a === 'del' ? { a: 'post_del', id: p.id } : a === 'pin' ? { a: 'post_mod', id: p.id, pin: !p.pin } : { a: 'post_mod', id: p.id, must: !p.must };
+        body.token = state.s.token;
+        call(body).then(function (r) {
+          if (a === 'del' && r.ok) { state.data.board = r.board; saveData(state.data); state.bview = 'list'; state.bpost = null; render(); return; }
+          if (r.ok && a !== 'del') return call({ a: 'post_get', token: state.s.token, id: p.id }).then(function (g) { if (g.ok) { g.board = r.board; apply(g); } else apply(r); });
+          apply(r);
         }).catch(function () { msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; x.disabled = false; });
       });
     });
+    area.querySelectorAll('[data-cdel]').forEach(function (x) {
+      x.addEventListener('click', function () {
+        if (!armed(x, '지우기')) return;
+        x.disabled = true;
+        call({ a: 'cmt_del', token: state.s.token, id: x.closest('.cmt').dataset.cid }).then(function (r) { if (r.ok) bumpCount(p.id, r.comments.length); apply(r); })
+          .catch(function () { msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; x.disabled = false; });
+      });
+    });
+    var cf = $('cForm');
+    if (cf) {
+      var ta = $('cText'); ta.value = state.cdraft[p.id] || '';
+      var cnt = function () { $('cCnt').textContent = ta.value.length ? ta.value.length + ' / 500' : ''; state.cdraft[p.id] = ta.value; };
+      ta.addEventListener('input', cnt); cnt();
+      cf.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var text = ta.value.trim(); if (!text) { msg.textContent = '댓글 내용을 넣어 주세요.'; return ta.focus(); }
+        $('cBtn').disabled = true; msg.textContent = '';
+        call({ a: 'cmt_add', token: state.s.token, post: p.id, text: text }).then(function (r) {
+          if (r.ok) { state.cdraft[p.id] = ''; bumpCount(p.id, r.comments.length); }
+          apply(r);
+        }).catch(function () { msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; $('cBtn').disabled = false; });
+      });
+    }
   }
+  function bumpCount(id, n) { var s = bFind(id); if (s) s.comments = n; }
+  function shrink(file) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        var w = im.naturalWidth, h = im.naturalHeight, k = Math.min(1, 1600 / Math.max(w, h)), c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+        var du = c.toDataURL('image/jpeg', 0.8); res({ type: 'image/jpeg', data: du.split(',')[1], url: du });
+      };
+      im.onerror = function () { URL.revokeObjectURL(url); rej(new Error('img')); };
+      im.src = url;
+    });
+  }
+  function renderCompose(area, d) {
+    var c = state.comp, b = d.board || { write: [], mod: [] }, isNew = !c.editId, mod = (b.mod || []).indexOf(c.team) >= 0;
+    var h = '<button class="btn back" id="eBack" type="button">← 취소</button><h1>' + (isNew ? '글쓰기' : '글 고치기') + '</h1>';
+    h += '<form class="eform" id="eForm" novalidate>';
+    if (isNew) h += '<label>게시판<select id="eTeam">' + (b.write || []).map(function (t) { return '<option value="' + esc(t) + '"' + (t === c.team ? ' selected' : '') + '>' + esc(bName(t)) + '</option>'; }).join('') + '</select></label>';
+    h += '<label>말머리<select id="eTag">' + TAGS.map(function (g) {
+      return '<option value="' + g + '"' + (g === c.tag ? ' selected' : '') + (g === '공지' && !mod && c.tag !== '공지' ? ' disabled' : '') + '>' + g + (g === '공지' && !mod ? ' (팀장·대표)' : '') + '</option>';
+    }).join('') + '</select></label>';
+    h += '<label>제목<input id="eTitle" maxlength="60" placeholder="제목 (비우면 첫 줄)" value="' + esc(c.title) + '"></label>';
+    h += '<label>내용<textarea id="eText" maxlength="2000" rows="8" placeholder="내용"></textarea></label><p class="cnt" id="eCnt"></p>';
+    h += '<div class="ephotos" id="ePhotos">' + c.keep.map(function (id) { return '<span class="ph"><img data-img="' + esc(id) + '" alt=""><button type="button" data-rk="' + esc(id) + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
+      c.add.map(function (x, i) { return '<span class="ph"><img class="pv-local" src="' + esc(x.url) + '" alt=""><button type="button" data-ra="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
+      (c.keep.length + c.add.length < 3 ? '<label class="addph">📷 사진<input type="file" id="eFile" accept="image/*" multiple hidden></label>' : '') + '</div>';
+    if (isNew && mod) h += '<div class="echk"><label><input type="checkbox" id="ePin"' + (c.pin ? ' checked' : '') + '> 📌 맨 위 고정</label><label><input type="checkbox" id="eMust"' + (c.must ? ' checked' : '') + '> 필독 (읽음 확인)</label></div>';
+    h += '<button class="btn btn-hot" id="eBtn" type="submit">' + (isNew ? '올리기' : '저장') + '</button><p class="msg" id="eMsg" role="alert"></p></form>';
+    area.innerHTML = h;
+    hydrateImgs(area);
+    var ta = $('eText'); ta.value = c.text;
+    function sync() {
+      c.title = $('eTitle').value; c.text = ta.value; c.tag = $('eTag').value;
+      if ($('eTeam')) c.team = $('eTeam').value;
+      if ($('ePin')) c.pin = $('ePin').checked;
+      if ($('eMust')) c.must = $('eMust').checked;
+      $('eCnt').textContent = ta.value.length + ' / 2000';
+    }
+    area.querySelectorAll('input,textarea,select').forEach(function (x) { x.addEventListener('input', sync); x.addEventListener('change', sync); });
+    sync();
+    if ($('eTeam')) $('eTeam').addEventListener('change', function () { sync(); if (c.tag === '공지' && (b.mod || []).indexOf(c.team) < 0) c.tag = '자유'; render(); });
+    $('eBack').addEventListener('click', function () { state.comp = null; state.bview = c.editId ? 'post' : 'list'; render(); });
+    area.querySelectorAll('[data-rk]').forEach(function (x) { x.addEventListener('click', function () { c.keep = c.keep.filter(function (id) { return id !== x.dataset.rk; }); render(); }); });
+    area.querySelectorAll('[data-ra]').forEach(function (x) { x.addEventListener('click', function () { c.add.splice(+x.dataset.ra, 1); render(); }); });
+    if ($('eFile')) $('eFile').addEventListener('change', function () {
+      var files = Array.prototype.slice.call(this.files || [], 0, 3 - c.keep.length - c.add.length), msg = $('eMsg');
+      msg.textContent = files.length ? '사진 줄이는 중…' : '';
+      Promise.all(files.map(shrink)).then(function (xs) { c.add = c.add.concat(xs).slice(0, 3 - c.keep.length); render(); })
+        .catch(function () { msg.textContent = '사진을 못 읽었어요. 다른 사진으로 해 주세요.'; });
+    });
+    $('eForm').addEventListener('submit', function (ev) {
+      ev.preventDefault(); sync();
+      var msg = $('eMsg');
+      if (!c.text.trim()) { msg.textContent = '내용을 넣어 주세요.'; return ta.focus(); }
+      $('eBtn').disabled = true; msg.textContent = c.add.length ? '사진 올리는 중…' : '';
+      var photos = c.add.map(function (x) { return { type: x.type, data: x.data }; });
+      var body = isNew ? { a: 'post', team: c.team, tag: c.tag, title: c.title, text: c.text, pin: !!c.pin, must: !!c.must, photos: photos }
+        : { a: 'post_edit', id: c.editId, tag: c.tag, title: c.title, text: c.text, keep: c.keep, photos: photos };
+      body.token = state.s.token;
+      call(body).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (!r.ok) { msg.textContent = bErr(r); $('eBtn').disabled = false; return; }
+        state.data.board = r.board; saveData(state.data); state.comp = null; state.bteam = c.team;
+        openPost(isNew ? r.id : c.editId);
+      }).catch(function () { msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; $('eBtn').disabled = false; });
+    });
+  }
+
+  // ── 메시지 (직원끼리 1:1) ─────────────────────────────
+  function stopPoll() { if (state.poll) { clearInterval(state.poll); state.poll = null; } }
+  function startPoll(fn, ms) { stopPoll(); state.poll = setInterval(function () { if (!document.hidden && state.tab === 'dm') fn(); }, ms); }
+  function loadDm() {
+    return call({ a: 'dm_list', token: state.s.token }).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) return;
+      state.dm = r;
+      if (state.data) { state.data.dm = { unread: r.unread }; }
+      if (state.tab === 'dm' && state.dmView !== 'chat') renderSoon(); else if (state.data) renderTabsOnly();
+    }).catch(function () {});
+  }
+  function loadChat(silent) {
+    var w = state.dmWith;
+    return call({ a: 'dm_get', token: state.s.token, with: w }).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok || state.dmWith !== w) return;
+      var before = state.chat && state.chat.msgs ? state.chat.msgs.length : -1;
+      state.chat = r;
+      var conv = state.dm && state.dm.convs.filter(function (c) { return c.with === r.with; })[0];
+      if (conv && conv.unread) { state.dm.unread = Math.max(0, state.dm.unread - conv.unread); conv.unread = 0; if (state.data) state.data.dm = { unread: state.dm.unread }; }
+      if (!silent || r.msgs.length !== before) renderSoon();
+    }).catch(function () {});
+  }
+  function openChat(name) {
+    state.dmView = 'chat'; state.dmWith = name; state.chat = null; render();
+    loadChat(); startPoll(function () { loadChat(true); }, 6000);
+  }
+  function renderDm(area, d) {
+    if (state.dmView === 'chat' && state.dmWith) return renderChat(area);
+    state.dmView = 'list';
+    var m = state.dm;
+    if (!m) { area.innerHTML = '<p class="load">불러오는 중…</p>'; return; }
+    var h = '<div class="bhead"><div><h1>메시지</h1><p class="sub">직원끼리 1:1 대화예요. 보낸 사람과 받는 사람만 봐요.</p></div>' +
+      '<button class="btn btn-hot" id="dNew" type="button">＋ 새 대화</button></div>';
+    if (state.dmPick) {
+      h += '<div class="pick"><input id="dFind" placeholder="이름 찾기" autocomplete="off"><div class="plist">' + m.people.map(function (p) {
+        return '<button type="button" class="pp" data-to="' + esc(p.name) + '"><strong>' + esc(p.name) + '</strong>' + (p.role === '관리자' ? '<span class="chip adm">대표</span>' : p.role === '팀장' ? '<span class="chip lead">팀장</span>' : '') + teamChip(p.team) + '</button>';
+      }).join('') + (m.people.length ? '' : '<p class="empty">다른 직원이 아직 없어요.</p>') + '</div></div>';
+    }
+    if (!m.convs.length) h += '<p class="empty">아직 대화가 없어요. ＋ 새 대화로 시작해 보세요.</p>';
+    else h += '<div class="list">' + m.convs.map(function (c) {
+      return '<button type="button" class="conv' + (c.unread ? ' unread' : '') + (c.with === '손님 문의' ? ' inq' : '') + '" data-with="' + esc(c.with) + '"><span class="cn"><strong>' + (c.with === '손님 문의' ? '📩 ' : '') + esc(c.with) + '</strong><span class="at">' + esc(c.at.slice(5)) + '</span></span>' +
+        '<span class="cl">' + (c.mine ? '나: ' : '') + esc(c.last) + '</span>' + (c.unread ? '<span class="n">' + c.unread + '</span>' : '') + '</button>';
+    }).join('') + '</div>';
+    area.innerHTML = h;
+    $('dNew').addEventListener('click', function () { state.dmPick = !state.dmPick; render(); if (state.dmPick && $('dFind')) $('dFind').focus(); });
+    if ($('dFind')) $('dFind').addEventListener('input', function () {
+      var q = this.value.replace(/\s+/g, '');
+      area.querySelectorAll('.pp').forEach(function (b) { b.hidden = q && b.dataset.to.replace(/\s+/g, '').indexOf(q) < 0; });
+    });
+    area.querySelectorAll('[data-to]').forEach(function (b) { b.addEventListener('click', function () { state.dmPick = false; openChat(b.dataset.to); }); });
+    area.querySelectorAll('[data-with]').forEach(function (b) { b.addEventListener('click', function () { openChat(b.dataset.with); }); });
+  }
+  function renderChat(area) {
+    var c = state.chat, w = state.dmWith;
+    var h = '<div class="chead"><button class="btn back" id="dBack" type="button">←</button><strong>' + esc(w) + '</strong></div>';
+    if (!c) h += '<p class="load">불러오는 중…</p>';
+    else {
+      h += '<div class="chat" id="chatBox">' + (c.msgs.length ? c.msgs.map(function (m) {
+        return '<div class="bub' + (m.mine ? ' me' : '') + '"><div class="bt">' + esc(m.text) + '</div><span class="bat">' + esc(m.at.slice(5)) + (m.mine && m.read ? ' · 읽음' : '') + '</span></div>';
+      }).join('') : '<p class="empty">첫 메시지를 보내 보세요.</p>') + '</div>';
+      if (c.system) h += '<p class="note">📩 홈페이지·인스타로 들어온 손님 문의를 자동으로 전달한 메시지예요. 손님 연락처로 직접 연락해 주세요. (여기에는 답장할 수 없어요)</p>';
+      else if (c.active === false) h += '<p class="note">지금은 메시지를 받을 수 없는 계정이에요.</p>';
+      else h += '<form class="send" id="dForm" novalidate><textarea id="dText" rows="1" maxlength="1000" placeholder="메시지"></textarea><button class="btn btn-hot" id="dBtn" type="submit">보내기</button></form><p class="msg" id="dMsg" role="alert"></p>';
+    }
+    area.innerHTML = h;
+    $('dBack').addEventListener('click', function () { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; render(); loadDm(); startPoll(loadDm, 20000); });
+    var box = $('chatBox'); if (box) box.scrollTop = box.scrollHeight;
+    if (box) window.scrollTo(0, document.body.scrollHeight);
+    var f = $('dForm'); if (!f) return;
+    var ta = $('dText'); ta.value = state.dmDraft[w] || '';
+    ta.addEventListener('input', function () { state.dmDraft[w] = ta.value; ta.style.height = 'auto'; ta.style.height = Math.min(140, ta.scrollHeight) + 'px'; });
+    ta.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && window.matchMedia('(pointer:fine)').matches) { e.preventDefault(); f.requestSubmit ? f.requestSubmit() : $('dBtn').click(); } });
+    f.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var text = ta.value.trim(); if (!text) return ta.focus();
+      $('dBtn').disabled = true; $('dMsg').textContent = '';
+      call({ a: 'dm_send', token: state.s.token, to: w, text: text }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (!r.ok) { $('dMsg').textContent = bErr(r); $('dBtn').disabled = false; return; }
+        state.dmDraft[w] = ''; state.chat = r; render(); if ($('dText')) $('dText').focus();
+      }).catch(function () { $('dMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; $('dBtn').disabled = false; });
+    });
+  }
+
+  // ── 알림 (홈 화면 앱 + 웹 푸시) ─────────────────────────
+  var IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  function standalone() { return window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); }
+  function pushOk() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+  function idb(fn) {
+    try {
+      var rq = indexedDB.open('gs', 1);
+      rq.onupgradeneeded = function () { rq.result.createObjectStore('kv'); };
+      rq.onsuccess = function () { try { var tx = rq.result.transaction('kv', 'readwrite'); fn(tx.objectStore('kv')); } catch (e) {} };
+    } catch (e) {}
+  }
+  function swToken(t) { if ('indexedDB' in window) idb(function (s) { if (t) s.put(t, 'token'); else s.delete('token'); }); }
+  function swReg() {
+    if (!('serviceWorker' in navigator)) return Promise.resolve(null);
+    return navigator.serviceWorker.register('/staff/sw.js', { scope: '/staff/' }).then(function () { return navigator.serviceWorker.ready; }).catch(function () { return null; });
+  }
+  function b64u8(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  function devName() { var u = navigator.userAgent; return (IOS ? 'iPhone' : /Android/.test(u) ? 'Android' : /Mac/.test(u) ? 'Mac' : /Windows/.test(u) ? 'Windows' : '기기') + (standalone() ? ' 앱' : ''); }
+  function bellState() {
+    if (!pushOk()) return Promise.resolve(IOS && !standalone() ? 'ios' : 'no');
+    if (Notification.permission === 'denied') return Promise.resolve('denied');
+    return swReg().then(function (reg) { return reg ? reg.pushManager.getSubscription().then(function (s) { return s ? 'on' : 'off'; }) : 'no'; }).catch(function () { return 'no'; });
+  }
+  function paintBell() { bellState().then(function (st) { var b = $('bell'); b.hidden = false; b.textContent = st === 'on' ? '🔔' : '🔕'; b.title = st === 'on' ? '알림 켜짐' : '알림 꺼짐'; b.dataset.st = st; }); }
+  function toast(t) { var s = $('sync'); s.textContent = t; clearTimeout(state.toastT); state.toastT = setTimeout(function () { if (s.textContent === t) s.textContent = ''; }, 5000); }
+  function bellClick() {
+    bellState().then(function (st) {
+      if (st === 'ios') return showSheet('<h2>아이폰 알림 켜기</h2><ol class="steps"><li>사파리 아래쪽 <b>공유 버튼(□↑)</b>을 눌러요.</li><li><b>홈 화면에 추가</b>를 눌러요.</li><li>홈 화면에 생긴 <b>GROOVE STAFF</b> 아이콘으로 열어요.</li><li>오른쪽 위 🔕 를 눌러 알림을 켜요.</li></ol><p class="note">아이폰은 홈 화면 앱에서만 알림을 받을 수 있어요 (iOS 16.4 이상).</p>');
+      if (st === 'no') return toast('이 브라우저는 알림을 못 받아요. 크롬이나 사파리 최신 버전에서 열어 주세요.');
+      if (st === 'denied') return toast('알림이 막혀 있어요. 휴대폰 설정에서 이 사이트(앱) 알림을 허용해 주세요.');
+      if (st === 'on') {
+        return swReg().then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (s) {
+          if (!s) return;
+          call({ a: 'push_unsub', token: state.s.token, endpoint: s.endpoint }).catch(function () {});
+          return s.unsubscribe();
+        }).then(function () { toast('이 기기 알림을 껐어요.'); paintBell(); });
+      }
+      Notification.requestPermission().then(function (perm) {
+        if (perm !== 'granted') { toast('알림을 허용해야 받을 수 있어요.'); return paintBell(); }
+        toast('알림 켜는 중…');
+        return Promise.all([swReg(), call({ a: 'push_key' })]).then(function (x) {
+          var reg = x[0], k = x[1];
+          if (!reg || !k.ok) throw new Error('key');
+          return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u8(k.key) });
+        }).then(function (sub) {
+          swToken(state.s.token);
+          return call({ a: 'push_sub', token: state.s.token, sub: JSON.parse(JSON.stringify(sub)), dev: devName() });
+        }).then(function (r) { toast(r && r.ok ? '알림을 켰어요. 새 글·댓글·메시지가 오면 알려 드려요.' : '알림 등록이 안 됐어요. 다시 해 주세요.'); paintBell(); })
+          .catch(function () { toast('알림을 못 켰어요. 잠시 후 다시 해 주세요.'); paintBell(); });
+      });
+    });
+  }
+  $('bell').addEventListener('click', bellClick);
+
+  // ── 내 정보 (이름·전화번호·비밀번호) ──
+  function openMe() {
+    if (!state.s) return;
+    var d = state.data || {}, me = d.me || {}, role = state.s.admin ? '대표' : state.s.lead ? '팀장' : '직원';
+    showSheet('<h2>내 정보</h2><p class="note" style="margin:0 0 14px">' + esc(state.s.team || '팀 없음') + ' · ' + role + ' — 팀·권한은 대표님이 정해요.</p>' +
+      '<form class="meform" id="mName" novalidate><label>이름 (로그인할 때 써요)<input id="mNameI" maxlength="12" autocomplete="off" value="' + esc(state.s.name) + '"></label>' +
+      '<button class="btn btn-ok" type="submit">이름 바꾸기</button><p class="msg" id="mNameM" role="alert"></p></form>' +
+      '<form class="meform" id="mPhone" novalidate><label>전화번호 (비상 연락망 · 대표님만 봐요)<input id="mPhoneI" type="tel" inputmode="numeric" maxlength="13" placeholder="010-1234-5678" value="' + esc(me.phone || '') + '"></label>' +
+      '<button class="btn btn-ok" type="submit">전화번호 저장</button><p class="msg" id="mPhoneM" role="alert"></p></form>' +
+      '<form class="meform" id="mPw" novalidate><label>현재 비밀번호<input id="mPwO" type="password" autocomplete="current-password" maxlength="40"></label>' +
+      '<label>새 비밀번호 (6자 이상)<input id="mPwN" type="password" autocomplete="new-password" maxlength="40"></label>' +
+      '<button class="btn btn-ok" type="submit">비밀번호 바꾸기</button><p class="msg" id="mPwM" role="alert"></p></form>');
+    $('mPhoneI').addEventListener('input', function () { this.value = fmtPhone(this.value); });
+    function go(form, body, m, ok, errs) {
+      var btn = form.querySelector('button'); btn.disabled = true; m.className = 'msg'; m.textContent = '';
+      body.token = state.s.token;
+      call(body).then(function (r) {
+        btn.disabled = false;
+        if (r.error === 'auth') { $('sheet').hidden = true; return toLogin(AUTH_OUT); }
+        if (!r.ok) { m.textContent = errs[r.error] || '처리가 안 됐어요. 다시 해 주세요.'; return; }
+        m.className = 'msg ok'; m.textContent = ok(r);
+      }).catch(function () { btn.disabled = false; m.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+    }
+    $('mName').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var n = $('mNameI').value.trim().replace(/\s+/g, ' '), m = $('mNameM');
+      if (n === state.s.name) { m.className = 'msg'; m.textContent = '지금 이름과 같아요.'; return; }
+      if (n.length < 2) { m.className = 'msg'; m.textContent = '이름을 2글자 이상 넣어 주세요.'; return; }
+      go(this, { a: 'me_name', name: n }, m, function (r) {
+        state.s.name = r.name; save(state.s); setWho(); saveData(state.data); refresh(true);
+        return '바꿨어요. 다음 로그인부터 새 이름(' + r.name + ')으로 들어와요. 게스트·글·메시지 기록도 새 이름으로 이어져요.';
+      }, { name: '이름은 2~12글자로, 특수문자·숫자만은 안 돼요.', taken: '같은 이름이 이미 있어요. 뒤에 한 글자를 붙여 주세요.', busy: '이름은 하루 3번까지 바꿀 수 있어요.' });
+    });
+    $('mPhone').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var ph = $('mPhoneI').value.replace(/\D/g, '');
+      if (!/^01[016789]\d{7,8}$/.test(ph)) { $('mPhoneM').className = 'msg'; $('mPhoneM').textContent = '010-0000-0000 모양으로 넣어 주세요.'; return; }
+      go(this, { a: 'me_phone', phone: ph }, $('mPhoneM'), function (r) { if (state.data) state.data.me = { phone: r.phone }; return '저장했어요.'; },
+        { phone: '전화번호를 다시 확인해 주세요.', phone_taken: '다른 직원이 이미 쓰는 번호예요.' });
+    });
+    $('mPw').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var o = $('mPwO').value, n = $('mPwN').value;
+      if (!o) { $('mPwM').className = 'msg'; $('mPwM').textContent = '현재 비밀번호를 넣어 주세요.'; return; }
+      if (n.length < 6) { $('mPwM').className = 'msg'; $('mPwM').textContent = '새 비밀번호는 6자 이상으로 해 주세요.'; return; }
+      go(this, { a: 'me_pw', old: o, pw: n }, $('mPwM'), function () { $('mPwO').value = ''; $('mPwN').value = ''; return '바꿨어요. 다른 기기에서는 다시 로그인해야 해요.'; },
+        { oldpw: '현재 비밀번호가 맞지 않아요.', pw: '새 비밀번호는 6~40자로 해 주세요.' });
+    });
+  }
+  $('meBtn').addEventListener('click', openMe);
+  function showSheet(html, plain) {
+    var s = $('sheet');
+    s.innerHTML = '<div class="sheet-in' + (plain ? ' plain' : '') + '">' + html + '<button class="btn" id="sheetX" type="button">닫기</button></div>';
+    s.hidden = false;
+    $('sheetX').addEventListener('click', function () { s.hidden = true; s.innerHTML = ''; });
+    s.addEventListener('click', function (e) { if (e.target === s) { s.hidden = true; s.innerHTML = ''; } }, { once: true });
+  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
+    var t = e.data && e.data.tab; if (t && state.data) { state.tab = t; render(); }
+  });
 
   // ── 가입 승인 (대표: 전체 / 팀장: 자기 팀 신청 승인·거절, 퇴사자 탈퇴) ──
   function renderAcc(area, d) {
