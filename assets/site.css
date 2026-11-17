@@ -225,6 +225,13 @@ img { max-width: 100%; display: block; }
 .seg .seg-s input:checked + span { background: rgba(161, 91, 255, .2); border-color: var(--s); color: var(--s); }
 .seg input:focus-visible + span { outline: 2px solid var(--g); outline-offset: 2px; }
 .rv-act { display: flex; flex-wrap: wrap; gap: 10px; }
+.rv-done { display: grid; gap: 6px; border: 1px solid var(--g); border-radius: var(--radius); padding: 18px 20px; background: rgba(255, 122, 26, .08); }
+.rv-done.is-warn { border-color: #ffb020; background: rgba(255, 176, 32, .08); }
+.rv-done p { margin: 0; line-height: 1.5; }
+.rv-done p:empty { display: none; }
+.rv-done .rv-done-h { font-weight: 800; font-size: 17px; }
+.rv-done .rv-code { font-weight: 800; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+.rv-done .rv-act { margin-top: 8px; }
 .tabs { display: flex; gap: 6px; }
 .tabs button { font: 800 14px/1 var(--body); padding: 10px 16px; min-height: 44px; border-radius: 999px; border: 1px solid var(--line-2); background: none; color: var(--muted); cursor: pointer; }
 .tabs .tab-g[aria-selected="true"] { color: var(--g); border-color: var(--g); background: rgba(255, 122, 26, .12); }

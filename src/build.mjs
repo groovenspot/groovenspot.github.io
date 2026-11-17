@@ -409,9 +409,15 @@ ${pageHead(lang, 'reserve')}
     <label class="full rv-chk"><input type="checkbox" name="promo"><span>${L('rv.promo')}</span></label>
     <input class="rv-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div class="full rv-act">
-      <button class="btn btn-hot btn-lg" type="submit">${L('rv.btn')}</button>
-      <button class="btn btn-lg btn-wa" type="button" data-wa>${L('rv.wa')}</button>
+      <button class="btn btn-hot btn-lg" type="submit" data-rv-main>${L('rv.btn')}</button>
+      <button class="btn btn-lg btn-wa" type="button" data-wa data-rv-main>${L('rv.wa')}</button>
       <a class="btn btn-lg" href="tel:${PHONE.replace(/-/g, '')}">${L('rv.call')} · ${PHONE}</a>
+    </div>
+    <div class="full rv-done" data-rv-done role="status" aria-live="polite" hidden>
+      <p class="rv-done-h" data-rv-h></p>
+      <p data-rv-sub></p>
+      <p class="rv-code" data-rv-code></p>
+      <div class="rv-act"><button class="btn btn-hot btn-lg" type="button" data-rv-go hidden></button></div>
     </div>
     <p class="full muted small">${L('rv.note')}</p>
   </form>
