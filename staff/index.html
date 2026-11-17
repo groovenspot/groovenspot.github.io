@@ -221,6 +221,8 @@ details.all { margin-top: 14px; }
 .amtb button[aria-pressed="true"] { border-color: var(--s); color: #d6bcff; background: rgba(161,91,255,.12); }
 .kgrp { display: grid; gap: 8px; margin: 10px 0 0; }
 .klink { width: 100%; font-size: 13px; }
+.kshare { white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; font-size: 14px; line-height: 1.55; background: var(--bg); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 14px; margin: 0 0 12px; }
+.kshare b { font-weight: 600; color: var(--muted); font-size: 12px; }
 .rk.ph { opacity: .45; border-style: dashed; }
 .rk.ph .nm strong { color: var(--muted); font-weight: 700; }
 details.all summary { cursor: pointer; color: var(--muted); font-weight: 800; font-size: 14px; padding: 8px 0; }
@@ -1323,15 +1325,16 @@ details.all .list { margin-top: 8px; }
     var all = k.custs, bottles = 0, soon = 0, late = 0;
     all.forEach(function (c) { bottles += kBottles(c) + kOpens(c); var x = kDays(kExpOf(c)); if (x !== null && x < 0) late++; else if (x !== null && x <= 7) soon++; });
     var retired = all.filter(function (c) { return kGroupOf(c.staff) === '퇴사자'; });
-    var h = k.edit ? '<div class="kh"><div><h1>🍾 킵 장부</h1><p class="sub">손님 ' + all.length + ' · 보관 ' + k.days + '일</p></div><button class="btn btn-hot" type="button" id="kNew">+ 맡기기</button></div>'
+    var h = k.all ? '<div class="kh"><div><h1>🍾 킵 장부</h1><p class="sub">손님 ' + all.length + ' · 보관 ' + k.days + '일</p></div><button class="btn btn-hot" type="button" id="kNew">+ 맡기기</button></div>'
+      : k.edit ? '<div class="kh"><div><h1>🍾 내 킵 손님</h1><p class="sub">내 담당 손님 ' + all.length + ' · 보관 ' + k.days + '일</p></div><button class="btn btn-hot" type="button" id="kNew">+ 맡기기</button></div>'
       : '<div class="kh"><div><h1>🍾 내 담당 킵</h1><p class="sub">손님 ' + all.length + ' · 보관 ' + k.days + '일 · 보기만 돼요 (맡기기·꺼내기는 팀장님)</p></div></div>';
     h += '<div class="ksearch"><span aria-hidden="true">🔎</span><input id="kQ" type="search" placeholder="손님 · 담당 · 술 · 연락처 뒤 4자리" value="' + esc(state.kq) + '" aria-label="킵 찾기"></div>';
     h += '<div class="ksum"><div><small>보관 중</small><b>' + bottles + '</b></div><div class="w"><small>7일 안 만료</small><b>' + soon + '</b></div><div class="x"><small>만료 지남</small><b>' + late + '</b></div></div>';
     var hasNone = all.some(function (c) { return !kGroupOf(c.staff); });
-    h += '<div class="kfil">' + [['', '전체'], ['exp', '⏰ 만료 임박']].concat(k.edit ? KGROUPS.map(function (g) { return [g, g]; }) : []).concat(k.edit && hasNone ? [['none', '구분 없음']] : []).map(function (x) {
+    h += '<div class="kfil">' + [['', '전체'], ['exp', '⏰ 만료 임박']].concat(k.all ? KGROUPS.map(function (g) { return [g, g]; }) : []).concat(k.all && hasNone ? [['none', '구분 없음']] : []).map(function (x) {
       return '<button type="button" data-kf="' + esc(x[0]) + '" aria-pressed="' + (f === x[0]) + '">' + esc(x[1]) + '</button>';
     }).join('') + '</div>';
-    if (k.edit && retired.length && f !== '퇴사자') h += '<p class="kalert"><b>⚠️ 퇴사자 담당 손님 ' + retired.length + '명</b> · 손님을 눌러 담당을 바꿔 주세요.</p>';
+    if (k.all && retired.length && f !== '퇴사자') h += '<p class="kalert"><b>⚠️ 퇴사자 담당 손님 ' + retired.length + '명</b> · 손님을 눌러 담당을 바꿔 주세요.</p>';
     area.innerHTML = h + '<div id="kList"></div>';
     if ($('kNew')) $('kNew').addEventListener('click', function () { kOpenAdd(null); });
     $('kQ').addEventListener('input', function () { state.kq = this.value; kListPaint(); });
@@ -1349,14 +1352,14 @@ details.all .list { margin-top: 8px; }
       return key(c.name).indexOf(q) >= 0 || key(c.staff).indexOf(q) >= 0 || c.items.some(function (i) { return key(i.liq).indexOf(q) >= 0; }) || (c.p4 && c.p4.indexOf(q) >= 0);
     });
     var h = '';
-    if (!shown.length) h += '<p class="empty">' + (all.length ? '맞는 손님이 없어요.' : '아직 맡긴 술이 없어요. 위의 <b>+ 맡기기</b>로 시작해요.') + '</p>';
+    if (!shown.length) h += '<p class="empty">' + (all.length ? '맞는 손님이 없어요.' : k.edit ? '아직 내 담당 손님 킵이 없어요. 위의 <b>+ 맡기기</b>로 시작해요.' : '아직 담당 손님 킵이 없어요.') + '</p>';
     // 담당별로 묶기 (영업진 → 스텝·DJ → 퇴사자 → 구분 없음, 같은 구분 안에서는 처음 나온 순서)
     var order = [], by = {};
     shown.forEach(function (c) { if (!by[c.staff]) { by[c.staff] = []; order.push(c.staff); } by[c.staff].push(c); });
     order.sort(function (a, b) { var ga = KGROUPS.indexOf(kGroupOf(a)), gb = KGROUPS.indexOf(kGroupOf(b)); return (ga < 0 ? 9 : ga) - (gb < 0 ? 9 : gb); });
     order.forEach(function (s) {
       var g = kGroupOf(s), list = by[s], n = list.reduce(function (t, c) { return t + kBottles(c) + kOpens(c); }, 0);
-      h += '<div class="kg"><strong>' + esc(s) + '</strong>' + (k.edit ? '<button type="button" class="chip' + (g ? '' : ' none') + '" data-kgs="' + esc(s) + '">' + esc(g || '구분 정하기') + '</button>' : (g ? '<span class="chip">' + esc(g) + '</span>' : '')) + '<span class="row">손님 ' + list.length + ' · ' + n + '병</span></div><div class="list">';
+      h += '<div class="kg"><strong>' + esc(s) + '</strong>' + (k.all ? '<button type="button" class="chip' + (g ? '' : ' none') + '" data-kgs="' + esc(s) + '">' + esc(g || '구분 정하기') + '</button>' : (g ? '<span class="chip">' + esc(g) + '</span>' : '')) + '<span class="row">손님 ' + list.length + ' · ' + n + '병</span></div><div class="list">';
       h += list.map(function (c) {
         var x = kDays(kExpOf(c));
         return '<button type="button" class="kc' + (x !== null && x < 0 ? ' late' : x !== null && x <= 7 ? ' soon' : '') + '" data-kc="' + esc(c.id) + '"><span class="nm"><strong>' + esc(c.name) + '</strong>' +
@@ -1394,14 +1397,14 @@ details.all .list { margin-top: 8px; }
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (state.kview !== 'cust' || !state.kcur || state.kcur.cust.id !== id) return;
       if (!r.ok) { state.kcur.err = kErr(r); return renderSoon(); }
-      state.kcur = { cust: r.cust, log: r.log, full: true }; kPut(r.cust); renderSoon();
+      state.kcur = { cust: r.cust, log: r.log, full: true, edit: r.edit }; kPut(r.cust); renderSoon();
     }).catch(function () { if (state.kcur) { state.kcur.err = '연결이 안 돼요. 다시 열어 주세요.'; renderSoon(); } });
   }
   // 서버 응답(손님 + 기록)으로 화면 바꾸기
   function kApply(r, undoText) {
     if (!r.ok || !r.cust) return;
     kPut(r.cust);
-    state.kcur = { cust: r.cust, log: r.log, full: true };
+    state.kcur = { cust: r.cust, log: r.log, full: true, edit: r.edit };
     state.kundo = r.undo && undoText ? { cid: r.cust.id, log: r.undo, text: undoText, at: Date.now() } : (undoText === null ? null : state.kundo);
     renderSoon();
   }
@@ -1416,7 +1419,7 @@ details.all .list { margin-top: 8px; }
   }
   function kDate(s) { return s ? md(s) : ''; }
   function renderKCust(area) {
-    var kc = state.kcur, c = kc.cust, g = kGroupOf(c.staff) || c.group, edit = !!state.keep.edit;
+    var kc = state.kcur, c = kc.cust, g = kGroupOf(c.staff) || c.group, edit = kc.edit != null ? !!kc.edit : !!state.keep.edit, boss = !!state.keep.all;
     var h = '<button class="btn back" type="button" id="kBack">← 킵 장부</button><div class="kv">';
     h += '<div class="row"><span class="chip">담당 ' + esc(c.staff || '-') + '</span>' + (g ? '<span class="chip">' + esc(g) + '</span>' : '') + (g === '퇴사자' ? '<b style="color:var(--warn)">담당을 바꿔 주세요</b>' : '') + '</div>';
     h += '<h1>' + esc(c.name) + ' <small>· ' + esc(kTot(c)) + '</small></h1>';
@@ -1434,11 +1437,13 @@ details.all .list { margin-top: 8px; }
     });
     var u = state.kundo;
     if (edit && u && u.cid === c.id && Date.now() - u.at < 15 * 60e3) h += '<div class="ktoast"><span>' + u.text + '</span><button class="btn" type="button" id="kUndo">되돌리기</button></div>';
+    if (edit && kc.saved) h += '<div class="ktoast"><span><b>✓ ' + esc(kc.saved) + '</b> · 손님에게 알려 주세요</span><button class="btn" type="button" id="kShareNow">📤 공유</button></div>';
     h += '<p class="msg" id="kMsg" role="alert"></p>';
     if (edit) {
-      h += '<div class="kacts"><button class="btn btn-ok" type="button" id="kMore">+ 술 맡기기</button><button class="btn" type="button" id="kLink">📱 손님에게 링크</button></div>';
-      h += '<div class="kacts" style="margin-top:8px"><button class="btn" type="button" id="kEdit">✏️ 손님 정보 · 담당</button><button class="btn btn-bad" type="button" id="kDel">손님 지우기</button></div>';
-    } else h += '<div class="kacts" style="grid-template-columns:1fr"><button class="btn" type="button" id="kLink">📱 손님에게 링크 보내기</button></div><p class="note">맡기기·꺼내기·수정은 팀장님이 해요.</p>';
+      h += '<div class="kacts"><button class="btn btn-ok" type="button" id="kMore">+ 술 맡기기</button><button class="btn" type="button" id="kLink">📤 손님에게 공유</button></div>';
+      h += boss ? '<div class="kacts" style="margin-top:8px"><button class="btn" type="button" id="kEdit">✏️ 손님 정보 · 담당</button><button class="btn btn-bad" type="button" id="kDel">손님 지우기</button></div>'
+        : '<div class="kacts" style="margin-top:8px;grid-template-columns:1fr"><button class="btn" type="button" id="kEdit">✏️ 손님 정보 (이름·연락처·메모)</button></div>';
+    } else h += '<div class="kacts" style="grid-template-columns:1fr"><button class="btn btn-hot" type="button" id="kLink">📤 손님에게 공유하기</button></div><p class="note">맡기기·꺼내기·수정은 팀장님이 해요.</p>';
     h += '</div>';
     h += '<h2 class="sec">기록</h2>';
     if (!kc.log) h += '<p class="load">불러오는 중…</p>';
@@ -1488,10 +1493,11 @@ details.all .list { margin-top: 8px; }
     });
     if ($('kUndo')) $('kUndo').addEventListener('click', function () { kCall({ a: 'keep_undo', log: state.kundo.log }, null, this); });
     $('kLink').addEventListener('click', function () { kLink(c, this); });
+    if ($('kShareNow')) $('kShareNow').addEventListener('click', function () { kLink(c, this); });
     if (!edit) return;
     $('kMore').addEventListener('click', function () { kOpenAdd(c); });
     $('kEdit').addEventListener('click', function () { kEditSheet(c); });
-    $('kDel').addEventListener('click', function () {
+    if ($('kDel')) $('kDel').addEventListener('click', function () {
       if (!armed(this, '손님 지우기')) return;
       var btn = this; btn.disabled = true;
       call({ a: 'keep_cust', token: state.s.token, id: c.id, del: true }).then(function (r) {
@@ -1506,18 +1512,27 @@ details.all .list { margin-top: 8px; }
     return '<datalist id="' + id + '">' + (state.keep.staffs || []).map(function (s) { return '<option value="' + esc(s.name) + '">' + esc(s.group || s.team || '') + '</option>'; }).join('') + '</datalist>';
   }
   function kEditSheet(c) {
-    showSheet('<h2>손님 정보 · 담당</h2>' +
+    var boss = !!state.keep.all;
+    showSheet('<h2>' + (boss ? '손님 정보 · 담당' : '손님 정보') + '</h2>' +
       '<label>손님 이름<input id="keN" maxlength="20" value="' + esc(c.name) + '"></label>' +
-      '<label>담당<input id="keS" maxlength="12" list="keSl" value="' + esc(c.staff) + '">' + kStaffList('keSl') + '</label>' +
+      (boss ? '<label>담당<input id="keS" maxlength="12" list="keSl" value="' + esc(c.staff) + '">' + kStaffList('keSl') + '</label>' : '<p class="note" style="margin:-4px 0 12px">담당 ' + esc(c.staff) + ' · 담당 바꾸기는 대표님이 해요.</p>') +
       '<label>연락처 (선택)<input id="keP" type="tel" inputmode="numeric" maxlength="13" value="' + esc(c.phone || '') + '" placeholder="010-0000-0000"></label>' +
       '<label>메모 (선택)<input id="keM" maxlength="60" value="' + esc(c.memo || '') + '"></label>' +
       '<button class="btn btn-hot" type="button" id="keGo">저장</button><p class="msg" id="keMsg" role="alert"></p>');
     $('keP').addEventListener('input', function () { this.value = fmtPhone(this.value); });
     $('keGo').addEventListener('click', function () {
-      var body = { a: 'keep_cust', id: c.id, name: $('keN').value.trim(), staff: $('keS').value.trim(), memo: $('keM').value.trim() };
+      var body = { a: 'keep_cust', id: c.id, name: $('keN').value.trim(), memo: $('keM').value.trim() };
+      if ($('keS')) body.staff = $('keS').value.trim();
       if (state.kcur && state.kcur.full) body.phone = $('keP').value.trim();
       kCall(body, null, this, $('keMsg')).then(function (r) { if (r && r.ok) { $('sheet').hidden = true; $('sheet').innerHTML = ''; } });
     });
+  }
+  // 손님에게 보낼 글: 맡긴 술 요약 + 보관 기한 + 확인 링크
+  function kShareText(c) {
+    var its = c.items.map(function (i) { return i.liq + ' ' + (i.kind === '병' ? i.n + '병' : i.amt); });
+    var exp = kExpOf(c);
+    return c.name + '님, 그루브앤스팟에 맡기신 술이에요 🍾\n' + (its.length ? (its.length > 12 ? its.slice(0, 12).join(', ') + ' 외 ' + (its.length - 12) + '개' : its.join(', ')) : '지금 맡기신 술이 없어요') +
+      (exp ? '\n보관 ' + md(exp) + '까지' : '') + '\n아래 링크에서 언제든 확인하실 수 있어요.';
   }
   function kLink(c, btn) {
     btn.disabled = true;
@@ -1525,22 +1540,34 @@ details.all .list { margin-top: 8px; }
       btn.disabled = false;
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok) { $('kMsg').textContent = kErr(r); return; }
-      var text = c.name + '님, 그루브앤스팟에 맡기신 술을 여기서 확인하실 수 있어요 🍾';
-      if (navigator.share) { navigator.share({ title: '그루브 킵', text: text, url: r.url }).catch(function () {}); return; }
-      var ph = (state.kcur && state.kcur.cust.phone || '').replace(/\D/g, '');
-      showSheet('<h2>📱 손님 확인 링크</h2><p class="note" style="margin:0 0 10px">카톡이나 문자로 손님에게 보내 주세요. 링크를 아는 사람만 이 손님의 킵을 볼 수 있어요.</p>' +
-        '<input class="klink" id="kLk" readonly value="' + esc(r.url) + '"><button class="btn btn-hot" type="button" id="kCp" style="margin-top:10px">링크 복사</button>' +
-        (ph ? '<a class="btn" style="width:100%;margin-top:8px" href="sms:' + esc(ph) + '?&body=' + encodeURIComponent(text + ' ' + r.url) + '">문자로 보내기</a>' : '') +
+      var text = kShareText(c), ph = (state.kcur && state.kcur.cust.phone || '').replace(/\D/g, '');
+      showSheet('<h2>📤 ' + esc(c.name) + '님에게 공유</h2>' +
+        '<p class="note" style="margin:0 0 8px">이 글과 링크가 그대로 가요. 링크를 받은 사람만 이 손님의 킵을 볼 수 있어요.</p>' +
+        '<div class="kshare">' + esc(text) + '\n<b>' + esc(r.url) + '</b></div>' +
+        (navigator.share ? '<button class="btn btn-hot" type="button" id="kSh">📤 공유하기 (카톡·문자·인스타 등)</button>' : '') +
+        (ph ? '<a class="btn" style="width:100%;margin-top:8px" id="kSms" href="sms:' + esc(ph) + '?&body=' + encodeURIComponent(text + '\n' + r.url) + '">💬 문자로 보내기 (' + esc(fmtPhone(ph)) + ')</a>' : '') +
+        '<button class="btn' + (navigator.share ? '' : ' btn-hot') + '" type="button" id="kCp" style="width:100%;margin-top:8px">📋 글·링크 복사 (카톡에 붙여넣기)</button>' +
+        '<input class="klink" id="kLk" readonly value="' + esc(r.url) + '" style="margin-top:10px" aria-label="확인 링크">' +
         (state.keep.edit ? '<button class="btn btn-bad" type="button" id="kRs" style="margin-top:8px">링크 새로 만들기 (예전 링크는 안 열림)</button>' : '') + '<p class="msg ok" id="kLm" role="status"></p>');
+      function copy(v) {
+        return (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).catch(function () {
+          var t = document.createElement('textarea'); t.value = v; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select();
+          var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} t.remove(); if (!ok) throw new Error('copy');
+        });
+      }
+      if ($('kSh')) $('kSh').addEventListener('click', function () { navigator.share({ title: '그루브앤스팟 킵', text: text, url: r.url }).catch(function () {}); });
       $('kCp').addEventListener('click', function () {
-        var i = $('kLk'); i.select();
-        (navigator.clipboard ? navigator.clipboard.writeText(r.url) : Promise.reject()).then(function () { $('kLm').textContent = '복사했어요.'; }).catch(function () { try { document.execCommand('copy'); $('kLm').textContent = '복사했어요.'; } catch (e) { $('kLm').textContent = '길게 눌러 복사해 주세요.'; } });
+        copy(text + '\n' + r.url).then(function () { $('kLm').textContent = '복사했어요. 카톡 대화방에 붙여넣어 보내 주세요.'; }).catch(function () { $('kLk').select(); $('kLm').textContent = '링크를 길게 눌러 복사해 주세요.'; });
       });
       if ($('kRs')) $('kRs').addEventListener('click', function () {
         if (!armed(this, '링크 새로 만들기 (예전 링크는 안 열림)')) return;
         var b = this; b.disabled = true;
         call({ a: 'keep_link', token: state.s.token, id: c.id, reset: true }).then(function (x) {
-          b.disabled = false; if (x.ok) { $('kLk').value = x.url; r.url = x.url; $('kLm').textContent = '새 링크를 만들었어요. 예전 링크는 이제 안 열려요.'; }
+          b.disabled = false;
+          if (!x.ok) return;
+          r.url = x.url; $('kLk').value = x.url; document.querySelector('#sheet .kshare b').textContent = x.url;
+          if ($('kSms')) $('kSms').href = 'sms:' + ph + '?&body=' + encodeURIComponent(text + '\n' + x.url);
+          $('kLm').textContent = '새 링크를 만들었어요. 예전 링크는 이제 안 열려요.';
         }).catch(function () { b.disabled = false; });
       });
     }).catch(function () { btn.disabled = false; $('kMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
@@ -1560,7 +1587,8 @@ details.all .list { margin-top: 8px; }
     } else {
       h += '<label>손님 (닉네임)<input id="kaN" maxlength="20" autocomplete="off" value="' + esc(a.name) + '" placeholder="장부에 쓰는 이름"></label>';
       h += '<div class="kpick" id="kaPick"></div>';
-      h += '<label>담당<input id="kaS" maxlength="12" list="kaSl" autocomplete="off" value="' + esc(a.staff) + '" placeholder="담당 직원 이름">' + kStaffList('kaSl') + '</label>';
+      h += k.all ? '<label>담당<input id="kaS" maxlength="12" list="kaSl" autocomplete="off" value="' + esc(a.staff) + '" placeholder="담당 직원 이름">' + kStaffList('kaSl') + '</label>'
+        : '<p class="note" style="margin:-4px 0 14px">담당: <b>' + esc(k.me || state.s.name) + '</b> (나)</p>';
       h += '<label>연락처 (선택)<input id="kaP" type="tel" inputmode="numeric" maxlength="13" value="' + esc(a.phone) + '" placeholder="비워도 돼요"></label>';
     }
     h += '<p class="lab" style="font-weight:700;font-size:14px;margin:4px 0 6px">술</p>';
@@ -1621,7 +1649,7 @@ details.all .list { margin-top: 8px; }
       var items = a.rows.filter(function (r) { return r.liq.trim(); }).map(function (r) { return r.amt ? { liq: r.liq.trim(), kind: '딴 병', amt: r.amt } : { liq: r.liq.trim(), kind: '병', n: +r.n || 1 }; });
       var m = $('kaMsg');
       if (!a.id && !a.name.trim()) { m.textContent = '손님 이름을 넣어 주세요.'; return; }
-      if (!a.id && !a.staff.trim()) { m.textContent = '담당을 넣어 주세요.'; return; }
+      if (!a.id && k.all && !a.staff.trim()) { m.textContent = '담당을 넣어 주세요.'; return; }
       if (!items.length) { m.textContent = '술 이름을 넣어 주세요.'; return; }
       var body = { a: 'keep_add', token: state.s.token, items: items };
       if (a.id) body.id = a.id; else { body.name = a.name.trim(); body.staff = a.staff.trim(); body.phone = a.phone.trim(); body.memo = a.memo.trim(); }
@@ -1635,7 +1663,6 @@ details.all .list { margin-top: 8px; }
         state.kundo = null;
         state.kcur.saved = n + '병 맡겼어요';
         render(); window.scrollTo(0, 0);
-        if ($('kMsg')) { $('kMsg').className = 'msg ok'; $('kMsg').textContent = '✓ ' + n + '병 맡겼어요.'; }
       }).catch(function () { btn.disabled = false; m.textContent = '연결이 안 돼서 못 맡겼어요. 다시 해 주세요.'; });
     });
   }
