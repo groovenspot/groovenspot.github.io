@@ -3115,7 +3115,7 @@ body.hasfab main { padding-bottom: 110px; }
     // GROOVE L: 도면 3칸씩 세 묶음 (위 L4~6·L10~12, 아래 L1~3·L7~9·L13~15)
     [[4, 5, 6], [10, 11, 12], null].forEach(function (g, k) { if (g) g.forEach(function (n, x) { G['L' + n] = [778 + k * 156 + x * 50, 176, 46, 60]; }); });
     [[1, 2, 3], [7, 8, 9], [13, 14, 15]].forEach(function (g, k) { g.forEach(function (n, x) { G['L' + n] = [778 + k * 156 + x * 50, 242, 46, 60]; }); });
-    for (i = 0; i < 6; i++) G['B' + (i + 1)] = [690 + i * 62, 330, 56, 64];
+    for (i = 0; i < 6; i++) G['B' + (6 - i)] = [690 + i * 62, 330, 56, 64];   // 메인바 앞: 왼쪽부터 B6 → B1 (대표 확인 2026-11-18)
   })();
   function tbView() { if (!state.tbView) { try { state.tbView = localStorage.getItem('gs_tb_view'); } catch (e) {} } return state.tbView === 'list' ? 'list' : 'map'; }
   function tbMapHtml(fl, ix) {
