@@ -2141,8 +2141,7 @@ details.all .list { margin-top: 8px; }
     if (!state.s || state.tbFly) return;
     if (!state.tb && state.tab === 'table') $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
     state.tbFly = 1;
-    var day = state.tbDay || '';
-    return call({ a: 'tb_get', token: state.s.token, day: day }).then(function (r) {
+    return call({ a: 'tb_get', token: state.s.token }).then(function (r) {
       state.tbFly = 0;
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok) { state.tbErr = '자리표를 못 불러왔어요.'; if (state.tab === 'table' && !quiet) renderSoon(); return; }
@@ -2465,8 +2464,7 @@ details.all .list { margin-top: 8px; }
     state.tbFloor = fl;
     var used = 0, total = 0;
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !tbShowWeekend()) return; z.rows.forEach(function (row) { row.forEach(function (s) { total++; if (ix.at[s] && !ix.at[s][0].ghost) used++; }); }); });
-    var h = '<div class="tbh"><div><h1>🪑 테이블 현황</h1><p class="sub">' + esc(tbDayLabel(t.day)) + (t.day === t.today ? '' : ' · 지난 영업일') + ' · ' + esc(fl) + ' ' + used + '/' + total + '</p></div>' +
-      '<select id="tbDay" aria-label="영업일">' + [0, 1, 2, 3, 4, 5, 6].map(function (i) { var d = tbAddDay(t.today, -i); return '<option value="' + d + '"' + (d === t.day ? ' selected' : '') + '>' + (i ? esc(tbDayLabel(d)) : '오늘 · ' + esc(tbDayLabel(d))) + '</option>'; }).join('') + '</select></div>';
+    var h = '<div class="tbh"><div><h1>🪑 테이블 현황</h1><p class="sub">' + esc(tbDayLabel(t.day)) + ' · 오늘 · ' + esc(fl) + ' ' + used + '/' + total + '</p></div></div>';   // 당일 것만 (대표 결정 2026-11-18)
     h += '<div class="tbfl">' + (t.floors || []).map(function (f) { return '<button type="button" data-tbf="' + esc(f.id) + '" aria-pressed="' + (f.id === fl) + '">' + esc(f.name) + ' <small>' + esc(f.floor) + '</small></button>'; }).join('') + '</div>';
     h += '<p class="msg ok" id="tbBox"' + (state.tbMsg ? '' : ' hidden') + '>' + esc(state.tbMsg || '') + '</p>'; state.tbMsg = '';
     var pend = t.rows.filter(function (r) { return r.status === '대기'; });
@@ -2491,7 +2489,6 @@ details.all .list { margin-top: 8px; }
       (ix.wait.length ? ix.wait.map(function (r) { var g = r.ghost, x = g || r, v = g ? g.req : (x.cur || x.req); return '<button type="button" class="tbw' + (x.status ? ' wait' : '') + (x.status === '거절' ? ' no' : '') + '" data-tbid="' + esc(x.id) + '"><span>' + esc(tbLine(v)) + '</span>' + (x.status ? '<em>' + esc(g ? '옮기기 대기' : x.status === '거절' ? '거절됨' : '승인 대기') + '</em>' : '') + '</button>'; }).join('') : '<p class="empty" style="margin:6px 0">대기 손님이 없어요.</p>') + '</div>';
     if (state.tbErr) h += '<p class="msg">' + esc(state.tbErr) + '</p>';
     area.innerHTML = h;
-    $('tbDay').addEventListener('change', function () { state.tbDay = this.value === t.today ? '' : this.value; state.tb = null; render(); loadTb(); });
     area.querySelectorAll('[data-tbf]').forEach(function (b) { b.addEventListener('click', function () { state.tbFloor = b.dataset.tbf; try { localStorage.setItem('gs_tb_floor', state.tbFloor); } catch (e) {} render(); }); });
     area.querySelectorAll('[data-seat]').forEach(function (b) { b.addEventListener('click', function () { var l = ix.at[b.dataset.seat], r = l && l[0]; tbOpen(r && r.ghost ? r.ghost : r || null, b.dataset.seat); }); });
     area.querySelectorAll('[data-tbid]').forEach(function (b) { b.addEventListener('click', function () { tbOpen(tbFind(b.dataset.tbid), ''); }); });
