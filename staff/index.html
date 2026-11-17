@@ -582,6 +582,8 @@ body.hasfab main { padding-bottom: 110px; }
 .yct { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: #111; border: 1px solid var(--line); font-size: 15px; font-weight: 700; line-height: 1.4; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
 .ycs { margin: 6px 0 0; font-size: 13px; word-break: break-all; }
 .ycs a { color: #7cc0ff; }
+.ycs a.ycdl { display: inline-block; margin-left: 6px; padding: 3px 10px; border: 1px solid #7cc0ff; border-radius: 999px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.ycdlh { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
 .ycsong { margin: -6px 0 12px; font-size: 13px; }
 .ycsong.ok { color: var(--ok); }
 .ycsong.bad { color: #ff8199; }
@@ -2641,6 +2643,14 @@ body.hasfab main { padding-bottom: 110px; }
     }
     next();
   }
+  // 사운드클라우드 곡 옆 ⬇️ 다운: 구매 버튼(Free Download)·설명의 다운로드 링크가 있으면 거기로, 싸클 자체 다운로드면 곡 페이지(··· More → Download file)
+  function ycDlBtn(x) {
+    var v = x.v || {}, sc = v.songKind === 'sc' || /^https?:\/\/([\w-]+\.)*(soundcloud\.com|snd\.sc)\//i.test(x.song || '');
+    if (!sc || !/^https?:\/\//.test(x.song || '')) return '';
+    var u = /^https?:\/\/[^\s<>"']+$/.test(v.songDlUrl || '') ? v.songDlUrl : '', host = u ? u.replace(/^https?:\/\/(www\.)?/, '').split(/[\/?#]/)[0] : '';
+    var tip = u ? host + ' 프리 다운로드 페이지' : v.songDl === 'SoundCloud 다운로드' ? '싸클 페이지 ··· (More) → Download file' : '싸클 페이지에서 Free Download 찾기';
+    return ' <a class="ycdl" href="' + esc(u || x.song) + '" target="_blank" rel="noopener noreferrer" title="' + esc(tip) + '">⬇️ 다운</a><span class="ycdlh">' + esc(tip) + '</span>';
+  }
   function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
   function ycWhat(v) {
     return [v.parade ? v.parade + ' 퍼레' : '', v.video ? v.video + '영상' : '', v.holo ? '홀로 ' + v.holo : '', v.picket ? v.picket + '피켓' : '', v.hammer ? '망치' : '', v.vvip ? 'VVIP 입장' : '', v.note || ''].filter(Boolean);
@@ -2652,7 +2662,7 @@ body.hasfab main { padding-bottom: 110px; }
     var what = ycWhat(x.v);
     if (what.length) h += '<div class="ycw">' + what.map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('') + '</div>';
     if (x.text) h += '<p class="yct">' + esc(x.text).replace(/\n/g, '<br>') + '</p>';
-    if (x.song) h += '<p class="ycs">🎵 ' + (/^https?:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(ycSongLabel(x)) + '</a>' : esc(x.song)) + '</p>';
+    if (x.song) h += '<p class="ycs">🎵 ' + (/^https?:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(ycSongLabel(x)) + '</a>' : esc(x.song)) + ycDlBtn(x) + '</p>';
     if (x.photos.length) h += '<div class="ycp">' + x.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="사진">'; }).join('') + '</div>';
     if (x.videos && x.videos.length) h += '<div class="ycv">' + x.videos.map(function (id, i) { var u = (state.vidUrl || {})[id]; return u ? '<div class="ycvp"><video src="' + u.url + '" controls playsinline preload="metadata"></video><button type="button" class="link" data-ycsv="' + esc(id) + '">⬇️ 영상 저장</button></div>' : '<button type="button" class="btn ycvbtn" data-ycvid="' + esc(id) + '">🎬 영상 ' + (i + 1) + ' 보기</button>'; }).join('') + '</div>';
     if (x.status === '끝') return h + '<p class="note" style="margin:6px 0 0">✂️ 컷 ' + esc(x.endAt) + (x.cutBy ? ' ' + esc(x.cutBy) : '') + (x.goAt ? ' · ㄱㄱ ' + esc(x.goAt) + (x.goBy ? ' ' + esc(x.goBy) : '') : '') + '</p></div>';
