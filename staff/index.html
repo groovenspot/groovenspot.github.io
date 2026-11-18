@@ -926,6 +926,13 @@ body.hasfab main { padding-bottom: 110px; }
 .chip.r-table { border-color: #4da3ff; color: #8cc4ff; }
 .chip.r-yc { border-color: var(--s); color: #c9a3ff; }
 .chip.r-guest { border-color: var(--ok); color: var(--ok); }
+.alllive { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
+.alllive .chip { cursor: pointer; padding: 8px 14px; font-size: 14px; background: none; }
+.alllive .sosl { border-color: #ff3b5c; color: #fff; background: #3a0610; }
+.alllive .opsl { border-color: var(--warn); color: var(--warn); }
+.ali .alops { font-size: 12px; color: var(--warn); font-weight: 800; }
+.ali .alsos { font-size: 12px; color: #ff8a9b; font-weight: 800; }
+.ali .alops.ok, .ali .alsos.ok { color: var(--ok); }
 </style>
 </head>
 <body>
@@ -1492,6 +1499,8 @@ body.hasfab main { padding-bottom: 110px; }
         '연출탭에서 요청·고치기·준비·ㄱㄱ·컷·취소한 것도 <b>💬 연출 대화</b>에 카톡처럼 올라가요 (예: <code>3-10 바로 / 범용영상 / 홀로따로</code> · <b>✍️연출탭</b>)',
         '<b>ㄱㄱ·컷</b>은 요청한 사람·DJ팀·관리자(대표·김동기·양진호·팀장), <b>순서(▲▼)</b>는 관리자·DJ팀만',
         '요청을 고치면 전광 준비가 다시 풀리고 카드에 <b>✏️ 수정됨</b>이 떠요',
+        '전광판 문구 옆 <b>📋 복사</b>: 서식 없는 글자만 복사돼서 아레나에 붙여 넣고 글꼴을 바로 바꿀 수 있어요 (줄바꿈 그대로)',
+        '카드 댓글에도 <b>📷 사진·🎬 영상</b> (사진 3장·영상 2개, 글 없이 사진만도 돼요)',
         '대화창 줄임말: <code>ㅈㄱㅈㅂㅇ</code> 전광 준비 · <code>ㅅㅈㅂㅇ</code> 술 준비 · <code>ㄱㄱ</code> · <code>컷</code> · 전광만은 <code>2 전광만 바로</code> / <code>3 전광만 바로</code>'
       ]) +
       sec('🚨 경호 호출', [
@@ -1538,10 +1547,11 @@ body.hasfab main { padding-bottom: 110px; }
         '팀장이 <b>제가 받을게요</b> → 날짜·손님 이름·인원·층·담당 MD를 정하면 <b>테이블 대기</b>에 들어가고 담당에게 알림 · 다른 팀장에게는 <b>받음</b>으로 보여요'
       ]) +
       sec('💬 대화창', [
-        '오른쪽 아래 💬 · 방은 <b>테이블·연출·게스트</b>',
+        '오른쪽 아래 💬 · 방은 <b>테이블·연출·게스트</b> (왼쪽 아래 <b>🚨</b>는 경호 호출)',
         '<b>@호출</b>은 성 빼고·초성·닉네임으로도 찾아져요 (예: <code>@동기</code> <code>@ㄷㄱ</code>)',
         '테이블·게스트 대화 보내기는 <b>출근 후</b>에 돼요',
-        '말풍선 <b>두 번 누르기 = ✅ 확인</b> · <b>꾹 누르기 = ↩️ 답장·📋 복사</b>',
+        '말풍선 <b>두 번 누르기 = ✅ 확인</b> (🛎 운영 요청 메시지는 = 내가 할게요) · <b>꾹 누르기 = ↩️ 답장·📋 복사</b>',
+        '테이블 대화에는 자리표·🛎 운영 탭·🚨 경호 호출에서 한 것도 한 줄씩 올라가요 (✍️자리표 · ✍️운영탭 · ✍️경호 호출)',
         '📷 사진·영상 올리기 (큰 영상은 자동으로 줄여서, 5분까지)'
       ]) +
       sec('🔎 분실물 · 그 밖의 탭', [
@@ -3742,7 +3752,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
 
   // ── 📡 전체 (대표만, 2026-11-18): 누구에게 어떤 알림이 갔는지 + 테이블·연출·게스트 대화를 한 화면에. 켜 두면 5초마다 새로 ──
-  var ALL_F = [['', '전체'], ['al', '🔔 알림'], ['table', '🪑 테이블'], ['yc', '🎆 연출'], ['guest', '👥 게스트']];
+  var ALL_F = [['', '전체'], ['al', '🔔 알림'], ['sos', '🚨 경호'], ['ops', '🛎 운영'], ['table', '🪑 테이블'], ['yc', '🎆 연출'], ['guest', '👥 게스트']];
   var ALL_TABS = ['ops', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'];
   function loadAll(quiet) {
     if (!state.s || state.allFly) return;
@@ -3752,7 +3762,7 @@ body.hasfab main { padding-bottom: 110px; }
       state.allFly = 0; state.allAt = Date.now();
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok) { if (!quiet || !state.all) { state.allErr = r.error === 'forbidden' ? '대표만 볼 수 있어요.' : '불러오지 못했어요.'; if (state.tab === 'all') render(); } return; }
-      var sig = JSON.stringify([r.on, r.list.length, r.list.slice(0, 60).map(function (x) { return x.id + x.at; })]), same = !!state.all && state.allSig === sig;
+      var sig = JSON.stringify([r.on, r.opsOpen, r.sosLive, r.list.length, r.list.slice(0, 80).map(function (x) { return x.id + x.at + (x.ops ? x.ops.status + x.ops.took.length : '') + (x.sos ? x.sos.status + x.sos.go.length : ''); })]), same = !!state.all && state.allSig === sig;
       state.all = r; state.allSig = sig; state.allErr = '';
       if (state.tab === 'all' && !same && $('sheet').hidden) render();
     }).catch(function () { state.allFly = 0; state.allAt = Date.now(); if (!state.all && state.tab === 'all') { state.allErr = '연결이 안 돼요.'; render(); } });
@@ -3763,13 +3773,15 @@ body.hasfab main { padding-bottom: 110px; }
     if (!state.all) { area.innerHTML = state.allErr ? '<p class="empty">' + esc(state.allErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.allFly && !state.allErr) loadAll(); return; }
     var A = state.all, f = state.allF || '', prev = state.allSeen || '', today = String(A.now || '').slice(0, 10);
     var nAl = A.list.filter(function (x) { return x.t === 'al'; }).length;
-    var list = A.list.filter(function (x) { return !f || (f === 'al' ? x.t === 'al' : x.t === 'ch' && x.room === f); });
+    var isOps = function (x) { return x.t === 'ch' ? !!x.ops : /^(📡 )?(🛎|✅ 운영)/.test(x.title); }, isSos = function (x) { return x.t === 'ch' ? !!x.sos : /^(📡 )?(🚨|🏃|✅ 경호)/.test(x.title); };
+    var list = A.list.filter(function (x) { return !f || (f === 'al' ? x.t === 'al' : f === 'ops' ? isOps(x) : f === 'sos' ? isSos(x) : x.t === 'ch' && x.room === f); });
     var tm = function (at) { return at.slice(0, 10) === today ? at.slice(11, 16) : at.slice(5, 16).replace('-', '/'); };
     var off = typeof Notification !== 'undefined' && Notification.permission !== 'granted';
     var h = '<div class="tbh"><div><h1>📡 전체</h1><p class="sub">최근 36시간 · 알림 ' + nAl + ' · 대화 ' + (A.list.length - nAl) + ' · 켜 두면 5초마다 새로</p></div></div>';
     h += '<div class="allp"><button type="button" class="btn' + (A.on ? ' btn-ok' : '') + '" id="allPush" aria-pressed="' + !!A.on + '">' + (A.on ? '🔔 전체 알림 받기 · 켜짐' : '🔕 전체 알림 받기 · 꺼짐') + '</button>' +
       '<span>' + (A.on ? '직원에게 가는 알림이 내 폰에도 와요 (내가 한 일은 빼고)' : '켜면 직원에게 가는 알림이 내 폰에도 같이 와요') + '</span>' +
       (A.on && off ? '<span class="warn">이 폰은 알림이 꺼져 있어요 — 위 🔔를 눌러 켜 주세요</span>' : '') + '</div><p class="msg" id="allMsg"></p>';
+    if (A.sosLive || A.opsOpen) h += '<div class="alllive">' + (A.sosLive ? '<button type="button" class="chip sosl" data-allf="sos">🚨 경호 호출 중 ' + A.sosLive + '</button>' : '') + (A.opsOpen ? '<button type="button" class="chip opsl" data-allf="ops">🛎 운영 대기 ' + A.opsOpen + '</button>' : '') + '</div>';
     h += '<div class="allf">' + ALL_F.map(function (x) { return '<button type="button" class="chip' + (x[0] === f ? ' on' : '') + '" data-allf="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
     if (!list.length) h += '<p class="empty">아직 없어요.</p>';
     h += '<div class="alll">' + list.slice(0, 300).map(function (x) {
@@ -3782,7 +3794,9 @@ body.hasfab main { padding-bottom: 110px; }
       var med = [x.ph ? '📷 사진 ' + x.ph : '', x.vd ? '🎬 영상 ' + x.vd : ''].filter(String).join(' ');
       return '<button type="button" class="ali ch' + nw + '" data-allroom="' + esc(x.room) + '"><span class="alh"><span class="chip r-' + esc(x.room) + '">' + esc(CHAT_NAME[x.room] || x.room) + '</span><time>' + esc(tm(x.at)) + '</time></span>' +
         '<span><b>' + esc(x.who) + nickH(x.who) + '</b>' + (x.org ? '<small>' + esc(x.org) + '</small>' : '') + '</span>' + (x.re ? '<span class="alre">↩ ' + esc(x.re) + '</span>' : '') +
-        (x.text || med ? '<span class="alb">' + esc(x.text) + (x.text && med ? '\n' : '') + esc(med) + '</span>' : '') + (x.req ? '<span class="alq">' + esc(x.req) + '</span>' : '') + '</button>';
+        (x.text || med ? '<span class="alb">' + esc(x.text) + (x.text && med ? '\n' : '') + esc(med) + '</span>' : '') + (x.req ? '<span class="alq">' + esc(x.req) + '</span>' : '') +
+        (x.ops ? '<span class="alops' + (x.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(x.ops.kind) + ' · ' + (x.ops.status === '확정' ? '✅ 담당 ' + esc(x.ops.took.map(function (k) { return k.who; }).join(', ')) : x.ops.status === '취소' ? '취소됨' : '담당 대기' + (x.ops.took.length ? ' · ' + esc(x.ops.took.map(function (k) { return k.who; }).join(', ')) : '') + (x.ops.need > 1 ? ' (' + x.ops.took.length + '/' + x.ops.need + ')' : '')) + '</span>' : '') +
+        (x.sos ? '<span class="alsos' + (x.sos.status === '해결' ? ' ok' : '') + '">🚨 경호 호출 · ' + (x.sos.status === '호출' ? '출동 대기' : x.sos.status === '출동' ? '🏃 출동 ' + esc(x.sos.go.map(function (k) { return k.who; }).join(', ')) : x.sos.status === '해결' ? '✅ 해결 ' + esc(x.sos.doneBy) + (x.sos.go.length ? ' · 출동 ' + esc(x.sos.go.map(function (k) { return k.who; }).join(', ')) : '') : '취소됨') + '</span>' : '') + '</button>';
     }).join('') + '</div>';
     area.innerHTML = h;
     state.allSeen = A.list.length ? A.list[0].at : prev;
