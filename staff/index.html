@@ -1464,10 +1464,10 @@ body.hasfab main { padding-bottom: 110px; }
       ]) +
       sec('🛎 운영 요청', [
         '<b>🛎 운영</b> 탭 → <b>+ 요청</b>: 🧊 배달(얼음·버켓얼음·물·휴지·물티슈·샴잔·방향제·셋팅버켓) · 🍽 기본 세팅 · 🧹 아웃 청소 · 🔀 자리 이동 · 🎆 퍼레이드 지원(VIP·돔·알망·페리에·킹·퀸·딥 피켓, 가마, 3가방·5가방, 인원 N명) · 🌡 온도 · 📝 기타',
-        '알림은 <b>운영팀에게만</b> 가요. 운영팀이 <b>✅ 내가 할게요</b>를 누르면 담당 → 필요한 인원이 다 차면 닫히고 요청한 사람에게 알림',
+        '알림은 <b>운영팀에게만</b> 가요. <b>✅ 내가 할게요</b>는 누구나 누를 수 있어요 → 누른 사람이 담당, 필요한 인원이 다 차면 닫히고 요청한 사람에게 알림',
         '테이블 대화에 카톡처럼 써도 돼요: <code>3-4 입장완 기셋부탁드립니다</code> · <code>2s2 아웃클</code> · <code>3디2 버켓얼음 부탁드립니다</code> · <code>2-4 물4 얼름</code> · <code>기존 3-11 클 부탁</code> · <code>3냉가동 부탁</code>',
         '운영 탭에서 보낸 요청도 <b>💬 테이블 대화</b>에 한 줄로 올라가고(✍️운영탭) 담당이 정해지면 그 줄에 표시돼요 · 자리표에서 비우기·옮기기를 해도 운영팀에게 아웃 청소·자리 이동 요청이 가요',
-        '운영팀은 대화에서 두 번 누르기로도 맡을 수 있어요 · 운영팀끼리 쓰는 <code>완료</code> 보고는 알림이 안 가요'
+        '대화에서 그 메시지를 두 번 눌러도 맡아져요 · 운영팀끼리 쓰는 <code>완료</code> 보고는 알림이 안 가요'
       ]) +
       sec('🍾 킵', [
         '맡기기·꺼내기는 담당이 요청 → <b>대표·김동기·양진호</b>가 승인하면 반영',
@@ -3538,7 +3538,7 @@ body.hasfab main { padding-bottom: 110px; }
     var n = state.s && state.s.team === '운영팀' ? r.list.filter(function (x) { return x.status === '대기' && !x.me; }).length : 0;
     if (state.data.opsOpen !== n) { state.data.opsOpen = n; renderTabsOnly(); }
   }
-  function opsCrewMe() { return !!(state.s && (state.s.team === '운영팀' || state.s.admin)); }
+  function opsCrewMe() { return !!state.s; }   // ✅ 내가 할게요는 누구나 (알림만 운영팀, 대표 결정 2026-11-19)
   function opsWhere(x) { return x.floor ? (x.floor === 'SPOT' ? '3층' : '2층') + (x.seat ? ' ' + x.seat : ' 전체') : (x.seat || ''); }
   function loadOps(quiet) {
     if (!state.s || state.opsFly) return;
@@ -3563,7 +3563,7 @@ body.hasfab main { padding-bottom: 110px; }
   function renderOps(area) {
     if (!state.ops) { area.innerHTML = state.opsErr ? '<p class="empty">' + esc(state.opsErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.opsFly && !state.opsErr) loadOps(); return; }
     var O = state.ops, crew = O.crew, open = O.list.filter(function (x) { return x.status === '대기'; }), fixed = O.list.filter(function (x) { return x.status === '확정'; }), gone = O.list.filter(function (x) { return x.status === '취소'; });
-    var h = '<div class="tbh"><div><h1>🛎 운영 요청</h1><p class="sub">' + (crew ? '운영팀에게만 알림이 가요 · ✅ 내가 할게요를 누르면 담당 · 인원이 다 차면 닫혀요' : '배달·기본 세팅·청소·자리 이동·퍼레이드 지원을 운영팀에게 요청해요') + '</p></div>' +
+    var h = '<div class="tbh"><div><h1>🛎 운영 요청</h1><p class="sub">' + '알림은 운영팀에게만 가요 · 누구나 ✅ 내가 할게요를 누르면 담당 · 인원이 다 차면 닫혀요' + '</p></div>' +
       '<button class="btn btn-hot" type="button" id="opNew" style="width:auto;flex:none;padding:0 16px">+ 요청</button></div>';
     h += '<p class="msg ok" id="opBox"' + (state.opsMsg ? '' : ' hidden') + '>' + esc(state.opsMsg || '') + '</p>'; state.opsMsg = '';
     var card = function (x) {
@@ -3571,11 +3571,11 @@ body.hasfab main { padding-bottom: 110px; }
       return '<div class="opc st-' + esc(x.status) + '" data-opid="' + esc(x.id) + '"><div class="oph"><span class="chip">' + esc(x.kind) + '</span><b>' + esc(opsWhere(x) || '자리 없음') + '</b><time>' + esc(x.hm) + '</time></div>' +
         (x.memo ? '<p class="opm">' + esc(x.memo) + '</p>' : '') +
         '<span class="ops2">요청 ' + esc(x.by) + nickH(x.by) + ' · ' + (x.status === '확정' ? '<span class="ok">✅ 담당 ' + who + '</span>' : x.status === '취소' ? '취소됨' : '담당 대기' + (x.took.length ? ' · ' + who : '')) + (x.need > 1 ? ' (' + x.took.length + '/' + x.need + '명)' : '') + '</span>' +
-        '<div class="opb">' + (crew && x.status === '대기' && !x.me ? '<button class="btn btn-ok" type="button" data-optake="1">✅ 내가 할게요</button>' : '') +
+        '<div class="opb">' + (crew && x.status === '대기' && !x.me && !x.mine ? '<button class="btn btn-ok" type="button" data-optake="1">✅ 내가 할게요</button>' : '') +
         (crew && x.me && x.status !== '취소' ? '<button class="btn" type="button" data-opun="1">담당 빼기</button>' : '') +
         ((x.mine || (state.s && state.s.admin)) && x.status !== '취소' ? '<button class="link" type="button" data-opcx="1">요청 취소</button>' : '') + '</div></div>';
     };
-    h += '<h2 class="sec tbz">⏳ 담당 대기 ' + open.length + '</h2>' + (open.length ? '<div class="opq">' + open.map(card).join('') + '</div>' : '<p class="empty">' + (crew ? '기다리는 요청이 없어요.' : '보낸 요청이 다 처리됐어요.') + '</p>');
+    h += '<h2 class="sec tbz">⏳ 담당 대기 ' + open.length + '</h2>' + (open.length ? '<div class="opq">' + open.map(card).join('') + '</div>' : '<p class="empty">기다리는 요청이 없어요.</p>');
     if (fixed.length) h += '<h2 class="sec tbz">✅ 담당 정해짐 ' + fixed.length + '</h2><div class="opq">' + fixed.map(card).join('') + '</div>';
     if (gone.length) h += '<details class="all"><summary>취소 ' + gone.length + '건</summary><div class="opq">' + gone.map(card).join('') + '</div></details>';
     area.innerHTML = h;
@@ -3589,7 +3589,7 @@ body.hasfab main { padding-bottom: 110px; }
   function opsForm() {
     var O = state.ops || { kinds: ['🧊 배달', '🍽 기본 세팅', '🧹 아웃 청소', '🔀 자리 이동', '🎆 퍼레이드 지원', '🌡 온도', '📝 기타'], items: {} };
     var kind = '', items = [], fl = state.tbFloor || tbFloorPref(), n = 1;
-    var h = '<h2>🛎 운영 요청</h2><p class="sub">운영팀에게만 알림이 가요. 운영팀이 맡으면 알려 드려요.</p>' +
+    var h = '<h2>🛎 운영 요청</h2><p class="sub">알림은 운영팀에게만 가요. 누가 맡으면 알려 드려요.</p>' +
       '<div class="opk">' + O.kinds.map(function (k) { return '<button type="button" class="chip" data-opk="' + esc(k) + '">' + esc(k) + '</button>'; }).join('') + '</div>' +
       '<div class="opi" id="opI" hidden></div>' +
       '<div class="opfl">' + [['SPOT', '3층 SPOT'], ['GROOVE', '2층 GROOVE'], ['', '층 없음']].map(function (x) { return '<button type="button" class="chip' + (x[0] === fl ? ' on' : '') + '" data-opfl="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
@@ -4320,7 +4320,7 @@ body.hasfab main { padding-bottom: 110px; }
       '<p>배정(승인하는 사람) <code>@이정훈 엘4</code> <code>3l5,6 @이성민 @경철</code></p>' +
       '<p>층: 앞의 3 = SPOT, 2 = GROOVE (없으면 보고 있는 층). 자리 글자: ㅅ·스·s = S, ㅣ·엘·l = L, 디·d = D, 디비·db = DB</p>' +
       '<p>섭몬 = 카마 · 섭레 = 레몬드랍 · 섭샴·짭몬은 메모. 흡연·화장실·부킹·N출 같은 말은 그냥 대화예요.</p>' +
-      '<p>🛎 <b>운영팀 부르기</b>: 아웃·이동·<code>기셋</code>·<code>버켓얼음</code>·<code>물4</code>·<code>샴잔</code>·<code>방향제</code>·<code>클</code>(청소)·<code>냉가동</code>을 쓰면 운영팀에게만 알림 → 운영팀이 <b>✅ 내가 할게요</b>(또는 두 번 누르기)</p>',
+      '<p>🛎 <b>운영팀 부르기</b>: 아웃·이동·<code>기셋</code>·<code>버켓얼음</code>·<code>물4</code>·<code>샴잔</code>·<code>방향제</code>·<code>클</code>(청소)·<code>냉가동</code>을 쓰면 운영팀에게만 알림 → 누구나 <b>✅ 내가 할게요</b>(또는 두 번 누르기)로 맡기</p>',
     yc: '<p><b>불꽃놀이방에 쓰던 그대로</b> 쓰면 연출 요청이 올라가요.</p>' +
       '<p>첫 줄 = 자리·순서(<code>바로</code> <code>준비되는대로</code> <code>12:10</code> <code>3-12 다음</code>), 다음 줄 = 영상·홀로·피켓·망치·퍼레·노래, <b>빈 줄 뒤 = 전광판 문구</b></p>' +
       '<pre>3s7 바로 구형딥퍼레 호철이형 컨펌완\n고트영상0 홀로0 생일피켓\n\n다은아 생일축하해\n-서빈 하연-</pre>' +
@@ -4475,7 +4475,7 @@ body.hasfab main { padding-bottom: 110px; }
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '', ro = false;
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ops ? '<em class="cops' + (m.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(m.ops.kind) + ' · ' + (m.ops.status === '확정' ? '✅ 담당 ' + esc(m.ops.took.map(function (k) { return k.who; }).join(', ')) : m.ops.status === '취소' ? '취소됨' : '운영팀 확인 대기' + (m.ops.need > 1 ? ' (' + m.ops.took.length + '/' + m.ops.need + ')' : '')) + '</em>' + (m.ops.status === '대기' && !m.ops.me && opsCrewMe() ? '<button type="button" class="copsb" data-copst="' + esc(m.ops.id) + '">✅ 내가 할게요</button>' : '') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ops ? '<em class="cops' + (m.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(m.ops.kind) + ' · ' + (m.ops.status === '확정' ? '✅ 담당 ' + esc(m.ops.took.map(function (k) { return k.who; }).join(', ')) : m.ops.status === '취소' ? '취소됨' : '운영팀 확인 대기' + (m.ops.need > 1 ? ' (' + m.ops.took.length + '/' + m.ops.need + ')' : '')) + '</em>' + (m.ops.status === '대기' && !m.ops.me && !m.ops.mine && opsCrewMe() ? '<button type="button" class="copsb" data-copst="' + esc(m.ops.id) + '">✅ 내가 할게요</button>' : '') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
     L.innerHTML = h ? (ro ? '' : '<p class="chint">두 번 누르면 ✅ 확인 · 꾹 누르면 ↩️ 답장</p>') + h : '<p class="cempty">아직 대화가 없어요.' + (ro ? '' : ' 첫 메시지를 남겨 보세요.') + '</p>';
     hydrateImgs(L);
