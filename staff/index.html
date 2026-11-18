@@ -3821,7 +3821,7 @@ body.popmode .chath .chpop { display: none; }
     var h = '<h2>🚨 경호 호출</h2><p class="sub">출근 중인 경호팀 전원에게 바로 알림이 가요.</p>' +
       '<div class="sosk">' + SOS_KINDS.map(function (k) { return '<button type="button" class="chip' + (k === kind ? ' on' : '') + '" data-sosk="' + esc(k) + '">' + esc(k) + '</button>'; }).join('') + '</div>' +
       '<div class="sosf">' + [['SPOT', '3층 SPOT'], ['GROOVE', '2층 GROOVE'], ['입구', '입구'], ['', '모름']].map(function (x) { return '<button type="button" class="chip' + (x[0] === fl ? ' on' : '') + '" data-sosf="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      '<label>자리<input id="sosSeat" maxlength="14" autocomplete="off" placeholder="예) 4 · L3 · D1 (모르면 비워 두기)"></label>' +
+      '<label>자리<input id="sosSeat" maxlength="20" autocomplete="off" placeholder="예) 4 · L3 · 흡연실 앞 · 아무 말이나 (모르면 비워 두기)"></label>' +
       '<label>메모<input id="sosMemo" maxlength="100" autocomplete="off" value="' + esc(t.slice(0, 100)) + '" placeholder="예) 남자 둘 시비 · 화장실 앞"></label>' +
       '<p class="msg" id="sosMsg"></p><div id="sosGo"><button class="btn btn-sos" type="button" id="sosSend" style="width:100%;min-height:54px;font-size:18px">🚨 경호팀 부르기</button></div>';
     showSheet(h);
@@ -3831,8 +3831,8 @@ body.popmode .chath .chpop { display: none; }
     call({ a: 'sos_get', token: state.s.token }).then(function (r) { if (r.ok) state.sosCrew = r.crew; }).catch(function () {});
     $('sosSend').addEventListener('click', function () {   // 한 번 더 확인 (대표 요청 2026-11-19)
       if (!kind) { $('sosMsg').textContent = '상황을 골라 주세요.'; return; }
-      var seat = $('sosSeat').value.replace(/\s+/g, '').toUpperCase(), memo = $('sosMemo').value.trim();
-      if (seat && (!fl || fl === '입구')) { $('sosMsg').textContent = '자리가 있는 층을 골라 주세요.'; return; }
+      var seat = $('sosSeat').value.trim(), memo = $('sosMemo').value.trim();   // 자리에 아무 말이나 써도 (대표 요청 2026-11-19)
+      if (/^[A-Za-z]{0,2}\d{1,2}(,[A-Za-z]{0,2}\d{1,2})*$/.test(seat.replace(/\s+/g, ''))) seat = seat.replace(/\s+/g, '').toUpperCase();   // 자리 이름이면 L4 처럼
       var where = (fl === 'SPOT' ? '3층' : fl === 'GROOVE' ? '2층' : fl === '입구' ? '입구' : '위치 모름') + (seat ? ' ' + seat : '');
       $('sosGo').innerHTML = '<div class="sosq"><p>🚨 경호팀을 부를까요?</p><span class="sub">' + esc(where + ' · ' + kind) + ' — ' + (state.sosCrew ? '출근 중인 경호원 ' + state.sosCrew + '명' : '경호팀 전원') + '에게 바로 알림이 가요.</span></div>' +
         '<div class="tbbtns"><button class="btn btn-sos" type="button" id="sosYes">🚨 네, 부르기</button><button class="btn" type="button" id="sosNo">아니요</button></div>';
@@ -4009,7 +4009,7 @@ body.popmode .chath .chpop { display: none; }
       '<div class="opk">' + O.kinds.map(function (k) { return '<button type="button" class="chip" data-opk="' + esc(k) + '">' + esc(k) + '</button>'; }).join('') + '</div>' +
       '<div class="opi" id="opI" hidden></div>' +
       '<div class="opfl">' + [['SPOT', '3층 SPOT'], ['GROOVE', '2층 GROOVE'], ['', '층 없음']].map(function (x) { return '<button type="button" class="chip' + (x[0] === fl ? ' on' : '') + '" data-opfl="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      '<label>자리<input id="opSeat" maxlength="14" autocomplete="off" placeholder="예) 4 · L3 · D1 · S5 (비우면 층 전체)"></label>' +
+      '<label>자리<input id="opSeat" maxlength="20" autocomplete="off" placeholder="예) 4 · L3 · D1 · 바 옆 (비우면 층 전체)"></label>' +
       '<div class="opn"><span>인원</span><button type="button" class="chip" data-opn="-1" aria-label="인원 빼기">−</button><b id="opN">1</b>명<button type="button" class="chip" data-opn="1" aria-label="인원 더하기">＋</button><span class="sub" style="margin:0">운영팀이 이만큼 맡으면 닫혀요</span></div>' +
       '<label>메모<input id="opMemo" maxlength="100" autocomplete="off" placeholder="예) 버켓 2개 · 3-10 생일 퍼레이드"></label>' +
       '<p class="msg" id="opMsg"></p><button class="btn btn-hot" type="button" id="opSave">운영팀에게 보내기</button>';
@@ -4026,7 +4026,7 @@ body.popmode .chath .chpop { display: none; }
     sh.querySelectorAll('[data-opfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.opfl; sh.querySelectorAll('[data-opfl]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
     sh.querySelectorAll('[data-opn]').forEach(function (b) { b.addEventListener('click', function () { n = Math.max(1, Math.min(10, n + +b.dataset.opn)); $('opN').textContent = n; }); });
     $('opSave').addEventListener('click', function () {
-      var m = $('opMsg'), seat = $('opSeat').value.replace(/\s+/g, '').toUpperCase();
+      var m = $('opMsg'), seat = $('opSeat').value.trim();
       if (!kind) { m.textContent = '종류를 골라 주세요.'; return; }
       if (seat && !fl) { m.textContent = '자리가 있는 층을 골라 주세요.'; return; }
       opsCall({ a: 'ops_add', kind: kind, items: items, floor: fl, seat: seat, n: n, memo: $('opMemo').value.trim() }, this, function (r) {
