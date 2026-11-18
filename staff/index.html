@@ -516,6 +516,26 @@ body.hasfab main { padding-bottom: 110px; }
 .chatl .cm .csave { position: absolute; right: 5px; bottom: 5px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 15px; cursor: pointer; }
 .chatl .cm .cphv { display: grid; gap: 2px; justify-items: end; }
 .chatl .cm .csavev { font-size: 13px; padding: 4px 2px; }
+/* 🎬 실시간 영상 (대표 요청 2026-11-19) */
+.lvf { background: var(--card); border: 1px solid var(--g); border-radius: 14px; padding: 12px; margin: 0 0 12px; }
+.lvf textarea { display: block; width: 100%; min-height: 64px; box-sizing: border-box; font: inherit; font-size: 15px; color: var(--txt); background: var(--bg); border: 1px solid var(--line-2); border-radius: 12px; padding: 10px 12px; resize: vertical; margin: 0 0 10px; }
+.lvf .lvfb { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lvf .lvfb .btn { width: auto; flex: none; min-height: 42px; padding: 0 16px; }
+.lvq { display: flex; flex-direction: column; gap: 10px; }
+.lvc { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.lvc.new { border-color: var(--g); }
+.lvc .lvh { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.lvc .lvh b { font-size: 15px; }
+.lvc .lvh time { margin-left: auto; color: var(--muted); font-size: 12px; }
+.lvc .lvh .org { font-size: 12px; color: var(--g); font-weight: 800; }
+.lvc .lvt { margin: 0; white-space: pre-wrap; word-break: break-word; }
+.lvc .cph { display: flex; flex-wrap: wrap; gap: 6px; }
+.lvc .cph img { width: 140px; height: 140px; object-fit: cover; border-radius: 12px; background: #000; cursor: zoom-in; }
+.lvc .cph video { width: 100%; max-height: 70vh; border-radius: 12px; background: #000; }
+.lvc .cph .cvid { width: auto; min-height: 44px; padding: 0 16px; }
+.lvc .cphi { position: relative; display: inline-block; }
+.lvc .csave { position: absolute; right: 5px; bottom: 5px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 15px; cursor: pointer; }
+.lvc .cphv { display: grid; gap: 4px; width: 100%; justify-items: end; }
 .imgview { width: 100%; border-radius: 12px; display: block; }
 .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.72); display: grid; place-items: end center; padding: 16px; }
 .sheet-in { width: 100%; max-width: 520px; background: var(--card); border: 1px solid var(--line-2); border-radius: 18px; padding: 20px; margin-bottom: env(safe-area-inset-bottom); max-height: 90vh; overflow: auto; }
@@ -1029,6 +1049,7 @@ body.popmode .chath .chpop { display: none; }
       <button type="button" role="tab" data-tab="table" aria-selected="false" hidden>🪑 테이블</button>
       <button type="button" role="tab" data-tab="yc" aria-selected="false" hidden>🎆 연출</button>
       <button type="button" role="tab" data-tab="ops" aria-selected="false" hidden>🛎 운영</button>
+      <button type="button" role="tab" data-tab="live" aria-selected="false">🎬 실시간</button>
       <button type="button" role="tab" data-tab="lost" aria-selected="false" hidden>🔎 분실물</button>
       <button type="button" role="tab" data-tab="board" aria-selected="false">게시판</button>
       <button type="button" role="tab" data-tab="dm" aria-selected="false">메시지</button>
@@ -1290,7 +1311,7 @@ body.popmode .chath .chpop { display: none; }
     if (/^chat:(table|yc)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
     var pm = /^pop:(table|yc|guest)$/.exec(h); if (pm) { state.pop = pm[1]; h = pm[1]; document.body.classList.add('popmode'); try { document.title = CHAT_NAME[pm[1]]; } catch (e) {} }
     if (h === 'sos') setTimeout(function () { loadSos(); }, 600);
-    if (['ops', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
+    if (['ops', 'live', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
     else {   // 다시 불러오면 마지막에 보던 탭·대화창 그대로 (대표 요청 2026-11-19)
       var lt = tabLast(); if (lt) { state.tab = lt.t; state.tabPick = lt.t; if (lt.c && lt.c === lt.t && !state.chatOpenNext) state.chatOpenNext = lt.c; }
     }
@@ -1305,6 +1326,7 @@ body.popmode .chath .chpop { display: none; }
     if (state.tab === 'keep') loadKeep();
     if (state.tab === 'all') loadAll();
     if (state.tab === 'ops') loadOps();
+    if (state.tab === 'live') loadLive();
     if (state.chatOpenNext) { var co = state.chatOpenNext; state.chatOpenNext = ''; setTimeout(function () { chatOpen(co); }, 400); }
     else setTimeout(function () { if (state.s && state.tab !== 'keep' && !(state.data && state.data.guard) && (!state.keep || state.kstale)) loadKeep(); }, 1500);   // 킵 탭을 누르기 전에 미리 받아 둔다
   }
@@ -1379,6 +1401,7 @@ body.popmode .chath .chpop { display: none; }
       if (state.tab === 'gate') loadGate();
       if (state.tab === 'all') loadAll();
       if (state.tab === 'ops') loadOps();
+      if (state.tab === 'live') loadLive();
   }
   document.querySelectorAll('#tabs button').forEach(function (b) { b.addEventListener('click', function () { goTab(b.dataset.tab); }); });
 
@@ -1400,6 +1423,7 @@ body.popmode .chath .chpop { display: none; }
       lost: ['🔎 분실물', 0],
       all: ['📡 전체', 0],
       ops: ['🛎 운영', d.opsOpen || 0],
+      live: ['🎬 실시간', lvUnseen(d)],
       me: ['👤 내 프로필', 0],
       work: ['🕘 근무표', 0],
       gate: ['🚪 입구', (state.gate && state.gate.calls || []).filter(function (c) { return c.status === '호출'; }).length]
@@ -1420,7 +1444,7 @@ body.popmode .chath .chpop { display: none; }
     if (state.tab === 'ops' && d.guard) state.tab = 'gate';
     var gateOn = !!(d.guard || d.gate);   // 🚪 입구: 경호팀 · 대표
     if (state.tab === 'gate' && !gateOn) state.tab = 'guest';
-    if (d.guard && ['gate', 'me'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
+    if (d.guard && ['gate', 'me', 'live'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
     state.tabPick = state.tab !== want ? want : ''; tabSave();
     tabArrange(d.tabOrder || []);   // ↕ 내 탭 순서
     document.querySelectorAll('#tabs button').forEach(function (b) {
@@ -1437,7 +1461,7 @@ body.popmode .chath .chpop { display: none; }
       if (b.dataset.tab === 'all') b.hidden = !d.admin;   // 📡 전체: 대표만
       if (b.dataset.tab === 'ops') b.hidden = false;   // 🛎 운영 요청: 누구나 (운영팀은 받기)
       if (b.dataset.tab === 'gate') b.hidden = !gateOn;
-      if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table));
+      if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || b.dataset.tab === 'live' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table));
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = '<span class="tl">' + esc(l[0]) + '</span>' + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
@@ -1504,6 +1528,7 @@ body.popmode .chath .chpop { display: none; }
     if (state.tab === 'gate') return renderGate(area, d);
     if (state.tab === 'all') return renderAll(area);
     if (state.tab === 'ops') return renderOps(area);
+    if (state.tab === 'live') return renderLive(area);
     var list = state.tab === 'edu' ? edu : notes, guide = state.tab === 'edu' ? pushGuideHtml() + eduGuideHtml() : '';
     if (!list.length) { area.innerHTML = guide + '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; bindPushGuide(); return; }
     area.innerHTML = guide + '<div class="list">' + list.map(function (n) {
@@ -3676,7 +3701,7 @@ body.popmode .chath .chpop { display: none; }
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
     if (t === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출: 탭이 아니라 위쪽 빨간 줄
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
-    if (t && state.data) { state.tab = t; state.tabPick = ''; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); if (t === 'ops') loadOps(); }
+    if (t && state.data) { state.tab = t; state.tabPick = ''; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); if (t === 'ops') loadOps(); if (t === 'live') loadLive(); }
   });
 
   // ── 🚨 경호 호출 (2026-11-19): 빨간 버튼 → 상황·위치 → 한 번 더 확인 → 출근 중 경호팀 전원. 경호원 🏃 출동 → ✅ 해결. 대화에 싸움·경호·상황 → 부를까요? ──
@@ -3787,6 +3812,100 @@ body.popmode .chath .chpop { display: none; }
   function opsCall(body, btn, done) {
     if (btn) btn.disabled = true; body.token = state.s.token;
     return call(body).then(function (r) { if (btn) btn.disabled = false; if (r.error === 'auth') return toLogin(AUTH_OUT); if (r.ok) { state.ops = r; opsBadge(r); flushPush(); } if (done) done(r); }).catch(function () { if (btn) btn.disabled = false; if (done) done({ error: 'net' }); });
+  }
+  // ── 🎬 실시간 영상 (대표 요청 2026-11-19): 누구나 영상·사진·글 → 출근한 직원 모두에게 알림 ──
+  function lvSeen(at) { var me = state.s && state.s.name, k = 'gs_lv_seen_' + me; if (at === undefined) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } } try { if (at > (localStorage.getItem(k) || '')) localStorage.setItem(k, at); } catch (e) {} }
+  function lvUnseen(d) { var seen = lvSeen(); return (d.lv || []).filter(function (x) { return !x[1] && x[0] > seen; }).length; }
+  function lvErr(r) { return { empty: '글이나 사진·영상을 넣어 주세요.', video: '영상을 다시 올려 주세요.', text: '< > 는 쓸 수 없어요.', busy: '잠시 후 다시 해 주세요.', photos: '사진은 3장까지예요.', photo: '사진을 다시 골라 주세요.', forbidden: '올린 사람·대표만 지울 수 있어요.', notfound: '이미 지워졌어요.' }[r.error] || '다시 해 주세요.'; }
+  function loadLive(quiet) {
+    if (!state.s || state.lvFly) return;
+    state.lvFly = 1;
+    if (!state.lvTimer) state.lvTimer = setInterval(function () { if (state.tab === 'live' && !document.hidden && state.s) loadLive(true); }, 10000);
+    return call({ a: 'lv_get', token: state.s.token }).then(function (r) {
+      state.lvFly = 0;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) { if (!state.lv) { state.lvErr = r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'live') render(); } return; }
+      var same = state.lv && JSON.stringify(state.lv.list) === JSON.stringify(r.list); state.lv = r; state.lvErr = '';
+      if (state.data) state.data.lv = r.list.slice(0, 30).map(function (x) { return [x.at, x.mine ? 1 : 0]; });
+      if (state.tab === 'live' && (!same || !quiet)) render(); else renderTabsOnly();
+    }).catch(function () { state.lvFly = 0; if (!state.lv) { state.lvErr = '연결이 안 돼요.'; if (state.tab === 'live') render(); } });
+  }
+  function lvMd() { return state.lvMd || (state.lvMd = { photos: [], vids: [] }); }
+  function lvPaint() {
+    var box = $('lvPh'); if (!box) return; var md = lvMd(); box.hidden = !md.photos.length && !md.vids.length;
+    box.innerHTML = md.photos.map(function (p, i) { return '<span class="ph"><img src="' + p.url + '" alt=""><button type="button" data-lprm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
+      md.vids.map(function (v, i) { return '<span class="ph vph' + (v.err ? ' bad' : '') + '"><span class="vbox">🎬<b>' + vidBadge(v) + '</b></span><button type="button" data-lvrm="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('');
+    box.querySelectorAll('[data-lprm]').forEach(function (b) { b.addEventListener('click', function () { md.photos.splice(+b.dataset.lprm, 1); lvPaint(); }); });
+    box.querySelectorAll('[data-lvrm]').forEach(function (b) { b.addEventListener('click', function () { var v = md.vids.splice(+b.dataset.lvrm, 1)[0]; if (v) v.gone = true; lvPaint(); }); });
+  }
+  function lvPick(all) {
+    var md = lvMd(), say = function (t) { var m = $('lvMsg'); if (m) m.textContent = t; };
+    var ims = all.filter(function (f) { return !ycIsVideo(f); });
+    if (ims.length > 3 - md.photos.length) say('사진은 3장까지예요.');
+    ims = ims.slice(0, Math.max(0, 3 - md.photos.length));
+    all.filter(ycIsVideo).forEach(function (f) {
+      if (md.vids.length >= 2) return say('영상은 2개까지예요.');
+      if (vidTooBig(f)) return say(vidSizeMsg(f));
+      var v = { file: f, size: f.size, prog: 0, vid: '', done: false, err: '' }; md.vids.push(v); vidPrep(v, lvPaint);
+      if (v.squeeze) say('큰 영상은 줄여서 올려요. 영상 길이만큼 걸리니 이 화면을 켜 두세요.');
+    });
+    lvPaint();
+    if (ims.length) Promise.all(ims.map(shrink)).then(function (xs) { if (state.lvMd !== md) return; md.photos = md.photos.concat(xs).slice(0, 3); lvPaint(); }).catch(function () { say('사진을 못 읽었어요.'); });
+  }
+  function renderLive(area) {
+    var L = state.lv;
+    if (!L) { area.innerHTML = state.lvErr ? '<p class="empty">' + esc(state.lvErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.lvFly && !state.lvErr) loadLive(); return; }
+    var seen = lvSeen(), admin = !!(state.s && state.s.admin);
+    var h = '<div class="tbh"><div><h1>🎬 실시간 영상</h1><p class="sub">누구나 올려요 · 올리면 출근한 직원 모두에게 알림' + (L.on ? ' (지금 ' + L.on + '명 출근)' : '') + '</p></div>' +
+      (state.lvForm ? '' : '<button class="btn btn-hot" type="button" id="lvNew" style="width:auto;flex:none;padding:0 16px">+ 올리기</button>') + '</div>';
+    h += '<p class="msg ok" id="lvBox"' + (state.lvMsg ? '' : ' hidden') + '>' + esc(state.lvMsg || '') + '</p>'; state.lvMsg = '';
+    if (state.lvForm) h += '<div class="lvf"><textarea id="lvT" rows="2" maxlength="300" placeholder="지금 상황 · 예) 3층 피크 🔥 · 2층 입구 줄">' + esc(state.lvText || '') + '</textarea>' +
+      '<div class="ephotos" id="lvPh" hidden></div><p class="msg" id="lvMsg"></p>' +
+      '<div class="lvfb"><label class="btn">📷 사진·영상<input type="file" id="lvFile" accept="image/*,video/*" multiple hidden></label><button class="btn btn-hot" type="button" id="lvSave">올리기</button><button class="link" type="button" id="lvX">취소</button></div></div>';
+    h += L.list.length ? '<div class="lvq">' + L.list.map(function (m) {
+      return '<div class="lvc' + (!m.mine && m.at > seen ? ' new' : '') + '" data-lvid="' + esc(m.id) + '"><div class="lvh"><b>' + esc(m.who) + nickH(m.who) + '</b>' + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') +
+        '<time>' + (m.day !== L.today ? esc(tbDayLabel(m.day)) + ' ' : '') + esc(m.hm) + '</time>' + (m.mine || admin ? '<button class="link" type="button" data-lvdel="1">지우기</button>' : '') + '</div>' +
+        (m.text ? '<p class="lvt">' + esc(m.text) + '</p>' : '') + chatMedia(m) + '</div>';
+    }).join('') + '</div>' : '<p class="empty">아직 올라온 영상이 없어요. 첫 영상을 올려 보세요.</p>';
+    area.innerHTML = h;
+    if (L.list.length) lvSeen(L.list[0].at); renderTabsOnly();
+    hydrateImgs(area);
+    area.querySelectorAll('.lvc .cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });
+    area.querySelectorAll('.lvc [data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
+    area.querySelectorAll('.lvc [data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
+    area.querySelectorAll('.lvc [data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { if (state.tab === 'live') render(); }); }); });
+    area.querySelectorAll('.lvc [data-lvdel]').forEach(function (b) { b.addEventListener('click', function () {
+      if (!armed(b, '지우기')) return; var id = b.closest('[data-lvid]').dataset.lvid; b.disabled = true;
+      call({ a: 'lv_del', token: state.s.token, id: id }).then(function (r) { if (r.ok) { state.lv = r; state.lvMsg = '지웠어요.'; } else { b.disabled = false; state.lvMsg = lvErr(r); } render(); }).catch(function () { b.disabled = false; });
+    }); });
+    if ($('lvNew')) $('lvNew').addEventListener('click', function () { state.lvForm = true; render(); var t = $('lvT'); if (t) t.focus(); });
+    if (!state.lvForm) return;
+    lvPaint();
+    $('lvT').addEventListener('input', function () { state.lvText = this.value; });
+    $('lvFile').addEventListener('change', function () { var fs = Array.prototype.slice.call(this.files || []); this.value = ''; if (fs.length) lvPick(fs); });
+    $('lvX').addEventListener('click', function () { var md = lvMd(); md.vids.forEach(function (v) { v.gone = true; }); state.lvMd = null; state.lvText = ''; state.lvForm = false; render(); });
+    $('lvSave').addEventListener('click', function () {
+      var b = this, md = lvMd(), t = $('lvT').value.trim(), m = $('lvMsg');
+      if (!t && !md.photos.length && !md.vids.length) { m.textContent = '글이나 사진·영상을 넣어 주세요.'; return; }
+      if (md.vids.some(function (v) { return v.err; })) { m.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
+      if (md.vids.some(function (v) { return !v.done; })) {   // 영상이 다 올라가면 바로 올림
+        b.disabled = true; b.textContent = '영상 올리는 중…';
+        var w = setInterval(function () {
+          if (state.lvMd !== md) { clearInterval(w); return; }
+          if (md.vids.some(function (v) { return v.err; })) { clearInterval(w); b.disabled = false; b.textContent = '올리기'; }
+          else if (md.vids.every(function (v) { return v.done; })) { clearInterval(w); b.disabled = false; b.textContent = '올리기'; var b2 = $('lvSave'); if (b2) b2.click(); }
+        }, 500);
+        return;
+      }
+      var body = { a: 'lv_add', token: state.s.token, text: t };
+      if (md.photos.length) body.photos = md.photos.map(function (p) { return { type: p.type, data: p.data }; });
+      if (md.vids.length) body.videos = md.vids.map(function (v) { return v.vid; });
+      b.disabled = true; m.textContent = '';
+      call(body).then(function (r) {
+        if (!r.ok) { b.disabled = false; m.textContent = lvErr(r); return; }
+        state.lv = r; state.lvMd = null; state.lvText = ''; state.lvForm = false; state.lvMsg = '올렸어요. 출근한 직원 모두에게 알렸어요.'; flushPush(); render();
+      }).catch(function () { b.disabled = false; m.textContent = '연결이 안 돼요.'; });
+    });
   }
   function renderOps(area) {
     if (!state.ops) { area.innerHTML = state.opsErr ? '<p class="empty">' + esc(state.opsErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.opsFly && !state.opsErr) loadOps(); return; }
