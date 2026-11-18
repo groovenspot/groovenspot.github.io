@@ -387,6 +387,26 @@ details.all .list { margin-top: 8px; }
 .conv.grp .cn strong { font-size: 16px; }
 .dbtns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .dbtns .dedit { min-height: 38px; padding: 0 14px; font-size: 13px; }
+mark.hl { background: rgba(255,214,10,.38); color: inherit; border-radius: 3px; padding: 0 1px; }
+mark.hl.cur { background: #ffd60a; color: #120800; box-shadow: 0 0 0 2px rgba(255,214,10,.5); }
+.dsearch { margin: 0 0 12px; }
+.dsearch input { min-height: 44px; padding: 10px 14px; }
+.dres h3 { margin: 14px 0 8px; font-size: 13px; color: var(--muted); font-weight: 700; }
+.dres .conv .cl mark.hl { color: var(--txt); }
+.cfind { display: flex; align-items: center; gap: 6px; }
+.cfind input { flex: 1; min-width: 0; min-height: 40px; padding: 8px 12px; }
+.cfind .cfn { flex: none; min-width: 42px; text-align: center; font-size: 12px; color: var(--muted); }
+.cfind button { flex: none; min-width: 36px; min-height: 40px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--card-2); color: var(--txt); font: inherit; font-size: 13px; cursor: pointer; padding: 0 8px; }
+.cfind button:disabled { opacity: .4; }
+.dmfind { position: sticky; top: calc(112px + env(safe-area-inset-top)); z-index: 3; background: var(--bg); padding: 0 0 8px; }
+.dmfind .note { margin: 6px 0 0; }
+.chatfind { padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.chatfind .cfres { max-height: 42vh; overflow-y: auto; margin-top: 8px; display: grid; gap: 6px; }
+.chatfind .cfhit { display: block; width: 100%; text-align: left; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; color: var(--txt); font: inherit; font-size: 13px; cursor: pointer; }
+.chatfind .cfhit small { display: block; color: var(--muted); font-size: 11px; margin-bottom: 2px; }
+.chatfind .cfhit.old { cursor: default; }
+.chatfind .cfmsg { font-size: 12px; color: var(--muted); margin: 6px 2px 0; }
+.bub.found .bt, .chatl .cm.found p { box-shadow: 0 0 0 2px #ffd60a; }
 .dbtns .dedit.on { border-color: rgba(255,59,92,.6); color: #ff8199; }
 .convw { display: flex; gap: 8px; align-items: stretch; }
 .convw .conv { flex: 1; min-width: 0; cursor: default; }
@@ -1181,8 +1201,9 @@ body.popmode .chath .chpop { display: none; }
 <button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
 <button type="button" class="sosfab" id="sosFab" hidden aria-label="경호 호출">🚨</button>
 <section class="chatbox" id="chatBox" hidden aria-label="대화">
-  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chpop" id="chatPop" hidden title="따로 띄우기 (항상 위에)" aria-label="대화창 따로 띄우기">🗗</button><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
+  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chpop" id="chatPop" hidden title="따로 띄우기 (항상 위에)" aria-label="대화창 따로 띄우기">🗗</button><button type="button" class="link" id="chatS" aria-label="대화 검색" aria-expanded="false">🔍</button><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
   <div class="chathelp" id="chatHelp" hidden></div>
+  <div class="chatfind" id="chatFind" hidden><div class="cfind"><input id="cfQ" type="search" placeholder="이 대화에서 찾기 (글·이름)" autocomplete="off" enterkeyhint="search"><span class="cfn" id="cfN"></span><button type="button" id="cfUp" aria-label="이전(위)">▲</button><button type="button" id="cfDn" aria-label="다음(아래)">▼</button><button type="button" id="cfX" aria-label="검색 닫기">✕</button></div><div class="cfmsg" id="cfMsg"></div><div class="cfres" id="cfRes" hidden></div></div>
   <div class="chatpin" id="chatPin" hidden aria-live="polite"></div>
   <div class="chatl" id="chatL"></div>
   <button type="button" class="chatnew" id="chatNew" hidden>⬇ 새 메시지</button>
@@ -2886,7 +2907,8 @@ body.popmode .chath .chpop { display: none; }
       if (!r.ok) return;
       state.dm = r;
       if (state.data) { state.data.dm = { unread: r.unread }; }
-      if (state.tab === 'dm' && state.dmView !== 'chat') renderSoon(); else if (state.data) renderTabsOnly();
+      var typing = document.activeElement && document.activeElement.id === 'dmQ';
+      if (state.tab === 'dm' && state.dmView !== 'chat') { if (!typing && !(state.dmQ || '').trim()) renderSoon(); } else if (state.data) renderTabsOnly();
     }).catch(function () {});
   }
   function loadChat(silent) {
@@ -2902,8 +2924,47 @@ body.popmode .chath .chpop { display: none; }
     }).catch(function () {});
   }
   function openChat(name) {
-    state.dmView = 'chat'; state.dmWith = name; state.chat = null; state.bubSel = ''; render();
+    state.dmView = 'chat'; state.dmWith = name; state.chat = null; state.bubSel = ''; state.dmFind = null; state.dmJump = null; render();
     loadChat(); startPoll(function () { loadChat(true); }, 6000);
+  }
+  // ── 🔍 대화 검색 (대표 요청 2026-11-19): 글자 칠하기(mark) + 위·아래로 옮겨 다니기 ──
+  function markHits(root, sel, q) {   // root 안 sel 요소의 글자에서 q 를 찾아 <mark class="hl"> 로 감싼다 (대소문자 무시)
+    root.querySelectorAll('mark.hl').forEach(function (m) { var t = document.createTextNode(m.textContent); m.parentNode.replaceChild(t, m); t.parentNode.normalize(); });
+    root.querySelectorAll('.found').forEach(function (e) { e.classList.remove('found'); });
+    q = String(q || '').trim().toLowerCase(); if (!q) return [];
+    var out = [];
+    root.querySelectorAll(sel).forEach(function (el) {
+      var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), nodes = [], n;
+      while ((n = w.nextNode())) if (n.nodeValue && n.nodeValue.toLowerCase().indexOf(q) >= 0 && !(n.parentNode.closest && n.parentNode.closest('button'))) nodes.push(n);
+      nodes.forEach(function (t) {
+        var v = t.nodeValue, lo = v.toLowerCase(), i = 0, j, f = document.createDocumentFragment();
+        while ((j = lo.indexOf(q, i)) >= 0) { if (j > i) f.appendChild(document.createTextNode(v.slice(i, j))); var mk = document.createElement('mark'); mk.className = 'hl'; mk.textContent = v.slice(j, j + q.length); f.appendChild(mk); out.push(mk); i = j + q.length; }
+        if (i < v.length) f.appendChild(document.createTextNode(v.slice(i)));
+        t.parentNode.replaceChild(f, t);
+      });
+    });
+    return out;
+  }
+  function hlText(t, q) {   // 글(검색 결과 줄)에 칠하기: 이스케이프한 뒤 감싼다
+    t = String(t || ''); q = String(q || '').trim(); if (!q) return esc(t);
+    var lo = t.toLowerCase(), ql = q.toLowerCase(), i = 0, j, h = '';
+    while ((j = lo.indexOf(ql, i)) >= 0) { h += esc(t.slice(i, j)) + '<mark class="hl">' + esc(t.slice(j, j + q.length)) + '</mark>'; i = j + q.length; }
+    return h + esc(t.slice(i));
+  }
+  function findGo(marks, F, unit, nEl, upEl, dnEl, dir, scroller) {   // 메시지 단위로 위·아래 (기본 = 가장 최근)
+    var units = []; marks.forEach(function (m) { var u = m.closest(unit); if (u && units.indexOf(u) < 0) units.push(u); });
+    if (!units.length) { F.i = -1; if (nEl) nEl.textContent = F.q ? '0개' : ''; if (upEl) upEl.disabled = dnEl.disabled = true; return null; }
+    if (F.id) { var k = units.map(function (u) { return u.dataset.mid || u.dataset.cmid; }).indexOf(F.id); F.i = k >= 0 ? k : units.length - 1; }
+    if (dir) F.i = Math.max(0, Math.min(units.length - 1, (F.i < 0 ? units.length : F.i) + dir));
+    if (F.i < 0 || F.i >= units.length) F.i = units.length - 1;
+    var u = units[F.i]; F.id = u.dataset.mid || u.dataset.cmid || '';
+    marks.forEach(function (m) { m.classList.toggle('cur', m.closest(unit) === u); });
+    u.classList.add('found');
+    if (nEl) nEl.textContent = (F.i + 1) + '/' + units.length;
+    if (upEl) { upEl.disabled = F.i <= 0; dnEl.disabled = F.i >= units.length - 1; }
+    if (scroller) { var r = u.getBoundingClientRect(), sr = scroller.getBoundingClientRect(); scroller.scrollTop += (r.top - sr.top) - (sr.height - r.height) / 2; }
+    else u.scrollIntoView({ block: 'center' });
+    return u;
   }
   function dmHideErr(r) { return { sys: '📩 손님 문의 방은 업무 방이라 지울 수 없어요.', busy: '잠깐 사이에 너무 많이 지웠어요. 잠시 후 다시 해 주세요.', notfound: '이미 없어진 대화예요. 목록을 새로 불러올게요.' }[r.error] || '지우지 못했어요. 다시 해 주세요.'; }
   function renderDm(area, d) {
@@ -2915,6 +2976,7 @@ body.popmode .chath .chpop { display: none; }
       '<div class="dbtns"><button class="btn btn-hot" id="dNew" type="button">＋ 새 대화</button><button class="btn" id="gNew" type="button">👥 그룹 만들기</button>' +
       (m && m.convs.length ? '<button class="btn dedit' + (state.dmEdit ? ' on' : '') + '" id="dEdit" type="button">' + (state.dmEdit ? '✓ 삭제 끝' : '🗑 대화 삭제') + '</button>' : '') + '</div></div>';
     if (state.dmEdit) h += '<p class="note" id="dEditNote">🗑 지울 대화의 삭제 버튼을 두 번 누르세요. 1:1 대화는 <b>나와 상대방 화면 모두</b>에서 지워져요. 👥 그룹은 만든 사람·대표가 지우면 모두에게서, 멤버가 지우면 내 화면에서만 지워져요. 새 메시지가 오면 그 뒤부터 다시 보여요.</p><p class="msg" id="dEditMsg" role="alert"></p>';
+    if (m.convs.length && !state.dmEdit) h += '<div class="dsearch"><input id="dmQ" type="search" placeholder="🔍 이름·메시지 검색" autocomplete="off" enterkeyhint="search" aria-label="메시지 검색" value="' + esc(state.dmQ || '') + '"></div>';
     if (state.grPick) {   // 👥 그룹 만들기 (2026-11-18): 2명 이상 골라서
       var sel = state.grSel = state.grSel || {}, nSel = Object.keys(sel).length;
       h += '<div class="pick gpick"><input id="gTitle" maxlength="20" autocomplete="off" placeholder="그룹 이름 (예: 토요일 준비)" value="' + esc(state.grTitle || '') + '"><input id="gFind" placeholder="이름·닉네임·초성 찾기" autocomplete="off"><div class="plist">' + m.people.map(function (p) {
@@ -2926,8 +2988,10 @@ body.popmode .chath .chpop { display: none; }
         return '<button type="button" class="pp" data-to="' + esc(p.name) + '"><strong>' + esc(p.name) + nickH(p.name) + '</strong>' + roleChip(p.role) + teamChip(p.team) + '</button>';
       }).join('') + (m.people.length ? '' : '<p class="empty">다른 직원이 아직 없어요.</p>') + '</div></div>';
     }
+    var qOn = !!(state.dmQ || '').trim() && !state.dmEdit;
+    if (m.convs.length) h += '<div class="dres" id="dmRes"' + (qOn ? '' : ' hidden') + '></div>';
     if (!m.convs.length) h += '<p class="empty">아직 대화가 없어요. ＋ 새 대화로 시작해 보세요.</p>';
-    else h += '<div class="list">' + m.convs.map(function (c) {
+    else h += '<div class="list" id="dmListW"' + (qOn ? ' hidden' : '') + '>' + m.convs.map(function (c) {
       if (state.dmEdit) {   // 🗑 대화 삭제 모드 (2026-11-19): 줄마다 삭제 버튼, 손님 문의 방은 업무 대기열이라 못 지움
         var row = convRow(c), fix = c.group && c.sys;
         return '<div class="convw">' + row.replace('data-with=', 'data-ewith=') + (fix ? '<span class="cfix">업무 방이라<br>못 지워요</span>' : '<button type="button" class="btn btn-bad cdel" data-dhide="' + esc(c.with) + '" data-dlbl="' + (c.group && !c.own ? '나만 삭제' : c.group ? '모두 삭제' : '삭제') + '">' + (c.group && !c.own ? '나만 삭제' : c.group ? '모두 삭제' : '삭제') + '</button>') + '</div>';
@@ -2941,6 +3005,42 @@ body.popmode .chath .chpop { display: none; }
         '<span class="cl">' + (c.mine ? '나: ' : '') + esc(c.last) + '</span>' + (c.unread ? '<span class="n">' + c.unread + '</span>' : '') + '</button>';
     }
     area.innerHTML = h;
+    // 🔍 메시지 검색 (2026-11-19): 대화방 이름은 바로, 메시지 내용은 서버에서 (지운 것 빼고) → 누르면 그 메시지로
+    function dmResPaint() {
+      var box = $('dmRes'), lw = $('dmListW'); if (!box) return;
+      var q = (state.dmQ || '').trim(); box.hidden = !q; if (lw) lw.hidden = !!q;
+      if (!q) { box.innerHTML = ''; return; }
+      var qk = key(q), H = state.dmHits && state.dmHits.q === q ? state.dmHits : null;
+      var cs = (state.dm.convs || []).filter(function (c) { var n = c.group ? c.title : c.with; return key(n).indexOf(qk) >= 0 || (!c.group && staffHit(c.with, qk) >= 0); });
+      var x = cs.length ? '<h3>대화방 ' + cs.length + '</h3><div class="list">' + cs.map(convRow).join('') + '</div>' : '';
+      x += '<h3>메시지' + (H && H.hits ? ' ' + H.hits.length + (H.more ? '+' : '') : '') + '</h3>';
+      if (!H) x += '<p class="load">찾는 중…</p>';
+      else if (H.err) x += '<p class="empty">' + esc(H.err) + '</p>';
+      else if (!H.hits.length) x += '<p class="empty">\'' + esc(q) + '\' 가 들어간 메시지가 없어요.</p>';
+      else x += '<div class="list">' + H.hits.map(function (t) {
+        return '<button type="button" class="conv" data-hit="' + esc(t.id) + '" data-hwith="' + esc(t.with) + '"><span class="cn"><strong>' + (t.group ? '👥 ' : '') + esc(t.title) + (t.group ? '' : nickH(t.title)) + '</strong><span class="at">' + esc(String(t.at).slice(5)) + '</span></span>' +
+          '<span class="cl">' + (t.mine ? '나: ' : t.group ? esc(t.who) + ': ' : '') + hlText(t.text, q) + '</span></button>';
+      }).join('') + (H.more ? '<p class="note">최근 60개만 보여요. 더 자세히 적어 보세요.</p>' : '') + '</div>';
+      box.innerHTML = x;
+      box.querySelectorAll('[data-with]').forEach(function (b) { b.addEventListener('click', function () { openChat(b.dataset.with); }); });
+      box.querySelectorAll('[data-hit]').forEach(function (b) { b.addEventListener('click', function () { var jq = q; openChat(b.dataset.hwith); state.dmJump = { id: b.dataset.hit, q: jq }; }); });
+    }
+    function dmSearch() {
+      var q = (state.dmQ || '').trim(); dmResPaint(); if (!q) return;
+      if (state.dmHits && state.dmHits.q === q && !state.dmHits.err) return;
+      call({ a: 'dm_find', token: state.s.token, q: q }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if ((state.dmQ || '').trim() !== q) return;
+        state.dmHits = r.ok ? { q: q, hits: r.hits, more: r.more } : { q: q, err: r.error === 'busy' ? '잠깐 사이에 너무 많이 찾았어요. 잠시 후 다시 해 주세요.' : '찾지 못했어요. 다시 해 주세요.' };
+        if (state.tab === 'dm' && state.dmView !== 'chat') dmResPaint();
+      }).catch(function () { if ((state.dmQ || '').trim() === q) { state.dmHits = { q: q, err: '연결이 안 돼요. 다시 해 주세요.' }; dmResPaint(); } });
+    }
+    if ($('dmQ')) {
+      var dq = $('dmQ');
+      dq.addEventListener('input', function () { state.dmQ = dq.value; clearTimeout(state.dmQT); if (!dq.value.trim()) return dmResPaint(); var q0 = dq.value.trim(); if (!(state.dmHits && state.dmHits.q === q0)) dmResPaint(); state.dmQT = setTimeout(dmSearch, 350); });
+      dq.addEventListener('keydown', function (e) { if (e.key === 'Escape') { dq.value = ''; state.dmQ = ''; dmResPaint(); } if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); clearTimeout(state.dmQT); dmSearch(); } });
+      if (qOn) dmSearch();
+    }
     if ($('dEdit')) $('dEdit').addEventListener('click', function () { state.dmEdit = !state.dmEdit; state.dmPick = false; state.grPick = false; render(); });
     area.querySelectorAll('[data-dhide]').forEach(function (b) { b.addEventListener('click', function () {
       if (!armed(b, b.dataset.dlbl)) return;
@@ -3006,7 +3106,12 @@ body.popmode .chath .chpop { display: none; }
   }
   function renderChat(area) {
     var c = state.chat, w = state.dmWith, grp = /^@g\//.test(w), gtitle = grp ? (c && c.title) || ((state.dm && state.dm.convs.filter(function (x) { return x.with === w; })[0]) || {}).title || '그룹 대화' : '';
-    var h = '<div class="chead"><button class="btn back" id="dBack" type="button">←</button><strong>' + (grp ? esc(gtitle) + (c && c.members ? '<button type="button" class="org gmem" id="gMem">' + c.members.length + '명 ▾</button>' : '') : esc(w) + nickH(w) + (c && c.org ? '<span class="org">' + esc(c.org) + '</span>' : '')) + '</strong></div>';
+    var hadF = document.activeElement && document.activeElement.id === 'dfQ';
+    if (state.dmJump && c) { state.dmFind = { q: state.dmJump.q, id: state.dmJump.id, i: -1, jump: state.dmJump.id }; state.dmJump = null; }
+    var F = state.dmFind;
+    var h = '<div class="chead"><button class="btn back" id="dBack" type="button">←</button><strong>' + (grp ? esc(gtitle) + (c && c.members ? '<button type="button" class="org gmem" id="gMem">' + c.members.length + '명 ▾</button>' : '') : esc(w) + nickH(w) + (c && c.org ? '<span class="org">' + esc(c.org) + '</span>' : '')) + '</strong>' +
+      '<button class="btn back" id="dFindB" type="button" aria-label="대화 안에서 찾기" aria-expanded="' + (F ? 'true' : 'false') + '" style="margin-left:auto">🔍</button></div>';
+    if (F) h += '<div class="dmfind"><div class="cfind"><input id="dfQ" type="search" placeholder="이 대화에서 찾기" autocomplete="off" enterkeyhint="search" value="' + esc(F.q || '') + '"><span class="cfn" id="dfN"></span><button type="button" id="dfUp" aria-label="이전(위)">▲</button><button type="button" id="dfDn" aria-label="다음(아래)">▼</button><button type="button" id="dfX" aria-label="검색 닫기">✕</button></div><p class="note" id="dfMsg" hidden></p></div>';
     if (grp && c && state.grInfo) {   // 멤버 · 이름 바꾸기 · 넣기 · 나가기
       h += '<div class="ginfo"><p class="note" style="margin:0 0 6px">멤버: ' + c.members.map(function (n) { return esc(n) + nickH(n); }).join(', ') + '</p>';
       if (c.can) {
@@ -3028,7 +3133,7 @@ body.popmode .chath .chpop { display: none; }
         if (m.inq && m.take) tk = '<div class="itk done">✅ <b>' + esc(m.take.by) + nickH(m.take.by) + '</b> 받음 · 담당 ' + esc(m.take.st) + ' · ' + esc(md(m.take.day)) + '(' + dowOf(m.take.day) + ') ' + (m.take.fl === 'SPOT' ? '3층' : '2층') + ' 대기' + (m.take.mine ? ' <button type="button" class="link" data-iun="' + esc(m.id) + '">취소</button>' : '') + '</div>';
         else if (m.inq && c.take && c.take.can) tk = '<div class="itk"><button type="button" class="btn btn-hot" data-itake="' + esc(m.id) + '">🙋 제가 받을게요</button></div>';
         var sel = canDel && state.bubSel === m.id;   // 🗑 메시지 하나 지우기 (2026-11-19): 말풍선을 누르면 삭제 버튼
-        return '<div class="bub' + (m.mine ? ' me' : '') + (m.who === '손님 문의' ? ' inqm' : '') + (sel ? ' sel' : '') + '"' + (canDel ? ' data-bsel="' + esc(m.id) + '"' : '') + '>' + who + '<div class="bt">' + esc(m.text) + '</div>' + tk + '<span class="bat">' + esc(m.at.slice(5)) + (grp ? (m.mine && m.seen ? ' · 읽음 ' + m.seen : '') : (m.mine && m.read ? ' · 읽음' : '')) + '</span>' +
+        return '<div class="bub' + (m.mine ? ' me' : '') + (m.who === '손님 문의' ? ' inqm' : '') + (sel ? ' sel' : '') + '" data-mid="' + esc(m.id) + '"' + (canDel ? ' data-bsel="' + esc(m.id) + '"' : '') + '>' + who + '<div class="bt">' + esc(m.text) + '</div>' + tk + '<span class="bat">' + esc(m.at.slice(5)) + (grp ? (m.mine && m.seen ? ' · 읽음 ' + m.seen : '') : (m.mine && m.read ? ' · 읽음' : '')) + '</span>' +
           (sel ? '<button type="button" class="btn btn-bad bdel" data-bdel="' + esc(m.id) + '" data-dlbl="' + delLbl(m) + '">' + delLbl(m) + '</button>' : '') + '</div>';
       }).join('') : '<p class="empty">첫 메시지를 보내 보세요.</p>') + '</div>';
       if (c.sysNote) h += '<p class="note">📩 인스타·홈페이지 등으로 들어온 손님 문의가 영업팀 팀장 모두에게 동시에 와요. \'🙋 제가 받을게요\'를 누르면 담당이 정해지고 그 날짜 테이블 대기에 바로 올라가요. 손님에게는 연락처로 직접 연락해 주세요.</p>';
@@ -3037,7 +3142,7 @@ body.popmode .chath .chpop { display: none; }
       else h += '<form class="send" id="dForm" novalidate><textarea id="dText" rows="1" maxlength="1000" placeholder="메시지"></textarea><button class="btn btn-hot" id="dBtn" type="submit">보내기</button></form><p class="msg" id="dMsg" role="alert"></p>';
     }
     area.innerHTML = h;
-    $('dBack').addEventListener('click', function () { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; render(); loadDm(); startPoll(loadDm, 20000); });
+    $('dBack').addEventListener('click', function () { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; state.dmFind = null; render(); loadDm(); startPoll(loadDm, 20000); });
     if ($('gMem')) $('gMem').addEventListener('click', function () { state.grInfo = !state.grInfo; render(); });
     area.querySelectorAll('[data-itake]').forEach(function (b) { b.addEventListener('click', function () { var m = c.msgs.filter(function (x) { return x.id === b.dataset.itake; })[0]; if (m) inqTakeSheet(c, m); }); });
     area.querySelectorAll('[data-bsel]').forEach(function (el) { el.addEventListener('click', function (e) {
@@ -3075,6 +3180,24 @@ body.popmode .chath .chpop { display: none; }
     var box = $('chatBox');
     if (state.keepY != null) { window.scrollTo(0, state.keepY); state.keepY = null; }   // 🗑 말풍선 고르기·지우기는 보던 자리 그대로
     else { if (box) box.scrollTop = box.scrollHeight; if (box) window.scrollTo(0, document.body.scrollHeight); }
+    // 🔍 대화 안에서 찾기 (2026-11-19): 칠하고 ▲▼ 로 메시지마다 (처음엔 가장 최근)
+    function dfApply(dir, keepScroll) {
+      var Fx = state.dmFind; if (!Fx || !$('dfQ')) return;
+      var y = window.scrollY, marks = markHits(area, '.bub .bt', Fx.q);
+      var u = findGo(marks, Fx, '.bub', $('dfN'), $('dfUp'), $('dfDn'), dir, null);
+      if (keepScroll && !u) window.scrollTo(0, y);
+      var msg = $('dfMsg');
+      if (Fx.jump && c) { var found = c.msgs.some(function (x) { return x.id === Fx.jump; }); msg.hidden = found; if (!found) msg.textContent = '찾은 메시지가 오래돼서 이 화면(최근 200개)에는 안 보여요. 내용은 메시지 검색 결과에서 볼 수 있어요.'; Fx.jump = ''; }
+    }
+    if (F && c) { dfApply(0); if (hadF && $('dfQ')) { var fq = $('dfQ'); fq.focus(); try { fq.setSelectionRange(fq.value.length, fq.value.length); } catch (e) {} } }
+    $('dFindB').addEventListener('click', function () { state.dmFind = state.dmFind ? null : { q: '', i: -1, id: '' }; state.keepY = window.scrollY; render(); if (state.dmFind && $('dfQ')) $('dfQ').focus(); else markHits(area, '.bub .bt', ''); });
+    if ($('dfQ')) {
+      $('dfQ').addEventListener('input', function () { state.dmFind.q = this.value; state.dmFind.id = ''; state.dmFind.i = -1; $('dfMsg').hidden = true; dfApply(0, true); });
+      $('dfQ').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); dfApply(-1); } if (e.key === 'Escape') $('dfX').click(); });
+      $('dfUp').addEventListener('click', function () { dfApply(-1); });
+      $('dfDn').addEventListener('click', function () { dfApply(1); });
+      $('dfX').addEventListener('click', function () { state.dmFind = null; state.keepY = window.scrollY; render(); });
+    }
     var f = $('dForm'); if (!f) return;
     var ta = $('dText'); ta.value = state.dmDraft[w] || '';
     ta.addEventListener('input', function () { state.dmDraft[w] = ta.value; ta.style.height = 'auto'; ta.style.height = Math.min(140, ta.scrollHeight) + 'px'; });
@@ -5208,7 +5331,7 @@ body.popmode .chath .chpop { display: none; }
     $('chatIn').placeholder = room === 'table' ? '메시지 · 카톡처럼 쓰면 자리 신청' : room === 'guest' ? '메시지 · 카톡처럼 쓰면 게스트 반영' : room === 'yc' ? '메시지 · 카톡처럼 쓰면 연출 요청' : '메시지 · @이름 부르기';
     $('chatHelp').innerHTML = CHAT_HELP[room] || ''; $('chatHelp').hidden = true; $('chatQ').setAttribute('aria-expanded', 'false');
     if (state.chatMediaReset) state.chatMediaReset();
-    chatReplyTo(null); chatMenuClose();
+    chatReplyTo(null); chatMenuClose(); cfClose();
     $('chatBox').hidden = false; $('chatFab').hidden = true; chatLock(true);
     $('chatPop').hidden = !!state.pop || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.matchMedia && matchMedia('(pointer: coarse)').matches);
     state.chatNewN = 0; $('chatNew').hidden = true; tabSave();
@@ -5246,7 +5369,31 @@ body.popmode .chath .chpop { display: none; }
     if (on && !was && !state.pop && window.matchMedia && matchMedia('(max-width: 600px)').matches) { state.lockY = window.scrollY || 0; b.style.top = -state.lockY + 'px'; b.classList.add('chatlock'); }
     else if (!on && was) { b.classList.remove('chatlock'); b.style.top = ''; window.scrollTo(0, state.lockY || 0); }
   }
-  function chatClose() { chatLock(false); chatMenuClose(); $('chatBox').hidden = true; $('chatAt').hidden = true; clearInterval(state.chatTimer); state.chatRoom = ''; tabSave(); paintChatFab(); }
+  // 🔍 탭 대화창 검색 (2026-11-19): 지금 보이는 대화(2일)는 바로 칠하고 ▲▼, 지난 기록은 서버에서
+  function cfClose() { $('chatFind').hidden = true; $('chatS').setAttribute('aria-expanded', 'false'); state.cfF = null; markHits($('chatL'), '[data-cmid] > p', ''); $('cfRes').hidden = true; $('cfRes').innerHTML = ''; $('cfMsg').innerHTML = ''; }
+  function cfApply(dir) {
+    var F = state.cfF; if (!F) return;
+    var L = $('chatL'), marks = markHits(L, '[data-cmid] > p, [data-cmid] > i, [data-cmid] > .creq', F.q);
+    findGo(marks, F, '[data-cmid]', $('cfN'), $('cfUp'), $('cfDn'), dir, L);
+    var msg = $('cfMsg');
+    if (!F.q) { msg.innerHTML = ''; return; }
+    msg.innerHTML = (marks.length ? '' : '최근 2일 대화에는 없어요. ') + '<button type="button" class="link" id="cfOld">🗂 지난 기록까지 찾기</button>';
+    $('cfOld').addEventListener('click', cfOld);
+  }
+  function cfOld() {
+    var F = state.cfF, room = state.chatRoom; if (!F || !F.q || !room) return;
+    var q = F.q, res = $('cfRes'); res.hidden = false; res.innerHTML = '<p class="cfmsg">찾는 중…</p>';
+    call({ a: 'chat_find', token: state.s.token, room: room, q: q }).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!state.cfF || state.cfF.q !== q || state.chatRoom !== room) return;
+      if (!r.ok) { res.innerHTML = '<p class="cfmsg">' + (r.error === 'busy' ? '잠깐 사이에 너무 많이 찾았어요. 잠시 후 다시 해 주세요.' : '찾지 못했어요. 다시 해 주세요.') + '</p>'; return; }
+      res.innerHTML = r.hits.length ? r.hits.map(function (t) {
+        return '<button type="button" class="cfhit' + (t.cur ? '' : ' old') + '"' + (t.cur ? ' data-cfgo="' + esc(t.id) + '"' : '') + '><small>' + esc(String(t.at).slice(5).replace('-', '/')) + ' · ' + esc(t.who) + nickH(t.who) + (t.cur ? ' · 눌러서 이동' : ' · 지난 기록') + '</small>' + hlText(t.text, q) + '</button>';
+      }).join('') + (r.more ? '<p class="cfmsg">최근 60개만 보여요.</p>' : '') : '<p class="cfmsg">\'' + esc(q) + '\' 가 들어간 대화가 없어요.</p>';
+      res.querySelectorAll('[data-cfgo]').forEach(function (b) { b.addEventListener('click', function () { state.cfF.id = b.dataset.cfgo; state.cfF.i = -1; res.hidden = true; cfApply(0); }); });
+    }).catch(function () { res.innerHTML = '<p class="cfmsg">연결이 안 돼요. 다시 해 주세요.</p>'; });
+  }
+  function chatClose() { cfClose(); chatLock(false); chatMenuClose(); $('chatBox').hidden = true; $('chatAt').hidden = true; clearInterval(state.chatTimer); state.chatRoom = ''; tabSave(); paintChatFab(); }
   function chatLoad(first) {
     var room = state.chatRoom; if (!room || state.chatFly) return;
     state.chatFly = 1;
@@ -5377,7 +5524,9 @@ body.popmode .chath .chpop { display: none; }
     }); });
     L.querySelectorAll('[data-copst]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.copst }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else b.disabled = false; }).catch(function () { b.disabled = false; }); }); });
     L.querySelectorAll('[data-chdel]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '✕')) return; call({ a: 'chat_del', token: state.s.token, id: b.dataset.chdel }).then(function (x) { if (x.ok) chatPaint(x, false); }); }); });
-    if (toEnd || near || pull) { L.scrollTop = L.scrollHeight; state.chatNewN = 0; state.chatStick = Date.now(); requestAnimationFrame(function () { if (Date.now() - (state.chatStick || 0) < 8000) L.scrollTop = L.scrollHeight; }); }
+    var finding = !!(state.cfF && state.cfF.q) && !toEnd;   // 🔍 찾는 중에는 맨 아래로 끌어내리지 않음
+    if (finding) cfApply(0);
+    if (!finding && (toEnd || near || pull)) { L.scrollTop = L.scrollHeight; state.chatNewN = 0; state.chatStick = Date.now(); requestAnimationFrame(function () { if (Date.now() - (state.chatStick || 0) < 8000) L.scrollTop = L.scrollHeight; }); }
     else if (fresh.length) state.chatNewN = (state.chatNewN || 0) + fresh.length;
     $('chatNew').hidden = !state.chatNewN; $('chatNew').textContent = '⬇ 새 메시지 ' + (state.chatNewN || '');
     if (hot) chatFlash(r.room);
@@ -5400,6 +5549,16 @@ body.popmode .chath .chpop { display: none; }
     $('chatNew').addEventListener('click', function () { var L = $('chatL'); L.scrollTop = L.scrollHeight; state.chatNewN = 0; $('chatNew').hidden = true; });
     $('chatL').addEventListener('scroll', function () { var L = $('chatL'); if (state.chatNewN && L.scrollHeight - L.scrollTop - L.clientHeight < 40) { state.chatNewN = 0; $('chatNew').hidden = true; } }, { passive: true });
     $('chatQ').addEventListener('click', function () { var h = $('chatHelp'); h.hidden = !h.hidden; this.setAttribute('aria-expanded', String(!h.hidden)); });
+    $('chatS').addEventListener('click', function () {
+      if (!$('chatFind').hidden) return cfClose();
+      $('chatFind').hidden = false; this.setAttribute('aria-expanded', 'true'); state.cfF = { q: '', i: -1, id: '' };
+      $('cfQ').value = ''; $('cfN').textContent = ''; $('cfMsg').innerHTML = ''; $('cfRes').hidden = true; $('cfUp').disabled = $('cfDn').disabled = true; $('cfQ').focus();
+    });
+    $('cfQ').addEventListener('input', function () { if (!state.cfF) return; state.cfF.q = this.value.trim(); state.cfF.id = ''; state.cfF.i = -1; $('cfRes').hidden = true; cfApply(0); });
+    $('cfQ').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); cfApply(-1); } if (e.key === 'Escape') cfClose(); });
+    $('cfUp').addEventListener('click', function () { cfApply(-1); });
+    $('cfDn').addEventListener('click', function () { cfApply(1); });
+    $('cfX').addEventListener('click', cfClose);
     var ta = $('chatIn');
     ta.addEventListener('input', function () { $('chatSos').hidden = !(state.chatRoom && !(state.data && state.data.guard) && SOS_WORDS.test(ta.value)); });   // 🚨 대화에 싸움·경호·상황 → 부를까요?
     $('chatSos').addEventListener('click', function () { var t = ta.value; sosForm({ text: t }); });
