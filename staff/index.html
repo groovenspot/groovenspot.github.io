@@ -3804,7 +3804,7 @@ body.popmode .chath .chpop { display: none; }
   }
   function byeConfirm() {
     showSheet('<h2>🌙 영업 종료</h2><p style="font-size:18px;font-weight:900;margin:4px 0 10px">영업종료하시겠습니까?</p>' +
-      '<ul class="note" style="margin:0 0 12px;padding-left:18px;line-height:1.7"><li>출근 중인 직원에게 <b>수고하셨습니다</b> 알림 · 화면 3초 깜빡</li><li>안 끝난 일 모두 끝 (킵 승인 대기는 그대로)</li><li>🪑 테이블 모두 비움</li><li>🎆 연출 · 🛎 운영 · 🚪 입구 · 🚨 경호 목록 비움</li><li>🎬 실시간 영상 오늘 것 지움</li><li>기록·★ 판매 순위·마감 리포트 숫자는 그대로 남아요</li></ul>' +
+      '<ul class="note" style="margin:0 0 12px;padding-left:18px;line-height:1.7"><li>출근 중인 직원에게 <b>수고하셨습니다</b> 알림 · 화면 3초 깜빡</li><li>안 끝난 일 모두 끝 (킵 승인 대기는 그대로)</li><li>🪑 테이블 모두 비움</li><li>🎆 연출 · 🛎 운영 · 🚪 입구 · 🚨 경호 목록 비움</li><li>🎬 실시간 영상 오늘 것 지움</li><li>🕘 출근 중인 사람 모두 <b>퇴근</b> 처리</li><li>기록·★ 판매 순위·마감 리포트 숫자는 그대로 남아요</li></ul>' +
       '<p class="msg" id="byeMsg"></p><button class="btn btn-hot" type="button" id="byeGo" style="width:100%;min-height:52px;font-size:17px">네, 영업 종료</button>');
     $('byeGo').addEventListener('click', function () {
       var b = this; b.disabled = true; b.textContent = '종료하는 중…';
