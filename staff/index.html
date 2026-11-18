@@ -1389,6 +1389,7 @@ body.hasfab main { padding-bottom: 110px; }
         '<b>➕ 빠 확장</b>을 누르면 확장 자리가 열려요 — 3층: <b>빠끝·빠입구·3·4사이·6·7사이</b> · 2층: <b>섭빠1·섭빠2·3·4사이·4·5사이</b> · 손님 없으면 <b>➖ 닫기</b>',
         '대기 손님은 <b>💰 비딩</b>: 담당이 금액(만원)을 올리면 관리자가 자리를 골라 확정',
         '넣기·승인·비딩은 <b>출근 후</b>에만 돼요 (출근 전엔 보기만)',
+        '<b>부팀장</b>은 다른 담당 손님 자리도 <b>자리 비우기</b>로 바로 비울 수 있어요 (막은 자리 빼고) · 대화창 <code>3-11 아웃</code>도 바로 반영',
         '자리표에서 넣고·고치고·옮기고·비우고·승인한 것도 <b>💬 테이블 대화</b>에 카톡처럼 한 줄로 올라가요 (예: <code>2H8- 카마 남(동기)</code> · <b>✍️자리표</b>)',
         '주말 자리(SPOT B·V, GROOVE Bar)는 금·토에만 보여요'
       ]) +
@@ -4596,8 +4597,17 @@ body.hasfab main { padding-bottom: 110px; }
       h += '<div class="tbview"><p>' + esc(tbLine(v) || '빈 자리') + '</p>' + (v.memo ? '<p class="sub">' + esc(v.memo) + '</p>' : '') + '</div>';
       if (!edit) h += '<p class="note">지난 영업일은 보기만 할 수 있어요.</p>';
       else if (blocked) h += '<p class="note">막아 둔 자리예요.</p>';
-      else if (r) h += '<p class="note">다른 담당 손님이에요. 고칠 수 없어요.</p>';
-      return showSheet(h);
+      // 부팀장: 다른 담당 손님 자리도 바로 비우기 (막은 자리 빼고, 대표 요청 2026-11-18)
+      var vice = edit && !blocked && !ap && state.s && state.s.role === '부팀장' && r && r.cur && !r.cur.blk && !(r.req && r.req.del);
+      if (edit && !blocked && r) h += '<p class="note">' + (vice ? '다른 담당 손님이에요. 고치기는 안 되고, 부팀장은 <b>자리 비우기</b>만 돼요.' : '다른 담당 손님이에요. 고칠 수 없어요.') + '</p>';
+      if (vice) h += '<div class="tbbtns"><button class="btn btn-bad" type="button" id="tbVDel">자리 비우기 (부팀장)</button></div><p class="msg" id="tbVMsg"></p>';
+      showSheet(h);
+      if (vice) $('tbVDel').addEventListener('click', function () {
+        if (!armed(this, '자리 비우기 (부팀장)')) return;
+        var b = this; b.disabled = true;
+        tbCall({ a: 'tb_del', id: r.id }, function (x) { if (!x.ok) { b.disabled = false; $('tbVMsg').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = '자리를 비웠어요.'; render(); });
+      });
+      return;
     }
     if (ap && !(r && r.cur && !r.cur.blk && (r.cur.g || r.cur.n))) h += '<div class="tbblk"><span>자리 막기</span>' + TB_BLK.map(function (x) { return '<button type="button" class="chip' + (v.blk === x ? ' on' : '') + '" data-tbblk="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>';
     h += '<div id="tbForm"' + (v.blk ? ' hidden' : '') + '>' +
@@ -4611,7 +4621,7 @@ body.hasfab main { padding-bottom: 110px; }
       '<label>자리<select id="tbSeat">' + free.map(function (s) { return '<option value="' + esc(s) + '"' + (s === (v.seat || '') ? ' selected' : '') + '>' + esc(s || '대기 명단 (자리 없음)') + '</option>'; }).join('') + '</select></label>' +
       '<p class="msg" id="tbMsg"></p><button class="btn btn-hot" type="button" id="tbSave">' + (ap ? '저장' : r && r.status === '거절' ? '고쳐서 다시 신청' : '승인 요청') + '</button>';
     if (r && ap && r.status === '대기') h += '<div class="tbbtns"><button class="btn btn-ok" type="button" id="tbOk1">요청 승인</button><button class="btn" type="button" id="tbNo1">거절</button></div>';
-    if (r && (r.cur || r.status)) h += '<div class="tbbtns">' + (r.mine && r.status && !ap ? '<button class="btn" type="button" id="tbCancel">요청 취소</button>' : '') + ((r.cur || ap) && !(r.req && r.req.del) ? '<button class="btn btn-bad" type="button" id="tbDel">' + (ap ? '자리 비우기' : '비우기 요청') + '</button>' : '') + '</div>';
+    if (r && (r.cur || r.status)) h += '<div class="tbbtns">' + (r.mine && r.status && !ap ? '<button class="btn" type="button" id="tbCancel">요청 취소</button>' : '') + ((r.cur || ap) && !(r.req && r.req.del) ? '<button class="btn btn-bad" type="button" id="tbDel">' + (ap || state.s.role === '부팀장' ? '자리 비우기' : '비우기 요청') + '</button>' : '') + '</div>';
     showSheet(h);
     var n = v.n || 0, tg = { sold: !!v.sold, keep: !!v.keep, inn: !!v.inn }, sx = v.sx || '', blk = v.blk || '';
     var s = $('sheet');
@@ -4634,9 +4644,10 @@ body.hasfab main { padding-bottom: 110px; }
     if ($('tbNo1')) $('tbNo1').addEventListener('click', function () { tbRejectSheet(r); });
     if ($('tbCancel')) $('tbCancel').addEventListener('click', function () { var b = this; b.disabled = true; tbCall({ a: 'tb_cancel', id: r.id }, function (x) { if (!x.ok) { b.disabled = false; $('tbMsg').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = '요청을 취소했어요.'; render(); }); });
     if ($('tbDel')) $('tbDel').addEventListener('click', function () {
-      if (!armed(this, ap ? '자리 비우기' : '비우기 요청')) return;
+      var direct = ap || state.s.role === '부팀장';   // 부팀장은 내 손님 자리도 바로 비움
+      if (!armed(this, direct ? '자리 비우기' : '비우기 요청')) return;
       var b = this; b.disabled = true;
-      tbCall({ a: 'tb_del', id: r.id }, function (x) { if (!x.ok) { b.disabled = false; $('tbMsg').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = ap ? '자리를 비웠어요.' : '비우기 요청을 보냈어요.'; render(); });
+      tbCall({ a: 'tb_del', id: r.id }, function (x) { if (!x.ok) { b.disabled = false; $('tbMsg').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = direct ? '자리를 비웠어요.' : '비우기 요청을 보냈어요.'; render(); });
     });
   }
   // 카톡용 복사: 지금 쓰는 표 모양 그대로 (승인된 것만)
