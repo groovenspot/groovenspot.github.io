@@ -889,6 +889,16 @@ body.hasfab main { padding-bottom: 110px; }
 .btn.btn-sos { background: #e0203f; border-color: #e0203f; color: #fff; }
 .sosq { background: #3a0610; border: 1px solid #ff3b5c; border-radius: 14px; padding: 12px; margin: 0 0 10px; }
 .sosq p { margin: 0 0 10px; font-weight: 800; }
+/* 🗗 대화창 따로 띄우기 (카톡 PC처럼, 대표 요청 2026-11-19): #pop:yc 로 열면 대화창만 꽉 차게 */
+body.popmode .top, body.popmode #sosBar, body.popmode main, body.popmode .chatfab, body.popmode .sosfab, body.popmode .goffer { display: none !important; }
+body.popmode .chatbox { position: fixed; inset: 0; width: auto; height: auto; right: 0; bottom: 0; border-radius: 0; border: 0; box-shadow: none; }
+body.popmode .chath .chpop { display: none; }
+.chath .chpop { font-size: 16px; text-decoration: none; }
+.chatnew { display: block; align-self: center; margin: 4px auto 0; border: 0; border-radius: 999px; background: var(--g); color: #120800; font-weight: 900; font-size: 13px; padding: 7px 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.45); }
+.chatnew[hidden] { display: none; }
+@keyframes newreq { 0%, 100% { box-shadow: inset 0 0 0 3px rgba(255,59,92,0); } 50% { box-shadow: inset 0 0 0 4px #ff3b5c; } }
+.chatbox.newreq { animation: newreq .7s ease-in-out 6; }
+@media (prefers-reduced-motion: reduce) { .chatbox.newreq { animation: none; box-shadow: inset 0 0 0 3px #ff3b5c; } }
 .chatsos { display: block; width: calc(100% - 24px); margin: 6px 12px 0; border: 1px solid #ff3b5c; background: #3a0610; color: #ffd6dd; border-radius: 12px; padding: 8px 12px; font-weight: 800; cursor: pointer; text-align: left; }
 .chatl em.csos { display: block; font-style: normal; font-size: 12px; color: #ff8a9b; margin-top: 4px; font-weight: 800; }
 .chatl em.csos.ok { color: var(--ok); }
@@ -1040,10 +1050,11 @@ body.hasfab main { padding-bottom: 110px; }
 <button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
 <button type="button" class="sosfab" id="sosFab" hidden aria-label="경호 호출">🚨</button>
 <section class="chatbox" id="chatBox" hidden aria-label="대화">
-  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
+  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chpop" id="chatPop" hidden title="따로 띄우기 (항상 위에)" aria-label="대화창 따로 띄우기">🗗</button><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
   <div class="chathelp" id="chatHelp" hidden></div>
   <div class="chatpin" id="chatPin" hidden aria-live="polite"></div>
   <div class="chatl" id="chatL"></div>
+  <button type="button" class="chatnew" id="chatNew" hidden>⬇ 새 메시지</button>
   <div class="chatat" id="chatAt" hidden></div>
   <div class="chatph" id="chatPh" hidden></div>
   <div class="chatrep" id="chatRep" hidden></div>
@@ -1184,11 +1195,11 @@ body.hasfab main { padding-bottom: 110px; }
 
   function toLogin(msg) {
     saveData(null); stopPoll(); swToken('');
-    state.s = null; state.data = null; state.tab = 'guest'; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
+    state.s = null; state.data = null; state.tab = 'guest'; state.tabPick = ''; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
     state.tb = null; state.tbDay = ''; state.tbMsg = ''; state.tbErr = ''; state.tbFly = 0;
     state.yc = null; state.ycMsg = ''; state.ycErr = ''; state.ycFly = 0;
     state.lf = null; state.lfMsg = ''; state.lfErr = ''; state.lfFly = 0; state.me = null; state.meWho = ''; state.work = null; state.wkStart = '';
-    try { chatClose(); state.chatTail = {}; $('chatFab').hidden = true; $('sosFab').hidden = true; $('sosBar').hidden = true; state.sos = []; state.sosSig = ''; } catch (e) {}
+    try { document.body.classList.remove('popmode'); state.pop = ''; chatClose(); state.chatTail = {}; $('chatFab').hidden = true; $('sosFab').hidden = true; $('sosBar').hidden = true; state.sos = []; state.sosSig = ''; } catch (e) {}
     state.keep = null; state.kview = 'list'; state.kcur = null; state.kq = ''; state.kf = ''; state.kadd = null; state.kundo = null; state.kstale = false; state.kfly = 0; state.kmulti = false; state.kopt = {}; state.ktmp = {};
     try { localStorage.removeItem(KKEY); } catch (e) {}
     state.bview = 'list'; state.btag = ''; state.bpost = null; state.comp = null; state.cdraft = {}; state.dm = null; state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.dmDraft = {}; state.dmPick = false;
@@ -1270,8 +1281,12 @@ body.hasfab main { padding-bottom: 110px; }
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
     if (/^chat:(table|yc)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
+    var pm = /^pop:(table|yc|guest)$/.exec(h); if (pm) { state.pop = pm[1]; h = pm[1]; document.body.classList.add('popmode'); try { document.title = CHAT_NAME[pm[1]]; } catch (e) {} }
     if (h === 'sos') setTimeout(function () { loadSos(); }, 600);
-    if (['ops', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) state.tab = h;
+    if (['ops', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
+    else {   // 다시 불러오면 마지막에 보던 탭·대화창 그대로 (대표 요청 2026-11-19)
+      var lt = tabLast(); if (lt) { state.tab = lt.t; state.tabPick = lt.t; if (lt.c && lt.c === lt.t && !state.chatOpenNext) state.chatOpenNext = lt.c; }
+    }
     swToken(state.s.token); paintBell();
     if (!state.keep) { var kc = kLoad(); if (kc) { state.keep = kc; state.kstale = true; } }
     var c = loadData();
@@ -1340,7 +1355,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
 
   function goTab(t) {
-      var prev = state.tab; state.tab = t;
+      var prev = state.tab; state.tab = t; state.tabPick = '';
       if (prev === 'dm' && state.tab !== 'dm') stopPoll();
       if (state.tab === 'board') { state.bview = state.bview === 'edit' ? 'edit' : 'list'; state.bpost = null; }
       if (state.tab === 'dm') { state.dmView = 'list'; state.dmWith = ''; state.chat = null; }
@@ -1384,6 +1399,8 @@ body.hasfab main { padding-bottom: 110px; }
     };
     var workOn = !!d.admin;   // 👤 내 프로필(이름을 누르면): 출근·퇴근 + 내 현황 · 🕘 근무표: 대표
     var LEAD_TABS = { notes: 1 }, decOn = !!(d.lead || d.decAdd || (d.decisions && d.decisions.length)), hasBoard = !!(d.board && d.board.teams && d.board.teams.length), canAcc = !!(d.admin || d.approver);
+    if (state.tabPick && labels[state.tabPick]) state.tab = state.tabPick;   // 응답이 잠깐 비어 게스트 현황으로 튕겼던 탭으로 되돌리기
+    var want = state.tab;
     if (!labels[state.tab] || (state.tab === 'acc' && !canAcc) || (state.tab === 'board' && !hasBoard)) state.tab = 'guest';
     if (LEAD_TABS[state.tab] && !d.lead) state.tab = 'guest';
     if (state.tab === 'dec' && !decOn) state.tab = 'guest';
@@ -1397,6 +1414,7 @@ body.hasfab main { padding-bottom: 110px; }
     var gateOn = !!(d.guard || d.gate);   // 🚪 입구: 경호팀 · 대표
     if (state.tab === 'gate' && !gateOn) state.tab = 'guest';
     if (d.guard && ['gate', 'me'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
+    state.tabPick = state.tab !== want ? want : ''; tabSave();
     tabArrange(d.tabOrder || []);   // ↕ 내 탭 순서
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
@@ -1422,6 +1440,13 @@ body.hasfab main { padding-bottom: 110px; }
     return { edu: edu, notes: notes };
   }
   function renderTabsOnly() { if (state.data) paintTabs(state.data); }
+  function tabSave() {
+    if (state.pop || !state.s) return;
+    try { localStorage.setItem('gs_last_tab', JSON.stringify({ n: state.s.name, t: state.tabPick || state.tab, c: state.chatRoom || '', at: Date.now() })); } catch (e) {}
+  }
+  function tabLast() {
+    try { var o = JSON.parse(localStorage.getItem('gs_last_tab') || 'null'); return o && state.s && o.n === state.s.name && Date.now() - o.at < 12 * 3600e3 && /^[a-z]+$/.test(o.t || '') ? o : null; } catch (e) { return null; }
+  }
   // ↕ 내 탭 순서 (대표 요청 2026-11-19): 사람마다 원하는 순서 · 계정에 저장
   var TAB_DEFAULT = Array.prototype.map.call(document.querySelectorAll('#tabs button'), function (b) { return b.dataset.tab; });
   function tabArrange(ord) {
@@ -3639,11 +3664,12 @@ body.hasfab main { padding-bottom: 110px; }
     s.addEventListener('click', function (e) { if (e.target === s) { s.hidden = true; s.innerHTML = ''; } }, { once: true });
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
+    if (state.pop) return;   // 따로 띄운 대화창은 그대로
     var t = e.data && e.data.tab, ct = /^chat:(table|yc)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
     if (t === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출: 탭이 아니라 위쪽 빨간 줄
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
-    if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); if (t === 'ops') loadOps(); }
+    if (t && state.data) { state.tab = t; state.tabPick = ''; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); if (t === 'ops') loadOps(); }
   });
 
   // ── 🚨 경호 호출 (2026-11-19): 빨간 버튼 → 상황·위치 → 한 번 더 확인 → 출근 중 경호팀 전원. 경호원 🏃 출동 → ✅ 해결. 대화에 싸움·경호·상황 → 부를까요? ──
@@ -4634,6 +4660,7 @@ body.hasfab main { padding-bottom: 110px; }
   function paintChatFab() {
     var room = chatRoom(), fab = $('chatFab'), box = $('chatBox');
     if (!fab) return;
+    if (state.pop) { fab.hidden = true; if (box.hidden && state.s && state.data) chatOpen(state.pop); return; }   // 따로 띄운 창: 대화창 하나만 (한 번만 열기)
     fab.hidden = !state.s || !room || !box.hidden;
     document.body.classList.toggle('hasfab', !!room && !!state.s);
     if (!room) { if (!box.hidden) chatClose(); return; }
@@ -4660,10 +4687,36 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.chatMediaReset) state.chatMediaReset();
     chatReplyTo(null); chatMenuClose();
     $('chatBox').hidden = false; $('chatFab').hidden = true;
+    $('chatPop').hidden = !!state.pop || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.matchMedia && matchMedia('(pointer: coarse)').matches);
+    state.chatNewN = 0; $('chatNew').hidden = true; tabSave();
     chatLoad(true);
     clearInterval(state.chatTimer); state.chatTimer = setInterval(function () { if (!document.hidden && !$('chatBox').hidden) chatLoad(); }, 3000);
   }
-  function chatClose() { chatMenuClose(); $('chatBox').hidden = true; $('chatAt').hidden = true; clearInterval(state.chatTimer); state.chatRoom = ''; paintChatFab(); }
+  function chatFlash(room) {
+    var b = $('chatBox'); b.classList.remove('newreq'); void b.offsetWidth; b.classList.add('newreq');
+    clearTimeout(state.flashT); state.flashT = setTimeout(function () { b.classList.remove('newreq'); }, 4500);
+    if (state.pop) {   // 따로 띄운 창: 제목도 잠깐
+      var t = (room === 'yc' ? '🔴 새 연출 요청 · ' : '🔴 새 요청 · ') + CHAT_NAME[room], set = function (x) { document.title = x; try { if (window.parent !== window) window.parent.document.title = x; } catch (e) {} };
+      set(t); clearTimeout(state.titleT); state.titleT = setTimeout(function () { set(CHAT_NAME[room]); }, 8000);
+    }
+  }
+  // 🗗 따로 띄우기: 크롬·엣지 PC는 항상 위에 떠 있는 창(문서 PIP) · 아니면 작은 새 창
+  function chatPopOut() {
+    var room = state.chatRoom; if (!room) return;
+    var url = location.pathname + '#pop:' + room;
+    var win = function () { var w = null; try { w = window.open(url, 'gs_pop_' + room, 'popup,width=420,height=760'); } catch (e) {} if (w) { try { w.focus(); } catch (e) {} chatClose(); } else alertBox('팝업이 막혀 있어요. 주소창 오른쪽에서 팝업을 허용해 주세요.'); };
+    var dp = window.documentPictureInPicture;
+    if (!dp || !dp.requestWindow) return win();
+    try { if (dp.window) dp.window.close(); } catch (e) {}
+    dp.requestWindow({ width: 420, height: 720 }).then(function (pw) {
+      pw.document.title = CHAT_NAME[room];
+      var st = pw.document.createElement('style'); st.textContent = 'html,body{margin:0;height:100%;background:#0b0b0c;overflow:hidden}iframe{border:0;width:100%;height:100%;display:block}';
+      pw.document.head.appendChild(st);
+      var f = pw.document.createElement('iframe'); f.src = url; f.title = CHAT_NAME[room]; f.setAttribute('allow', 'clipboard-read; clipboard-write'); pw.document.body.appendChild(f);
+      chatClose();
+    }).catch(win);
+  }
+  function chatClose() { chatMenuClose(); $('chatBox').hidden = true; $('chatAt').hidden = true; clearInterval(state.chatTimer); state.chatRoom = ''; tabSave(); paintChatFab(); }
   function chatLoad(first) {
     var room = state.chatRoom; if (!room || state.chatFly) return;
     state.chatFly = 1;
@@ -4742,7 +4795,11 @@ body.hasfab main { padding-bottom: 110px; }
     box.querySelectorAll('[data-cpin]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.cpin }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else { b.disabled = false; if (x.error === 'full') chatLoad(); } }).catch(function () { b.disabled = false; }); }); });
   }
   function chatPaint(r, toEnd, force) {
-    var L = $('chatL'), same = !force && state.chat && JSON.stringify(state.chat.list) === JSON.stringify(r.list);
+    var L = $('chatL'), prev = state.chat, same = !force && state.chat && JSON.stringify(state.chat.list) === JSON.stringify(r.list);
+    // ⬇ 새 글: 🎆 연출 요청·🛎 운영·🚨 경호·🆘 줄은 항상 맨 아래로 + 테두리 깜빡 · 다른 글은 읽던 자리 그대로 두고 '⬇ 새 메시지 N' (대표 요청 2026-11-19)
+    var seenIds = {}, fresh = [];
+    if (prev && prev.room === r.room) { prev.list.forEach(function (m) { seenIds[m.id] = 1; }); fresh = r.list.filter(function (m) { return !seenIds[m.id] && !m.mine; }); }
+    var hot = fresh.some(function (m) { return r.room === 'yc' ? !!m.req : !!(m.ops || m.sos || /🆘/.test(m.req || '')); });
     state.chat = r; state.chatTail = state.chatTail || {}; state.chatTail[r.room] = r.list.slice(-30).map(function (m) { return [m.at, m.mine ? 1 : 0]; });
     if (r.list.length) chatSeen(r.room, r.list[r.list.length - 1].at);
     chatPin(r.room === 'table' ? r.pin || [] : []);
@@ -4769,12 +4826,21 @@ body.hasfab main { padding-bottom: 110px; }
     });
     L.querySelectorAll('[data-copst]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.copst }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else b.disabled = false; }).catch(function () { b.disabled = false; }); }); });
     L.querySelectorAll('[data-chdel]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '✕')) return; call({ a: 'chat_del', token: state.s.token, id: b.dataset.chdel }).then(function (x) { if (x.ok) chatPaint(x, false); }); }); });
-    if (toEnd || near) L.scrollTop = L.scrollHeight;
+    if (toEnd || near || hot) { L.scrollTop = L.scrollHeight; state.chatNewN = 0; }
+    else if (fresh.length) state.chatNewN = (state.chatNewN || 0) + fresh.length;
+    $('chatNew').hidden = !state.chatNewN; $('chatNew').textContent = '⬇ 새 메시지 ' + (state.chatNewN || '');
+    if (hot) chatFlash(r.room);
     paintChatFab();
   }
   (function () {
     $('chatFab').addEventListener('click', function () { var room = chatRoom(); if (room) chatOpen(room); });
-    $('chatX').addEventListener('click', chatClose);
+    $('chatX').addEventListener('click', function () {
+      if (state.pop) { try { if (window.parent !== window) window.parent.close(); } catch (e) {} try { window.close(); } catch (e) {} return; }   // 따로 띄운 창은 창 닫기
+      chatClose();
+    });
+    $('chatPop').addEventListener('click', chatPopOut);
+    $('chatNew').addEventListener('click', function () { var L = $('chatL'); L.scrollTop = L.scrollHeight; state.chatNewN = 0; $('chatNew').hidden = true; });
+    $('chatL').addEventListener('scroll', function () { var L = $('chatL'); if (state.chatNewN && L.scrollHeight - L.scrollTop - L.clientHeight < 40) { state.chatNewN = 0; $('chatNew').hidden = true; } }, { passive: true });
     $('chatQ').addEventListener('click', function () { var h = $('chatHelp'); h.hidden = !h.hidden; this.setAttribute('aria-expanded', String(!h.hidden)); });
     var ta = $('chatIn');
     ta.addEventListener('input', function () { $('chatSos').hidden = !(state.chatRoom && SOS_WORDS.test(ta.value)); });   // 🚨 대화에 싸움·경호·상황 → 부를까요?
