@@ -763,6 +763,23 @@ body.hasfab main { padding-bottom: 110px; }
 .days7 span.on { color: var(--txt); border-color: rgba(255,122,26,.5); } .days7 i { display: block; font-style: normal; font-size: 11px; font-weight: 600; color: var(--muted); }
 .mel { display: grid; gap: 6px; } .mel .mi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; font-size: 14px; }
 .mel .mi.late { border-color: rgba(255,59,92,.5); } .mel .mi small { color: var(--muted); }
+/* ☀️ 출근 브리핑 · 📇 손님 기록 (2026-11-18) */
+#meBrief { width: 100%; margin: 0 0 14px; }
+.brf h3 { margin: 14px 0 6px; font-size: 15px; } .brf h3 small { color: var(--muted); font-weight: 600; }
+.brf .mi { width: 100%; text-align: left; font: inherit; color: var(--txt); }
+.brf button.mi, .cul button.cu { cursor: pointer; }
+.brf .bnone { color: var(--muted); font-size: 14px; margin: 0; }
+.cuh { display: flex; gap: 8px; align-items: center; margin: 0 0 10px; } .cuh input { flex: 1; min-height: 40px; min-width: 0; } .cuh .btn { width: auto; min-height: 40px; padding: 0 12px; font-size: 14px; flex: none; }
+.cul { display: grid; gap: 6px; }
+.cul .cu { display: grid; gap: 3px; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; color: var(--txt); font: inherit; }
+.cul .cu.due { border-color: rgba(255,176,32,.55); } .cul .cu.soon { border-color: rgba(161,91,255,.6); }
+.cul .cu b { font-size: 15px; } .cul .cu small { color: var(--muted); font-size: 13px; }
+.cul .cu .cut { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.chip.cdue { border-color: var(--warn); color: var(--warn); } .chip.csoon { border-color: var(--s); color: #c9a5ff; } .chip.ckeep { border-color: var(--line-2); color: var(--muted); }
+.cus .sum2 { font-size: 14px; color: var(--muted); margin: 0 0 10px; } .cus .sum2 b { color: var(--txt); }
+.cus .mdr { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 8px; } .cus .mdr select { flex: 1 1 0; min-height: 40px; min-width: 0; } .cus .mdr input { flex: 1 1 100%; min-height: 40px; min-width: 0; }
+.cus .cub { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; } .cus .cub .btn { width: 100%; text-align: center; text-decoration: none; display: grid; place-items: center; }
+.cus .hist { display: grid; gap: 4px; margin: 6px 0 12px; font-size: 13px; } .cus .hist div { border-bottom: 1px solid var(--line); padding: 5px 0; } .cus .hist small { color: var(--muted); }
 .wtab { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
 .wtab table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 13px; table-layout: fixed; }
 .wtab thead th.wn { width: 104px; } .wtab thead th.ws { width: 150px; } .wtab thead th small { font-weight: 600; font-size: 11px; }
@@ -990,7 +1007,7 @@ body.hasfab main { padding-bottom: 110px; }
         if (r.error === 'auth') return toLogin(AUTH_OUT);
         if (r.ok || r.error === 'already') {
           state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can }; state.data.inputLock = false; saveData(state.data);
-          $('sheet').hidden = true; $('sheet').innerHTML = ''; render(); gateSoon(); alertMsg('🕘 출근했어요 · 이제 넣을 수 있어요'); return;
+          $('sheet').hidden = true; $('sheet').innerHTML = ''; render(); gateSoon(); alertMsg('🕘 출근했어요 · 이제 넣을 수 있어요'); if (r.ok) openBrief(); return;
         }
         b.disabled = false; $('ppMsg').textContent = r.error === 'forbidden' ? '대표 계정은 출근 없이 넣을 수 있어요.' : r.error === 'busy' ? '잠시 후 다시 해 주세요.' : '찍지 못했어요. 다시 해 주세요.';
       }).catch(function () { b.disabled = false; $('ppMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
@@ -1341,6 +1358,7 @@ body.hasfab main { padding-bottom: 110px; }
       ]) +
       sec('🕘 출근·퇴근 · 👤 내 프로필', [
         '맨 위 <b>내 이름</b>을 누르면 👤 내 프로필 → <b>🕘 출근하기</b> / 끝나면 <b>퇴근하기</b>(두 번 눌러 확인)',
+        '출근하면 <b>☀️ 오늘 브리핑</b>이 떠요: 오늘 내 손님·킵 만료 임박·마감 다가온 내 업무·안 읽은 공지·챙길 손님. 프로필의 <b>☀️ 오늘 브리핑</b>으로 다시 볼 수 있어요',
         '<b>출근 전에는 보기만</b>: 테이블·게스트 현황은 볼 수 있지만, 손님 넣기·고치기·승인·비딩·게스트 입력·테이블/게스트 대화 보내기는 출근 버튼을 눌러야 돼요. 누르려고 하면 출근 안내 창이 떠요',
         '<b>🚪 입구 호출 알림은 출근한 사람만</b> 받아요 (휴무 날도 손님 받으려면 출근 누르기)',
         '영업팀은 프로필 아래 <b>📊 내 현황</b>: 8주 게스트 추이·내 순위·팀 안 순위·킵 만료 임박 손님·앞으로 잡힌 대기 손님',
@@ -1384,12 +1402,19 @@ body.hasfab main { padding-bottom: 110px; }
         '팀 카드를 누르면 <b>팀 안 순위</b> (직원은 자기 팀, 승인하는 사람은 모든 팀)',
         '입력은 팀장 이상(출근 후): 게스트 대화창에 날짜·팀·이름+숫자 양식으로 올리면 반영'
       ]) +
+      sec('📇 손님 기록 · 🎂 생일·기념일', [
+        '내 프로필 아래 <b>📇 내 손님</b>: 테이블에 넣은 손님·킵 손님이 이름으로 모여요 (마지막 방문·횟수·자리·술·킵)',
+        '손님을 누르면 <b>🎂 생일·💍 기념일(3개)·📝 메모</b>를 넣고 방문 기록을 봐요. 이름 찾기는 초성으로도 돼요',
+        '<b>14일 넘게 안 오신 손님</b>은 저녁에 📞 연락 알림 → 연락하면 <b>📞 연락했어요</b>를 눌러 주세요 (알림이 다시 14일부터)',
+        '생일·기념일은 <b>7일 전</b>에 알림 → 연출(케이크·피켓) 예약으로 이어 가요',
+        '테이블·킵에 없는 단골은 <b>+ 손님</b>으로 직접 추가, 필요 없는 이름은 <b>🙈 숨기기</b>'
+      ]) +
       sec('📋 업무사항', [
         '<b>내가 한 일·할 일은 직접 올려요</b>: 📋 업무사항 → <b>➕ 업무 추가</b> → 할 일·마감 → 추가하기 (직원은 <b>내 일</b>로 들어가요)',
         '팀장·김동기·양진호·대표는 다른 사람을 담당으로 넣을 수 있어요. 할 일·담당에 <b>이름·닉네임</b>이 나오면 그 사람에게 알림',
         '상태는 <b>대기 → ▶ 진행 → ✅ 완료</b>로 직접 바꿔요. 완료되면 대표에게 알림',
         '<b>코멘트</b>로 진행 상황을 남기고 <b>📷 사진·영상</b>도 같이 올려요 (사진 3장·영상 2개, 텍스트 없이 사진만도 돼요)',
-        '직원은 자기 일만, 부팀장 이상은 전부 봐요. 완료된 일은 대표가 확인하고 지워요',
+        '직원은 자기 일만, 부팀장 이상은 전부 봐요. 할 일·담당·마감은 대표가 <b>✏️ 내용 고치기</b>로 바꿔요. 완료된 일은 대표가 확인하고 지워요',
         '스스로 찾아서 올리고 끝까지 마무리한 기록은 대표가 직접 확인해요'
       ]) +
       sec('✉️ 메시지 · 👥 그룹 · 🙋 손님 문의', [
@@ -1443,8 +1468,9 @@ body.hasfab main { padding-bottom: 110px; }
         '<span class="row">담당 ' + esc(x.who || '-') + ' · 마감 ' + esc(x.due || '-') + ' · <span class="st ' + esc(late ? 'late' : x.status) + '">' + esc(late ? '마감 지남 · ' + x.status : x.status) + '</span>' + (x.done ? ' · 완료 ' + esc(x.done.slice(5)) : '') +
         (x.mine ? ' · <b>내 일</b>' : '') + '</span>' + (x.ppl && x.ppl.length ? '<span class="row decppl">👤 ' + x.ppl.map(function (n) { return esc(n) + nickH(n); }).join(', ') + '</span>' : '');
       if (x.can) c += '<div class="decst" role="group" aria-label="상태">' + ['대기', '진행', '완료'].map(function (st) { return '<button type="button" data-decst="' + st + '" aria-pressed="' + (x.status === st) + '">' + (st === '완료' ? '✅ ' : st === '진행' ? '▶ ' : '') + st + '</button>'; }).join('') + '</div>';
-      if (x.cmts.length) c += '<div class="ycc">' + x.cmts.map(function (m) { return '<p' + (/^상태 → /.test(m.text) ? ' class="sys"' : '') + '><b>' + esc(m.who) + nickH(m.who) + '</b> ' + esc(m.text) + ' <small>' + esc(m.at) + '</small></p>' + chatMedia(m); }).join('') + '</div>';
+      if (x.cmts.length) c += '<div class="ycc">' + x.cmts.map(function (m) { return '<p' + (/^(상태 → |✏️ 고침)/.test(m.text) ? ' class="sys"' : '') + '><b>' + esc(m.who) + nickH(m.who) + '</b> ' + esc(m.text) + ' <small>' + esc(m.at) + '</small></p>' + chatMedia(m); }).join('') + '</div>';
       if (x.can) c += '<form class="yccf" data-deccf="1"><label class="chatpic" aria-label="사진·영상 올리기" title="사진·영상">📷<input type="file" data-decfile="1" accept="image/*,video/*" multiple hidden></label><input data-deccmt="1" maxlength="200" placeholder="코멘트 (예: 내일까지 견적 받을게요)" autocomplete="off" value="' + esc((state.decTxt || {})[x.id] || '') + '"><button class="btn" type="submit">보내기</button></form><div class="chatph decph" data-decph="1" hidden></div>';
+      if (d.admin) c += '<button class="btn" type="button" data-decedit="1" style="width:100%;margin-top:8px">✏️ 내용 고치기</button>';   // 대표만 (2026-11-18)
       if (d.admin && x.status === '완료') c += '<button class="btn btn-bad" type="button" data-decdel="1" style="width:100%;margin-top:8px">🗑 확인·지우기</button>';
       return c + '</div>';
     }).join('') + '</div>';
@@ -1519,12 +1545,41 @@ body.hasfab main { padding-bottom: 110px; }
         });
       }
       var del = card.querySelector('[data-decdel]'); if (del) del.addEventListener('click', function () { if (!armed(del, '🗑 확인·지우기')) return; send(id, { del: 1 }, del); });
+      var ed = card.querySelector('[data-decedit]'); if (ed) ed.addEventListener('click', function () { decEdit(list.filter(function (x) { return x.id === id; })[0], d); });
     });
     // 코멘트 사진·영상 (대표 요청 2026-11-18)
     hydrateImgs(area);
     area.querySelectorAll('.ycc [data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
     area.querySelectorAll('.ycc [data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
     area.querySelectorAll('.ycc [data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { if (state.tab === 'dec') render(); }); }); });
+  }
+  // ✏️ 대표: 업무 내용(할 일·담당·마감) 고치기
+  function decEdit(x, d) {
+    if (!x) return;
+    showSheet('<h2>✏️ 업무 고치기</h2><label>할 일<textarea id="deW" maxlength="300" rows="3">' + esc(x.what) + '</textarea></label>' +
+      '<label>담당 (이름·닉네임·초성)<input id="deP" maxlength="60" autocomplete="off" value="' + esc(x.who) + '"></label><div class="decsug" id="deS" hidden></div>' +
+      '<label>마감<input id="deD" type="date" value="' + esc(x.due || '') + '"></label><p class="note" style="margin:0 0 8px">새로 이름·닉네임이 나온 사람에게 알림이 가요. 코멘트·상태는 그대로예요.</p>' +
+      '<p class="msg" id="deM"></p><button class="btn btn-hot" type="button" id="deGo" style="width:100%">저장</button>');
+    var pi = $('deP'), sb = $('deS');
+    function sug() {
+      var q = pi.value.split(/[,，·\s]+/).pop(), l = staffFind(d.decStaff || [], q).slice(0, 12);
+      if (!l.length) { sb.hidden = true; sb.innerHTML = ''; return; }
+      sb.innerHTML = l.map(function (n) { return '<button type="button" data-dsug="' + esc(n) + '">' + esc(n) + nickH(n) + '</button>'; }).join(''); sb.hidden = false;
+      sb.querySelectorAll('[data-dsug]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () { pi.value = pi.value.replace(/[^,，·\s]*$/, '') + b.dataset.dsug + ', '; sb.hidden = true; pi.focus(); }); });
+    }
+    pi.addEventListener('input', sug); pi.addEventListener('blur', function () { setTimeout(function () { sb.hidden = true; }, 150); });
+    $('deGo').addEventListener('click', function () {
+      var b = this, w = $('deW').value.trim(); if (!w) { $('deM').textContent = '할 일을 써 주세요.'; return; }
+      b.disabled = true;
+      call({ a: 'dec_edit', token: state.s.token, id: x.id, what: w, who: pi.value.replace(/[,，·\s]+$/, '').trim(), due: $('deD').value }).then(function (r) {
+        b.disabled = false;
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (!r.ok) { $('deM').textContent = { forbidden: '대표만 고칠 수 있어요.', text: '< > 는 쓸 수 없어요.', due: '마감 날짜를 다시 골라 주세요.', dup: '같은 회의에 같은 내용이 이미 있어요.', notfound: '그 사이 지워졌어요.', long: '300자까지예요.' }[r.error] || '저장하지 못했어요.'; return; }
+        $('sheet').hidden = true; $('sheet').innerHTML = '';
+        if (state.decMd && x.id !== r.id) { state.decMd[r.id] = state.decMd[x.id]; delete state.decMd[x.id]; }
+        state.data.decisions = r.decisions; saveData(state.data); render();
+      }).catch(function () { b.disabled = false; $('deM').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+    });
   }
   // 📋 업무사항 코멘트에 붙일 사진(3장)·영상(2개) — 일마다 따로, 화면이 다시 그려져도 남아 있음
   function decMd(id) { state.decMd = state.decMd || {}; return state.decMd[id] || (state.decMd[id] = { photos: [], vids: [] }); }
@@ -1682,7 +1737,7 @@ body.hasfab main { padding-bottom: 110px; }
         if (r.ok || r.error === 'already') {
           state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can };
           if (kind === 'in') state.data.inputLock = false;   // 출근 → 넣기·승인 가능
-          saveData(state.data); render(); gateSoon(); return;
+          saveData(state.data); render(); gateSoon(); if (kind === 'in' && r.ok) openBrief(); return;   // ☀️ 출근하면 오늘 브리핑
         }
         b.disabled = false; alertMsg(r.error === 'noin' ? '출근을 먼저 찍어 주세요.' : r.error === 'busy' ? '잠시 후 다시 해 주세요.' : '찍지 못했어요. 다시 해 주세요.');
       }).catch(function () { b.disabled = false; alertMsg('연결이 안 돼요. 다시 해 주세요.'); });
@@ -1853,7 +1908,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
   function meHead(d) {   // 👤 내 프로필 머리: 이름·팀·역할 + 내 정보 바꾸기 + 출근·퇴근
     var role = state.s.admin ? '대표' : state.s.role === '부팀장' ? '부팀장' : state.s.role === '수습' ? '수습' : state.s.lead ? '팀장' : '직원';
-    return '<div class="gh prof"><div><h1>👤 ' + esc(state.s.name) + nickH(state.s.name) + '</h1><span class="range">' + esc(state.s.team || '팀 없음') + ' · ' + role + '</span></div><button type="button" class="btn" id="meEdit">✏️ 내 정보 바꾸기</button></div>' + punchBar(d);
+    return '<div class="gh prof"><div><h1>👤 ' + esc(state.s.name) + nickH(state.s.name) + '</h1><span class="range">' + esc(state.s.team || '팀 없음') + ' · ' + role + '</span></div><button type="button" class="btn" id="meEdit">✏️ 내 정보 바꾸기</button></div>' + punchBar(d) + '<button type="button" class="btn" id="meBrief">☀️ 오늘 브리핑</button>';
   }
   function renderMe(area, d) {
     var sales = SALES.indexOf(d.team) >= 0, pick = !!(d.admin || d.gall), h = meHead(d), m = state.me;
@@ -1877,10 +1932,130 @@ body.hasfab main { padding-bottom: 110px; }
     h += '<h2 class="sec">🍾 킵 만료 임박 (7일 안)</h2>' + (m.keep.length ? '<div class="list mel">' + m.keep.map(function (k) {
       return '<div class="mi' + (k.days < 0 ? ' late' : '') + '"><b>' + esc(k.name) + '</b> · ' + (k.days < 0 ? '만료 ' + (-k.days) + '일 지남' : k.days === 0 ? '오늘 만료' : 'D-' + k.days) + ' <small>' + esc(k.items.join(', ')) + '</small></div>';
     }).join('') + '</div><p class="note">손님에게 연락해서 다시 오시게 해 주세요.</p>' : '<p class="note">7일 안에 만료되는 킵이 없어요.</p>');
-    area.innerHTML = h; bindMe(area);
+    h += cuSection(m, other);
+    area.innerHTML = h; bindMe(area); bindCu(area, m, other);
+  }
+
+  // ☀️ 출근 브리핑 (대표 요청 2026-11-18): 출근을 누르면 오늘 챙길 것 한 화면
+  function openBrief() {
+    if (!state.s) return;
+    call({ a: 'brief', token: state.s.token }).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (r.ok) showBrief(r);
+    }).catch(function () {});
+  }
+  function showBrief(b) {
+    var fl = function (x) { return x === 'SPOT' ? '3층' : '2층'; }, sec = function (t, n, body) { return '<h3>' + t + (n ? ' <small>' + n + '</small>' : '') + '</h3>' + body; };
+    var h = '<div class="brf"><h2>☀️ 오늘 브리핑</h2><p class="sub">' + esc(md(b.today)) + ' 영업일' + (b.in ? ' · 출근 ' + esc(b.in) : '') + ' · ' + esc(b.name) + '님 오늘도 잘 부탁해요!</p>';
+    h += sec('🪑 오늘 내 손님', b.table.length ? b.table.length + '팀' : '', b.table.length ? '<div class="mel">' + b.table.map(function (x) {
+      return '<div class="mi">' + esc(fl(x.fl) + ' ' + (x.seat || '대기')) + ' · <b>' + esc(x.g || '-') + '</b> ' + esc((x.sx || '') + (x.n || '')) + (x.liq ? ' · ' + esc(x.liq) : '') + (x.sold ? ' <span class="chip sold">판매</span>' : '') + (x.wait ? ' <small>' + esc(x.st === '거절' ? '거절됨' : '승인 대기') + '</small>' : '') + '</div>';
+    }).join('') + '</div>' : '<p class="bnone">아직 잡힌 손님이 없어요. 오늘 손님 연락 돌려 봐요 💪</p>');
+    if (b.soon.length) h += sec('🎂 다가오는 생일·기념일', '', '<div class="mel">' + b.soon.map(function (x) { return '<button type="button" class="mi" data-bcu="' + esc(x.id) + '"><b>' + esc(x.name) + '</b> · ' + esc(x.n) + ' ' + (x.in ? 'D-' + x.in : '<b>오늘</b>') + ' <small>' + esc(+x.d.slice(0, 2) + '/' + +x.d.slice(3)) + '</small></button>'; }).join('') + '</div>');
+    if (b.due.length) h += sec('📞 연락해 볼 손님', b.dueN + '명', '<div class="mel">' + b.due.map(function (x) { return '<button type="button" class="mi" data-bcu="' + esc(x.id) + '"><b>' + esc(x.name) + '</b> · ' + x.gap + '일째 안 옴 <small>마지막 ' + esc(md(x.last)) + '</small></button>'; }).join('') + '</div>');
+    if (b.keep.length) h += sec('🍾 킵 만료 임박', '', '<div class="mel">' + b.keep.map(function (k) { return '<div class="mi' + (k.days < 0 ? ' late' : '') + '"><b>' + esc(k.name) + '</b> · ' + (k.days < 0 ? '만료 ' + (-k.days) + '일 지남' : k.days === 0 ? '오늘 만료' : 'D-' + k.days) + ' <small>' + esc(k.items.join(', ')) + '</small></div>'; }).join('') + '</div>');
+    if (b.dec.length) h += sec('📋 마감 다가온 내 업무', '', '<div class="mel">' + b.dec.map(function (x) { return '<button type="button" class="mi' + (x.late ? ' late' : '') + '" data-bdec="1">' + esc(x.what) + ' <small>' + (x.late ? '마감 지남 ' : '마감 ') + esc(md(x.due)) + ' · ' + esc(x.status) + '</small></button>'; }).join('') + '</div>');
+    if (b.notes.length) h += sec('📢 안 읽은 공지', '', '<div class="mel">' + b.notes.map(function (x) { return '<button type="button" class="mi" data-bpost="' + esc(x.id) + '">' + (x.must ? '📌 ' : '') + esc(x.title) + ' <small>' + esc(x.at) + '</small></button>'; }).join('') + '</div>');
+    if (!b.soon.length && !b.due.length && !b.keep.length && !b.dec.length && !b.notes.length) h += '<p class="bnone" style="margin-top:12px">그 밖에 따로 챙길 건 없어요 👍</p>';
+    showSheet(h + '</div>');
+    var sh = $('sheet'), close = function () { sh.hidden = true; sh.innerHTML = ''; };
+    sh.querySelectorAll('[data-bcu]').forEach(function (x) { x.addEventListener('click', function () { cuOpen(x.dataset.bcu); }); });
+    sh.querySelectorAll('[data-bdec]').forEach(function (x) { x.addEventListener('click', function () { close(); goTab('dec'); render(); }); });
+    sh.querySelectorAll('[data-bpost]').forEach(function (x) { x.addEventListener('click', function () { close(); goTab('board'); openPost(x.dataset.bpost); render(); }); });
+  }
+
+  // 📇 손님 기록 · 🎂 생일·기념일 (대표 요청 2026-11-18): 테이블·킵 기록을 손님 이름으로 모음, 14일 넘게 안 오면 연락 알림, 생일·기념일 7일 전 알림
+  function cuDue(x) { return x.due && x.gap <= 60; }
+  function cuSection(m, other) {
+    var L = m.cust || [], due = L.filter(cuDue).length, soon = L.filter(function (x) { return x.soon.length; }).length, f = state.cuF || '';
+    return '<h2 class="sec">📇 ' + (other ? esc(m.name) + ' 손님' : '내 손님') + ' <small style="color:var(--muted);font-weight:600">' + L.length + '명</small></h2>' +
+      '<p class="note" style="margin:0 0 8px">테이블·킵 기록이 손님 이름으로 모여요. 14일 넘게 안 오면 📞 연락 알림, 생일·기념일은 7일 전에 알림이 가요.</p>' +
+      '<div class="kfil">' + [['', '전체 ' + L.length], ['due', '📞 연락해 볼 ' + due], ['soon', '🎂 다가오는 날 ' + soon]].map(function (o) { return '<button type="button" data-cuf="' + o[0] + '" aria-pressed="' + (f === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="cuh"><input id="cuQ" type="search" placeholder="손님 이름 찾기" autocomplete="off" value="' + esc(state.cuQ || '') + '"><button type="button" class="btn" id="cuAdd">+ 손님</button></div><div class="cul" id="cuList"></div>';
+  }
+  function cuLine(x) {
+    var chips = x.soon.map(function (e) { return '<span class="chip csoon">🎂 ' + esc(e.n) + ' ' + (e.in ? 'D-' + e.in : '오늘') + '</span>'; }).join('') +
+      (cuDue(x) ? '<span class="chip cdue">📞 ' + x.gap + '일째</span>' : '') + (x.keep.length ? '<span class="chip ckeep">🍾 ' + esc(x.keep[0]) + (x.keep.length > 1 ? ' 외' : '') + '</span>' : '');
+    var sub = [x.last ? '마지막 ' + md(x.last) + (x.since > 0 ? ' (' + x.since + '일 전)' : ' (오늘)') : '방문 기록 없음', x.visits ? x.visits + '번' : '', x.seat, x.liq].filter(String).join(' · ');
+    return '<button type="button" class="cu' + (x.soon.length ? ' soon' : cuDue(x) ? ' due' : '') + '" data-cuid="' + esc(x.id) + '"><span class="cut"><b>' + esc(x.name) + '</b>' + chips + '</span><small>' + esc(sub) + (x.memo ? ' · 📝 ' + esc(x.memo) : '') + '</small></button>';
+  }
+  function bindCu(area, m, other) {
+    var box = $('cuList'); if (!box) return;
+    function paint() {
+      var q = key(state.cuQ || ''), f = state.cuF || '', L = (m.cust || []).filter(function (x) { return (!q || key(x.name).indexOf(q) >= 0 || staffFind([x.name], state.cuQ).length) && (!f || (f === 'due' ? cuDue(x) : x.soon.length)); });
+      if (f === 'due') L.sort(function (a, b) { return a.gap - b.gap; }); if (f === 'soon') L.sort(function (a, b) { return a.soon[0].in - b.soon[0].in; });
+      var lim = state.cuMore ? 400 : 30;
+      box.innerHTML = L.length ? L.slice(0, lim).map(cuLine).join('') + (L.length > lim ? '<button type="button" class="btn" id="cuMore">더 보기 (' + (L.length - lim) + '명)</button>' : '') : '<p class="note">' + ((m.cust || []).length ? '맞는 손님이 없어요.' : '아직 손님 기록이 없어요. 테이블에 손님을 넣거나 킵을 맡기면 여기에 쌓여요.') + '</p>';
+      box.querySelectorAll('[data-cuid]').forEach(function (b) { b.addEventListener('click', function () { cuOpen(b.dataset.cuid); }); });
+      if ($('cuMore')) $('cuMore').addEventListener('click', function () { state.cuMore = true; paint(); });
+    }
+    paint();
+    $('cuQ').addEventListener('input', function () { state.cuQ = this.value; paint(); });
+    area.querySelectorAll('[data-cuf]').forEach(function (b) { b.addEventListener('click', function () { state.cuF = b.dataset.cuf; area.querySelectorAll('[data-cuf]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); paint(); }); });
+    $('cuAdd').addEventListener('click', function () {
+      showSheet('<h2>📇 손님 추가</h2><p class="sub">테이블·킵에 아직 없는 단골을 직접 넣어요. 같은 이름으로 테이블·킵에 들어오면 같은 손님으로 이어져요.</p><label>손님 이름<input id="cuNew" maxlength="20" autocomplete="off" placeholder="예: 민성"></label><p class="msg" id="cuNewM"></p><button class="btn btn-hot" type="button" id="cuNewGo" style="width:100%">추가</button>');
+      $('cuNewGo').addEventListener('click', function () {
+        var g = $('cuNew').value.trim(), b = this; if (!g) { $('cuNewM').textContent = '이름을 써 주세요.'; return; }
+        b.disabled = true;
+        call({ a: 'cu_set', token: state.s.token, add: true, g: g, staff: other ? m.name : '' }).then(function (r) {
+          b.disabled = false;
+          if (r.error === 'auth') return toLogin(AUTH_OUT);
+          if (!r.ok) { $('cuNewM').textContent = r.error === 'name' ? '이름을 다시 써 주세요.' : r.error === 'busy' ? '잠시 후 다시 해 주세요.' : '추가하지 못했어요.'; return; }
+          if (state.me && key(state.me.name) === key(r.cust.staff)) state.me.cust = r.list;
+          if (state.tab === 'me') render(); cuShow(r.cust, '추가했어요 · 생일·기념일을 넣어 두세요');
+        }).catch(function () { b.disabled = false; $('cuNewM').textContent = '연결이 안 돼요.'; });
+      });
+    });
+  }
+  function cuOpen(id) {
+    call({ a: 'cu_get', token: state.s.token, id: id }).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (r.ok) cuShow(r.cust); else alertMsg('손님 기록을 못 열었어요.');
+    }).catch(function () { alertMsg('연결이 안 돼요.'); });
+  }
+  function mdSel(id, v) {
+    var p = String(v || '').split('-'), mo = +p[0] || 0, dd = +p[1] || 0, o = function (n, cur, lab) { var h = '<option value="">' + lab + '</option>'; for (var i = 1; i <= n; i++) h += '<option value="' + i + '"' + (i === cur ? ' selected' : '') + '>' + i + lab + '</option>'; return h; };
+    return '<select data-mm="' + id + '" aria-label="월">' + o(12, mo, '월') + '</select><select data-md="' + id + '" aria-label="일">' + o(31, dd, '일') + '</select>';
+  }
+  function mdVal(root, id) { var m = root.querySelector('[data-mm="' + id + '"]').value, d = root.querySelector('[data-md="' + id + '"]').value; return m && d ? ('0' + m).slice(-2) + '-' + ('0' + d).slice(-2) : (m || d ? 'bad' : ''); }
+  function cuShow(c, msg) {
+    var fl = function (x) { return x === 'SPOT' ? '3층' : '2층'; }, other = key(c.staff) !== key(state.s.name), ev = (c.ev || []).slice(0, 3);
+    if (ev.length < 3) ev.push({ n: '', d: '' });
+    var h = '<div class="cus"><h2>📇 ' + esc(c.name) + (other ? ' <small style="color:var(--muted);font-size:14px">' + esc(c.staff) + ' 손님</small>' : '') + '</h2>' +
+      '<p class="sum2">' + (c.last ? '마지막 방문 <b>' + esc(md(c.last)) + '</b>' + (c.since > 0 ? ' (' + c.since + '일 전)' : ' (오늘)') + ' · 총 <b>' + c.visits + '번</b>' : '방문 기록 없음') + (c.seat ? ' · ' + esc(c.seat) : '') + (c.liq ? ' · ' + esc(c.liq) : '') +
+      (c.keep.length ? '<br>🍾 킵 ' + esc(c.keep.join(', ')) : '') + (c.contact ? '<br>📞 마지막 연락 ' + esc(md(c.contact)) : '') + (cuDue(c) ? '<br><b style="color:var(--warn)">' + c.gap + '일째 안 오셨어요 · 연락해 볼 때예요</b>' : '') + '</p>' +
+      '<label>🎂 생일</label><div class="mdr">' + mdSel('b', c.bday) + '</div>' +
+      '<label>💍 기념일 (최대 3개)</label>' + ev.map(function (e, i) { return '<div class="mdr"><input data-evn="' + i + '" maxlength="10" placeholder="예: 결혼기념일" value="' + esc(e.n) + '">' + mdSel('e' + i, e.d) + '</div>'; }).join('') +
+      '<label>📝 메모<textarea id="cuMemo" maxlength="100" rows="2" placeholder="예: 하이볼 좋아함 · 금요일 단체">' + esc(c.memo || '') + '</textarea></label>' +
+      '<p class="msg' + (msg ? ' ok' : '') + '" id="cuMsg">' + esc(msg || '') + '</p>' +
+      '<div class="cub"><button class="btn btn-hot" type="button" id="cuSave">저장</button><button class="btn" type="button" id="cuCall">📞 연락했어요</button>' + (c.phone ? '<a class="btn" href="tel:' + esc(String(c.phone).replace(/[^0-9+]/g, '')) + '">📱 전화 걸기</a>' : '') + '<button class="btn" type="button" id="cuHide">🙈 숨기기</button></div>' +
+      '<h3 style="margin:8px 0 4px;font-size:15px">🗓 방문 기록</h3><div class="hist">' + ((c.hist || []).length ? c.hist.map(function (v) {
+        return '<div><b>' + esc(md(v.day)) + '</b> ' + (v.keep ? '🍾 킵 ' + esc(v.keep) : esc(fl(v.fl) + ' ' + v.seat) + ' · ' + esc((v.sx || '') + (v.n || '')) + (v.liq ? ' · ' + esc(v.liq) : '') + (v.sold ? ' · 판매' : '') + (v.memo ? ' <small>' + esc(v.memo) + '</small>' : '')) + '</div>';
+      }).join('') : '<small>아직 없어요</small>') + '</div></div>';
+    showSheet(h);
+    var sh = $('sheet'), say = function (t, ok) { var m = $('cuMsg'); if (m) { m.textContent = t; m.className = 'msg' + (ok ? ' ok' : ''); } };
+    function send(body, btn, okMsg) {
+      btn.disabled = true;
+      call(Object.assign({ a: 'cu_set', token: state.s.token, id: c.id }, body)).then(function (r) {
+        btn.disabled = false;
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (!r.ok) return say({ date: '날짜를 다시 골라 주세요.', text: '< > 는 쓸 수 없어요.', busy: '잠시 후 다시 해 주세요.', forbidden: '내 손님만 고칠 수 있어요.' }[r.error] || '저장하지 못했어요.');
+        if (state.me && key(state.me.name) === key(c.staff)) { state.me.cust = r.list; if (state.tab === 'me') render(); }
+        if (body.hide) { sh.hidden = true; sh.innerHTML = ''; alertMsg('숨겼어요'); return; }
+        cuShow(r.cust, okMsg);
+      }).catch(function () { btn.disabled = false; say('연결이 안 돼요. 다시 해 주세요.'); });
+    }
+    $('cuSave').addEventListener('click', function () {
+      var bd = mdVal(sh, 'b'), evs = [];
+      for (var i = 0; i < ev.length; i++) { var n = sh.querySelector('[data-evn="' + i + '"]').value.trim(), d = mdVal(sh, 'e' + i); if (d === 'bad' || (n && !d)) return say('기념일 날짜(월·일)를 골라 주세요.'); if (d) evs.push({ n: n || '기념일', d: d }); }
+      if (bd === 'bad') return say('생일은 월·일을 둘 다 골라 주세요.');
+      send({ bday: bd, ev: evs, memo: $('cuMemo').value.trim() }, this, '저장했어요');
+    });
+    $('cuCall').addEventListener('click', function () { send({ contact: true }, this, '📞 연락 기록했어요 · 14일 알림이 다시 시작돼요'); });
+    $('cuHide').addEventListener('click', function () { if (!armed(this, '🙈 숨기기')) return; send({ hide: true }, this); });
   }
   function bindMe(area) {
     bindPunch(area); if ($('meEdit')) $('meEdit').addEventListener('click', openMe);
+    if ($('meBrief')) $('meBrief').addEventListener('click', openBrief);
     var sel = $('meWho'); if (sel) sel.addEventListener('change', function () { state.meWho = this.value; state.me = null; state.meFly = 0; render(); });
   }
 
