@@ -966,6 +966,11 @@ body.chatlock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidde
 .glive p { margin: 0; font-size: 15px; } .glive p small { color: var(--muted); }
 .gbar { height: 8px; border-radius: 99px; background: rgba(255,255,255,.12); overflow: hidden; } .gbar i { display: block; height: 100%; background: var(--g); border-radius: 99px; transition: width 1s linear; }
 .gorder { font-size: 13px; color: var(--muted); margin: -8px 0 16px; line-height: 1.6; }
+/* 🚫 입구 호출 제외 (대표 요청 2026-11-19 아침) */
+.gskipw h3 { font-size: 14px; margin: 10px 0 6px; } .gskipw h3 small { color: var(--muted); font-weight: 600; }
+.gsk { display: flex; flex-wrap: wrap; gap: 6px; } .gsk button { min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--txt); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.gsk button[aria-pressed="true"] { background: rgba(255,59,92,.16); border-color: var(--bad); color: var(--bad); text-decoration: line-through; } .gsk button .on { color: var(--ok); font-size: 10px; margin-right: 3px; }
+.gskipw details summary { font-size: 13px; color: var(--muted); cursor: pointer; margin: 8px 0 6px; } .gskipnow { font-size: 13px; color: var(--bad); margin: -10px 0 16px; line-height: 1.6; }
 .gstat { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--card); margin: 0 0 16px; }
 .gstat table { border-collapse: collapse; width: 100%; font-size: 14px; } .gstat th, .gstat td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: center; font-variant-numeric: tabular-nums; }
 .gstat th:first-child, .gstat td:first-child { text-align: left; padding-left: 12px; } .gstat thead th { color: var(--muted); font-weight: 800; font-size: 12px; }
@@ -1756,7 +1761,7 @@ body.popmode .chath .chpop { display: none; }
         '<b>@호출</b>: <code>@</code>를 치면 직원 목록이 떠요 → 성 빼고·초성·닉네임으로 찾기 (<code>@동기</code> <code>@ㄷㄱ</code>) → 부른 사람에게 알림',
         '<b>말풍선</b>: <b>두 번 누르기 = ✅ 확인</b> (내 이름이 담당으로 붙음 · 🛎 운영 요청은 = 내가 할게요) · <b>꾹 누르기 = ↩️ 답장 · 📋 복사 · ✅ 확인/취소</b> · 답장 위 인용을 누르면 원래 글로 이동',
         '<b>지우기</b>: 내가 쓴 글 옆 <b>✕</b>를 두 번',
-        '<b>읽는 자리</b>: 위로 올려 읽는 중에 새 글이 오면 <b>⬇ 새 메시지 N</b> 버튼 → 누르면 맨 아래 · 대화는 <b>최근 3일</b>까지 보여요',
+        '<b>읽는 자리</b>: 위로 올려 읽는 중에 새 글이 오면 <b>⬇ 새 메시지 N</b> 버튼 → 누르면 맨 아래 · 대화는 <b>최근 3일</b>까지 보이고, <b>🌙 영업 종료</b> 때 비워져요',
         '<b>저절로 내려가는 것</b>: 새 🛎 운영 요청·🚨 경호·🆘 긴급모집 줄이 오면 맨 아래로 + 테두리 빨갛게 깜빡 · 🎆 새 연출 요청은 <b>DJ팀 계정만</b> 맨 아래로 (🎆 연출 탭도, 다른 사람은 깜빡만)',
         '<b>🆘 긴급모집</b>은 🪑 테이블 대화 <b>맨 위에 빨갛게 고정</b> + 💬 버튼도 빨갛게 깜빡',
         '<b>자동 기록</b>: 테이블 대화에 자리표·🛎 운영 탭·🚨 경호 호출에서 한 것도 한 줄씩 (✍️자리표 · ✍️운영탭 · ✍️경호 호출 · 🆘긴급모집 · 📍위치) · 연출 대화에는 ✍️연출탭',
@@ -1781,7 +1786,7 @@ body.popmode .chath .chpop { display: none; }
       ]) +
       sec('🌙 영업 종료 · 🌅 영업 시작', [
         '<b>대표·팀장</b>만 (경호팀장 빼고): 맨 위 GROOVE STAFF 옆 <b>🌙 영업종료</b> → <b>한 번 더 확인</b>',
-        '누르면 정리: 🪑 테이블 전부 비움 · 🎆 연출·🛎 운영·🚪 입구·🚨 경호의 안 끝난 일 · 🎬 실시간 그날 것 지움 · 🕘 출근 중인 사람 <b>모두 퇴근</b> · 🍾 킵 장부는 그대로',
+        '누르면 정리: 🪑 테이블 전부 비움 · 🎆 연출·🛎 운영·🚪 입구·🚨 경호의 안 끝난 일 · 💬 대화창 비움 · 🎬 실시간 그날 것 지움 · 🕘 출근 중인 사람 <b>모두 퇴근</b> · 🍾 킵 장부는 그대로',
         '출근해 있던 사람에게 <b>수고하셨습니다</b> 알림 + 화면이 3초 깜빡',
         '그 뒤 버튼이 <b>🌅 영업시작</b>으로 바뀌어요 → 누르면 출근한 사람에게 <b>오늘도 화이팅</b> 알림'
       ]) +
@@ -1795,6 +1800,7 @@ body.popmode .chath .chpop { display: none; }
         '경호팀 화면에 누구에게 갔는지·몇 초 남았는지·다음 차례가 보이고, 한 바퀴 돌아도 없으면 경호팀·대표에게 <b>없음</b> 알림',
         '안내·순번 호출은 <b>💬 테이블 대화</b>에 한 줄로 올라가요: 지금 차례 <b>@이름</b> → 넘기면 다음 사람으로 바뀌고, 받으면 <b>✅ @이름 받음</b>',
         '<b>⏱ 차례 시간</b>(안내 10초·순번 15초)은 경호팀장·대표가 입구 탭에서 5초씩 늘리고 줄여요',
+        '<b>🚫 호출 제외</b>: 대표·김동기·양진호가 입구 탭에서 🙋 안내·🆕 순번 차례에서 뺄 사람을 눌러 골라요 (다시 누르면 넣음 · 풀 때까지 유지 · 👤 담당 MD 지정 호출은 그대로)',
         '<b>수습</b> 직책은 호출에서 빠져요 · <b>경호팀장</b>은 🪑 테이블·🎆 연출을 보고 그 💬 대화에 쓸 수 있어요 · 대표는 3일 받은 수 확인'
       ]) +
       sec('🪑 테이블', [
@@ -2228,7 +2234,7 @@ body.popmode .chath .chpop { display: none; }
     return !d.guard && !d.admin && w.in && !w.out && state.s && state.s.role !== '수습' && (SALES.indexOf(d.team) >= 0 || d.team === '운영팀');
   }
   function gateErr(r) {
-    return { nomd: '지금 출근 중인 MD가 없어요.', noguide: '지금 출근 중인 운영팀이 없어요.', off: '그 MD는 지금 출근 중이 아니에요.', name: '호출할 수 없는 사람이에요.', busy: '잠시 후 다시 눌러 주세요.',
+    return { nomd: '지금 부를 수 있는 MD가 없어요 (출근 중 · 🚫 호출 제외 확인).', noguide: '지금 부를 수 있는 운영팀이 없어요 (출근 중 · 🚫 호출 제외 확인).', off: '그 MD는 지금 출근 중이 아니에요.', name: '호출할 수 없는 사람이에요.', busy: '잠시 후 다시 눌러 주세요.',
       taken: '이미 다른 사람이 받았어요.', closed: '이미 끝난 호출이에요.', notyou: '지금은 내 차례가 아니에요.', forbidden: '권한이 없어요.', net: '연결이 안 돼요. 다시 해 주세요.' }[r && r.error] || '안 됐어요. 다시 해 주세요.';
   }
   function loadGate(quiet) {
@@ -2282,8 +2288,8 @@ body.popmode .chath .chpop { display: none; }
       '<div class="gcnt">' + [['m', '남'], ['w', '여']].map(function (x) { return '<div class="gstep"><span>' + x[1] + '</span><button type="button" data-gstep="' + x[0] + '" data-d="-1" aria-label="' + x[1] + ' 빼기">−</button><b>' + (f[x[0]] || 0) + '</b><button type="button" data-gstep="' + x[0] + '" data-d="1" aria-label="' + x[1] + ' 더하기">+</button></div>'; }).join('') + '</div>' +
       '<input id="gMemo" maxlength="40" autocomplete="off" placeholder="메모 (예: 생일, 외국인, 예약 이름)" value="' + esc(f.memo || '') + '"></div>';
     h += '<div class="gbtns">' +
-      '<button type="button" class="gbig guide" data-gnew="guide"' + (g.guides ? '' : ' disabled') + '>🙋 안내 직원 호출<small>' + (g.guides ? '운영팀 한 명씩 ' + g.turn.guide + '초 · 다음 ' + esc(gnext ? gnext.name : '') : '출근 중인 운영팀이 없어요') + '</small></button>' +
-      '<button type="button" class="gbig md" data-gnew="md"' + (next ? '' : ' disabled') + '>🆕 담당 없는 손님 → MD 순번<small>' + (next ? '한 명씩 ' + g.turn.md + '초 · 다음 ' + esc(next.name) : '출근 중인 MD가 없어요') + '</small></button>' +
+      '<button type="button" class="gbig guide" data-gnew="guide"' + (g.guides ? '' : ' disabled') + '>🙋 안내 직원 호출<small>' + (g.guides ? '운영팀 한 명씩 ' + g.turn.guide + '초 · 다음 ' + esc(gnext ? gnext.name : '') : (g.skip && (g.skip.guide || []).length ? '부를 수 있는 운영팀이 없어요 (🚫 제외 ' + g.skip.guide.length + '명)' : '출근 중인 운영팀이 없어요')) + '</small></button>' +
+      '<button type="button" class="gbig md" data-gnew="md"' + (next ? '' : ' disabled') + '>🆕 담당 없는 손님 → MD 순번<small>' + (next ? '한 명씩 ' + g.turn.md + '초 · 다음 ' + esc(next.name) : (g.skip && (g.skip.md || []).length ? '부를 수 있는 MD가 없어요 (🚫 제외 ' + g.skip.md.length + '명)' : '출근 중인 MD가 없어요')) + '</small></button>' +
       '<button type="button" class="gbig pick" data-gnew="pick"' + ((g.mds || []).length ? '' : ' disabled') + '>👤 담당 MD 호출<small>손님이 찾는 MD 이름 골라서</small></button></div>';
     function gpkList(q) {
       var list = (g.mds || []).filter(function (m) { return !q || staffHit(m.name, q) >= 0; });
@@ -2291,10 +2297,25 @@ body.popmode .chath .chpop { display: none; }
     }
     if (state.gpick) h += '<div class="gpk"><input id="gFind" autocomplete="off" placeholder="이름·닉네임·초성 (예: ㅅㅇ)" value="' + esc(state.gq || '') + '"><div class="plist" id="gpkL">' + gpkList(state.gq || '') + '</div><button type="button" class="btn" data-gpick-close>닫기</button></div>';
     if ((g.order || []).length) h += '<p class="gorder">MD 순번: ' + g.order.map(function (x) { return esc(x.name) + (x.n ? ' <small>(' + x.n + ')</small>' : ''); }).join(' → ') + ' <small>· 괄호 = 3일 받은 수</small></p>';
+    var sk = g.skip || { guide: [], md: [] };
+    if (!sk.edit && ((sk.guide || []).length || (sk.md || []).length)) h += '<p class="gskipnow">🚫 호출 제외 · ' + [['guide', '🙋 안내'], ['md', '🆕 순번']].filter(function (x) { return (sk[x[0]] || []).length; }).map(function (x) { return x[1] + ' ' + sk[x[0]].map(esc).join(', '); }).join(' · ') + '</p>';
     // ⏱ 차례 시간 (경호팀장·대표, 2026-11-18): 한 사람에게 기다려 주는 시간 5초씩 5~120초
     if (g.turn && g.turn.edit) h += '<div class="gturn"><h2 class="sec" style="margin:0 0 8px">⏱ 차례 시간 <small style="color:var(--muted);font-weight:600">경호팀장·대표</small></h2><div class="gcnt">' +
       [['guide', '🙋 안내'], ['md', '🆕 순번']].map(function (x) { return '<div class="gstep"><span>' + x[1] + '</span><button type="button" data-gturn="' + x[0] + '" data-d="-5" aria-label="' + x[1] + ' 줄이기">−</button><b>' + g.turn[x[0]] + '초</b><button type="button" data-gturn="' + x[0] + '" data-d="5" aria-label="' + x[1] + ' 늘리기">+</button></div>'; }).join('') +
       '</div><p class="note" style="margin:0">한 사람에게 기다려 주는 시간이에요. 안 받으면 다음 사람에게 넘어가요. (5초씩 · ' + (g.turn.min || 5) + '~' + (g.turn.max || 120) + '초)</p></div>';
+    // 🚫 호출 제외 (대표·김동기·양진호, 2026-11-19 아침): 🙋 안내·🆕 순번 차례에서 뺄 사람 — 누르면 빼고, 다시 누르면 넣음. 풀 때까지 유지
+    if (sk.edit && sk.cands) {
+      var skBtn = function (kind, c) { var off = (sk[kind] || []).some(function (n) { return key(n) === key(c.name); }); return '<button type="button" data-gskip="' + kind + '" data-gsn="' + esc(c.name) + '" aria-pressed="' + off + '">' + (c.on ? '<span class="on">●</span>' : '') + (off ? '🚫 ' : '') + esc(c.name) + nickH(c.name) + '</button>'; };
+      var skGroup = function (kind, title) {
+        var all = sk.cands[kind] || [], isOff = function (c) { return (sk[kind] || []).some(function (n) { return key(n) === key(c.name); }); };
+        var top = all.filter(function (c) { return c.on || isOff(c); }), rest = all.filter(function (c) { return !c.on && !isOff(c); });
+        return '<h3>' + title + ' <small>· 뺀 사람 ' + (sk[kind] || []).length + '명</small></h3><div class="gsk">' + (top.length ? top.map(function (c) { return skBtn(kind, c); }).join('') : '<span class="note" style="margin:0">출근 중인 사람이 없어요</span>') + '</div>' +
+          (rest.length ? '<details data-gskd="' + kind + '"' + (state.gskOpen && state.gskOpen[kind] ? ' open' : '') + '><summary>출근 안 한 사람 ' + rest.length + '명</summary><div class="gsk">' + rest.map(function (c) { return skBtn(kind, c); }).join('') + '</div></details>' : '');
+      };
+      h += '<div class="gturn gskipw"><h2 class="sec" style="margin:0 0 6px">🚫 호출 제외 <small style="color:var(--muted);font-weight:600">대표·김동기·양진호가 정해요</small></h2>' +
+        '<p class="note" style="margin:0">누르면 그 사람에게 <b>차례가 안 가요</b> (빨간 줄 = 뺀 사람, 다시 누르면 넣어요). 풀 때까지 그대로예요. <span style="color:var(--ok)">●</span> = 지금 출근 중 · 👤 담당 MD 지정 호출은 그대로 돼요.</p>' +
+        skGroup('guide', '🙋 안내 직원 (운영팀)') + skGroup('md', '🆕 MD 순번 (영업팀)') + '</div>';
+    }
     // 👥 입구 탭 쓰는 사람 (대표·김동기·양진호가 넣고 뺌, 2026-11-18)
     if (g.users) {
       var ul = g.users.list || [], uq = state.guq || '', inU = function (n) { return ul.some(function (x) { return key(x) === key(n); }); };
@@ -2351,6 +2372,11 @@ body.popmode .chath .chpop { display: none; }
     function bindGu(root) { root.querySelectorAll('[data-guon],[data-guoff]').forEach(function (b) { b.addEventListener('click', guClick); }); }
     var gq = $('guQ'); if (gq) gq.addEventListener('input', function () { state.guq = gq.value; $('guL').innerHTML = state.guList(gq.value); bindGu($('guL')); });   // 목록만 (한글 조합 유지)
     bindGu(area);
+    area.querySelectorAll('[data-gskip]').forEach(function (b) { b.addEventListener('click', function () {   // 🚫 호출 제외 넣고 빼기
+      var k = b.dataset.gskip, n = b.dataset.gsn, on = b.getAttribute('aria-pressed') !== 'true', y = window.scrollY;
+      gateSend({ a: 'gate_skip', kind: k, name: n, on: on }, b, function (r) { state.gmsg = r.error ? (r.error === 'forbidden' ? '권한이 없어요.' : '바꾸지 못했어요. 다시 해 주세요.') : '🚫 ' + n + ' 님을 ' + (k === 'guide' ? '🙋 안내' : '🆕 순번') + ' 차례에서 ' + (on ? '뺐어요.' : '다시 넣었어요.'); state.gmsgOk = !r.error; render(); window.scrollTo(0, y); });
+    }); });
+    area.querySelectorAll('[data-gskd]').forEach(function (dt) { dt.addEventListener('toggle', function () { state.gskOpen = state.gskOpen || {}; state.gskOpen[dt.dataset.gskd] = dt.open; }); });
     function guClick() { var b = this; (function () {
       var on = !!b.dataset.guon, n = b.dataset.guon || b.dataset.guoff;
       gateSend({ a: 'gate_users', name: n, on: on }, b, function (r) { state.guq = on ? '' : state.guq; state.gmsg = r.error ? (r.error === 'already' ? '경호팀·대표는 이미 입구 탭을 써요.' : '바꾸지 못했어요. 다시 해 주세요.') : '👥 ' + n + ' 님을 입구 탭에서 ' + (on ? '쓰게 했어요.' : '뺐어요.'); state.gmsgOk = !r.error; render(); });
@@ -4060,7 +4086,7 @@ body.popmode .chath .chpop { display: none; }
   }
   function byeConfirm() {
     showSheet('<h2>🌙 영업 종료</h2><p style="font-size:18px;font-weight:900;margin:4px 0 10px">영업종료하시겠습니까?</p>' +
-      '<ul class="note" style="margin:0 0 12px;padding-left:18px;line-height:1.7"><li>출근 중인 직원에게 <b>수고하셨습니다</b> 알림 · 화면 3초 깜빡</li><li>안 끝난 일 모두 끝 (킵 승인 대기는 그대로)</li><li>🪑 테이블 모두 비움</li><li>🎆 연출 · 🛎 운영 · 🚪 입구 · 🚨 경호 목록 비움</li><li>🎬 실시간 영상 오늘 것 지움</li><li>🕘 출근 중인 사람 모두 <b>퇴근</b> 처리</li><li>기록·★ 판매 순위·마감 리포트 숫자는 그대로 남아요</li></ul>' +
+      '<ul class="note" style="margin:0 0 12px;padding-left:18px;line-height:1.7"><li>출근 중인 직원에게 <b>수고하셨습니다</b> 알림 · 화면 3초 깜빡</li><li>안 끝난 일 모두 끝 (킵 승인 대기는 그대로)</li><li>🪑 테이블 모두 비움</li><li>🎆 연출 · 🛎 운영 · 🚪 입구 · 🚨 경호 목록 비움</li><li>💬 대화창 비움 (테이블·연출·게스트·운영·입구)</li><li>🎬 실시간 영상 오늘 것 지움</li><li>🕘 출근 중인 사람 모두 <b>퇴근</b> 처리</li><li>기록·★ 판매 순위·마감 리포트 숫자는 그대로 남아요</li></ul>' +
       '<p class="msg" id="byeMsg"></p><button class="btn btn-hot" type="button" id="byeGo" style="width:100%;min-height:52px;font-size:17px">네, 영업 종료</button>');
     $('byeGo').addEventListener('click', function () {
       var b = this; b.disabled = true; b.textContent = '종료하는 중…';
