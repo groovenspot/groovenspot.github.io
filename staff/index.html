@@ -3781,7 +3781,7 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-opid]').forEach(function (c) {
       var id = c.dataset.opid;
       c.querySelectorAll('[data-optake],[data-opun]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_take', id: id, on: !b.dataset.opun }, b, function (r) { if (!r.ok) state.opsMsg = opsErr(r); else if (!b.dataset.opun) state.opsMsg = '맡았어요. 요청한 사람에게 알려요.'; render(); }); }); });
-      c.querySelectorAll('[data-opurg]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_urgent', id: id }, b, function (r) { state.opsMsg = r.ok ? '🆘 테이블 대화에 다시 올리고 맨 위에 고정했어요. 운영팀·영업진 전체에게 알렸어요. 인원이 다 차면 풀려요.' : opsErr(r); render(); }); }); });
+      c.querySelectorAll('[data-opurg]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_urgent', id: id }, b, function (r) { state.opsMsg = r.ok ? '🆘 테이블 대화에 다시 올리고 맨 위에 고정했어요. 출근한 운영팀·영업진에게 알렸어요. 인원이 다 차면 풀려요.' : opsErr(r); render(); }); }); });
       c.querySelectorAll('[data-opcx]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '요청 취소')) return; opsCall({ a: 'ops_cancel', id: id }, b, function (r) { state.opsMsg = r.ok ? '요청을 취소했어요.' : opsErr(r); render(); }); }); });
     });
   }
