@@ -431,7 +431,9 @@ body.hasfab main { padding-bottom: 110px; }
 .chathelp code { color: var(--txt); background: rgba(255,255,255,.06); border-radius: 6px; padding: 1px 5px; font-family: inherit; }
 .chathelp pre { margin: 4px 0 8px; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.06); color: var(--txt); font: inherit; white-space: pre-wrap; }
 .chathelp p { margin: 0 0 6px; }
-.chatl { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; -webkit-overflow-scrolling: touch; }
+.chatl { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+/* 폰: 대화창을 열면 뒤 화면이 따라 움직이지 않게 (대표 제보 2026-11-19: 게스트 대화에서 밀면 뒤 순위 화면이 오르내림) */
+body.chatlock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden; }
 .chatl .cday { align-self: center; font-size: 11px; color: var(--muted); margin: 6px 0; }
 .chatl .cm { max-width: 82%; align-self: flex-start; }
 .chatl .cm.me { align-self: flex-end; text-align: right; }
@@ -1491,7 +1493,7 @@ body.popmode .chath .chpop { display: none; }
     if (state.tab === 'ops' && d.guard) state.tab = 'gate';
     var gateOn = !!(d.guard || d.gate);   // 🚪 입구: 경호팀 · 대표
     if (state.tab === 'gate' && !gateOn) state.tab = 'guest';
-    if (d.guard && ['gate', 'me'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
+    if (d.guard && ['gate', 'me'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : [], hasBoard ? ['board'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·📋 경호팀 게시판·내 프로필만
     state.tabPick = state.tab !== want ? want : ''; tabSave();
     tabArrange(d.tabOrder || []);   // ↕ 내 탭 순서
     document.querySelectorAll('#tabs button').forEach(function (b) {
@@ -1508,7 +1510,7 @@ body.popmode .chath .chpop { display: none; }
       if (b.dataset.tab === 'all') b.hidden = !d.admin;   // 📡 전체: 대표만
       if (b.dataset.tab === 'ops') b.hidden = false;   // 🛎 운영 요청: 누구나 (운영팀은 받기)
       if (b.dataset.tab === 'gate') b.hidden = !gateOn;
-      if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table));
+      if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table) || (b.dataset.tab === 'board' && hasBoard));
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = '<span class="tl">' + esc(l[0]) + '</span>' + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
@@ -2506,7 +2508,7 @@ body.popmode .chath .chpop { display: none; }
 
   // ── 게시판 (전체 공지 · 전체 직원 · 팀) ─────────────────
   var TAGS = ['공지', '업무', '일정', '자유'];
-  function bName(t) { return t === '전체' ? '📢 전체 공지' : t === '직원' ? '👥 전체 직원' : t + ' 팀'; }
+  function bName(t) { return t === '전체' ? '📢 전체 공지' : t === '직원' ? '👥 전체 직원' : /팀$/.test(t) ? t : t + ' 팀'; }   // '경호팀 팀' → '경호팀'
   function bDesc(t, d) {
     if (t === '전체') return '대표님 공지예요. 모든 직원이 봐요.';
     if (t === '직원') return '모든 직원이 보고 쓸 수 있어요.';
@@ -5021,7 +5023,7 @@ body.popmode .chath .chpop { display: none; }
     $('chatHelp').innerHTML = CHAT_HELP[room] || ''; $('chatHelp').hidden = true; $('chatQ').setAttribute('aria-expanded', 'false');
     if (state.chatMediaReset) state.chatMediaReset();
     chatReplyTo(null); chatMenuClose();
-    $('chatBox').hidden = false; $('chatFab').hidden = true;
+    $('chatBox').hidden = false; $('chatFab').hidden = true; chatLock(true);
     $('chatPop').hidden = !!state.pop || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.matchMedia && matchMedia('(pointer: coarse)').matches);
     state.chatNewN = 0; $('chatNew').hidden = true; tabSave();
     chatLoad(true);
@@ -5053,7 +5055,12 @@ body.popmode .chath .chpop { display: none; }
       chatClose();
     }).catch(win);
   }
-  function chatClose() { chatMenuClose(); $('chatBox').hidden = true; $('chatAt').hidden = true; clearInterval(state.chatTimer); state.chatRoom = ''; tabSave(); paintChatFab(); }
+  function chatLock(on) {   // 폰에서 대화창이 열려 있는 동안 뒤 화면 고정 (닫으면 보던 자리로)
+    var b = document.body, was = b.classList.contains('chatlock');
+    if (on && !was && !state.pop && window.matchMedia && matchMedia('(max-width: 600px)').matches) { state.lockY = window.scrollY || 0; b.style.top = -state.lockY + 'px'; b.classList.add('chatlock'); }
+    else if (!on && was) { b.classList.remove('chatlock'); b.style.top = ''; window.scrollTo(0, state.lockY || 0); }
+  }
+  function chatClose() { chatLock(false); chatMenuClose(); $('chatBox').hidden = true; $('chatAt').hidden = true; clearInterval(state.chatTimer); state.chatRoom = ''; tabSave(); paintChatFab(); }
   function chatLoad(first) {
     var room = state.chatRoom; if (!room || state.chatFly) return;
     state.chatFly = 1;
