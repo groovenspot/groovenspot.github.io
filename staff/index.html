@@ -411,6 +411,15 @@ body.hasfab main { padding-bottom: 110px; }
 .org { font-size: 11px; font-weight: 700; color: var(--g); margin-left: 4px; }
 .rnames { display: block; font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 4px; text-align: left; }
 .rnames b { color: var(--ok); } .rnames.un { color: #ff8199; }
+.gdsong { margin: -2px 0 12px; padding: 10px; border: 1px solid var(--line-2); border-radius: 14px; background: var(--card-2); }
+.gdsong input[type=text], .gdsong #gdSQ { margin-bottom: 8px; min-height: 40px; padding: 8px 12px; }
+.gdsl { display: grid; gap: 6px; max-height: 260px; overflow-y: auto; }
+.gdsl button { text-align: left; min-height: 40px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line-2); background: none; color: var(--txt); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.gdsl button small { color: var(--muted); font-weight: 600; margin-left: 4px; }
+.gdup { display: block; width: 100%; margin-top: 8px; text-align: center; cursor: pointer; }
+.gdsp { margin: 0 0 6px; }
+.gdst { margin: 0 0 14px; border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 12px; background: var(--card); }
+.gdst summary { font-weight: 800; cursor: pointer; } .gdst ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.7; } .gdst .bad { color: #ff8199; }
 .decadd { margin: 0 0 12px; border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 12px; background: var(--card); }
 .decadd summary { font-weight: 800; cursor: pointer; }
 .decadd form { margin-top: 10px; } .decadd label { margin-bottom: 10px; font-size: 13px; }
@@ -2702,7 +2711,7 @@ body.hasfab main { padding-bottom: 110px; }
   // ── 🎆 연출 요청 (2026-11-18, 카톡 '불꽃놀이' 방) ─────────────────
   // 영업진이 요청 → DJ팀 전광 준비(ㅈㄱㅈㅂㅇ) · 운영팀 술 준비(ㅅㅈㅂㅇ) → ㄱㄱ(시작) → 컷(끝). ㄱㄱ·컷 = 요청자·DJ팀·관리자, 순서 = 관리자·DJ팀 (대표 결정 2026-11-18).
   function ycErr(r) {
-    return { seat: '자리를 골라 주세요.', when: '순서를 다시 골라 주세요.', empty: '연출 내용을 하나 이상 넣어 주세요.', text: '<, >, " 는 쓸 수 없어요.', long: '문구는 300자까지예요.', songlink: '노래는 멜론 곡 링크나 사운드클라우드 곡 링크로 넣어 주세요.', video: '영상을 다시 올려 주세요.', songsite: '멜론이나 사운드클라우드 링크만 돼요.', unreleased: '사운드클라우드에 다운로드 링크가 없는 곡이에요 · 미발매곡은 안 돼요.', sctrack: '사운드클라우드 곡(트랙) 하나의 링크를 넣어 주세요.', check: '노래 링크를 확인하지 못했어요. 잠시 후 다시 해 주세요.',
+    return { seat: '자리를 골라 주세요.', when: '순서를 다시 골라 주세요.', empty: '연출 내용을 하나 이상 넣어 주세요.', text: '<, >, " 는 쓸 수 없어요.', long: '문구는 300자까지예요.', songlink: '노래는 멜론 곡 링크나 사운드클라우드 곡 링크로 넣어 주세요.', drivesong: '📁 세팅곡 폴더에 있는 파일만 쓸 수 있어요.', video: '영상을 다시 올려 주세요.', songsite: '멜론이나 사운드클라우드 링크만 돼요.', unreleased: '사운드클라우드에 다운로드 링크가 없는 곡이에요 · 미발매곡은 안 돼요.', sctrack: '사운드클라우드 곡(트랙) 하나의 링크를 넣어 주세요.', check: '노래 링크를 확인하지 못했어요. 잠시 후 다시 해 주세요.',
       forbidden: '이건 할 수 없어요.', state: '이미 바뀌었어요. 새로고침했어요.', notfound: '이미 지워졌어요.', busy: '잠시 후 다시 해 주세요.', photo: '사진은 3장까지, jpg·png만 돼요.' }[r.error] || '저장이 안 됐어요. 잠시 후 다시 해 주세요.';
   }
   function loadYc(quiet) {
@@ -2846,15 +2855,73 @@ body.hasfab main { padding-bottom: 110px; }
     }
     next();
   }
+  // 📁 세팅곡 고르기·올리기 (구글 드라이브 'GROOVE 직원앱/세팅곡' 폴더, 2026-11-18). 올리기는 DJ팀·관리자
+  function gdSongType(f) {
+    if (/^audio\/(mpeg|mp3|mp4|x-m4a|m4a|aac|x-aac|wav|x-wav|wave|vnd\.wave|flac|x-flac|ogg)$/.test(f.type || '')) return f.type;
+    return { mp3: 'audio/mpeg', m4a: 'audio/mp4', wav: 'audio/wav', aac: 'audio/aac', flac: 'audio/flac', ogg: 'audio/ogg' }[(String(f.name || '').match(/\.(\w+)$/) || [0, ''])[1].toLowerCase()] || '';
+  }
+  function gdSongBox(box, pick) {
+    var q = '', up = null, timer = null;
+    function load(fresh) {
+      call({ a: 'gd_songs', token: state.s.token, fresh: !!fresh }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        state.gdSongs = r.ok ? r : { files: [], pending: [], error: r.error || 'x' }; paint();
+        clearTimeout(timer); if (box.isConnected && !box.hidden && (state.gdSongs.pending || []).some(function (p) { return (p.tries || 0) < 3; })) timer = setTimeout(function () { load(true); }, 5000);
+      }).catch(function () { state.gdSongs = { files: [], pending: [], error: 'net' }; paint(); });
+    }
+    function paint() {
+      if (!box.isConnected) return;
+      var r = state.gdSongs || { files: [], pending: [] }, k = key(q), files = (r.files || []).filter(function (f) { return !k || key(f.name).indexOf(k) >= 0 || hcho(f.name).indexOf(k) >= 0; });
+      var h = '<input id="gdSQ" maxlength="40" autocomplete="off" placeholder="🔎 곡 이름 찾기" value="' + esc(q) + '">';
+      if (r.error) h += '<p class="note">' + (r.error === 'notready' ? '드라이브 준비 중이에요. 잠시 후 다시 열어 주세요.' : '세팅곡을 불러오지 못했어요.') + '</p>';
+      (r.pending || []).forEach(function (p) { h += '<p class="note gdsp">' + ((p.tries || 0) >= 3 ? '❌ ' + esc(p.name) + ' · 드라이브에 못 올렸어요 (' + esc(p.err || '') + ')' : '⏳ ' + esc(p.name) + ' · 드라이브에 올리는 중') + '</p>'; });
+      if (up) h += '<p class="note gdsp">' + (up.err ? '❌ ' + esc(up.name) + ' · ' + esc(up.err) : '⬆️ ' + esc(up.name) + ' · ' + Math.floor(up.prog * 100) + '%') + '</p>';
+      h += files.length ? '<div class="gdsl">' + files.slice(0, 80).map(function (f) { return '<button type="button" data-gsong="' + esc(f.id) + '">🎵 ' + esc(String(f.name).replace(/\.[A-Za-z0-9]{2,4}$/, '')) + ' <small>' + (f.size ? (f.size / 1048576).toFixed(1) + 'MB · ' : '') + esc(String(f.at || '').slice(5, 10)) + '</small></button>'; }).join('') + '</div>'
+        : '<p class="note">' + ((r.files || []).length ? '맞는 곡이 없어요.' : '아직 세팅곡이 없어요.' + (r.can ? ' 아래 ⬆️로 올려 주세요.' : ' DJ팀에 올려 달라고 해 주세요.')) + '</p>';
+      if (r.can) h += '<label class="btn gdup">⬆️ 노래 파일 올리기 (mp3·m4a·wav, 60MB까지)<input type="file" id="gdSF" accept="audio/*,.mp3,.m4a,.wav,.aac,.flac,.ogg" hidden></label>';
+      box.innerHTML = h;
+      var qi = $('gdSQ'); qi.addEventListener('input', function () { q = this.value; var pos = this.selectionStart; paint(); var n = $('gdSQ'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } });
+      box.querySelectorAll('[data-gsong]').forEach(function (b) { b.addEventListener('click', function () { var f = (state.gdSongs.files || []).filter(function (x) { return x.id === b.dataset.gsong; })[0]; if (f) pick(f); }); });
+      var fi = $('gdSF'); if (fi) fi.addEventListener('change', function () { var f = this.files && this.files[0]; this.value = ''; if (f) send(f); });
+    }
+    function send(f) {
+      var type = gdSongType(f);
+      if (!type) { up = { name: f.name, err: 'mp3·m4a·wav·aac·flac 파일만 돼요', prog: 0 }; return paint(); }
+      if (f.size > 60 * 1048576) { up = { name: f.name, err: '60MB까지 올릴 수 있어요', prog: 0 }; return paint(); }
+      var CH = 2025000, n = Math.ceil(f.size / CH), i = 0, tries = 0, vid = '';
+      up = { name: f.name, prog: 0 }; paint();
+      function next() {
+        if (i >= n) {
+          return call({ a: 'gd_song_up', token: state.s.token, vid: vid, name: f.name }).then(function (r) {
+            if (!r.ok) throw new Error(r.error || 'up');
+            up = null; state.gdSongs = Object.assign({}, state.gdSongs, { pending: r.pending }); paint(); setTimeout(function () { load(true); }, 3000);
+          }).catch(function (e) { up.err = String(e && e.message) === 'forbidden' ? 'DJ팀·관리자만 올릴 수 있어요' : '올리지 못했어요'; paint(); });
+        }
+        ycB64(f.slice(i * CH, (i + 1) * CH)).then(function (d) {
+          return call({ a: 'vid_up', token: state.s.token, kind: 'song', vid: vid, part: i, size: f.size, type: type, data: d });
+        }).then(function (r) {
+          if (!r.ok) throw new Error(r.error || 'up');
+          vid = r.vid; i++; tries = 0; up.prog = i / n; paint(); next();
+        }).catch(function (e) {
+          if (++tries <= 3 && !/vtype|vbig|auth|busy/.test(String(e && e.message))) return setTimeout(next, 1500 * tries);
+          up.err = /busy/.test(String(e && e.message)) ? '잠시 후 다시 올려 주세요' : '올리지 못했어요'; paint();
+        });
+      }
+      next();
+    }
+    if (state.gdSongs) paint(); else box.innerHTML = '<p class="load">세팅곡 불러오는 중…</p>';
+    load(false);
+  }
   // 사운드클라우드 곡 옆 ⬇️ 다운: 구매 버튼(Free Download)·설명의 다운로드 링크가 있으면 거기로, 싸클 자체 다운로드면 곡 페이지(··· More → Download file)
   function ycDlBtn(x) {
+    if ((x.v || {}).songKind === 'drive') { var du = /^https:\/\/drive\.google\.com\/uc\?export=download&id=[-\w]+$/.test(x.v.songDlUrl || '') ? x.v.songDlUrl : ''; return du ? ' <a class="ycdl" href="' + esc(du) + '" target="_blank" rel="noopener noreferrer" title="드라이브 세팅곡 파일">⬇️ 다운</a><span class="ycdlh">드라이브 세팅곡 파일</span>' : ''; }
     var v = x.v || {}, sc = v.songKind === 'sc' || /^https?:\/\/([\w-]+\.)*(soundcloud\.com|snd\.sc)\//i.test(x.song || '');
     if (!sc || !/^https?:\/\//.test(x.song || '')) return '';
     var u = /^https?:\/\/[^\s<>"']+$/.test(v.songDlUrl || '') ? v.songDlUrl : '', host = u ? u.replace(/^https?:\/\/(www\.)?/, '').split(/[\/?#]/)[0] : '';
     var tip = u ? host + ' 프리 다운로드 페이지' : v.songWarn === 'unreleased' ? '미발매곡 · 다운로드 없음 (파일은 요청자·DJ에게 따로 받기)' : v.songWarn ? '확인 못 한 곡 · 싸클 페이지에서 Free Download 있는지 확인' : v.songDl === 'SoundCloud 다운로드' ? '싸클 페이지 ··· (More) → Download file' : '싸클 페이지에서 Free Download 찾기';
     return ' <a class="ycdl" href="' + esc(u || x.song) + '" target="_blank" rel="noopener noreferrer" title="' + esc(tip) + '">⬇️ 다운</a><span class="ycdlh">' + esc(tip) + '</span>';
   }
-  function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songWarn === 'unreleased' ? ' · ⚠️ 미발매' + (v.songTitle ? ' · ' + v.songTitle : '') : v.songWarn ? ' · ⚠️ 확인 못 한 곡' : v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
+  function ycSongLabel(x) { var v = x.v || {}; return v.songKind === 'drive' ? '📁 세팅곡' + (v.songTitle ? ' · ' + v.songTitle : '') : v.songKind === 'melon' ? '멜론' : v.songKind === 'sc' ? '사운드클라우드' + (v.songWarn === 'unreleased' ? ' · ⚠️ 미발매' + (v.songTitle ? ' · ' + v.songTitle : '') : v.songWarn ? ' · ⚠️ 확인 못 한 곡' : v.songTitle ? ' · ' + v.songTitle : '') : x.song.replace(/^https?:\/\//, '').slice(0, 40); }
   function ycWhatK(v) {
     return [['parade', v.parade ? v.parade + ' 퍼레' : ''], ['video', v.video ? v.video + '영상' : ''], ['holo', v.holo ? '홀로 ' + v.holo : ''], ['picket', v.picket ? v.picket + '피켓' : ''], ['hammer', v.hammer ? '망치' : ''], ['vvip', v.vvip ? 'VVIP 입장' : '']].filter(function (p) { return p[1]; });
   }
@@ -2949,6 +3016,7 @@ body.hasfab main { padding-bottom: 110px; }
     h += '<div class="tbtg"><button type="button" class="chip" data-yctg="hammer">🔨 망치</button><button type="button" class="chip" data-yctg="vvip">👑 VVIP 입장</button></div>';
     h += '<label>전광판 문구<textarea id="ycT" rows="3" maxlength="300" placeholder="예) 엄마보다 더 자주 보는 거 같다&#10;-뱃사공-">' + esc(x ? x.text : '') + '</textarea></label>';
     h += '<label>노래<input id="ycS" maxlength="300" autocomplete="off" inputmode="url" value="' + esc(x ? x.song : '') + '" placeholder="멜론 공유 링크 · 사운드클라우드 링크"></label><p class="note ycsong" id="ycSongOk">멜론 곡 링크 또는 사운드클라우드 곡 링크. 다운로드 없는 싸클 곡은 ⚠️ 미발매로 표시돼요.</p>' +
+      '<div class="tbsx" style="margin-top:-6px"><button type="button" class="chip" id="ycSongPick">📁 세팅곡에서 고르기</button></div><div class="gdsong" id="ycSongBox" hidden></div>' +
       '<label>노래 시작 (선택)<input id="ycSAt" maxlength="20" autocomplete="off" placeholder="예) 1:23부터 · 후렴부터 · 23:40 시작" value="' + esc(v.songAt || '') + '"></label>';
     h += '<label>메모 (선택)<input id="ycNote" maxlength="100" autocomplete="off" placeholder="예) 케이크 들고 갈게요 · 생일자 빨간 옷" value="' + esc(v.note || '') + '"></label>';
     h += (x ? '<label>사진 · 영상 (홀로그램)</label>' : '') + '<div class="ephotos" id="ycPh"></div>';
@@ -3024,13 +3092,17 @@ body.hasfab main { padding-bottom: 110px; }
       box.className = 'note ycsong'; box.textContent = '확인하는 중…';
       call({ a: 'song_check', token: state.s.token, song: u }).then(function (r) {
         if (my !== songSeq) return;
-        if (r.ok) { box.className = 'note ycsong ok'; box.textContent = '✅ ' + (r.kind === 'melon' ? '멜론 곡' : '사운드클라우드' + (r.title ? ' · ' + r.title : '') + ' · ' + r.dl); }
+        if (r.ok) { box.className = 'note ycsong ok'; box.textContent = '✅ ' + (r.kind === 'melon' ? '멜론 곡' : r.kind === 'drive' ? '📁 세팅곡 · ' + r.title + ' · 조명실에서 ⬇️ 다운' : '사운드클라우드' + (r.title ? ' · ' + r.title : '') + ' · ' + r.dl); }
         else if (r.soft) { box.className = 'note ycsong warn'; box.textContent = r.error === 'unreleased' ? '⚠️ 미발매곡이에요 (다운로드 없음)' + (r.title ? ' · ' + r.title : '') + ' · 요청은 돼요' : '⚠️ 사운드클라우드를 지금 확인하지 못했어요 · 요청은 돼요 (조명실에서 다운로드 되는지 확인해 주세요)'; }
         else { box.className = 'note ycsong bad'; box.textContent = '❌ ' + ycErr(r) + (r.title ? ' (' + r.title + ')' : ''); }
       }).catch(function () { if (my === songSeq) { box.className = 'note ycsong bad'; box.textContent = '❌ ' + ycErr({ error: 'check' }); } });
     }
     $('ycS').addEventListener('input', function () { clearTimeout(songT); songT = setTimeout(songCheck, 700); });
     if ($('ycS').value.trim()) songCheck();
+    $('ycSongPick').addEventListener('click', function () {   // 📁 세팅곡 (구글 드라이브 '세팅곡' 폴더, 2026-11-18)
+      var box = $('ycSongBox'); box.hidden = !box.hidden; if (box.hidden) return;
+      gdSongBox(box, function (f) { $('ycS').value = 'https://drive.google.com/file/d/' + f.id + '/view'; box.hidden = true; songCheck(); });
+    });
     $('ycSave').addEventListener('click', function () {
       var b = this, m = $('ycMsg');
       v.picket = $('ycPk').value.trim(); v.video = $('ycVQ').value.trim(); v.note = $('ycNote').value.trim(); v.songAt = $('ycSAt').value.trim();
@@ -3703,6 +3775,18 @@ body.hasfab main { padding-bottom: 110px; }
   }
 
   // ── 가입 승인 (대표: 전체 / 팀장: 자기 팀 신청 승인·거절, 퇴사자 탈퇴) ──
+  // 🗂 구글 드라이브 상태 (대표): 마지막 백업·결산·회의록 불러오기 · 폴더/시트 링크
+  function gdStatus() {
+    call({ a: 'gd_status', token: state.s.token }).then(function (r) {
+      var box = $('gdSt'); if (!box || !r.ok) { if (box) box.hidden = true; return; }
+      var J = r.jobs || {}, L = r.links || {}, at = function (x) { return x ? String(x).replace('T', ' ').slice(5, 16) : ''; };
+      var KST = function (iso) { if (!iso) return ''; var d = new Date(Date.parse(iso) + 9 * 3600e3).toISOString(); return d.slice(5, 10) + ' ' + d.slice(11, 16); };
+      var row = function (k, label) { var j = J[k] || {}; return '<li><b>' + label + '</b> ' + (j.err && j.fail ? '<span class="bad">❌ ' + esc(j.err).slice(0, 80) + '</span>' : j.ok ? '✅ ' + esc(KST(j.ok)) : j.err ? '⏳ ' + esc(j.err) : '아직 안 함') + '</li>'; };
+      box.innerHTML = '<details><summary>🗂 구글 드라이브 ' + (r.on ? '' : '(꺼짐)') + Object.keys(J).filter(function (k) { return J[k].fail; }).map(function () { return ' ❗'; }).join('') + '</summary><ul>' +
+        row('backup', '백업 (매일 아침, 30일)') + row('report', '일일 결산 시트') + row('notes', '회의록·교육 문서') + row('yc', '연출 사진·영상') + row('lf', '분실물') + (J.songs ? row('songs', '세팅곡 올리기') : '') + '</ul>' +
+        '<p class="note" style="margin:6px 0 0">그루브 계정 드라이브 <b>GROOVE 직원앱</b> 폴더' + (L.report ? ' · <a href="' + esc(L.report) + '" target="_blank" rel="noopener">📊 일일 결산 시트</a>' : '') + (L.notes ? ' · <a href="' + esc(L.notes) + '" target="_blank" rel="noopener">📄 회의록 폴더</a>' : '') + (L.edu ? ' · <a href="' + esc(L.edu) + '" target="_blank" rel="noopener">📚 신규 교육 폴더</a>' : '') + '</p></details>';
+    }).catch(function () { var box = $('gdSt'); if (box) box.hidden = true; });
+  }
   function renderAcc(area, d) {
     var acc = d.accounts || [], boss = !!d.admin;
     var groups = boss ? [
@@ -3721,7 +3805,7 @@ body.hasfab main { padding-bottom: 110px; }
         return '<option' + (a.role === r ? ' selected' : '') + '>' + r + '</option>';
       }).join('') + '</select>';
     }
-    var h = '';
+    var h = boss ? '<div class="gdst" id="gdSt"><p class="load">🗂 구글 드라이브 상태 불러오는 중…</p></div>' : '';
     groups.forEach(function (gp, gi) {
       h += '<h2 class="sec">' + gp[0] + ' ' + gp[1].length + '</h2>';
       if (!gp[1].length) { h += '<p class="empty">' + (gi === 0 ? '새 가입 신청이 없어요.' : '없어요.') + '</p>'; return; }
@@ -3750,6 +3834,7 @@ body.hasfab main { padding-bottom: 110px; }
       ? '<p class="how">가입할 때 고른 팀이 미리 골라져 있어요. 승인할 때 팀과 권한을 확인해 주세요. <b>직원</b>은 게스트 현황·신규 교육·팀 게시판, <b>부팀장</b>은 직원 권한에 회의록·업무사항 보기가 더해지고, <b>팀장</b>은 회의록·업무사항까지 보고 자기 팀 가입 승인·퇴사자 탈퇴·팀 게시판 관리, 모든 팀 게스트 입력도 할 수 있어요. 손님 문의 메시지는 영업팀 팀장에게만 가요. 중지·탈퇴하면 그 사람은 바로 로그아웃돼요. 비밀번호를 잊은 직원은 탈퇴 후 다시 가입 신청하면 돼요.</p>'
       : '<p class="how">' + esc(d.team) + ' 팀으로 가입 신청한 사람만 보여요. 승인하면 직원 권한으로 들어와요. 퇴사한 직원은 <b>퇴사 · 탈퇴</b>를 두 번 누르면 계정이 지워지고 바로 로그아웃돼요. 팀장 지정·중지·전화번호는 대표님만 볼 수 있어요.</p>';
     area.innerHTML = h;
+    if (boss) gdStatus();
 
     area.querySelectorAll('.acc').forEach(function (box) {
       var name = box.dataset.name, sel = box.querySelector('[data-team]'), rsel = box.querySelector('[data-role]'), err = box.querySelector('.err');
