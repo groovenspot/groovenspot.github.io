@@ -4692,7 +4692,9 @@ body.popmode .chath .chpop { display: none; }
     var h = '<h2>' + (x ? '연출 고치기' : '🎆 연출 요청') + '</h2>';
     if (mineSeats.length && !x) h += '<div class="tbsx"><span class="note" style="margin:0 6px 0 0">내 테이블</span>' + mineSeats.map(function (m) { return '<button type="button" class="chip" data-ycms="' + esc(m.fl + '|' + m.seat) + '">' + esc(m.fl + ' ' + m.seat + (m.g ? ' ' + m.g : '')) + '</button>'; }).join('') + '</div>';
     h += '<div class="tbfl" style="margin:0 0 10px">' + (y.floors || []).map(function (f) { return '<button type="button" data-ycfl="' + esc(f.id) + '" aria-pressed="' + (f.id === fl) + '">' + esc(f.name) + ' <small>' + esc(f.floor) + '</small></button>'; }).join('') + '</div>';
-    h += '<label>자리<select id="ycSeat"></select></label>';
+    // 자리: 고르기 대신 숫자·글자·초성을 치면 뜨는 버튼 (대표 요청 2026-11-19 새벽, 자리표와 같은 방식)
+    h += '<label>자리<input id="ycSeat" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="숫자·글자 치면 떠요 (예: 1 · ㅅ1 · 3ㅅ1 · 엘4 · 3-11)"></label><div class="tbsx tbpick" id="ycSeatP"></div>' +
+      '<div class="tbsx" style="margin-top:-6px"><button type="button" class="chip" id="ycOnly">📺 전광만 (자리 없이)</button></div>';
     h += '<label>순서</label><div class="tbsx" id="ycWhen">' + [['now', '바로'], ['ready', '준비되는 대로'], ['time', '시간'], ['after', '○○ 다음']].map(function (o) { return '<button type="button" class="chip" data-ycwhen="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>' +
       '<div id="ycWhenX"></div>';
     h += '<label>영상</label><div class="tbsx">' + (y.teams || []).map(function (t) { return '<button type="button" class="chip" data-ycv="' + esc(t) + '">' + esc(t) + '팀</button>'; }).join('') + '<button type="button" class="chip" data-ycv="">없음</button></div>' +
@@ -4709,9 +4711,17 @@ body.popmode .chath .chpop { display: none; }
     h += '<p class="msg" id="ycMsg"></p><button class="btn btn-hot" type="button" id="ycSave">' + (x ? '저장' : '요청 보내기') + '</button>';
     showSheet(h);
     var s = $('sheet');
+    function ycSeatOpts() { var o = seatsOf(fl).slice(); if (x && x.floor === fl && /,/.test(x.seat)) o.unshift(x.seat); return o; }
+    function ycSeatHits(q) { var o = ycSeatOpts(), k = tbSeatQ(q), ex = o.filter(function (z) { return z.toUpperCase() === k; }); return ex.concat(tbSeatHits(o, q).filter(function (z) { return ex.indexOf(z) < 0; })); }
+    function ycSeatChips(show) {
+      var q = $('ycSeat').value.trim(), hits = show && q ? ycSeatHits(q).slice(0, 16) : [], box = $('ycSeatP');
+      box.innerHTML = hits.map(function (z) { return '<button type="button" class="chip' + (z === seat ? ' on' : '') + '" data-ycsp="' + esc(z) + '">' + esc(z) + '</button>'; }).join('');
+      box.querySelectorAll('[data-ycsp]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () { seat = b.dataset.ycsp; $('ycSeat').value = seat; $('ycOnly').classList.remove('on'); ycSeatChips(false); }); });
+      if (hits.length) try { box.scrollIntoView({ block: 'nearest' }); } catch (e) {}
+    }
     function paintSeats() {
-      var opts = seatsOf(fl).slice(); if (x && x.floor === fl && /,/.test(x.seat)) opts.unshift(x.seat); if (seat && seat !== '전광만' && opts.indexOf(seat) < 0) seat = '';
-      $('ycSeat').innerHTML = '<option value="">자리 고르기</option><option value="전광만"' + (seat === '전광만' ? ' selected' : '') + '>📺 ' + esc(fl) + ' 전광만 (자리 없이)</option>' + opts.map(function (q) { return '<option' + (q === seat ? ' selected' : '') + '>' + esc(q) + '</option>'; }).join('');
+      var opts = ycSeatOpts(); if (seat && seat !== '전광만' && opts.indexOf(seat) < 0) seat = '';
+      $('ycSeat').value = seat === '전광만' ? '' : seat || ''; $('ycSeatP').innerHTML = ''; $('ycOnly').classList.toggle('on', seat === '전광만'); $('ycOnly').textContent = '📺 ' + fl + ' 전광만 (자리 없이)';
       s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.ycfl === fl); });
     }
     function paintWhen() {
@@ -4763,7 +4773,9 @@ body.popmode .chath .chpop { display: none; }
     paintSeats(); paintWhen(); paintV(); paintTg(); paintPh();
     s.querySelectorAll('[data-ycms]').forEach(function (b) { b.addEventListener('click', function () { var p = b.dataset.ycms.split('|'); fl = p[0]; seat = p[1]; paintSeats(); }); });
     s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.ycfl; paintSeats(); }); });
-    $('ycSeat').addEventListener('change', function () { seat = this.value; });
+    $('ycSeat').addEventListener('input', function () { var q = this.value.trim(), k = tbSeatQ(q), ex = ycSeatOpts().filter(function (z) { return z.toUpperCase() === k; }); seat = !q ? '' : ex.length ? ex[0] : null; $('ycOnly').classList.remove('on'); ycSeatChips(true); });
+    $('ycSeat').addEventListener('focus', function () { this.select(); });
+    $('ycOnly').addEventListener('click', function () { seat = seat === '전광만' ? '' : '전광만'; $('ycSeat').value = ''; ycSeatChips(false); this.classList.toggle('on', seat === '전광만'); });
     s.querySelectorAll('[data-ycwhen]').forEach(function (b) { b.addEventListener('click', function () { var k = b.dataset.ycwhen; when = k === 'time' ? (/^\d{2}:\d{2}$/.test(when) ? when : '') : k === 'after' ? (when.indexOf('after:') === 0 ? when : 'after:') : k; paintWhen(); }); });
     s.querySelectorAll('[data-ycv]').forEach(function (b) { b.addEventListener('click', function () { v.video = b.dataset.ycv; $('ycVQ').value = v.video; paintV(); }); });
     $('ycVQ').addEventListener('input', function () { v.video = this.value.trim(); paintV(); });
@@ -4792,6 +4804,7 @@ body.popmode .chath .chpop { display: none; }
     $('ycSave').addEventListener('click', function () {
       var b = this, m = $('ycMsg');
       v.picket = $('ycPk').value.trim(); v.video = $('ycVQ').value.trim(); v.note = $('ycNote').value.trim(); v.songAt = $('ycSAt').value.trim();
+      if (seat == null) { var sh = ycSeatHits($('ycSeat').value.trim()); if (sh.length === 1) seat = sh[0]; else { m.textContent = '자리를 아래 버튼에서 골라 주세요.'; return; } }
       if (!seat) { m.textContent = '자리를 골라 주세요.'; return; }
       if (!when || when === 'after:') { m.textContent = '순서를 골라 주세요.'; return; }
       b.disabled = true; m.textContent = '';
