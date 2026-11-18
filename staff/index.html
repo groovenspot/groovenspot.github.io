@@ -1689,8 +1689,7 @@ body.popmode .chath .chpop { display: none; }
         '대화에서 그 메시지를 두 번 눌러도 맡아져요 · 운영팀끼리 쓰는 <code>완료</code> 보고는 알림이 안 가요'
       ]) +
       sec('🍾 킵', [
-        '맡기기·꺼내기·병 수 고치기는 담당이 요청 → <b>대표·김동기·양진호</b>(+ 대표가 그날 권한 준 직원)가 승인하면 반영',
-        '<b>👥 킵 승인 권한 (오늘)</b>: 대표만 직원을 골라 줄 수 있어요 → 그 영업일 동안 승인 · 영업일이 바뀌면 끝',
+        '맡기기·꺼내기·병 수 고치기는 담당이 요청 → <b>대표·김동기·양진호</b>가 승인하면 반영',
         '킵 장부 기록은 <b>지워지지 않고 모두 남아요</b> (손님 삭제·되돌리기·이름 맞춤도 <b>킵 기록</b>에 한 줄씩)',
         '보관 <b>30일</b>. 잘못 눌렀으면 15분 안에 되돌리기',
         '손님 링크를 보내면 손님이 자기 킵을 직접 볼 수 있어요'
@@ -3058,6 +3057,7 @@ body.popmode .chath .chpop { display: none; }
     if (!k.staffs.some(function (x) { return x.name === cust.staff; })) k.staffs.push({ name: cust.staff, group: cust.group || '', team: '' });
   }
   // 👥 킵 장부 승인 권한 하루 주기 (대표 요청 2026-11-19): 대표만 · 고른 직원은 오늘 영업일 동안 맡기기·꺼내기·병 수 고치기 승인
+  var KP_GRANT_UI = false;   // 대표 요청 2026-11-19 새벽: 화면에서 숨김 (서버 기능은 그대로 · 다시 쓰려면 true)
   function kGrantSheet() {
     var q = '';
     function draw(msg) {
@@ -3127,7 +3127,7 @@ body.popmode .chath .chpop { display: none; }
     h += '<div class="ksearch"><span aria-hidden="true">🔎</span><input id="kQ" type="search" placeholder="손님 · 담당 · 술 · 연락처 뒤 4자리" value="' + esc(state.kq) + '" aria-label="킵 찾기"></div>';
     h += '<div class="ksum"><div><small>보관 중</small><b>' + bottles + '</b></div><div class="w"><small>7일 안 만료</small><b>' + soon + '</b></div><div class="x"><small>만료 지남</small><b>' + late + '</b></div></div>';
     if (k.all || k.see) h += '<button class="btn kdaybtn" type="button" id="kDay">📊 킵 하루 결산 · 입고·출고 병 수</button>';
-    if (k.grantor) { var kgOn = (k.grants || []).filter(function (x) { return x.on; }); h += '<button class="btn kdaybtn" type="button" id="kGrant">👥 킵 승인 권한 (오늘)' + (kgOn.length ? ' · ' + kgOn.map(function (x) { return esc(x.name); }).join(', ') : '') + '</button>'; }
+    if (k.grantor && KP_GRANT_UI) { var kgOn = (k.grants || []).filter(function (x) { return x.on; }); h += '<button class="btn kdaybtn" type="button" id="kGrant">👥 킵 승인 권한 (오늘)' + (kgOn.length ? ' · ' + kgOn.map(function (x) { return esc(x.name); }).join(', ') : '') + '</button>'; }
     if (k.granted) h += '<p class="note" style="margin:0 0 10px">✅ 오늘 영업일 동안 킵 승인 권한을 받았어요 (대표가 줌).</p>';
     var hasNone = all.some(function (c) { return !kGroupOf(c.staff); });
     h += '<div class="kfil">' + [['', '전체'], ['exp', '⏰ 만료 임박']].concat(k.all || k.see ? KGROUPS.map(function (g) { return [g, g]; }) : []).concat((k.all || k.see) && hasNone ? [['none', '구분 없음']] : []).map(function (x) {
