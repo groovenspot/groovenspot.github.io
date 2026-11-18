@@ -1444,7 +1444,7 @@ body.popmode .chath .chpop { display: none; }
     if (state.tab === 'ops' && d.guard) state.tab = 'gate';
     var gateOn = !!(d.guard || d.gate);   // 🚪 입구: 경호팀 · 대표
     if (state.tab === 'gate' && !gateOn) state.tab = 'guest';
-    if (d.guard && ['gate', 'me', 'live'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
+    if (d.guard && ['gate', 'me'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
     state.tabPick = state.tab !== want ? want : ''; tabSave();
     tabArrange(d.tabOrder || []);   // ↕ 내 탭 순서
     document.querySelectorAll('#tabs button').forEach(function (b) {
@@ -1461,7 +1461,7 @@ body.popmode .chath .chpop { display: none; }
       if (b.dataset.tab === 'all') b.hidden = !d.admin;   // 📡 전체: 대표만
       if (b.dataset.tab === 'ops') b.hidden = false;   // 🛎 운영 요청: 누구나 (운영팀은 받기)
       if (b.dataset.tab === 'gate') b.hidden = !gateOn;
-      if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || b.dataset.tab === 'live' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table));
+      if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table));
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = '<span class="tl">' + esc(l[0]) + '</span>' + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
