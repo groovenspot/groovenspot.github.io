@@ -386,6 +386,15 @@ details.all .list { margin-top: 8px; }
 .conv.inq { background: #17140f; }
 .conv.grp .cn strong { font-size: 16px; }
 .dbtns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.dbtns .dedit { min-height: 38px; padding: 0 14px; font-size: 13px; }
+.dbtns .dedit.on { border-color: rgba(255,59,92,.6); color: #ff8199; }
+.convw { display: flex; gap: 8px; align-items: stretch; }
+.convw .conv { flex: 1; min-width: 0; cursor: default; }
+.convw .cdel { flex: none; width: 88px; margin: 0; min-height: 0; padding: 0 8px; border-radius: 16px; font-size: 14px; }
+.convw .cdel.arm { font-size: 12px; white-space: normal; line-height: 1.25; }
+.convw .cfix { flex: none; align-self: center; color: var(--muted); font-size: 12px; width: 88px; text-align: center; }
+.bub.sel .bt { outline: 2px solid rgba(255,59,92,.55); outline-offset: 1px; }
+.bub .bdel { margin: 4px 0 0; width: auto; min-height: 34px; padding: 0 12px; font-size: 12px; }
 .gpick .pp.gp { cursor: pointer; } .gpick .pp.gp input { width: 18px; height: 18px; min-height: 0; padding: 0; flex: none; accent-color: var(--g); }
 .gpick #gTitle { margin-bottom: 8px; }
 .gmem { background: none; border: 1px solid var(--line-2); border-radius: 999px; padding: 1px 8px; cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; color: var(--g); }
@@ -2893,16 +2902,19 @@ body.popmode .chath .chpop { display: none; }
     }).catch(function () {});
   }
   function openChat(name) {
-    state.dmView = 'chat'; state.dmWith = name; state.chat = null; render();
+    state.dmView = 'chat'; state.dmWith = name; state.chat = null; state.bubSel = ''; render();
     loadChat(); startPoll(function () { loadChat(true); }, 6000);
   }
+  function dmHideErr(r) { return { sys: '📩 손님 문의 방은 업무 방이라 지울 수 없어요.', busy: '잠깐 사이에 너무 많이 지웠어요. 잠시 후 다시 해 주세요.', notfound: '이미 없어진 대화예요. 목록을 새로 불러올게요.' }[r.error] || '지우지 못했어요. 다시 해 주세요.'; }
   function renderDm(area, d) {
     if (state.dmView === 'chat' && state.dmWith) return renderChat(area);
     state.dmView = 'list';
     var m = state.dm;
     if (!m) { area.innerHTML = '<p class="load">불러오는 중…</p>'; return; }
     var h = '<div class="bhead"><div><h1>메시지</h1><p class="sub">1:1 대화는 두 사람만, 👥 그룹 대화는 멤버만 봐요.</p></div>' +
-      '<div class="dbtns"><button class="btn btn-hot" id="dNew" type="button">＋ 새 대화</button><button class="btn" id="gNew" type="button">👥 그룹 만들기</button></div></div>';
+      '<div class="dbtns"><button class="btn btn-hot" id="dNew" type="button">＋ 새 대화</button><button class="btn" id="gNew" type="button">👥 그룹 만들기</button>' +
+      (m && m.convs.length ? '<button class="btn dedit' + (state.dmEdit ? ' on' : '') + '" id="dEdit" type="button">' + (state.dmEdit ? '✓ 삭제 끝' : '🗑 대화 삭제') + '</button>' : '') + '</div></div>';
+    if (state.dmEdit) h += '<p class="note" id="dEditNote">🗑 지울 대화의 삭제 버튼을 두 번 누르세요. 1:1 대화는 <b>나와 상대방 화면 모두</b>에서 지워져요. 👥 그룹은 만든 사람·대표가 지우면 모두에게서, 멤버가 지우면 내 화면에서만 지워져요. 새 메시지가 오면 그 뒤부터 다시 보여요.</p><p class="msg" id="dEditMsg" role="alert"></p>';
     if (state.grPick) {   // 👥 그룹 만들기 (2026-11-18): 2명 이상 골라서
       var sel = state.grSel = state.grSel || {}, nSel = Object.keys(sel).length;
       h += '<div class="pick gpick"><input id="gTitle" maxlength="20" autocomplete="off" placeholder="그룹 이름 (예: 토요일 준비)" value="' + esc(state.grTitle || '') + '"><input id="gFind" placeholder="이름·닉네임·초성 찾기" autocomplete="off"><div class="plist">' + m.people.map(function (p) {
@@ -2916,12 +2928,32 @@ body.popmode .chath .chpop { display: none; }
     }
     if (!m.convs.length) h += '<p class="empty">아직 대화가 없어요. ＋ 새 대화로 시작해 보세요.</p>';
     else h += '<div class="list">' + m.convs.map(function (c) {
+      if (state.dmEdit) {   // 🗑 대화 삭제 모드 (2026-11-19): 줄마다 삭제 버튼, 손님 문의 방은 업무 대기열이라 못 지움
+        var row = convRow(c), fix = c.group && c.sys;
+        return '<div class="convw">' + row.replace('data-with=', 'data-ewith=') + (fix ? '<span class="cfix">업무 방이라<br>못 지워요</span>' : '<button type="button" class="btn btn-bad cdel" data-dhide="' + esc(c.with) + '" data-dlbl="' + (c.group && !c.own ? '나만 삭제' : c.group ? '모두 삭제' : '삭제') + '">' + (c.group && !c.own ? '나만 삭제' : c.group ? '모두 삭제' : '삭제') + '</button>') + '</div>';
+      }
+      return convRow(c);
+    }).join('') + '</div>';
+    function convRow(c) {
       if (c.group) return '<button type="button" class="conv grp' + (c.unread ? ' unread' : '') + (c.sys ? ' inq' : '') + '" data-with="' + esc(c.with) + '"><span class="cn"><strong>' + (c.sys ? '' : '👥 ') + esc(c.title) + '</strong><span class="org">' + c.n + '명</span><span class="at">' + esc(String(c.at || '').slice(5)) + '</span></span>' +
         '<span class="cl">' + (c.mine ? '나: ' : '') + esc(c.last || '아직 대화가 없어요') + '</span>' + (c.unread ? '<span class="n">' + c.unread + '</span>' : '') + '</button>';
       return '<button type="button" class="conv' + (c.unread ? ' unread' : '') + (c.with === '손님 문의' ? ' inq' : '') + '" data-with="' + esc(c.with) + '"><span class="cn"><strong>' + (c.with === '손님 문의' ? '📩 ' : '') + esc(c.with) + nickH(c.with) + (c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</strong><span class="at">' + esc(c.at.slice(5)) + '</span></span>' +
         '<span class="cl">' + (c.mine ? '나: ' : '') + esc(c.last) + '</span>' + (c.unread ? '<span class="n">' + c.unread + '</span>' : '') + '</button>';
-    }).join('') + '</div>';
+    }
     area.innerHTML = h;
+    if ($('dEdit')) $('dEdit').addEventListener('click', function () { state.dmEdit = !state.dmEdit; state.dmPick = false; state.grPick = false; render(); });
+    area.querySelectorAll('[data-dhide]').forEach(function (b) { b.addEventListener('click', function () {
+      if (!armed(b, b.dataset.dlbl)) return;
+      b.disabled = true; var w = b.dataset.dhide;
+      call({ a: 'dm_hide', token: state.s.token, with: w }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (!r.ok) { b.disabled = false; var em = $('dEditMsg'); if (em) em.textContent = dmHideErr(r); return; }
+        delete state.dmDraft[w];
+        state.dm = r; if (state.data) state.data.dm = { unread: r.unread };
+        if (!r.convs.length) state.dmEdit = false;
+        render();
+      }).catch(function () { b.disabled = false; var em = $('dEditMsg'); if (em) em.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+    }); });
     $('dNew').addEventListener('click', function () { state.dmPick = !state.dmPick; state.grPick = false; render(); if (state.dmPick && $('dFind')) $('dFind').focus(); });
     $('gNew').addEventListener('click', function () { state.grPick = !state.grPick; state.dmPick = false; render(); if (state.grPick && $('gTitle')) $('gTitle').focus(); });
     if (state.grPick) {
@@ -2987,13 +3019,17 @@ body.popmode .chath .chpop { display: none; }
     }
     if (!c) h += '<p class="load">불러오는 중…</p>';
     else {
-      var lastWho = '';
+      var lastWho = '', canDel = !c.sysNote, boss = !!(state.data && state.data.admin);
+      var delLbl = function (m) { return m.mine || boss ? '🗑 모두에게서 삭제' : '🗑 내 화면에서 삭제'; };
+      if (canDel && c.msgs.length && !state.bubTip) h += '<p class="note" style="margin:0 0 4px">💡 말풍선을 누르면 그 메시지를 지울 수 있어요. 내가 보낸 메시지는 상대방 화면에서도 지워져요.</p>';
       h += '<div class="chat" id="chatBox">' + (c.msgs.length ? c.msgs.map(function (m) {
         var who = grp && !m.mine && m.who !== lastWho ? '<span class="bwho">' + (m.who === '손님 문의' ? '📩 ' : '') + esc(m.who) + nickH(m.who) + '</span>' : ''; lastWho = m.mine ? '' : m.who;
         var tk = '';
         if (m.inq && m.take) tk = '<div class="itk done">✅ <b>' + esc(m.take.by) + nickH(m.take.by) + '</b> 받음 · 담당 ' + esc(m.take.st) + ' · ' + esc(md(m.take.day)) + '(' + dowOf(m.take.day) + ') ' + (m.take.fl === 'SPOT' ? '3층' : '2층') + ' 대기' + (m.take.mine ? ' <button type="button" class="link" data-iun="' + esc(m.id) + '">취소</button>' : '') + '</div>';
         else if (m.inq && c.take && c.take.can) tk = '<div class="itk"><button type="button" class="btn btn-hot" data-itake="' + esc(m.id) + '">🙋 제가 받을게요</button></div>';
-        return '<div class="bub' + (m.mine ? ' me' : '') + (m.who === '손님 문의' ? ' inqm' : '') + '">' + who + '<div class="bt">' + esc(m.text) + '</div>' + tk + '<span class="bat">' + esc(m.at.slice(5)) + (grp ? (m.mine && m.seen ? ' · 읽음 ' + m.seen : '') : (m.mine && m.read ? ' · 읽음' : '')) + '</span></div>';
+        var sel = canDel && state.bubSel === m.id;   // 🗑 메시지 하나 지우기 (2026-11-19): 말풍선을 누르면 삭제 버튼
+        return '<div class="bub' + (m.mine ? ' me' : '') + (m.who === '손님 문의' ? ' inqm' : '') + (sel ? ' sel' : '') + '"' + (canDel ? ' data-bsel="' + esc(m.id) + '"' : '') + '>' + who + '<div class="bt">' + esc(m.text) + '</div>' + tk + '<span class="bat">' + esc(m.at.slice(5)) + (grp ? (m.mine && m.seen ? ' · 읽음 ' + m.seen : '') : (m.mine && m.read ? ' · 읽음' : '')) + '</span>' +
+          (sel ? '<button type="button" class="btn btn-bad bdel" data-bdel="' + esc(m.id) + '" data-dlbl="' + delLbl(m) + '">' + delLbl(m) + '</button>' : '') + '</div>';
       }).join('') : '<p class="empty">첫 메시지를 보내 보세요.</p>') + '</div>';
       if (c.sysNote) h += '<p class="note">📩 인스타·홈페이지 등으로 들어온 손님 문의가 영업팀 팀장 모두에게 동시에 와요. \'🙋 제가 받을게요\'를 누르면 담당이 정해지고 그 날짜 테이블 대기에 바로 올라가요. 손님에게는 연락처로 직접 연락해 주세요.</p>';
       if (c.system) h += '<p class="note">📩 홈페이지·인스타로 들어온 손님 문의를 자동으로 전달한 메시지예요. 손님 연락처로 직접 연락해 주세요. (여기에는 답장할 수 없어요)</p>';
@@ -3004,6 +3040,20 @@ body.popmode .chath .chpop { display: none; }
     $('dBack').addEventListener('click', function () { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; render(); loadDm(); startPoll(loadDm, 20000); });
     if ($('gMem')) $('gMem').addEventListener('click', function () { state.grInfo = !state.grInfo; render(); });
     area.querySelectorAll('[data-itake]').forEach(function (b) { b.addEventListener('click', function () { var m = c.msgs.filter(function (x) { return x.id === b.dataset.itake; })[0]; if (m) inqTakeSheet(c, m); }); });
+    area.querySelectorAll('[data-bsel]').forEach(function (el) { el.addEventListener('click', function (e) {
+      if (e.target.closest('button,a') || (window.getSelection && String(window.getSelection())) ) return;
+      state.keepY = window.scrollY; state.bubSel = state.bubSel === el.dataset.bsel ? '' : el.dataset.bsel; state.bubTip = 1; render();
+    }); });
+    area.querySelectorAll('[data-bdel]').forEach(function (b) { b.addEventListener('click', function () {
+      if (!armed(b, b.dataset.dlbl)) return;
+      b.disabled = true; var y = window.scrollY;
+      call({ a: 'dm_hide', token: state.s.token, with: w, id: b.dataset.bdel }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (!r.ok) { b.disabled = false; alertMsg(dmHideErr(r)); return; }
+        if (state.dmWith !== w) return;
+        state.bubSel = ''; state.chat = r; state.keepY = y; render();
+      }).catch(function () { b.disabled = false; alertMsg('연결이 안 돼요. 다시 해 주세요.'); });
+    }); });
     area.querySelectorAll('[data-iun]').forEach(function (b) { b.addEventListener('click', function () {
       if (!armed(b, '취소')) return; b.disabled = true;
       call({ a: 'inq_untake', token: state.s.token, id: b.dataset.iun }).then(function (r) {
@@ -3022,8 +3072,9 @@ body.popmode .chath .chpop { display: none; }
     if ($('gRenB')) $('gRenB').addEventListener('click', function () { gEdit({ title: $('gRen').value.trim() }, function (r) { state.chat = r; render(); }); });
     if ($('gAddB')) $('gAddB').addEventListener('click', function () { var n = $('gAddS').value; if (n) gEdit({ add: [n] }, function (r) { state.chat = r; render(); }); });
     if ($('gLeave')) $('gLeave').addEventListener('click', function () { var b = this; if (!armed(b, '그룹 나가기')) return; gEdit({ leave: true }, function (r) { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; state.dm = r; render(); startPoll(loadDm, 20000); }); });
-    var box = $('chatBox'); if (box) box.scrollTop = box.scrollHeight;
-    if (box) window.scrollTo(0, document.body.scrollHeight);
+    var box = $('chatBox');
+    if (state.keepY != null) { window.scrollTo(0, state.keepY); state.keepY = null; }   // 🗑 말풍선 고르기·지우기는 보던 자리 그대로
+    else { if (box) box.scrollTop = box.scrollHeight; if (box) window.scrollTo(0, document.body.scrollHeight); }
     var f = $('dForm'); if (!f) return;
     var ta = $('dText'); ta.value = state.dmDraft[w] || '';
     ta.addEventListener('input', function () { state.dmDraft[w] = ta.value; ta.style.height = 'auto'; ta.style.height = Math.min(140, ta.scrollHeight) + 'px'; });
