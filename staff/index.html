@@ -641,9 +641,17 @@ body.hasfab main { padding-bottom: 110px; }
 .tbt.blk b { color: var(--muted); }
 .tbt.ghost { opacity: .55; border-style: dashed; border-color: var(--warn); }
 .tbt.mine { box-shadow: inset 0 0 0 1px rgba(255,122,26,.55); }
-.tbt.sold { background: rgba(255,190,40,.16); }
-.tbt.sold:not(.in) { border-color: #c99a2e; }
-.tbt.sold b { color: #ffd166; }
+/* 🟢 게스트(초록) · 🍾 킵(파랑) · ★ 판매(빨강) 테두리 (대표 요청 2026-11-19) — 겹치면 판매 > 킵 > 게스트 */
+.tbt.keep { border-color: #4da3ff; background: rgba(77,163,255,.12); }
+.tbt.sold { border-color: #ff3b5c; background: rgba(255,59,92,.13); }
+.tbt.sold b { color: #ffb3c0; }
+.sheet-in .tbtg button.chip[data-tbtg="sold"] { border-color: #ff3b5c; color: #ff8fa3; }
+.sheet-in .tbtg button.chip[data-tbtg="sold"].on { background: #ff3b5c; border-color: #ff3b5c; color: #fff; }
+.sheet-in .tbtg button.chip[data-tbtg="keep"] { border-color: #4da3ff; color: #9ccaff; }
+.sheet-in .tbtg button.chip[data-tbtg="keep"].on { background: #4da3ff; border-color: #4da3ff; color: #04162b; }
+.sheet-in .tbtg button.chip[data-tbtg="inn"] { border-color: #3ccf91; color: #8fe8c0; }
+.sheet-in .tbtg button.chip[data-tbtg="inn"].on { background: #3ccf91; border-color: #3ccf91; color: #04210f; }
+.tbtg .note { flex-basis: 100%; margin: 0; font-size: 12px; }
 .tbempty { margin: 0 0 10px; border: 1px solid var(--line-2); border-radius: 12px; padding: 0 12px; background: var(--card); }
 .tbempty summary { padding: 10px 0; font-weight: 800; cursor: pointer; }
 .tbempty .ez { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 10px; }
@@ -772,6 +780,9 @@ body.hasfab main { padding-bottom: 110px; }
 .tbt.tbm.wait, .tbt.tbm.ghost { border: 2px dashed #ffb02e; }
 .tbt.tbm.no { border: 2px solid #ff5c7a; }
 .tbt.tbm.blk { border: 2px solid #7a6a6a; }
+.tbt.tbm.keep { border: 2px solid #4da3ff; background: rgba(77,163,255,.16); }   /* 🍾 킵 파랑 · ★ 판매 빨강 (대표 요청 2026-11-19) */
+.tbt.tbm.sold { border: 2px solid #ff3b5c; background: rgba(255,59,92,.16); }
+.tbt.tbm.wait.keep, .tbt.tbm.wait.sold { border-style: dashed; }
 .tbmleg { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--muted); margin: 0 0 4px; }
 .tbmleg i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: -2px; border: 2px solid #9a9aa8; }
 /* 성별: 남자 파랑 · 여자 분홍 · 혼성 보라 */
@@ -4118,7 +4129,8 @@ body.popmode .chath .chpop { display: none; }
       if (r.status === '대기') { cls += ' wait'; badge = '<em>' + (r.req && r.req.del ? '비우기 대기' : r.cur ? '변경 대기' : '승인 대기') + '</em>'; }
       if (r.status === '거절') { cls += ' no'; badge = '<em>거절됨</em>'; }
       if (r.mine) cls += ' mine';
-      if (v.sold) cls += ' sold';   // 판매 = 색으로 (별표 대신, 2026-11-18)
+      if (v.keep) cls += ' keep';   // 🍾 킵 = 파랑
+      if (v.sold) cls += ' sold';   // ★ 판매 = 빨강 (별표 대신, 2026-11-18 · 색 2026-11-19)
     }
     var more = list && list.length > 1 ? '<i class="tbmore">+' + (list.length - 1) + '</i>' : '';
     var body = !v ? '<span class="tbplus">+</span>' : v.blk ? '<b>' + esc(v.blk) + '</b>' :
@@ -5116,7 +5128,7 @@ body.popmode .chath .chpop { display: none; }
     var extra = [];
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !show) return; z.rows.forEach(function (r) { r.forEach(function (sid) { if (!known[sid]) extra.push(sid); }); }); });
     if (extra.length) h += '<div class="tbrow">' + extra.map(function (sid) { return tbTile(sid, ix.at[sid]); }).join('') + '</div>';
-    h += '<div class="tbmleg"><span><i style="background:rgba(60,207,145,.25);border-color:#3ccf91"></i>입장</span><span><i></i>게스트</span><span><i style="border-color:#ffb02e;border-style:dashed"></i>승인 대기</span><span><i style="border-color:#74747f;border-style:dashed"></i>빈자리</span><span><i style="background:rgba(255,190,40,.38);border-color:#ffd166"></i>판매</span></div>';
+    h += '<div class="tbmleg"><span><i style="background:rgba(60,207,145,.25);border-color:#3ccf91"></i>게스트</span><span><i style="background:rgba(255,59,92,.25);border-color:#ff3b5c"></i>판매</span><span><i style="background:rgba(77,163,255,.25);border-color:#4da3ff"></i>킵</span><span><i></i>손님</span><span><i style="border-color:#ffb02e;border-style:dashed"></i>승인 대기</span><span><i style="border-color:#74747f;border-style:dashed"></i>빈자리</span></div>';
     return h;
   }
   function renderTable(area) {
@@ -5343,20 +5355,23 @@ body.popmode .chath .chpop { display: none; }
       '<div class="tbsx">' + [['남', '남자', 'm'], ['여', '여자', 'f'], ['혼', '혼성', 'x']].map(function (x) { return '<button type="button" class="chip sx-' + x[2] + (v.sx === x[0] ? ' on' : '') + '" data-tbsx="' + x[0] + '">' + x[1] + '</button>'; }).join('') +
       '<span class="tbn"><button type="button" class="chip" data-tbn="-1" aria-label="인원 빼기">−</button><b id="tbN">' + (v.n || 0) + '</b>명<button type="button" class="chip" data-tbn="1" aria-label="인원 더하기">＋</button></span></div>' +
       '<label>술<input id="tbL" maxlength="20" autocomplete="off" value="' + esc(v.liq || '') + '" placeholder="카마 · 포션 · 오페라 · 레몬드랍"></label><div class="tbliq">' + (t.liqs || []).map(function (x) { return '<button type="button" class="chip" data-tbliq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>' +
-      '<div class="tbtg">' + [['sold', '★ 판매'], ['keep', '🍾 킵'], ['inn', '입장']].map(function (x) { return '<button type="button" class="chip' + (v[x[0]] ? ' on' : '') + '" data-tbtg="' + x[0] + '" aria-pressed="' + !!v[x[0]] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="tbtg">' + [['sold', '★ 판매'], ['keep', '🍾 킵'], ['inn', '게스트']].map(function (x) { return '<button type="button" class="chip' + (v[x[0]] ? ' on' : '') + '" data-tbtg="' + x[0] + '" aria-pressed="' + !!v[x[0]] + '">' + x[1] + '</button>'; }).join('') + (ap ? '' : '<p class="note">★ 판매·🍾 킵은 승인 후 등록 · 게스트는 바로 등록</p>') + '</div>' +
       (ap ? '<label>담당<select id="tbS"><option value="">담당 고르기</option>' + (t.staffs || []).map(function (n) { return '<option' + (n === v.st ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + (v.st && (t.staffs || []).indexOf(v.st) < 0 ? '<option selected>' + esc(v.st) + '</option>' : '') + '</select></label>' : '<p class="note" style="margin:8px 0 0">담당 · ' + esc(t.me) + '</p>') +
       '<label>메모<input id="tbM" maxlength="40" autocomplete="off" value="' + esc(v.memo || '') + '"></label></div>' +
       '<label>자리<select id="tbSeat">' + free.map(function (s) { return '<option value="' + esc(s) + '"' + (s === (v.seat || '') ? ' selected' : '') + '>' + esc(s || '대기 명단 (자리 없음)') + '</option>'; }).join('') + '</select></label>' +
       '<p class="msg" id="tbMsg"></p><button class="btn btn-hot" type="button" id="tbSave">' + (ap ? '저장' : r && r.status === '거절' ? '고쳐서 다시 신청' : '승인 요청') + '</button>';
     if (r && ap && r.status === '대기') h += '<div class="tbbtns"><button class="btn btn-ok" type="button" id="tbOk1">요청 승인</button><button class="btn" type="button" id="tbNo1">거절</button></div>';
-    if (r && (r.cur || r.status)) h += '<div class="tbbtns">' + (r.mine && r.status && !ap ? '<button class="btn" type="button" id="tbCancel">요청 취소</button>' : '') + ((r.cur || ap) && !(r.req && r.req.del) ? '<button class="btn btn-bad" type="button" id="tbDel">' + (ap || state.s.role === '부팀장' ? '자리 비우기' : '비우기 요청') + '</button>' : '') + '</div>';
+    if (r && (r.cur || r.status)) h += '<div class="tbbtns">' + (r.mine && r.status && !ap ? '<button class="btn" type="button" id="tbCancel">요청 취소</button>' : '') + ((r.cur || ap) && !(r.req && r.req.del) ? '<button class="btn btn-bad" type="button" id="tbDel">' + (ap || state.s.role === '부팀장' || (r.cur && !r.cur.blk && r.cur.st === t.me) ? '자리 비우기' : '비우기 요청') + '</button>' : '') + '</div>';
     showSheet(h); bindWhere();
     var n = v.n || 0, tg = { sold: !!v.sold, keep: !!v.keep, inn: !!v.inn }, sx = v.sx || '', blk = v.blk || '';
     var s = $('sheet');
     s.querySelectorAll('[data-tbsx]').forEach(function (b) { b.addEventListener('click', function () { sx = sx === b.dataset.tbsx ? '' : b.dataset.tbsx; s.querySelectorAll('[data-tbsx]').forEach(function (x) { x.classList.toggle('on', x.dataset.tbsx === sx); }); }); });
     s.querySelectorAll('[data-tbn]').forEach(function (b) { b.addEventListener('click', function () { n = Math.max(0, Math.min(50, n + +b.dataset.tbn)); $('tbN').textContent = n; }); });
     s.querySelectorAll('[data-tbliq]').forEach(function (b) { b.addEventListener('click', function () { var i = $('tbL'), parts = i.value.split(/\s+/).filter(Boolean), k = parts.indexOf(b.dataset.tbliq); if (k >= 0) parts.splice(k, 1); else parts.push(b.dataset.tbliq); i.value = parts.join(' '); }); });
-    s.querySelectorAll('[data-tbtg]').forEach(function (b) { b.addEventListener('click', function () { var k = b.dataset.tbtg; tg[k] = !tg[k]; b.classList.toggle('on', tg[k]); b.setAttribute('aria-pressed', tg[k]); }); });
+    // 🟢 게스트만이면 승인 없이 바로 등록 · ★ 판매·🍾 킵이 있으면 승인 요청 (대표 요청 2026-11-19)
+    var saveLab = function () { var sb = $('tbSave'); if (!sb || ap || blk) return; sb.textContent = tg.inn && !tg.sold && !tg.keep ? '등록 (바로)' : r && r.status === '거절' ? '고쳐서 다시 신청' : '승인 요청'; };
+    s.querySelectorAll('[data-tbtg]').forEach(function (b) { b.addEventListener('click', function () { var k = b.dataset.tbtg; tg[k] = !tg[k]; b.classList.toggle('on', tg[k]); b.setAttribute('aria-pressed', tg[k]); saveLab(); }); });
+    saveLab();
     s.querySelectorAll('[data-tbblk]').forEach(function (b) { b.addEventListener('click', function () { blk = blk === b.dataset.tbblk ? '' : b.dataset.tbblk; s.querySelectorAll('[data-tbblk]').forEach(function (x) { x.classList.toggle('on', x.dataset.tbblk === blk); }); $('tbForm').hidden = !!blk; }); });
     $('tbSave').addEventListener('click', function () {
       var b = this, m = $('tbMsg');
@@ -5366,13 +5381,17 @@ body.popmode .chath .chpop { display: none; }
       if (blk && !nv.seat) { m.textContent = '막을 자리를 골라 주세요.'; return; }
       b.disabled = true; m.textContent = '';
       var body = { a: 'tb_set', day: t.day, floor: fl, v: nv }; if (r) body.id = r.id;
-      tbCall(body, function (x) { if (!x.ok) { b.disabled = false; m.textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = ap ? '저장했어요.' : '승인 요청을 보냈어요. 승인되면 표에 들어가요.'; render(); });
+      tbCall(body, function (x) {
+        if (!x.ok) { b.disabled = false; m.textContent = tbErr(x); return; }
+        var row = (x.rows || []).filter(function (y) { return r ? y.id === r.id : y.floor === fl && ((y.req && y.req.seat === nv.seat && y.req.g === nv.g) || (y.cur && y.cur.seat === nv.seat && y.cur.g === nv.g)); })[0];
+        tbCloseSheet(); state.tbMsg = ap ? '저장했어요.' : row && row.status === '대기' ? '승인 요청을 보냈어요. 승인되면 표에 들어가요.' : '등록했어요.'; render();
+      });
     });
     if ($('tbOk1')) $('tbOk1').addEventListener('click', function () { tbCloseSheet(); tbJudge([r.id], true, '', null); });
     if ($('tbNo1')) $('tbNo1').addEventListener('click', function () { tbRejectSheet(r); });
     if ($('tbCancel')) $('tbCancel').addEventListener('click', function () { var b = this; b.disabled = true; tbCall({ a: 'tb_cancel', id: r.id }, function (x) { if (!x.ok) { b.disabled = false; $('tbMsg').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = '요청을 취소했어요.'; render(); }); });
     if ($('tbDel')) $('tbDel').addEventListener('click', function () {
-      var direct = ap || state.s.role === '부팀장';   // 부팀장은 내 손님 자리도 바로 비움
+      var direct = ap || state.s.role === '부팀장' || !!(r.cur && !r.cur.blk && r.cur.st === t.me);   // 부팀장·내 손님 자리는 바로 비움 (대표 요청 2026-11-19)
       if (!armed(this, direct ? '자리 비우기' : '비우기 요청')) return;
       var b = this; b.disabled = true;
       tbCall({ a: 'tb_del', id: r.id }, function (x) { if (!x.ok) { b.disabled = false; $('tbMsg').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = direct ? '자리를 비웠어요.' : '비우기 요청을 보냈어요.'; render(); });
