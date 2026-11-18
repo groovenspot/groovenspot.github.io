@@ -647,6 +647,12 @@ body.hasfab main { padding-bottom: 110px; }
 .ych .chip.chg, .ycw .chip.chg { color: var(--warn); border-color: var(--warn); }
 .ycchg { margin: 6px 0 0; color: var(--warn); font-size: 13px; font-weight: 800; }
 .yct.chg { border-color: var(--warn); box-shadow: inset 0 0 0 1px var(--warn); }
+.yctw { position: relative; }
+.yctw .yct { padding-right: 76px; }
+.yccp { position: absolute; right: 6px; top: 6px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--txt); border-radius: 999px; padding: 5px 10px; font-size: 12px; font-weight: 800; cursor: pointer; }
+.yccp.ok { border-color: var(--ok); color: var(--ok); }
+.yccf .chatpic { flex: none; }
+.ycc .ycph { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 0; }
 .ycold { margin: 4px 0 0; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 .chgt { display: inline-block; margin-left: 6px; padding: 1px 7px; border: 1px solid var(--warn); border-radius: 999px; color: var(--warn); font-size: 11px; font-weight: 800; white-space: nowrap; }
 .ycsat { margin: 4px 0 0; font-size: 13px; color: #7cc0ff; font-weight: 700; }
@@ -854,6 +860,7 @@ body.hasfab main { padding-bottom: 110px; }
   .sheet-in { max-width: 600px; }
 }
 /* 🚨 경호 호출 */
+#listArea { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }   /* 아래 🚨·💬 동그라미 버튼이 댓글 칸을 가리지 않게 */
 .sosfab { position: fixed; left: 16px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 15; width: 58px; height: 58px; border-radius: 50%; border: 2px solid #ff8a9b; background: #e0203f; color: #fff; font-size: 26px; cursor: pointer; box-shadow: 0 8px 24px rgba(224,32,63,.45); }
 .sosbar { position: sticky; top: 0; z-index: 6; padding: 10px 14px; background: #3a0610; border-bottom: 2px solid #ff3b5c; display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow: auto; }   /* 머리줄 바로 아래 (탭을 가리지 않게 흐름 안에) */
 .sosbar .sosi { display: flex; flex-direction: column; gap: 6px; }
@@ -4116,7 +4123,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (cg) h += '<p class="ycchg">✏️ 수정됨 ' + esc(cg.at) + (cg.by && cg.by !== x.by ? ' · ' + esc(cg.by) + nickH(cg.by) : '') + (cg.n > 1 ? ' · ' + cg.n + '번' : '') + ' · ' + cg.f.map(function (k) { return esc(YC_CHG_L[k] || k); }).join(' · ') + '</p>';
     var what = ycWhatK(x.v);
     if (what.length) h += '<div class="ycw">' + what.map(function (t) { return '<span class="chip' + (ch(t[0]) ? ' chg' : '') + '">' + esc(t[1]) + '</span>'; }).join('') + '</div>';
-    if (x.text) h += '<p class="yct' + (ch('text') ? ' chg' : '') + '">' + esc(x.text).replace(/\n/g, '<br>') + '</p>';
+    if (x.text) h += '<div class="yctw"><p class="yct' + (ch('text') ? ' chg' : '') + '">' + esc(x.text).replace(/\n/g, '<br>') + '</p><button type="button" class="yccp" data-yccp="1">📋 복사</button></div>';   // 전광판 문구 복사 (대표 요청 2026-11-19)
     if (ch('text') && cg.oldText != null) h += '<p class="ycold">' + (x.text ? '이전 문구' : '문구 지움') + ' · ' + (cg.oldText ? '<s>' + esc(cg.oldText).replace(/\n/g, ' / ') + '</s>' : '(없었음)') + '</p>';
     if (x.song) h += '<p class="ycs">🎵 ' + (/^https?:\/\//.test(x.song) ? '<a href="' + esc(x.song) + '" target="_blank" rel="noopener">' + esc(ycSongLabel(x)) + '</a>' : esc(x.song)) + ycDlBtn(x) + (ch('song') ? tag : '') + '</p>' + (x.v && x.v.songAt ? '<p class="ycsat">▶ 노래 시작 · ' + esc(x.v.songAt) + (ch('songAt') ? tag : '') + '</p>' : '');
     if (x.v && x.v.note) h += '<p class="ycmemo">📝 ' + esc(x.v.note) + (ch('note') ? tag : '') + '</p>';
@@ -4138,8 +4145,8 @@ body.hasfab main { padding-bottom: 110px; }
       if ((mine || boss) && x.status !== '끝') s.push('<button class="link" type="button" data-yced="1">고치기</button><button class="link" type="button" data-yccx="1">요청 취소</button>');
       if (s.length) h += '<div class="ycl">' + s.join('') + '</div>';
     }
-    h += '<div class="ycc">' + x.cmts.map(function (c) { return '<p><b>' + esc(c.who) + nickH(c.who) + (c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</b> ' + esc(c.text) + ' <small>' + esc(c.hm) + '</small></p>'; }).join('') +
-      (can ? '<form class="yccf" data-yccf="1"><input data-yccmt="1" maxlength="100" placeholder="댓글 (예: 시작시간 알려주세요)" autocomplete="off"><button class="btn" type="submit">보내기</button></form>' : '') + '</div>';
+    h += '<div class="ycc">' + x.cmts.map(function (c) { return '<p><b>' + esc(c.who) + nickH(c.who) + (c.org ? '<span class="org">' + esc(c.org) + '</span>' : '') + '</b> ' + esc(c.text) + ' <small>' + esc(c.hm) + '</small></p>' + chatMedia(c); }).join('') +
+      (can ? '<div class="chatph ycph" data-ycph="1" hidden></div><form class="yccf" data-yccf="1"><label class="chatpic" aria-label="사진·영상 올리기" title="사진·영상">📷<input type="file" data-ycfile="1" accept="image/*,video/*" multiple hidden></label><input data-yccmt="1" maxlength="100" placeholder="댓글 (예: 시작시간 알려주세요)" autocomplete="off"><button class="btn" type="submit">보내기</button></form>' : '') + '</div>';
     return h + '</div>';
   }
   function renderYc(area) {
@@ -4159,6 +4166,10 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-ycvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.ycvid, b); }); });
     area.querySelectorAll('[data-ycsv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.ycsv); }); });
     area.querySelectorAll('.ycp img[data-img]').forEach(function (im) { im.style.cursor = 'zoom-in'; im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });   // 연출 사진: 누르면 크게 + 저장
+    area.querySelectorAll('.ycc .cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });   // 댓글 사진·영상
+    area.querySelectorAll('.ycc [data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
+    area.querySelectorAll('.ycc [data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
+    area.querySelectorAll('.ycc [data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { render(); }); }); });
     if ($('ycNew')) $('ycNew').addEventListener('click', function () { ycForm(null); });
     area.querySelectorAll('[data-ycid]').forEach(function (card) {
       var id = card.dataset.ycid, x = y.list.filter(function (q) { return q.id === id; })[0];
@@ -4171,11 +4182,61 @@ body.hasfab main { padding-bottom: 110px; }
       }); });
       var e = card.querySelector('[data-yced]'); if (e) e.addEventListener('click', function () { ycForm(x); });
       var cx = card.querySelector('[data-yccx]'); if (cx) cx.addEventListener('click', function () { if (!armed(cx, '요청 취소')) return; ycCall({ a: 'yc_cancel', id: id }, function (r) { state.ycMsg = r.ok ? '연출 요청을 취소했어요.' : ''; if (!r.ok) state.ycErr = ycErr(r); render(); }); });
-      var f = card.querySelector('[data-yccf]'); if (f) f.addEventListener('submit', function (ev) {
-        ev.preventDefault(); var i = f.querySelector('input'), t = i.value.trim(); if (!t) return; i.disabled = true;
-        ycCall({ a: 'yc_cmt', id: id, text: t }, function (r) { if (!r.ok) { i.disabled = false; state.ycErr = ycErr(r); } render(); });
-      });
+      var cp = card.querySelector('[data-yccp]'); if (cp) cp.addEventListener('click', function () { ycCopy(x.text, cp); });
+      var f = card.querySelector('[data-yccf]'); if (f) {
+        f.querySelector('[data-ycfile]').addEventListener('change', function () { ycCmtPick(id, Array.prototype.slice.call(this.files || [])); this.value = ''; });
+        ycCmtPaint(id);
+        f.addEventListener('submit', function (ev) {
+          ev.preventDefault(); var i = f.querySelector('[data-yccmt]'), t = i.value.trim(), md = ycCmtMd(id), fb = f.querySelector('button[type="submit"]');
+          if (!t && !md.photos.length && !md.vids.length) return;
+          if (fb.disabled) return;
+          if (md.vids.some(function (v) { return v.err; })) { state.ycErr = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; render(); return; }
+          if (md.vids.some(function (v) { return !v.done; })) {   // 영상이 다 올라가면 바로 보냄
+            fb.disabled = true; fb.textContent = '올리는 중…';
+            var w = setInterval(function () {
+              if (ycCmtMd(id) !== md) { clearInterval(w); return; }
+              if (md.vids.some(function (v) { return v.err; })) { clearInterval(w); fb.disabled = false; fb.textContent = '보내기'; }
+              else if (md.vids.every(function (v) { return v.done; })) { clearInterval(w); fb.disabled = false; var f2 = document.querySelector('.yc[data-ycid="' + id + '"] [data-yccf]'); if (f2) f2.requestSubmit(); }
+            }, 500);
+            return;
+          }
+          var body = { a: 'yc_cmt', id: id, text: t };
+          if (md.photos.length) body.photos = md.photos.map(function (p) { return { type: p.type, data: p.data }; });
+          if (md.vids.length) body.videos = md.vids.map(function (v) { return v.vid; });
+          i.disabled = true; fb.disabled = true;
+          ycCall(body, function (r) { if (!r.ok) { i.disabled = false; fb.disabled = false; state.ycErr = ycErr(r); } else { state.ycCmtMd[id] = null; flushPush(); } render(); });
+        });
+      }
     });
+  }
+  // 📋 전광판 문구 복사 · 💬 댓글 사진·영상 (대표 요청 2026-11-19)
+  function ycCopy(t, btn) {
+    var done = function (okk) { btn.textContent = okk ? '✅ 복사됨' : '복사 안 됨'; btn.classList.toggle('ok', !!okk); setTimeout(function () { btn.textContent = '📋 복사'; btn.classList.remove('ok'); }, 1600); };
+    var fallback = function () { try { var ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, t.length); var okk = document.execCommand('copy'); document.body.removeChild(ta); done(okk); } catch (e) { done(false); } };
+    try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function () { done(true); }, fallback); else fallback(); } catch (e) { fallback(); }
+  }
+  function ycCmtMd(id) { state.ycCmtMd = state.ycCmtMd || {}; return state.ycCmtMd[id] || (state.ycCmtMd[id] = { photos: [], vids: [] }); }
+  function ycCmtPaint(id) {
+    var box = document.querySelector('.yc[data-ycid="' + id + '"] [data-ycph]'); if (!box) return;
+    var md = ycCmtMd(id); box.hidden = !md.photos.length && !md.vids.length;
+    box.innerHTML = md.photos.map(function (p, i) { return '<span class="ph"><img src="' + p.url + '" alt=""><button type="button" data-yprm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
+      md.vids.map(function (v, i) { return '<span class="ph' + (v.err ? ' bad' : '') + '">🎬<b>' + vidBadge(v) + '</b><button type="button" data-yvrm="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('');
+    box.querySelectorAll('[data-yprm]').forEach(function (b) { b.addEventListener('click', function () { md.photos.splice(+b.dataset.yprm, 1); ycCmtPaint(id); }); });
+    box.querySelectorAll('[data-yvrm]').forEach(function (b) { b.addEventListener('click', function () { var v = md.vids.splice(+b.dataset.yvrm, 1)[0]; if (v) v.gone = true; ycCmtPaint(id); }); });
+  }
+  function ycCmtPick(id, all) {
+    var md = ycCmtMd(id), say = function (t) { state.ycErr = t; var e = $('ycBox'); if (e) { e.textContent = t; e.hidden = false; e.classList.remove('ok'); } };
+    var ims = all.filter(function (f) { return !ycIsVideo(f); });
+    if (ims.length > 3 - md.photos.length) say('사진은 한 번에 3장까지예요.');
+    ims = ims.slice(0, Math.max(0, 3 - md.photos.length));
+    all.filter(ycIsVideo).forEach(function (f) {
+      if (md.vids.length >= 2) return say('영상은 2개까지예요.');
+      if (vidTooBig(f)) return say(vidSizeMsg(f));
+      var v = { file: f, size: f.size, prog: 0, vid: '', done: false, err: '' }; md.vids.push(v); vidPrep(v, function () { ycCmtPaint(id); });
+      if (v.squeeze) say('큰 영상은 줄여서 올려요. 영상 길이만큼 걸리니 이 화면을 켜 두세요.');
+    });
+    ycCmtPaint(id);
+    if (ims.length) Promise.all(ims.map(shrink)).then(function (xs) { if (state.ycCmtMd[id] !== md) return; md.photos = md.photos.concat(xs).slice(0, 3); ycCmtPaint(id); }).catch(function () { say('사진을 못 읽었어요.'); });
   }
   // 요청 입력 창 (새로 / 고치기)
   function ycForm(x) {
