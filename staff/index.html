@@ -486,6 +486,7 @@ body.hasfab main { padding-bottom: 110px; }
 .chatf .btn { width: auto; min-height: 42px; padding: 0 16px; }
 /* 대화창 사진·영상 (2026-11-18) */
 .chatpic { flex: none; width: 42px; height: 42px; margin: 0; border-radius: 12px; border: 1px solid var(--line-2); display: grid; place-items: center; font-size: 20px; cursor: pointer; background: var(--card); }
+.chatro { margin: 0; padding: 12px; text-align: center; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
 .chatph { display: flex; gap: 8px; padding: 10px 12px 0; overflow-x: auto; border-top: 1px solid var(--line); }
 .chatph .ph { position: relative; flex: none; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line-2); background: #000; display: grid; place-items: center; font-size: 20px; }
 .chatph .ph b { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font-size: 11px; }
@@ -803,6 +804,7 @@ body.hasfab main { padding-bottom: 110px; }
 .gseg button small { display: block; font-size: 11px; font-weight: 600; color: var(--muted); }
 .gseg button[aria-pressed="true"] { border-color: var(--g); background: rgba(255,122,26,.16); }
 .gcnt { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.gturn { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: 0 0 14px; } .gturn .gcnt { margin: 0 0 6px; grid-template-columns: 1fr; } .gturn .gstep > span { min-width: 0; white-space: nowrap; } .gturn .gstep b { font-size: 18px; min-width: 44px; }
 .gstep { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 4px 6px; }
 .gstep b { min-width: 22px; text-align: center; font-size: 22px; font-variant-numeric: tabular-nums; }
 .gstep button { width: 40px; height: 44px; flex: none; border-radius: 10px; border: 1px solid var(--line-2); background: var(--bg); color: var(--txt); font-size: 24px; font-weight: 800; cursor: pointer; }
@@ -927,6 +929,7 @@ body.hasfab main { padding-bottom: 110px; }
   <div class="chatph" id="chatPh" hidden></div>
   <div class="chatrep" id="chatRep" hidden></div>
   <div class="cmenu" id="chatMenu" hidden></div>
+  <p class="chatro" id="chatRo" hidden>👀 경호팀장은 대화를 보기만 해요</p>
   <form class="chatf" id="chatF"><label class="chatpic" aria-label="사진·영상 올리기" title="사진·영상">📷<input type="file" id="chatFile" accept="image/*,video/*" multiple hidden></label><textarea id="chatIn" rows="1" maxlength="500" placeholder="메시지" autocomplete="off"></textarea><button class="btn btn-hot" type="submit">보내기</button></form>
 </section>
 
@@ -1371,8 +1374,9 @@ body.hasfab main { padding-bottom: 110px; }
         '<b>👤 담당 MD 호출</b>: 손님이 찾는 MD 이름을 골라 그 사람에게 <b>60초</b>',
         '받는 사람: 화면 위 호출 카드 + 알림 → <b>받을게요</b> 또는 <b>넘기기</b>. 시간이 지나면 다음 사람에게 자동으로 넘어가요',
         '경호팀 화면에 누구에게 갔는지·몇 초 남았는지·다음 차례가 보이고, 한 바퀴 돌아도 없으면 경호팀·대표에게 <b>없음</b> 알림',
-        '안내·순번 호출은 <b>💬 테이블 대화</b>에 한 줄로 올라가서 모두 볼 수 있어요',
-        '<b>수습</b> 직책은 호출에서 빠져요 · <b>경호팀장</b>은 🪑 테이블·🎆 연출을 보기만 할 수 있어요 · 대표는 3일 받은 수 확인'
+        '안내·순번 호출은 <b>💬 테이블 대화</b>에 한 줄로 올라가요: 지금 차례 <b>@이름</b> → 넘기면 다음 사람으로 바뀌고, 받으면 <b>✅ @이름 받음</b>',
+        '<b>⏱ 차례 시간</b>(안내 10초·순번 15초)은 경호팀장·대표가 입구 탭에서 5초씩 늘리고 줄여요',
+        '<b>수습</b> 직책은 호출에서 빠져요 · <b>경호팀장</b>은 🪑 테이블·🎆 연출과 그 💬 대화를 보기만 할 수 있어요 · 대표는 3일 받은 수 확인'
       ]) +
       sec('🪑 테이블', [
         '영업진이 자기 손님을 넣으면 <b>승인 대기</b> → 대표·김동기·양진호·팀장(그날 권한 받은 직원 포함)이 승인, 또는 코멘트 달아 거절 → 고쳐서 다시 신청',
@@ -1817,6 +1821,10 @@ body.hasfab main { padding-bottom: 110px; }
         '</div><button type="button" class="btn" data-gpick-close>닫기</button></div>';
     }
     if ((g.order || []).length) h += '<p class="gorder">MD 순번: ' + g.order.map(function (x) { return esc(x.name) + (x.n ? ' <small>(' + x.n + ')</small>' : ''); }).join(' → ') + ' <small>· 괄호 = 3일 받은 수</small></p>';
+    // ⏱ 차례 시간 (경호팀장·대표, 2026-11-18): 한 사람에게 기다려 주는 시간 5초씩 5~120초
+    if (g.turn && g.turn.edit) h += '<div class="gturn"><h2 class="sec" style="margin:0 0 8px">⏱ 차례 시간 <small style="color:var(--muted);font-weight:600">경호팀장·대표</small></h2><div class="gcnt">' +
+      [['guide', '🙋 안내'], ['md', '🆕 순번']].map(function (x) { return '<div class="gstep"><span>' + x[1] + '</span><button type="button" data-gturn="' + x[0] + '" data-d="-5" aria-label="' + x[1] + ' 줄이기">−</button><b>' + g.turn[x[0]] + '초</b><button type="button" data-gturn="' + x[0] + '" data-d="5" aria-label="' + x[1] + ' 늘리기">+</button></div>'; }).join('') +
+      '</div><p class="note" style="margin:0">한 사람에게 기다려 주는 시간이에요. 안 받으면 다음 사람에게 넘어가요. (5초씩 · ' + (g.turn.min || 5) + '~' + (g.turn.max || 120) + '초)</p></div>';
     var calls = g.calls || [];
     h += '<h2 class="sec">오늘 호출 ' + calls.length + '</h2>';
     h += calls.length ? '<div class="glist">' + calls.map(function (c) {
@@ -1855,6 +1863,11 @@ body.hasfab main { padding-bottom: 110px; }
     var fi = $('gFind'); if (fi) fi.addEventListener('input', function () { state.gq = fi.value; var pos = fi.selectionStart; render(); var n = $('gFind'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } });
     area.querySelectorAll('[data-gpick]').forEach(function (b) { b.addEventListener('click', function () { fire('pick', b.dataset.gpick, b); }); });
     var pc = area.querySelector('[data-gpick-close]'); if (pc) pc.addEventListener('click', function () { state.gpick = false; state.gq = ''; render(); });
+    area.querySelectorAll('[data-gturn]').forEach(function (b) { b.addEventListener('click', function () {
+      var k = b.dataset.gturn, mn = g.turn.min || 5, mx = g.turn.max || 120, v = Math.max(mn, Math.min(mx, (+g.turn[k] || 0) + +b.dataset.d));
+      if (v === +g.turn[k]) return;
+      gateSend({ a: 'gate_turn', kind: k, sec: v }, b, function (r) { state.gmsg = r.error ? '바꾸지 못했어요. 다시 해 주세요.' : '⏱ ' + (k === 'guide' ? '안내' : '순번') + ' 차례 시간을 ' + v + '초로 바꿨어요.'; state.gmsgOk = !r.error; render(); });
+    }); });
     area.querySelectorAll('[data-gcancel]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '취소')) return; gateSend({ a: 'gate_cancel', id: b.dataset.gcancel }, b); }); });
     area.querySelectorAll('[data-gagain]').forEach(function (b) { b.addEventListener('click', function () { var c = (g.calls || []).filter(function (x) { return x.id === b.dataset.gagain; })[0]; if (c) fire(c.kind, c.pick, b, c); }); });
   }
@@ -4053,7 +4066,7 @@ body.hasfab main { padding-bottom: 110px; }
   };
   function chatRoom() {
     var d = state.data || {};
-    if (d.guard) return '';   // 경호팀: 대화 없음
+    if (d.guard) return (state.tab === 'table' && d.table) || (state.tab === 'yc' && d.yc) ? state.tab : '';   // 경호팀: 대화 없음 · 경호팀장은 테이블·연출 대화 보기만 (2026-11-18)
     return state.tab === 'table' || state.tab === 'yc' || state.tab === 'guest' ? state.tab : '';
   }
   function chatSeen(room, at) { var o = {}; try { o = JSON.parse(localStorage.getItem('gs_chat_seen') || '{}'); } catch (e) {} if (at === undefined) return o[room] || ''; if (at > (o[room] || '')) { o[room] = at; try { localStorage.setItem('gs_chat_seen', JSON.stringify(o)); } catch (e) {} } }
@@ -4119,6 +4132,7 @@ body.hasfab main { padding-bottom: 110px; }
     $('chatHelp').innerHTML = CHAT_HELP[room] || ''; $('chatHelp').hidden = true; $('chatQ').setAttribute('aria-expanded', 'false');
     if (state.chatMediaReset) state.chatMediaReset();
     chatReplyTo(null); chatMenuClose();
+    var ro = !!(state.data && state.data.guard); $('chatF').hidden = ro; $('chatRo').hidden = !ro; $('chatQ').hidden = ro;   // 경호팀장: 보기만
     $('chatBox').hidden = false; $('chatFab').hidden = true;
     chatLoad(true);
     clearInterval(state.chatTimer); state.chatTimer = setInterval(function () { if (!document.hidden && !$('chatBox').hidden) chatLoad(); }, 3000);
@@ -4194,20 +4208,20 @@ body.hasfab main { padding-bottom: 110px; }
     state.chat = r; state.chatTail = state.chatTail || {}; state.chatTail[r.room] = r.list.slice(-30).map(function (m) { return [m.at, m.mine ? 1 : 0]; });
     if (r.list.length) chatSeen(r.room, r.list[r.list.length - 1].at);
     if (same && !toEnd) return;
-    var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '';
+    var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '', ro = !!(state.data && state.data.guard);   // 경호팀장: 보기만 (확인·답장·지우기 없음)
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small><button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
-    L.innerHTML = h ? '<p class="chint">두 번 누르면 ✅ 확인 · 꾹 누르면 ↩️ 답장</p>' + h : '<p class="cempty">아직 대화가 없어요. 첫 메시지를 남겨 보세요.</p>';
+    L.innerHTML = h ? (ro ? '' : '<p class="chint">두 번 누르면 ✅ 확인 · 꾹 누르면 ↩️ 답장</p>') + h : '<p class="cempty">아직 대화가 없어요.' + (ro ? '' : ' 첫 메시지를 남겨 보세요.') + '</p>';
     hydrateImgs(L);
     L.querySelectorAll('.cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });
     L.querySelectorAll('[data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
     L.querySelectorAll('[data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
     L.querySelectorAll('[data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { chatPaint(state.chat, false, true); }); }); });
-    L.querySelectorAll('[data-cmid] > p, [data-cmid] > .cph').forEach(function (el) { chatPress(el, el.parentNode.dataset.cmid); });   // 꾹 누르면 답장·복사·확인
+    if (!ro) L.querySelectorAll('[data-cmid] > p, [data-cmid] > .cph').forEach(function (el) { chatPress(el, el.parentNode.dataset.cmid); });   // 꾹 누르면 답장·복사·확인
     L.querySelectorAll('.crep[data-goto]').forEach(function (q) { q.addEventListener('click', function (e) { var t = L.querySelector('[data-cmid="' + q.dataset.goto + '"]'); if (!t) return; e.stopPropagation(); t.scrollIntoView({ block: 'center', behavior: 'smooth' }); t.classList.add('flash'); setTimeout(function () { t.classList.remove('flash'); }, 1400); }); });
-    L.querySelectorAll('[data-cmid] > p').forEach(function (p) {   // 두 번 누르면 확인(담당)
+    if (!ro) L.querySelectorAll('[data-cmid] > p').forEach(function (p) {   // 두 번 누르면 확인(담당)
       p.addEventListener('click', function () {
         var id = p.parentNode.dataset.cmid, now = Date.now();
         if (state.chatTap && state.chatTap.id === id && now - state.chatTap.t < 400) { state.chatTap = null; chatAck(id, p); }
