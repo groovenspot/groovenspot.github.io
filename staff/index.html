@@ -853,6 +853,27 @@ body.hasfab main { padding-bottom: 110px; }
   .sheet { place-items: center; }
   .sheet-in { max-width: 600px; }
 }
+/* 🚨 경호 호출 */
+.sosfab { position: fixed; left: 16px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 15; width: 58px; height: 58px; border-radius: 50%; border: 2px solid #ff8a9b; background: #e0203f; color: #fff; font-size: 26px; cursor: pointer; box-shadow: 0 8px 24px rgba(224,32,63,.45); }
+.sosbar { position: sticky; top: 0; z-index: 6; padding: 10px 14px; background: #3a0610; border-bottom: 2px solid #ff3b5c; display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow: auto; }   /* 머리줄 바로 아래 (탭을 가리지 않게 흐름 안에) */
+.sosbar .sosi { display: flex; flex-direction: column; gap: 6px; }
+.sosbar .sosh { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.sosbar .sosh b { font-size: 17px; color: #fff; }
+.sosbar .sosh time { margin-left: auto; color: #ffb3c0; font-variant-numeric: tabular-nums; font-weight: 800; }
+.sosbar .sosd { color: #ffd6dd; font-size: 14px; }
+.sosbar .sosd .ok { color: var(--ok); font-weight: 800; }
+.sosbar .sosb { display: flex; gap: 8px; flex-wrap: wrap; }
+.sosbar .sosb .btn { flex: 1; min-height: 46px; font-size: 16px; }
+.sosbar .btn-sos { background: #ff3b5c; border-color: #ff3b5c; color: #fff; }
+.sosk, .sosf { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+.sosk .chip, .sosf .chip { cursor: pointer; background: none; padding: 9px 14px; font-size: 15px; }
+.sosk .chip.on, .sosf .chip.on { background: #ff3b5c; border-color: #ff3b5c; color: #fff; }
+.btn.btn-sos { background: #e0203f; border-color: #e0203f; color: #fff; }
+.sosq { background: #3a0610; border: 1px solid #ff3b5c; border-radius: 14px; padding: 12px; margin: 0 0 10px; }
+.sosq p { margin: 0 0 10px; font-weight: 800; }
+.chatsos { display: block; width: calc(100% - 24px); margin: 6px 12px 0; border: 1px solid #ff3b5c; background: #3a0610; color: #ffd6dd; border-radius: 12px; padding: 8px 12px; font-weight: 800; cursor: pointer; text-align: left; }
+.chatl em.csos { display: block; font-style: normal; font-size: 12px; color: #ff8a9b; margin-top: 4px; font-weight: 800; }
+.chatl em.csos.ok { color: var(--ok); }
 /* 🛎 운영 요청 */
 .opq { display: flex; flex-direction: column; gap: 10px; }
 .opc { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
@@ -905,6 +926,7 @@ body.hasfab main { padding-bottom: 110px; }
   <div class="brand">GROOVE <b>STAFF</b></div>
   <div class="who" id="who" hidden><button class="mebtn" id="meBtn" type="button" aria-label="내 프로필"><strong id="whoName"></strong> <span id="whoTeam"></span></button><button class="bell" id="bell" type="button" hidden aria-label="알림 켜기·끄기">🔕</button><button class="link" id="logout" type="button">로그아웃</button></div>
 </header>
+<div class="sosbar" id="sosBar" hidden role="alert" aria-live="assertive"></div>
 
 <main>
   <section id="loginView" hidden>
@@ -972,6 +994,7 @@ body.hasfab main { padding-bottom: 110px; }
 <div class="sheet" id="sheet" hidden></div>
 <div class="goffer" id="gateOffer" hidden role="alertdialog" aria-live="assertive"></div>
 <button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
+<button type="button" class="sosfab" id="sosFab" hidden aria-label="경호 호출">🚨</button>
 <section class="chatbox" id="chatBox" hidden aria-label="대화">
   <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
   <div class="chathelp" id="chatHelp" hidden></div>
@@ -979,6 +1002,7 @@ body.hasfab main { padding-bottom: 110px; }
   <div class="chatat" id="chatAt" hidden></div>
   <div class="chatph" id="chatPh" hidden></div>
   <div class="chatrep" id="chatRep" hidden></div>
+  <button type="button" class="chatsos" id="chatSos" hidden>🚨 경호팀 부를까요? (눌러서 경호 호출)</button>
   <div class="cmenu" id="chatMenu" hidden></div>
   <form class="chatf" id="chatF"><label class="chatpic" aria-label="사진·영상 올리기" title="사진·영상">📷<input type="file" id="chatFile" accept="image/*,video/*" multiple hidden></label><textarea id="chatIn" rows="1" maxlength="500" placeholder="메시지" autocomplete="off"></textarea><button class="btn btn-hot" type="submit">보내기</button></form>
 </section>
@@ -1119,7 +1143,7 @@ body.hasfab main { padding-bottom: 110px; }
     state.tb = null; state.tbDay = ''; state.tbMsg = ''; state.tbErr = ''; state.tbFly = 0;
     state.yc = null; state.ycMsg = ''; state.ycErr = ''; state.ycFly = 0;
     state.lf = null; state.lfMsg = ''; state.lfErr = ''; state.lfFly = 0; state.me = null; state.meWho = ''; state.work = null; state.wkStart = '';
-    try { chatClose(); state.chatTail = {}; $('chatFab').hidden = true; } catch (e) {}
+    try { chatClose(); state.chatTail = {}; $('chatFab').hidden = true; $('sosFab').hidden = true; $('sosBar').hidden = true; state.sos = []; state.sosSig = ''; } catch (e) {}
     state.keep = null; state.kview = 'list'; state.kcur = null; state.kq = ''; state.kf = ''; state.kadd = null; state.kundo = null; state.kstale = false; state.kfly = 0; state.kmulti = false; state.kopt = {}; state.ktmp = {};
     try { localStorage.removeItem(KKEY); } catch (e) {}
     state.bview = 'list'; state.btag = ''; state.bpost = null; state.comp = null; state.cdraft = {}; state.dm = null; state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.dmDraft = {}; state.dmPick = false;
@@ -1201,6 +1225,7 @@ body.hasfab main { padding-bottom: 110px; }
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
     if (/^chat:(table|yc)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
+    if (h === 'sos') setTimeout(function () { loadSos(); }, 600);
     if (['ops', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) state.tab = h;
     swToken(state.s.token); paintBell();
     if (!state.keep) { var kc = kLoad(); if (kc) { state.keep = kc; state.kstale = true; } }
@@ -1257,7 +1282,7 @@ body.hasfab main { padding-bottom: 110px; }
       }
       $('sync').textContent = ''; state.lastSync = Date.now();
       state.listAt = Date.now(); (r.gateOffers || []).forEach(function (c) { c.dl = state.listAt + (c.left || 0) * 1000; });
-      state.data = r; saveData(r);
+      state.data = r; saveData(r); try { sosPut(r.sos || []); } catch (e) {}
       try { paintGateOffer(); } catch (e) {}
       if (r.pq) flushPush();
       state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; state.s.role = r.role || ''; save(state.s); setWho();
@@ -1461,6 +1486,12 @@ body.hasfab main { padding-bottom: 110px; }
         '<b>ㄱㄱ·컷</b>은 요청한 사람·DJ팀·관리자(대표·김동기·양진호·팀장), <b>순서(▲▼)</b>는 관리자·DJ팀만',
         '요청을 고치면 전광 준비가 다시 풀리고 카드에 <b>✏️ 수정됨</b>이 떠요',
         '대화창 줄임말: <code>ㅈㄱㅈㅂㅇ</code> 전광 준비 · <code>ㅅㅈㅂㅇ</code> 술 준비 · <code>ㄱㄱ</code> · <code>컷</code> · 전광만은 <code>2 전광만 바로</code> / <code>3 전광만 바로</code>'
+      ]) +
+      sec('🚨 경호 호출', [
+        '화면 왼쪽 아래 <b>🚨 빨간 버튼</b> → 상황(싸움·시비 / 진상 / 응급환자 / 기타)·층·자리 → <b>한 번 더 확인</b> → 출근 중인 경호팀 전원에게 알림',
+        '경호원이 <b>🏃 출동</b>을 누르면 부른 사람과 다른 경호원에게 누가 가는지 떠요 → 끝나면 <b>✅ 해결</b>',
+        '30초 안에 출동이 없으면 다시 울리고, 1분이 지나면 경호팀장·대표에게도 가요',
+        '대화창에 싸움·경호·상황을 쓰면 <b>🚨 경호팀 부를까요?</b> 버튼이 떠요 (눌러야만 호출) · 테이블 대화에 🚨 기록이 남아요'
       ]) +
       sec('🛎 운영 요청', [
         '<b>🛎 운영</b> 탭 → <b>+ 요청</b>: 🧊 배달(얼음·버켓얼음·물·휴지·물티슈·샴잔·방향제·셋팅버켓) · 🍽 기본 세팅 · 🧹 아웃 청소 · 🔀 자리 이동 · 🎆 퍼레이드 지원(VIP·돔·알망·페리에·킹·퀸·딥 피켓, 가마, 3가방·5가방, 인원 N명) · 🌡 온도 · 📝 기타',
@@ -1844,6 +1875,7 @@ body.hasfab main { padding-bottom: 110px; }
   function gateSoon() { setTimeout(function () { loadGate(true); }, 300); }
   function gateTyping() { var a = document.activeElement; return !!(a && (a.id === 'gMemo' || a.id === 'gFind' || a.id === 'guQ')); }
   function gatePut(r) {
+    if (r.sos) try { sosPut(r.sos); } catch (e) {}
     var now = Date.now();
     (r.offers || []).concat(r.calls || []).forEach(function (c) { c.dl = now + (c.left || 0) * 1000; });
     var sig = function (g) { return g ? JSON.stringify([(g.calls || []).map(function (c) { return [c.id, c.status, c.turn, c.passed, c.took]; }), g.order, g.gorder, g.mds, g.stats]) : ''; }, same = !!state.gate && sig(state.gate) === sig(r);
@@ -3528,9 +3560,91 @@ body.hasfab main { padding-bottom: 110px; }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
     var t = e.data && e.data.tab, ct = /^chat:(table|yc)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
+    if (t === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출: 탭이 아니라 위쪽 빨간 줄
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
     if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); if (t === 'ops') loadOps(); }
   });
+
+  // ── 🚨 경호 호출 (2026-11-19): 빨간 버튼 → 상황·위치 → 한 번 더 확인 → 출근 중 경호팀 전원. 경호원 🏃 출동 → ✅ 해결. 대화에 싸움·경호·상황 → 부를까요? ──
+  var SOS_WORDS = /싸움|싸워|싸우|시비|난동|폭행|경호|상황|가드\s*(?:좀\s*)?(?:부탁|불러|와\s*주)|쓰러|응급/;
+  var SOS_KINDS = ['싸움·시비', '진상', '응급환자', '기타'];
+  function sosPut(list) {
+    var act = (list || []).filter(function (x) { return x.status === '호출' || x.status === '출동'; });
+    var sig = JSON.stringify(act.map(function (x) { return [x.id, x.status, x.go.length, x.stage]; }));
+    var fresh = act.some(function (x) { return x.status === '호출' && !x.mine && (state.sosSeen || {})[x.id] !== 1; });
+    state.sos = act; state.sosAt = Date.now();
+    if (fresh) { state.sosSeen = state.sosSeen || {}; act.forEach(function (x) { state.sosSeen[x.id] = 1; }); try { if (navigator.vibrate) navigator.vibrate([400, 150, 400, 150, 400]); } catch (e) {} }
+    if (sig !== state.sosSig) { state.sosSig = sig; paintSos(); }
+  }
+  function loadSos() {
+    if (!state.s || state.sosFly) return;
+    state.sosFly = 1;
+    return call({ a: 'sos_get', token: state.s.token }).then(function (r) { state.sosFly = 0; if (r.error === 'auth') return toLogin(AUTH_OUT); if (r.ok) { state.sosCrew = r.crew; sosPut(r.list); } }).catch(function () { state.sosFly = 0; });
+  }
+  function sosAge(x) { var s = Math.max(0, Math.round((Date.now() - (x.ms || Date.now())) / 1000)); return Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2); }
+  function sosAct(body, btn) {
+    if (btn) btn.disabled = true; body.token = state.s.token;
+    return call(body).then(function (r) { if (btn) btn.disabled = false; if (r.ok) { sosPut(r.list); flushPush(); if (state.chatRoom === 'table' && !$('chatBox').hidden) chatLoad(); } else if (r.error === 'state') loadSos(); }).catch(function () { if (btn) btn.disabled = false; });
+  }
+  function paintSos() {
+    var bar = $('sosBar'), list = state.sos || [], d = state.data || {}, crew = !!(d.guard || d.admin);
+    $('sosFab').hidden = !state.s || !state.data || !!state.data.guard;   // 경호팀은 받는 쪽 (입구 버튼을 가리지 않게)
+    if (!list.length) { bar.hidden = true; bar.innerHTML = ''; return; }
+    bar.innerHTML = list.map(function (x) {
+      var who = x.go.map(function (k) { return esc(k.who); }).join(', '), what = esc(x.where + ' · ' + x.kind) + (x.memo ? ' · ' + esc(x.memo) : '');
+      var line = x.mine ? (x.status === '호출' ? '🚨 경호 호출 중 · 출동 기다리는 중' : '🏃 <span class="ok">' + who + '</span> 출동 중') : (x.status === '호출' ? '🚨 경호 호출 · ' + esc(x.by) : '🏃 <span class="ok">' + who + '</span> 출동 · 부른 사람 ' + esc(x.by));
+      var btns = '';
+      if (crew && !x.me) btns += '<button class="btn btn-sos" type="button" data-sosgo="' + esc(x.id) + '">🏃 ' + (x.status === '호출' ? '출동' : '나도 출동') + '</button>';
+      if (x.mine || crew) btns += '<button class="btn btn-ok" type="button" data-sosdone="' + esc(x.id) + '">✅ 해결</button>';
+      if (x.mine && x.status === '호출') btns += '<button class="btn" type="button" data-soscx="' + esc(x.id) + '" style="flex:none">취소</button>';
+      return '<div class="sosi"><div class="sosh"><b>' + what + '</b><time data-sosms="' + (x.ms || 0) + '">' + sosAge(x) + '</time></div><div class="sosd">' + line + '</div>' + (btns ? '<div class="sosb">' + btns + '</div>' : '') + '</div>';
+    }).join('');
+    bar.hidden = false; try { bar.style.top = document.querySelector('.top').offsetHeight + 'px'; } catch (e) {}
+    bar.querySelectorAll('[data-sosgo]').forEach(function (b) { b.addEventListener('click', function () { sosAct({ a: 'sos_go', id: b.dataset.sosgo }, b); }); });
+    bar.querySelectorAll('[data-sosdone]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '✅ 해결')) return; sosAct({ a: 'sos_done', id: b.dataset.sosdone }, b); }); });
+    bar.querySelectorAll('[data-soscx]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '취소')) return; sosAct({ a: 'sos_cancel', id: b.dataset.soscx }, b); }); });
+  }
+  setInterval(function () {   // 경과 시간 · 호출이 살아 있으면 3초마다 새로
+    document.querySelectorAll('[data-sosms]').forEach(function (el) { var ms = +el.dataset.sosms; if (ms) el.textContent = sosAge({ ms: ms }); });
+    if (state.s && state.data && !document.hidden && (state.sos || []).length && Date.now() - (state.sosAt || 0) > 2800) loadSos();
+    if (state.s && state.data) $('sosFab').hidden = !!state.data.guard;
+  }, 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.data) loadSos(); });
+  function sosForm(pre) {
+    pre = pre || {};
+    var t = String(pre.text || ''), kind = /싸움|싸워|싸우|시비|난동|폭행/.test(t) ? '싸움·시비' : /쓰러|응급|다쳤|피 나|기절/.test(t) ? '응급환자' : /진상/.test(t) ? '진상' : '';
+    var fl = /3\s*층|^\s*3\s*[-ㅣlLsSㅅdDㄷ디엘스]/.test(t) ? 'SPOT' : /2\s*층|^\s*2\s*[-ㅣlLsSㅅdDㄷ디엘스]/.test(t) ? 'GROOVE' : /입구/.test(t) ? '입구' : (state.tbFloor || tbFloorPref());
+    var h = '<h2>🚨 경호 호출</h2><p class="sub">출근 중인 경호팀 전원에게 바로 알림이 가요.</p>' +
+      '<div class="sosk">' + SOS_KINDS.map(function (k) { return '<button type="button" class="chip' + (k === kind ? ' on' : '') + '" data-sosk="' + esc(k) + '">' + esc(k) + '</button>'; }).join('') + '</div>' +
+      '<div class="sosf">' + [['SPOT', '3층 SPOT'], ['GROOVE', '2층 GROOVE'], ['입구', '입구'], ['', '모름']].map(function (x) { return '<button type="button" class="chip' + (x[0] === fl ? ' on' : '') + '" data-sosf="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<label>자리<input id="sosSeat" maxlength="14" autocomplete="off" placeholder="예) 4 · L3 · D1 (모르면 비워 두기)"></label>' +
+      '<label>메모<input id="sosMemo" maxlength="100" autocomplete="off" value="' + esc(t.slice(0, 100)) + '" placeholder="예) 남자 둘 시비 · 화장실 앞"></label>' +
+      '<p class="msg" id="sosMsg"></p><div id="sosGo"><button class="btn btn-sos" type="button" id="sosSend" style="width:100%;min-height:54px;font-size:18px">🚨 경호팀 부르기</button></div>';
+    showSheet(h);
+    var sh = $('sheet');
+    sh.querySelectorAll('[data-sosk]').forEach(function (b) { b.addEventListener('click', function () { kind = b.dataset.sosk; $('sosMsg').textContent = ''; sh.querySelectorAll('[data-sosk]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
+    sh.querySelectorAll('[data-sosf]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.sosf; sh.querySelectorAll('[data-sosf]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
+    call({ a: 'sos_get', token: state.s.token }).then(function (r) { if (r.ok) state.sosCrew = r.crew; }).catch(function () {});
+    $('sosSend').addEventListener('click', function () {   // 한 번 더 확인 (대표 요청 2026-11-19)
+      if (!kind) { $('sosMsg').textContent = '상황을 골라 주세요.'; return; }
+      var seat = $('sosSeat').value.replace(/\s+/g, '').toUpperCase(), memo = $('sosMemo').value.trim();
+      if (seat && (!fl || fl === '입구')) { $('sosMsg').textContent = '자리가 있는 층을 골라 주세요.'; return; }
+      var where = (fl === 'SPOT' ? '3층' : fl === 'GROOVE' ? '2층' : fl === '입구' ? '입구' : '위치 모름') + (seat ? ' ' + seat : '');
+      $('sosGo').innerHTML = '<div class="sosq"><p>🚨 경호팀을 부를까요?</p><span class="sub">' + esc(where + ' · ' + kind) + ' — ' + (state.sosCrew ? '출근 중인 경호원 ' + state.sosCrew + '명' : '경호팀 전원') + '에게 바로 알림이 가요.</span></div>' +
+        '<div class="tbbtns"><button class="btn btn-sos" type="button" id="sosYes">🚨 네, 부르기</button><button class="btn" type="button" id="sosNo">아니요</button></div>';
+      $('sosNo').addEventListener('click', function () { tbCloseSheet(); });
+      $('sosYes').addEventListener('click', function () {
+        var b = this; b.disabled = true;
+        call({ a: 'sos_add', token: state.s.token, kind: kind, floor: fl, seat: seat, memo: memo }).then(function (r) {
+          b.disabled = false;
+          if (!r.ok) { $('sosMsg').textContent = { seat: '자리를 확인해 주세요.', text: '< > 는 쓸 수 없어요.', busy: '잠시 후 다시 해 주세요.', kind: '상황을 골라 주세요.' }[r.error] || '다시 해 주세요.'; return; }
+          tbCloseSheet(); sosPut(r.list); flushPush();
+          if (pre.text) { var ta = $('chatIn'); if (ta && ta.value === t) { ta.value = ''; ta.style.height = 'auto'; } $('chatSos').hidden = true; if (state.chatRoom === 'table') chatLoad(); }
+        }).catch(function () { b.disabled = false; $('sosMsg').textContent = '연결이 안 돼요. 다시 눌러 주세요.'; });
+      });
+    });
+  }
+  $('sosFab').addEventListener('click', function () { if (state.s) sosForm(); });
 
   // ── 🛎 운영 요청 (2026-11-18): 배달·기본 세팅·아웃 청소·자리 이동·퍼레이드 지원(N명)·온도 → 운영팀에게만 알림. 운영팀이 ✅ 맡으면(인원이 다 차면) 닫힘 ──
   function opsBadge(r) {   // 🛎 탭 숫자: 운영팀은 아직 아무도 안 맡은(내가 안 맡은) 요청 수
@@ -4320,6 +4434,7 @@ body.hasfab main { padding-bottom: 110px; }
       '<p>배정(승인하는 사람) <code>@이정훈 엘4</code> <code>3l5,6 @이성민 @경철</code></p>' +
       '<p>층: 앞의 3 = SPOT, 2 = GROOVE (없으면 보고 있는 층). 자리 글자: ㅅ·스·s = S, ㅣ·엘·l = L, 디·d = D, 디비·db = DB</p>' +
       '<p>섭몬 = 카마 · 섭레 = 레몬드랍 · 섭샴·짭몬은 메모. 흡연·화장실·부킹·N출 같은 말은 그냥 대화예요.</p>' +
+      '<p>🚨 <b>경호</b>: 싸움·경호·상황을 쓰면 <b>경호팀 부를까요?</b> 버튼 → 눌러야 호출돼요 (왼쪽 아래 🚨 버튼도 같아요)</p>' +
       '<p>🛎 <b>운영팀 부르기</b>: 아웃·이동·<code>기셋</code>·<code>버켓얼음</code>·<code>물4</code>·<code>샴잔</code>·<code>방향제</code>·<code>클</code>(청소)·<code>냉가동</code>을 쓰면 운영팀에게만 알림 → 누구나 <b>✅ 내가 할게요</b>(또는 두 번 누르기)로 맡기</p>',
     yc: '<p><b>불꽃놀이방에 쓰던 그대로</b> 쓰면 연출 요청이 올라가요.</p>' +
       '<p>첫 줄 = 자리·순서(<code>바로</code> <code>준비되는대로</code> <code>12:10</code> <code>3-12 다음</code>), 다음 줄 = 영상·홀로·피켓·망치·퍼레·노래, <b>빈 줄 뒤 = 전광판 문구</b></p>' +
@@ -4391,6 +4506,7 @@ body.hasfab main { padding-bottom: 110px; }
     call({ a: 'chat_ack', token: state.s.token, id: id }).then(function (r) { p.classList.remove('acking'); if (r.ok) { chatPaint(r, false, true); flushPush(); } }).catch(function () { p.classList.remove('acking'); });
   }
   function chatOpen(room) {
+    $('chatSos').hidden = true;
     state.chatRoom = room; state.chat = null;
     $('chatT').textContent = CHAT_NAME[room]; $('chatL').innerHTML = '<p class="cempty">불러오는 중…</p>';
     $('chatIn').placeholder = room === 'table' ? '메시지 · 카톡처럼 쓰면 자리 신청' : room === 'guest' ? '메시지 · 카톡처럼 쓰면 게스트 반영' : '메시지 · 카톡처럼 쓰면 연출 요청';
@@ -4475,7 +4591,7 @@ body.hasfab main { padding-bottom: 110px; }
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '', ro = false;
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ops ? '<em class="cops' + (m.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(m.ops.kind) + ' · ' + (m.ops.status === '확정' ? '✅ 담당 ' + esc(m.ops.took.map(function (k) { return k.who; }).join(', ')) : m.ops.status === '취소' ? '취소됨' : '운영팀 확인 대기' + (m.ops.need > 1 ? ' (' + m.ops.took.length + '/' + m.ops.need + ')' : '')) + '</em>' + (m.ops.status === '대기' && !m.ops.me && !m.ops.mine && opsCrewMe() ? '<button type="button" class="copsb" data-copst="' + esc(m.ops.id) + '">✅ 내가 할게요</button>' : '') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.sos ? '<em class="csos' + (m.sos.status === '해결' ? ' ok' : '') + '">🚨 경호 호출 · ' + (m.sos.status === '호출' ? '출동 대기' : m.sos.status === '출동' ? '🏃 출동 ' + esc(m.sos.go.map(function (k) { return k.who; }).join(', ')) : m.sos.status === '해결' ? '✅ 해결 ' + esc(m.sos.doneBy) + (m.sos.go.length ? ' · 출동 ' + esc(m.sos.go.map(function (k) { return k.who; }).join(', ')) : '') : '취소됨') + '</em>' : '') + (m.ops ? '<em class="cops' + (m.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(m.ops.kind) + ' · ' + (m.ops.status === '확정' ? '✅ 담당 ' + esc(m.ops.took.map(function (k) { return k.who; }).join(', ')) : m.ops.status === '취소' ? '취소됨' : '운영팀 확인 대기' + (m.ops.need > 1 ? ' (' + m.ops.took.length + '/' + m.ops.need + ')' : '')) + '</em>' + (m.ops.status === '대기' && !m.ops.me && !m.ops.mine && opsCrewMe() ? '<button type="button" class="copsb" data-copst="' + esc(m.ops.id) + '">✅ 내가 할게요</button>' : '') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
     L.innerHTML = h ? (ro ? '' : '<p class="chint">두 번 누르면 ✅ 확인 · 꾹 누르면 ↩️ 답장</p>') + h : '<p class="cempty">아직 대화가 없어요.' + (ro ? '' : ' 첫 메시지를 남겨 보세요.') + '</p>';
     hydrateImgs(L);
@@ -4502,6 +4618,8 @@ body.hasfab main { padding-bottom: 110px; }
     $('chatX').addEventListener('click', chatClose);
     $('chatQ').addEventListener('click', function () { var h = $('chatHelp'); h.hidden = !h.hidden; this.setAttribute('aria-expanded', String(!h.hidden)); });
     var ta = $('chatIn');
+    ta.addEventListener('input', function () { $('chatSos').hidden = !(state.chatRoom && SOS_WORDS.test(ta.value)); });   // 🚨 대화에 싸움·경호·상황 → 부를까요?
+    $('chatSos').addEventListener('click', function () { var t = ta.value; sosForm({ text: t }); });
     ta.addEventListener('input', function () { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; chatAtPaint(); });
     ta.addEventListener('click', chatAtPaint);
     ta.addEventListener('compositionend', chatAtPaint); ta.addEventListener('keyup', chatAtPaint);   // 한글 입력이 끝났을 때도 다시
@@ -4546,7 +4664,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (state.chatReply) body.reply = state.chatReply.id;
       call(body).then(function (r) {
         btn.disabled = false;
-        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; md = { photos: [], vids: [] }; paintMd(); chatReplyTo(null); chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.req && room === 'table') { loadTb(true); flushPush(); } if (c && c.req && room === 'yc') loadYc(true); if (c && /^👥/.test(c.req || '') && room === 'guest') refresh(true); if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
+        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; $('chatSos').hidden = true; md = { photos: [], vids: [] }; paintMd(); chatReplyTo(null); chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.req && room === 'table') { loadTb(true); flushPush(); } if (c && c.req && room === 'yc') loadYc(true); if (c && /^👥/.test(c.req || '') && room === 'guest') refresh(true); if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
         else if (r.error === 'auth') toLogin(AUTH_OUT);
         else if (r.error === 'punch') {}   // 출근 버튼 안내가 따로 뜸 (call)
         else alertBox(r.error === 'busy' ? '너무 빨리 보내고 있어요. 잠시 후에 보내 주세요.' : r.error === 'photo' ? '사진은 jpg·png 3장까지예요.' : r.error === 'video' ? '영상을 다시 올려 주세요.' : r.error === 'reply' ? '답장할 글이 지워졌어요.' : '못 보냈어요. 다시 해 주세요.');
