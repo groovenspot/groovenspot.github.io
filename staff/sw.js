@@ -22,6 +22,8 @@ self.addEventListener('push', function (e) {
     return fetch(API, { method: 'POST', body: JSON.stringify({ a: 'peek', token: t }) }).then(function (r) { return r.json(); }).catch(function () { return null; });
   }).then(function (n) {
     n = n && n.ok ? n : { title: 'GROOVE STAFF', body: '새 소식이 있어요', tab: '' };
+    // 열려 있는 앱에도 알려 줌 (🌙 영업 종료 → 화면 '수고하셨습니다')
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) { cs.forEach(function (c) { try { c.postMessage({ peek: { title: n.title, body: n.body } }); } catch (x) {} }); }).catch(function () {});
     return self.registration.showNotification(n.title, { body: n.body, tag: 'gs-staff', renotify: true, icon: '/staff/icon-192.png', badge: '/staff/badge-72.png', data: { tab: n.tab || '' } });
   }));
 });
