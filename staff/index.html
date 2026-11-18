@@ -860,6 +860,7 @@ body.hasfab main { padding-bottom: 110px; }
   .sheet-in { max-width: 600px; }
 }
 /* 🚨 경호 호출 */
+#listArea { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }   /* 아래 🚨·💬 동그라미 버튼이 댓글 칸을 가리지 않게 */
 .sosfab { position: fixed; left: 16px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 15; width: 58px; height: 58px; border-radius: 50%; border: 2px solid #ff8a9b; background: #e0203f; color: #fff; font-size: 26px; cursor: pointer; box-shadow: 0 8px 24px rgba(224,32,63,.45); }
 .sosbar { position: sticky; top: 0; z-index: 6; padding: 10px 14px; background: #3a0610; border-bottom: 2px solid #ff3b5c; display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow: auto; }   /* 머리줄 바로 아래 (탭을 가리지 않게 흐름 안에) */
 .sosbar .sosi { display: flex; flex-direction: column; gap: 6px; }
