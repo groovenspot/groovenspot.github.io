@@ -993,6 +993,26 @@ body.popmode .chath .chpop { display: none; }
 .ali { display: flex; flex-direction: column; gap: 3px; text-align: left; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; color: var(--txt); font: inherit; cursor: pointer; }
 .ali.al { border-left: 3px solid var(--g); }
 .ali.nw { box-shadow: inset 0 0 0 1px var(--g); }
+/* 📡 대표 화면: ⏳ 안 끝난 일 · ⏱ 응답 시간 · 🌙 리포트 (대표 요청 2026-11-19) */
+.bd { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; margin: 0 0 10px; }
+.bd > summary { cursor: pointer; font-weight: 900; font-size: 15px; list-style: none; }
+.bd > summary::-webkit-details-marker { display: none; }
+.bd.hot { border-color: #ff3b5c; }
+.bdi { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.bdi:first-of-type { border-top: 0; }
+.bdi > div { flex: 1; min-width: 0; }
+.bdi b { display: block; font-size: 14px; word-break: break-word; }
+.bdi small { display: block; color: var(--muted); font-size: 12px; word-break: break-word; }
+.bdi .min { flex: none; font-size: 12px; font-weight: 900; color: var(--warn); }
+.bdi .min.late { color: #ff8a9b; }
+.bdi button { flex: none; min-height: 36px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line-2); background: none; color: var(--txt); font-weight: 800; font-size: 12px; cursor: pointer; }
+.bdi button.ok { border-color: var(--ok); color: var(--ok); }
+.bdr { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.bdr:first-of-type { border-top: 0; }
+.bdr b { font-size: 13px; } .bdr span { text-align: right; font-weight: 800; } .bdr small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+.bdg { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 0 2px; font-size: 13px; }
+.bdm { margin: 8px 0 0; font-size: 13px; }
+.bd .msg:empty { display: none; }
 /* 🚨 경호 · 🎆 연출 · 🆘 긴급모집 = 빨간 테두리 (대표 요청 2026-11-19) */
 .ali.red, .ali.al.red { border: 2px solid #ff3b5c; border-left-width: 4px; }
 .ali.red .chip.al { border-color: #ff3b5c; color: #ff8a9b; }
@@ -4050,13 +4070,27 @@ body.popmode .chath .chpop { display: none; }
       state.allFly = 0; state.allAt = Date.now();
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok) { if (!quiet || !state.all) { state.allErr = r.error === 'forbidden' ? '대표만 볼 수 있어요.' : r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'all') render(); } return; }
-      var sig = JSON.stringify([r.on, r.opsOpen, r.sosLive, r.list.length, r.list.slice(0, 80).map(function (x) { return x.id + x.at + (x.ops && x.ops.took ? x.ops.status + x.ops.took.length : '') + (x.sos && x.sos.go ? x.sos.status + x.sos.go.length : ''); })]), same = !!state.all && state.allSig === sig;
+      var sig = JSON.stringify([r.on, r.opsOpen, r.sosLive, JSON.stringify(r.pend || []), JSON.stringify(r.resp || []), r.rep && r.rep.at, r.list.length, r.list.slice(0, 80).map(function (x) { return x.id + x.at + (x.ops && x.ops.took ? x.ops.status + x.ops.took.length : '') + (x.sos && x.sos.go ? x.sos.status + x.sos.go.length : ''); })]), same = !!state.all && state.allSig === sig;
       state.all = r; state.allSig = sig; state.allErr = '';
       if (state.tab === 'all' && !same && $('sheet').hidden) render();
     }).catch(function () { state.allFly = 0; state.allAt = Date.now(); if (!state.all && state.tab === 'all') { state.allErr = '연결이 안 돼요.'; render(); } });
   }
   setInterval(function () { if (state.s && state.data && state.tab === 'all' && !document.hidden && Date.now() - (state.allAt || 0) > 4500) loadAll(true); }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'all') loadAll(true); });
+  function fmtS(s) { if (s == null) return '–'; if (s < 60) return s + '초'; if (s < 3600) return Math.floor(s / 60) + '분' + (s % 60 ? ' ' + (s % 60) + '초' : ''); return Math.floor(s / 3600) + '시간 ' + Math.floor(s % 3600 / 60) + '분'; }
+  function respHtml(list) {
+    return (list || []).map(function (x) {
+      return '<div class="bdr"><b>' + esc(x.label) + '</b><span>' + (x.n ? (x.avg != null ? '평균 ' + fmtS(x.avg) : '아직 없음') : '0건') + '</span>' +
+        (x.n ? '<small>' + x.n + '건' + (x.n > x.done ? ' (안 끝남 ' + (x.n - x.done) + ')' : '') + (x.max != null ? ' · 가장 늦음 ' + fmtS(x.max) + ' · ' + esc(x.maxWhat) + (x.maxWho ? ' · ' + esc(x.maxWho) : '') : '') + '</small>' : '') + '</div>';
+    }).join('');
+  }
+  function repHtml(r) {
+    var g = r.guests || {}, gt = Object.keys(g).reduce(function (t, k) { return t + g[k]; }, 0);
+    return respHtml(r.resp) + '<div class="bdg"><span>🪑 테이블 <b>' + r.tb.n + '</b> (★ 판매 ' + r.tb.sold + ' · 🍾 킵 ' + r.tb.keep + ' · 🟢 게스트 ' + r.tb.inn + ')</span>' +
+      '<span>👥 게스트 <b>' + gt + '</b>' + (Object.keys(g).length ? ' (' + Object.keys(g).map(function (k) { return esc(k) + ' ' + g[k]; }).join(' · ') + ')' : '') + '</span>' +
+      (r.keep ? '<span>🍾 킵 입고 <b>' + r.keep.in + '</b> · 출고 <b>' + r.keep.out + '</b>' + (r.keep.oin || r.keep.oout ? ' (딴 병 ' + r.keep.oin + '·' + r.keep.oout + ')' : '') + '</span>' : '') +
+      '<span>🎬 실시간 <b>' + (r.lv || 0) + '</b></span><span>🕘 출근 <b>' + (r.duty || 0) + '</b>명</span></div>';
+  }
   function renderAll(area) {
     if (!state.all) { area.innerHTML = state.allErr ? '<p class="empty">' + esc(state.allErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.allFly && !state.allErr) loadAll(); return; }   // 실패해도 5초마다 다시 불러옴
     var A = state.all, f = state.allF || '', prev = state.allSeen || '', today = String(A.now || '').slice(0, 10);
@@ -4078,6 +4112,15 @@ body.popmode .chath .chpop { display: none; }
       '<span>' + (A.on ? '직원에게 가는 알림이 내 폰에도 와요 (내가 한 일은 빼고)' : '켜면 직원에게 가는 알림이 내 폰에도 같이 와요') + '</span>' +
       (A.on && off ? '<span class="warn">이 폰은 알림이 꺼져 있어요 — 위 🔔를 눌러 켜 주세요</span>' : '') + '</div><p class="msg" id="allMsg"></p>';
     if (A.sosLive || A.opsOpen || A.urgOpen || A.duty) h += '<div class="alllive">' + (A.sosLive ? '<button type="button" class="chip sosl" data-allf="sos">🚨 경호 호출 중 ' + A.sosLive + '</button>' : '') + (A.urgOpen ? '<button type="button" class="chip urgl" data-allf="urg">🆘 긴급모집 중 ' + A.urgOpen + '</button>' : '') + (A.opsOpen ? '<button type="button" class="chip opsl" data-allf="ops">🛎 운영 대기 ' + A.opsOpen + '</button>' : '') + (A.duty ? '<span class="chip dutyl">🕘 출근 ' + A.duty + '명</span>' : '') + '</div>';
+    // ⏳ 안 끝난 일 · ⏱ 오늘 응답 시간 · 🌙 영업 마감 리포트 (대표 요청 2026-11-19)
+    var pend = A.pend || [];
+    h += '<details class="bd' + (pend.length ? ' hot' : '') + '" id="bdPend"' + (state.bdPend === false ? '' : ' open') + '><summary>⏳ 안 끝난 일 ' + pend.length + '</summary>' + (pend.length ? pend.map(function (x) {
+      return '<div class="bdi" data-bdk="' + esc(x.k) + '" data-bdid="' + esc(x.id) + '"><div><b>' + esc(x.title) + '</b><small>' + esc(x.sub) + '</small></div><span class="min' + (x.min >= 5 ? ' late' : '') + '">' + x.min + '분째</span>' +
+        (x.k === 'tb' || x.k === 'keep' ? '<button type="button" class="ok" data-bdok="1">✅ 승인</button>' : '') + '<button type="button" data-bdnd="1">🔔 다시 알리기</button></div>';
+    }).join('') : '<p class="note" style="margin:6px 0 0">지금 밀린 일이 없어요 👍</p>') + '<p class="msg" id="bdMsg"></p></details>';
+    h += '<details class="bd" id="bdResp"' + (state.bdResp ? ' open' : '') + '><summary>⏱ 오늘 응답 시간</summary>' + respHtml(A.resp) + '</details>';
+    h += '<details class="bd" id="bdRep"' + (state.bdRep ? ' open' : '') + '><summary>🌙 영업 마감 리포트' + (A.rep ? ' · ' + esc(tbDayLabel(A.rep.day)) : '') + '</summary>' + (A.rep ? repHtml(A.rep) : '<p class="note" style="margin:6px 0 0">영업일이 끝난 아침(8시쯤)에 알림으로 와요.</p>') +
+      '<button type="button" class="btn" id="bdNow" style="margin-top:8px">📊 오늘 지금까지 보기</button></details>';
     h += '<div class="allf">' + ALL_F.map(function (x) { return '<button type="button" class="chip' + (x[0] === f ? ' on' : '') + '" data-allf="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
     if (!list.length) h += '<p class="empty">아직 없어요.</p>';
     h += '<div class="alll">' + list.slice(0, 300).map(function (x) {
@@ -4106,6 +4149,20 @@ body.popmode .chath .chpop { display: none; }
       call({ a: 'all_push', token: state.s.token, on: !A.on }).then(function (r) { b.disabled = false; if (r.ok) { state.all = r; state.allSig = ''; render(); } else $('allMsg').textContent = '바꾸지 못했어요.'; }).catch(function () { b.disabled = false; $('allMsg').textContent = '연결이 안 돼요.'; });
     });
     area.querySelectorAll('[data-allf]').forEach(function (b) { b.addEventListener('click', function () { state.allF = b.dataset.allf; render(); }); });
+    [['bdPend', 'bdPend'], ['bdResp', 'bdResp'], ['bdRep', 'bdRep']].forEach(function (x) { var d = $(x[0]); if (d) d.addEventListener('toggle', function () { state[x[1]] = d.open; }); });
+    area.querySelectorAll('.bdi [data-bdnd]').forEach(function (b) { b.addEventListener('click', function () {
+      var row = b.closest('.bdi'); b.disabled = true;
+      call({ a: 'all_nudge', token: state.s.token, k: row.dataset.bdk, id: row.dataset.bdid }).then(function (r) { b.textContent = r.ok ? '✅ ' + r.n + '명에게 알림' : r.error === 'nobody' ? '받을 사람 없음' : '다시 해 주세요'; if (!r.ok) b.disabled = false; flushPush(); }).catch(function () { b.disabled = false; });
+    }); });
+    area.querySelectorAll('.bdi [data-bdok]').forEach(function (b) { b.addEventListener('click', function () {
+      var row = b.closest('.bdi'), k = row.dataset.bdk, id = row.dataset.bdid; b.disabled = true;
+      var body = k === 'tb' ? { a: 'tb_ok', token: state.s.token, ids: [id] } : { a: 'keep_req', token: state.s.token, id: id, op: 'ok' };
+      call(body).then(function (r) { if (r.ok) { b.textContent = '✅ 승인됨'; flushPush(); state.allSig = ''; loadAll(true); } else { b.disabled = false; $('bdMsg').textContent = '승인하지 못했어요. 해당 탭에서 확인해 주세요.'; } }).catch(function () { b.disabled = false; });
+    }); });
+    if ($('bdNow')) $('bdNow').addEventListener('click', function () {
+      var b = this; b.disabled = true;
+      call({ a: 'rep_now', token: state.s.token }).then(function (r) { b.disabled = false; if (!r.ok) return; showSheet('<h2>📊 오늘 지금까지 · ' + esc(tbDayLabel(r.rep.day)) + '</h2><div class="bd" style="border:0;padding:0">' + repHtml(r.rep) + '</div>'); }).catch(function () { b.disabled = false; });
+    });
     area.querySelectorAll('[data-allroom]').forEach(function (b) { b.addEventListener('click', function () { chatOpen(b.dataset.allroom); }); });
     area.querySelectorAll('[data-allgo]').forEach(function (b) { b.addEventListener('click', function () {
       var t = b.dataset.allgo, m = t.match(/^chat:(table|yc|guest)$/);
