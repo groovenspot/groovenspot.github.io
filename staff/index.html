@@ -44,6 +44,9 @@ button, select { font: inherit; color: inherit; }
 .byeov small { font-size: 16px; color: #c9c1ff; font-weight: 700; }
 @keyframes byeflash { 0% { background: #120a2e; } 100% { background: #5b3df5; } }
 .byeov.out { opacity: 0; transition: opacity .4s; }
+.byeov.hi { animation-name: hiflash; } .byeov.hi small { color: #ffd6b0; }
+@keyframes hiflash { 0% { background: #2a1203; } 100% { background: #ff7a1a; } }
+.byebtn.hi { border-color: rgba(255,122,26,.8); background: rgba(255,122,26,.14); color: #ffb27a; }
 .who { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); min-width: 0; }
 .who strong { color: var(--txt); }
 .link { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; padding: 6px 2px; font-size: 13px; }
@@ -713,6 +716,8 @@ body.chatlock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidde
 .tbw em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--warn); }
 .tbsx, .tbliq, .tbtg, .tbblk, .tbgr { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; align-items: center; }
 .tbpick { margin: -6px 0 12px; } .tbpick:empty { display: none; }
+.tbsat { margin: 12px 0 4px; padding: 10px 12px; border-radius: 12px; background: var(--card-2); color: var(--muted); font-size: 14px; text-align: center; }
+.tbsat b { color: var(--txt); font-size: 16px; }
 .tbgr small { font-weight: 600; opacity: .65; margin-left: 2px; }
 .sheet-in button.chip { font: inherit; font-size: 14px; font-weight: 800; padding: 6px 14px; min-height: 38px; background: none; color: var(--txt); cursor: pointer; }
 .sheet-in button.chip.on { background: var(--g); border-color: var(--g); color: #120800; }
@@ -1092,7 +1097,7 @@ body.popmode .chath .chpop { display: none; }
   <div class="who" id="who" hidden><button class="mebtn" id="meBtn" type="button" aria-label="내 프로필"><strong id="whoName"></strong> <span id="whoTeam"></span></button><button class="bell" id="bell" type="button" hidden aria-label="알림 켜기·끄기">🔕</button><button class="link" id="logout" type="button">로그아웃</button></div>
 </header>
 <div class="sosbar" id="sosBar" hidden role="alert" aria-live="assertive"></div>
-<div class="byeov" id="byeOv" hidden role="alert" aria-live="assertive"><div><b>수고하셨습니다</b><span>🙏</span><small id="byeBy"></small></div></div>
+<div class="byeov" id="byeOv" hidden role="alert" aria-live="assertive"><div><b id="byeT">수고하셨습니다</b><span id="byeE">🙏</span><small id="byeBy"></small></div></div>
 
 <main>
   <section id="loginView" hidden>
@@ -1458,7 +1463,7 @@ body.popmode .chath .chpop { display: none; }
       $('sync').textContent = ''; state.lastSync = Date.now();
       state.listAt = Date.now(); (r.gateOffers || []).forEach(function (c) { c.dl = state.listAt + (c.left || 0) * 1000; });
       state.data = r; saveData(r); try { sosPut(r.sos || []); } catch (e) {}
-      try { $('byeBtn').hidden = !r.byeOk; byeShow(r.bye); } catch (e) {}   // 🌙 영업 종료
+      try { byeBtnPaint(r); byeShow(r.bye); byeShow(r.hi, true); } catch (e) {}   // 🌙 영업 종료 · 🌅 영업 시작
       try { paintGateOffer(); } catch (e) {}
       if (r.pq) flushPush();
       state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; state.s.role = r.role || ''; save(state.s); setWho();
@@ -3772,15 +3777,30 @@ body.popmode .chath .chpop { display: none; }
   }
   function paintBell() { bellState().then(function (st) { var b = $('bell'); b.hidden = false; b.textContent = st === 'on' ? '🔔' : '🔕'; b.title = st === 'on' ? '알림 켜짐' : '알림 꺼짐'; b.dataset.st = st; }); }
   // 🌙 영업 종료: 화면 가득 '수고하셨습니다' 3초 깜빡 (한 번 본 건 다시 안 띄움)
-  function byeShow(b) {
+  function byeShow(b, hi) {   // hi: 🌅 영업 시작 '오늘도 화이팅'
     if (!b || !b.at) return;
-    var seen = ''; try { seen = localStorage.getItem('gs_bye') || ''; } catch (e) {}
+    var sk = hi ? 'gs_hi' : 'gs_bye', seen = ''; try { seen = localStorage.getItem(sk) || ''; } catch (e) {}
     if (seen === b.at) return;
     var t = Date.parse(String(b.at).slice(0, 19).replace(' ', 'T') + '+09:00'); if (isFinite(t) && Date.now() - t > 15 * 60e3) return;   // 15분 지난 건 안 띄움
-    try { localStorage.setItem('gs_bye', b.at); } catch (e) {}
-    var o = $('byeOv'); $('byeBy').textContent = '🌙 영업 종료' + (b.by ? ' · ' + b.by : ''); o.classList.remove('out'); o.hidden = false;
+    try { localStorage.setItem(sk, b.at); } catch (e) {}
+    var o = $('byeOv'); $('byeT').textContent = hi ? '오늘도 화이팅' : '수고하셨습니다'; $('byeE').textContent = hi ? '🔥' : '🙏';
+    $('byeBy').textContent = (hi ? '🌅 영업 시작' : '🌙 영업 종료') + (b.by ? ' · ' + b.by : ''); o.classList.toggle('hi', !!hi); o.classList.remove('out'); o.hidden = false;
     try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
     clearTimeout(state.byeT); state.byeT = setTimeout(function () { o.classList.add('out'); setTimeout(function () { o.hidden = true; o.classList.remove('out'); }, 420); }, 3000);
+  }
+  function byeBtnPaint(d) { var b = $('byeBtn'); if (!b) return; b.hidden = !(d && d.byeOk); var hi = !!(d && d.bizClosed); b.textContent = hi ? '🌅 영업시작' : '🌙 영업종료'; b.classList.toggle('hi', hi); }
+  function hiConfirm() {
+    showSheet('<h2>🌅 영업 시작</h2><p style="font-size:18px;font-weight:900;margin:4px 0 10px">영업 시작할까요?</p>' +
+      '<p class="note" style="margin:0 0 12px">출근 중인 직원에게 <b>오늘도 화이팅 🔥</b> 알림이 가요.</p><p class="msg" id="hiMsg"></p><button class="btn btn-hot" type="button" id="hiGo" style="width:100%;min-height:52px;font-size:17px">네, 영업 시작</button>');
+    $('hiGo').addEventListener('click', function () {
+      var b = this; b.disabled = true; b.textContent = '시작하는 중…';
+      call({ a: 'biz_open', token: state.s.token }).then(function (r) {
+        if (!r.ok) { b.disabled = false; b.textContent = '네, 영업 시작'; $('hiMsg').textContent = r.error === 'forbidden' ? '대표·팀장만 할 수 있어요.' : r.error === 'busy' ? '방금 했어요. 잠시 후 다시 해 주세요.' : '시작하지 못했어요. 다시 해 주세요.'; return; }
+        $('sheet').hidden = true; $('sheet').innerHTML = ''; flushPush();
+        if (state.data) { state.data.bizClosed = false; byeBtnPaint(state.data); }
+        byeShow(r.hi, true); toast('🌅 영업 시작 · 출근 중 ' + r.n + '명에게 알렸어요'); refresh(true);
+      }).catch(function () { b.disabled = false; b.textContent = '네, 영업 시작'; $('hiMsg').textContent = '연결이 안 돼요.'; });
+    });
   }
   function byeConfirm() {
     showSheet('<h2>🌙 영업 종료</h2><p style="font-size:18px;font-weight:900;margin:4px 0 10px">영업종료하시겠습니까?</p>' +
@@ -3792,6 +3812,7 @@ body.popmode .chath .chpop { display: none; }
         if (!r.ok) { b.disabled = false; b.textContent = '네, 영업 종료'; $('byeMsg').textContent = r.error === 'forbidden' ? '대표·팀장만 할 수 있어요.' : r.error === 'busy' ? '방금 했어요. 잠시 후 다시 해 주세요.' : '종료하지 못했어요. 다시 해 주세요.'; return; }
         $('sheet').hidden = true; $('sheet').innerHTML = ''; flushPush();
         state.tb = null; state.yc = null; state.ops = null; state.gate = null; state.sos = []; state.sosSig = ''; try { sosPut([]); } catch (e) {}
+        if (state.data) { state.data.bizClosed = true; byeBtnPaint(state.data); }
         byeShow(r.bye); toast('🌙 영업 종료 · 출근 중 ' + r.n + '명에게 알렸어요'); refresh(true);
       }).catch(function () { b.disabled = false; b.textContent = '네, 영업 종료'; $('byeMsg').textContent = '연결이 안 돼요.'; });
     });
@@ -3909,7 +3930,7 @@ body.popmode .chath .chpop { display: none; }
         { oldpw: '현재 비밀번호가 맞지 않아요.', pw: '새 비밀번호는 6~40자로 해 주세요.' });
     });
   }
-  $('byeBtn').addEventListener('click', function () { if (state.data && state.data.byeOk) byeConfirm(); });   // 🌙 영업 종료
+  $('byeBtn').addEventListener('click', function () { if (state.data && state.data.byeOk) (state.data.bizClosed ? hiConfirm : byeConfirm)(); });   // 🌙 영업 종료 · 🌅 영업 시작
   $('byeOv').addEventListener('click', function () { var o = this; clearTimeout(state.byeT); o.hidden = true; });
   $('meBtn').addEventListener('click', function () { if (state.data) goTab('me'); else openMe(); });   // 이름 → 👤 내 프로필 (출근·퇴근·내 현황 · 내 정보 바꾸기)
   function showSheet(html, plain) {
@@ -3923,7 +3944,7 @@ body.popmode .chath .chpop { display: none; }
     if (state.pop) return;   // 따로 띄운 대화창은 그대로
     var t = e.data && e.data.tab, ct = /^chat:(table|yc|guest|ops|gate)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
-    if (e.data && e.data.peek && /^🌙 영업 종료/.test(e.data.peek.title || '') && state.data) { refresh(true); return; }   // 🌙 영업 종료 알림 → 화면 '수고하셨습니다'
+    if (e.data && e.data.peek && /^(🌙 영업 종료|🌅 영업 시작)/.test(e.data.peek.title || '') && state.data) { refresh(true); return; }   // 🌙 영업 종료 알림 → 화면 '수고하셨습니다'
     if (t === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출: 탭이 아니라 위쪽 빨간 줄
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
     if (t && state.data) { state.tab = t; state.tabPick = ''; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); if (t === 'ops') loadOps(); if (t === 'live') loadLive(); }
@@ -4229,6 +4250,7 @@ body.popmode .chath .chpop { display: none; }
     return respHtml(r.resp) + '<div class="bdg"><span>🪑 테이블 <b>' + r.tb.n + '</b> (★ 판매 ' + r.tb.sold + ' · 🍾 킵 ' + r.tb.keep + ' · 🟢 게스트 ' + r.tb.inn + ')</span>' +
       '<span>👥 게스트 <b>' + gt + '</b>' + (Object.keys(g).length ? ' (' + Object.keys(g).map(function (k) { return esc(k) + ' ' + g[k]; }).join(' · ') + ')' : '') + '</span>' +
       (r.keep ? '<span>🍾 킵 입고 <b>' + r.keep.in + '</b> · 출고 <b>' + r.keep.out + '</b>' + (r.keep.oin || r.keep.oout ? ' (딴 병 ' + r.keep.oin + '·' + r.keep.oout + ')' : '') + '</span>' : '') +
+      (r.tb.stay ? '<span>⏱ 평균 체류 <b>' + durTxt(r.tb.stay) + '</b> · 회전 <b>' + r.tb.turn + '</b></span>' : '') +
       '<span>🎬 실시간 <b>' + (r.lv || 0) + '</b></span><span>🕘 출근 <b>' + (r.duty || 0) + '</b>명</span></div>';
   }
   function renderAll(area) {
@@ -5651,7 +5673,7 @@ body.popmode .chath .chpop { display: none; }
       var vice = edit && !blocked && !ap && state.s && state.s.role === '부팀장' && r && r.cur && !r.cur.blk && !(r.req && r.req.del);
       if (edit && !blocked && r) h += '<p class="note">' + (vice ? '다른 담당 손님이에요. 고치기는 안 되고, 부팀장은 <b>자리 비우기</b>만 돼요.' : '다른 담당 손님이에요. 고칠 수 없어요.') + '</p>';
       if (vice) h += '<div class="tbbtns"><button class="btn btn-bad" type="button" id="tbVDel">자리 비우기 (부팀장)</button></div><p class="msg" id="tbVMsg"></p>';
-      showSheet(h); bindWhere();
+      h += tbSatLine(r); showSheet(h); bindWhere();
       if (vice) $('tbVDel').addEventListener('click', function () {
         if (!armed(this, '자리 비우기 (부팀장)')) return;
         var b = this; b.disabled = true;
@@ -5672,7 +5694,7 @@ body.popmode .chath .chpop { display: none; }
       '<p class="msg" id="tbMsg"></p><button class="btn btn-hot" type="button" id="tbSave">' + (ap ? '저장' : r && r.status === '거절' ? '고쳐서 다시 신청' : '승인 요청') + '</button>';
     if (r && ap && r.status === '대기') h += '<div class="tbbtns"><button class="btn btn-ok" type="button" id="tbOk1">요청 승인</button><button class="btn" type="button" id="tbNo1">거절</button></div>';
     if (r && (r.cur || r.status)) h += '<div class="tbbtns">' + (r.mine && r.status && !ap ? '<button class="btn" type="button" id="tbCancel">요청 취소</button>' : '') + ((r.cur || ap) && !(r.req && r.req.del) ? '<button class="btn btn-bad" type="button" id="tbDel">' + (ap || state.s.role === '부팀장' || (r.cur && !r.cur.blk && r.cur.st === t.me) ? '자리 비우기' : '비우기 요청') + '</button>' : '') + '</div>';
-    showSheet(h); bindWhere();
+    h += tbSatLine(r); showSheet(h); bindWhere();
     var n = v.n || 0, tg = { sold: !!v.sold, keep: !!v.keep, inn: !!v.inn }, sx = v.sx || '', blk = v.blk || '';
     var s = $('sheet');
     // 담당·자리: 고르기 대신 초성·단어·숫자를 치면 바로 뜨는 버튼 (대표 요청 2026-11-19 새벽)
@@ -5729,6 +5751,14 @@ body.popmode .chath .chpop { display: none; }
       var b = this; b.disabled = true;
       tbCall({ a: 'tb_del', id: r.id }, function (x) { if (!x.ok) { b.disabled = false; $('tbMsg').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = direct ? '자리를 비웠어요.' : '비우기 요청을 보냈어요.'; render(); });
     });
+  }
+  // ⏱ 테이블 시간 (대표 요청 2026-11-19 새벽): 자리를 누르면 아래에 '앉은 지 몇 시간째'
+  function durTxt(min) { return min >= 60 ? Math.floor(min / 60) + '시간' + (min % 60 ? ' ' + (min % 60) + '분' : '') : min + '분'; }
+  function tbSatLine(r) {
+    if (!r || !r.sat || !r.cur || !r.cur.seat || r.cur.blk) return '';
+    var t = Date.parse(r.sat.replace(' ', 'T') + ':00+09:00'); if (!isFinite(t)) return '';
+    var min = Math.max(0, Math.floor((Date.now() - t) / 60000));
+    return '<p class="tbsat">⏱ 앉은 지 <b>' + durTxt(min) + '</b> · ' + esc(r.sat.slice(11, 16)) + '부터</p>';
   }
   // 자리 치기: 한글·초성도 자리 글자로 (ㅅ·스·에스=S, ㅣ·ㄹ·엘=L, 디·ㄷ=D, 디비=DB, 비·ㅂ=B, ㅎ=H, 브이=V)
   var TB_SEAT_KO = [['디비', 'DB'], ['ㄷㅂ', 'DB'], ['에이치', 'H'], ['에취', 'H'], ['브이', 'V'], ['에스', 'S'], ['스', 'S'], ['엘', 'L'], ['디', 'D'], ['비', 'B'], ['ㅅ', 'S'], ['ㄷ', 'D'], ['ㄹ', 'L'], ['ㅂ', 'B'], ['ㅎ', 'H'], ['ㅣ', 'L'], ['|', 'L']];
