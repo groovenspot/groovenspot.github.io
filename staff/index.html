@@ -853,6 +853,29 @@ body.hasfab main { padding-bottom: 110px; }
   .sheet { place-items: center; }
   .sheet-in { max-width: 600px; }
 }
+/* 🛎 운영 요청 */
+.opq { display: flex; flex-direction: column; gap: 10px; }
+.opc { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.opc.st-대기 { border-left: 3px solid var(--warn); }
+.opc.st-확정 { border-left: 3px solid var(--ok); }
+.opc.st-취소 { opacity: .55; }
+.opc .oph { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.opc .oph b { font-size: 16px; }
+.opc .oph time { margin-left: auto; color: var(--muted); font-size: 12px; }
+.opc .opm { margin: 0; white-space: pre-wrap; word-break: break-word; }
+.opc .ops2 { color: var(--muted); font-size: 13px; }
+.opc .ops2 .ok { color: var(--ok); font-weight: 800; }
+.opc .opb { display: flex; gap: 8px; flex-wrap: wrap; }
+.opc .opb .btn { width: auto; flex: none; min-height: 40px; }
+.opk, .opi, .opfl { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+.opk .chip, .opi .chip, .opfl .chip { cursor: pointer; background: none; padding: 7px 12px; font-size: 14px; }
+.opk .chip.on, .opi .chip.on, .opfl .chip.on { background: var(--g); border-color: var(--g); color: #120800; }
+.opn { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
+.opn > span:first-child { white-space: nowrap; font-weight: 700; }
+.opn .chip { cursor: pointer; background: none; padding: 6px 14px; font-size: 16px; }
+.chatl em.cops { display: block; font-style: normal; font-size: 12px; color: var(--warn); margin-top: 4px; }
+.chatl em.cops.ok { color: var(--ok); }
+.chatl .cm button.copsb { display: inline-block; position: static; width: auto; height: auto; opacity: 1; margin-top: 4px; font-size: 12px; font-weight: 800; border: 1px solid var(--ok); color: var(--ok); background: none; border-radius: 999px; padding: 4px 10px; cursor: pointer; }
 /* 📡 전체 (대표만) */
 .allp { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 12px; }
 .allp .btn { width: auto; flex: none; }
@@ -923,6 +946,7 @@ body.hasfab main { padding-bottom: 110px; }
       <button type="button" role="tab" data-tab="guest" aria-selected="true">게스트 현황</button>
       <button type="button" role="tab" data-tab="table" aria-selected="false" hidden>🪑 테이블</button>
       <button type="button" role="tab" data-tab="yc" aria-selected="false" hidden>🎆 연출</button>
+      <button type="button" role="tab" data-tab="ops" aria-selected="false" hidden>🛎 운영</button>
       <button type="button" role="tab" data-tab="lost" aria-selected="false" hidden>🔎 분실물</button>
       <button type="button" role="tab" data-tab="board" aria-selected="false">게시판</button>
       <button type="button" role="tab" data-tab="dm" aria-selected="false">메시지</button>
@@ -1177,7 +1201,7 @@ body.hasfab main { padding-bottom: 110px; }
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
     if (/^chat:(table|yc)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
-    if (['all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) state.tab = h;
+    if (['ops', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) state.tab = h;
     swToken(state.s.token); paintBell();
     if (!state.keep) { var kc = kLoad(); if (kc) { state.keep = kc; state.kstale = true; } }
     var c = loadData();
@@ -1188,6 +1212,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'lost') loadLost();
     if (state.tab === 'keep') loadKeep();
     if (state.tab === 'all') loadAll();
+    if (state.tab === 'ops') loadOps();
     if (state.chatOpenNext) { var co = state.chatOpenNext; state.chatOpenNext = ''; setTimeout(function () { chatOpen(co); }, 400); }
     else setTimeout(function () { if (state.s && state.tab !== 'keep' && !(state.data && state.data.guard) && (!state.keep || state.kstale)) loadKeep(); }, 1500);   // 킵 탭을 누르기 전에 미리 받아 둔다
   }
@@ -1261,6 +1286,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (state.tab === 'work' && state.work) loadWork();
       if (state.tab === 'gate') loadGate();
       if (state.tab === 'all') loadAll();
+      if (state.tab === 'ops') loadOps();
   }
   document.querySelectorAll('#tabs button').forEach(function (b) { b.addEventListener('click', function () { goTab(b.dataset.tab); }); });
 
@@ -1281,6 +1307,7 @@ body.hasfab main { padding-bottom: 110px; }
       yc: ['🎆 연출', d.ycWaiting || 0],
       lost: ['🔎 분실물', 0],
       all: ['📡 전체', 0],
+      ops: ['🛎 운영', d.opsOpen || 0],
       me: ['👤 내 프로필', 0],
       work: ['🕘 근무표', 0],
       gate: ['🚪 입구', (state.gate && state.gate.calls || []).filter(function (c) { return c.status === '호출'; }).length]
@@ -1296,6 +1323,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'lost' && !d.lost) state.tab = 'guest';
     if (state.tab === 'work' && !workOn) state.tab = 'guest';
     if (state.tab === 'all' && !d.admin) state.tab = 'guest';
+    if (state.tab === 'ops' && d.guard) state.tab = 'gate';
     var gateOn = !!(d.guard || d.gate);   // 🚪 입구: 경호팀 · 대표
     if (state.tab === 'gate' && !gateOn) state.tab = 'guest';
     if (d.guard && ['gate', 'me'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
@@ -1311,6 +1339,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (b.dataset.tab === 'lost') b.hidden = !d.lost;
       if (b.dataset.tab === 'work') b.hidden = !workOn;
       if (b.dataset.tab === 'all') b.hidden = !d.admin;   // 📡 전체: 대표만
+      if (b.dataset.tab === 'ops') b.hidden = false;   // 🛎 운영 요청: 누구나 (운영팀은 받기)
       if (b.dataset.tab === 'gate') b.hidden = !gateOn;
       if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table));
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
@@ -1339,6 +1368,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'work') return renderWork(area, d);
     if (state.tab === 'gate') return renderGate(area, d);
     if (state.tab === 'all') return renderAll(area);
+    if (state.tab === 'ops') return renderOps(area);
     var list = state.tab === 'edu' ? edu : notes, guide = state.tab === 'edu' ? pushGuideHtml() + eduGuideHtml() : '';
     if (!list.length) { area.innerHTML = guide + '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; bindPushGuide(); return; }
     area.innerHTML = guide + '<div class="list">' + list.map(function (n) {
@@ -1431,6 +1461,13 @@ body.hasfab main { padding-bottom: 110px; }
         '<b>ㄱㄱ·컷</b>은 요청한 사람·DJ팀·관리자(대표·김동기·양진호·팀장), <b>순서(▲▼)</b>는 관리자·DJ팀만',
         '요청을 고치면 전광 준비가 다시 풀리고 카드에 <b>✏️ 수정됨</b>이 떠요',
         '대화창 줄임말: <code>ㅈㄱㅈㅂㅇ</code> 전광 준비 · <code>ㅅㅈㅂㅇ</code> 술 준비 · <code>ㄱㄱ</code> · <code>컷</code> · 전광만은 <code>2 전광만 바로</code> / <code>3 전광만 바로</code>'
+      ]) +
+      sec('🛎 운영 요청', [
+        '<b>🛎 운영</b> 탭 → <b>+ 요청</b>: 🧊 배달(얼음·버켓얼음·물·휴지·물티슈·샴잔·방향제·셋팅버켓) · 🍽 기본 세팅 · 🧹 아웃 청소 · 🔀 자리 이동 · 🎆 퍼레이드 지원(VIP·돔·알망·페리에·킹·퀸·딥 피켓, 가마, 3가방·5가방, 인원 N명) · 🌡 온도 · 📝 기타',
+        '알림은 <b>운영팀에게만</b> 가요. 운영팀이 <b>✅ 내가 할게요</b>를 누르면 담당 → 필요한 인원이 다 차면 닫히고 요청한 사람에게 알림',
+        '테이블 대화에 카톡처럼 써도 돼요: <code>3-4 입장완 기셋부탁드립니다</code> · <code>2s2 아웃클</code> · <code>3디2 버켓얼음 부탁드립니다</code> · <code>2-4 물4 얼름</code> · <code>기존 3-11 클 부탁</code> · <code>3냉가동 부탁</code>',
+        '운영 탭에서 보낸 요청도 <b>💬 테이블 대화</b>에 한 줄로 올라가고(✍️운영탭) 담당이 정해지면 그 줄에 표시돼요 · 자리표에서 비우기·옮기기를 해도 운영팀에게 아웃 청소·자리 이동 요청이 가요',
+        '운영팀은 대화에서 두 번 누르기로도 맡을 수 있어요 · 운영팀끼리 쓰는 <code>완료</code> 보고는 알림이 안 가요'
       ]) +
       sec('🍾 킵', [
         '맡기기·꺼내기는 담당이 요청 → <b>대표·김동기·양진호</b>가 승인하면 반영',
@@ -3492,12 +3529,100 @@ body.hasfab main { padding-bottom: 110px; }
     var t = e.data && e.data.tab, ct = /^chat:(table|yc)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
-    if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); }
+    if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); if (t === 'ops') loadOps(); }
   });
+
+  // ── 🛎 운영 요청 (2026-11-18): 배달·기본 세팅·아웃 청소·자리 이동·퍼레이드 지원(N명)·온도 → 운영팀에게만 알림. 운영팀이 ✅ 맡으면(인원이 다 차면) 닫힘 ──
+  function opsBadge(r) {   // 🛎 탭 숫자: 운영팀은 아직 아무도 안 맡은(내가 안 맡은) 요청 수
+    if (!state.data || !r || !r.list) return;
+    var n = state.s && state.s.team === '운영팀' ? r.list.filter(function (x) { return x.status === '대기' && !x.me; }).length : 0;
+    if (state.data.opsOpen !== n) { state.data.opsOpen = n; renderTabsOnly(); }
+  }
+  function opsCrewMe() { return !!(state.s && (state.s.team === '운영팀' || state.s.admin)); }
+  function opsWhere(x) { return x.floor ? (x.floor === 'SPOT' ? '3층' : '2층') + (x.seat ? ' ' + x.seat : ' 전체') : (x.seat || ''); }
+  function loadOps(quiet) {
+    if (!state.s || state.opsFly) return;
+    if (!state.ops && state.tab === 'ops') $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
+    state.opsFly = 1;
+    return call({ a: 'ops_get', token: state.s.token }).then(function (r) {
+      state.opsFly = 0; state.opsAt = Date.now();
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) { if (!state.ops) { state.opsErr = '불러오지 못했어요.'; if (state.tab === 'ops') render(); } return; }
+      var sig = JSON.stringify(r.list), same = !!state.ops && JSON.stringify(state.ops.list) === sig;
+      state.ops = r; state.opsErr = ''; opsBadge(r);
+      if (state.tab === 'ops' && !same && $('sheet').hidden) render();
+    }).catch(function () { state.opsFly = 0; state.opsAt = Date.now(); if (!state.ops && state.tab === 'ops') { state.opsErr = '연결이 안 돼요.'; render(); } });
+  }
+  setInterval(function () { if (state.s && state.data && state.tab === 'ops' && !document.hidden && Date.now() - (state.opsAt || 0) > 4500) loadOps(true); }, 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'ops') loadOps(true); });
+  function opsErr(r) { return { kind: '종류를 골라 주세요.', empty: '무엇을 갖다 드릴지 골라 주세요.', seat: '자리를 확인해 주세요. (예: 4 · L3 · D1 · S5)', text: '< > 는 쓸 수 없어요.', n: '인원은 1~10명이에요.', busy: '잠시 후 다시 해 주세요.', full: '이미 인원이 다 찼어요.', forbidden: '권한이 없어요.', state: '취소된 요청이에요.', notfound: '없는 요청이에요.' }[r.error] || '다시 해 주세요.'; }
+  function opsCall(body, btn, done) {
+    if (btn) btn.disabled = true; body.token = state.s.token;
+    return call(body).then(function (r) { if (btn) btn.disabled = false; if (r.error === 'auth') return toLogin(AUTH_OUT); if (r.ok) { state.ops = r; opsBadge(r); flushPush(); } if (done) done(r); }).catch(function () { if (btn) btn.disabled = false; if (done) done({ error: 'net' }); });
+  }
+  function renderOps(area) {
+    if (!state.ops) { area.innerHTML = state.opsErr ? '<p class="empty">' + esc(state.opsErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.opsFly && !state.opsErr) loadOps(); return; }
+    var O = state.ops, crew = O.crew, open = O.list.filter(function (x) { return x.status === '대기'; }), fixed = O.list.filter(function (x) { return x.status === '확정'; }), gone = O.list.filter(function (x) { return x.status === '취소'; });
+    var h = '<div class="tbh"><div><h1>🛎 운영 요청</h1><p class="sub">' + (crew ? '운영팀에게만 알림이 가요 · ✅ 내가 할게요를 누르면 담당 · 인원이 다 차면 닫혀요' : '배달·기본 세팅·청소·자리 이동·퍼레이드 지원을 운영팀에게 요청해요') + '</p></div>' +
+      '<button class="btn btn-hot" type="button" id="opNew" style="width:auto;flex:none;padding:0 16px">+ 요청</button></div>';
+    h += '<p class="msg ok" id="opBox"' + (state.opsMsg ? '' : ' hidden') + '>' + esc(state.opsMsg || '') + '</p>'; state.opsMsg = '';
+    var card = function (x) {
+      var who = x.took.map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ');
+      return '<div class="opc st-' + esc(x.status) + '" data-opid="' + esc(x.id) + '"><div class="oph"><span class="chip">' + esc(x.kind) + '</span><b>' + esc(opsWhere(x) || '자리 없음') + '</b><time>' + esc(x.hm) + '</time></div>' +
+        (x.memo ? '<p class="opm">' + esc(x.memo) + '</p>' : '') +
+        '<span class="ops2">요청 ' + esc(x.by) + nickH(x.by) + ' · ' + (x.status === '확정' ? '<span class="ok">✅ 담당 ' + who + '</span>' : x.status === '취소' ? '취소됨' : '담당 대기' + (x.took.length ? ' · ' + who : '')) + (x.need > 1 ? ' (' + x.took.length + '/' + x.need + '명)' : '') + '</span>' +
+        '<div class="opb">' + (crew && x.status === '대기' && !x.me ? '<button class="btn btn-ok" type="button" data-optake="1">✅ 내가 할게요</button>' : '') +
+        (crew && x.me && x.status !== '취소' ? '<button class="btn" type="button" data-opun="1">담당 빼기</button>' : '') +
+        ((x.mine || (state.s && state.s.admin)) && x.status !== '취소' ? '<button class="link" type="button" data-opcx="1">요청 취소</button>' : '') + '</div></div>';
+    };
+    h += '<h2 class="sec tbz">⏳ 담당 대기 ' + open.length + '</h2>' + (open.length ? '<div class="opq">' + open.map(card).join('') + '</div>' : '<p class="empty">' + (crew ? '기다리는 요청이 없어요.' : '보낸 요청이 다 처리됐어요.') + '</p>');
+    if (fixed.length) h += '<h2 class="sec tbz">✅ 담당 정해짐 ' + fixed.length + '</h2><div class="opq">' + fixed.map(card).join('') + '</div>';
+    if (gone.length) h += '<details class="all"><summary>취소 ' + gone.length + '건</summary><div class="opq">' + gone.map(card).join('') + '</div></details>';
+    area.innerHTML = h;
+    $('opNew').addEventListener('click', opsForm);
+    area.querySelectorAll('[data-opid]').forEach(function (c) {
+      var id = c.dataset.opid;
+      c.querySelectorAll('[data-optake],[data-opun]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_take', id: id, on: !b.dataset.opun }, b, function (r) { if (!r.ok) state.opsMsg = opsErr(r); else if (!b.dataset.opun) state.opsMsg = '맡았어요. 요청한 사람에게 알려요.'; render(); }); }); });
+      c.querySelectorAll('[data-opcx]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '요청 취소')) return; opsCall({ a: 'ops_cancel', id: id }, b, function (r) { state.opsMsg = r.ok ? '요청을 취소했어요.' : opsErr(r); render(); }); }); });
+    });
+  }
+  function opsForm() {
+    var O = state.ops || { kinds: ['🧊 배달', '🍽 기본 세팅', '🧹 아웃 청소', '🔀 자리 이동', '🎆 퍼레이드 지원', '🌡 온도', '📝 기타'], items: {} };
+    var kind = '', items = [], fl = state.tbFloor || tbFloorPref(), n = 1;
+    var h = '<h2>🛎 운영 요청</h2><p class="sub">운영팀에게만 알림이 가요. 운영팀이 맡으면 알려 드려요.</p>' +
+      '<div class="opk">' + O.kinds.map(function (k) { return '<button type="button" class="chip" data-opk="' + esc(k) + '">' + esc(k) + '</button>'; }).join('') + '</div>' +
+      '<div class="opi" id="opI" hidden></div>' +
+      '<div class="opfl">' + [['SPOT', '3층 SPOT'], ['GROOVE', '2층 GROOVE'], ['', '층 없음']].map(function (x) { return '<button type="button" class="chip' + (x[0] === fl ? ' on' : '') + '" data-opfl="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<label>자리<input id="opSeat" maxlength="14" autocomplete="off" placeholder="예) 4 · L3 · D1 · S5 (비우면 층 전체)"></label>' +
+      '<div class="opn"><span>인원</span><button type="button" class="chip" data-opn="-1" aria-label="인원 빼기">−</button><b id="opN">1</b>명<button type="button" class="chip" data-opn="1" aria-label="인원 더하기">＋</button><span class="sub" style="margin:0">운영팀이 이만큼 맡으면 닫혀요</span></div>' +
+      '<label>메모<input id="opMemo" maxlength="100" autocomplete="off" placeholder="예) 버켓 2개 · 3-10 생일 퍼레이드"></label>' +
+      '<p class="msg" id="opMsg"></p><button class="btn btn-hot" type="button" id="opSave">운영팀에게 보내기</button>';
+    showSheet(h);
+    var sh = $('sheet');
+    sh.querySelectorAll('[data-opk]').forEach(function (b) { b.addEventListener('click', function () {
+      kind = b.dataset.opk; $('opMsg').textContent = ''; items = []; sh.querySelectorAll('[data-opk]').forEach(function (x) { x.classList.toggle('on', x === b); });
+      var list = (O.items || {})[kind] || [], box = $('opI');   // 🧊 배달: 얼음·버켓얼음… · 🎆 퍼레이드: 피켓·가마·가방
+      box.hidden = !list.length;
+      box.innerHTML = list.map(function (k) { return '<button type="button" class="chip" data-opi="' + esc(k) + '">' + esc(k) + '</button>'; }).join('');
+      box.querySelectorAll('[data-opi]').forEach(function (c) { c.addEventListener('click', function () { var k = c.dataset.opi, i = items.indexOf(k); if (i >= 0) items.splice(i, 1); else items.push(k); c.classList.toggle('on', i < 0); }); });
+      if (kind === '🎆 퍼레이드 지원' && n < 2) { n = 2; $('opN').textContent = n; }
+    }); });
+    sh.querySelectorAll('[data-opfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.opfl; sh.querySelectorAll('[data-opfl]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
+    sh.querySelectorAll('[data-opn]').forEach(function (b) { b.addEventListener('click', function () { n = Math.max(1, Math.min(10, n + +b.dataset.opn)); $('opN').textContent = n; }); });
+    $('opSave').addEventListener('click', function () {
+      var m = $('opMsg'), seat = $('opSeat').value.replace(/\s+/g, '').toUpperCase();
+      if (!kind) { m.textContent = '종류를 골라 주세요.'; return; }
+      if (seat && !fl) { m.textContent = '자리가 있는 층을 골라 주세요.'; return; }
+      opsCall({ a: 'ops_add', kind: kind, items: items, floor: fl, seat: seat, n: n, memo: $('opMemo').value.trim() }, this, function (r) {
+        if (!r.ok) { m.textContent = opsErr(r); return; }
+        tbCloseSheet(); state.opsMsg = '운영팀에게 보냈어요. 맡으면 알려 드려요.'; if (state.tab !== 'ops') goTab('ops'); else render();
+      });
+    });
+  }
 
   // ── 📡 전체 (대표만, 2026-11-18): 누구에게 어떤 알림이 갔는지 + 테이블·연출·게스트 대화를 한 화면에. 켜 두면 5초마다 새로 ──
   var ALL_F = [['', '전체'], ['al', '🔔 알림'], ['table', '🪑 테이블'], ['yc', '🎆 연출'], ['guest', '👥 게스트']];
-  var ALL_TABS = ['gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'];
+  var ALL_TABS = ['ops', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'];
   function loadAll(quiet) {
     if (!state.s || state.allFly) return;
     if (!state.all && state.tab === 'all') $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
@@ -4194,7 +4319,8 @@ body.hasfab main { padding-bottom: 110px; }
       '<p>이동 <code>3l4->3l2</code> <code>3l4->3l2 판매전환</code>(옮기면서 판매) <code>3ㅣ9에서 3ㅣ10 이동</code> <code>2s5 3l5로 이동</code></p>' +
       '<p>배정(승인하는 사람) <code>@이정훈 엘4</code> <code>3l5,6 @이성민 @경철</code></p>' +
       '<p>층: 앞의 3 = SPOT, 2 = GROOVE (없으면 보고 있는 층). 자리 글자: ㅅ·스·s = S, ㅣ·엘·l = L, 디·d = D, 디비·db = DB</p>' +
-      '<p>섭몬 = 카마 · 섭레 = 레몬드랍 · 섭샴·짭몬은 메모. 흡연·화장실·부킹·얼음·방향제·N출 같은 말은 그냥 대화예요.</p>',
+      '<p>섭몬 = 카마 · 섭레 = 레몬드랍 · 섭샴·짭몬은 메모. 흡연·화장실·부킹·N출 같은 말은 그냥 대화예요.</p>' +
+      '<p>🛎 <b>운영팀 부르기</b>: 아웃·이동·<code>기셋</code>·<code>버켓얼음</code>·<code>물4</code>·<code>샴잔</code>·<code>방향제</code>·<code>클</code>(청소)·<code>냉가동</code>을 쓰면 운영팀에게만 알림 → 운영팀이 <b>✅ 내가 할게요</b>(또는 두 번 누르기)</p>',
     yc: '<p><b>불꽃놀이방에 쓰던 그대로</b> 쓰면 연출 요청이 올라가요.</p>' +
       '<p>첫 줄 = 자리·순서(<code>바로</code> <code>준비되는대로</code> <code>12:10</code> <code>3-12 다음</code>), 다음 줄 = 영상·홀로·피켓·망치·퍼레·노래, <b>빈 줄 뒤 = 전광판 문구</b></p>' +
       '<pre>3s7 바로 구형딥퍼레 호철이형 컨펌완\n고트영상0 홀로0 생일피켓\n\n다은아 생일축하해\n-서빈 하연-</pre>' +
@@ -4349,7 +4475,7 @@ body.hasfab main { padding-bottom: 110px; }
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '', ro = false;
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.ops ? '<em class="cops' + (m.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(m.ops.kind) + ' · ' + (m.ops.status === '확정' ? '✅ 담당 ' + esc(m.ops.took.map(function (k) { return k.who; }).join(', ')) : m.ops.status === '취소' ? '취소됨' : '운영팀 확인 대기' + (m.ops.need > 1 ? ' (' + m.ops.took.length + '/' + m.ops.need + ')' : '')) + '</em>' + (m.ops.status === '대기' && !m.ops.me && opsCrewMe() ? '<button type="button" class="copsb" data-copst="' + esc(m.ops.id) + '">✅ 내가 할게요</button>' : '') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
     L.innerHTML = h ? (ro ? '' : '<p class="chint">두 번 누르면 ✅ 확인 · 꾹 누르면 ↩️ 답장</p>') + h : '<p class="cempty">아직 대화가 없어요.' + (ro ? '' : ' 첫 메시지를 남겨 보세요.') + '</p>';
     hydrateImgs(L);
@@ -4366,6 +4492,7 @@ body.hasfab main { padding-bottom: 110px; }
         else state.chatTap = { id: id, t: now };
       });
     });
+    L.querySelectorAll('[data-copst]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.copst }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else b.disabled = false; }).catch(function () { b.disabled = false; }); }); });
     L.querySelectorAll('[data-chdel]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '✕')) return; call({ a: 'chat_del', token: state.s.token, id: b.dataset.chdel }).then(function (x) { if (x.ok) chatPaint(x, false); }); }); });
     if (toEnd || near) L.scrollTop = L.scrollHeight;
     paintChatFab();
