@@ -734,6 +734,38 @@ body.hasfab main { padding-bottom: 110px; }
 .tbbtns .btn { flex: 1; }
 .tbview p { font-size: 17px; font-weight: 800; margin: 8px 0; }
 /* 🖥 PC (대표 요청 2026-11-18): 넓은 화면은 본문을 넓히고, 탭은 잘리지 않게 줄바꿈, 위쪽 줄을 본문 폭에 맞추고, 시트는 가운데 */
+/* 🕘 출근·퇴근 · 📊 내 현황 · 🕘 근무표 · 🙋 문의 받기 (2026-11-18) */
+.punch { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 12px; margin: 0 0 14px; }
+.punch span { font-size: 14px; color: var(--muted); } .punch b { color: var(--txt); font-variant-numeric: tabular-nums; }
+.punch.done { border-color: var(--line); }
+.gh.prof h1 small { font-size: 15px; } .sum b .of { font-style: normal; font-size: 14px; color: var(--muted); font-weight: 700; margin-left: 2px; } .gh.dash { margin-top: 22px; } .gh.dash h2 { margin: 0; font-size: 20px; }
+#meWho { min-height: 40px; border-radius: 10px; background: var(--card); border: 1px solid var(--line-2); padding: 0 10px; max-width: 100%; }
+.trend { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; align-items: end; height: 150px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 10px 6px; }
+.trend .tb { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
+.trend .tb i { display: block; width: 70%; max-width: 34px; background: var(--line-2); border-radius: 6px 6px 2px 2px; }
+.trend .tb.now i { background: var(--g); }
+.trend .tv { font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; } .trend small { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.days7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 8px 0 0; }
+.days7 span { text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px 0; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--muted); }
+.days7 span.on { color: var(--txt); border-color: rgba(255,122,26,.5); } .days7 i { display: block; font-style: normal; font-size: 11px; font-weight: 600; color: var(--muted); }
+.mel { display: grid; gap: 6px; } .mel .mi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; font-size: 14px; }
+.mel .mi.late { border-color: rgba(255,59,92,.5); } .mel .mi small { color: var(--muted); }
+.wtab { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+.wtab table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 13px; table-layout: fixed; }
+.wtab thead th.wn { width: 104px; } .wtab thead th.ws { width: 150px; } .wtab thead th small { font-weight: 600; font-size: 11px; }
+.wnav { display: flex; gap: 6px; } .wnav .btn { min-height: 38px; font-size: 14px; padding: 0 14px; }
+.wtab th, .wtab td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: center; vertical-align: middle; }
+.wtab thead th { color: var(--muted); font-weight: 800; }
+.wtab tbody th { text-align: left; padding-left: 10px; white-space: nowrap; } .wtab tbody th small { display: block; color: var(--muted); font-weight: 600; }
+.wc { width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 9px; background: var(--card-2); cursor: pointer; font-variant-numeric: tabular-nums; font-size: 12px; line-height: 1.3; padding: 3px 2px; }
+.wc small { display: block; font-size: 11px; } .wc.late { border-color: rgba(255,59,92,.6); } .wc.late small { color: var(--bad); }
+.wc.open { border-style: dashed; border-color: var(--warn); } .wc.empty { background: none; color: var(--muted); }
+.wsum { white-space: nowrap; text-align: left !important; padding-left: 8px !important; } .wsum small { display: block; color: var(--muted); font-size: 11px; }
+.wrule { margin: 14px 0 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; } .wrule summary { cursor: pointer; font-weight: 800; }
+.wrr { display: grid; gap: 8px; } .wr { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .wr b { min-width: 52px; }
+.wr label { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--muted); margin: 0; } .wr input { width: 110px; }
+.itk { margin: 6px 0 2px; } .itk .btn { min-height: 36px; font-size: 14px; } .itk.done { font-size: 13px; color: var(--ok); }
+.iqfl { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; } .iqfl > span { font-size: 14px; color: var(--muted); min-width: 34px; }
 @media (min-width: 900px) {
   main { max-width: 1040px; padding: 24px 24px 60px; }
   .tabs { flex-wrap: wrap; overflow: visible; }
@@ -747,7 +779,7 @@ body.hasfab main { padding-bottom: 110px; }
 <body>
 <header class="top">
   <div class="brand">GROOVE <b>STAFF</b></div>
-  <div class="who" id="who" hidden><button class="mebtn" id="meBtn" type="button" aria-label="내 정보"><strong id="whoName"></strong> <span id="whoTeam"></span></button><button class="bell" id="bell" type="button" hidden aria-label="알림 켜기·끄기">🔕</button><button class="link" id="logout" type="button">로그아웃</button></div>
+  <div class="who" id="who" hidden><button class="mebtn" id="meBtn" type="button" aria-label="내 프로필"><strong id="whoName"></strong> <span id="whoTeam"></span></button><button class="bell" id="bell" type="button" hidden aria-label="알림 켜기·끄기">🔕</button><button class="link" id="logout" type="button">로그아웃</button></div>
 </header>
 
 <main>
@@ -796,6 +828,7 @@ body.hasfab main { padding-bottom: 110px; }
       <button type="button" role="tab" data-tab="notes" aria-selected="false" hidden>회의록</button>
       <button type="button" role="tab" data-tab="dec" aria-selected="false" hidden>업무사항</button>
       <button type="button" role="tab" data-tab="acc" aria-selected="false" hidden>가입 승인</button>
+      <button type="button" role="tab" data-tab="work" aria-selected="false" hidden>🕘 근무표</button>
     </nav>
     <p class="sync" id="sync" aria-live="polite"></p>
     <div id="listArea"></div>
@@ -936,7 +969,7 @@ body.hasfab main { padding-bottom: 110px; }
     state.s = null; state.data = null; state.tab = 'guest'; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
     state.tb = null; state.tbDay = ''; state.tbMsg = ''; state.tbErr = ''; state.tbFly = 0;
     state.yc = null; state.ycMsg = ''; state.ycErr = ''; state.ycFly = 0;
-    state.lf = null; state.lfMsg = ''; state.lfErr = ''; state.lfFly = 0;
+    state.lf = null; state.lfMsg = ''; state.lfErr = ''; state.lfFly = 0; state.me = null; state.meWho = ''; state.work = null; state.wkStart = '';
     try { chatClose(); state.chatTail = {}; $('chatFab').hidden = true; } catch (e) {}
     state.keep = null; state.kview = 'list'; state.kcur = null; state.kq = ''; state.kf = ''; state.kadd = null; state.kundo = null; state.kstale = false; state.kfly = 0; state.kmulti = false; state.kopt = {}; state.ktmp = {};
     try { localStorage.removeItem(KKEY); } catch (e) {}
@@ -1019,7 +1052,7 @@ body.hasfab main { padding-bottom: 110px; }
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
     if (/^chat:(table|yc)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
-    if (['guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep'].indexOf(h) >= 0) state.tab = h;
+    if (['guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) state.tab = h;
     swToken(state.s.token); paintBell();
     if (!state.keep) { var kc = kLoad(); if (kc) { state.keep = kc; state.kstale = true; } }
     var c = loadData();
@@ -1083,9 +1116,8 @@ body.hasfab main { padding-bottom: 110px; }
     });
   }
 
-  document.querySelectorAll('#tabs button').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var prev = state.tab; state.tab = b.dataset.tab;
+  function goTab(t) {
+      var prev = state.tab; state.tab = t;
       if (prev === 'dm' && state.tab !== 'dm') stopPoll();
       if (state.tab === 'board') { state.bview = state.bview === 'edit' ? 'edit' : 'list'; state.bpost = null; }
       if (state.tab === 'dm') { state.dmView = 'list'; state.dmWith = ''; state.chat = null; }
@@ -1097,8 +1129,10 @@ body.hasfab main { padding-bottom: 110px; }
       if (state.tab === 'lost') loadLost();
       if (state.tab === 'board' && state.bview !== 'edit') refresh(true);
       if (state.tab === 'dm') enterDm();
-    });
-  });
+      if (state.tab === 'me' && state.me) loadMe();
+      if (state.tab === 'work' && state.work) loadWork();
+  }
+  document.querySelectorAll('#tabs button').forEach(function (b) { b.addEventListener('click', function () { goTab(b.dataset.tab); }); });
 
   function paintTabs(d) {
     var edu = d.notes.filter(function (n) { return n.kind === '교육'; }), notes = d.notes.filter(function (n) { return n.kind !== '교육' && n.kind !== '규칙'; });
@@ -1115,8 +1149,11 @@ body.hasfab main { padding-bottom: 110px; }
       keep: ['🍾 킵', keepDue()],
       table: ['🪑 테이블', d.tableApprove ? (d.tablePending || 0) : 0],
       yc: ['🎆 연출', d.ycWaiting || 0],
-      lost: ['🔎 분실물', 0]
+      lost: ['🔎 분실물', 0],
+      me: ['👤 내 프로필', 0],
+      work: ['🕘 근무표', 0]
     };
+    var workOn = !!d.admin;   // 👤 내 프로필(이름을 누르면): 출근·퇴근 + 내 현황 · 🕘 근무표: 대표
     var LEAD_TABS = { notes: 1 }, decOn = !!(d.lead || d.decAdd || (d.decisions && d.decisions.length)), hasBoard = !!(d.board && d.board.teams && d.board.teams.length), canAcc = !!(d.admin || d.approver);
     if (!labels[state.tab] || (state.tab === 'acc' && !canAcc) || (state.tab === 'board' && !hasBoard)) state.tab = 'guest';
     if (LEAD_TABS[state.tab] && !d.lead) state.tab = 'guest';
@@ -1125,6 +1162,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'table' && !d.table) state.tab = 'guest';
     if (state.tab === 'yc' && !d.yc) state.tab = 'guest';
     if (state.tab === 'lost' && !d.lost) state.tab = 'guest';
+    if (state.tab === 'work' && !workOn) state.tab = 'guest';
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
       if (b.dataset.tab === 'acc') b.hidden = !canAcc;
@@ -1135,6 +1173,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (b.dataset.tab === 'table') b.hidden = !d.table;
       if (b.dataset.tab === 'yc') b.hidden = !d.yc;
       if (b.dataset.tab === 'lost') b.hidden = !d.lost;
+      if (b.dataset.tab === 'work') b.hidden = !workOn;
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
@@ -1157,6 +1196,8 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'table') return renderTable(area);
     if (state.tab === 'yc') return renderYc(area);
     if (state.tab === 'lost') return renderLost(area);
+    if (state.tab === 'me') return renderMe(area, d);
+    if (state.tab === 'work') return renderWork(area, d);
     var list = state.tab === 'edu' ? edu : notes, guide = state.tab === 'edu' ? pushGuideHtml() + eduGuideHtml() : '';
     if (!list.length) { area.innerHTML = guide + '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; bindPushGuide(); return; }
     area.innerHTML = guide + '<div class="list">' + list.map(function (n) {
@@ -1443,6 +1484,121 @@ body.hasfab main { padding-bottom: 110px; }
         render();
       }).catch(function () { btn.disabled = false; msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
     });
+  }
+  // ── 🕘 출근·퇴근 (2026-11-18): 직원은 버튼만, 지각·근무시간은 대표만 '근무표'에서 ──
+  function punchBar(d) {
+    var w = d.work; if (!w || !w.can) return '';
+    if (w.in && w.out) return '<div class="punch done"><span>🕘 출근 <b>' + esc(w.in) + '</b> · 퇴근 <b>' + esc(w.out) + '</b></span><button type="button" class="link" data-punch="out">퇴근 다시 찍기</button></div>';
+    if (w.in) return '<div class="punch"><span>🕘 출근 <b>' + esc(w.in) + '</b> · 수고 많아요</span><button type="button" class="btn btn-hot" data-punch="out">퇴근하기</button></div>';
+    return '<div class="punch"><span>🕘 오늘 아직 출근 전이에요</span><button type="button" class="btn btn-hot" data-punch="in">출근하기</button></div>';
+  }
+  function bindPunch(area) {
+    area.querySelectorAll('[data-punch]').forEach(function (b) { b.addEventListener('click', function () {
+      var kind = b.dataset.punch;
+      if (kind === 'out' && !armed(b, b.textContent)) return;
+      b.disabled = true;
+      call({ a: 'wk_punch', token: state.s.token, kind: kind }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (r.ok || r.error === 'already') { state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can }; saveData(state.data); render(); return; }
+        b.disabled = false; alertMsg(r.error === 'noin' ? '출근을 먼저 찍어 주세요.' : r.error === 'busy' ? '잠시 후 다시 해 주세요.' : '찍지 못했어요. 다시 해 주세요.');
+      }).catch(function () { b.disabled = false; alertMsg('연결이 안 돼요. 다시 해 주세요.'); });
+    }); });
+  }
+  function alertMsg(t) { var m = $('sync'); if (m) { m.textContent = t; setTimeout(function () { if (m.textContent === t) m.textContent = ''; }, 4000); } }
+
+  // ── 📊 내 현황 (영업진 개인 대시보드, 2026-11-18) ──
+  function loadMe() {
+    var who = state.meWho || ''; if (!state.s || state.meFly) return; state.meFly = 1;
+    call({ a: 'my_dash', token: state.s.token, name: who }).then(function (r) {
+      if (who !== (state.meWho || '')) return;
+      state.meFly = 0;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) { state.me = { error: r.error }; } else state.me = r;
+      if (state.tab === 'me') render();
+    }).catch(function () { state.meFly = 0; state.me = state.me || { error: 'net' }; if (state.tab === 'me') render(); });
+  }
+  function meHead(d) {   // 👤 내 프로필 머리: 이름·팀·역할 + 내 정보 바꾸기 + 출근·퇴근
+    var role = state.s.admin ? '대표' : state.s.role === '부팀장' ? '부팀장' : state.s.lead ? '팀장' : '직원';
+    return '<div class="gh prof"><div><h1>👤 ' + esc(state.s.name) + nickH(state.s.name) + '</h1><span class="range">' + esc(state.s.team || '팀 없음') + ' · ' + role + '</span></div><button type="button" class="btn" id="meEdit">✏️ 내 정보 바꾸기</button></div>' + punchBar(d);
+  }
+  function renderMe(area, d) {
+    var sales = SALES.indexOf(d.team) >= 0, pick = !!(d.admin || d.gall), h = meHead(d), m = state.me;
+    if (!sales && !pick) { area.innerHTML = h; bindMe(area); return; }   // 영업팀이 아니면 출근·퇴근·내 정보만
+    if (!m) { area.innerHTML = h + '<p class="load">불러오는 중…</p>'; bindMe(area); loadMe(); return; }
+    if (m.error) { area.innerHTML = h + '<p class="empty">현황을 불러오지 못했어요. 다시 열어 주세요.</p>'; bindMe(area); return; }
+    var other = key(m.name) !== key(state.s.name);
+    h += '<div class="gh dash"><div><h2>📊 ' + (other ? esc(m.name) + nickH(m.name) + ' 현황' : '내 현황') + '</h2><span class="range">' + esc(other ? m.team || '' : '') + (other ? ' · ' : '') + '오늘 영업일 ' + esc(md(m.today)) + '</span></div>' +
+      (m.people ? '<select id="meWho" aria-label="영업진 고르기"><option value="">' + (sales ? '나' : '영업진 고르기') + '</option>' + m.people.filter(function (p) { return SALES.indexOf(p.team) >= 0; }).map(function (p) { return '<option' + (key(p.name) === key(m.name) && other ? ' selected' : '') + ' value="' + esc(p.name) + '">' + esc(p.name) + ' · ' + esc(p.team) + '</option>'; }).join('') + '</select>' : '') + '</div>';
+    if (!sales && !other) { area.innerHTML = h + '<p class="empty">위에서 영업진을 고르면 그 사람의 게스트 추이·테이블·킵 만료가 보여요.</p>'; bindMe(area); return; }
+    var G = m.guest, mx = Math.max.apply(null, G.weeks.map(function (w) { return w.total; }).concat([1]));
+    h += '<div class="sum"><div><small>이번 주 게스트</small><b>' + G.total + '팀</b></div><div><small>전체 순위</small><b>' + (G.rank ? G.rank + '<i class="of">/' + G.of + '</i>' : '-') + '</b></div><div><small>팀 안 순위</small><b>' + (G.teamRank ? G.teamRank + '<i class="of">/' + G.teamOf + '</i>' : '-') + '</b></div><div><small>이번 주 테이블</small><b>' + m.table.week.tables + '</b></div></div>';
+    h += '<h2 class="sec">📈 게스트 주간 추이 (8주)</h2><div class="trend">' + G.weeks.map(function (w, i) {
+      return '<div class="tb' + (i === 7 ? ' now' : '') + '"><span class="tv">' + w.total + '</span><i style="height:' + Math.max(3, Math.round(w.total / mx * 100)) + '%"></i><small>' + esc(md(w.start)) + '</small></div>';
+    }).join('') + '</div>';
+    h += '<div class="days7">' + G.days.map(function (n, i) { return '<span class="' + (n ? 'on' : '') + '"><i>' + DOW[i] + '</i>' + (n || '·') + '</span>'; }).join('') + '</div>';
+    var T = m.table, fl = function (x) { return x === 'SPOT' ? '3층' : '2층'; }, tline = function (x) { return esc(fl(x.fl) + ' ' + (x.seat || '대기')) + ' · ' + esc([x.g, (x.sx || '') + (x.n || '')].filter(String).join(' ')) + (x.sold ? ' <span class="chip sold">판매</span>' : '') + (x.bid ? ' <small>💰' + x.bid + '만</small>' : '') + (x.wait ? ' <small>승인 대기</small>' : ''); };
+    h += '<h2 class="sec">🪑 테이블 · 판매석</h2><div class="sum"><div><small>이번 주 테이블</small><b>' + T.week.tables + '</b></div><div><small>판매석</small><b>' + T.week.sold + '</b></div><div><small>비딩</small><b>' + T.week.bid + '<i class="of">만</i></b></div><div><small>지난주 테이블·판매</small><b>' + T.prev.tables + '<i class="of">·' + T.prev.sold + '</i></b></div></div>';
+    h += T.today.length ? '<div class="list mel">' + T.today.map(function (x) { return '<div class="mi">오늘 · ' + tline(x) + '</div>'; }).join('') + '</div>' : '<p class="note">오늘 내 테이블 손님은 아직 없어요.</p>';
+    if (T.ahead.length) h += '<h2 class="sec">📅 앞으로 잡힌 대기 (문의 배정)</h2><div class="list mel">' + T.ahead.map(function (x) { return '<div class="mi"><b>' + esc(md(x.day)) + '</b> · ' + tline(x) + '</div>'; }).join('') + '</div>';
+    h += '<h2 class="sec">🍾 킵 만료 임박 (7일 안)</h2>' + (m.keep.length ? '<div class="list mel">' + m.keep.map(function (k) {
+      return '<div class="mi' + (k.days < 0 ? ' late' : '') + '"><b>' + esc(k.name) + '</b> · ' + (k.days < 0 ? '만료 ' + (-k.days) + '일 지남' : k.days === 0 ? '오늘 만료' : 'D-' + k.days) + ' <small>' + esc(k.items.join(', ')) + '</small></div>';
+    }).join('') + '</div><p class="note">손님에게 연락해서 다시 오시게 해 주세요.</p>' : '<p class="note">7일 안에 만료되는 킵이 없어요.</p>');
+    area.innerHTML = h; bindMe(area);
+  }
+  function bindMe(area) {
+    bindPunch(area); if ($('meEdit')) $('meEdit').addEventListener('click', openMe);
+    var sel = $('meWho'); if (sel) sel.addEventListener('change', function () { state.meWho = this.value; state.me = null; state.meFly = 0; render(); });
+  }
+
+  // ── 🕘 근무표 (대표만): 한 주 사람별 출근·퇴근·지각·근무시간, 시각 고치기, 팀별 지각 기준 ──
+  function loadWork() {
+    if (!state.s || state.wkFly) return; state.wkFly = 1; var st0 = state.wkStart || '';
+    call({ a: 'wk_table', token: state.s.token, start: st0 }).then(function (r) {
+      if (st0 !== (state.wkStart || '')) return;
+      state.wkFly = 0;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      state.work = r.ok ? r : { error: r.error }; if (state.tab === 'work') render();
+    }).catch(function () { state.wkFly = 0; state.work = state.work || { error: 'net' }; if (state.tab === 'work') render(); });
+  }
+  function hm(mins) { return mins ? Math.floor(mins / 60) + '시간' + (mins % 60 ? ' ' + (mins % 60) + '분' : '') : '-'; }
+  function renderWork(area, d) {
+    var w = state.work;
+    if (!w) { area.innerHTML = '<p class="load">불러오는 중…</p>'; loadWork(); return; }
+    if (w.error) { area.innerHTML = '<p class="empty">불러오지 못했어요.</p>'; return; }
+    var prev = addDays(w.start, -7), next = addDays(w.start, 7);
+    var h = '<div class="gh"><div><h1>🕘 근무표</h1><span class="range">' + esc(md(w.start)) + '(월) ~ ' + esc(md(w.end)) + '(일) 영업일 · 대표님만 보여요</span></div>' +
+      '<div class="wnav"><button type="button" class="btn" data-wks="' + esc(prev) + '">← 지난주</button>' + (next <= w.today ? '<button type="button" class="btn" data-wks="' + esc(next) + '">다음 주 →</button>' : '') + '</div></div>';
+    if (!w.rows.length) h += '<p class="empty">이 주에 찍힌 출근이 없어요.</p>';
+    else h += '<div class="wtab"><table><thead><tr><th class="wn">이름</th>' + DOW.map(function (x, i) { return '<th>' + x + ' <small>' + esc(md(addDays(w.start, i))) + '</small></th>'; }).join('') + '<th class="ws">합계</th></tr></thead><tbody>' + w.rows.map(function (r) {
+      return '<tr><th>' + esc(r.name) + nickH(r.name) + '<small>' + esc(r.team) + '</small></th>' + r.days.map(function (x, i) {
+        if (!x) return '<td><button type="button" class="wc empty" data-wadd="' + esc(r.name) + '|' + esc(addDays(w.start, i)) + '">·</button></td>';
+        return '<td><button type="button" class="wc' + (x.late ? ' late' : '') + (x.in && !x.out ? ' open' : '') + '" data-wid="' + esc(x.id) + '">' + esc(x.in || '?') + '~' + esc(x.out || '?') + (x.late ? '<small>지각 ' + x.late + '분</small>' : '') + (x.memo ? '<small>📝</small>' : '') + '</button></td>';
+      }).join('') + '<td class="wsum"><b>' + hm(r.mins) + '</b><small>' + r.n + '일' + (r.lateN ? ' · 지각 ' + r.lateN + '번(' + r.late + '분)' : '') + (r.open ? ' · 퇴근 안 찍음 ' + r.open : '') + '</small></td></tr>';
+    }).join('') + '</tbody></table></div>';
+    var R = w.rule || { def: {}, teams: {} };
+    h += '<details class="wrule"><summary>⏰ 지각 기준 시각 (팀별)</summary><p class="note" style="margin:6px 0">기준보다 늦게 찍으면 지각으로 세요. 바꾼 기준은 다음 출근부터 적용돼요(지난 기록은 그대로). 팀 칸을 비워 두면 기본값을 써요.</p><div class="wrr">' +
+      [''].concat(w.teams).map(function (t) { var x = t ? (R.teams[t] || {}) : R.def; return '<div class="wr"><b>' + (t ? esc(t) : '기본') + '</b><label>일~목<input type="time" data-wr="' + esc(t) + '|wd" value="' + esc(x.wd || '') + '" placeholder="' + esc(R.def.wd) + '"></label><label>금·토<input type="time" data-wr="' + esc(t) + '|we" value="' + esc(x.we || '') + '" placeholder="' + esc(R.def.we) + '"></label><button type="button" class="btn" data-wrs="' + esc(t) + '">저장</button></div>'; }).join('') + '</div><p class="msg" id="wrMsg"></p></details>';
+    area.innerHTML = h;
+    area.querySelectorAll('[data-wks]').forEach(function (b) { b.addEventListener('click', function () { state.wkStart = b.dataset.wks; state.work = null; state.wkFly = 0; render(); }); });
+    area.querySelectorAll('[data-wrs]').forEach(function (b) { b.addEventListener('click', function () {
+      var t = b.dataset.wrs, wd = area.querySelector('[data-wr="' + t + '|wd"]').value, we = area.querySelector('[data-wr="' + t + '|we"]').value;
+      if (!wd || !we) { $('wrMsg').textContent = '두 시각을 모두 넣어 주세요.'; return; }
+      b.disabled = true; call({ a: 'wk_edit', token: state.s.token, start: w.start, rule: { team: t, wd: wd, we: we } }).then(function (r) { b.disabled = false; if (r.ok) { state.work = r; render(); } else $('wrMsg').textContent = '저장하지 못했어요.'; });
+    }); });
+    function edit(o) {
+      showSheet('<h2>🕘 ' + esc(o.name) + ' · ' + esc(md(o.day)) + '</h2><p class="note" style="margin:0 0 10px">새벽 시각(예: 03:30)은 다음 날 새벽으로 셈해요.</p>' +
+        '<label>출근<input type="time" id="weIn" value="' + esc(o.in || '') + '"></label><label>퇴근<input type="time" id="weOut" value="' + esc(o.out || '') + '"></label><label>메모<input id="weMemo" maxlength="40" value="' + esc(o.memo || '') + '" placeholder="예: 병원 들렀다 옴"></label>' +
+        '<p class="msg" id="weMsg"></p><button class="btn btn-hot" type="button" id="weSave" style="width:100%">저장</button>');
+      $('weSave').addEventListener('click', function () {
+        var b = this; b.disabled = true;
+        call(Object.assign({ a: 'wk_edit', token: state.s.token, start: w.start, in: $('weIn').value, out: $('weOut').value, memo: $('weMemo').value.trim() }, o.id ? { id: o.id } : { name: o.name, day: o.day })).then(function (r) {
+          b.disabled = false; if (!r.ok) { $('weMsg').textContent = r.error === 'time' ? '시각을 확인해 주세요.' : '저장하지 못했어요.'; return; }
+          $('sheet').hidden = true; state.work = r; render();
+        });
+      });
+    }
+    area.querySelectorAll('[data-wid]').forEach(function (b) { b.addEventListener('click', function () { var x = null; w.rows.forEach(function (r) { r.days.forEach(function (y) { if (y && y.id === b.dataset.wid) x = y; }); }); if (x) edit(x); }); });
+    area.querySelectorAll('[data-wadd]').forEach(function (b) { b.addEventListener('click', function () { var p = b.dataset.wadd.split('|'); edit({ name: p[0], day: p[1] }); }); });
   }
   function renderGuest(area, d) {
     var g = d.guests || {}, w = g[state.week] || { rows: [], total: 0 };
@@ -1859,6 +2015,30 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-to]').forEach(function (b) { b.addEventListener('click', function () { state.dmPick = false; openChat(b.dataset.to); }); });
     area.querySelectorAll('[data-with]').forEach(function (b) { b.addEventListener('click', function () { openChat(b.dataset.with); }); });
   }
+  // ── 🙋 손님 문의 → 담당 배정 → 테이블 대기 (2026-11-18) ──
+  function inqTakeSheet(c, m) {
+    var q = m.inq || {}, T = c.take, today = T.today, me = state.s.name, staffs = T.staffs || [], sx = q.sx || '';
+    var mine = staffs.some(function (p) { return key(p.name) === key(me); });
+    showSheet('<h2>🙋 제가 받을게요</h2><p class="note" style="margin:0 0 10px">담당을 정하면 그 날짜에 테이블 대기로 올라가고 문의 방에 \'누가 받았는지\'가 남아요.</p>' +
+      '<label>날짜<input type="date" id="iqDay" min="' + esc(today) + '" max="' + esc(addDays(today, 90)) + '" value="' + esc(q.day && q.day >= today ? q.day : today) + '"></label>' +
+      '<div class="iqfl"><span>층</span>' + [['GROOVE', '2층 힙합'], ['SPOT', '3층 EDM']].map(function (x) { return '<button type="button" class="chip' + ((q.fl || 'GROOVE') === x[0] ? ' on' : '') + '" data-iqfl="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<label>손님 이름<input id="iqG" maxlength="20" value="' + esc(q.g || '') + '" placeholder="예: 김민수"></label>' +
+      '<div class="iqfl"><span>구성</span>' + [['남', '남자', 'm'], ['여', '여자', 'f'], ['혼', '혼성', 'x']].map(function (x) { return '<button type="button" class="chip sx-' + x[2] + (sx === x[0] ? ' on' : '') + '" data-iqsx="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '<input id="iqN" type="number" min="0" max="50" inputmode="numeric" value="' + (q.n || '') + '" placeholder="인원" style="width:76px"></div>' +
+      '<label>담당<select id="iqSt">' + staffs.map(function (p) { return '<option value="' + esc(p.name) + '"' + (key(p.name) === key(mine ? me : '') ? ' selected' : '') + '>' + esc(p.name) + ' · ' + esc(p.team) + '</option>'; }).join('') + '</select></label>' +
+      '<label>메모<input id="iqMemo" maxlength="40" placeholder="예: 생일 · 22시 도착"></label>' +
+      '<p class="msg" id="iqMsg"></p><button class="btn btn-hot" type="button" id="iqGo" style="width:100%">받고 테이블 대기 올리기</button>');
+    var fl = q.fl || 'GROOVE';
+    document.querySelectorAll('[data-iqfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.iqfl; document.querySelectorAll('[data-iqfl]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
+    document.querySelectorAll('[data-iqsx]').forEach(function (b) { b.addEventListener('click', function () { sx = sx === b.dataset.iqsx ? '' : b.dataset.iqsx; document.querySelectorAll('[data-iqsx]').forEach(function (x) { x.classList.toggle('on', x.dataset.iqsx === sx); }); }); });
+    $('iqGo').addEventListener('click', function () {
+      var b = this; b.disabled = true; $('iqMsg').textContent = '';
+      call({ a: 'inq_take', token: state.s.token, id: m.id, day: $('iqDay').value, floor: fl, g: $('iqG').value.trim(), sx: sx, n: +$('iqN').value || 0, st: $('iqSt').value, memo: $('iqMemo').value.trim() }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (!r.ok) { b.disabled = false; $('iqMsg').textContent = r.error === 'taken' ? (r.by || '다른 사람') + '님이 먼저 받았어요.' : r.error === 'day' ? '오늘부터 90일 안의 날짜를 골라 주세요.' : r.error === 'floor' ? '층을 골라 주세요.' : r.error === 'forbidden' ? '영업팀 팀장·대표만 받을 수 있어요.' : tbErr(r); if (r.error === 'taken') loadChat(); return; }
+        $('sheet').hidden = true; state.chat = r; state.tb = null; state.me = null; render();
+      }).catch(function () { b.disabled = false; $('iqMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+    });
+  }
   function renderChat(area) {
     var c = state.chat, w = state.dmWith, grp = /^@g\//.test(w), gtitle = grp ? (c && c.title) || ((state.dm && state.dm.convs.filter(function (x) { return x.with === w; })[0]) || {}).title || '그룹 대화' : '';
     var h = '<div class="chead"><button class="btn back" id="dBack" type="button">←</button><strong>' + (grp ? esc(gtitle) + (c && c.members ? '<button type="button" class="org gmem" id="gMem">' + c.members.length + '명 ▾</button>' : '') : esc(w) + nickH(w) + (c && c.org ? '<span class="org">' + esc(c.org) + '</span>' : '')) + '</strong></div>';
@@ -1877,9 +2057,12 @@ body.hasfab main { padding-bottom: 110px; }
       var lastWho = '';
       h += '<div class="chat" id="chatBox">' + (c.msgs.length ? c.msgs.map(function (m) {
         var who = grp && !m.mine && m.who !== lastWho ? '<span class="bwho">' + (m.who === '손님 문의' ? '📩 ' : '') + esc(m.who) + nickH(m.who) + '</span>' : ''; lastWho = m.mine ? '' : m.who;
-        return '<div class="bub' + (m.mine ? ' me' : '') + (m.who === '손님 문의' ? ' inqm' : '') + '">' + who + '<div class="bt">' + esc(m.text) + '</div><span class="bat">' + esc(m.at.slice(5)) + (grp ? (m.mine && m.seen ? ' · 읽음 ' + m.seen : '') : (m.mine && m.read ? ' · 읽음' : '')) + '</span></div>';
+        var tk = '';
+        if (m.inq && m.take) tk = '<div class="itk done">✅ <b>' + esc(m.take.by) + nickH(m.take.by) + '</b> 받음 · 담당 ' + esc(m.take.st) + ' · ' + esc(md(m.take.day)) + '(' + dowOf(m.take.day) + ') ' + (m.take.fl === 'SPOT' ? '3층' : '2층') + ' 대기' + (m.take.mine ? ' <button type="button" class="link" data-iun="' + esc(m.id) + '">취소</button>' : '') + '</div>';
+        else if (m.inq && c.take && c.take.can) tk = '<div class="itk"><button type="button" class="btn btn-hot" data-itake="' + esc(m.id) + '">🙋 제가 받을게요</button></div>';
+        return '<div class="bub' + (m.mine ? ' me' : '') + (m.who === '손님 문의' ? ' inqm' : '') + '">' + who + '<div class="bt">' + esc(m.text) + '</div>' + tk + '<span class="bat">' + esc(m.at.slice(5)) + (grp ? (m.mine && m.seen ? ' · 읽음 ' + m.seen : '') : (m.mine && m.read ? ' · 읽음' : '')) + '</span></div>';
       }).join('') : '<p class="empty">첫 메시지를 보내 보세요.</p>') + '</div>';
-      if (c.sysNote) h += '<p class="note">📩 인스타·홈페이지 등으로 들어온 손님 문의가 영업팀 팀장 모두에게 동시에 와요. 손님에게는 연락처로 직접 연락하고, 여기에 \'제가 받을게요\'처럼 남기면 팀장끼리 봐요.</p>';
+      if (c.sysNote) h += '<p class="note">📩 인스타·홈페이지 등으로 들어온 손님 문의가 영업팀 팀장 모두에게 동시에 와요. \'🙋 제가 받을게요\'를 누르면 담당이 정해지고 그 날짜 테이블 대기에 바로 올라가요. 손님에게는 연락처로 직접 연락해 주세요.</p>';
       if (c.system) h += '<p class="note">📩 홈페이지·인스타로 들어온 손님 문의를 자동으로 전달한 메시지예요. 손님 연락처로 직접 연락해 주세요. (여기에는 답장할 수 없어요)</p>';
       else if (c.active === false) h += '<p class="note">지금은 메시지를 받을 수 없는 계정이에요.</p>';
       else h += '<form class="send" id="dForm" novalidate><textarea id="dText" rows="1" maxlength="1000" placeholder="메시지"></textarea><button class="btn btn-hot" id="dBtn" type="submit">보내기</button></form><p class="msg" id="dMsg" role="alert"></p>';
@@ -1887,6 +2070,15 @@ body.hasfab main { padding-bottom: 110px; }
     area.innerHTML = h;
     $('dBack').addEventListener('click', function () { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; render(); loadDm(); startPoll(loadDm, 20000); });
     if ($('gMem')) $('gMem').addEventListener('click', function () { state.grInfo = !state.grInfo; render(); });
+    area.querySelectorAll('[data-itake]').forEach(function (b) { b.addEventListener('click', function () { var m = c.msgs.filter(function (x) { return x.id === b.dataset.itake; })[0]; if (m) inqTakeSheet(c, m); }); });
+    area.querySelectorAll('[data-iun]').forEach(function (b) { b.addEventListener('click', function () {
+      if (!armed(b, '취소')) return; b.disabled = true;
+      call({ a: 'inq_untake', token: state.s.token, id: b.dataset.iun }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (r.ok) { state.chat = r; state.tb = null; render(); return; }
+        b.disabled = false; alertMsg(r.error === 'seated' ? '이미 자리에 앉은 손님이라 취소할 수 없어요. 테이블 현황에서 바꿔 주세요.' : '취소하지 못했어요.');
+      });
+    }); });
     function gEdit(body, done) {
       call(Object.assign({ a: 'gr_edit', token: state.s.token, id: w.slice(3) }, body)).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
@@ -2686,7 +2878,7 @@ body.hasfab main { padding-bottom: 110px; }
         { oldpw: '현재 비밀번호가 맞지 않아요.', pw: '새 비밀번호는 6~40자로 해 주세요.' });
     });
   }
-  $('meBtn').addEventListener('click', openMe);
+  $('meBtn').addEventListener('click', function () { if (state.data) goTab('me'); else openMe(); });   // 이름 → 👤 내 프로필 (출근·퇴근·내 현황 · 내 정보 바꾸기)
   function showSheet(html, plain) {
     var s = $('sheet');
     s.innerHTML = '<div class="sheet-in' + (plain ? ' plain' : '') + '">' + html + '<button class="btn" id="sheetX" type="button">닫기</button></div>';
