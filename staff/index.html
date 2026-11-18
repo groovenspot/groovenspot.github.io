@@ -903,6 +903,24 @@ body.hasfab main { padding-bottom: 110px; }
 .opc .ops2 .ok { color: var(--ok); font-weight: 800; }
 .opc .opb { display: flex; gap: 8px; flex-wrap: wrap; }
 .opc .opb .btn { width: auto; flex: none; min-height: 40px; }
+/* 🆘 긴급모집 (대표 요청 2026-11-19): 잘 보이게 빨간 깜빡임 */
+@keyframes urgbg { 0%, 100% { background: #3a0610; box-shadow: 0 0 0 0 rgba(255,59,92,.75); } 50% { background: #6a0b1f; box-shadow: 0 0 0 6px rgba(255,59,92,0); } }
+@keyframes urgring { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,59,92,.8); } 50% { box-shadow: 0 0 0 8px rgba(255,59,92,0); } }
+.btn.btn-urg { background: #e0203f; border-color: #ff8a9b; color: #fff; }
+.opc.urg { border: 2px solid #ff3b5c; animation: urgring 1.2s ease-in-out infinite; }
+.opc .opurg { margin: 0; color: #ff8a9b; font-size: 13px; font-weight: 800; }
+.chatpin { display: flex; flex-direction: column; gap: 6px; padding: 8px 12px 2px; max-height: 40%; overflow-y: auto; }
+.chatpin[hidden] { display: none; }
+.cpin { display: flex; align-items: center; gap: 8px; border: 2px solid #ff3b5c; border-radius: 12px; padding: 8px 10px; color: #ffd6dd; animation: urgbg 1.2s ease-in-out infinite; }
+.cpin > div { flex: 1; min-width: 0; font-size: 13px; line-height: 1.45; word-break: break-word; }
+.cpin b { color: #fff; font-size: 14px; }
+.cpin .cpn { color: #fff; font-weight: 900; }
+.cpin small { color: #ffb3c0; }
+.cpin button { flex: none; min-height: 38px; padding: 0 12px; border-radius: 999px; border: 0; background: #fff; color: #b0102c; font-weight: 900; font-size: 13px; cursor: pointer; }
+.cpin .cpme { flex: none; color: #9ff0c4; font-weight: 800; font-size: 12px; }
+.chatl .cm.urg > p { border: 2px solid #ff3b5c; animation: urgring 1.2s ease-in-out infinite; }
+.chatfab.urg { animation: urgring 1.2s ease-in-out infinite; background: #e0203f; color: #fff; }
+@media (prefers-reduced-motion: reduce) { .cpin, .opc.urg, .chatl .cm.urg > p, .chatfab.urg { animation: none; } }
 .opk, .opi, .opfl { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
 .opk .chip, .opi .chip, .opfl .chip { cursor: pointer; background: none; padding: 7px 12px; font-size: 14px; }
 .opk .chip.on, .opi .chip.on, .opfl .chip.on { background: var(--g); border-color: var(--g); color: #120800; }
@@ -1021,6 +1039,7 @@ body.hasfab main { padding-bottom: 110px; }
 <section class="chatbox" id="chatBox" hidden aria-label="대화">
   <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
   <div class="chathelp" id="chatHelp" hidden></div>
+  <div class="chatpin" id="chatPin" hidden aria-live="polite"></div>
   <div class="chatl" id="chatL"></div>
   <div class="chatat" id="chatAt" hidden></div>
   <div class="chatph" id="chatPh" hidden></div>
@@ -3728,7 +3747,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
   setInterval(function () { if (state.s && state.data && state.tab === 'ops' && !document.hidden && Date.now() - (state.opsAt || 0) > 4500) loadOps(true); }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'ops') loadOps(true); });
-  function opsErr(r) { return { kind: '종류를 골라 주세요.', empty: '무엇을 갖다 드릴지 골라 주세요.', seat: '자리를 확인해 주세요. (예: 4 · L3 · D1 · S5)', text: '< > 는 쓸 수 없어요.', n: '인원은 1~10명이에요.', busy: '잠시 후 다시 해 주세요.', full: '이미 인원이 다 찼어요.', forbidden: '권한이 없어요.', state: '취소된 요청이에요.', notfound: '없는 요청이에요.' }[r.error] || '다시 해 주세요.'; }
+  function opsErr(r) { return { kind: '종류를 골라 주세요.', empty: '무엇을 갖다 드릴지 골라 주세요.', seat: '자리를 확인해 주세요. (예: 4 · L3 · D1 · S5)', text: '< > 는 쓸 수 없어요.', n: '인원은 1~10명이에요.', busy: '잠시 후 다시 해 주세요.', full: '이미 인원이 다 찼어요.', forbidden: '권한이 없어요.', state: '취소된 요청이에요.', notfound: '없는 요청이에요.', soon: '방금 올렸어요. 1분 뒤에 다시 올릴 수 있어요.' }[r.error] || '다시 해 주세요.'; }
   function opsCall(body, btn, done) {
     if (btn) btn.disabled = true; body.token = state.s.token;
     return call(body).then(function (r) { if (btn) btn.disabled = false; if (r.error === 'auth') return toLogin(AUTH_OUT); if (r.ok) { state.ops = r; opsBadge(r); flushPush(); } if (done) done(r); }).catch(function () { if (btn) btn.disabled = false; if (done) done({ error: 'net' }); });
@@ -3741,10 +3760,13 @@ body.hasfab main { padding-bottom: 110px; }
     h += '<p class="msg ok" id="opBox"' + (state.opsMsg ? '' : ' hidden') + '>' + esc(state.opsMsg || '') + '</p>'; state.opsMsg = '';
     var card = function (x) {
       var who = x.took.map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ');
-      return '<div class="opc st-' + esc(x.status) + '" data-opid="' + esc(x.id) + '"><div class="oph"><span class="chip">' + esc(x.kind) + '</span><b>' + esc(opsWhere(x) || '자리 없음') + '</b><time>' + esc(x.hm) + '</time></div>' +
+      var urg = x.urgent && x.status === '대기', par = x.kind === '🎆 퍼레이드 지원' && x.status === '대기';
+      return '<div class="opc st-' + esc(x.status) + (urg ? ' urg' : '') + '" data-opid="' + esc(x.id) + '"><div class="oph"><span class="chip">' + esc(x.kind) + '</span><b>' + esc(opsWhere(x) || '자리 없음') + '</b><time>' + esc(x.hm) + '</time></div>' +
         (x.memo ? '<p class="opm">' + esc(x.memo) + '</p>' : '') +
         '<span class="ops2">요청 ' + esc(x.by) + nickH(x.by) + ' · ' + (x.status === '확정' ? '<span class="ok">✅ 담당 ' + who + '</span>' : x.status === '취소' ? '취소됨' : '담당 대기' + (x.took.length ? ' · ' + who : '')) + (x.need > 1 ? ' (' + x.took.length + '/' + x.need + '명)' : '') + '</span>' +
+        (urg ? '<p class="opurg">🆘 긴급모집 중 · 테이블 대화 맨 위에 고정 (' + esc(x.urgent.who) + ' ' + esc(x.urgent.hm) + ')</p>' : '') +
         '<div class="opb">' + (crew && x.status === '대기' && !x.me && !x.mine ? '<button class="btn btn-ok" type="button" data-optake="1">✅ 내가 할게요</button>' : '') +
+        (par ? '<button class="btn btn-urg" type="button" data-opurg="1">🆘 ' + (x.urgent ? '다시 긴급모집' : '긴급모집') + '</button>' : '') +
         (crew && x.me && x.status !== '취소' ? '<button class="btn" type="button" data-opun="1">담당 빼기</button>' : '') +
         ((x.mine || (state.s && state.s.admin)) && x.status !== '취소' ? '<button class="link" type="button" data-opcx="1">요청 취소</button>' : '') + '</div></div>';
     };
@@ -3756,6 +3778,7 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-opid]').forEach(function (c) {
       var id = c.dataset.opid;
       c.querySelectorAll('[data-optake],[data-opun]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_take', id: id, on: !b.dataset.opun }, b, function (r) { if (!r.ok) state.opsMsg = opsErr(r); else if (!b.dataset.opun) state.opsMsg = '맡았어요. 요청한 사람에게 알려요.'; render(); }); }); });
+      c.querySelectorAll('[data-opurg]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_urgent', id: id }, b, function (r) { state.opsMsg = r.ok ? '🆘 테이블 대화에 다시 올리고 맨 위에 고정했어요. 인원이 다 차면 풀려요.' : opsErr(r); render(); }); }); });
       c.querySelectorAll('[data-opcx]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '요청 취소')) return; opsCall({ a: 'ops_cancel', id: id }, b, function (r) { state.opsMsg = r.ok ? '요청을 취소했어요.' : opsErr(r); render(); }); }); });
     });
   }
@@ -4618,6 +4641,8 @@ body.hasfab main { padding-bottom: 110px; }
     }
     var seen = chatSeen(room), n = chatTail(room).filter(function (t) { return !t[1] && t[0] > seen; }).length;
     $('chatN').hidden = !n; $('chatN').textContent = n > 99 ? '99+' : n;
+    var urg = room === 'table' && (state.chatRoom === 'table' ? state.opsUrg : state.data && state.data.opsUrg) > 0;
+    fab.classList.toggle('urg', !!urg); fab.setAttribute('aria-label', urg ? '대화 · 🆘 긴급모집 중' : '대화');
   }
   function chatAck(id, p) {
     p.classList.add('acking');
@@ -4701,15 +4726,28 @@ body.hasfab main { padding-bottom: 110px; }
     bar.hidden = false; $('chatRepX').addEventListener('click', function () { chatReplyTo(null); });
     $('chatIn').focus();
   }
+  // 🆘 긴급모집: 인원이 다 찰 때까지 테이블 대화 맨 위에 고정 (대표 요청 2026-11-19)
+  function chatPin(p) {
+    var box = $('chatPin'), sig = JSON.stringify(p); state.opsUrg = p.length; paintChatFab();
+    if (box.dataset.sig === sig) return; box.dataset.sig = sig;
+    box.hidden = !p.length;
+    var guard = state.data && state.data.guard;
+    box.innerHTML = p.map(function (x) {
+      return '<div class="cpin"><div><b>🆘 긴급모집</b> · ' + esc(opsWhere(x) || '') + ' 🎆 퍼레이드 지원 <span class="cpn">' + x.took.length + '/' + x.need + '명</span>' + (x.memo ? '<br>' + esc(x.memo) : '') + (x.took.length ? '<br><small>✅ ' + x.took.map(function (k) { return esc(k.who); }).join(', ') + '</small>' : '') + '</div>' +
+        (x.me ? '<span class="cpme">✅ 내가 맡음</span>' : x.mine || guard ? '' : '<button type="button" data-cpin="' + esc(x.id) + '">✅ 내가 할게요</button>') + '</div>';
+    }).join('');
+    box.querySelectorAll('[data-cpin]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.cpin }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else { b.disabled = false; if (x.error === 'full') chatLoad(); } }).catch(function () { b.disabled = false; }); }); });
+  }
   function chatPaint(r, toEnd, force) {
     var L = $('chatL'), same = !force && state.chat && JSON.stringify(state.chat.list) === JSON.stringify(r.list);
     state.chat = r; state.chatTail = state.chatTail || {}; state.chatTail[r.room] = r.list.slice(-30).map(function (m) { return [m.at, m.mine ? 1 : 0]; });
     if (r.list.length) chatSeen(r.room, r.list[r.list.length - 1].at);
+    chatPin(r.room === 'table' ? r.pin || [] : []);
     if (same && !toEnd) return;
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '', ro = false;
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.sos ? '<em class="csos' + (m.sos.status === '해결' ? ' ok' : '') + '">🚨 경호 호출 · ' + (m.sos.status === '호출' ? '출동 대기' : m.sos.status === '출동' ? '🏃 출동 ' + esc(m.sos.go.map(function (k) { return k.who; }).join(', ')) : m.sos.status === '해결' ? '✅ 해결 ' + esc(m.sos.doneBy) + (m.sos.go.length ? ' · 출동 ' + esc(m.sos.go.map(function (k) { return k.who; }).join(', ')) : '') : '취소됨') + '</em>' : '') + (m.ops ? '<em class="cops' + (m.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(m.ops.kind) + ' · ' + (m.ops.status === '확정' ? '✅ 담당 ' + esc(m.ops.took.map(function (k) { return k.who; }).join(', ')) : m.ops.status === '취소' ? '취소됨' : '운영팀 확인 대기' + (m.ops.need > 1 ? ' (' + m.ops.took.length + '/' + m.ops.need + ')' : '')) + '</em>' + (m.ops.status === '대기' && !m.ops.me && !m.ops.mine && opsCrewMe() ? '<button type="button" class="copsb" data-copst="' + esc(m.ops.id) + '">✅ 내가 할게요</button>' : '') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.req === '🆘긴급모집' && m.ops && m.ops.status === '대기' ? ' urg' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.sos ? '<em class="csos' + (m.sos.status === '해결' ? ' ok' : '') + '">🚨 경호 호출 · ' + (m.sos.status === '호출' ? '출동 대기' : m.sos.status === '출동' ? '🏃 출동 ' + esc(m.sos.go.map(function (k) { return k.who; }).join(', ')) : m.sos.status === '해결' ? '✅ 해결 ' + esc(m.sos.doneBy) + (m.sos.go.length ? ' · 출동 ' + esc(m.sos.go.map(function (k) { return k.who; }).join(', ')) : '') : '취소됨') + '</em>' : '') + (m.ops ? '<em class="cops' + (m.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(m.ops.kind) + ' · ' + (m.ops.status === '확정' ? '✅ 담당 ' + esc(m.ops.took.map(function (k) { return k.who; }).join(', ')) : m.ops.status === '취소' ? '취소됨' : '운영팀 확인 대기' + (m.ops.need > 1 ? ' (' + m.ops.took.length + '/' + m.ops.need + ')' : '')) + '</em>' + (m.ops.status === '대기' && !m.ops.me && !m.ops.mine && opsCrewMe() ? '<button type="button" class="copsb" data-copst="' + esc(m.ops.id) + '">✅ 내가 할게요</button>' : '') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
     L.innerHTML = h ? (ro ? '' : '<p class="chint">두 번 누르면 ✅ 확인 · 꾹 누르면 ↩️ 답장</p>') + h : '<p class="cempty">아직 대화가 없어요.' + (ro ? '' : ' 첫 메시지를 남겨 보세요.') + '</p>';
     hydrateImgs(L);
