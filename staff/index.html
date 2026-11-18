@@ -714,6 +714,7 @@ body.hasfab main { padding-bottom: 110px; }
 .tbt.tbm b { font-size: 13px; line-height: 1.2; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .tbt.tbm span { font-size: 11px; line-height: 1.15; white-space: nowrap; }
 .tbt.tbm em { display: none; }
+.tbmode { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 10px; } .tbmode .tbvw { margin: 0; } .tbmode small { color: var(--muted); font-size: 12px; } .tbmode .link { font-size: 12px; padding: 0; }
 .tbt.tbm small { display: block; font-size: 10.5px; line-height: 1.15; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }   /* 도면에도 담당 이름 늘 (대표 요청 2026-11-18) */
 .tbt.tbm.rd small { font-size: 10px; }
 .tbt.tbm .tbmore { display: block; top: 1px; right: 3px; font-size: 9px; }
@@ -4337,7 +4338,11 @@ body.hasfab main { padding-bottom: 110px; }
       zl: [['H · 혼술바존', 10, 94], ['주말 · 메인바 앞', 690, 314, 1]],
       seats: { '2': [380, 22, 70, 75], '3': [456, 22, 70, 75], '4': [532, 22, 70, 75], '5': [608, 22, 70, 75], '6': [684, 22, 70, 75], '7': [860, 22, 70, 75], '1': [418, 340, 76, 80],
         S3: [476, 135, 'r'], S4: [538, 135, 'r'], S5: [600, 135, 'r'], S6: [662, 135, 'r'],
-        S1: [444, 205, 'r'], S2: [506, 205, 'r'], S7: [610, 205, 'r'], S8: [672, 205, 'r'], S9: [734, 205, 'r'] } }
+        S1: [444, 205, 'r'], S2: [506, 205, 'r'], S7: [610, 205, 'r'], S8: [672, 205, 'r'], S9: [734, 205, 'r'] },
+      // 평일(일~목) 2층 (대표 그림 2026-11-18): 윗줄 S4~S7, 아랫줄 S1~S3 · (사이) · S8~S10, S1~S3 아래 D5. 동그라미 지름 52
+      wd: { S4: [490, 135, 'r', 52], S5: [552, 135, 'r', 52], S6: [614, 135, 'r', 52], S7: [676, 135, 'r', 52],
+        S1: [428, 205, 'r', 52], S2: [484, 205, 'r', 52], S3: [540, 205, 'r', 52], S8: [626, 205, 'r', 52], S9: [682, 205, 'r', 52], S10: [738, 205, 'r', 52],
+        D5: [420, 245, 94, 85] } }
   };
   (function () {
     var S = TB_MAP.SPOT.seats, G = TB_MAP.GROOVE.seats, i;
@@ -4346,7 +4351,7 @@ body.hasfab main { padding-bottom: 110px; }
     for (i = 0; i < 5; i++) S['V' + (i + 1)] = [10 + i * 57, 22, 52, 64];                       // 바
     for (i = 0; i < 9; i++) S['B' + (i + 1)] = [756 + (i % 3) * 60, 150 + Math.floor(i / 3) * 80, 56, 70];   // 메인바 3×3
     // GROOVE H: 4줄 × 8칸
-    [[25, 26, 27, 28, 29, 30, 31, 32], [24, 23, 22, 21, 20, 19, 18, 17], [9, 10, 11, 12, 13, 14, 15, 16], [8, 7, 6, 5, 4, 3, 2, 1]].forEach(function (r, y) { r.forEach(function (n, x) { G['H' + n] = [10 + x * 50, 110 + y * 81, 46, 75]; }); });
+    [[25, 26, 27, 28, 29, 30, 31, 32], [24, 23, 22, 21, 20, 19, 18, 17], [9, 10, 11, 12, 13, 14, 15, 16], [8, 7, 6, 5, 4, 3, 2, 1]].forEach(function (r, y) { r.forEach(function (n, x) { G['H' + n] = [10 + x * 48, 110 + y * 81, 44, 75]; }); });   // 칸 48 (평일 S1 자리 비움)
     // GROOVE L (운영팀 김경철 2026-11-18): 네 묶음 — 위 L1·2·3 / L6·7 / L10·11 / L14·15, 아래 L4·5 / L8·9 / L12·13 (각각 위 묶음 밑)
     [[[1, 2, 3]], [[6, 7], [4, 5]], [[10, 11], [8, 9]], [[14, 15], [12, 13]]].reduce(function (x0, g) {
       g.forEach(function (row, y) { row.forEach(function (n, x) { G['L' + n] = [x0 + x * 48, 176 + y * 66, 44, 60]; }); });
@@ -4364,10 +4369,10 @@ body.hasfab main { padding-bottom: 110px; }
     var h = '<div class="tbmapw"><div class="tbmap" style="width:max(100%,' + m.w + 'px);aspect-ratio:' + m.w + '/' + m.h + '">';
     m.lm.concat(show ? [] : m.wkoff).forEach(function (l) { h += '<div class="lm' + (l[5] ? ' ' + l[5] : '') + '" style="' + box(l[1], l[2], l[3], l[4]) + '">' + esc(l[0]) + '</div>'; });
     m.zl.forEach(function (z) { if (z[3] && !show) return; h += '<div class="zl" style="left:' + pct(z[1], m.w) + ';top:' + pct(z[2], m.h) + '">' + esc(z[0]) + '</div>'; });
-    var known = {};
+    var known = {}, seats = m.wd && state.tb && !state.tb.weekend ? Object.assign({}, m.seats, m.wd) : m.seats;   // 평일 배치가 따로 있는 층(2층)
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !show) return; z.rows.forEach(function (r) { r.forEach(function (sid) {
-      var p = m.seats[sid]; if (!p) return; known[sid] = 1;
-      var rect = p[2] === 'r' ? [p[0] - 30, p[1] - 30, 60, 60] : p;
+      var p = seats[sid]; if (!p) return; known[sid] = 1;
+      var d = p[3] || 60, rect = p[2] === 'r' ? [p[0] - d / 2, p[1] - d / 2, d, d] : p;
       h += tbTile(sid, ix.at[sid], { style: box(rect[0], rect[1], rect[2], rect[3]), round: p[2] === 'r', wk: !!wk[sid] });
     }); }); });
     h += '</div></div>';
@@ -4385,8 +4390,11 @@ body.hasfab main { padding-bottom: 110px; }
     state.tbFloor = fl;
     var used = 0, total = 0;
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !tbShowWeekend()) return; z.rows.forEach(function (row) { row.forEach(function (s) { total++; if (ix.at[s] && !ix.at[s][0].ghost) used++; }); }); });
-    var h = '<div class="tbh"><div><h1>🪑 테이블 현황</h1><p class="sub">' + esc(tbDayLabel(t.day)) + ' · 오늘 · ' + esc(fl) + ' ' + used + '/' + total + '</p></div></div>';   // 당일 것만 (대표 결정 2026-11-18)
+    var h = '<div class="tbh"><div><h1>🪑 테이블 현황</h1><p class="sub">' + esc(tbDayLabel(t.day)) + ' · 오늘 · ' + esc(fl) + ' ' + used + '/' + total + (t.mode ? ' · ' + (t.mode.cur === 'we' ? '주말' : '평일') + ' 배치' : '') + '</p></div></div>';   // 당일 것만 (대표 결정 2026-11-18)
     h += '<div class="tbfl">' + (t.floors || []).map(function (f) { return '<button type="button" data-tbf="' + esc(f.id) + '" aria-pressed="' + (f.id === fl) + '">' + esc(f.name) + ' <small>' + esc(f.floor) + '</small></button>'; }).join('') + '</div>';
+    // 📅 평일·주말 배치 (대표·김동기·양진호, 2026-11-18): 안 누르면 요일대로 (일~목 평일 · 금·토 주말)
+    if (t.mode && t.mode.can) h += '<div class="tbmode"><div class="tbvw" role="group" aria-label="배치"><button type="button" data-tbmode="wd" aria-pressed="' + (t.mode.cur === 'wd') + '">📅 평일</button><button type="button" data-tbmode="we" aria-pressed="' + (t.mode.cur === 'we') + '">🎉 주말</button></div>' +
+      '<small>' + (t.mode.set ? '오늘 ' + esc(t.mode.by) + '님이 정함 · <button type="button" class="link" data-tbmode="auto">요일대로</button>' : '요일대로 (일~목 평일 · 금·토 주말)') + '</small></div>';
     if (!t.view) h += viewOnlyBar();   // 출근 전: 보기만
     h += '<p class="msg ok" id="tbBox"' + (state.tbMsg ? '' : ' hidden') + '>' + esc(state.tbMsg || '') + '</p>'; state.tbMsg = '';
     var pend = t.rows.filter(function (r) { return r.status === '대기'; });
@@ -4432,6 +4440,16 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tbErr) h += '<p class="msg">' + esc(state.tbErr) + '</p>';
     area.innerHTML = h;
     bindViewOnly(area);
+    area.querySelectorAll('[data-tbmode]').forEach(function (b) { b.addEventListener('click', function () {
+      if (b.getAttribute('aria-pressed') === 'true') return;
+      b.disabled = true;
+      tbCall({ a: 'tb_mode', mode: b.dataset.tbmode }, function (r) {
+        b.disabled = false;
+        if (r.ok) { state.tbMsg = (r.mode.cur === 'we' ? '🎉 주말' : '📅 평일') + ' 배치로 바꿨어요' + (b.dataset.tbmode === 'auto' ? ' (요일대로)' : '') + '.'; render(); return; }
+        alertMsg(r.error === 'busy' ? '평일 자리(' + (r.seats || []).join('·') + ')에 손님이 있어서 주말로 못 바꿔요. 먼저 옮겨 주세요.' : r.error === 'forbidden' ? '대표·김동기·양진호만 바꿀 수 있어요.' : '바꾸지 못했어요. 다시 해 주세요.');
+        var m = $('tbBox'); if (m) { m.hidden = false; m.className = 'msg'; m.textContent = r.error === 'busy' ? '평일 자리(' + (r.seats || []).join('·') + ')에 손님이 있어서 주말로 못 바꿔요. 먼저 옮겨 주세요.' : '바꾸지 못했어요.'; }
+      });
+    }); });
     area.querySelectorAll('[data-tbf]').forEach(function (b) { b.addEventListener('click', function () { state.tbFloor = b.dataset.tbf; try { localStorage.setItem('gs_tb_floor', state.tbFloor); } catch (e) {} render(); }); });
     area.querySelectorAll('[data-seat]').forEach(function (b) { b.addEventListener('click', function () { var l = ix.at[b.dataset.seat], r = l && l[0]; tbOpen(r && r.ghost ? r.ghost : r || null, b.dataset.seat); }); });
     area.querySelectorAll('[data-tbid]').forEach(function (b) { b.addEventListener('click', function () { tbOpen(tbFind(b.dataset.tbid), ''); }); });
