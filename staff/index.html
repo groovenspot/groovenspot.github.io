@@ -3907,13 +3907,14 @@ body.popmode .chath .chpop { display: none; }
     var h = '<h2>🚨 경호 호출</h2><p class="sub">출근 중인 경호팀 전원에게 바로 알림이 가요.</p>' +
       '<div class="sosk">' + SOS_KINDS.map(function (k) { return '<button type="button" class="chip' + (k === kind ? ' on' : '') + '" data-sosk="' + esc(k) + '">' + esc(k) + '</button>'; }).join('') + '</div>' +
       '<div class="sosf">' + [['SPOT', '3층 SPOT'], ['GROOVE', '2층 GROOVE'], ['입구', '입구'], ['', '모름']].map(function (x) { return '<button type="button" class="chip' + (x[0] === fl ? ' on' : '') + '" data-sosf="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      '<label>자리<input id="sosSeat" maxlength="20" autocomplete="off" placeholder="예) 4 · L3 · 흡연실 앞 · 아무 말이나 (모르면 비워 두기)"></label>' +
+      '<label>자리<input id="sosSeat" maxlength="20" autocomplete="off" placeholder="예) 1 · ㅅ1 · 엘4 · 흡연실 앞 · 아무 말이나 (모르면 비워 두기)"></label><div class="tbsx tbpick" id="sosSeatP"></div>' +
       '<label>메모<input id="sosMemo" maxlength="100" autocomplete="off" value="' + esc(t.slice(0, 100)) + '" placeholder="예) 남자 둘 시비 · 화장실 앞"></label>' +
       '<p class="msg" id="sosMsg"></p><div id="sosGo"><button class="btn btn-sos" type="button" id="sosSend" style="width:100%;min-height:54px;font-size:18px">🚨 경호팀 부르기</button></div>';
     showSheet(h);
     var sh = $('sheet');
     sh.querySelectorAll('[data-sosk]').forEach(function (b) { b.addEventListener('click', function () { kind = b.dataset.sosk; $('sosMsg').textContent = ''; sh.querySelectorAll('[data-sosk]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
-    sh.querySelectorAll('[data-sosf]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.sosf; sh.querySelectorAll('[data-sosf]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
+    var sosSP = seatHelp($('sosSeat'), $('sosSeatP'), function () { return fl === 'SPOT' || fl === 'GROOVE' ? fl : ''; });
+    sh.querySelectorAll('[data-sosf]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.sosf; sh.querySelectorAll('[data-sosf]').forEach(function (x) { x.classList.toggle('on', x === b); }); if (sosSP) sosSP(true); }); });
     call({ a: 'sos_get', token: state.s.token }).then(function (r) { if (r.ok) state.sosCrew = r.crew; }).catch(function () {});
     $('sosSend').addEventListener('click', function () {   // 한 번 더 확인 (대표 요청 2026-11-19)
       if (!kind) { $('sosMsg').textContent = '상황을 골라 주세요.'; return; }
@@ -4096,7 +4097,7 @@ body.popmode .chath .chpop { display: none; }
       '<div class="opk">' + O.kinds.map(function (k) { return '<button type="button" class="chip" data-opk="' + esc(k) + '">' + esc(k) + '</button>'; }).join('') + '</div>' +
       '<div class="opi" id="opI" hidden></div>' +
       '<div class="opfl">' + [['SPOT', '3층 SPOT'], ['GROOVE', '2층 GROOVE'], ['', '층 없음']].map(function (x) { return '<button type="button" class="chip' + (x[0] === fl ? ' on' : '') + '" data-opfl="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      '<label>자리<input id="opSeat" maxlength="20" autocomplete="off" placeholder="예) 4 · L3 · D1 · 바 옆 (비우면 층 전체)"></label>' +
+      '<label>자리<input id="opSeat" maxlength="20" autocomplete="off" placeholder="예) 1 · ㅅ1 · 엘4 · 바 옆 (비우면 층 전체)"></label><div class="tbsx tbpick" id="opSeatP"></div>' +
       '<div class="opn"><span>인원</span><button type="button" class="chip" data-opn="-1" aria-label="인원 빼기">−</button><b id="opN">1</b>명<button type="button" class="chip" data-opn="1" aria-label="인원 더하기">＋</button><span class="sub" style="margin:0">운영팀이 이만큼 맡으면 닫혀요</span></div>' +
       '<label>메모<input id="opMemo" maxlength="100" autocomplete="off" placeholder="예) 버켓 2개 · 3-10 생일 퍼레이드"></label>' +
       '<p class="msg" id="opMsg"></p><button class="btn btn-hot" type="button" id="opSave">운영팀에게 보내기</button>';
@@ -4110,7 +4111,8 @@ body.popmode .chath .chpop { display: none; }
       box.querySelectorAll('[data-opi]').forEach(function (c) { c.addEventListener('click', function () { var k = c.dataset.opi, i = items.indexOf(k); if (i >= 0) items.splice(i, 1); else items.push(k); c.classList.toggle('on', i < 0); }); });
       if (kind === '🎆 퍼레이드 지원' && n < 2) { n = 2; $('opN').textContent = n; }
     }); });
-    sh.querySelectorAll('[data-opfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.opfl; sh.querySelectorAll('[data-opfl]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
+    var opSP = seatHelp($('opSeat'), $('opSeatP'), function () { return fl; });   // 자리 치면 뜨는 버튼 (대표 요청 2026-11-19 새벽)
+    sh.querySelectorAll('[data-opfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.opfl; sh.querySelectorAll('[data-opfl]').forEach(function (x) { x.classList.toggle('on', x === b); }); if (opSP) opSP(true); }); });
     sh.querySelectorAll('[data-opn]').forEach(function (b) { b.addEventListener('click', function () { n = Math.max(1, Math.min(10, n + +b.dataset.opn)); $('opN').textContent = n; }); });
     $('opSave').addEventListener('click', function () {
       var m = $('opMsg'), seat = $('opSeat').value.trim();
@@ -5660,6 +5662,26 @@ body.popmode .chath .chpop { display: none; }
     var k = tbSeatQ(q); if (!k) return [];
     return list.filter(function (x) { if (!x) return false; var u = x.toUpperCase(); return u.indexOf(k) === 0 || (/^\d+$/.test(k) && u.replace(/^[A-Z]+/, '').indexOf(k) === 0); })
       .sort(function (a, b) { var A = a.toUpperCase() === k ? 0 : 1, B = b.toUpperCase() === k ? 0 : 1; return A - B || a.length - b.length; });
+  }
+  // 층 자리 목록 (테이블 현황 → 없으면 연출 데이터)
+  function floorSeats(fl) {
+    var out = [], f = state.tb && (state.tb.floors || []).filter(function (x) { return x.id === fl; })[0];
+    if (f) f.zones.forEach(function (z) { z.rows.forEach(function (r) { r.forEach(function (q) { out.push(q); }); }); });
+    if (!out.length && state.yc) { var g = (state.yc.floors || []).filter(function (x) { return x.id === fl; })[0]; if (g) out = g.seats.slice(); }
+    return out;
+  }
+  // 아무 말이나 쓰는 자리 칸(🛎 운영 요청·🚨 경호 호출)에도: 숫자·글자·초성 치면 그 층 자리 버튼 (눌러도 되고 그냥 써도 됨)
+  function seatHelp(inp, box, getFl) {
+    if (!inp || !box) return;
+    if (!state.tb && !state.tbFly) try { var lp = loadTb(true); if (lp && lp.then) lp.then(function () { if (inp.value.trim() && document.body.contains(inp)) paint(true); }); } catch (e) {}
+    function paint(show) {
+      var fl = getFl(), q = inp.value.trim(), hits = show && q && fl ? tbSeatHits(floorSeats(fl), q).slice(0, 16) : [];
+      box.innerHTML = hits.map(function (x) { return '<button type="button" class="chip" data-shp="' + esc(x) + '">' + esc(x) + '</button>'; }).join('');
+      box.querySelectorAll('[data-shp]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () { inp.value = b.dataset.shp; paint(false); }); });
+      if (hits.length) try { box.scrollIntoView({ block: 'nearest' }); } catch (e) {}
+    }
+    inp.addEventListener('input', function () { paint(true); });
+    return paint;
   }
   // 카톡용 복사: 지금 쓰는 표 모양 그대로 (승인된 것만)
   function tbText(fl) {
