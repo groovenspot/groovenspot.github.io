@@ -721,6 +721,9 @@ body.hasfab main { padding-bottom: 110px; }
 .tbmap .lm.thin { border-radius: 4px; background: #2a2416; border-color: #4a3d20; }
 .tbmap .lm.room { background: none; border: 1px dashed #34343c; }
 .tbmap .lm.st { background: repeating-linear-gradient(0deg, #2b1a0e 0 6px, #3a2412 6px 9px); border-color: #5a3418; color: #ff9a4a; writing-mode: vertical-rl; }
+.tbmapw.vert { overflow-x: hidden; }
+.tbmap.vert { margin: 0 auto; }
+.tbmap .lm.vt, .tbmap .zl.vt { writing-mode: vertical-rl; letter-spacing: .1em; }
 .tbmap .zl { position: absolute; font-size: 10px; font-weight: 800; color: #6d6d78; pointer-events: none; }
 .tbt.tbm { position: absolute; min-height: 0; padding: 4px 6px; border-radius: 10px; gap: 0; justify-content: flex-start; }
 .tbt.tbm.rd { border-radius: 50%; align-items: center; justify-content: center; text-align: center; padding: 2px; }
@@ -3778,7 +3781,7 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-opid]').forEach(function (c) {
       var id = c.dataset.opid;
       c.querySelectorAll('[data-optake],[data-opun]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_take', id: id, on: !b.dataset.opun }, b, function (r) { if (!r.ok) state.opsMsg = opsErr(r); else if (!b.dataset.opun) state.opsMsg = '맡았어요. 요청한 사람에게 알려요.'; render(); }); }); });
-      c.querySelectorAll('[data-opurg]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_urgent', id: id }, b, function (r) { state.opsMsg = r.ok ? '🆘 테이블 대화에 다시 올리고 맨 위에 고정했어요. 인원이 다 차면 풀려요.' : opsErr(r); render(); }); }); });
+      c.querySelectorAll('[data-opurg]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_urgent', id: id }, b, function (r) { state.opsMsg = r.ok ? '🆘 테이블 대화에 다시 올리고 맨 위에 고정했어요. 운영팀·영업진 전체에게 알렸어요. 인원이 다 차면 풀려요.' : opsErr(r); render(); }); }); });
       c.querySelectorAll('[data-opcx]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '요청 취소')) return; opsCall({ a: 'ops_cancel', id: id }, b, function (r) { state.opsMsg = r.ok ? '요청을 취소했어요.' : opsErr(r); render(); }); }); });
     });
   }
@@ -4870,16 +4873,31 @@ body.hasfab main { padding-bottom: 110px; }
     }, 772);
     for (i = 0; i < 6; i++) G['B' + (6 - i)] = [690 + i * 62, 330, 56, 64];   // 메인바 앞: 왼쪽부터 B6 → B1 (대표 확인 2026-11-18)
   })();
-  function tbView() { if (!state.tbView) { try { state.tbView = localStorage.getItem('gs_tb_view'); } catch (e) {} } return state.tbView === 'list' ? 'list' : 'map'; }
+  // 👤 도면 보기 가로(map)·세로(vmap)·목록(list): 사람마다 계정에 저장 (대표 요청 2026-11-19)
+  function tbView() {
+    var me = state.s && state.s.name, v = (state.tbViewWho === me && state.tbView) || (state.data && state.data.pref && state.data.pref.tbView);
+    if (!v) { try { v = localStorage.getItem('gs_tb_view'); } catch (e) {} }
+    return v === 'list' || v === 'vmap' ? v : 'map';
+  }
+  function tbViewSet(v) {
+    state.tbView = v; state.tbViewWho = state.s && state.s.name; try { localStorage.setItem('gs_tb_view', v); } catch (e) {}
+    if (state.data) { state.data.pref = Object.assign({}, state.data.pref || {}, { tbView: v }); saveData(state.data); }
+    if (state.s) call({ a: 'me_pref', token: state.s.token, k: 'tbView', v: v }).catch(function () {});
+  }
+  function tbVZoom(W) { var cw = Math.min(1280, (document.documentElement.clientWidth || window.innerWidth) - 24); return Math.min(1, Math.max(.45, cw / W)); }
+  window.addEventListener('resize', function () { document.querySelectorAll('.tbmap.vert').forEach(function (m) { m.style.zoom = tbVZoom(+m.dataset.w); }); });
   function tbMapHtml(fl, ix) {
     var m = TB_MAP[fl]; if (!m) return '';
     var wk = {}, show = tbShowWeekend();
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend) z.rows.forEach(function (r) { r.forEach(function (x) { wk[x] = 1; }); }); });
+    // ↕ 세로: 도면을 시계 방향으로 90° 돌려서 폰 폭에 맞춤 (왼쪽 → 위, 위쪽 → 오른쪽)
+    var vert = tbView() === 'vmap', W = vert ? m.h : m.w, H = vert ? m.w : m.h;
     function pct(x, w) { return (x / w * 100).toFixed(3) + '%'; }
-    function box(x, y, w, h) { return 'left:' + pct(x, m.w) + ';top:' + pct(y, m.h) + ';width:' + pct(w, m.w) + ';height:' + pct(h, m.h); }
-    var h = '<div class="tbmapw"><div class="tbmap" style="width:max(100%,' + m.w + 'px);aspect-ratio:' + m.w + '/' + m.h + '">';
-    m.lm.concat(show ? [] : m.wkoff).forEach(function (l) { h += '<div class="lm' + (l[5] ? ' ' + l[5] : '') + '" style="' + box(l[1], l[2], l[3], l[4]) + '">' + esc(l[0]) + '</div>'; });
-    m.zl.forEach(function (z) { if (z[3] && !show) return; h += '<div class="zl" style="left:' + pct(z[1], m.w) + ';top:' + pct(z[2], m.h) + '">' + esc(z[0]) + '</div>'; });
+    function rot(x, y, w, h) { return vert ? [m.h - y - h, x, h, w] : [x, y, w, h]; }
+    function box(x, y, w, h) { var r = rot(x, y, w, h); return 'left:' + pct(r[0], W) + ';top:' + pct(r[1], H) + ';width:' + pct(r[2], W) + ';height:' + pct(r[3], H); }
+    var h = '<div class="tbmapw' + (vert ? ' vert' : '') + '"><div class="tbmap' + (vert ? ' vert' : '') + '" data-w="' + W + '" style="' + (vert ? 'width:' + W + 'px;zoom:' + tbVZoom(W) : 'width:max(100%,' + m.w + 'px)') + ';aspect-ratio:' + W + '/' + H + '">';
+    m.lm.concat(show ? [] : m.wkoff).forEach(function (l) { var tall = vert && l[3] > l[4] * 1.6; h += '<div class="lm' + (l[5] ? ' ' + l[5] : '') + (tall ? ' vt' : '') + '" style="' + box(l[1], l[2], l[3], l[4]) + '">' + esc(l[0]) + '</div>'; });
+    m.zl.forEach(function (z) { if (z[3] && !show) return; h += '<div class="zl' + (vert ? ' vt' : '') + '" style="left:' + pct(vert ? m.h - z[2] - 13 : z[1], W) + ';top:' + pct(vert ? z[1] : z[2], H) + '">' + esc(z[0]) + '</div>'; });
     var known = {}, seats = m.wd && state.tb && !state.tb.weekend ? Object.assign({}, m.seats, m.wd) : m.seats;   // 평일 배치가 따로 있는 층(2층)
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !show) return; z.rows.forEach(function (r) { r.forEach(function (sid) {
       var p = seats[sid]; if (!p) return; known[sid] = 1;
@@ -4922,7 +4940,7 @@ body.hasfab main { padding-bottom: 110px; }
     h += '<div class="tbtools">' + (edit ? '<button class="btn btn-hot" type="button" id="tbAdd">+ 손님 넣기</button>' : '') + '<button class="btn" type="button" id="tbCopy">📋 카톡용 복사</button>' +
       (t.grantor ? '<button class="btn" type="button" id="tbGrant">👥 승인 권한' + (gOn ? ' ' + gOn + '명' : '') + '</button>' : '') + '</div>';
     var view = tbView();
-    h += '<div class="tbvw" role="group" aria-label="보기"><button type="button" data-tbv="map" aria-pressed="' + (view === 'map') + '">🗺 도면</button><button type="button" data-tbv="list" aria-pressed="' + (view === 'list') + '">☰ 목록</button></div>';
+    h += '<div class="tbvw" role="group" aria-label="보기 (내 계정에 저장)"><button type="button" data-tbv="map" aria-pressed="' + (view === 'map') + '">↔ 가로</button><button type="button" data-tbv="vmap" aria-pressed="' + (view === 'vmap') + '">↕ 세로</button><button type="button" data-tbv="list" aria-pressed="' + (view === 'list') + '">☰ 목록</button></div>';
     // 🟢 빈 자리 안내 + 빠 확장 버튼
     var emp = [], fz = tbFloorOf(fl), extZ = fz ? fz.zones.filter(function (z) { return z.ext; }) : [];
     tbSeatsOf(fl).forEach(function (z) { var e = []; z.rows.forEach(function (row) { row.forEach(function (x) { if (!ix.at[x]) e.push(x); }); }); if (e.length) emp.push([z.name, e]); });
@@ -4933,7 +4951,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (!tbExtOn(fl)) h += '<button class="btn" type="button" id="tbExt" style="width:100%;margin:0 0 10px">➕ 빠 확장 (' + rng + ')</button>';
       else if (!tbExtUsed(fl)) h += '<button class="btn" type="button" id="tbExtOff" style="width:100%;margin:0 0 10px">➖ 빠 확장 닫기 (' + rng + ')</button>';
     }
-    if (view === 'map') h += tbMapHtml(fl, ix);
+    if (view !== 'list') h += tbMapHtml(fl, ix);
     else tbSeatsOf(fl).forEach(function (z) {
       if (z.weekend && !tbShowWeekend()) return;
       h += '<h2 class="sec tbz">' + esc(z.name) + (z.weekend ? ' <span class="chip">주말</span>' : '') + '</h2>';
@@ -4969,7 +4987,7 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-tbedit]').forEach(function (b) { b.addEventListener('click', function () { var r = tbFind(b.dataset.tbedit); tbOpen(r, r && (r.req || r.cur) ? (r.req || r.cur).seat : ''); }); });
     if ($('tbOkAll')) $('tbOkAll').addEventListener('click', function () { if (!armed(this, '모두 승인')) return; tbJudge(pend.map(function (r) { return r.id; }), true, '', this); });
     if ($('tbAdd')) $('tbAdd').addEventListener('click', function () { tbOpen(null, ''); });
-    area.querySelectorAll('[data-tbv]').forEach(function (b) { b.addEventListener('click', function () { state.tbView = b.dataset.tbv; try { localStorage.setItem('gs_tb_view', state.tbView); } catch (e) {} render(); }); });
+    area.querySelectorAll('[data-tbv]').forEach(function (b) { b.addEventListener('click', function () { tbViewSet(b.dataset.tbv); render(); }); });
     $('tbCopy').addEventListener('click', tbCopy);
     if ($('tbGrant')) $('tbGrant').addEventListener('click', tbGrantSheet);
     area.querySelectorAll('[data-eseat]').forEach(function (b) { b.addEventListener('click', function () { tbOpen(null, b.dataset.eseat); }); });
