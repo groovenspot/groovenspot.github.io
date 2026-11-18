@@ -11,6 +11,7 @@
 <link rel="manifest" href="/staff/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/staff/icon-192.png">
 <meta name="theme-color" content="#0a0909">
+<script>/* 🎨 화면 배경: 이 기기에 기억한 색을 그리기 전에 바로 (로그인·목록 전) */ try { if (localStorage.getItem('gs_theme') === 'light') { document.documentElement.dataset.theme = 'light'; document.querySelector('meta[name="theme-color"]').content = '#ffffff'; } } catch (e) {}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -23,6 +24,74 @@
   --body: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
   color-scheme: dark;
 }
+/* 🎨 ⚪ 흰색 화면 (직원 요청 2026-11-19: 폰 밝기를 낮추면 검정 화면이 잘 안 보임) — 👤 내 프로필 → 🎨 화면 배경. <html data-theme="light"> 일 때만 바뀌고 ⚫ 검정 화면은 그대로.
+   덮어쓰기는 html:where(...) 로 원래 규칙보다 아주 조금만 세게 → .on .ok .me 같은 상태 규칙은 그대로 이긴다. 🚨 경호·🆘 긴급 빨간 줄, 🌙 영업종료 화면, 사진·영상 바탕(검정)은 일부러 그대로. */
+html[data-theme="light"] {
+  --bg: #f3f1ef; --card: #ffffff; --card-2: #eeeae7; --line: rgba(0,0,0,.11); --line-2: rgba(0,0,0,.2);
+  --txt: #1a1614; --muted: #5d5551; --g-ink: #b03a08; --s: #7c3aed; --ok: #0a7447; --warn: #985500; --bad: #c40e36;
+  --silver: #c9d0da;
+  color-scheme: light;
+}
+.thm { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 8px 8px 8px 14px; margin: 0 0 14px; }
+.thm b { font-size: 15px; } .thm small { display: block; color: var(--muted); font-size: 12px; font-weight: 600; }
+.thseg { display: inline-grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 3px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); }
+.thseg button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-weight: 800; font-size: 14px; cursor: pointer; white-space: nowrap; }
+.thseg button[aria-pressed="true"] { background: var(--g); color: #120800; }
+html:where([data-theme="light"]) .brand b, html:where([data-theme="light"]) .tabs button[aria-selected="true"], html:where([data-theme="light"]) .chip.k-회의, html:where([data-theme="light"]) .it b, html:where([data-theme="light"]) .bteams button[aria-pressed="true"], html:where([data-theme="light"]) .gmem, html:where([data-theme="light"]) .org, html:where([data-theme="light"]) .decsug button:first-child, html:where([data-theme="light"]) .chatat button:first-child, html:where([data-theme="light"]) .chatrep b, html:where([data-theme="light"]) .lvc .lvh .org, html:where([data-theme="light"]) .me-card b, html:where([data-theme="light"]) .glive .glh .gls, html:where([data-theme="light"]) .goffer .gof-t, html:where([data-theme="light"]) .chip.r-live, html:where([data-theme="light"]) .orglab { color: var(--g-ink); }
+html:where([data-theme="light"]) .chip.t-아룬, html:where([data-theme="light"]) .tbt small, html:where([data-theme="light"]) .chip.al, html:where([data-theme="light"]) .byebtn.hi, html:where([data-theme="light"]) .chip.r-gate { color: #b4470a; }
+html:where([data-theme="light"]) .doc h3, html:where([data-theme="light"]) .doc h4 { color: #9a3c06; }
+html:where([data-theme="light"]) .btn-bad, html:where([data-theme="light"]) .ksum div.o b, html:where([data-theme="light"]) .kdt td.o, html:where([data-theme="light"]) .kdr b.o, html:where([data-theme="light"]) .chip.g-공지, html:where([data-theme="light"]) .chip.must, html:where([data-theme="light"]) .dbtns .dedit.on, html:where([data-theme="light"]) .rnames.un, html:where([data-theme="light"]) .gdst .bad, html:where([data-theme="light"]) .tbt.no em, html:where([data-theme="light"]) .ycsong.bad, html:where([data-theme="light"]) .tbno, html:where([data-theme="light"]) .gkind button[data-gk="sold"][aria-selected="true"], html:where([data-theme="light"]) .chatl em.csos, html:where([data-theme="light"]) .opc .opurg, html:where([data-theme="light"]) .bdi .min.late, html:where([data-theme="light"]) .ali.red .chip.al, html:where([data-theme="light"]) .ali .alurg, html:where([data-theme="light"]) .ali .alsos, html:where([data-theme="light"]) .sheet-in .tbtg button.chip[data-tbtg="sold"] { color: #c8102e; }
+html:where([data-theme="light"]) .tbt.sold b { color: #a30d2b; }
+html:where([data-theme="light"]) .chatl .cm .creq.bad { color: var(--warn); }
+html:where([data-theme="light"]) .chip.t-운영팀, html:where([data-theme="light"]) .chip.g-업무, html:where([data-theme="light"]) .chip.r-table, html:where([data-theme="light"]) .chatl .cm p b.at, html:where([data-theme="light"]) .chatl .cm .cack, html:where([data-theme="light"]) .ycsat, html:where([data-theme="light"]) .ycs a, html:where([data-theme="light"]) .btn.btn-where, html:where([data-theme="light"]) .sheet-in button.chip.sx-m, html:where([data-theme="light"]) .sheet-in .tbtg button.chip[data-tbtg="keep"], html:where([data-theme="light"]) .tbt .sxc.sx-m, html:where([data-theme="light"]) .tbw .sxc.sx-m { color: #0b5cad; }
+html:where([data-theme="light"]) .ycs a.ycdl { border-color: #0b5cad; }
+html:where([data-theme="light"]) .btn.btn-where { border-color: #2b7fd8; }
+html:where([data-theme="light"]) .chip.t-클로버, html:where([data-theme="light"]) .sheet-in .tbtg button.chip[data-tbtg="inn"] { color: #0b7d4c; }
+html:where([data-theme="light"]) .chip.t-고트, html:where([data-theme="light"]) .tbbid .bi .amt { color: #7a5d00; }
+html:where([data-theme="light"]) .chip.t-고트 { border-color: #c9a227; }
+html:where([data-theme="light"]) .chip.k-기획, html:where([data-theme="light"]) .chip.t-DJ팀, html:where([data-theme="light"]) .it.op b, html:where([data-theme="light"]) .stp .ctl button.q.op, html:where([data-theme="light"]) .orgtier.lead .lab, html:where([data-theme="light"]) .chip.r-yc, html:where([data-theme="light"]) .chip.lead, html:where([data-theme="light"]) .chip.vice, html:where([data-theme="light"]) .amtb button[aria-pressed="true"], html:where([data-theme="light"]) .chip.csoon, html:where([data-theme="light"]) .nick, html:where([data-theme="light"]) .sheet-in button.chip.sx-x, html:where([data-theme="light"]) .tbt .sxc.sx-x, html:where([data-theme="light"]) .tbw .sxc.sx-x { color: #6d28d9; }
+html:where([data-theme="light"]) .byebtn { color: #4b3bc4; }
+html:where([data-theme="light"]) .tbt .sxc.sx-f, html:where([data-theme="light"]) .tbw .sxc.sx-f, html:where([data-theme="light"]) .sheet-in button.chip.sx-f, html:where([data-theme="light"]) .ycst .live { color: #c0267a; }
+html:where([data-theme="light"]) .chip.t-경호팀 { color: #3f4a5a; border-color: #6b7685; }
+html:where([data-theme="light"]) .sosbar .sosd .ok { color: #9ff0c4; }
+html:where([data-theme="light"]) .top { background: rgba(255,255,255,.92); }
+html:where([data-theme="light"]) .pitem.pinned { background: #fff4ea; }
+html:where([data-theme="light"]) .conv.inq { background: #fff7ec; }
+html:where([data-theme="light"]) .bub.inqm .bt { background: #fff1d9; }
+html:where([data-theme="light"]) .chatl .cm p { background: #ebeaee; }
+html:where([data-theme="light"]) .chatat { background: #f4f3f6; }
+html:where([data-theme="light"]) .cmenu { background: #fff; box-shadow: 0 8px 28px rgba(0,0,0,.18); }
+html:where([data-theme="light"]) .cmenu button:active, html:where([data-theme="light"]) .cmenu button:hover, html:where([data-theme="light"]) .chatrep button { background: rgba(0,0,0,.07); }
+html:where([data-theme="light"]) .chathelp code, html:where([data-theme="light"]) .chathelp pre, html:where([data-theme="light"]) .doc th, html:where([data-theme="light"]) .doc tr.hd td { background: rgba(0,0,0,.05); }
+html:where([data-theme="light"]) .days span { background: rgba(0,0,0,.04); }
+html:where([data-theme="light"]) .chatl .cm p .crep { border-bottom-color: rgba(0,0,0,.14); }
+html:where([data-theme="light"]) .mebtn strong { text-decoration-color: rgba(0,0,0,.35); }
+html:where([data-theme="light"]) .gbar { background: rgba(0,0,0,.1); }
+html:where([data-theme="light"]) .tbt.blk:not(.keep):not(.sold):not(.in) { background: #e7e2df; }
+html:where([data-theme="light"]) .yct { background: #f2f0ee; }
+html:where([data-theme="light"]) .ephotos .vph .vbox { background: #ebe9ee; }
+html:where([data-theme="light"]) .retrypill { background: rgba(255,255,255,.96); box-shadow: 0 4px 14px rgba(0,0,0,.15); }
+html:where([data-theme="light"]) .sheet { background: rgba(25,20,18,.45); }
+html:where([data-theme="light"]) .sheet-in { box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+html:where([data-theme="light"]) .chatbox { box-shadow: 0 12px 40px rgba(0,0,0,.22); }
+html:where([data-theme="light"]) .chatfab { box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+html:where([data-theme="light"]) .chatnew { box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+html:where([data-theme="light"]) textarea { background: var(--bg); color: var(--txt); border: 1px solid var(--line-2); border-radius: 12px; }
+html:where([data-theme="light"]) .glive, html:where([data-theme="light"]) .goffer { background: #fff0e3; }
+html:where([data-theme="light"]) .glive.pk { background: #f1eaff; }
+html:where([data-theme="light"]) .glive.gd { background: #e7f1ff; }
+html:where([data-theme="light"]) .goffer { box-shadow: 0 12px 34px rgba(0,0,0,.22); }
+html:where([data-theme="light"]) .goffer.done { background: #e5f6ee; }
+html:where([data-theme="light"]) .sosq { background: #ffe9ed; }
+html:where([data-theme="light"]) .tbmap { background: #eceae7; }
+html:where([data-theme="light"]) .tbmap .lm { background: #dedbd7; border-color: #c8c4bf; color: #57524d; }
+html:where([data-theme="light"]) .tbmap .lm.dj { background: #d3d0cb; color: #3d3935; }
+html:where([data-theme="light"]) .tbmap .lm.bar { background: #f1e4c4; border-color: #d4bb7c; color: #6e5210; }
+html:where([data-theme="light"]) .tbmap .lm.thin { background: #f1e4c4; border-color: #d4bb7c; }
+html:where([data-theme="light"]) .tbmap .lm.room { background: none; border-color: #b3afa9; }
+html:where([data-theme="light"]) .tbmap .lm.st { background: repeating-linear-gradient(0deg, #f7dcc4 0 6px, #efc8a5 6px 9px); border-color: #d99a66; color: #9a3c06; }
+html:where([data-theme="light"]) .tbmap .zl { color: #5f5a55; }
+html[data-theme="light"] .chip[style*="#ff8199"], html[data-theme="light"] .chatl .cempty[style*="255, 129, 153"] { color: #c8102e !important; }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--txt); font: 16px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
@@ -1685,6 +1754,7 @@ body.popmode .chath .chpop { display: none; }
   $('tabEdit').addEventListener('click', function () { if (state.s && state.data) tabOrderSheet(); });
   function render() {
     var d = state.data; if (!d) return;
+    try { themeFromPref(d); } catch (e) {}   // 🎨 계정에 저장한 화면 배경
     try { paintChatFab(); } catch (e) {}
     var L = paintTabs(d), edu = L.edu, notes = L.notes;
     var area = $('listArea');
@@ -1750,7 +1820,8 @@ body.popmode .chath .chpop { display: none; }
       sec('📱 화면 · 탭', [
         '탭은 한 줄에 <b>4개씩</b> · 탭 아래 <b>↕ 탭 순서</b>에서 ▲▼로 내가 자주 쓰는 탭을 앞으로 → 저장 (내 계정에 저장돼서 다른 폰에서도 같아요 · <b>기본 순서로</b>)',
         '앱이 업데이트되거나 다시 불러와져도 <b>마지막에 보던 탭·열려 있던 대화창</b>으로 돌아가요',
-        '숫자 배지는 탭 오른쪽 위 · 🆘 긴급모집 중이면 💬 버튼이 빨갛게 깜빡여요'
+        '숫자 배지는 탭 오른쪽 위 · 🆘 긴급모집 중이면 💬 버튼이 빨갛게 깜빡여요',
+        '<b>🎨 화면 배경</b>: 내 프로필에서 <b>⚫ 검정 / ⚪ 흰색</b> 고르기 (밝기를 낮추면 흰색이 더 잘 보여요 · 내 계정에 저장)'
       ]) +
       sec('💬 대화창 쓰는 법', [
         '<b>여는 법</b>: 🪑 테이블 · 🎆 연출 · 게스트/판매 · 🛎 운영 · 🚪 입구 탭에서 오른쪽 아래 <b>💬</b> → <b>지금 보는 탭의 방</b>이 열려요 (탭을 바꾸면 방도 바뀜) · 💬 위 숫자 = 안 읽은 메시지 · 닫기는 위 <b>✕</b>',
@@ -2439,7 +2510,7 @@ body.popmode .chath .chpop { display: none; }
   }
   function meHead(d) {   // 👤 내 프로필 머리: 이름·팀·역할 + 내 정보 바꾸기 + 출근·퇴근
     var role = state.s.admin ? '대표' : state.s.role === '부팀장' ? '부팀장' : state.s.role === '수습' ? '수습' : state.s.lead ? '팀장' : '직원';
-    return '<div class="gh prof"><div><h1>👤 ' + esc(state.s.name) + nickH(state.s.name) + '</h1><span class="range">' + esc(state.s.team || '팀 없음') + ' · ' + role + '</span></div><button type="button" class="btn" id="meEdit">✏️ 내 정보 바꾸기</button></div>' + punchBar(d) + '<button type="button" class="btn" id="meBrief">☀️ 오늘 브리핑</button>';
+    return '<div class="gh prof"><div><h1>👤 ' + esc(state.s.name) + nickH(state.s.name) + '</h1><span class="range">' + esc(state.s.team || '팀 없음') + ' · ' + role + '</span></div><button type="button" class="btn" id="meEdit">✏️ 내 정보 바꾸기</button></div>' + punchBar(d) + '<button type="button" class="btn" id="meBrief">☀️ 오늘 브리핑</button>' + themeRow();
   }
   function renderMe(area, d) {
     var sales = SALES.indexOf(d.team) >= 0, pick = !!(d.admin || d.gall), h = meHead(d), m = state.me;
@@ -2587,6 +2658,7 @@ body.popmode .chath .chpop { display: none; }
   function bindMe(area) {
     bindPunch(area); if ($('meEdit')) $('meEdit').addEventListener('click', openMe);
     if ($('meBrief')) $('meBrief').addEventListener('click', openBrief);
+    bindTheme(area);   // 🎨 화면 배경
     var sel = $('meWho'); if (sel) sel.addEventListener('change', function () { state.meWho = this.value; state.me = null; state.meFly = 0; render(); });
   }
 
@@ -5752,6 +5824,33 @@ body.popmode .chath .chpop { display: none; }
     state.tbView = v; state.tbViewWho = state.s && state.s.name; try { localStorage.setItem('gs_tb_view', v); } catch (e) {}
     if (state.data) { state.data.pref = Object.assign({}, state.data.pref || {}, { tbView: v }); saveData(state.data); }
     if (state.s) call({ a: 'me_pref', token: state.s.token, k: 'tbView', v: v }).catch(function () {});
+  }
+  // 🎨 화면 배경 ⚫ 검정 · ⚪ 흰색 (직원 요청 2026-11-19): 계정에 저장(다른 폰도 같게) + 이 기기에도 기억(열자마자 그 색, <head> 맨 위에서)
+  function themeCur() { return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'; }
+  function themeApply(v) {
+    var light = v === 'light', h = document.documentElement, m = document.querySelector('meta[name="theme-color"]');
+    if (light) h.dataset.theme = 'light'; else delete h.dataset.theme;
+    if (m) m.content = light ? '#ffffff' : '#0a0909';
+    try { localStorage.setItem('gs_theme', light ? 'light' : 'dark'); } catch (e) {}   // 로그아웃해도 이 기기 기억은 남김
+  }
+  function themeFromPref(d) {   // 목록이 오면 계정에 저장된 색이 이 기기 기억보다 먼저 (계정에 없으면 이 기기 것 그대로 · 방금 바꿨으면 15초는 내 것)
+    var v = d && d.pref && d.pref.theme;
+    if ((v === 'light' || v === 'dark') && v !== themeCur() && !(state.themeAt && Date.now() - state.themeAt < 15000)) themeApply(v);
+  }
+  function themeSet(v) {
+    themeApply(v); state.themeAt = Date.now();
+    if (state.data) { state.data.pref = Object.assign({}, state.data.pref || {}, { theme: v }); saveData(state.data); }
+    if (state.s) call({ a: 'me_pref', token: state.s.token, k: 'theme', v: v }).catch(function () {});
+  }
+  function themeRow() {
+    var t = themeCur();
+    return '<div class="thm"><div><b>🎨 화면 배경</b><small>밝기를 낮추면 ⚪ 흰색이 더 잘 보여요 · 내 계정에 저장</small></div><div class="thseg" role="group" aria-label="화면 배경">' +
+      [['dark', '⚫ 검정'], ['light', '⚪ 흰색']].map(function (o) { return '<button type="button" data-thm="' + o[0] + '" aria-pressed="' + (t === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>';
+  }
+  function bindTheme(area) {
+    area.querySelectorAll('[data-thm]').forEach(function (b) { b.addEventListener('click', function () {
+      themeSet(b.dataset.thm); area.querySelectorAll('[data-thm]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.thm === themeCur())); });
+    }); });
   }
   function tbVZoom(W) { var cw = Math.min(1280, (document.documentElement.clientWidth || window.innerWidth) - 24); return Math.min(1, Math.max(.45, cw / W)); }
   window.addEventListener('resize', function () { document.querySelectorAll('.tbmap.vert').forEach(function (m) { m.style.zoom = tbVZoom(+m.dataset.w); }); });
