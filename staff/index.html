@@ -677,6 +677,7 @@ body.chatlock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidde
 .tbw.no { border-color: var(--bad); }
 .tbw em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--warn); }
 .tbsx, .tbliq, .tbtg, .tbblk, .tbgr { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; align-items: center; }
+.tbpick { margin: -6px 0 12px; } .tbpick:empty { display: none; }
 .tbgr small { font-weight: 600; opacity: .65; margin-left: 2px; }
 .sheet-in button.chip { font: inherit; font-size: 14px; font-weight: 800; padding: 6px 14px; min-height: 38px; background: none; color: var(--txt); cursor: pointer; }
 .sheet-in button.chip.on { background: var(--g); border-color: var(--g); color: #120800; }
@@ -5575,15 +5576,37 @@ body.popmode .chath .chpop { display: none; }
       '<span class="tbn"><button type="button" class="chip" data-tbn="-1" aria-label="인원 빼기">−</button><b id="tbN">' + (v.n || 0) + '</b>명<button type="button" class="chip" data-tbn="1" aria-label="인원 더하기">＋</button></span></div>' +
       '<label>술<input id="tbL" maxlength="20" autocomplete="off" value="' + esc(v.liq || '') + '" placeholder="카마 · 포션 · 오페라 · 레몬드랍"></label><div class="tbliq">' + (t.liqs || []).map(function (x) { return '<button type="button" class="chip" data-tbliq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>' +
       '<div class="tbtg">' + [['sold', '★ 판매'], ['keep', '🍾 킵'], ['inn', '게스트']].map(function (x) { return '<button type="button" class="chip' + (v[x[0]] ? ' on' : '') + '" data-tbtg="' + x[0] + '" aria-pressed="' + !!v[x[0]] + '">' + x[1] + '</button>'; }).join('') + (ap ? '' : '<p class="note">★ 판매·🍾 킵은 승인 후 등록 · 게스트는 바로 등록</p>') + '</div>' +
-      (ap ? '<label>담당<select id="tbS"><option value="">담당 고르기</option>' + (t.staffs || []).map(function (n) { return '<option' + (n === v.st ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + (v.st && (t.staffs || []).indexOf(v.st) < 0 ? '<option selected>' + esc(v.st) + '</option>' : '') + '</select></label>' : '<p class="note" style="margin:8px 0 0">담당 · ' + esc(t.me) + '</p>') +
+      (ap ? '<label>담당<input id="tbS" maxlength="12" autocomplete="off" placeholder="이름·초성·닉네임 치면 떠요 (예: ㄷㄱ · 동기)" value="' + esc(v.st || '') + '"></label><div class="tbsx tbpick" id="tbSP"></div>' : '<p class="note" style="margin:8px 0 0">담당 · ' + esc(t.me) + '</p>') +
       '<label>메모<input id="tbM" maxlength="40" autocomplete="off" value="' + esc(v.memo || '') + '"></label></div>' +
-      '<label>자리<select id="tbSeat">' + free.map(function (s) { return '<option value="' + esc(s) + '"' + (s === (v.seat || '') ? ' selected' : '') + '>' + esc(s || '대기 명단 (자리 없음)') + '</option>'; }).join('') + '</select></label>' +
+      '<label>자리<input id="tbSeat" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="숫자·글자 치면 떠요 (예: 3 · ㅅ1 · L4) · 비우면 대기 명단" value="' + esc(v.seat || '') + '"></label><div class="tbsx tbpick" id="tbSeatP"></div>' +
       '<p class="msg" id="tbMsg"></p><button class="btn btn-hot" type="button" id="tbSave">' + (ap ? '저장' : r && r.status === '거절' ? '고쳐서 다시 신청' : '승인 요청') + '</button>';
     if (r && ap && r.status === '대기') h += '<div class="tbbtns"><button class="btn btn-ok" type="button" id="tbOk1">요청 승인</button><button class="btn" type="button" id="tbNo1">거절</button></div>';
     if (r && (r.cur || r.status)) h += '<div class="tbbtns">' + (r.mine && r.status && !ap ? '<button class="btn" type="button" id="tbCancel">요청 취소</button>' : '') + ((r.cur || ap) && !(r.req && r.req.del) ? '<button class="btn btn-bad" type="button" id="tbDel">' + (ap || state.s.role === '부팀장' || (r.cur && !r.cur.blk && r.cur.st === t.me) ? '자리 비우기' : '비우기 요청') + '</button>' : '') + '</div>';
     showSheet(h); bindWhere();
     var n = v.n || 0, tg = { sold: !!v.sold, keep: !!v.keep, inn: !!v.inn }, sx = v.sx || '', blk = v.blk || '';
     var s = $('sheet');
+    // 담당·자리: 고르기 대신 초성·단어·숫자를 치면 바로 뜨는 버튼 (대표 요청 2026-11-19 새벽)
+    var pick = { st: v.st || '', seat: v.seat || '' };
+    function tbPickPaint(inp, box, list, cur, label, onPick) {
+      box.innerHTML = list.length ? list.map(function (x) { return '<button type="button" class="chip' + (x === cur ? ' on' : '') + '" data-pk="' + esc(x) + '">' + label(x) + '</button>'; }).join('') : '';
+      box.querySelectorAll('[data-pk]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () { onPick(b.dataset.pk); }); });      if (list.length) try { box.scrollIntoView({ block: 'nearest' }); } catch (e) {}   // 폰: 키보드에 가리지 않게
+    }
+    if ($('tbS')) {
+      var stIn = $('tbS'), stBox = $('tbSP'), staffs = t.staffs || [];
+      var stPaint = function (show) { var q = stIn.value.trim(); tbPickPaint(stIn, stBox, show && q ? staffFind(staffs, q, '').slice(0, 12) : [], pick.st, function (x) { return esc(x) + nickH(x); }, function (x) { pick.st = x; stIn.value = x; stPaint(false); }); };
+      stIn.addEventListener('input', function () { var q = this.value.trim(), ex = staffs.filter(function (x) { return x === q || nickOf(x) === q; }); pick.st = ex.length === 1 ? ex[0] : ''; stPaint(true); });
+      stIn.addEventListener('focus', function () { this.select(); });
+    }
+    var seIn = $('tbSeat'), seBox = $('tbSeatP');
+    var sePaint = function (show) { var q = seIn.value.trim(), hits = show && q ? tbSeatHits(free, q).slice(0, 16) : []; tbPickPaint(seIn, seBox, hits, pick.seat, function (x) { return esc(x); }, function (x) { pick.seat = x; seIn.value = x; sePaint(false); }); };
+    seIn.addEventListener('input', function () { var q = this.value.trim(), k = tbSeatQ(q), ex = free.filter(function (x) { return x && x.toUpperCase() === k; }); pick.seat = !q ? '' : ex.length ? ex[0] : null; sePaint(true); });
+    seIn.addEventListener('focus', function () { this.select(); });
+    function tbResolve() {   // 저장할 때: 고른 것 · 딱 맞는 것 · 하나만 뜬 것
+      var out = { ok: true, seat: pick.seat, st: pick.st };
+      if (out.seat == null) { var hs = tbSeatHits(free, seIn.value.trim()); if (hs.length === 1) out.seat = hs[0]; else out.ok = false, out.why = '자리를 아래 버튼에서 골라 주세요.'; }
+      if ($('tbS') && !out.st) { var q = $('tbS').value.trim(), hs2 = q ? staffFind(t.staffs || [], q, '') : []; if (hs2.length === 1) out.st = hs2[0]; else if (q) out.ok = false, out.why = out.why || '담당을 아래 버튼에서 골라 주세요.'; }
+      return out;
+    }
     s.querySelectorAll('[data-tbsx]').forEach(function (b) { b.addEventListener('click', function () { sx = sx === b.dataset.tbsx ? '' : b.dataset.tbsx; s.querySelectorAll('[data-tbsx]').forEach(function (x) { x.classList.toggle('on', x.dataset.tbsx === sx); }); }); });
     s.querySelectorAll('[data-tbn]').forEach(function (b) { b.addEventListener('click', function () { n = Math.max(0, Math.min(50, n + +b.dataset.tbn)); $('tbN').textContent = n; }); });
     s.querySelectorAll('[data-tbliq]').forEach(function (b) { b.addEventListener('click', function () { var i = $('tbL'), parts = i.value.split(/\s+/).filter(Boolean), k = parts.indexOf(b.dataset.tbliq); if (k >= 0) parts.splice(k, 1); else parts.push(b.dataset.tbliq); i.value = parts.join(' '); }); });
@@ -5594,7 +5617,8 @@ body.popmode .chath .chpop { display: none; }
     s.querySelectorAll('[data-tbblk]').forEach(function (b) { b.addEventListener('click', function () { blk = blk === b.dataset.tbblk ? '' : b.dataset.tbblk; s.querySelectorAll('[data-tbblk]').forEach(function (x) { x.classList.toggle('on', x.dataset.tbblk === blk); }); $('tbForm').hidden = !!blk; }); });
     $('tbSave').addEventListener('click', function () {
       var b = this, m = $('tbMsg');
-      var nv = blk ? { seat: $('tbSeat').value, blk: blk } : { seat: $('tbSeat').value, g: $('tbG').value.trim(), sx: sx, n: n, liq: $('tbL').value.trim(), memo: $('tbM').value.trim(), st: ap ? $('tbS').value : t.me, sold: tg.sold, keep: tg.keep, inn: tg.inn };
+      var rs = tbResolve(); if (!rs.ok) { m.textContent = rs.why; return; }
+      var nv = blk ? { seat: rs.seat, blk: blk } : { seat: rs.seat, g: $('tbG').value.trim(), sx: sx, n: n, liq: $('tbL').value.trim(), memo: $('tbM').value.trim(), st: ap ? rs.st : t.me, sold: tg.sold, keep: tg.keep, inn: tg.inn };
       if (!blk && !nv.g && !nv.liq && !nv.n) { m.textContent = '손님 이름이나 인원을 넣어 주세요.'; return; }
       if (!blk && ap && !nv.st) { m.textContent = '담당을 골라 주세요.'; return; }
       if (blk && !nv.seat) { m.textContent = '막을 자리를 골라 주세요.'; return; }
@@ -5615,6 +5639,14 @@ body.popmode .chath .chpop { display: none; }
       var b = this; b.disabled = true;
       tbCall({ a: 'tb_del', id: r.id }, function (x) { if (!x.ok) { b.disabled = false; $('tbMsg').textContent = tbErr(x); return; } tbCloseSheet(); state.tbMsg = direct ? '자리를 비웠어요.' : '비우기 요청을 보냈어요.'; render(); });
     });
+  }
+  // 자리 치기: 한글·초성도 자리 글자로 (ㅅ·스·에스=S, ㅣ·ㄹ·엘=L, 디·ㄷ=D, 디비=DB, 비·ㅂ=B, ㅎ=H, 브이=V)
+  var TB_SEAT_KO = [['디비', 'DB'], ['ㄷㅂ', 'DB'], ['에이치', 'H'], ['에취', 'H'], ['브이', 'V'], ['에스', 'S'], ['스', 'S'], ['엘', 'L'], ['디', 'D'], ['비', 'B'], ['ㅅ', 'S'], ['ㄷ', 'D'], ['ㄹ', 'L'], ['ㅂ', 'B'], ['ㅎ', 'H'], ['ㅣ', 'L'], ['|', 'L']];
+  function tbSeatQ(q) { var x = String(q || '').replace(/\s+/g, '').replace(/^[23](?:-|층|[fF])/, '').replace(/^[23](?=[^\d])/, ''); TB_SEAT_KO.forEach(function (p) { x = x.split(p[0]).join(p[1]); }); return x.toUpperCase(); }
+  function tbSeatHits(list, q) {
+    var k = tbSeatQ(q); if (!k) return [];
+    return list.filter(function (x) { if (!x) return false; var u = x.toUpperCase(); return u.indexOf(k) === 0 || (/^\d+$/.test(k) && u.replace(/^[A-Z]+/, '').indexOf(k) === 0); })
+      .sort(function (a, b) { var A = a.toUpperCase() === k ? 0 : 1, B = b.toUpperCase() === k ? 0 : 1; return A - B || a.length - b.length; });
   }
   // 카톡용 복사: 지금 쓰는 표 모양 그대로 (승인된 것만)
   function tbText(fl) {
