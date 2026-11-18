@@ -1131,7 +1131,7 @@ body.popmode .chath .chpop { display: none; }
     <nav class="tabs" role="tablist" aria-label="스태프 메뉴" id="tabs">
       <button type="button" role="tab" data-tab="all" aria-selected="false" hidden>📡 전체</button>
       <button type="button" role="tab" data-tab="gate" aria-selected="false" hidden>🚪 입구</button>
-      <button type="button" role="tab" data-tab="guest" aria-selected="true">게스트 현황</button>
+      <button type="button" role="tab" data-tab="guest" aria-selected="true">게스트/판매</button>
       <button type="button" role="tab" data-tab="table" aria-selected="false" hidden>🪑 테이블</button>
       <button type="button" role="tab" data-tab="yc" aria-selected="false" hidden>🎆 연출</button>
       <button type="button" role="tab" data-tab="ops" aria-selected="false" hidden>🛎 운영</button>
@@ -1497,7 +1497,7 @@ body.popmode .chath .chpop { display: none; }
     var pending = (d.accounts || []).filter(function (a) { return a.status === '대기'; }).length;
     var bu = d.board && d.board.unread || 0, du = d.dm && d.dm.unread || 0;
     var labels = {
-      guest: ['게스트 현황', 0],
+      guest: ['게스트/판매', 0],   // 탭 이름 (대표 요청 2026-11-19 새벽: 게스트 현황 → 게스트/판매)
       board: ['게시판', bu],
       dm: ['메시지', du],
       edu: ['신규 교육', edu.filter(function (n) { return !n.read; }).length],
@@ -1676,7 +1676,7 @@ body.popmode .chath .chpop { display: none; }
       sec('🕘 출근·퇴근 · 👤 내 프로필', [
         '맨 위 <b>내 이름</b>을 누르면 👤 내 프로필 → <b>🕘 출근하기</b> / 끝나면 <b>퇴근하기</b>(두 번 눌러 확인)',
         '출근하면 <b>☀️ 오늘 브리핑</b>이 떠요: 오늘 내 손님·킵 만료 임박·마감 다가온 내 업무·안 읽은 공지·챙길 손님. 프로필의 <b>☀️ 오늘 브리핑</b>으로 다시 볼 수 있어요',
-        '<b>출근 전에는 보기만</b>: 테이블·게스트 현황은 볼 수 있지만, 손님 넣기·고치기·승인·비딩·게스트 입력·테이블/게스트 대화 보내기는 출근 버튼을 눌러야 돼요. 누르려고 하면 출근 안내 창이 떠요',
+        '<b>출근 전에는 보기만</b>: 테이블·게스트/판매는 볼 수 있지만, 손님 넣기·고치기·승인·비딩·게스트 입력·테이블/게스트 대화 보내기는 출근 버튼을 눌러야 돼요. 누르려고 하면 출근 안내 창이 떠요',
         '<b>🚪 입구 호출 알림은 출근한 사람만</b> 받아요 (휴무 날도 손님 받으려면 출근 누르기)',
         '영업팀은 프로필 아래 <b>📊 내 현황</b>: 8주 게스트 추이·내 순위·팀 안 순위·킵 만료 임박 손님·앞으로 잡힌 대기 손님',
         '출근·퇴근 시각은 대표가 <b>근무표</b>로 확인해요'
@@ -1742,9 +1742,10 @@ body.popmode .chath .chpop { display: none; }
         '보관 <b>30일</b>. 잘못 눌렀으면 15분 안에 되돌리기',
         '손님 링크를 보내면 손님이 자기 킵을 직접 볼 수 있어요'
       ]) +
-      sec('👥 게스트 현황', [
+      sec('👥 게스트/판매', [
         '순위는 모두 볼 수 있어요 · 게스트 수는 <b>팀</b> 단위로 세요',
         '팀 카드를 누르면 <b>팀 안 순위</b> (직원은 자기 팀, 승인하는 사람은 모든 팀)',
+        '위의 <b>[👥 게스트 | ★ 판매]</b>로 바꿔 보기: ★ 판매는 <b>승인된 판매 테이블</b>만 담당 기준으로 셈 (팀별 오늘·이번 주·지난주 · 개인 순위)',
         '입력은 팀장 이상(출근 후): 게스트 대화창에 날짜·팀·이름+숫자 양식으로 올리면 반영 · <b>게스트 대화는 팀장·대표·김동기·양진호만 보여요</b>'
       ]) +
       sec('📇 손님 기록 · 🎂 생일·기념일', [
@@ -5018,7 +5019,7 @@ body.popmode .chath .chpop { display: none; }
   var CHAT_HELP = {
     ops: '<p><b>운영 대화</b>는 그냥 대화예요 (운영 요청으로 바뀌지 않아요). 운영팀을 부르려면 <b>+ 요청</b>이나 🪑 테이블 대화를 써 주세요.</p><p><code>@이름</code>으로 부르면 그 사람에게 알림 · 꾹 눌러 답장 · 📷 사진·영상도 돼요.</p>',
     gate: '<p><b>입구 대화</b>는 그냥 대화예요. 경호팀도 같이 봐요.</p><p><code>@이름</code>으로 부르면 그 사람에게 알림 · 꾹 눌러 답장 · 📷 사진·영상도 돼요. 손님을 MD에게 보내는 건 위의 <b>입구 호출</b>로 해 주세요.</p>',
-    guest: '<p><b>카톡에 올리던 게스트 집계 그대로</b> 쓰면 게스트 현황에 바로 들어가요.</p>' +
+    guest: '<p><b>카톡에 올리던 게스트 집계 그대로</b> 쓰면 게스트/판매 탭에 바로 들어가요.</p>' +
       '<pre>11/17\n고트\n건호3\n수연4\n요셉5\n\n아룬\n성원1\n\n클로버\n지현1\n은호1</pre>' +
       '<p>첫 줄 날짜(없으면 오늘 영업일, 이번 주·지난주만) · 팀 줄 · 이름숫자. 이름은 줄여 써도 그 팀에서 한 명이면 알아봐요(<code>건호</code> → 김건호).</p>' +
       '<p>넣을 수 있는 사람: 대표·김동기·양진호·팀장 (모든 팀). 같은 날 같은 사람을 다시 쓰면 고쳐져요. 못 찾은 이름은 ⚠️ 로 알려 줘요(팀원 명단에 넣어 주세요).</p>',
