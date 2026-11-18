@@ -740,6 +740,7 @@ body.hasfab main { padding-bottom: 110px; }
 .punch { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 12px; margin: 0 0 14px; }
 .punch span { font-size: 14px; color: var(--muted); } .punch b { color: var(--txt); font-variant-numeric: tabular-nums; }
 .punch.done { border-color: var(--line); }
+.punch.vonly { border-color: var(--warn); flex-wrap: nowrap; } .punch.vonly span { color: var(--txt); } .punch.vonly .btn-hot { width: auto; min-height: 40px; padding: 0 16px; font-size: 15px; flex: none; }
 .gh.prof h1 small { font-size: 15px; } .sum b .of { font-style: normal; font-size: 14px; color: var(--muted); font-weight: 700; margin-left: 2px; } .gh.dash { margin-top: 22px; } .gh.dash h2 { margin: 0; font-size: 20px; }
 #meWho { min-height: 40px; border-radius: 10px; background: var(--card); border: 1px solid var(--line-2); padding: 0 10px; max-width: 100%; }
 .trend { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; align-items: end; height: 150px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 10px 6px; }
@@ -964,8 +965,29 @@ body.hasfab main { padding-bottom: 110px; }
   }
   function call(body) {
     // text/plain 단순 요청 → 사전 확인 없이 가고, 응답은 CORS 로 읽힌다
-    return fetch(API, { method: 'POST', body: JSON.stringify(body) }).then(function (r) { return r.json(); });
+    return fetch(API, { method: 'POST', body: JSON.stringify(body) }).then(function (r) { return r.json(); })
+      .then(function (j) { if (j && j.error === 'punch') setTimeout(punchPrompt, 0); return j; });   // 출근 전 넣기 → 출근 버튼 안내
   }
+  // 🕘 출근 전에는 보기만 (대표 결정 2026-11-18): 테이블 넣기·승인·비딩·게스트 입력·테이블/게스트 대화는 출근 버튼을 누른 뒤에
+  function inputLocked() { return !!(state.data && state.data.inputLock); }
+  function punchPrompt() {
+    if (!state.s || !state.data) return;
+    showSheet('<h2>🕘 출근 버튼을 먼저 눌러 주세요</h2><p class="sub">출근 전에는 테이블·게스트를 <b>보기만</b> 할 수 있어요. 출근하면 바로 넣을 수 있어요.</p>' +
+      '<button class="btn btn-hot" type="button" id="ppIn" style="width:100%;margin:0 0 10px">🕘 출근하기</button><p class="msg" id="ppMsg" role="alert"></p>', true);
+    $('ppIn').addEventListener('click', function () {
+      var b = $('ppIn'); b.disabled = true;
+      call({ a: 'wk_punch', token: state.s.token, kind: 'in' }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (r.ok || r.error === 'already') {
+          state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can }; state.data.inputLock = false; saveData(state.data);
+          $('sheet').hidden = true; $('sheet').innerHTML = ''; render(); gateSoon(); alertMsg('🕘 출근했어요 · 이제 넣을 수 있어요'); return;
+        }
+        b.disabled = false; $('ppMsg').textContent = r.error === 'forbidden' ? '대표 계정은 출근 없이 넣을 수 있어요.' : r.error === 'busy' ? '잠시 후 다시 해 주세요.' : '찍지 못했어요. 다시 해 주세요.';
+      }).catch(function () { b.disabled = false; $('ppMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+    });
+  }
+  function viewOnlyBar() { return inputLocked() ? '<div class="punch vonly"><span>👀 출근 전에는 <b>보기만</b> 돼요</span><button type="button" class="btn btn-hot" data-ppin>출근하기</button></div>' : ''; }
+  function bindViewOnly(area) { area.querySelectorAll('[data-ppin]').forEach(function (b) { b.addEventListener('click', punchPrompt); }); }
   // 알림은 서버 줄에 넣어 두고, 화면이 따로 '보내기'를 불러 준다(기다리지 않음)
   function flushPush() { try { fetch(API, { method: 'POST', body: JSON.stringify({ a: 'flush' }), keepalive: true }).catch(function () {}); } catch (e) {} }
   // 사진은 구글 드라이브 이미지 서버에서 바로 받는다(링크 공유 사진). 안 되면 예전처럼 서버로 받는다.
@@ -1557,9 +1579,9 @@ body.hasfab main { padding-bottom: 110px; }
       call({ a: 'wk_punch', token: state.s.token, kind: kind }).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
         if (r.ok || r.error === 'already') {
-          state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can }; saveData(state.data);
-          if (kind === 'in' && state.data.punchLock) { state.data.punchLock = false; state.me = null; state.tb = null; state.tbErr = ''; render(); refresh(true); return; }   // 출근 → 현황 열기
-          render(); gateSoon(); return;
+          state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can };
+          if (kind === 'in') state.data.inputLock = false;   // 출근 → 넣기·승인 가능
+          saveData(state.data); render(); gateSoon(); return;
         }
         b.disabled = false; alertMsg(r.error === 'noin' ? '출근을 먼저 찍어 주세요.' : r.error === 'busy' ? '잠시 후 다시 해 주세요.' : '찍지 못했어요. 다시 해 주세요.');
       }).catch(function () { b.disabled = false; alertMsg('연결이 안 돼요. 다시 해 주세요.'); });
@@ -1735,7 +1757,6 @@ body.hasfab main { padding-bottom: 110px; }
   function renderMe(area, d) {
     var sales = SALES.indexOf(d.team) >= 0, pick = !!(d.admin || d.gall), h = meHead(d), m = state.me;
     if (!sales && !pick) { area.innerHTML = h; bindMe(area); return; }   // 영업팀이 아니면 출근·퇴근·내 정보만
-    if (d.punchLock && !pick) { area.innerHTML = h + '<p class="empty">🔒 출근하면 내 현황이 보여요.</p>'; bindMe(area); return; }
     if (!m) { area.innerHTML = h + '<p class="load">불러오는 중…</p>'; bindMe(area); loadMe(); return; }
     if (m.error) { area.innerHTML = h + '<p class="empty">현황을 불러오지 못했어요. 다시 열어 주세요.</p>'; bindMe(area); return; }
     var other = key(m.name) !== key(state.s.name);
@@ -1812,11 +1833,7 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-wid]').forEach(function (b) { b.addEventListener('click', function () { var x = null; w.rows.forEach(function (r) { r.days.forEach(function (y) { if (y && y.id === b.dataset.wid) x = y; }); }); if (x) edit(x); }); });
     area.querySelectorAll('[data-wadd]').forEach(function (b) { b.addEventListener('click', function () { var p = b.dataset.wadd.split('|'); edit({ name: p[0], day: p[1] }); }); });
   }
-  function lockHtml(d, what) {   // 🔒 출근 전 (대표 결정 2026-11-18: 출근 버튼을 눌러야 현황을 본다)
-    return '<div class="lockc"><p class="big">🔒</p><h2>출근하면 ' + what + ' 볼 수 있어요</h2><p class="sub" style="margin:0">매장에 도착하면 아래 출근 버튼을 눌러 주세요.</p>' + punchBar(d) + '</div>';
-  }
   function renderGuest(area, d) {
-    if (d.punchLock) { area.innerHTML = lockHtml(d, '게스트 현황을'); bindPunch(area); return; }
     var g = d.guests || {}, w = g[state.week] || { rows: [], total: 0 };
     var isNow = state.week === 'week', ti = isNow && w.start ? Math.round((Date.parse(g.today) - Date.parse(w.start)) / 864e5) : -1;
     var teamSum = {}; SALES.forEach(function (t) { teamSum[t] = 0; });
@@ -1825,7 +1842,7 @@ body.hasfab main { padding-bottom: 110px; }
     var me = w.rows.filter(function (r) { return r.mine; })[0];
     var top = w.rows.filter(function (r) { return r.rank <= 3; });
     var canIn = !!(d.admin || d.gall || (d.approver && d.team));
-    var h = (canIn ? ginHtml(d) : '') + '<div class="gh"><div><h1>' + (isNow ? '이번 주' : '지난주') + ' 게스트 순위</h1>' +
+    var h = (canIn ? viewOnlyBar() + ginHtml(d) : '') + '<div class="gh"><div><h1>' + (isNow ? '이번 주' : '지난주') + ' 게스트 순위</h1>' +
       (w.start ? '<span class="range">' + md(w.start) + '(월) ~ ' + md(w.end) + '(일) 영업일</span>' : '') + '</div>' +
       '<div class="wk" role="tablist" aria-label="주 선택"><button type="button" data-w="week" aria-selected="' + isNow + '">이번 주</button>' +
       '<button type="button" data-w="prev" aria-selected="' + !isNow + '">지난주</button></div></div>';
@@ -1858,6 +1875,7 @@ body.hasfab main { padding-bottom: 110px; }
     }
     h += '<p class="how">' + (canIn ? '위 <b>게스트 입력</b>에서 영업일을 고르고 팀원별 숫자를 넣은 뒤 저장하면 개인 순위와 팀 합계에 바로 반영돼요. 스태프 페이지에 가입하지 않은 팀원은 <b>팀원 추가</b>로 이름만 넣으면 돼요. 낮 12시 전은 전날 영업으로 잡혀요. 이번 주·지난주까지 고칠 수 있어요.' : '게스트 수는 팀장님이 스태프 페이지에서 넣고, 넣는 즉시 순위에 반영돼요.') + '</p>';
     area.innerHTML = h;
+    bindViewOnly(area);
     bindGin(area, d);
     area.querySelectorAll('[data-w]').forEach(function (b) { b.addEventListener('click', function () { state.week = b.dataset.w; render(); }); });
     area.querySelectorAll('[data-gteam]').forEach(function (b) { b.addEventListener('click', function () { state.gTeam = b.dataset.gteam === state.gTeam ? '' : b.dataset.gteam; render(); var t = area.querySelector('.tteam'); if (t && state.gTeam) t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }); });
@@ -3126,7 +3144,6 @@ body.hasfab main { padding-bottom: 110px; }
     return call({ a: 'tb_get', token: state.s.token }).then(function (r) {
       state.tbFly = 0;
       if (r.error === 'auth') return toLogin(AUTH_OUT);
-      if (r.error === 'punch' && state.data) { state.data.punchLock = true; if (state.tab === 'table' || state.tab === 'guest') renderSoon(); return; }
       if (!r.ok) { state.tbErr = '자리표를 못 불러왔어요.'; if (state.tab === 'table' && !quiet) renderSoon(); return; }
       tbPut(r);
     }).catch(function () { state.tbFly = 0; state.tbErr = '연결이 안 돼요.'; if (state.tab === 'table' && !quiet) renderSoon(); });
@@ -3761,7 +3778,6 @@ body.hasfab main { padding-bottom: 110px; }
   function chatRoom() {
     var d = state.data || {};
     if (d.guard) return '';   // 경호팀: 대화 없음
-    if (d.punchLock && (state.tab === 'table' || state.tab === 'guest')) return '';   // 출근 전: 게스트·테이블 대화도 잠금
     return state.tab === 'table' || state.tab === 'yc' || state.tab === 'guest' ? state.tab : '';
   }
   function chatSeen(room, at) { var o = {}; try { o = JSON.parse(localStorage.getItem('gs_chat_seen') || '{}'); } catch (e) {} if (at === undefined) return o[room] || ''; if (at > (o[room] || '')) { o[room] = at; try { localStorage.setItem('gs_chat_seen', JSON.stringify(o)); } catch (e) {} } }
@@ -3977,6 +3993,7 @@ body.hasfab main { padding-bottom: 110px; }
         btn.disabled = false;
         if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; md = { photos: [], vids: [] }; paintMd(); chatReplyTo(null); chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.req && room === 'table') { loadTb(true); flushPush(); } if (c && c.req && room === 'yc') loadYc(true); if (c && /^👥/.test(c.req || '') && room === 'guest') refresh(true); if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
         else if (r.error === 'auth') toLogin(AUTH_OUT);
+        else if (r.error === 'punch') {}   // 출근 버튼 안내가 따로 뜸 (call)
         else alertBox(r.error === 'busy' ? '너무 빨리 보내고 있어요. 잠시 후에 보내 주세요.' : r.error === 'photo' ? '사진은 jpg·png 3장까지예요.' : r.error === 'video' ? '영상을 다시 올려 주세요.' : r.error === 'reply' ? '답장할 글이 지워졌어요.' : '못 보냈어요. 다시 해 주세요.');
       }).catch(function () { btn.disabled = false; alertBox('연결이 안 돼요.'); });
     });
@@ -4045,7 +4062,6 @@ body.hasfab main { padding-bottom: 110px; }
     return h;
   }
   function renderTable(area) {
-    if (state.data && state.data.punchLock) { area.innerHTML = lockHtml(state.data, '테이블 현황을'); bindPunch(area); return; }
     if (!state.tb) { area.innerHTML = state.tbErr ? '<p class="empty">' + esc(state.tbErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.tbFly) loadTb(); return; }
     var t = state.tb, fl = state.tbFloor || tbFloorPref(), ix = tbIndex(fl), edit = t.canEdit;
     area.classList.toggle('tbro', !!t.view);   // 경호팀장: 보기만
@@ -4054,6 +4070,7 @@ body.hasfab main { padding-bottom: 110px; }
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !tbShowWeekend()) return; z.rows.forEach(function (row) { row.forEach(function (s) { total++; if (ix.at[s] && !ix.at[s][0].ghost) used++; }); }); });
     var h = '<div class="tbh"><div><h1>🪑 테이블 현황</h1><p class="sub">' + esc(tbDayLabel(t.day)) + ' · 오늘 · ' + esc(fl) + ' ' + used + '/' + total + '</p></div></div>';   // 당일 것만 (대표 결정 2026-11-18)
     h += '<div class="tbfl">' + (t.floors || []).map(function (f) { return '<button type="button" data-tbf="' + esc(f.id) + '" aria-pressed="' + (f.id === fl) + '">' + esc(f.name) + ' <small>' + esc(f.floor) + '</small></button>'; }).join('') + '</div>';
+    if (!t.view) h += viewOnlyBar();   // 출근 전: 보기만
     h += '<p class="msg ok" id="tbBox"' + (state.tbMsg ? '' : ' hidden') + '>' + esc(state.tbMsg || '') + '</p>'; state.tbMsg = '';
     var pend = t.rows.filter(function (r) { return r.status === '대기'; });
     if (t.approver && pend.length && t.day === t.today) {
@@ -4097,6 +4114,7 @@ body.hasfab main { padding-bottom: 110px; }
       (ix.wait.length ? ix.wait.map(function (r) { var g = r.ghost, x = g || r, v = g ? g.req : (x.cur || x.req); return '<button type="button" class="tbw' + (x.status ? ' wait' : '') + (x.status === '거절' ? ' no' : '') + '" data-tbid="' + esc(x.id) + '"><span>' + esc(tbLine(v)) + '</span>' + (x.status ? '<em>' + esc(g ? '옮기기 대기' : x.status === '거절' ? '거절됨' : '승인 대기') + '</em>' : '') + '</button>'; }).join('') : '<p class="empty" style="margin:6px 0">대기 손님이 없어요.</p>') + '</div>';
     if (state.tbErr) h += '<p class="msg">' + esc(state.tbErr) + '</p>';
     area.innerHTML = h;
+    bindViewOnly(area);
     area.querySelectorAll('[data-tbf]').forEach(function (b) { b.addEventListener('click', function () { state.tbFloor = b.dataset.tbf; try { localStorage.setItem('gs_tb_floor', state.tbFloor); } catch (e) {} render(); }); });
     area.querySelectorAll('[data-seat]').forEach(function (b) { b.addEventListener('click', function () { var l = ix.at[b.dataset.seat], r = l && l[0]; tbOpen(r && r.ghost ? r.ghost : r || null, b.dataset.seat); }); });
     area.querySelectorAll('[data-tbid]').forEach(function (b) { b.addEventListener('click', function () { tbOpen(tbFind(b.dataset.tbid), ''); }); });
@@ -4200,6 +4218,7 @@ body.hasfab main { padding-bottom: 110px; }
   // 자리 누르기: 입력 창 (승인하는 사람은 바로 반영, 그 밖에는 승인 요청)
   function tbOpen(r, seat) {
     if (state.tb && state.tb.view && !arguments[0]) return;   // 경호팀장: 보기만 (빈 자리 눌러도 넣기 없음)
+    if (!arguments[0] && inputLocked()) return punchPrompt();   // 출근 전: 새로 넣기 → 출근 버튼 안내
     var t = state.tb, ap = t.approver, edit = t.canEdit, fl = r ? r.floor : state.tbFloor;
     var v = r ? JSON.parse(JSON.stringify(r.req && !r.req.del ? r.req : r.cur || {})) : { seat: seat };
     if (v.seat == null) v.seat = seat || '';
