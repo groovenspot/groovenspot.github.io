@@ -1334,7 +1334,7 @@ body.hasfab main { padding-bottom: 110px; }
         '<b>크롬</b>으로 <b>그루브.site/staff</b> 를 열고 로그인해요.',
         '크롬 오른쪽 위 <b>⋮</b> → <b>홈 화면에 추가</b>(또는 <b>앱 설치</b>) → 홈 화면에 생긴 <b>GROOVE STAFF</b> 아이콘으로 열어요. (알림이 더 잘 와요)',
         '오른쪽 위 <b>🔕</b> 를 누르고 <b>허용</b>을 눌러요. <b>🔔</b> 로 바뀌면 끝이에요.'
-      ], ['· 휴대폰 <b>설정 → 애플리케이션 → Chrome → 알림</b>을 켜요.', '· 크롬 <b>⋮ → 설정 → 사이트 설정 → 알림</b>에서 <b>그루브.site</b> 를 허용해요.', '· <b>설정 → 배터리</b>에서 Chrome 을 절전(잠자는 앱)에서 빼 주세요.', '· 삼성 인터넷 말고 <b>크롬</b>으로 열어 주세요.']) +
+      ], ['· <b>홈 화면 앱</b>으로 쓰면: 휴대폰 <b>설정 → 애플리케이션 → GROOVE STAFF → 알림</b>을 켜요. (크롬 설정이 아니라 이 앱에서)', '· 크롬 화면이면: 주소창 왼쪽 <b>자물쇠(조절) 아이콘 → 권한 → 알림</b> 켜기', '· 크롬 <b>⋮ → 설정 → 사이트 설정 → 알림</b> 목록에는 그루브.site 가 <b>xn--2i0bl1s25d.site</b> 로 보여요 → 허용', '· 휴대폰 <b>설정 → 애플리케이션 → Chrome → 알림</b>도 켜 주세요.', '· <b>설정 → 배터리</b>에서 Chrome·GROOVE STAFF 를 절전(잠자는 앱)에서 빼 주세요.', '· 삼성 인터넷 말고 <b>크롬</b>으로 열어 주세요.']) +
       sec('ios', '🍎 아이폰', [
         '<b>사파리</b>로 <b>그루브.site/staff</b> 를 열어요. (iOS 16.4 이상)',
         '아래쪽 <b>공유 버튼(□↑)</b> → <b>홈 화면에 추가</b> → <b>추가</b>를 눌러요.',
@@ -3337,11 +3337,33 @@ body.hasfab main { padding-bottom: 110px; }
   }
   function paintBell() { bellState().then(function (st) { var b = $('bell'); b.hidden = false; b.textContent = st === 'on' ? '🔔' : '🔕'; b.title = st === 'on' ? '알림 켜짐' : '알림 꺼짐'; b.dataset.st = st; }); }
   function toast(t) { var s = $('sync'); s.textContent = t; clearTimeout(state.toastT); state.toastT = setTimeout(function () { if (s.textContent === t) s.textContent = ''; }, 5000); }
+  // 🔕 갤럭시에서 알림이 안 풀릴 때 (2026-11-18): 어디서 열었는지(크롬 탭·홈 화면 앱·삼성 인터넷)에 맞춰 푸는 곳을 바로 알려 줌.
+  // 크롬 설정의 사이트 목록에는 그루브.site 가 'xn--2i0bl1s25d.site' 로 보이고, 홈 화면 앱은 크롬이 아니라 그 앱의 알림 설정에서 풀어야 함.
+  var SAMSUNG = /SamsungBrowser/i.test(navigator.userAgent), ANDROID = /Android/i.test(navigator.userAgent);
+  function chromeIntent() { return 'intent://' + location.host + location.pathname + '#Intent;scheme=https;package=com.android.chrome;end'; }
+  function unblockSheet(why) {
+    var host = location.hostname, steps;
+    if (SAMSUNG) steps = ['지금 <b>삼성 인터넷</b>으로 열려 있어요. 알림은 <b>크롬</b>에서 켜는 게 제일 잘 돼요 → 아래 <b>크롬으로 열기</b>',
+      '삼성 인터넷에서 계속 쓰려면: 아래 <b>≡ → 설정 → 사이트 및 다운로드 → 알림</b> → <b>' + esc(host) + '</b> 를 허용',
+      '휴대폰 <b>설정 → 애플리케이션 → 삼성 인터넷 → 알림</b>도 켜져 있어야 해요'];
+    else if (standalone()) steps = ['휴대폰 <b>설정 → 애플리케이션 → GROOVE STAFF → 알림</b>을 켜요. (홈 화면 앱은 크롬이 아니라 <b>이 앱</b>에서 켜야 해요)',
+      'GROOVE STAFF 가 앱 목록에 없으면: 휴대폰 <b>설정 → 애플리케이션 → Chrome → 알림</b>을 켜요',
+      '그래도 안 되면 홈 화면 아이콘을 지우고, 크롬으로 <b>그루브.site/staff</b> 를 열어 다시 <b>홈 화면에 추가</b> → 처음 뜨는 알림 창에서 <b>허용</b>'];
+    else steps = ['크롬 주소창 왼쪽 <b>자물쇠(또는 조절 ⚙) 아이콘</b>을 눌러요',
+      '<b>권한 → 알림</b>을 켜요. (안 보이면 <b>권한 초기화</b>를 누르고 이 화면을 새로고침)',
+      '또는 크롬 <b>⋮ → 설정 → 사이트 설정 → 알림</b> → 목록에서 <b>' + esc(host) + '</b> (= 그루브.site) → <b>허용</b>',
+      '휴대폰 <b>설정 → 애플리케이션 → Chrome → 알림</b>도 켜져 있어야 해요',
+      '허용 창 대신 주소창 오른쪽에 작은 <b>🔔</b> 만 뜨면 그걸 눌러 <b>허용</b>'];
+    showSheet('<h2>🔕 알림이 ' + (why === 'quiet' ? '안 켜졌어요' : '막혀 있어요') + '</h2><p class="sub">' + (SAMSUNG ? '삼성 인터넷' : standalone() ? '홈 화면 앱' : '크롬') + '에서 연 화면이에요. 아래대로 풀고 <b>다 했어요</b>를 눌러 주세요.</p><ol class="steps">' + steps.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol>' +
+      (SAMSUNG ? '<a class="btn btn-hot" href="' + esc(chromeIntent()) + '" style="display:grid;place-items:center;margin:0 0 8px;text-decoration:none">크롬으로 열기</a>' : '') +
+      '<button class="btn btn-ok" type="button" id="ubRe" style="width:100%;margin:0 0 8px">다 했어요 · 다시 켜기</button>');
+    $('ubRe').addEventListener('click', function () { $('sheet').hidden = true; $('sheet').innerHTML = ''; bellClick(); });
+  }
   function bellClick() {
     bellState().then(function (st) {
       if (st === 'ios') return showSheet('<h2>아이폰 알림 켜기</h2><ol class="steps"><li>사파리 아래쪽 <b>공유 버튼(□↑)</b>을 눌러요.</li><li><b>홈 화면에 추가</b>를 눌러요.</li><li>홈 화면에 생긴 <b>GROOVE STAFF</b> 아이콘으로 열어요.</li><li>오른쪽 위 🔕 를 눌러 알림을 켜요.</li></ol><p class="note">아이폰은 홈 화면 앱에서만 알림을 받을 수 있어요 (iOS 16.4 이상).</p>');
-      if (st === 'no') return toast('이 브라우저는 알림을 못 받아요. 크롬이나 사파리 최신 버전에서 열어 주세요.');
-      if (st === 'denied') return toast('알림이 막혀 있어요. 휴대폰 설정에서 이 사이트(앱) 알림을 허용해 주세요.');
+      if (st === 'no') return ANDROID ? unblockSheet('no') : toast('이 브라우저는 알림을 못 받아요. 크롬이나 사파리 최신 버전에서 열어 주세요.');
+      if (st === 'denied') return ANDROID ? unblockSheet('denied') : toast('알림이 막혀 있어요. 휴대폰 설정에서 이 사이트(앱) 알림을 허용해 주세요.');
       if (st === 'on') {
         return swReg().then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (s) {
           if (!s) return;
@@ -3350,7 +3372,7 @@ body.hasfab main { padding-bottom: 110px; }
         }).then(function () { toast('이 기기 알림을 껐어요.'); paintBell(); });
       }
       Notification.requestPermission().then(function (perm) {
-        if (perm !== 'granted') { toast('알림을 허용해야 받을 수 있어요.'); return paintBell(); }
+        if (perm !== 'granted') { paintBell(); return ANDROID ? unblockSheet(perm === 'denied' ? 'denied' : 'quiet') : toast('알림을 허용해야 받을 수 있어요.'); }   // 크롬이 허용 창을 안 띄우고 넘긴 경우(여러 번 닫으면 조용히 막음)도
         toast('알림 켜는 중…');
         return Promise.all([swReg(), call({ a: 'push_key' })]).then(function (x) {
           var reg = x[0], k = x[1];
