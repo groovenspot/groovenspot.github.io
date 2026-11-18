@@ -3007,6 +3007,30 @@ body.popmode .chath .chpop { display: none; }
     cust.items.forEach(function (it) { if (k.liqs.indexOf(it.liq) < 0) k.liqs.push(it.liq); });
     if (!k.staffs.some(function (x) { return x.name === cust.staff; })) k.staffs.push({ name: cust.staff, group: cust.group || '', team: '' });
   }
+  // 👥 킵 장부 승인 권한 하루 주기 (대표 요청 2026-11-19): 대표만 · 고른 직원은 오늘 영업일 동안 맡기기·꺼내기·병 수 고치기 승인
+  function kGrantSheet() {
+    var q = '';
+    function draw(msg) {
+      if (!$('kgQ')) {
+        showSheet('<h2>👥 킵 승인 권한</h2><p class="sub">고른 직원은 <b>오늘 영업일 동안</b> 킵 맡기기·꺼내기·병 수 고치기를 승인할 수 있어요. 영업일이 바뀌면 자동으로 끝나요.</p>' +
+          '<p class="note" style="margin:0 0 10px" id="kgN"></p><input id="kgQ" placeholder="이름·팀·초성 찾기" autocomplete="off" style="margin:0 0 10px"><div id="kgL"></div><p class="msg" id="kgM"></p>');
+        var inp = $('kgQ'); inp.addEventListener('input', function () { q = inp.value; draw(); });
+      }
+      var g = (state.keep && state.keep.grants) || [], on = g.filter(function (x) { return x.on; }), kq = key(q);
+      var list = g.filter(function (x) { return x.on || !kq || key(x.name).indexOf(kq) >= 0 || key(x.team).indexOf(kq) >= 0 || staffHit(x.name, q) >= 0; });
+      $('kgN').innerHTML = '지금 ' + on.length + '명' + (on.length ? ' · ' + on.map(function (x) { return esc(x.name) + nickH(x.name) + ' ' + esc(x.at); }).join(', ') : '');
+      if (msg) { $('kgM').textContent = msg.t; $('kgM').className = 'msg' + (msg.ok ? ' ok' : ''); }
+      $('kgL').innerHTML = '<div class="tbgr">' + (list.length ? list.map(function (x) { return '<button type="button" class="chip' + (x.on ? ' on' : '') + '" data-kg="' + esc(x.name) + '" aria-pressed="' + x.on + '">' + (x.on ? '✅ ' : '') + esc(x.name) + nickH(x.name) + (x.team ? ' <small>' + esc(x.team) + '</small>' : '') + '</button>'; }).join('') : '<p class="empty">고를 직원이 없어요.</p>') + '</div>';
+      $('kgL').querySelectorAll('[data-kg]').forEach(function (b) { b.addEventListener('click', function () {
+        var name = b.dataset.kg, was = b.getAttribute('aria-pressed') === 'true'; b.disabled = true;
+        call({ a: 'kp_grant', token: state.s.token, name: name, on: !was }).then(function (r) {
+          if (r.ok) { state.keep = Object.assign({}, state.keep, { grants: r.grants, approver: r.approver, grantor: r.grantor }); if (state.tab === 'keep') render(); loadKeep(); }
+          draw(r.ok ? { ok: 1, t: name + (was ? ' 권한을 뺐어요.' : ' 오늘 킵 승인 권한을 줬어요.') } : { t: r.error === 'forbidden' ? '대표만 줄 수 있어요.' : r.error === 'already' ? '이미 승인할 수 있는 사람이에요.' : '다시 해 주세요.' });
+        }).catch(function () { b.disabled = false; draw({ t: '연결이 안 돼요.' }); });
+      }); });
+    }
+    draw();
+  }
   function loadKeep() {
     if (!state.keep && state.tab === 'keep') $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
     if (state.kloading) { state.kagain = true; return; }
@@ -3053,6 +3077,8 @@ body.popmode .chath .chpop { display: none; }
     h += '<div class="ksearch"><span aria-hidden="true">🔎</span><input id="kQ" type="search" placeholder="손님 · 담당 · 술 · 연락처 뒤 4자리" value="' + esc(state.kq) + '" aria-label="킵 찾기"></div>';
     h += '<div class="ksum"><div><small>보관 중</small><b>' + bottles + '</b></div><div class="w"><small>7일 안 만료</small><b>' + soon + '</b></div><div class="x"><small>만료 지남</small><b>' + late + '</b></div></div>';
     if (k.all || k.see) h += '<button class="btn kdaybtn" type="button" id="kDay">📊 킵 하루 결산 · 입고·출고 병 수</button>';
+    if (k.grantor) { var kgOn = (k.grants || []).filter(function (x) { return x.on; }); h += '<button class="btn kdaybtn" type="button" id="kGrant">👥 킵 승인 권한 (오늘)' + (kgOn.length ? ' · ' + kgOn.map(function (x) { return esc(x.name); }).join(', ') : '') + '</button>'; }
+    if (k.granted) h += '<p class="note" style="margin:0 0 10px">✅ 오늘 영업일 동안 킵 승인 권한을 받았어요 (대표가 줌).</p>';
     var hasNone = all.some(function (c) { return !kGroupOf(c.staff); });
     h += '<div class="kfil">' + [['', '전체'], ['exp', '⏰ 만료 임박']].concat(k.all || k.see ? KGROUPS.map(function (g) { return [g, g]; }) : []).concat((k.all || k.see) && hasNone ? [['none', '구분 없음']] : []).map(function (x) {
       return '<button type="button" data-kf="' + esc(x[0]) + '" aria-pressed="' + (f === x[0]) + '">' + esc(x[1]) + '</button>';
@@ -3062,6 +3088,7 @@ body.popmode .chath .chpop { display: none; }
     $('kNew').addEventListener('click', function () { kOpenAdd(null); });
     kBindReqs(area);
     if ($('kDay')) $('kDay').addEventListener('click', function () { kDayOpen(''); });
+    if ($('kGrant')) $('kGrant').addEventListener('click', kGrantSheet);
     if ($('kOkAll')) $('kOkAll').addEventListener('click', function () {
       if (!armed(this, '모두 승인')) return;
       var ids = kPend().filter(function (r) { return !r.tmp; }).map(function (r) { return r.id; }), btn = this; btn.disabled = true;
