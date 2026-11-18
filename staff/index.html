@@ -853,6 +853,28 @@ body.hasfab main { padding-bottom: 110px; }
   .sheet { place-items: center; }
   .sheet-in { max-width: 600px; }
 }
+/* 📡 전체 (대표만) */
+.allp { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 12px; }
+.allp .btn { width: auto; flex: none; }
+.allp span { color: var(--muted); font-size: 13px; }
+.allp .warn { color: var(--warn); }
+.allf { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 12px; }
+.allf .chip { cursor: pointer; background: none; padding: 6px 12px; font-size: 13px; }
+.allf .chip.on { background: var(--g); border-color: var(--g); color: #120800; }
+.alll { display: flex; flex-direction: column; gap: 8px; }
+.ali { display: flex; flex-direction: column; gap: 3px; text-align: left; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; color: var(--txt); font: inherit; cursor: pointer; }
+.ali.al { border-left: 3px solid var(--g); }
+.ali.nw { box-shadow: inset 0 0 0 1px var(--g); }
+.ali .alh { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ali time { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.ali .alb { white-space: pre-wrap; word-break: break-word; font-size: 14px; }
+.ali .alto, .ali .alre { font-size: 12px; color: var(--muted); }
+.ali .alq { font-size: 12px; color: var(--ok); white-space: pre-wrap; }
+.ali small { color: var(--muted); font-weight: 600; margin-left: 4px; }
+.chip.al { border-color: var(--g); color: #ffad70; }
+.chip.r-table { border-color: #4da3ff; color: #8cc4ff; }
+.chip.r-yc { border-color: var(--s); color: #c9a3ff; }
+.chip.r-guest { border-color: var(--ok); color: var(--ok); }
 </style>
 </head>
 <body>
@@ -896,6 +918,7 @@ body.hasfab main { padding-bottom: 110px; }
 
   <section id="appView" hidden>
     <nav class="tabs" role="tablist" aria-label="스태프 메뉴" id="tabs">
+      <button type="button" role="tab" data-tab="all" aria-selected="false" hidden>📡 전체</button>
       <button type="button" role="tab" data-tab="gate" aria-selected="false" hidden>🚪 입구</button>
       <button type="button" role="tab" data-tab="guest" aria-selected="true">게스트 현황</button>
       <button type="button" role="tab" data-tab="table" aria-selected="false" hidden>🪑 테이블</button>
@@ -1154,7 +1177,7 @@ body.hasfab main { padding-bottom: 110px; }
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
     if (/^chat:(table|yc)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
-    if (['gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) state.tab = h;
+    if (['all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) state.tab = h;
     swToken(state.s.token); paintBell();
     if (!state.keep) { var kc = kLoad(); if (kc) { state.keep = kc; state.kstale = true; } }
     var c = loadData();
@@ -1164,6 +1187,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'yc') loadYc();
     if (state.tab === 'lost') loadLost();
     if (state.tab === 'keep') loadKeep();
+    if (state.tab === 'all') loadAll();
     if (state.chatOpenNext) { var co = state.chatOpenNext; state.chatOpenNext = ''; setTimeout(function () { chatOpen(co); }, 400); }
     else setTimeout(function () { if (state.s && state.tab !== 'keep' && !(state.data && state.data.guard) && (!state.keep || state.kstale)) loadKeep(); }, 1500);   // 킵 탭을 누르기 전에 미리 받아 둔다
   }
@@ -1236,6 +1260,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (state.tab === 'me' && state.me) loadMe();
       if (state.tab === 'work' && state.work) loadWork();
       if (state.tab === 'gate') loadGate();
+      if (state.tab === 'all') loadAll();
   }
   document.querySelectorAll('#tabs button').forEach(function (b) { b.addEventListener('click', function () { goTab(b.dataset.tab); }); });
 
@@ -1255,6 +1280,7 @@ body.hasfab main { padding-bottom: 110px; }
       table: ['🪑 테이블', d.tableApprove ? (d.tablePending || 0) : 0],
       yc: ['🎆 연출', d.ycWaiting || 0],
       lost: ['🔎 분실물', 0],
+      all: ['📡 전체', 0],
       me: ['👤 내 프로필', 0],
       work: ['🕘 근무표', 0],
       gate: ['🚪 입구', (state.gate && state.gate.calls || []).filter(function (c) { return c.status === '호출'; }).length]
@@ -1269,6 +1295,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'yc' && !d.yc) state.tab = 'guest';
     if (state.tab === 'lost' && !d.lost) state.tab = 'guest';
     if (state.tab === 'work' && !workOn) state.tab = 'guest';
+    if (state.tab === 'all' && !d.admin) state.tab = 'guest';
     var gateOn = !!(d.guard || d.gate);   // 🚪 입구: 경호팀 · 대표
     if (state.tab === 'gate' && !gateOn) state.tab = 'guest';
     if (d.guard && ['gate', 'me'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
@@ -1283,6 +1310,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (b.dataset.tab === 'yc') b.hidden = !d.yc;
       if (b.dataset.tab === 'lost') b.hidden = !d.lost;
       if (b.dataset.tab === 'work') b.hidden = !workOn;
+      if (b.dataset.tab === 'all') b.hidden = !d.admin;   // 📡 전체: 대표만
       if (b.dataset.tab === 'gate') b.hidden = !gateOn;
       if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table));
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
@@ -1310,6 +1338,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'me') return renderMe(area, d);
     if (state.tab === 'work') return renderWork(area, d);
     if (state.tab === 'gate') return renderGate(area, d);
+    if (state.tab === 'all') return renderAll(area);
     var list = state.tab === 'edu' ? edu : notes, guide = state.tab === 'edu' ? pushGuideHtml() + eduGuideHtml() : '';
     if (!list.length) { area.innerHTML = guide + '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; bindPushGuide(); return; }
     area.innerHTML = guide + '<div class="list">' + list.map(function (n) {
@@ -3462,8 +3491,65 @@ body.hasfab main { padding-bottom: 110px; }
     var t = e.data && e.data.tab, ct = /^chat:(table|yc)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
-    if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); }
+    if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); }
   });
+
+  // ── 📡 전체 (대표만, 2026-11-18): 누구에게 어떤 알림이 갔는지 + 테이블·연출·게스트 대화를 한 화면에. 켜 두면 5초마다 새로 ──
+  var ALL_F = [['', '전체'], ['al', '🔔 알림'], ['table', '🪑 테이블'], ['yc', '🎆 연출'], ['guest', '👥 게스트']];
+  var ALL_TABS = ['gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'];
+  function loadAll(quiet) {
+    if (!state.s || state.allFly) return;
+    if (!state.all && state.tab === 'all') $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
+    state.allFly = 1;
+    return call({ a: 'all_feed', token: state.s.token }).then(function (r) {
+      state.allFly = 0; state.allAt = Date.now();
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok) { if (!quiet || !state.all) { state.allErr = r.error === 'forbidden' ? '대표만 볼 수 있어요.' : '불러오지 못했어요.'; if (state.tab === 'all') render(); } return; }
+      var sig = JSON.stringify([r.on, r.list.length, r.list.slice(0, 60).map(function (x) { return x.id + x.at; })]), same = !!state.all && state.allSig === sig;
+      state.all = r; state.allSig = sig; state.allErr = '';
+      if (state.tab === 'all' && !same && $('sheet').hidden) render();
+    }).catch(function () { state.allFly = 0; state.allAt = Date.now(); if (!state.all && state.tab === 'all') { state.allErr = '연결이 안 돼요.'; render(); } });
+  }
+  setInterval(function () { if (state.s && state.data && state.tab === 'all' && !document.hidden && Date.now() - (state.allAt || 0) > 4500) loadAll(true); }, 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'all') loadAll(true); });
+  function renderAll(area) {
+    if (!state.all) { area.innerHTML = state.allErr ? '<p class="empty">' + esc(state.allErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.allFly && !state.allErr) loadAll(); return; }
+    var A = state.all, f = state.allF || '', prev = state.allSeen || '', today = String(A.now || '').slice(0, 10);
+    var nAl = A.list.filter(function (x) { return x.t === 'al'; }).length;
+    var list = A.list.filter(function (x) { return !f || (f === 'al' ? x.t === 'al' : x.t === 'ch' && x.room === f); });
+    var tm = function (at) { return at.slice(0, 10) === today ? at.slice(11, 16) : at.slice(5, 16).replace('-', '/'); };
+    var off = typeof Notification !== 'undefined' && Notification.permission !== 'granted';
+    var h = '<div class="tbh"><div><h1>📡 전체</h1><p class="sub">최근 36시간 · 알림 ' + nAl + ' · 대화 ' + (A.list.length - nAl) + ' · 켜 두면 5초마다 새로</p></div></div>';
+    h += '<div class="allp"><button type="button" class="btn' + (A.on ? ' btn-ok' : '') + '" id="allPush" aria-pressed="' + !!A.on + '">' + (A.on ? '🔔 전체 알림 받기 · 켜짐' : '🔕 전체 알림 받기 · 꺼짐') + '</button>' +
+      '<span>' + (A.on ? '직원에게 가는 알림이 내 폰에도 와요 (내가 한 일은 빼고)' : '켜면 직원에게 가는 알림이 내 폰에도 같이 와요') + '</span>' +
+      (A.on && off ? '<span class="warn">이 폰은 알림이 꺼져 있어요 — 위 🔔를 눌러 켜 주세요</span>' : '') + '</div><p class="msg" id="allMsg"></p>';
+    h += '<div class="allf">' + ALL_F.map(function (x) { return '<button type="button" class="chip' + (x[0] === f ? ' on' : '') + '" data-allf="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
+    if (!list.length) h += '<p class="empty">아직 없어요.</p>';
+    h += '<div class="alll">' + list.slice(0, 300).map(function (x) {
+      var nw = prev && x.at > prev ? ' nw' : '';
+      if (x.t === 'al') {
+        var to = x.to.length > 8 ? x.to.slice(0, 8).join(', ') + ' 외 ' + (x.to.length - 8) + '명' : x.to.join(', ');
+        return '<button type="button" class="ali al' + nw + '" data-allgo="' + esc(x.tab) + '"><span class="alh"><span class="chip al">🔔 알림</span><time>' + esc(tm(x.at)) + '</time></span>' +
+          '<b>' + esc(x.title) + '</b>' + (x.body ? '<span class="alb">' + esc(x.body) + '</span>' : '') + '<span class="alto">→ ' + esc(to) + '</span></button>';
+      }
+      var med = [x.ph ? '📷 사진 ' + x.ph : '', x.vd ? '🎬 영상 ' + x.vd : ''].filter(String).join(' ');
+      return '<button type="button" class="ali ch' + nw + '" data-allroom="' + esc(x.room) + '"><span class="alh"><span class="chip r-' + esc(x.room) + '">' + esc(CHAT_NAME[x.room] || x.room) + '</span><time>' + esc(tm(x.at)) + '</time></span>' +
+        '<span><b>' + esc(x.who) + nickH(x.who) + '</b>' + (x.org ? '<small>' + esc(x.org) + '</small>' : '') + '</span>' + (x.re ? '<span class="alre">↩ ' + esc(x.re) + '</span>' : '') +
+        (x.text || med ? '<span class="alb">' + esc(x.text) + (x.text && med ? '\n' : '') + esc(med) + '</span>' : '') + (x.req ? '<span class="alq">' + esc(x.req) + '</span>' : '') + '</button>';
+    }).join('') + '</div>';
+    area.innerHTML = h;
+    state.allSeen = A.list.length ? A.list[0].at : prev;
+    $('allPush').addEventListener('click', function () {
+      var b = this; b.disabled = true;
+      call({ a: 'all_push', token: state.s.token, on: !A.on }).then(function (r) { b.disabled = false; if (r.ok) { state.all = r; state.allSig = ''; render(); } else $('allMsg').textContent = '바꾸지 못했어요.'; }).catch(function () { b.disabled = false; $('allMsg').textContent = '연결이 안 돼요.'; });
+    });
+    area.querySelectorAll('[data-allf]').forEach(function (b) { b.addEventListener('click', function () { state.allF = b.dataset.allf; render(); }); });
+    area.querySelectorAll('[data-allroom]').forEach(function (b) { b.addEventListener('click', function () { chatOpen(b.dataset.allroom); }); });
+    area.querySelectorAll('[data-allgo]').forEach(function (b) { b.addEventListener('click', function () {
+      var t = b.dataset.allgo, m = t.match(/^chat:(table|yc|guest)$/);
+      if (m) chatOpen(m[1]); else if (ALL_TABS.indexOf(t) >= 0) goTab(t);
+    }); });
+  }
 
   // ── 🪑 테이블 현황 (2026-11-18) ─────────────────────────
   // 카톡방에 올리던 자리표. 영업진은 자기 손님을 직접 넣고(승인 대기), 대표·김동기·양진호·팀장이 승인하거나 코멘트 달아 거절한다.
