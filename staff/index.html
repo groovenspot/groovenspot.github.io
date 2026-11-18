@@ -713,7 +713,9 @@ body.hasfab main { padding-bottom: 110px; }
 .tbt.tbm > i { font-size: 11px; line-height: 1.15; }
 .tbt.tbm b { font-size: 13px; line-height: 1.2; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .tbt.tbm span { font-size: 11px; line-height: 1.15; white-space: nowrap; }
-.tbt.tbm small, .tbt.tbm em { display: none; }
+.tbt.tbm em { display: none; }
+.tbt.tbm small { display: block; font-size: 10.5px; line-height: 1.15; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }   /* 도면에도 담당 이름 늘 (대표 요청 2026-11-18) */
+.tbt.tbm.rd small { font-size: 10px; }
 .tbt.tbm .tbmore { display: block; top: 1px; right: 3px; font-size: 9px; }
 .tbt.tbm.empty { border-style: dashed; }
 .tbt.tbm.wait::after { content: ''; position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
