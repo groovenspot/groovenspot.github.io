@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">펄스케어</string>
+    <string name="tile_label">오늘의 컨디션</string>
+    <string name="tile_description">컨디션 점수와 오늘의 미션</string>
+    <string name="complication_label">컨디션 점수</string>
+</resources>
