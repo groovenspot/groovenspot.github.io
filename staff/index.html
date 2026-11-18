@@ -530,6 +530,9 @@ body.chatlock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidde
 .chatph .ph b { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font-size: 11px; }
 .chatph .ph.bad { border-color: var(--bad); }
 .chatph .ph img { width: 100%; height: 100%; object-fit: cover; }
+.decadd .decaddpic { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 52px; margin: 0 0 10px; border: 2px dashed var(--line-2); border-radius: 14px; color: var(--txt); font-weight: 800; cursor: pointer; }
+.decadd .decaddpic small { color: var(--muted); font-weight: 600; }
+.decadd .decaddph { border-top: 0; padding: 0 0 10px; }
 .chatph .ph button { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(0,0,0,.7); color: #fff; font-size: 11px; cursor: pointer; }
 .chatl .cm .cph { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0; max-width: 260px; }
 .chatl .cm.me .cph { justify-content: flex-end; margin-left: auto; }
@@ -1811,6 +1814,7 @@ body.popmode .chath .chpop { display: none; }
       '<label>할 일<textarea id="decAddW" maxlength="300" rows="2" placeholder="예: 우지랑 12월 파티 조명 견적 받기">' + esc(state.decAddDraft || '') + '</textarea></label>' +
       (d.decAdd === 'all' ? '<label>담당 (이름·닉네임·초성)<input id="decAddP" maxlength="60" autocomplete="off" placeholder="예: 김동기, 우지 · ㄱㄷ 만 써도 돼요"></label><div class="decsug" id="decAddS" hidden></div>' : '') +
       '<label>마감 (선택)<input id="decAddD" type="date"></label>' +
+      '<label class="decaddpic">📷 사진·영상 붙이기 <small>(사진 3장·영상 2개)</small><input type="file" id="decAddFile" accept="image/*,video/*" multiple hidden></label><div class="chatph decph decaddph" id="decAddPh" hidden></div>' +
       '<p class="note" style="margin:0 0 8px">' + (d.decAdd === 'all' ? '할 일·담당에 이름이나 닉네임을 쓰면 그 사람에게 알림이 가요.' : '<b>내 일</b>로 추가돼요. 다른 사람을 태그해서 추가하는 건 팀장·김동기·양진호·대표님만 해요.') + '</p>' +
       '<button class="btn btn-ok" type="submit" style="width:100%">추가하기</button><p class="msg" id="decAddM" role="alert"></p></form></details>';
     if (!list.length) {
@@ -1852,16 +1856,33 @@ body.popmode .chath .chpop { display: none; }
         }); });
       }
       if (pi && sb) { pi.addEventListener('input', sug); pi.addEventListener('focus', sug); pi.addEventListener('blur', function () { setTimeout(function () { sb.hidden = true; }, 150); }); }
+      // 추가할 때 사진·영상 같이 (대표 요청 2026-11-19) — 코멘트 첨부와 같은 방식, 화면이 다시 그려져도 남아 있음
+      $('decAddFile').addEventListener('change', function () { decPick(DEC_NEW, Array.prototype.slice.call(this.files || [])); this.value = ''; });
+      decPaint(DEC_NEW);
       f.addEventListener('submit', function (e) {
         e.preventDefault();
-        var w = $('decAddW').value.trim(), m = $('decAddM'), btn = f.querySelector('button');
+        var w = $('decAddW').value.trim(), m = $('decAddM'), btn = f.querySelector('button[type="submit"]'), md = decMd(DEC_NEW);
         if (!w) { m.className = 'msg'; m.textContent = '할 일을 써 주세요.'; return; }
+        if (btn.disabled) return;
+        if (md.vids.some(function (x) { return x.err; })) { m.className = 'msg'; m.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
+        if (md.vids.some(function (x) { return !x.done; })) {   // 영상이 다 올라가면 바로 추가
+          btn.disabled = true; m.className = 'msg'; m.textContent = '영상 올리는 중이에요… 다 올라가면 바로 추가해요.';
+          var wt = setInterval(function () {
+            if (decMd(DEC_NEW) !== md || !document.body.contains(f)) { clearInterval(wt); return; }
+            if (md.vids.some(function (x) { return x.err; })) { clearInterval(wt); btn.disabled = false; m.textContent = '영상을 못 올렸어요. 다시 넣어 주세요.'; }
+            else if (md.vids.every(function (x) { return x.done; })) { clearInterval(wt); btn.disabled = false; m.textContent = ''; f.requestSubmit(); }
+          }, 500);
+          return;
+        }
         btn.disabled = true;
-        call({ a: 'dec_add', token: state.s.token, what: w, who: $('decAddP') ? $('decAddP').value.replace(/[,，·\s]+$/, '').trim() : '', due: $('decAddD').value }).then(function (r) {
+        var body = { a: 'dec_add', token: state.s.token, what: w, who: $('decAddP') ? $('decAddP').value.replace(/[,，·\s]+$/, '').trim() : '', due: $('decAddD').value };
+        if (md.photos.length) body.photos = md.photos.map(function (p) { return { type: p.type, data: p.data }; });
+        if (md.vids.length) body.videos = md.vids.map(function (x) { return x.vid; });
+        call(body).then(function (r) {
           btn.disabled = false;
           if (r.error === 'auth') return toLogin(AUTH_OUT);
-          if (!r.ok) { m.className = 'msg'; m.textContent = { forbidden: '추가할 수 없어요.', text: '< > 는 쓸 수 없어요.', due: '마감 날짜를 다시 골라 주세요.', empty: '할 일을 써 주세요.', busy: '잠시 후 다시 해 주세요.' }[r.error] || '추가가 안 됐어요. 다시 해 주세요.'; return; }
-          state.decAddDraft = ''; state.decAddOpen = false; state.decF = '';
+          if (!r.ok) { m.className = 'msg'; m.textContent = { forbidden: '추가할 수 없어요.', text: '< > 는 쓸 수 없어요.', due: '마감 날짜를 다시 골라 주세요.', empty: '할 일을 써 주세요.', busy: '잠시 후 다시 해 주세요.', photo: '사진은 jpg·png 3장까지예요.', video: '영상을 다시 올려 주세요.' }[r.error] || '추가가 안 됐어요. 다시 해 주세요.'; return; }
+          state.decAddDraft = ''; state.decAddOpen = false; state.decF = ''; state.decMd[DEC_NEW] = null;
           state.data.decisions = r.decisions; saveData(state.data); render();
         }).catch(function () { btn.disabled = false; m.className = 'msg'; m.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
       });
@@ -1943,9 +1964,10 @@ body.popmode .chath .chpop { display: none; }
     });
   }
   // 📋 업무사항 코멘트에 붙일 사진(3장)·영상(2개) — 일마다 따로, 화면이 다시 그려져도 남아 있음
+  var DEC_NEW = '__add';   // ➕ 업무 추가 폼에 붙일 사진·영상
   function decMd(id) { state.decMd = state.decMd || {}; return state.decMd[id] || (state.decMd[id] = { photos: [], vids: [] }); }
   function decPaint(id) {
-    var box = document.querySelector('.dec[data-decid="' + id + '"] [data-decph]'); if (!box) return;
+    var box = id === DEC_NEW ? $('decAddPh') : document.querySelector('.dec[data-decid="' + id + '"] [data-decph]'); if (!box) return;
     var md = decMd(id); box.hidden = !md.photos.length && !md.vids.length;
     box.innerHTML = md.photos.map(function (p, i) { return '<span class="ph"><img src="' + p.url + '" alt=""><button type="button" data-dprm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
       md.vids.map(function (v, i) { return '<span class="ph' + (v.err ? ' bad' : '') + '">🎬<b>' + vidBadge(v) + '</b><button type="button" data-dvrm="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('');
@@ -1953,7 +1975,7 @@ body.popmode .chath .chpop { display: none; }
     box.querySelectorAll('[data-dvrm]').forEach(function (b) { b.addEventListener('click', function () { var v = md.vids.splice(+b.dataset.dvrm, 1)[0]; if (v) v.gone = true; decPaint(id); }); });
   }
   function decPick(id, all) {
-    var md = decMd(id), msg = $('decMsg'), say = function (t) { if (msg) msg.textContent = t; };
+    var md = decMd(id), msg = $(id === DEC_NEW ? 'decAddM' : 'decMsg'), say = function (t) { if (msg) msg.textContent = t; };
     var ims = all.filter(function (f) { return !ycIsVideo(f); });
     if (ims.length > 3 - md.photos.length) say('사진은 한 번에 3장까지예요.');
     ims = ims.slice(0, Math.max(0, 3 - md.photos.length));
