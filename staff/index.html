@@ -33,6 +33,17 @@ button, select { font: inherit; color: inherit; }
   padding: calc(10px + env(safe-area-inset-top)) 16px 10px; background: rgba(10,9,9,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .brand { font-weight: 900; letter-spacing: .08em; font-size: 15px; }
 .brand b { color: var(--g); }
+/* 🌙 영업 종료 (대표 요청 2026-11-19 새벽): 대표·팀장 버튼 · 받으면 화면 가득 '수고하셨습니다' 3초 깜빡 */
+.brandw { display: flex; align-items: center; gap: 8px; min-width: 0; }
+@media (max-width: 420px) { .brandw .brand { letter-spacing: .03em; font-size: 14px; } .byebtn { padding: 0 8px !important; font-size: 11px !important; } }
+.byebtn { min-height: 30px; padding: 0 10px; border-radius: 999px; border: 1px solid rgba(155,140,255,.7); background: rgba(155,140,255,.12); color: #c9c1ff; font-weight: 900; font-size: 12px; white-space: nowrap; cursor: pointer; }
+.byeov { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; text-align: center; background: #120a2e; animation: byeflash .5s steps(2, jump-none) 6; cursor: pointer; }
+.byeov > div { display: grid; gap: 10px; padding: 24px; }
+.byeov b { font-size: clamp(34px, 11vw, 72px); font-weight: 900; color: #fff; letter-spacing: -.02em; }
+.byeov span { font-size: 48px; }
+.byeov small { font-size: 16px; color: #c9c1ff; font-weight: 700; }
+@keyframes byeflash { 0% { background: #120a2e; } 100% { background: #5b3df5; } }
+.byeov.out { opacity: 0; transition: opacity .4s; }
 .who { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); min-width: 0; }
 .who strong { color: var(--txt); }
 .link { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; padding: 6px 2px; font-size: 13px; }
@@ -118,6 +129,11 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 .wk { display: inline-grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
 .wk button { min-height: 36px; padding: 0 14px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-weight: 800; font-size: 13px; cursor: pointer; }
 .wk button[aria-selected="true"] { background: var(--card-2); color: var(--txt); }
+.gkind { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 0 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
+.gkind button { min-height: 42px; border: 0; border-radius: 10px; background: none; color: var(--muted); font-weight: 900; font-size: 15px; cursor: pointer; }
+.gkind button[aria-selected="true"] { background: var(--card-2); color: var(--txt); }
+.gkind button[data-gk="sold"][aria-selected="true"] { color: #ff8a9b; box-shadow: inset 0 0 0 1px rgba(255,59,92,.6); }
+.sum .tday { display: block; font-style: normal; font-size: 11px; font-weight: 800; color: var(--muted); margin-top: 2px; }
 .sum { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 0 14px; }
 .sum div { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
 .sum small { display: block; color: var(--muted); font-size: 12px; font-weight: 700; }
@@ -1072,10 +1088,11 @@ body.popmode .chath .chpop { display: none; }
 </head>
 <body>
 <header class="top">
-  <div class="brand">GROOVE <b>STAFF</b></div>
+  <div class="brandw"><div class="brand">GROOVE <b>STAFF</b></div><button type="button" class="byebtn" id="byeBtn" hidden>🌙 영업종료</button></div>
   <div class="who" id="who" hidden><button class="mebtn" id="meBtn" type="button" aria-label="내 프로필"><strong id="whoName"></strong> <span id="whoTeam"></span></button><button class="bell" id="bell" type="button" hidden aria-label="알림 켜기·끄기">🔕</button><button class="link" id="logout" type="button">로그아웃</button></div>
 </header>
 <div class="sosbar" id="sosBar" hidden role="alert" aria-live="assertive"></div>
+<div class="byeov" id="byeOv" hidden role="alert" aria-live="assertive"><div><b>수고하셨습니다</b><span>🙏</span><small id="byeBy"></small></div></div>
 
 <main>
   <section id="loginView" hidden>
@@ -1172,7 +1189,7 @@ body.popmode .chath .chpop { display: none; }
   var SALES = ['클로버', '아룬', '고트']; // 영업팀
   var DOW = ['월', '화', '수', '목', '금', '토', '일'];
   var $ = function (id) { return document.getElementById(id); };
-  var state = { s: null, data: null, tab: 'guest', week: 'week', bteam: '', draft: '', gday: '', gteam: '', gdraft: {}, gmsg: '', rmsg: '', rbad: false, rarm: '',
+  var state = { s: null, data: null, tab: 'guest', gKind: (function () { try { return localStorage.getItem('gs_gkind') || 'guest'; } catch (e) { return 'guest'; } })(), week: 'week', bteam: '', draft: '', gday: '', gteam: '', gdraft: {}, gmsg: '', rmsg: '', rbad: false, rarm: '',
     bview: 'list', btag: '', bpost: null, comp: null, cdraft: {}, imgs: {}, dm: null, dmView: 'list', dmWith: '', chat: null, dmDraft: {}, dmPick: false, poll: null, lastSync: 0, pcache: {}, sending: null, sendErr: '',
     keep: null, kview: 'list', kcur: null, kq: '', kf: '', kadd: null, kundo: null, kerr: '', kmsg: '', kstale: false, kfly: 0, kmulti: false, kopt: {}, ktmp: {}, kreload: false };
 
@@ -1441,6 +1458,7 @@ body.popmode .chath .chpop { display: none; }
       $('sync').textContent = ''; state.lastSync = Date.now();
       state.listAt = Date.now(); (r.gateOffers || []).forEach(function (c) { c.dl = state.listAt + (c.left || 0) * 1000; });
       state.data = r; saveData(r); try { sosPut(r.sos || []); } catch (e) {}
+      try { $('byeBtn').hidden = !r.byeOk; byeShow(r.bye); } catch (e) {}   // 🌙 영업 종료
       try { paintGateOffer(); } catch (e) {}
       if (r.pq) flushPush();
       state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; state.s.role = r.role || ''; save(state.s); setWho();
@@ -2479,7 +2497,9 @@ body.popmode .chath .chpop { display: none; }
     area.querySelectorAll('[data-wadd]').forEach(function (b) { b.addEventListener('click', function () { var p = b.dataset.wadd.split('|'); edit({ name: p[0], day: p[1] }); }); });
   }
   function renderGuest(area, d) {
-    var g = d.guests || {}, w = g[state.week] || { rows: [], total: 0 };
+    // 👥 게스트 / ★ 판매 순위 바꾸기 (대표 결정 2026-11-19 새벽: 승인된 ★판매 테이블만 · 담당 기준)
+    var sold = state.gKind === 'sold' && !!d.sold, unit = '팀';
+    var g = (sold ? d.sold : d.guests) || {}, w = g[state.week] || { rows: [], total: 0 };
     var isNow = state.week === 'week', ti = isNow && w.start ? Math.round((Date.parse(g.today) - Date.parse(w.start)) / 864e5) : -1;
     var teamSum = {}; SALES.forEach(function (t) { teamSum[t] = 0; });
     w.rows.forEach(function (r) { if (teamSum[r.team] != null) teamSum[r.team] += r.total; });
@@ -2487,42 +2507,48 @@ body.popmode .chath .chpop { display: none; }
     var me = w.rows.filter(function (r) { return r.mine; })[0];
     var top = w.rows.filter(function (r) { return r.rank <= 3; });
     var canIn = !!(d.admin || d.gall || (d.approver && d.team));
-    var h = (canIn ? viewOnlyBar() + ginHtml(d) : '') + '<div class="gh"><div><h1>' + (isNow ? '이번 주' : '지난주') + ' 게스트 순위</h1>' +
+    var kindBar = d.sold ? '<div class="gkind" role="tablist" aria-label="순위 종류"><button type="button" data-gk="guest" aria-selected="' + !sold + '">👥 게스트</button><button type="button" data-gk="sold" aria-selected="' + sold + '">★ 판매</button></div>' : '';
+    var h = (canIn && !sold ? viewOnlyBar() + ginHtml(d) : '') + kindBar + '<div class="gh"><div><h1>' + (isNow ? '이번 주' : '지난주') + (sold ? ' ★ 판매 순위' : ' 게스트 순위') + '</h1>' +
       (w.start ? '<span class="range">' + md(w.start) + '(월) ~ ' + md(w.end) + '(일) 영업일</span>' : '') + '</div>' +
       '<div class="wk" role="tablist" aria-label="주 선택"><button type="button" data-w="week" aria-selected="' + isNow + '">이번 주</button>' +
       '<button type="button" data-w="prev" aria-selected="' + !isNow + '">지난주</button></div></div>';
     // 팀 카드를 누르면 그 팀 안 순위 (대표 요청 2026-11-18): 대표·승인하는 사람은 모든 팀, 직원은 자기 팀
     var tOk = function (t) { return !!(d.admin || d.guestAll || d.team === t); };
     if (state.gTeam && !tOk(state.gTeam)) state.gTeam = '';
-    h += '<p class="sumcap">영업팀 팀별 게스트' + (SALES.some(tOk) ? ' <span class="note" style="margin:0">· 팀을 누르면 팀 안 순위</span>' : '') + '</p><div class="sum"><div><small>전체</small><b>' + w.total + '</b></div>' + SALES.map(function (t) {
+    var tToday = {}, allToday = 0; SALES.forEach(function (t) { tToday[t] = 0; });
+    if (sold && ti >= 0) w.rows.forEach(function (r) { var n = r.days[ti] || 0; allToday += n; if (tToday[r.team] != null) tToday[r.team] += n; });
+    var todayS = function (n) { return sold && ti >= 0 ? '<i class="tday">오늘 ' + n + '</i>' : ''; };
+    h += '<p class="sumcap">영업팀 팀별 ' + (sold ? '★ 판매 테이블' : '게스트') + (SALES.some(tOk) ? ' <span class="note" style="margin:0">· 팀을 누르면 팀 안 순위</span>' : '') + '</p><div class="sum"><div><small>전체</small><b>' + w.total + '</b>' + todayS(allToday) + '</div>' + SALES.map(function (t) {
       var cls = (best > 0 && teamSum[t] === best ? 'win' : '') + (state.gTeam === t ? ' on' : '');
-      return tOk(t) ? '<button type="button" class="tsum ' + cls + '" data-gteam="' + esc(t) + '" aria-pressed="' + (state.gTeam === t) + '"><small>' + esc(t) + (best > 0 && teamSum[t] === best ? ' 👑' : '') + '</small><b>' + teamSum[t] + '</b></button>'
-        : '<div' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '><small>' + esc(t) + '</small><b>' + teamSum[t] + '</b></div>';
+      return tOk(t) ? '<button type="button" class="tsum ' + cls + '" data-gteam="' + esc(t) + '" aria-pressed="' + (state.gTeam === t) + '"><small>' + esc(t) + (best > 0 && teamSum[t] === best ? ' 👑' : '') + '</small><b>' + teamSum[t] + '</b>' + todayS(tToday[t]) + '</button>'
+        : '<div' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '><small>' + esc(t) + '</small><b>' + teamSum[t] + '</b>' + todayS(tToday[t]) + '</div>';
     }).join('') + '</div>';
     if (state.gTeam) {
       var tr = w.rows.filter(function (r) { return r.team === state.gTeam; }), tlast = null, trank = 0;
       tr = tr.map(function (r, i) { if (r.total !== tlast) { trank = i + 1; tlast = r.total; } return Object.assign({}, r, { rank: trank }); });
       h += '<div class="tteam"><h2 class="sec">' + esc(state.gTeam) + ' 팀 안 순위 <small>' + tr.length + '명 · ' + teamSum[state.gTeam] + '팀</small><button type="button" class="tclose" data-gteam="">닫기 ✕</button></h2>' +
-        (tr.length ? '<div class="list">' + tr.map(function (r) { return rankCard(r, ti); }).join('') + '</div>' : '<p class="empty">' + (isNow ? '이번 주' : '지난주') + ' 이 팀 게스트가 아직 없어요.</p>') + '</div>';
+        (tr.length ? '<div class="list">' + tr.map(function (r) { return rankCard(r, ti); }).join('') + '</div>' : '<p class="empty">' + (isNow ? '이번 주' : '지난주') + ' 이 팀 ' + (sold ? '★ 판매' : '게스트') + '가 아직 없어요.</p>') + '</div>';
     }
-    if (me) h += '<div class="me-card">내 순위 <b>' + me.rank + '위</b> · 게스트 <b>' + me.total + '팀</b>' +
+    if (me) h += '<div class="me-card">내 순위 <b>' + me.rank + '위</b> · ' + (sold ? '★ 판매' : '게스트') + ' <b>' + me.total + '팀</b>' +
       (me.rank > 3 && top.length ? ' · 3위와 ' + (top[top.length - 1].total - me.total) + '팀 차이' : me.rank > 1 && w.rows.length ? ' · 1위와 ' + (w.rows[0].total - me.total) + '팀 차이' : '') + '</div>';
     h += '<h2 class="sec">🏆 개인 순위 TOP 3</h2><div class="list">' + top.map(function (r) { return rankCard(r, ti); }).join('');
     for (var pi = top.length; pi < 3; pi++) h += '<div class="rk ph"><span class="medal" aria-hidden="true">' + ['🥇', '🥈', '🥉'][pi] + '</span><div class="nm"><strong>아직 없음</strong></div><div class="tot">0<small>팀</small></div></div>';
     h += '</div>';
     if (!w.rows.length) {
-      h += '<p class="empty" style="margin-top:12px">' + (isNow ? '이번 주 아직 올라온 게스트가 없어요.' : '지난주 기록이 없어요.') + '</p>';
+      h += '<p class="empty" style="margin-top:12px">' + (isNow ? (sold ? '이번 주 아직 승인된 ★ 판매 테이블이 없어요.' : '이번 주 아직 올라온 게스트가 없어요.') : '지난주 기록이 없어요.') + '</p>';
     } else {
       if ((d.admin || d.guestAll) && w.rows.length > top.length) {   // 승인하는 사람(대표·김동기·양진호·팀장)은 모든 직원 (대표 결정 2026-11-18)
         h += '<details class="all" open><summary>전체 순위 (' + w.rows.length + '명 · 승인하는 사람만 보여요)</summary><div class="list">' +
           w.rows.map(function (r) { return rankCard(r, ti); }).join('') + '</div></details>';
       }
     }
-    h += '<p class="how">' + (canIn ? '위 <b>게스트 입력</b>에서 영업일을 고르고 팀원별 숫자를 넣은 뒤 저장하면 개인 순위와 팀 합계에 바로 반영돼요. 스태프 페이지에 가입하지 않은 팀원은 <b>팀원 추가</b>로 이름만 넣으면 돼요. 낮 12시 전은 전날 영업으로 잡혀요. 이번 주·지난주까지 고칠 수 있어요.' : '게스트 수는 팀장님이 스태프 페이지에서 넣고, 넣는 즉시 순위에 반영돼요.') + '</p>';
+    if (sold) h += '<p class="how">🪑 테이블에서 <b>승인된 ★ 판매</b> 테이블만 세요 (요청만 올린 건 빼고). 담당 MD 기준 · 낮 12시 전은 전날 영업으로 · 손님이 나가 자리를 비워도 그대로 남아요.</p>';
+    else h += '<p class="how">' + (canIn ? '위 <b>게스트 입력</b>에서 영업일을 고르고 팀원별 숫자를 넣은 뒤 저장하면 개인 순위와 팀 합계에 바로 반영돼요. 스태프 페이지에 가입하지 않은 팀원은 <b>팀원 추가</b>로 이름만 넣으면 돼요. 낮 12시 전은 전날 영업으로 잡혀요. 이번 주·지난주까지 고칠 수 있어요.' : '게스트 수는 팀장님이 스태프 페이지에서 넣고, 넣는 즉시 순위에 반영돼요.') + '</p>';
     area.innerHTML = h;
     bindViewOnly(area);
     bindGin(area, d);
     area.querySelectorAll('[data-w]').forEach(function (b) { b.addEventListener('click', function () { state.week = b.dataset.w; render(); }); });
+    area.querySelectorAll('[data-gk]').forEach(function (b) { b.addEventListener('click', function () { state.gKind = b.dataset.gk; state.gTeam = ''; try { localStorage.setItem('gs_gkind', state.gKind); } catch (e) {} render(); }); });
     area.querySelectorAll('[data-gteam]').forEach(function (b) { b.addEventListener('click', function () { state.gTeam = b.dataset.gteam === state.gTeam ? '' : b.dataset.gteam; render(); var t = area.querySelector('.tteam'); if (t && state.gTeam) t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }); });
   }
 
@@ -3744,6 +3770,31 @@ body.popmode .chath .chpop { display: none; }
     return swReg().then(function (reg) { return reg ? reg.pushManager.getSubscription().then(function (s) { return s ? 'on' : 'off'; }) : 'no'; }).catch(function () { return 'no'; });
   }
   function paintBell() { bellState().then(function (st) { var b = $('bell'); b.hidden = false; b.textContent = st === 'on' ? '🔔' : '🔕'; b.title = st === 'on' ? '알림 켜짐' : '알림 꺼짐'; b.dataset.st = st; }); }
+  // 🌙 영업 종료: 화면 가득 '수고하셨습니다' 3초 깜빡 (한 번 본 건 다시 안 띄움)
+  function byeShow(b) {
+    if (!b || !b.at) return;
+    var seen = ''; try { seen = localStorage.getItem('gs_bye') || ''; } catch (e) {}
+    if (seen === b.at) return;
+    var t = Date.parse(String(b.at).slice(0, 19).replace(' ', 'T') + '+09:00'); if (isFinite(t) && Date.now() - t > 15 * 60e3) return;   // 15분 지난 건 안 띄움
+    try { localStorage.setItem('gs_bye', b.at); } catch (e) {}
+    var o = $('byeOv'); $('byeBy').textContent = '🌙 영업 종료' + (b.by ? ' · ' + b.by : ''); o.classList.remove('out'); o.hidden = false;
+    try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+    clearTimeout(state.byeT); state.byeT = setTimeout(function () { o.classList.add('out'); setTimeout(function () { o.hidden = true; o.classList.remove('out'); }, 420); }, 3000);
+  }
+  function byeConfirm() {
+    showSheet('<h2>🌙 영업 종료</h2><p style="font-size:18px;font-weight:900;margin:4px 0 10px">영업종료하시겠습니까?</p>' +
+      '<ul class="note" style="margin:0 0 12px;padding-left:18px;line-height:1.7"><li>출근 중인 직원에게 <b>수고하셨습니다</b> 알림 · 화면 3초 깜빡</li><li>안 끝난 일 모두 끝 (킵 승인 대기는 그대로)</li><li>🪑 테이블 모두 비움</li><li>🎆 연출 · 🛎 운영 · 🚪 입구 · 🚨 경호 목록 비움</li><li>기록·★ 판매 순위·마감 리포트 숫자는 그대로 남아요</li></ul>' +
+      '<p class="msg" id="byeMsg"></p><button class="btn btn-hot" type="button" id="byeGo" style="width:100%;min-height:52px;font-size:17px">네, 영업 종료</button>');
+    $('byeGo').addEventListener('click', function () {
+      var b = this; b.disabled = true; b.textContent = '종료하는 중…';
+      call({ a: 'biz_close', token: state.s.token }).then(function (r) {
+        if (!r.ok) { b.disabled = false; b.textContent = '네, 영업 종료'; $('byeMsg').textContent = r.error === 'forbidden' ? '대표·팀장만 할 수 있어요.' : r.error === 'busy' ? '방금 했어요. 잠시 후 다시 해 주세요.' : '종료하지 못했어요. 다시 해 주세요.'; return; }
+        $('sheet').hidden = true; $('sheet').innerHTML = ''; flushPush();
+        state.tb = null; state.yc = null; state.ops = null; state.gate = null; state.sos = []; state.sosSig = ''; try { sosPut([]); } catch (e) {}
+        byeShow(r.bye); toast('🌙 영업 종료 · 출근 중 ' + r.n + '명에게 알렸어요'); refresh(true);
+      }).catch(function () { b.disabled = false; b.textContent = '네, 영업 종료'; $('byeMsg').textContent = '연결이 안 돼요.'; });
+    });
+  }
   function toast(t) { var s = $('sync'); s.textContent = t; clearTimeout(state.toastT); state.toastT = setTimeout(function () { if (s.textContent === t) s.textContent = ''; }, 5000); }
   // 🔕 갤럭시에서 알림이 안 풀릴 때 (2026-11-18): 어디서 열었는지(크롬 탭·홈 화면 앱·삼성 인터넷)에 맞춰 푸는 곳을 바로 알려 줌.
   // 크롬 설정의 사이트 목록에는 그루브.site 가 'xn--2i0bl1s25d.site' 로 보이고, 홈 화면 앱은 크롬이 아니라 그 앱의 알림 설정에서 풀어야 함.
@@ -3857,6 +3908,8 @@ body.popmode .chath .chpop { display: none; }
         { oldpw: '현재 비밀번호가 맞지 않아요.', pw: '새 비밀번호는 6~40자로 해 주세요.' });
     });
   }
+  $('byeBtn').addEventListener('click', function () { if (state.data && state.data.byeOk) byeConfirm(); });   // 🌙 영업 종료
+  $('byeOv').addEventListener('click', function () { var o = this; clearTimeout(state.byeT); o.hidden = true; });
   $('meBtn').addEventListener('click', function () { if (state.data) goTab('me'); else openMe(); });   // 이름 → 👤 내 프로필 (출근·퇴근·내 현황 · 내 정보 바꾸기)
   function showSheet(html, plain) {
     var s = $('sheet');
@@ -3869,6 +3922,7 @@ body.popmode .chath .chpop { display: none; }
     if (state.pop) return;   // 따로 띄운 대화창은 그대로
     var t = e.data && e.data.tab, ct = /^chat:(table|yc|guest|ops|gate)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
+    if (e.data && e.data.peek && /^🌙 영업 종료/.test(e.data.peek.title || '') && state.data) { refresh(true); return; }   // 🌙 영업 종료 알림 → 화면 '수고하셨습니다'
     if (t === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출: 탭이 아니라 위쪽 빨간 줄
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
     if (t && state.data) { state.tab = t; state.tabPick = ''; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); if (t === 'ops') loadOps(); if (t === 'live') loadLive(); }
