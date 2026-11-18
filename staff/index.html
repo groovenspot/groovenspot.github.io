@@ -63,11 +63,17 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 .seg button[aria-selected="true"] { background: var(--card-2); color: var(--txt); }
 .done-box { border: 1px solid rgba(60,207,145,.45); background: rgba(60,207,145,.08); border-radius: 14px; padding: 14px 16px; margin: 0 0 16px; font-size: 14px; }
 .done-box b { color: var(--ok); }
-.tabs { display: flex; gap: 6px; margin: 0 0 16px; overflow-x: auto; scrollbar-width: none; }
-.tabs::-webkit-scrollbar { display: none; }
-.tabs button { flex: none; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-2); background: none; color: var(--muted); font-weight: 800; font-size: 14px; cursor: pointer; }
+.tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 8px; }   /* 한 줄에 4개씩 (대표 요청 2026-11-19) */
+.tabs button { min-width: 0; min-height: 42px; padding: 0 4px; border-radius: 12px; border: 1px solid var(--line-2); background: none; color: var(--muted); font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tabs button[hidden] { display: none; }
+.tabedit { margin: 0 0 14px; text-align: right; }
+.tabedit .link { font-size: 12px; padding: 2px; }
+.tor { display: flex; align-items: center; gap: 8px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+.tor span { flex: 1; font-weight: 800; }
+.tor button { width: 44px; min-height: 38px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--txt); font-size: 16px; cursor: pointer; }
+.tor button:disabled { opacity: .3; }
 .tabs button[aria-selected="true"] { color: var(--g); border-color: var(--g); background: rgba(255,122,26,.12); }
-.tabs .n { display: inline-block; min-width: 18px; margin-left: 6px; padding: 0 5px; border-radius: 9px; background: var(--g); color: #120800; font-size: 11px; line-height: 18px; }
+.tabs .n { display: inline-block; min-width: 18px; margin-left: 4px; padding: 0 5px; border-radius: 9px; background: var(--g); color: #120800; font-size: 11px; line-height: 18px; }
 }
 .list { display: grid; gap: 10px; }
 .item { display: grid; gap: 6px; text-align: left; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; cursor: pointer; }
@@ -853,7 +859,7 @@ body.hasfab main { padding-bottom: 110px; }
 @media (min-width: 900px) {
   .goffer { left: auto; right: 24px; width: 400px; }
   main { max-width: 1040px; padding: 24px 24px 60px; }
-  .tabs { flex-wrap: wrap; overflow: visible; }
+  .tabs { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
   .top { padding-left: max(24px, calc((100% - 1040px) / 2 + 24px)); padding-right: max(24px, calc((100% - 1040px) / 2 + 24px)); }
   .who { white-space: nowrap; }
   .sheet { place-items: center; }
@@ -993,6 +999,7 @@ body.hasfab main { padding-bottom: 110px; }
       <button type="button" role="tab" data-tab="acc" aria-selected="false" hidden>가입 승인</button>
       <button type="button" role="tab" data-tab="work" aria-selected="false" hidden>🕘 근무표</button>
     </nav>
+    <p class="tabedit" id="tabEditW"><button type="button" class="link" id="tabEdit">↕ 탭 순서</button></p>
     <p class="sync" id="sync" aria-live="polite"></p>
     <div id="listArea"></div>
   </section>
@@ -1366,6 +1373,7 @@ body.hasfab main { padding-bottom: 110px; }
     var gateOn = !!(d.guard || d.gate);   // 🚪 입구: 경호팀 · 대표
     if (state.tab === 'gate' && !gateOn) state.tab = 'guest';
     if (d.guard && ['gate', 'me'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
+    tabArrange(d.tabOrder || []);   // ↕ 내 탭 순서
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
       if (b.dataset.tab === 'acc') b.hidden = !canAcc;
@@ -1384,11 +1392,43 @@ body.hasfab main { padding-bottom: 110px; }
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
+    $('tabEditW').hidden = document.querySelectorAll('#tabs button:not([hidden])').length < 4;
     // 홈 화면 앱 아이콘 숫자 (지원하는 폰만)
     try { var tot = bu + du + (canAcc ? pending : 0); if (navigator.setAppBadge) { if (tot) navigator.setAppBadge(tot); else navigator.clearAppBadge(); } } catch (e) {}
     return { edu: edu, notes: notes };
   }
   function renderTabsOnly() { if (state.data) paintTabs(state.data); }
+  // ↕ 내 탭 순서 (대표 요청 2026-11-19): 사람마다 원하는 순서 · 계정에 저장
+  var TAB_DEFAULT = Array.prototype.map.call(document.querySelectorAll('#tabs button'), function (b) { return b.dataset.tab; });
+  function tabArrange(ord) {
+    var sig = (ord || []).join(','); if (sig === state.tabOrd) return; state.tabOrd = sig;
+    var nav = $('tabs'), by = {}; nav.querySelectorAll('button').forEach(function (b) { by[b.dataset.tab] = b; });
+    (ord || []).filter(function (t) { return by[t]; }).concat(TAB_DEFAULT.filter(function (t) { return (ord || []).indexOf(t) < 0; })).forEach(function (t) { if (by[t]) nav.appendChild(by[t]); });
+  }
+  function tabOrderSheet() {
+    var vis = Array.prototype.filter.call(document.querySelectorAll('#tabs button'), function (b) { return !b.hidden; }), name = {};
+    vis.forEach(function (b) { name[b.dataset.tab] = (b.firstChild && b.firstChild.nodeType === 3 ? b.firstChild.textContent : b.textContent).trim(); });
+    var cur = vis.map(function (b) { return b.dataset.tab; });
+    showSheet('<h2>↕ 탭 순서</h2><p class="sub">위로 올린 탭이 먼저 보여요 (한 줄에 4개씩). 내 계정에 저장돼서 다른 폰에서도 같아요.</p><div id="toL"></div><p class="msg" id="toMsg"></p>' +
+      '<div class="tbbtns"><button class="btn btn-hot" type="button" id="toSave">저장</button><button class="btn" type="button" id="toReset">기본 순서로</button></div>');
+    function paint() {
+      $('toL').innerHTML = cur.map(function (t, i) { return '<div class="tor"><span>' + (i + 1) + '. ' + esc(name[t] || t) + '</span><button type="button" data-tou="' + i + '" aria-label="위로"' + (i ? '' : ' disabled') + '>▲</button><button type="button" data-tod="' + i + '" aria-label="아래로"' + (i < cur.length - 1 ? '' : ' disabled') + '>▼</button></div>'; }).join('');
+      $('toL').querySelectorAll('[data-tou]').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.tou; cur.splice(i - 1, 0, cur.splice(i, 1)[0]); paint(); }); });
+      $('toL').querySelectorAll('[data-tod]').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.tod; cur.splice(i + 1, 0, cur.splice(i, 1)[0]); paint(); }); });
+    }
+    paint();
+    var save = function (order, btn) {
+      btn.disabled = true;
+      call({ a: 'me_tabs', token: state.s.token, order: order }).then(function (r) {
+        btn.disabled = false;
+        if (!r.ok) { $('toMsg').textContent = '저장하지 못했어요. 다시 해 주세요.'; return; }
+        state.data.tabOrder = r.tabOrder; saveData(state.data); $('sheet').hidden = true; $('sheet').innerHTML = ''; renderTabsOnly();
+      }).catch(function () { btn.disabled = false; $('toMsg').textContent = '연결이 안 돼요.'; });
+    };
+    $('toSave').addEventListener('click', function () { save(cur, this); });
+    $('toReset').addEventListener('click', function () { save([], this); });
+  }
+  $('tabEdit').addEventListener('click', function () { if (state.s && state.data) tabOrderSheet(); });
   function render() {
     var d = state.data; if (!d) return;
     try { paintChatFab(); } catch (e) {}
@@ -3678,7 +3718,7 @@ body.hasfab main { padding-bottom: 110px; }
     return call({ a: 'ops_get', token: state.s.token }).then(function (r) {
       state.opsFly = 0; state.opsAt = Date.now();
       if (r.error === 'auth') return toLogin(AUTH_OUT);
-      if (!r.ok) { if (!state.ops) { state.opsErr = '불러오지 못했어요.'; if (state.tab === 'ops') render(); } return; }
+      if (!r.ok) { if (!state.ops) { state.opsErr = r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'ops') render(); } return; }
       var sig = JSON.stringify(r.list), same = !!state.ops && JSON.stringify(state.ops.list) === sig;
       state.ops = r; state.opsErr = ''; opsBadge(r);
       if (state.tab === 'ops' && !same && $('sheet').hidden) render();
@@ -3761,8 +3801,8 @@ body.hasfab main { padding-bottom: 110px; }
     return call({ a: 'all_feed', token: state.s.token }).then(function (r) {
       state.allFly = 0; state.allAt = Date.now();
       if (r.error === 'auth') return toLogin(AUTH_OUT);
-      if (!r.ok) { if (!quiet || !state.all) { state.allErr = r.error === 'forbidden' ? '대표만 볼 수 있어요.' : '불러오지 못했어요.'; if (state.tab === 'all') render(); } return; }
-      var sig = JSON.stringify([r.on, r.opsOpen, r.sosLive, r.list.length, r.list.slice(0, 80).map(function (x) { return x.id + x.at + (x.ops ? x.ops.status + x.ops.took.length : '') + (x.sos ? x.sos.status + x.sos.go.length : ''); })]), same = !!state.all && state.allSig === sig;
+      if (!r.ok) { if (!quiet || !state.all) { state.allErr = r.error === 'forbidden' ? '대표만 볼 수 있어요.' : r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'all') render(); } return; }
+      var sig = JSON.stringify([r.on, r.opsOpen, r.sosLive, r.list.length, r.list.slice(0, 80).map(function (x) { return x.id + x.at + (x.ops && x.ops.took ? x.ops.status + x.ops.took.length : '') + (x.sos && x.sos.go ? x.sos.status + x.sos.go.length : ''); })]), same = !!state.all && state.allSig === sig;
       state.all = r; state.allSig = sig; state.allErr = '';
       if (state.tab === 'all' && !same && $('sheet').hidden) render();
     }).catch(function () { state.allFly = 0; state.allAt = Date.now(); if (!state.all && state.tab === 'all') { state.allErr = '연결이 안 돼요.'; render(); } });
@@ -3770,9 +3810,10 @@ body.hasfab main { padding-bottom: 110px; }
   setInterval(function () { if (state.s && state.data && state.tab === 'all' && !document.hidden && Date.now() - (state.allAt || 0) > 4500) loadAll(true); }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'all') loadAll(true); });
   function renderAll(area) {
-    if (!state.all) { area.innerHTML = state.allErr ? '<p class="empty">' + esc(state.allErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.allFly && !state.allErr) loadAll(); return; }
+    if (!state.all) { area.innerHTML = state.allErr ? '<p class="empty">' + esc(state.allErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.allFly && !state.allErr) loadAll(); return; }   // 실패해도 5초마다 다시 불러옴
     var A = state.all, f = state.allF || '', prev = state.allSeen || '', today = String(A.now || '').slice(0, 10);
     var nAl = A.list.filter(function (x) { return x.t === 'al'; }).length;
+    A.list.forEach(function (x) { if (x.ops && !x.ops.took) x.ops = null; if (x.sos && !x.sos.go) x.sos = null; });   // 배포 직후 서버가 아직 예전 버전이면 (몇 분) 진행 상황 없이
     var isOps = function (x) { return x.t === 'ch' ? !!x.ops : /^(📡 )?(🛎|✅ 운영)/.test(x.title); }, isSos = function (x) { return x.t === 'ch' ? !!x.sos : /^(📡 )?(🚨|🏃|✅ 경호)/.test(x.title); };
     var list = A.list.filter(function (x) { return !f || (f === 'al' ? x.t === 'al' : f === 'ops' ? isOps(x) : f === 'sos' ? isSos(x) : x.t === 'ch' && x.room === f); });
     var tm = function (at) { return at.slice(0, 10) === today ? at.slice(11, 16) : at.slice(5, 16).replace('-', '/'); };
