@@ -63,11 +63,19 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 .seg button[aria-selected="true"] { background: var(--card-2); color: var(--txt); }
 .done-box { border: 1px solid rgba(60,207,145,.45); background: rgba(60,207,145,.08); border-radius: 14px; padding: 14px 16px; margin: 0 0 16px; font-size: 14px; }
 .done-box b { color: var(--ok); }
-.tabs { display: flex; gap: 6px; margin: 0 0 16px; overflow-x: auto; scrollbar-width: none; }
-.tabs::-webkit-scrollbar { display: none; }
-.tabs button { flex: none; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-2); background: none; color: var(--muted); font-weight: 800; font-size: 14px; cursor: pointer; }
+.tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 8px; }   /* 한 줄에 4개씩 (대표 요청 2026-11-19) */
+.tabs button { position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 42px; padding: 0 3px; border-radius: 12px; border: 1px solid var(--line-2); background: none; color: var(--muted); font-weight: 800; font-size: 13px; cursor: pointer; }
+.tabs .tl { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 380px) { .tabs button { font-size: 12px; } }
+.tabs button[hidden] { display: none; }
+.tabedit { margin: 0 0 14px; text-align: right; }
+.tabedit .link { font-size: 12px; padding: 2px; }
+.tor { display: flex; align-items: center; gap: 8px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+.tor span { flex: 1; font-weight: 800; }
+.tor button { width: 44px; min-height: 38px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--txt); font-size: 16px; cursor: pointer; }
+.tor button:disabled { opacity: .3; }
 .tabs button[aria-selected="true"] { color: var(--g); border-color: var(--g); background: rgba(255,122,26,.12); }
-.tabs .n { display: inline-block; min-width: 18px; margin-left: 6px; padding: 0 5px; border-radius: 9px; background: var(--g); color: #120800; font-size: 11px; line-height: 18px; }
+.tabs .n { position: absolute; top: -7px; right: -4px; min-width: 18px; padding: 0 5px; text-align: center; z-index: 1; border-radius: 9px; background: var(--g); color: #120800; font-size: 11px; line-height: 18px; }
 }
 .list { display: grid; gap: 10px; }
 .item { display: grid; gap: 6px; text-align: left; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; cursor: pointer; }
@@ -713,6 +721,9 @@ body.hasfab main { padding-bottom: 110px; }
 .tbmap .lm.thin { border-radius: 4px; background: #2a2416; border-color: #4a3d20; }
 .tbmap .lm.room { background: none; border: 1px dashed #34343c; }
 .tbmap .lm.st { background: repeating-linear-gradient(0deg, #2b1a0e 0 6px, #3a2412 6px 9px); border-color: #5a3418; color: #ff9a4a; writing-mode: vertical-rl; }
+.tbmapw.vert { overflow-x: hidden; }
+.tbmap.vert { margin: 0 auto; }
+.tbmap .lm.vt, .tbmap .zl.vt { writing-mode: vertical-rl; letter-spacing: .1em; }
 .tbmap .zl { position: absolute; font-size: 10px; font-weight: 800; color: #6d6d78; pointer-events: none; }
 .tbt.tbm { position: absolute; min-height: 0; padding: 4px 6px; border-radius: 10px; gap: 0; justify-content: flex-start; }
 .tbt.tbm.rd { border-radius: 50%; align-items: center; justify-content: center; text-align: center; padding: 2px; }
@@ -853,7 +864,7 @@ body.hasfab main { padding-bottom: 110px; }
 @media (min-width: 900px) {
   .goffer { left: auto; right: 24px; width: 400px; }
   main { max-width: 1040px; padding: 24px 24px 60px; }
-  .tabs { flex-wrap: wrap; overflow: visible; }
+  .tabs { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
   .top { padding-left: max(24px, calc((100% - 1040px) / 2 + 24px)); padding-right: max(24px, calc((100% - 1040px) / 2 + 24px)); }
   .who { white-space: nowrap; }
   .sheet { place-items: center; }
@@ -895,6 +906,24 @@ body.hasfab main { padding-bottom: 110px; }
 .opc .ops2 .ok { color: var(--ok); font-weight: 800; }
 .opc .opb { display: flex; gap: 8px; flex-wrap: wrap; }
 .opc .opb .btn { width: auto; flex: none; min-height: 40px; }
+/* 🆘 긴급모집 (대표 요청 2026-11-19): 잘 보이게 빨간 깜빡임 */
+@keyframes urgbg { 0%, 100% { background: #3a0610; box-shadow: 0 0 0 0 rgba(255,59,92,.75); } 50% { background: #6a0b1f; box-shadow: 0 0 0 6px rgba(255,59,92,0); } }
+@keyframes urgring { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,59,92,.8); } 50% { box-shadow: 0 0 0 8px rgba(255,59,92,0); } }
+.btn.btn-urg { background: #e0203f; border-color: #ff8a9b; color: #fff; }
+.opc.urg { border: 2px solid #ff3b5c; animation: urgring 1.2s ease-in-out infinite; }
+.opc .opurg { margin: 0; color: #ff8a9b; font-size: 13px; font-weight: 800; }
+.chatpin { display: flex; flex-direction: column; gap: 6px; padding: 8px 12px 2px; max-height: 40%; overflow-y: auto; }
+.chatpin[hidden] { display: none; }
+.cpin { display: flex; align-items: center; gap: 8px; border: 2px solid #ff3b5c; border-radius: 12px; padding: 8px 10px; color: #ffd6dd; animation: urgbg 1.2s ease-in-out infinite; }
+.cpin > div { flex: 1; min-width: 0; font-size: 13px; line-height: 1.45; word-break: break-word; }
+.cpin b { color: #fff; font-size: 14px; }
+.cpin .cpn { color: #fff; font-weight: 900; }
+.cpin small { color: #ffb3c0; }
+.cpin button { flex: none; min-height: 38px; padding: 0 12px; border-radius: 999px; border: 0; background: #fff; color: #b0102c; font-weight: 900; font-size: 13px; cursor: pointer; }
+.cpin .cpme { flex: none; color: #9ff0c4; font-weight: 800; font-size: 12px; }
+.chatl .cm.urg > p { border: 2px solid #ff3b5c; animation: urgring 1.2s ease-in-out infinite; }
+.chatfab.urg { animation: urgring 1.2s ease-in-out infinite; background: #e0203f; color: #fff; }
+@media (prefers-reduced-motion: reduce) { .cpin, .opc.urg, .chatl .cm.urg > p, .chatfab.urg { animation: none; } }
 .opk, .opi, .opfl { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
 .opk .chip, .opi .chip, .opfl .chip { cursor: pointer; background: none; padding: 7px 12px; font-size: 14px; }
 .opk .chip.on, .opi .chip.on, .opfl .chip.on { background: var(--g); border-color: var(--g); color: #120800; }
@@ -993,6 +1022,7 @@ body.hasfab main { padding-bottom: 110px; }
       <button type="button" role="tab" data-tab="acc" aria-selected="false" hidden>가입 승인</button>
       <button type="button" role="tab" data-tab="work" aria-selected="false" hidden>🕘 근무표</button>
     </nav>
+    <p class="tabedit" id="tabEditW"><button type="button" class="link" id="tabEdit">↕ 탭 순서</button></p>
     <p class="sync" id="sync" aria-live="polite"></p>
     <div id="listArea"></div>
   </section>
@@ -1012,6 +1042,7 @@ body.hasfab main { padding-bottom: 110px; }
 <section class="chatbox" id="chatBox" hidden aria-label="대화">
   <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
   <div class="chathelp" id="chatHelp" hidden></div>
+  <div class="chatpin" id="chatPin" hidden aria-live="polite"></div>
   <div class="chatl" id="chatL"></div>
   <div class="chatat" id="chatAt" hidden></div>
   <div class="chatph" id="chatPh" hidden></div>
@@ -1366,6 +1397,7 @@ body.hasfab main { padding-bottom: 110px; }
     var gateOn = !!(d.guard || d.gate);   // 🚪 입구: 경호팀 · 대표
     if (state.tab === 'gate' && !gateOn) state.tab = 'guest';
     if (d.guard && ['gate', 'me'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
+    tabArrange(d.tabOrder || []);   // ↕ 내 탭 순서
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
       if (b.dataset.tab === 'acc') b.hidden = !canAcc;
@@ -1382,13 +1414,45 @@ body.hasfab main { padding-bottom: 110px; }
       if (b.dataset.tab === 'gate') b.hidden = !gateOn;
       if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table));
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
-      b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
+      b.innerHTML = '<span class="tl">' + esc(l[0]) + '</span>' + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
+    $('tabEditW').hidden = document.querySelectorAll('#tabs button:not([hidden])').length < 4;
     // 홈 화면 앱 아이콘 숫자 (지원하는 폰만)
     try { var tot = bu + du + (canAcc ? pending : 0); if (navigator.setAppBadge) { if (tot) navigator.setAppBadge(tot); else navigator.clearAppBadge(); } } catch (e) {}
     return { edu: edu, notes: notes };
   }
   function renderTabsOnly() { if (state.data) paintTabs(state.data); }
+  // ↕ 내 탭 순서 (대표 요청 2026-11-19): 사람마다 원하는 순서 · 계정에 저장
+  var TAB_DEFAULT = Array.prototype.map.call(document.querySelectorAll('#tabs button'), function (b) { return b.dataset.tab; });
+  function tabArrange(ord) {
+    var sig = (ord || []).join(','); if (sig === state.tabOrd) return; state.tabOrd = sig;
+    var nav = $('tabs'), by = {}; nav.querySelectorAll('button').forEach(function (b) { by[b.dataset.tab] = b; });
+    (ord || []).filter(function (t) { return by[t]; }).concat(TAB_DEFAULT.filter(function (t) { return (ord || []).indexOf(t) < 0; })).forEach(function (t) { if (by[t]) nav.appendChild(by[t]); });
+  }
+  function tabOrderSheet() {
+    var vis = Array.prototype.filter.call(document.querySelectorAll('#tabs button'), function (b) { return !b.hidden; }), name = {};
+    vis.forEach(function (b) { name[b.dataset.tab] = (b.querySelector('.tl') || b).textContent.trim(); });
+    var cur = vis.map(function (b) { return b.dataset.tab; });
+    showSheet('<h2>↕ 탭 순서</h2><p class="sub">위로 올린 탭이 먼저 보여요 (한 줄에 4개씩). 내 계정에 저장돼서 다른 폰에서도 같아요.</p><div id="toL"></div><p class="msg" id="toMsg"></p>' +
+      '<div class="tbbtns"><button class="btn btn-hot" type="button" id="toSave">저장</button><button class="btn" type="button" id="toReset">기본 순서로</button></div>');
+    function paint() {
+      $('toL').innerHTML = cur.map(function (t, i) { return '<div class="tor"><span>' + (i + 1) + '. ' + esc(name[t] || t) + '</span><button type="button" data-tou="' + i + '" aria-label="위로"' + (i ? '' : ' disabled') + '>▲</button><button type="button" data-tod="' + i + '" aria-label="아래로"' + (i < cur.length - 1 ? '' : ' disabled') + '>▼</button></div>'; }).join('');
+      $('toL').querySelectorAll('[data-tou]').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.tou; cur.splice(i - 1, 0, cur.splice(i, 1)[0]); paint(); }); });
+      $('toL').querySelectorAll('[data-tod]').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.tod; cur.splice(i + 1, 0, cur.splice(i, 1)[0]); paint(); }); });
+    }
+    paint();
+    var save = function (order, btn) {
+      btn.disabled = true;
+      call({ a: 'me_tabs', token: state.s.token, order: order }).then(function (r) {
+        btn.disabled = false;
+        if (!r.ok) { $('toMsg').textContent = '저장하지 못했어요. 다시 해 주세요.'; return; }
+        state.data.tabOrder = r.tabOrder; saveData(state.data); $('sheet').hidden = true; $('sheet').innerHTML = ''; renderTabsOnly();
+      }).catch(function () { btn.disabled = false; $('toMsg').textContent = '연결이 안 돼요.'; });
+    };
+    $('toSave').addEventListener('click', function () { save(cur, this); });
+    $('toReset').addEventListener('click', function () { save([], this); });
+  }
+  $('tabEdit').addEventListener('click', function () { if (state.s && state.data) tabOrderSheet(); });
   function render() {
     var d = state.data; if (!d) return;
     try { paintChatFab(); } catch (e) {}
@@ -3678,7 +3742,7 @@ body.hasfab main { padding-bottom: 110px; }
     return call({ a: 'ops_get', token: state.s.token }).then(function (r) {
       state.opsFly = 0; state.opsAt = Date.now();
       if (r.error === 'auth') return toLogin(AUTH_OUT);
-      if (!r.ok) { if (!state.ops) { state.opsErr = '불러오지 못했어요.'; if (state.tab === 'ops') render(); } return; }
+      if (!r.ok) { if (!state.ops) { state.opsErr = r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'ops') render(); } return; }
       var sig = JSON.stringify(r.list), same = !!state.ops && JSON.stringify(state.ops.list) === sig;
       state.ops = r; state.opsErr = ''; opsBadge(r);
       if (state.tab === 'ops' && !same && $('sheet').hidden) render();
@@ -3686,7 +3750,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
   setInterval(function () { if (state.s && state.data && state.tab === 'ops' && !document.hidden && Date.now() - (state.opsAt || 0) > 4500) loadOps(true); }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'ops') loadOps(true); });
-  function opsErr(r) { return { kind: '종류를 골라 주세요.', empty: '무엇을 갖다 드릴지 골라 주세요.', seat: '자리를 확인해 주세요. (예: 4 · L3 · D1 · S5)', text: '< > 는 쓸 수 없어요.', n: '인원은 1~10명이에요.', busy: '잠시 후 다시 해 주세요.', full: '이미 인원이 다 찼어요.', forbidden: '권한이 없어요.', state: '취소된 요청이에요.', notfound: '없는 요청이에요.' }[r.error] || '다시 해 주세요.'; }
+  function opsErr(r) { return { kind: '종류를 골라 주세요.', empty: '무엇을 갖다 드릴지 골라 주세요.', seat: '자리를 확인해 주세요. (예: 4 · L3 · D1 · S5)', text: '< > 는 쓸 수 없어요.', n: '인원은 1~10명이에요.', busy: '잠시 후 다시 해 주세요.', full: '이미 인원이 다 찼어요.', forbidden: '권한이 없어요.', state: '취소된 요청이에요.', notfound: '없는 요청이에요.', soon: '방금 올렸어요. 1분 뒤에 다시 올릴 수 있어요.' }[r.error] || '다시 해 주세요.'; }
   function opsCall(body, btn, done) {
     if (btn) btn.disabled = true; body.token = state.s.token;
     return call(body).then(function (r) { if (btn) btn.disabled = false; if (r.error === 'auth') return toLogin(AUTH_OUT); if (r.ok) { state.ops = r; opsBadge(r); flushPush(); } if (done) done(r); }).catch(function () { if (btn) btn.disabled = false; if (done) done({ error: 'net' }); });
@@ -3699,10 +3763,13 @@ body.hasfab main { padding-bottom: 110px; }
     h += '<p class="msg ok" id="opBox"' + (state.opsMsg ? '' : ' hidden') + '>' + esc(state.opsMsg || '') + '</p>'; state.opsMsg = '';
     var card = function (x) {
       var who = x.took.map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ');
-      return '<div class="opc st-' + esc(x.status) + '" data-opid="' + esc(x.id) + '"><div class="oph"><span class="chip">' + esc(x.kind) + '</span><b>' + esc(opsWhere(x) || '자리 없음') + '</b><time>' + esc(x.hm) + '</time></div>' +
+      var urg = x.urgent && x.status === '대기', par = x.kind === '🎆 퍼레이드 지원' && x.status === '대기';
+      return '<div class="opc st-' + esc(x.status) + (urg ? ' urg' : '') + '" data-opid="' + esc(x.id) + '"><div class="oph"><span class="chip">' + esc(x.kind) + '</span><b>' + esc(opsWhere(x) || '자리 없음') + '</b><time>' + esc(x.hm) + '</time></div>' +
         (x.memo ? '<p class="opm">' + esc(x.memo) + '</p>' : '') +
         '<span class="ops2">요청 ' + esc(x.by) + nickH(x.by) + ' · ' + (x.status === '확정' ? '<span class="ok">✅ 담당 ' + who + '</span>' : x.status === '취소' ? '취소됨' : '담당 대기' + (x.took.length ? ' · ' + who : '')) + (x.need > 1 ? ' (' + x.took.length + '/' + x.need + '명)' : '') + '</span>' +
+        (urg ? '<p class="opurg">🆘 긴급모집 중 · 테이블 대화 맨 위에 고정 (' + esc(x.urgent.who) + ' ' + esc(x.urgent.hm) + ')</p>' : '') +
         '<div class="opb">' + (crew && x.status === '대기' && !x.me && !x.mine ? '<button class="btn btn-ok" type="button" data-optake="1">✅ 내가 할게요</button>' : '') +
+        (par ? '<button class="btn btn-urg" type="button" data-opurg="1">🆘 ' + (x.urgent ? '다시 긴급모집' : '긴급모집') + '</button>' : '') +
         (crew && x.me && x.status !== '취소' ? '<button class="btn" type="button" data-opun="1">담당 빼기</button>' : '') +
         ((x.mine || (state.s && state.s.admin)) && x.status !== '취소' ? '<button class="link" type="button" data-opcx="1">요청 취소</button>' : '') + '</div></div>';
     };
@@ -3714,6 +3781,7 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-opid]').forEach(function (c) {
       var id = c.dataset.opid;
       c.querySelectorAll('[data-optake],[data-opun]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_take', id: id, on: !b.dataset.opun }, b, function (r) { if (!r.ok) state.opsMsg = opsErr(r); else if (!b.dataset.opun) state.opsMsg = '맡았어요. 요청한 사람에게 알려요.'; render(); }); }); });
+      c.querySelectorAll('[data-opurg]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_urgent', id: id }, b, function (r) { state.opsMsg = r.ok ? '🆘 테이블 대화에 다시 올리고 맨 위에 고정했어요. 운영팀·영업진 전체에게 알렸어요. 인원이 다 차면 풀려요.' : opsErr(r); render(); }); }); });
       c.querySelectorAll('[data-opcx]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '요청 취소')) return; opsCall({ a: 'ops_cancel', id: id }, b, function (r) { state.opsMsg = r.ok ? '요청을 취소했어요.' : opsErr(r); render(); }); }); });
     });
   }
@@ -3761,8 +3829,8 @@ body.hasfab main { padding-bottom: 110px; }
     return call({ a: 'all_feed', token: state.s.token }).then(function (r) {
       state.allFly = 0; state.allAt = Date.now();
       if (r.error === 'auth') return toLogin(AUTH_OUT);
-      if (!r.ok) { if (!quiet || !state.all) { state.allErr = r.error === 'forbidden' ? '대표만 볼 수 있어요.' : '불러오지 못했어요.'; if (state.tab === 'all') render(); } return; }
-      var sig = JSON.stringify([r.on, r.opsOpen, r.sosLive, r.list.length, r.list.slice(0, 80).map(function (x) { return x.id + x.at + (x.ops ? x.ops.status + x.ops.took.length : '') + (x.sos ? x.sos.status + x.sos.go.length : ''); })]), same = !!state.all && state.allSig === sig;
+      if (!r.ok) { if (!quiet || !state.all) { state.allErr = r.error === 'forbidden' ? '대표만 볼 수 있어요.' : r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'all') render(); } return; }
+      var sig = JSON.stringify([r.on, r.opsOpen, r.sosLive, r.list.length, r.list.slice(0, 80).map(function (x) { return x.id + x.at + (x.ops && x.ops.took ? x.ops.status + x.ops.took.length : '') + (x.sos && x.sos.go ? x.sos.status + x.sos.go.length : ''); })]), same = !!state.all && state.allSig === sig;
       state.all = r; state.allSig = sig; state.allErr = '';
       if (state.tab === 'all' && !same && $('sheet').hidden) render();
     }).catch(function () { state.allFly = 0; state.allAt = Date.now(); if (!state.all && state.tab === 'all') { state.allErr = '연결이 안 돼요.'; render(); } });
@@ -3770,9 +3838,10 @@ body.hasfab main { padding-bottom: 110px; }
   setInterval(function () { if (state.s && state.data && state.tab === 'all' && !document.hidden && Date.now() - (state.allAt || 0) > 4500) loadAll(true); }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'all') loadAll(true); });
   function renderAll(area) {
-    if (!state.all) { area.innerHTML = state.allErr ? '<p class="empty">' + esc(state.allErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.allFly && !state.allErr) loadAll(); return; }
+    if (!state.all) { area.innerHTML = state.allErr ? '<p class="empty">' + esc(state.allErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.allFly && !state.allErr) loadAll(); return; }   // 실패해도 5초마다 다시 불러옴
     var A = state.all, f = state.allF || '', prev = state.allSeen || '', today = String(A.now || '').slice(0, 10);
     var nAl = A.list.filter(function (x) { return x.t === 'al'; }).length;
+    A.list.forEach(function (x) { if (x.ops && !x.ops.took) x.ops = null; if (x.sos && !x.sos.go) x.sos = null; });   // 배포 직후 서버가 아직 예전 버전이면 (몇 분) 진행 상황 없이
     var isOps = function (x) { return x.t === 'ch' ? !!x.ops : /^(📡 )?(🛎|✅ 운영)/.test(x.title); }, isSos = function (x) { return x.t === 'ch' ? !!x.sos : /^(📡 )?(🚨|🏃|✅ 경호)/.test(x.title); };
     var list = A.list.filter(function (x) { return !f || (f === 'al' ? x.t === 'al' : f === 'ops' ? isOps(x) : f === 'sos' ? isSos(x) : x.t === 'ch' && x.room === f); });
     var tm = function (at) { return at.slice(0, 10) === today ? at.slice(11, 16) : at.slice(5, 16).replace('-', '/'); };
@@ -4575,6 +4644,8 @@ body.hasfab main { padding-bottom: 110px; }
     }
     var seen = chatSeen(room), n = chatTail(room).filter(function (t) { return !t[1] && t[0] > seen; }).length;
     $('chatN').hidden = !n; $('chatN').textContent = n > 99 ? '99+' : n;
+    var urg = room === 'table' && (state.chatRoom === 'table' ? state.opsUrg : state.data && state.data.opsUrg) > 0;
+    fab.classList.toggle('urg', !!urg); fab.setAttribute('aria-label', urg ? '대화 · 🆘 긴급모집 중' : '대화');
   }
   function chatAck(id, p) {
     p.classList.add('acking');
@@ -4658,15 +4729,28 @@ body.hasfab main { padding-bottom: 110px; }
     bar.hidden = false; $('chatRepX').addEventListener('click', function () { chatReplyTo(null); });
     $('chatIn').focus();
   }
+  // 🆘 긴급모집: 인원이 다 찰 때까지 테이블 대화 맨 위에 고정 (대표 요청 2026-11-19)
+  function chatPin(p) {
+    var box = $('chatPin'), sig = JSON.stringify(p); state.opsUrg = p.length; paintChatFab();
+    if (box.dataset.sig === sig) return; box.dataset.sig = sig;
+    box.hidden = !p.length;
+    var guard = state.data && state.data.guard;
+    box.innerHTML = p.map(function (x) {
+      return '<div class="cpin"><div><b>🆘 긴급모집</b> · ' + esc(opsWhere(x) || '') + ' 🎆 퍼레이드 지원 <span class="cpn">' + x.took.length + '/' + x.need + '명</span>' + (x.memo ? '<br>' + esc(x.memo) : '') + (x.took.length ? '<br><small>✅ ' + x.took.map(function (k) { return esc(k.who); }).join(', ') + '</small>' : '') + '</div>' +
+        (x.me ? '<span class="cpme">✅ 내가 맡음</span>' : x.mine || guard ? '' : '<button type="button" data-cpin="' + esc(x.id) + '">✅ 내가 할게요</button>') + '</div>';
+    }).join('');
+    box.querySelectorAll('[data-cpin]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.cpin }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else { b.disabled = false; if (x.error === 'full') chatLoad(); } }).catch(function () { b.disabled = false; }); }); });
+  }
   function chatPaint(r, toEnd, force) {
     var L = $('chatL'), same = !force && state.chat && JSON.stringify(state.chat.list) === JSON.stringify(r.list);
     state.chat = r; state.chatTail = state.chatTail || {}; state.chatTail[r.room] = r.list.slice(-30).map(function (m) { return [m.at, m.mine ? 1 : 0]; });
     if (r.list.length) chatSeen(r.room, r.list[r.list.length - 1].at);
+    chatPin(r.room === 'table' ? r.pin || [] : []);
     if (same && !toEnd) return;
     var near = L.scrollHeight - L.scrollTop - L.clientHeight < 80, day = '', h = '', ro = false;
     r.list.forEach(function (m) {
       if (m.day !== day) { day = m.day; h += '<p class="cday">' + esc(tbDayLabel(m.day)) + '</p>'; }
-      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.sos ? '<em class="csos' + (m.sos.status === '해결' ? ' ok' : '') + '">🚨 경호 호출 · ' + (m.sos.status === '호출' ? '출동 대기' : m.sos.status === '출동' ? '🏃 출동 ' + esc(m.sos.go.map(function (k) { return k.who; }).join(', ')) : m.sos.status === '해결' ? '✅ 해결 ' + esc(m.sos.doneBy) + (m.sos.go.length ? ' · 출동 ' + esc(m.sos.go.map(function (k) { return k.who; }).join(', ')) : '') : '취소됨') + '</em>' : '') + (m.ops ? '<em class="cops' + (m.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(m.ops.kind) + ' · ' + (m.ops.status === '확정' ? '✅ 담당 ' + esc(m.ops.took.map(function (k) { return k.who; }).join(', ')) : m.ops.status === '취소' ? '취소됨' : '운영팀 확인 대기' + (m.ops.need > 1 ? ' (' + m.ops.took.length + '/' + m.ops.need + ')' : '')) + '</em>' + (m.ops.status === '대기' && !m.ops.me && !m.ops.mine && opsCrewMe() ? '<button type="button" class="copsb" data-copst="' + esc(m.ops.id) + '">✅ 내가 할게요</button>' : '') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
+      h += '<div class="cm' + (m.mine ? ' me' : '') + (m.me ? ' hit' : '') + (m.req === '🆘긴급모집' && m.ops && m.ops.status === '대기' ? ' urg' : '') + (m.acked ? ' acked' : '') + '" data-cmid="' + esc(m.id) + '">' + (m.mine ? '' : '<i>' + esc(m.who) + nickH(m.who) + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') + '</i>') + (m.mine ? '<small>' + esc(m.hm) + '</small>' + (ro ? '' : '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>') : '') + (m.text || m.reply ? '<p>' + (m.reply ? '<span class="crep" data-goto="' + esc(m.reply.id) + '"><b>' + esc(m.reply.who) + '에게 답장</b><span>' + esc(m.reply.text) + '</span></span>' : '') + chatText(m) + '</p>' : '') + chatMedia(m) + (m.req ? m.req.split('\n').map(function (l) { return '<em class="creq' + (/^⚠️/.test(l) ? ' bad' : '') + '">' + esc(l) + '</em>'; }).join('') : '') + (m.sos ? '<em class="csos' + (m.sos.status === '해결' ? ' ok' : '') + '">🚨 경호 호출 · ' + (m.sos.status === '호출' ? '출동 대기' : m.sos.status === '출동' ? '🏃 출동 ' + esc(m.sos.go.map(function (k) { return k.who; }).join(', ')) : m.sos.status === '해결' ? '✅ 해결 ' + esc(m.sos.doneBy) + (m.sos.go.length ? ' · 출동 ' + esc(m.sos.go.map(function (k) { return k.who; }).join(', ')) : '') : '취소됨') + '</em>' : '') + (m.ops ? '<em class="cops' + (m.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(m.ops.kind) + ' · ' + (m.ops.status === '확정' ? '✅ 담당 ' + esc(m.ops.took.map(function (k) { return k.who; }).join(', ')) : m.ops.status === '취소' ? '취소됨' : '운영팀 확인 대기' + (m.ops.need > 1 ? ' (' + m.ops.took.length + '/' + m.ops.need + ')' : '')) + '</em>' + (m.ops.status === '대기' && !m.ops.me && !m.ops.mine && opsCrewMe() ? '<button type="button" class="copsb" data-copst="' + esc(m.ops.id) + '">✅ 내가 할게요</button>' : '') : '') + (m.ack && m.ack.length ? '<em class="cack">✅ 확인 · 담당 ' + esc(m.ack[0].who) + ' ' + esc(m.ack[0].hm) + (m.ack.length > 1 ? ' · ' + m.ack.slice(1).map(function (k) { return esc(k.who) + nickH(k.who); }).join(', ') : '') + '</em>' : '') + (m.mine ? '' : '<small>' + esc(m.hm) + '</small>') + (!m.mine && r.admin ? '<button type="button" data-chdel="' + esc(m.id) + '" aria-label="지우기">✕</button>' : '') + '</div>';
     });
     L.innerHTML = h ? (ro ? '' : '<p class="chint">두 번 누르면 ✅ 확인 · 꾹 누르면 ↩️ 답장</p>') + h : '<p class="cempty">아직 대화가 없어요.' + (ro ? '' : ' 첫 메시지를 남겨 보세요.') + '</p>';
     hydrateImgs(L);
@@ -4789,16 +4873,31 @@ body.hasfab main { padding-bottom: 110px; }
     }, 772);
     for (i = 0; i < 6; i++) G['B' + (6 - i)] = [690 + i * 62, 330, 56, 64];   // 메인바 앞: 왼쪽부터 B6 → B1 (대표 확인 2026-11-18)
   })();
-  function tbView() { if (!state.tbView) { try { state.tbView = localStorage.getItem('gs_tb_view'); } catch (e) {} } return state.tbView === 'list' ? 'list' : 'map'; }
+  // 👤 도면 보기 가로(map)·세로(vmap)·목록(list): 사람마다 계정에 저장 (대표 요청 2026-11-19)
+  function tbView() {
+    var me = state.s && state.s.name, v = (state.tbViewWho === me && state.tbView) || (state.data && state.data.pref && state.data.pref.tbView);
+    if (!v) { try { v = localStorage.getItem('gs_tb_view'); } catch (e) {} }
+    return v === 'list' || v === 'vmap' ? v : 'map';
+  }
+  function tbViewSet(v) {
+    state.tbView = v; state.tbViewWho = state.s && state.s.name; try { localStorage.setItem('gs_tb_view', v); } catch (e) {}
+    if (state.data) { state.data.pref = Object.assign({}, state.data.pref || {}, { tbView: v }); saveData(state.data); }
+    if (state.s) call({ a: 'me_pref', token: state.s.token, k: 'tbView', v: v }).catch(function () {});
+  }
+  function tbVZoom(W) { var cw = Math.min(1280, (document.documentElement.clientWidth || window.innerWidth) - 24); return Math.min(1, Math.max(.45, cw / W)); }
+  window.addEventListener('resize', function () { document.querySelectorAll('.tbmap.vert').forEach(function (m) { m.style.zoom = tbVZoom(+m.dataset.w); }); });
   function tbMapHtml(fl, ix) {
     var m = TB_MAP[fl]; if (!m) return '';
     var wk = {}, show = tbShowWeekend();
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend) z.rows.forEach(function (r) { r.forEach(function (x) { wk[x] = 1; }); }); });
+    // ↕ 세로: 도면을 시계 방향으로 90° 돌려서 폰 폭에 맞춤 (왼쪽 → 위, 위쪽 → 오른쪽)
+    var vert = tbView() === 'vmap', W = vert ? m.h : m.w, H = vert ? m.w : m.h;
     function pct(x, w) { return (x / w * 100).toFixed(3) + '%'; }
-    function box(x, y, w, h) { return 'left:' + pct(x, m.w) + ';top:' + pct(y, m.h) + ';width:' + pct(w, m.w) + ';height:' + pct(h, m.h); }
-    var h = '<div class="tbmapw"><div class="tbmap" style="width:max(100%,' + m.w + 'px);aspect-ratio:' + m.w + '/' + m.h + '">';
-    m.lm.concat(show ? [] : m.wkoff).forEach(function (l) { h += '<div class="lm' + (l[5] ? ' ' + l[5] : '') + '" style="' + box(l[1], l[2], l[3], l[4]) + '">' + esc(l[0]) + '</div>'; });
-    m.zl.forEach(function (z) { if (z[3] && !show) return; h += '<div class="zl" style="left:' + pct(z[1], m.w) + ';top:' + pct(z[2], m.h) + '">' + esc(z[0]) + '</div>'; });
+    function rot(x, y, w, h) { return vert ? [m.h - y - h, x, h, w] : [x, y, w, h]; }
+    function box(x, y, w, h) { var r = rot(x, y, w, h); return 'left:' + pct(r[0], W) + ';top:' + pct(r[1], H) + ';width:' + pct(r[2], W) + ';height:' + pct(r[3], H); }
+    var h = '<div class="tbmapw' + (vert ? ' vert' : '') + '"><div class="tbmap' + (vert ? ' vert' : '') + '" data-w="' + W + '" style="' + (vert ? 'width:' + W + 'px;zoom:' + tbVZoom(W) : 'width:max(100%,' + m.w + 'px)') + ';aspect-ratio:' + W + '/' + H + '">';
+    m.lm.concat(show ? [] : m.wkoff).forEach(function (l) { var tall = vert && l[3] > l[4] * 1.6; h += '<div class="lm' + (l[5] ? ' ' + l[5] : '') + (tall ? ' vt' : '') + '" style="' + box(l[1], l[2], l[3], l[4]) + '">' + esc(l[0]) + '</div>'; });
+    m.zl.forEach(function (z) { if (z[3] && !show) return; h += '<div class="zl' + (vert ? ' vt' : '') + '" style="left:' + pct(vert ? m.h - z[2] - 13 : z[1], W) + ';top:' + pct(vert ? z[1] : z[2], H) + '">' + esc(z[0]) + '</div>'; });
     var known = {}, seats = m.wd && state.tb && !state.tb.weekend ? Object.assign({}, m.seats, m.wd) : m.seats;   // 평일 배치가 따로 있는 층(2층)
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !show) return; z.rows.forEach(function (r) { r.forEach(function (sid) {
       var p = seats[sid]; if (!p) return; known[sid] = 1;
@@ -4841,7 +4940,7 @@ body.hasfab main { padding-bottom: 110px; }
     h += '<div class="tbtools">' + (edit ? '<button class="btn btn-hot" type="button" id="tbAdd">+ 손님 넣기</button>' : '') + '<button class="btn" type="button" id="tbCopy">📋 카톡용 복사</button>' +
       (t.grantor ? '<button class="btn" type="button" id="tbGrant">👥 승인 권한' + (gOn ? ' ' + gOn + '명' : '') + '</button>' : '') + '</div>';
     var view = tbView();
-    h += '<div class="tbvw" role="group" aria-label="보기"><button type="button" data-tbv="map" aria-pressed="' + (view === 'map') + '">🗺 도면</button><button type="button" data-tbv="list" aria-pressed="' + (view === 'list') + '">☰ 목록</button></div>';
+    h += '<div class="tbvw" role="group" aria-label="보기 (내 계정에 저장)"><button type="button" data-tbv="map" aria-pressed="' + (view === 'map') + '">↔ 가로</button><button type="button" data-tbv="vmap" aria-pressed="' + (view === 'vmap') + '">↕ 세로</button><button type="button" data-tbv="list" aria-pressed="' + (view === 'list') + '">☰ 목록</button></div>';
     // 🟢 빈 자리 안내 + 빠 확장 버튼
     var emp = [], fz = tbFloorOf(fl), extZ = fz ? fz.zones.filter(function (z) { return z.ext; }) : [];
     tbSeatsOf(fl).forEach(function (z) { var e = []; z.rows.forEach(function (row) { row.forEach(function (x) { if (!ix.at[x]) e.push(x); }); }); if (e.length) emp.push([z.name, e]); });
@@ -4852,7 +4951,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (!tbExtOn(fl)) h += '<button class="btn" type="button" id="tbExt" style="width:100%;margin:0 0 10px">➕ 빠 확장 (' + rng + ')</button>';
       else if (!tbExtUsed(fl)) h += '<button class="btn" type="button" id="tbExtOff" style="width:100%;margin:0 0 10px">➖ 빠 확장 닫기 (' + rng + ')</button>';
     }
-    if (view === 'map') h += tbMapHtml(fl, ix);
+    if (view !== 'list') h += tbMapHtml(fl, ix);
     else tbSeatsOf(fl).forEach(function (z) {
       if (z.weekend && !tbShowWeekend()) return;
       h += '<h2 class="sec tbz">' + esc(z.name) + (z.weekend ? ' <span class="chip">주말</span>' : '') + '</h2>';
@@ -4888,7 +4987,7 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-tbedit]').forEach(function (b) { b.addEventListener('click', function () { var r = tbFind(b.dataset.tbedit); tbOpen(r, r && (r.req || r.cur) ? (r.req || r.cur).seat : ''); }); });
     if ($('tbOkAll')) $('tbOkAll').addEventListener('click', function () { if (!armed(this, '모두 승인')) return; tbJudge(pend.map(function (r) { return r.id; }), true, '', this); });
     if ($('tbAdd')) $('tbAdd').addEventListener('click', function () { tbOpen(null, ''); });
-    area.querySelectorAll('[data-tbv]').forEach(function (b) { b.addEventListener('click', function () { state.tbView = b.dataset.tbv; try { localStorage.setItem('gs_tb_view', state.tbView); } catch (e) {} render(); }); });
+    area.querySelectorAll('[data-tbv]').forEach(function (b) { b.addEventListener('click', function () { tbViewSet(b.dataset.tbv); render(); }); });
     $('tbCopy').addEventListener('click', tbCopy);
     if ($('tbGrant')) $('tbGrant').addEventListener('click', tbGrantSheet);
     area.querySelectorAll('[data-eseat]').forEach(function (b) { b.addEventListener('click', function () { tbOpen(null, b.dataset.eseat); }); });
