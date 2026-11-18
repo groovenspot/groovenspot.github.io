@@ -240,6 +240,9 @@ details.all { margin-top: 14px; }
 .ktoast .btn { min-height: 36px; padding: 0 12px; font-size: 13px; }
 .kacts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 0; }
 .kacts .btn { min-height: 48px; }
+.kreq .kph { margin: 6px 0 0; }
+.tl .ycp { margin: 6px 0 2px; }
+.tl .ycp img { width: 56px; height: 56px; }
 .tl { display: grid; margin: 0; padding: 0; list-style: none; }
 .tl li { position: relative; padding: 0 0 12px 20px; font-size: 14px; }
 .tl li::before { content: ""; position: absolute; left: 4px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--g); }
@@ -1026,6 +1029,8 @@ body.popmode .chath .chpop { display: none; }
 .chip.r-table { border-color: #4da3ff; color: #8cc4ff; }
 .chip.r-yc { border-color: var(--s); color: #c9a3ff; }
 .chip.r-guest { border-color: var(--ok); color: var(--ok); }
+.chip.r-ops { border-color: var(--warn); color: var(--warn); }
+.chip.r-gate { border-color: #ff8a3d; color: #ffb27a; }
 .alllive { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
 .alllive .chip { cursor: pointer; padding: 8px 14px; font-size: 14px; background: none; }
 .alllive .sosl { border-color: #ff3b5c; color: #fff; background: #3a0610; }
@@ -1348,8 +1353,8 @@ body.popmode .chath .chpop { display: none; }
   function openApp() {
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
-    if (/^chat:(table|yc)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
-    var pm = /^pop:(table|yc|guest)$/.exec(h); if (pm) { state.pop = pm[1]; h = pm[1]; document.body.classList.add('popmode'); try { document.title = CHAT_NAME[pm[1]]; } catch (e) {} }
+    if (/^chat:(table|yc|guest|ops|gate)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
+    var pm = /^pop:(table|yc|guest|ops|gate)$/.exec(h); if (pm) { state.pop = pm[1]; h = pm[1]; document.body.classList.add('popmode'); try { document.title = CHAT_NAME[pm[1]]; } catch (e) {} }
     if (h === 'sos') setTimeout(function () { loadSos(); }, 600);
     if (['ops', 'live', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
     else {   // 다시 불러오면 마지막에 보던 탭·대화창 그대로 (대표 요청 2026-11-19)
@@ -1689,8 +1694,8 @@ body.popmode .chath .chpop { display: none; }
         '대화에서 그 메시지를 두 번 눌러도 맡아져요 · 운영팀끼리 쓰는 <code>완료</code> 보고는 알림이 안 가요'
       ]) +
       sec('🍾 킵', [
-        '맡기기·꺼내기·병 수 고치기는 담당이 요청 → <b>대표·김동기·양진호</b>(+ 대표가 그날 권한 준 직원)가 승인하면 반영',
-        '<b>👥 킵 승인 권한 (오늘)</b>: 대표만 직원을 골라 줄 수 있어요 → 그 영업일 동안 승인 · 영업일이 바뀌면 끝',
+        '맡기기·꺼내기·병 수 고치기는 담당이 요청 → <b>대표·김동기·양진호</b>가 승인하면 반영',
+        '꺼낼 때는 <b>− 또는 🍾 빼기</b> → 병 수 한 번에 · <b>몇 번 자리</b> · <b>🎆 퍼레 같이 / 🍾 킵만 바로</b> · 메모 (승인 화면에 보여요) · 맡기기는 <b>📷 사진</b>도 붙일 수 있어요',
         '킵 장부 기록은 <b>지워지지 않고 모두 남아요</b> (손님 삭제·되돌리기·이름 맞춤도 <b>킵 기록</b>에 한 줄씩)',
         '보관 <b>30일</b>. 잘못 눌렀으면 15분 안에 되돌리기',
         '손님 링크를 보내면 손님이 자기 킵을 직접 볼 수 있어요'
@@ -1721,7 +1726,8 @@ body.popmode .chath .chpop { display: none; }
         '팀장이 <b>제가 받을게요</b> → 날짜·손님 이름·인원·층·담당 MD를 정하면 <b>테이블 대기</b>에 들어가고 담당에게 알림 · 다른 팀장에게는 <b>받음</b>으로 보여요'
       ]) +
       sec('💬 대화창', [
-        '오른쪽 아래 💬 · 방은 <b>테이블·연출·게스트</b> (왼쪽 아래 <b>🚨</b>는 경호 호출)',
+        '오른쪽 아래 💬 · 방은 <b>테이블·연출·게스트·운영·입구</b> (왼쪽 아래 <b>🚨</b>는 경호 호출)',
+        '<b>🛎 운영 대화</b>·<b>🚪 입구 대화</b>는 그냥 대화예요 (요청으로 안 바뀜) · 입구 대화는 <b>경호팀</b>·입구 탭 쓰는 사람만',
         '<b>@호출</b>은 성 빼고·초성·닉네임으로도 찾아져요 (예: <code>@동기</code> <code>@ㄷㄱ</code>)',
         '테이블·게스트 대화 보내기는 <b>출근 후</b>에 돼요',
         '말풍선 <b>두 번 누르기 = ✅ 확인</b> (🛎 운영 요청 메시지는 = 내가 할게요) · <b>꾹 누르기 = ↩️ 답장·📋 복사</b>',
@@ -2079,6 +2085,7 @@ body.popmode .chath .chpop { display: none; }
     (r.offers || []).concat(r.calls || []).forEach(function (c) { c.dl = now + (c.left || 0) * 1000; });
     var sig = function (g) { return g ? JSON.stringify([(g.calls || []).map(function (c) { return [c.id, c.status, c.turn, c.passed, c.took]; }), g.order, g.gorder, g.mds, g.stats]) : ''; }, same = !!state.gate && sig(state.gate) === sig(r);
     state.gate = r; state.gateErr = ''; state.gateAt = now;
+    if (state.chatTail) delete state.chatTail.gate; try { paintChatFab(); } catch (e) {}
     if (state.data) state.data.gateOffers = r.offers || [];
     paintGateOffer();
     if (state.data && gateCanSee()) renderTabsOnly();
@@ -2994,7 +3001,8 @@ body.popmode .chath .chpop { display: none; }
     var st = r.status === '대기' ? '' : r.status === '승인' ? '<span class="chip" style="border-color:var(--ok);color:var(--ok)">승인 · ' + esc(r.who) + nickH(r.who) + '</span>'
       : r.status === '거절' ? '<span class="chip" style="border-color:var(--bad);color:#ff8199">거절 · ' + esc(r.who) + nickH(r.who) + '</span>' : '<span class="chip">' + esc(r.status) + '</span>';
     var h = '<div class="kreq"><div class="row"><b style="color:var(--txt)">' + esc(r.cust) + '</b><span>담당 ' + esc(r.staff) + nickH(r.staff) + '</span>' + (mode === 'ap' ? '<span>· 요청 ' + esc(r.by) + nickH(r.by) + '</span>' : '') + '<span style="margin-left:auto">' + esc(r.at.slice(5)) + '</span></div>' +
-      '<div class="kreq-t"><span class="chip">' + esc(r.kind) + '</span> ' + esc(r.text) + ' ' + st + '</div>' + (r.reason ? '<div class="note" style="margin:0">사유: ' + esc(r.reason) + '</div>' : '');
+      '<div class="kreq-t"><span class="chip">' + esc(r.kind) + '</span> ' + esc(r.text) + ' ' + st + '</div>' + (r.reason ? '<div class="note" style="margin:0">사유: ' + esc(r.reason) + '</div>' : '') +
+      (r.photos && r.photos.length ? '<div class="ycp kph">' + r.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="맡기기 사진">'; }).join('') + '</div>' : '');
     if (r.status === '대기' && mode === 'ap') h += '<div class="kreq-b"><button class="btn btn-ok" type="button" data-kok="' + esc(r.id) + '">승인</button><button class="btn btn-bad" type="button" data-kno="' + esc(r.id) + '">거절</button></div>';
     if (r.status === '대기' && mode === 'me') h += r.tmp ? '<div class="kreq-b"><span class="note" style="margin:0">⏳ 보내는 중…</span></div>'
       : '<div class="kreq-b"><span class="note" style="margin:0">⏳ ' + APPROVERS_TXT + ' 승인 기다리는 중</span><button class="btn" type="button" data-kcx="' + esc(r.id) + '">요청 취소</button></div>';
@@ -3036,6 +3044,7 @@ body.popmode .chath .chpop { display: none; }
   }
   function alertBox(m) { var b = $('kBox'); if (b) { b.textContent = m; b.hidden = false; } }
   function kBindReqs(root) {
+    if (root.querySelector('.kph img, .tl .ycp img')) { hydrateImgs(root); root.querySelectorAll('.kph img[data-img], .tl .ycp img[data-img]').forEach(function (im) { im.style.cursor = 'zoom-in'; im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); }); }
     root.querySelectorAll('[data-kok]').forEach(function (b) { b.addEventListener('click', function () { kReq(b.dataset.kok, 'ok', '', b); }); });
     root.querySelectorAll('[data-kcx]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '요청 취소')) return; kReq(b.dataset.kcx, 'cancel', '', b); }); });
     root.querySelectorAll('[data-kno]').forEach(function (b) {
@@ -3058,6 +3067,7 @@ body.popmode .chath .chpop { display: none; }
     if (!k.staffs.some(function (x) { return x.name === cust.staff; })) k.staffs.push({ name: cust.staff, group: cust.group || '', team: '' });
   }
   // 👥 킵 장부 승인 권한 하루 주기 (대표 요청 2026-11-19): 대표만 · 고른 직원은 오늘 영업일 동안 맡기기·꺼내기·병 수 고치기 승인
+  var KP_GRANT_UI = false;   // 대표 요청 2026-11-19 새벽: 화면에서 숨김 (서버 기능은 그대로 · 다시 쓰려면 true)
   function kGrantSheet() {
     var q = '';
     function draw(msg) {
@@ -3127,7 +3137,7 @@ body.popmode .chath .chpop { display: none; }
     h += '<div class="ksearch"><span aria-hidden="true">🔎</span><input id="kQ" type="search" placeholder="손님 · 담당 · 술 · 연락처 뒤 4자리" value="' + esc(state.kq) + '" aria-label="킵 찾기"></div>';
     h += '<div class="ksum"><div><small>보관 중</small><b>' + bottles + '</b></div><div class="w"><small>7일 안 만료</small><b>' + soon + '</b></div><div class="x"><small>만료 지남</small><b>' + late + '</b></div></div>';
     if (k.all || k.see) h += '<button class="btn kdaybtn" type="button" id="kDay">📊 킵 하루 결산 · 입고·출고 병 수</button>';
-    if (k.grantor) { var kgOn = (k.grants || []).filter(function (x) { return x.on; }); h += '<button class="btn kdaybtn" type="button" id="kGrant">👥 킵 승인 권한 (오늘)' + (kgOn.length ? ' · ' + kgOn.map(function (x) { return esc(x.name); }).join(', ') : '') + '</button>'; }
+    if (k.grantor && KP_GRANT_UI) { var kgOn = (k.grants || []).filter(function (x) { return x.on; }); h += '<button class="btn kdaybtn" type="button" id="kGrant">👥 킵 승인 권한 (오늘)' + (kgOn.length ? ' · ' + kgOn.map(function (x) { return esc(x.name); }).join(', ') : '') + '</button>'; }
     if (k.granted) h += '<p class="note" style="margin:0 0 10px">✅ 오늘 영업일 동안 킵 승인 권한을 받았어요 (대표가 줌).</p>';
     var hasNone = all.some(function (c) { return !kGroupOf(c.staff); });
     h += '<div class="kfil">' + [['', '전체'], ['exp', '⏰ 만료 임박']].concat(k.all || k.see ? KGROUPS.map(function (g) { return [g, g]; }) : []).concat((k.all || k.see) && hasNone ? [['none', '구분 없음']] : []).map(function (x) {
@@ -3403,7 +3413,8 @@ body.popmode .chath .chpop { display: none; }
     if (edit && kc.asked) h += '<div class="ktoast pend"><span><b>⏳ ' + esc(kc.asked) + '</b> · ' + APPROVERS_TXT + ' 승인 후 반영돼요</span></div>';
     h += '<p class="msg" id="kMsg" role="alert"></p>';
     if (edit) {
-      h += '<div class="kacts"><button class="btn btn-ok" type="button" id="kMore">+ 술 맡기기</button><button class="btn" type="button" id="kLink">📤 손님에게 공유</button></div>';
+      var canOut = c.items.some(function (i) { return i.kind === '병' && i.n > 0; });
+      h += '<div class="kacts"><button class="btn btn-ok" type="button" id="kMore">+ 술 맡기기</button>' + (canOut ? '<button class="btn btn-hot" type="button" id="kOut">🍾 빼기</button></div><div class="kacts" style="margin-top:8px;grid-template-columns:1fr">' : '') + '<button class="btn" type="button" id="kLink">📤 손님에게 공유</button></div>';
       h += boss ? '<div class="kacts" style="margin-top:8px"><button class="btn" type="button" id="kEdit">✏️ 손님 정보 · 담당</button><button class="btn btn-bad" type="button" id="kDel">손님 지우기</button></div>'
         : '<div class="kacts" style="margin-top:8px;grid-template-columns:1fr"><button class="btn" type="button" id="kEdit">✏️ 손님 정보 (이름·연락처·메모)</button></div>';
     } else h += '<div class="kacts" style="grid-template-columns:1fr"><button class="btn btn-hot" type="button" id="kLink">📤 손님에게 공유하기</button></div>';
@@ -3414,6 +3425,7 @@ body.popmode .chath .chpop { display: none; }
     else h += '<ul class="tl">' + kc.log.map(function (l) {
       var ch = l.col === '병' ? l.from + ' → ' + l.to + '병' : l.col === '남은 양' ? (l.from || '-') + ' → ' + (l.to === '0' ? '없음' : l.to) : '';
       return '<li class="' + (/^(꺼냄|다 마심)$/.test(l.what) ? 'o' : '') + (l.undone ? ' u' : '') + '"><b>' + esc(l.what) + '</b>' + (l.liq ? ' · ' + esc(l.liq) : '') + (ch ? ' · ' + esc(ch) : '') + (l.memo ? ' · ' + esc(l.memo) : '') +
+        (l.photos && l.photos.length ? '<div class="ycp">' + l.photos.map(function (id) { return '<img data-img="' + esc(id) + '" alt="맡기기 사진">'; }).join('') + '</div>' : '') +
         '<small>' + esc(l.at) + ' · ' + esc(l.who) + nickH(l.who) + (l.undone ? ' · 되돌림' : '') + '</small></li>';
     }).join('') + '</ul>';
     area.innerHTML = h;
@@ -3422,10 +3434,13 @@ body.popmode .chath .chpop { display: none; }
     area.querySelectorAll('[data-kt]').forEach(function (b) {
       b.addEventListener('click', function () {
         var it = item(b.dataset.kt); if (!it) return;
+        if (it.kind === '병') return kTakeSheet(c, it, direct);   // 🍾 빼기: 병 수 한 번에 + 자리·퍼레/킵만·메모 (대표 요청 2026-11-19 새벽)
         var txt = it.kind === '병' ? '<b>' + esc(it.liq) + ' 1병 꺼냄' + (direct ? '' : ' 요청') + '</b> · ' + it.n + ' → ' + (it.n - 1) : '<b>' + esc(it.liq) + ' 다 마심' + (direct ? '' : ' 요청') + '</b>';
         kCall({ a: 'keep_set', item: it.id, op: 'take', n: 1 }, txt, b, null, true);
       });
     });
+    if ($('kOut')) $('kOut').addEventListener('click', function () { kTakeSheet(c, null, direct); });
+    kBindReqs(area);
     area.querySelectorAll('[data-kp]').forEach(function (b) {
       b.addEventListener('click', function () {
         var it = item(b.dataset.kp); if (!it) return;
@@ -3535,9 +3550,43 @@ body.popmode .chath .chpop { display: none; }
       });
     }).catch(function () { btn.disabled = false; $('kMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
   }
+  // 🍾 빼기 (대표 요청 2026-11-19 새벽): 병 수 한 번에 · 몇 번 자리 · 🎆 퍼레 같이 / 🍾 킵만 바로 · 메모 → 승인 화면에도 보임
+  var KEEP_HOW = ['🎆 퍼레 같이', '🍾 킵만 바로'];
+  function kTakeSheet(c, it, direct) {
+    var bt = c.items.filter(function (i) { return i.kind === '병' && i.n > 0; }); if (!bt.length) return;
+    var st = { it: it || (bt.length === 1 ? bt[0] : null), n: 1, how: '' };
+    function left(i) { if (direct) return i.n; return i.n - kPend(c.id).filter(function (r) { return r.item === i.id && r.kind === '꺼내기'; }).reduce(function (t, r) { return t + (r.n || 0); }, 0); }
+    function draw() {
+      var seat = $('ktSeat') ? $('ktSeat').value : '', memo = $('ktMemo') ? $('ktMemo').value : '', i = st.it, mx = i ? Math.max(0, left(i)) : 0;
+      if (st.n > mx) st.n = Math.max(1, mx);
+      showSheet('<h2>🍾 빼기 · ' + esc(c.name) + '</h2>' +
+        (bt.length > 1 || !i ? '<p class="lab" style="font-weight:700;font-size:14px;margin:0 0 6px">술</p><div class="tbgr" id="ktL">' + bt.map(function (x) { return '<button type="button" class="chip' + (i && i.id === x.id ? ' on' : '') + '" data-kti="' + esc(x.id) + '">' + esc(x.liq) + ' ' + x.n + '병</button>'; }).join('') + '</div>' : '<p class="note" style="margin:0 0 10px"><b>' + esc(i.liq) + '</b> · 지금 ' + i.n + '병</p>') +
+        (i ? '<label>몇 병<span class="knum"><button type="button" id="ktDn" aria-label="한 병 덜"' + (st.n <= 1 ? ' disabled' : '') + '>−</button><input id="ktN" type="number" inputmode="numeric" min="1" max="' + mx + '" value="' + st.n + '"><button type="button" id="ktUp" aria-label="한 병 더"' + (st.n >= mx ? ' disabled' : '') + '>+</button></span></label>' +
+          (mx < i.n ? '<p class="note" style="margin:-6px 0 10px">⏳ ' + (i.n - mx) + '병은 이미 빼기 요청 중이에요.</p>' : '') : '') +
+        '<label>몇 번 자리로?<input id="ktSeat" maxlength="12" autocomplete="off" placeholder="예) 3-11 · L4" value="' + esc(seat) + '"></label>' +
+        '<p class="lab" style="font-weight:700;font-size:14px;margin:0 0 6px">어떻게 나가요?</p><div class="tbgr">' + KEEP_HOW.map(function (w) { return '<button type="button" class="chip' + (st.how === w ? ' on' : '') + '" data-kth="' + esc(w) + '" aria-pressed="' + (st.how === w) + '">' + esc(w) + '</button>'; }).join('') + '</div>' +
+        '<label>메모 (선택)<input id="ktMemo" maxlength="40" autocomplete="off" placeholder="예) 12시 생일 · 얼음 같이" value="' + esc(memo) + '"></label>' +
+        (direct ? '' : '<p class="note" style="margin:0 0 10px">⏳ ' + APPROVERS_TXT + ' 승인 후 빠져요. 자리·메모도 승인 화면에 보여요.</p>') +
+        '<button class="btn btn-hot" type="button" id="ktGo"' + (i && mx > 0 ? '' : ' disabled') + '>' + (i ? esc(i.liq) + ' ' + st.n + '병 빼기' : '술을 골라 주세요') + (direct ? '' : ' 요청') + '</button><p class="msg" id="ktMsg" role="alert"></p>');
+      document.querySelectorAll('[data-kti]').forEach(function (b) { b.addEventListener('click', function () { st.it = bt.filter(function (x) { return x.id === b.dataset.kti; })[0]; st.n = 1; draw(); }); });
+      document.querySelectorAll('[data-kth]').forEach(function (b) { b.addEventListener('click', function () { st.how = st.how === b.dataset.kth ? '' : b.dataset.kth; draw(); }); });
+      if ($('ktDn')) $('ktDn').addEventListener('click', function () { st.n = Math.max(1, st.n - 1); draw(); });
+      if ($('ktUp')) $('ktUp').addEventListener('click', function () { st.n = Math.min(mx, st.n + 1); draw(); });
+      if ($('ktN')) $('ktN').addEventListener('change', function () { st.n = Math.max(1, Math.min(mx, Math.floor(+this.value || 1))); draw(); });
+      $('ktGo').addEventListener('click', function () {
+        var i2 = st.it; if (!i2) return;
+        var n = st.n, s2 = $('ktSeat').value.trim().replace(/^([a-z])/i, function (x) { return x.toUpperCase(); }), m2 = $('ktMemo').value.trim();
+        if (/[<>"]/.test(s2 + m2)) { $('ktMsg').textContent = '< > " 는 쓸 수 없어요.'; return; }
+        var note = [s2 ? s2 + ' 자리' : '', st.how, m2].filter(String).join(' · ');
+        var txt = '<b>' + esc(i2.liq) + ' ' + n + '병 꺼냄' + (direct ? '' : ' 요청') + '</b> · ' + i2.n + ' → ' + (i2.n - n) + (note ? ' · ' + esc(note) : '');
+        kCall({ a: 'keep_set', item: i2.id, op: 'take', n: n, seat: s2, how: st.how, tmemo: m2 }, txt, this, $('ktMsg'), true);
+      });
+    }
+    draw();
+  }
   // 맡기기: 손님(있으면 고르기 / 없으면 새로) + 술 여러 줄
   function kOpenAdd(c) {
-    state.kadd = { id: c ? c.id : '', name: c ? c.name : '', staff: c ? c.staff : '', phone: '', memo: '', fixed: !!c, rows: [{ liq: '', n: 1, amt: '' }], msg: '' };
+    state.kadd = { id: c ? c.id : '', name: c ? c.name : '', staff: c ? c.staff : '', phone: '', memo: '', fixed: !!c, rows: [{ liq: '', n: 1, amt: '' }], msg: '', photos: [] };
     state.kview = 'add'; render(); window.scrollTo(0, 0);
     setTimeout(function () { var i = c ? document.querySelector('[data-kr="0"][data-f="liq"]') : $('kaN'); if (i) i.focus(); }, 50);
   }
@@ -3566,6 +3615,9 @@ body.popmode .chath .chpop { display: none; }
     h += '<div class="kchips">' + k.liqs.slice(0, 10).map(function (x) { return '<button type="button" data-kq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '<button type="button" id="kaRow">+ 술 한 줄 더</button></div>';
     h += '<p class="note" style="margin:-6px 0 12px">일부만 남은 병은 \'남은 양\'을 골라요 (한 병씩).</p>';
     if (!a.fixed && !a.id) h += '<label>메모 (선택)<input id="kaM" maxlength="60" value="' + esc(a.memo) + '"></label>';
+    // 📷 맡기기 사진 (대표 요청 2026-11-19 새벽): 병·영수증 등 최대 3장 → 승인 화면·기록에 보임
+    h += '<p class="lab" style="font-weight:700;font-size:14px;margin:4px 0 6px">사진 (선택)</p><div class="ephotos" id="kaPh">' + (a.photos || []).map(function (x, i) { return '<span class="ph"><img src="' + x.url + '" alt=""><button type="button" data-kax="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
+      ((a.photos || []).length < 3 ? '<label class="addph">📷 사진<input type="file" id="kaFile" accept="image/*" multiple hidden></label>' : '') + '</div>';
     var tot = a.rows.reduce(function (s, r) { return s + (r.liq.trim() ? (r.amt ? 1 : (+r.n || 0)) : 0); }, 0), dir = kDirect(k);
     if (!dir) h += '<p class="note" style="margin:0 0 10px">⏳ 저장하면 ' + APPROVERS_TXT + '에게 승인 요청이 가고, 승인되면 반영돼요.</p>';
     h += '<button class="btn btn-hot" type="button" id="kaGo">' + (tot ? tot + '병 맡기기' : '맡기기') + (dir ? '' : ' 요청') + '</button><p class="msg" id="kaMsg" role="alert">' + esc(a.msg || '') + '</p></div>';
@@ -3607,6 +3659,11 @@ body.popmode .chath .chpop { display: none; }
         r.liq = b.dataset.kq; render();
       });
     });
+    if ($('kaFile')) $('kaFile').addEventListener('change', function () {
+      var fs = [].slice.call(this.files || []).filter(function (f) { return /^image\//.test(f.type); }).slice(0, 3 - a.photos.length); this.value = '';
+      sync(); Promise.all(fs.map(shrink)).then(function (xs) { a.photos = a.photos.concat(xs).slice(0, 3); render(); }).catch(function () { $('kaMsg').textContent = '사진을 못 읽었어요.'; });
+    });
+    area.querySelectorAll('[data-kax]').forEach(function (b) { b.addEventListener('click', function () { sync(); a.photos.splice(+b.dataset.kax, 1); render(); }); });
     $('kaRow').addEventListener('click', function () { sync(); if (a.rows.length < 20) a.rows.push({ liq: '', n: 1, amt: '' }); render(); var l = document.querySelectorAll('[data-f="liq"]'); if (l.length) l[l.length - 1].focus(); });
     $('kaGo').addEventListener('click', function () {
       sync();
@@ -3616,6 +3673,7 @@ body.popmode .chath .chpop { display: none; }
       if (!a.id && k.all && !a.staff.trim()) { m.textContent = '담당을 넣어 주세요.'; return; }
       if (!items.length) { m.textContent = '술 이름을 넣어 주세요.'; return; }
       var body = { a: 'keep_add', token: state.s.token, items: items };
+      if (a.photos && a.photos.length) body.photos = a.photos.map(function (x) { return { type: x.type, data: x.data }; });
       if (a.id) body.id = a.id; else { body.name = a.name.trim(); body.staff = a.staff.trim(); body.phone = a.phone.trim(); body.memo = a.memo.trim(); }
       var btn = this; btn.disabled = true; m.textContent = '';
       call(body).then(function (r) {
@@ -3785,7 +3843,7 @@ body.popmode .chath .chpop { display: none; }
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
     if (state.pop) return;   // 따로 띄운 대화창은 그대로
-    var t = e.data && e.data.tab, ct = /^chat:(table|yc)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
+    var t = e.data && e.data.tab, ct = /^chat:(table|yc|guest|ops|gate)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
     if (t === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출: 탭이 아니라 위쪽 빨간 줄
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
@@ -3891,6 +3949,7 @@ body.popmode .chath .chpop { display: none; }
       if (!r.ok) { if (!state.ops) { state.opsErr = r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'ops') render(); } return; }
       var sig = JSON.stringify(r.list), same = !!state.ops && JSON.stringify(state.ops.list) === sig;
       state.ops = r; state.opsErr = ''; opsBadge(r);
+      if (state.chatTail) delete state.chatTail.ops; try { paintChatFab(); } catch (e) {}
       if (state.tab === 'ops' && !same && $('sheet').hidden) render();
     }).catch(function () { state.opsFly = 0; state.opsAt = Date.now(); if (!state.ops && state.tab === 'ops') { state.opsErr = '연결이 안 돼요.'; render(); } });
   }
@@ -4165,7 +4224,7 @@ body.popmode .chath .chpop { display: none; }
     });
     area.querySelectorAll('[data-allroom]').forEach(function (b) { b.addEventListener('click', function () { chatOpen(b.dataset.allroom); }); });
     area.querySelectorAll('[data-allgo]').forEach(function (b) { b.addEventListener('click', function () {
-      var t = b.dataset.allgo, m = t.match(/^chat:(table|yc|guest)$/);
+      var t = b.dataset.allgo, m = t.match(/^chat:(table|yc|guest|ops|gate)$/);
       if (m) chatOpen(m[1]); else if (ALL_TABS.indexOf(t) >= 0) goTab(t);
     }); });
   }
@@ -4853,9 +4912,11 @@ body.popmode .chath .chpop { display: none; }
     });
   }
   // ── 💬 탭 대화 (2026-11-18): 테이블·연출 탭에서 오른쪽 아래 버튼 → 그 탭 대화방. 안 읽은 수는 탭 목록 응답의 꼬리(chat)로.
-  var CHAT_NAME = { table: '🪑 테이블 대화', yc: '🎆 연출 대화', guest: '👥 게스트 대화' };
+  var CHAT_NAME = { table: '🪑 테이블 대화', yc: '🎆 연출 대화', guest: '👥 게스트 대화', ops: '🛎 운영 대화', gate: '🚪 입구 대화' };   // 🛎 운영·🚪 입구 대화 (대표 요청 2026-11-19 새벽)
   // 카톡처럼 쓰면 알아듣는 말 (카톡 테이블방·불꽃놀이방 대화를 보고 만든 규칙, 2026-11-18)
   var CHAT_HELP = {
+    ops: '<p><b>운영 대화</b>는 그냥 대화예요 (운영 요청으로 바뀌지 않아요). 운영팀을 부르려면 <b>+ 요청</b>이나 🪑 테이블 대화를 써 주세요.</p><p><code>@이름</code>으로 부르면 그 사람에게 알림 · 꾹 눌러 답장 · 📷 사진·영상도 돼요.</p>',
+    gate: '<p><b>입구 대화</b>는 그냥 대화예요. 경호팀도 같이 봐요.</p><p><code>@이름</code>으로 부르면 그 사람에게 알림 · 꾹 눌러 답장 · 📷 사진·영상도 돼요. 손님을 MD에게 보내는 건 위의 <b>입구 호출</b>로 해 주세요.</p>',
     guest: '<p><b>카톡에 올리던 게스트 집계 그대로</b> 쓰면 게스트 현황에 바로 들어가요.</p>' +
       '<pre>11/17\n고트\n건호3\n수연4\n요셉5\n\n아룬\n성원1\n\n클로버\n지현1\n은호1</pre>' +
       '<p>첫 줄 날짜(없으면 오늘 영업일, 이번 주·지난주만) · 팀 줄 · 이름숫자. 이름은 줄여 써도 그 팀에서 한 명이면 알아봐요(<code>건호</code> → 김건호).</p>' +
@@ -4880,11 +4941,11 @@ body.popmode .chath .chpop { display: none; }
   };
   function chatRoom() {
     var d = state.data || {};
-    if (d.guard) return (state.tab === 'table' && d.table) || (state.tab === 'yc' && d.yc) ? state.tab : '';   // 경호팀: 대화 없음 · 경호팀장은 테이블·연출 대화 (2026-11-18)
-    return state.tab === 'table' || state.tab === 'yc' || state.tab === 'guest' ? state.tab : '';
+    if (d.guard) return state.tab === 'gate' || (state.tab === 'table' && d.table) || (state.tab === 'yc' && d.yc) ? state.tab : '';   // 경호팀: 🚪 입구 대화 · 경호팀장은 테이블·연출 대화도 (2026-11-18)
+    return ['table', 'yc', 'guest', 'ops', 'gate'].indexOf(state.tab) >= 0 ? state.tab : '';
   }
   function chatSeen(room, at) { var o = {}; try { o = JSON.parse(localStorage.getItem('gs_chat_seen') || '{}'); } catch (e) {} if (at === undefined) return o[room] || ''; if (at > (o[room] || '')) { o[room] = at; try { localStorage.setItem('gs_chat_seen', JSON.stringify(o)); } catch (e) {} } }
-  function chatTail(room) { var src = room === 'table' ? state.tb : room === 'yc' ? state.yc : null; return (state.chatTail && state.chatTail[room]) || (src && src.chat) || []; }
+  function chatTail(room) { var src = room === 'table' ? state.tb : room === 'yc' ? state.yc : room === 'ops' ? state.ops : room === 'gate' ? state.gate : null; return (state.chatTail && state.chatTail[room]) || (src && src.chat) || []; }
   function chatText(m) {   // @이름 은 굵게
     var t = esc(m.text);
     (m.at2 || []).forEach(function (n) { [n, nickOf(n)].forEach(function (w) { if (!w) return; var e = esc(w); t = t.split('@' + e).join('<b class="at">@' + e + '</b>'); }); });
@@ -4946,7 +5007,7 @@ body.popmode .chath .chpop { display: none; }
     $('chatSos').hidden = true;
     state.chatRoom = room; state.chat = null;
     $('chatT').textContent = CHAT_NAME[room]; $('chatL').innerHTML = '<p class="cempty">불러오는 중…</p>';
-    $('chatIn').placeholder = room === 'table' ? '메시지 · 카톡처럼 쓰면 자리 신청' : room === 'guest' ? '메시지 · 카톡처럼 쓰면 게스트 반영' : '메시지 · 카톡처럼 쓰면 연출 요청';
+    $('chatIn').placeholder = room === 'table' ? '메시지 · 카톡처럼 쓰면 자리 신청' : room === 'guest' ? '메시지 · 카톡처럼 쓰면 게스트 반영' : room === 'yc' ? '메시지 · 카톡처럼 쓰면 연출 요청' : '메시지 · @이름 부르기';
     $('chatHelp').innerHTML = CHAT_HELP[room] || ''; $('chatHelp').hidden = true; $('chatQ').setAttribute('aria-expanded', 'false');
     if (state.chatMediaReset) state.chatMediaReset();
     chatReplyTo(null); chatMenuClose();
@@ -5122,7 +5183,7 @@ body.popmode .chath .chpop { display: none; }
     $('chatL').addEventListener('scroll', function () { var L = $('chatL'); if (state.chatNewN && L.scrollHeight - L.scrollTop - L.clientHeight < 40) { state.chatNewN = 0; $('chatNew').hidden = true; } }, { passive: true });
     $('chatQ').addEventListener('click', function () { var h = $('chatHelp'); h.hidden = !h.hidden; this.setAttribute('aria-expanded', String(!h.hidden)); });
     var ta = $('chatIn');
-    ta.addEventListener('input', function () { $('chatSos').hidden = !(state.chatRoom && SOS_WORDS.test(ta.value)); });   // 🚨 대화에 싸움·경호·상황 → 부를까요?
+    ta.addEventListener('input', function () { $('chatSos').hidden = !(state.chatRoom && !(state.data && state.data.guard) && SOS_WORDS.test(ta.value)); });   // 🚨 대화에 싸움·경호·상황 → 부를까요?
     $('chatSos').addEventListener('click', function () { var t = ta.value; sosForm({ text: t }); });
     ta.addEventListener('input', function () { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; chatAtPaint(); });
     ta.addEventListener('click', chatAtPaint);
