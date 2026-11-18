@@ -3913,7 +3913,7 @@ body.popmode .chath .chpop { display: none; }
     showSheet(h);
     var sh = $('sheet');
     sh.querySelectorAll('[data-sosk]').forEach(function (b) { b.addEventListener('click', function () { kind = b.dataset.sosk; $('sosMsg').textContent = ''; sh.querySelectorAll('[data-sosk]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
-    var sosSP = seatHelp($('sosSeat'), $('sosSeatP'), function () { return fl === 'SPOT' || fl === 'GROOVE' ? fl : ''; });
+    var sosSP = seatHelp($('sosSeat'), $('sosSeatP'), function () { return fl === '입구' ? '입구' : fl; }, function (f) { fl = f; sh.querySelectorAll('[data-sosf]').forEach(function (x) { x.classList.toggle('on', x.dataset.sosf === f); }); });
     sh.querySelectorAll('[data-sosf]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.sosf; sh.querySelectorAll('[data-sosf]').forEach(function (x) { x.classList.toggle('on', x === b); }); if (sosSP) sosSP(true); }); });
     call({ a: 'sos_get', token: state.s.token }).then(function (r) { if (r.ok) state.sosCrew = r.crew; }).catch(function () {});
     $('sosSend').addEventListener('click', function () {   // 한 번 더 확인 (대표 요청 2026-11-19)
@@ -4111,7 +4111,7 @@ body.popmode .chath .chpop { display: none; }
       box.querySelectorAll('[data-opi]').forEach(function (c) { c.addEventListener('click', function () { var k = c.dataset.opi, i = items.indexOf(k); if (i >= 0) items.splice(i, 1); else items.push(k); c.classList.toggle('on', i < 0); }); });
       if (kind === '🎆 퍼레이드 지원' && n < 2) { n = 2; $('opN').textContent = n; }
     }); });
-    var opSP = seatHelp($('opSeat'), $('opSeatP'), function () { return fl; });   // 자리 치면 뜨는 버튼 (대표 요청 2026-11-19 새벽)
+    var opSP = seatHelp($('opSeat'), $('opSeatP'), function () { return fl; }, function (f) { fl = f; sh.querySelectorAll('[data-opfl]').forEach(function (x) { x.classList.toggle('on', x.dataset.opfl === f); }); });   // 자리 치면 뜨는 버튼 (대표 요청 2026-11-19 새벽)
     sh.querySelectorAll('[data-opfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.opfl; sh.querySelectorAll('[data-opfl]').forEach(function (x) { x.classList.toggle('on', x === b); }); if (opSP) opSP(true); }); });
     sh.querySelectorAll('[data-opn]').forEach(function (b) { b.addEventListener('click', function () { n = Math.max(1, Math.min(10, n + +b.dataset.opn)); $('opN').textContent = n; }); });
     $('opSave').addEventListener('click', function () {
@@ -4775,7 +4775,8 @@ body.popmode .chath .chpop { display: none; }
     paintSeats(); paintWhen(); paintV(); paintTg(); paintPh();
     s.querySelectorAll('[data-ycms]').forEach(function (b) { b.addEventListener('click', function () { var p = b.dataset.ycms.split('|'); fl = p[0]; seat = p[1]; paintSeats(); }); });
     s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.ycfl; paintSeats(); }); });
-    $('ycSeat').addEventListener('input', function () { var q = this.value.trim(), k = tbSeatQ(q), ex = ycSeatOpts().filter(function (z) { return z.toUpperCase() === k; }); seat = !q ? '' : ex.length ? ex[0] : null; $('ycOnly').classList.remove('on'); ycSeatChips(true); });
+    $('ycSeat').addEventListener('input', function () { var q = this.value.trim(), pf = seatFloorOf(q); if (pf && pf !== fl && seatsOf(pf).length) { fl = pf; s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.ycfl === fl); }); $('ycOnly').textContent = '📺 ' + fl + ' 전광만 (자리 없이)'; }
+      var k = tbSeatQ(q), ex = ycSeatOpts().filter(function (z) { return z.toUpperCase() === k; }); seat = !q ? '' : ex.length ? ex[0] : null; $('ycOnly').classList.remove('on'); ycSeatChips(true); });
     $('ycSeat').addEventListener('focus', function () { this.select(); });
     $('ycOnly').addEventListener('click', function () { seat = seat === '전광만' ? '' : '전광만'; $('ycSeat').value = ''; ycSeatChips(false); this.classList.toggle('on', seat === '전광만'); });
     s.querySelectorAll('[data-ycwhen]').forEach(function (b) { b.addEventListener('click', function () { var k = b.dataset.ycwhen; when = k === 'time' ? (/^\d{2}:\d{2}$/.test(when) ? when : '') : k === 'after' ? (when.indexOf('after:') === 0 ? when : 'after:') : k; paintWhen(); }); });
@@ -5671,13 +5672,21 @@ body.popmode .chath .chpop { display: none; }
     return out;
   }
   // 아무 말이나 쓰는 자리 칸(🛎 운영 요청·🚨 경호 호출)에도: 숫자·글자·초성 치면 그 층 자리 버튼 (눌러도 되고 그냥 써도 됨)
-  function seatHelp(inp, box, getFl) {
+  // 앞에 3·2(3ㅅ1 · 3-11 · 2층 S1)를 쓰면 그 층으로
+  function seatFloorOf(q) { var m = /^\s*([23])\s*(?:-|층|[fF]|(?=[^\d\s]))/.exec(String(q || '')); return m ? (m[1] === '3' ? 'SPOT' : 'GROOVE') : ''; }
+  // 아무 말이나 쓰는 자리 칸(🛎 운영 요청·🚨 경호 호출)에도: 숫자·글자·초성 치면 자리 버튼 (눌러도 되고 그냥 써도 됨)
+  //  층을 골랐으면 그 층 자리 · 층 없음/모름이면 두 층 다 (버튼에 층 표시) · 3ㅅ1처럼 층을 붙여 쓰면 그 층으로 바꿈
+  function seatHelp(inp, box, getFl, setFl) {
     if (!inp || !box) return;
     if (!state.tb && !state.tbFly) try { var lp = loadTb(true); if (lp && lp.then) lp.then(function () { if (inp.value.trim() && document.body.contains(inp)) paint(true); }); } catch (e) {}
     function paint(show) {
-      var fl = getFl(), q = inp.value.trim(), hits = show && q && fl ? tbSeatHits(floorSeats(fl), q).slice(0, 16) : [];
-      box.innerHTML = hits.map(function (x) { return '<button type="button" class="chip" data-shp="' + esc(x) + '">' + esc(x) + '</button>'; }).join('');
-      box.querySelectorAll('[data-shp]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () { inp.value = b.dataset.shp; paint(false); }); });
+      var q = inp.value.trim(), pf = seatFloorOf(q), fl = getFl();
+      if (pf && pf !== fl && setFl && (fl === 'SPOT' || fl === 'GROOVE' || !fl)) { setFl(pf); fl = pf; }
+      var fls = fl === 'SPOT' || fl === 'GROOVE' ? [fl] : fl ? [] : ['SPOT', 'GROOVE'], hits = [];
+      if (show && q) fls.forEach(function (f) { tbSeatHits(floorSeats(f), q).forEach(function (x) { hits.push([f, x]); }); });
+      hits = hits.slice(0, 18);
+      box.innerHTML = hits.map(function (h) { return '<button type="button" class="chip" data-shp="' + esc(h[1]) + '" data-shf="' + esc(h[0]) + '">' + (fls.length > 1 ? '<small>' + (h[0] === 'SPOT' ? '3층' : '2층') + '</small> ' : '') + esc(h[1]) + '</button>'; }).join('');
+      box.querySelectorAll('[data-shp]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () { if (setFl && b.dataset.shf !== getFl()) setFl(b.dataset.shf); inp.value = b.dataset.shp; paint(false); }); });
       if (hits.length) try { box.scrollIntoView({ block: 'nearest' }); } catch (e) {}
     }
     inp.addEventListener('input', function () { paint(true); });
