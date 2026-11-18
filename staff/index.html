@@ -1703,7 +1703,7 @@ body.popmode .chath .chpop { display: none; }
       sec('👥 게스트 현황', [
         '순위는 모두 볼 수 있어요 · 게스트 수는 <b>팀</b> 단위로 세요',
         '팀 카드를 누르면 <b>팀 안 순위</b> (직원은 자기 팀, 승인하는 사람은 모든 팀)',
-        '입력은 팀장 이상(출근 후): 게스트 대화창에 날짜·팀·이름+숫자 양식으로 올리면 반영'
+        '입력은 팀장 이상(출근 후): 게스트 대화창에 날짜·팀·이름+숫자 양식으로 올리면 반영 · <b>게스트 대화는 팀장·대표·김동기·양진호만 보여요</b>'
       ]) +
       sec('📇 손님 기록 · 🎂 생일·기념일', [
         '내 프로필 아래 <b>📇 내 손님</b>: 테이블에 넣은 손님·킵 손님이 이름으로 모여요 (마지막 방문·횟수·자리·술·킵)',
@@ -4942,6 +4942,7 @@ body.popmode .chath .chpop { display: none; }
   function chatRoom() {
     var d = state.data || {};
     if (d.guard) return state.tab === 'gate' || (state.tab === 'table' && d.table) || (state.tab === 'yc' && d.yc) ? state.tab : '';   // 경호팀: 🚪 입구 대화 · 경호팀장은 테이블·연출 대화도 (2026-11-18)
+    if (state.tab === 'guest' && !d.guestChat) return '';   // 👥 게스트 대화: 팀장·대표·김동기·양진호만 (대표 결정 2026-11-19 새벽)
     return ['table', 'yc', 'guest', 'ops', 'gate'].indexOf(state.tab) >= 0 ? state.tab : '';
   }
   function chatSeen(room, at) { var o = {}; try { o = JSON.parse(localStorage.getItem('gs_chat_seen') || '{}'); } catch (e) {} if (at === undefined) return o[room] || ''; if (at > (o[room] || '')) { o[room] = at; try { localStorage.setItem('gs_chat_seen', JSON.stringify(o)); } catch (e) {} } }
