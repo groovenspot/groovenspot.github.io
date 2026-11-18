@@ -1734,7 +1734,7 @@ body.popmode .chath .chpop { display: none; }
         '말풍선 <b>두 번 누르기 = ✅ 확인</b> (🛎 운영 요청 메시지는 = 내가 할게요) · <b>꾹 누르기 = ↩️ 답장·📋 복사</b>',
         '테이블 대화에는 자리표·🛎 운영 탭·🚨 경호 호출에서 한 것도 한 줄씩 올라가요 (✍️자리표 · ✍️운영탭 · ✍️경호 호출 · 🆘긴급모집 · 📍위치)',
         '<b>🗗 따로 띄우기</b>(PC): 대화창 위 🗗 → 크롬·엣지는 <b>항상 위에 떠 있는 작은 창</b>이라 아레나 위에 겹쳐 둬도 안 가려져요',
-        '새 🎆 연출 요청(·🛎·🚨·🆘) 줄이 오면 테두리 빨갛게 깜빡 · <b>DJ팀 계정은 자동으로 맨 아래로</b>, 다른 사람은 위로 올려 읽는 중이면 <b>⬇ 새 메시지 N</b> 버튼',
+        '새 🎆 연출 요청·🛎·🚨·🆘 줄이 오면 <b>자동으로 맨 아래로</b> + 테두리 빨갛게 깜빡 (🎆 연출 대화는 <b>DJ팀 계정만</b> 맨 아래로) · 위로 올려 읽는 중이면 <b>⬇ 새 메시지 N</b> 버튼',
         '📷 사진·영상 올리기 (큰 영상은 자동으로 줄여서, 5분까지)'
       ]) +
       sec('🎬 실시간 영상', [
@@ -5138,8 +5138,8 @@ body.popmode .chath .chpop { display: none; }
     if (prev && prev.room === r.room) { prev.list.forEach(function (m) { seenIds[m.id] = 1; }); unseen = r.list.filter(function (m) { return !seenIds[m.id]; }); fresh = unseen.filter(function (m) { return !m.mine; }); }
     // 같은 계정이 다른 기기(폰)에서 올린 요청도 이 화면(조명실 아이맥 등)에서는 새 글 → 내려가고 깜빡 (대표 제보 2026-11-19 새벽). 이 기기에서 방금 보낸 글(toEnd)만 빼기
     var hot = unseen.some(function (m) { return (!m.mine || !toEnd) && (r.room === 'yc' ? !!m.req : !!(m.ops || m.sos || /🆘/.test(m.req || ''))); });
-    // 새 요청이 오면 저절로 맨 아래로: DJ팀 계정만 (대표 결정 2026-11-19 새벽) — 다른 사람은 읽던 자리 그대로 + '⬇ 새 메시지' (깜빡은 모두)
-    var pull = hot && !!state.data && state.data.team === 'DJ팀';
+    // 🎆 연출 대화에서 새 연출 요청이 오면 저절로 맨 아래로: DJ팀 계정만 (대표 결정 2026-11-19 새벽) — 다른 사람은 읽던 자리 그대로 + '⬇ 새 메시지' (깜빡은 모두) · 다른 방(🛎·🚨·🆘)은 원래대로 모두
+    var pull = hot && (r.room !== 'yc' || (!!state.data && state.data.team === 'DJ팀'));
     if (!toEnd) fresh = unseen;   // 다른 기기에서 올린 내 글도 '새 메시지'로 셈
     state.chat = r; state.chatTail = state.chatTail || {}; state.chatTail[r.room] = r.list.slice(-30).map(function (m) { return [m.at, m.mine ? 1 : 0]; });
     if (r.list.length) chatSeen(r.room, r.list[r.list.length - 1].at);
@@ -5184,7 +5184,7 @@ body.popmode .chath .chpop { display: none; }
   }
   document.addEventListener('visibilitychange', function () {   // 다시 보면 바로 새로 + 가려져 있을 때 온 연출 요청은 한 번 더 깜빡
     if (document.hidden || !state.s || !state.chatRoom || $('chatBox').hidden) return;
-    if (state.flashPending === state.chatRoom) { state.flashPending = ''; chatFlash(state.chatRoom); if (state.data && state.data.team === 'DJ팀') { var L = $('chatL'); L.scrollTop = L.scrollHeight; } }
+    if (state.flashPending === state.chatRoom) { state.flashPending = ''; chatFlash(state.chatRoom); if (state.chatRoom !== 'yc' || (state.data && state.data.team === 'DJ팀')) { var L = $('chatL'); L.scrollTop = L.scrollHeight; } }
     chatLoad();
   });
   (function () {
