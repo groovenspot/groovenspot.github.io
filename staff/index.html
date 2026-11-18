@@ -64,7 +64,9 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 .done-box { border: 1px solid rgba(60,207,145,.45); background: rgba(60,207,145,.08); border-radius: 14px; padding: 14px 16px; margin: 0 0 16px; font-size: 14px; }
 .done-box b { color: var(--ok); }
 .tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 8px; }   /* 한 줄에 4개씩 (대표 요청 2026-11-19) */
-.tabs button { min-width: 0; min-height: 42px; padding: 0 4px; border-radius: 12px; border: 1px solid var(--line-2); background: none; color: var(--muted); font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tabs button { position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 42px; padding: 0 3px; border-radius: 12px; border: 1px solid var(--line-2); background: none; color: var(--muted); font-weight: 800; font-size: 13px; cursor: pointer; }
+.tabs .tl { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 380px) { .tabs button { font-size: 12px; } }
 .tabs button[hidden] { display: none; }
 .tabedit { margin: 0 0 14px; text-align: right; }
 .tabedit .link { font-size: 12px; padding: 2px; }
@@ -73,7 +75,7 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 .tor button { width: 44px; min-height: 38px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--txt); font-size: 16px; cursor: pointer; }
 .tor button:disabled { opacity: .3; }
 .tabs button[aria-selected="true"] { color: var(--g); border-color: var(--g); background: rgba(255,122,26,.12); }
-.tabs .n { display: inline-block; min-width: 18px; margin-left: 4px; padding: 0 5px; border-radius: 9px; background: var(--g); color: #120800; font-size: 11px; line-height: 18px; }
+.tabs .n { position: absolute; top: -7px; right: -4px; min-width: 18px; padding: 0 5px; text-align: center; z-index: 1; border-radius: 9px; background: var(--g); color: #120800; font-size: 11px; line-height: 18px; }
 }
 .list { display: grid; gap: 10px; }
 .item { display: grid; gap: 6px; text-align: left; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; cursor: pointer; }
@@ -1390,7 +1392,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (b.dataset.tab === 'gate') b.hidden = !gateOn;
       if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table));
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
-      b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
+      b.innerHTML = '<span class="tl">' + esc(l[0]) + '</span>' + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
     $('tabEditW').hidden = document.querySelectorAll('#tabs button:not([hidden])').length < 4;
     // 홈 화면 앱 아이콘 숫자 (지원하는 폰만)
@@ -1407,7 +1409,7 @@ body.hasfab main { padding-bottom: 110px; }
   }
   function tabOrderSheet() {
     var vis = Array.prototype.filter.call(document.querySelectorAll('#tabs button'), function (b) { return !b.hidden; }), name = {};
-    vis.forEach(function (b) { name[b.dataset.tab] = (b.firstChild && b.firstChild.nodeType === 3 ? b.firstChild.textContent : b.textContent).trim(); });
+    vis.forEach(function (b) { name[b.dataset.tab] = (b.querySelector('.tl') || b).textContent.trim(); });
     var cur = vis.map(function (b) { return b.dataset.tab; });
     showSheet('<h2>↕ 탭 순서</h2><p class="sub">위로 올린 탭이 먼저 보여요 (한 줄에 4개씩). 내 계정에 저장돼서 다른 폰에서도 같아요.</p><div id="toL"></div><p class="msg" id="toMsg"></p>' +
       '<div class="tbbtns"><button class="btn btn-hot" type="button" id="toSave">저장</button><button class="btn" type="button" id="toReset">기본 순서로</button></div>');
