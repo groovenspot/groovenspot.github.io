@@ -1008,6 +1008,12 @@ body.popmode .chath .chpop { display: none; }
 .alllive .sosl { border-color: #ff3b5c; color: #fff; background: #3a0610; }
 .alllive .opsl { border-color: var(--warn); color: var(--warn); }
 .ali .alops { font-size: 12px; color: var(--warn); font-weight: 800; }
+.alllive .urgl { border-color: #ff3b5c; color: #ffd6dd; background: #3a0610; animation: urgring 1.2s ease-in-out infinite; }
+.alllive .dutyl { border-color: var(--line-2); color: var(--muted); cursor: default; }
+.ali .alwh { font-size: 12px; font-weight: 800; color: var(--warn); }
+.ali .alwh.ok { color: var(--ok); }
+.ali .alurg { font-size: 12px; font-weight: 900; color: #ff8a9b; }
+.chip.r-live { border-color: var(--g); color: var(--g); }
 .ali .alsos { font-size: 12px; color: #ff8a9b; font-weight: 800; }
 .ali .alops.ok, .ali .alsos.ok { color: var(--ok); }
 </style>
@@ -1584,6 +1590,11 @@ body.popmode .chath .chpop { display: none; }
         '위치 <b>서면역 3번 출구</b> · 공개 번호 <b>0507-1301-5970</b> · 인스타 <b>@groovenspot</b>',
         '매장은 직접 예약을 받지 않아요. 예약은 <b>MD(영업진)</b>를 통해서만'
       ]) +
+      sec('📱 화면 · 탭', [
+        '탭은 한 줄에 <b>4개씩</b> · 탭 아래 <b>↕ 탭 순서</b>에서 ▲▼로 내가 자주 쓰는 탭을 앞으로 → 저장 (내 계정에 저장돼서 다른 폰에서도 같아요 · <b>기본 순서로</b>)',
+        '앱이 업데이트되거나 다시 불러와져도 <b>마지막에 보던 탭·열려 있던 대화창</b>으로 돌아가요',
+        '숫자 배지는 탭 오른쪽 위 · 🆘 긴급모집 중이면 💬 버튼이 빨갛게 깜빡여요'
+      ]) +
       sec('🔑 가입·로그인', [
         '<b>그루브.site/staff</b>에서 이름·전화번호·비밀번호(6자 이상)·팀을 넣고 신청 → 대표나 팀장이 승인하면 써요',
         '비밀번호 5번 틀리면 30분 잠겨요. 로그인은 30일 유지',
@@ -1613,9 +1624,14 @@ body.popmode .chath .chpop { display: none; }
         '<b>수습</b> 직책은 호출에서 빠져요 · <b>경호팀장</b>은 🪑 테이블·🎆 연출을 보고 그 💬 대화에 쓸 수 있어요 · 대표는 3일 받은 수 확인'
       ]) +
       sec('🪑 테이블', [
-        '영업진이 자기 손님을 넣으면 <b>승인 대기</b> → 대표·김동기·양진호·팀장(그날 권한 받은 직원 포함)이 승인, 또는 코멘트 달아 거절 → 고쳐서 다시 신청',
+        '🟢 <b>게스트</b>(예전 입장 버튼)만 누르면 <b>누구나 승인 없이 바로 등록</b> · ★ <b>판매</b>·🍾 <b>킵</b>이 붙으면 <b>승인 대기</b> → 대표·김동기·양진호·팀장(그날 권한 받은 직원 포함)이 승인, 또는 코멘트 달아 거절 → 고쳐서 다시 신청',
+        '도면·버튼 색: 🟢 <b>게스트 초록</b> · ★ <b>판매 빨강</b> · 🍾 <b>킵 파랑</b> · 승인 대기 주황 점선 · 빈자리 회색 점선',
+        '<b>내 손님 자리 아웃은 승인 없이 바로</b> (자리 창 <b>자리 비우기</b> · 대화 <code>3-11 아웃</code> · <code>2s2 아웃클</code>)',
+        '이름 바꾸기: 대화에 <code>3L8 이름변경 원영입니다</code> · <code>3l4 지훈으로 이름변경</code> → 자리표에 바로 (내 테이블은 승인 없이)',
+        '다른 사람이 내 손님 자리를 옮기면 <b>🔀 자리 이동</b> 알림이 와요 (예: <code>3층 L2 → L6</code>)',
+        '<b>📍 손님 위치 확인</b>: 다른 담당 손님 자리를 눌러 📍 → 담당 MD에게 알림 + 테이블 대화 한 줄 → 담당은 <b>자리에 있어요 / 흡연실 / 화장실 / 밖에 잠깐 / 나갔어요</b>를 한 번 눌러 답해요 (물어본 사람에게 알림)',
         '💬 대화창에 카톡처럼 써도 돼요: <code>3-2 민성 남4(동기)ㅇ</code> · <code>3층 DB7 아웃</code>(<code>캔슬</code>도 돼요) · <code>3L3 → 3L5</code> · 옮기면서 판매 전환 <code>3L3 → 3L5 판매전환</code>(한 번에) · 맞교환 <code>3L3 ↔ 3L5</code>(승인권자)',
-        '도면·목록 보기, <b>📋 카톡용 복사</b> · 판매석은 <b>노란색</b>, 도면에 담당 이름 · <b>🟢 빈 자리</b> 목록',
+        '보기는 <b>↔ 가로 / ↕ 세로</b>(폰 폭에 맞춘 도면) <b>/ ☰ 목록</b> — 고른 보기는 내 계정에 저장 · <b>📋 카톡용 복사</b> · 도면에 담당 이름 · <b>🟢 빈 자리</b> 목록',
         '<b>➕ 빠 확장</b>을 누르면 확장 자리가 열려요 — 3층: <b>빠끝·빠입구·3·4사이·6·7사이</b> · 2층: <b>섭빠1·섭빠2·3·4사이·4·5사이</b> · 손님 없으면 <b>➖ 닫기</b>',
         '대기 손님은 <b>💰 비딩</b>: 담당이 금액(만원)을 올리면 관리자가 자리를 골라 확정',
         '넣기·승인·비딩은 <b>출근 후</b>에만 돼요 (출근 전엔 보기만)',
@@ -1642,14 +1658,17 @@ body.popmode .chath .chpop { display: none; }
         '대화창에 싸움·경호·상황을 쓰면 <b>🚨 경호팀 부를까요?</b> 버튼이 떠요 (눌러야만 호출) · 테이블 대화에 🚨 기록이 남아요'
       ]) +
       sec('🛎 운영 요청', [
-        '<b>🛎 운영</b> 탭 → <b>+ 요청</b>: 🧊 배달(얼음·버켓얼음·물·휴지·물티슈·샴잔·방향제·셋팅버켓) · 🍽 기본 세팅 · 🧹 아웃 청소 · 🔀 자리 이동 · 🎆 퍼레이드 지원(VIP·돔·알망·페리에·킹·퀸·딥 피켓, 가마, 3가방·5가방, 인원 N명) · 🌡 온도 · 📝 기타',
-        '알림은 <b>운영팀에게만</b> 가요. <b>✅ 내가 할게요</b>는 누구나 누를 수 있어요 → 누른 사람이 담당, 필요한 인원이 다 차면 닫히고 요청한 사람에게 알림',
+        '<b>🛎 운영</b> 탭 → <b>+ 요청</b>: 🧊 배달(얼음·버켓얼음·물·휴지·물티슈·샴잔·방향제·셋팅버켓) · 🍽 기본 세팅 · 🧹 아웃 청소 · 🔀 자리 이동 · 🎆 퍼레이드 지원(VIP·돔·돔술·알망·페리에·킹·퀸·딥 피켓, 홀로, 망치, 가마, 3가방·5가방, 인원 N명) · 🌡 온도 · 📝 기타',
+        '알림은 <b>운영팀에게만</b> 가요. <b>✅ 내가 할게요</b>는 누구나(영업진도, <b>내가 올린 요청도</b> — 올리고 바로 치울 때) 누를 수 있어요 → 누른 사람이 담당, 필요한 인원이 다 차면 닫히고 요청한 사람에게 알림',
+        '<b>🆘 긴급모집</b>: 퍼레이드 지원 인원이 안 차면 카드의 🆘 버튼 → 테이블 대화에 다시 올라가고 <b>다 찰 때까지 대화창 맨 위에 빨갛게 고정</b> · <b>출근한 운영팀·영업진</b>에게 알림 (1분에 한 번)',
         '테이블 대화에 카톡처럼 써도 돼요: <code>3-4 입장완 기셋부탁드립니다</code> · <code>2s2 아웃클</code> · <code>3디2 버켓얼음 부탁드립니다</code> · <code>2-4 물4 얼름</code> · <code>기존 3-11 클 부탁</code> · <code>3냉가동 부탁</code>',
         '운영 탭에서 보낸 요청도 <b>💬 테이블 대화</b>에 한 줄로 올라가고(✍️운영탭) 담당이 정해지면 그 줄에 표시돼요 · 자리표에서 비우기·옮기기를 해도 운영팀에게 아웃 청소·자리 이동 요청이 가요',
         '대화에서 그 메시지를 두 번 눌러도 맡아져요 · 운영팀끼리 쓰는 <code>완료</code> 보고는 알림이 안 가요'
       ]) +
       sec('🍾 킵', [
-        '맡기기·꺼내기는 담당이 요청 → <b>대표·김동기·양진호</b>가 승인하면 반영',
+        '맡기기·꺼내기·병 수 고치기는 담당이 요청 → <b>대표·김동기·양진호</b>(+ 대표가 그날 권한 준 직원)가 승인하면 반영',
+        '<b>👥 킵 승인 권한 (오늘)</b>: 대표만 직원을 골라 줄 수 있어요 → 그 영업일 동안 승인 · 영업일이 바뀌면 끝',
+        '킵 장부 기록은 <b>지워지지 않고 모두 남아요</b> (손님 삭제·되돌리기·이름 맞춤도 <b>킵 기록</b>에 한 줄씩)',
         '보관 <b>30일</b>. 잘못 눌렀으면 15분 안에 되돌리기',
         '손님 링크를 보내면 손님이 자기 킵을 직접 볼 수 있어요'
       ]) +
@@ -1683,12 +1702,20 @@ body.popmode .chath .chpop { display: none; }
         '<b>@호출</b>은 성 빼고·초성·닉네임으로도 찾아져요 (예: <code>@동기</code> <code>@ㄷㄱ</code>)',
         '테이블·게스트 대화 보내기는 <b>출근 후</b>에 돼요',
         '말풍선 <b>두 번 누르기 = ✅ 확인</b> (🛎 운영 요청 메시지는 = 내가 할게요) · <b>꾹 누르기 = ↩️ 답장·📋 복사</b>',
-        '테이블 대화에는 자리표·🛎 운영 탭·🚨 경호 호출에서 한 것도 한 줄씩 올라가요 (✍️자리표 · ✍️운영탭 · ✍️경호 호출)',
+        '테이블 대화에는 자리표·🛎 운영 탭·🚨 경호 호출에서 한 것도 한 줄씩 올라가요 (✍️자리표 · ✍️운영탭 · ✍️경호 호출 · 🆘긴급모집 · 📍위치)',
+        '<b>🗗 따로 띄우기</b>(PC): 대화창 위 🗗 → 크롬·엣지는 <b>항상 위에 떠 있는 작은 창</b>이라 아레나 위에 겹쳐 둬도 안 가려져요',
+        '새 🎆 연출 요청(·🛎·🚨·🆘) 줄은 <b>자동으로 맨 아래로</b> + 테두리 빨갛게 깜빡 · 위로 올려 읽는 중이면 <b>⬇ 새 메시지 N</b> 버튼',
         '📷 사진·영상 올리기 (큰 영상은 자동으로 줄여서, 5분까지)'
+      ]) +
+      sec('🎬 실시간 영상', [
+        '<b>🎬 실시간</b> 탭: 누구나(경호팀 빼고) 영상 2개·사진 3장·글을 올려요 · 큰 영상은 자동으로 줄여서',
+        '올리면 <b>출근한(퇴근 전) 직원 모두</b>에게 알림 · 탭에 안 본 글 수',
+        '최근 3일 · 영상 바로 재생·저장 · 사진 크게 보기 · 지우기는 올린 사람·대표'
       ]) +
       sec('🔎 분실물 · 그 밖의 탭', [
         '분실물은 운영팀·대표가 올리고 홈페이지 /lost/ 에 날짜별로 올라가요. 10일 지나면 자동 삭제',
-        '게시판(팀·전체) · 회의록은 부팀장 이상'
+        '게시판(팀·전체) · 회의록은 부팀장 이상',
+        '<b>📡 전체</b>(대표만): 최근 36시간 모든 알림·대화·🎬 실시간 · 🚨 경호·🆘 긴급모집·🛎 운영 진행 상황 · 출근 인원 · 📍 위치 답 · 🔀 자리 이동 · 🍾 킵으로 걸러 보기 · 🔔 전체 알림 받기'
       ]) + '</div>';
   }
   function bindPushGuide() {
@@ -4010,8 +4037,8 @@ body.popmode .chath .chpop { display: none; }
   }
 
   // ── 📡 전체 (대표만, 2026-11-18): 누구에게 어떤 알림이 갔는지 + 테이블·연출·게스트 대화를 한 화면에. 켜 두면 5초마다 새로 ──
-  var ALL_F = [['', '전체'], ['al', '🔔 알림'], ['sos', '🚨 경호'], ['ops', '🛎 운영'], ['table', '🪑 테이블'], ['yc', '🎆 연출'], ['guest', '👥 게스트']];
-  var ALL_TABS = ['ops', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'];
+  var ALL_F = [['', '전체'], ['al', '🔔 알림'], ['sos', '🚨 경호'], ['ops', '🛎 운영'], ['urg', '🆘 긴급모집'], ['where', '📍 위치'], ['move', '🔀 자리 이동'], ['live', '🎬 실시간'], ['keep', '🍾 킵'], ['table', '🪑 테이블'], ['yc', '🎆 연출'], ['guest', '👥 게스트']];   // 2026-11-19 업데이트
+  var ALL_TABS = ['ops', 'live', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'];
   function loadAll(quiet) {
     if (!state.s || state.allFly) return;
     if (!state.all && state.tab === 'all') $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
@@ -4032,15 +4059,20 @@ body.popmode .chath .chpop { display: none; }
     var A = state.all, f = state.allF || '', prev = state.allSeen || '', today = String(A.now || '').slice(0, 10);
     var nAl = A.list.filter(function (x) { return x.t === 'al'; }).length;
     A.list.forEach(function (x) { if (x.ops && !x.ops.took) x.ops = null; if (x.sos && !x.sos.go) x.sos = null; });   // 배포 직후 서버가 아직 예전 버전이면 (몇 분) 진행 상황 없이
-    var isOps = function (x) { return x.t === 'ch' ? !!x.ops : /^(📡 )?(🛎|✅ 운영)/.test(x.title); }, isSos = function (x) { return x.t === 'ch' ? !!x.sos : /^(📡 )?(🚨|🏃|✅ 경호)/.test(x.title); };
-    var list = A.list.filter(function (x) { return !f || (f === 'al' ? x.t === 'al' : f === 'ops' ? isOps(x) : f === 'sos' ? isSos(x) : x.t === 'ch' && x.room === f); });
+    var isOps = function (x) { return x.t === 'ch' ? !!x.ops : /^(📡 )?(🛎|✅ 운영|🆘)/.test(x.title); }, isSos = function (x) { return x.t === 'ch' ? !!x.sos : /^(📡 )?(🚨|🏃|✅ 경호)/.test(x.title); };
+    var isUrg = function (x) { return x.t === 'ch' ? /🆘/.test(x.req || '') || !!(x.ops && x.ops.urgent) : /^(📡 )?🆘/.test(x.title); }, isWhere = function (x) { return x.t === 'ch' ? !!x.wh || /^📍/.test(x.text || '') : /^(📡 )?📍/.test(x.title); };
+    var isMove = function (x) { return x.t === 'al' ? /^(📡 )?🔀/.test(x.title) : x.t === 'ch' && /옮기기|→/.test(x.req || ''); }, isLive = function (x) { return x.t === 'lv' || (x.t === 'al' && /^(📡 )?🎬/.test(x.title)); }, isKeep = function (x) { return x.t === 'al' && /^(📡 )?(🍾|✅ 킵|↩️ 킵)/.test(x.title); };
+    var FIL = { al: function (x) { return x.t === 'al'; }, ops: isOps, sos: isSos, urg: isUrg, where: isWhere, move: isMove, live: isLive, keep: isKeep };
+    var list = A.list.filter(function (x) { return !f || (FIL[f] ? FIL[f](x) : x.t === 'ch' && x.room === f); });
+    var ans = {}; A.list.forEach(function (x) { if (x.t === 'ch' && x.rid && (!ans[x.rid] || x.at > ans[x.rid].at)) ans[x.rid] = x; });   // 📍 위치 확인 답
     var tm = function (at) { return at.slice(0, 10) === today ? at.slice(11, 16) : at.slice(5, 16).replace('-', '/'); };
     var off = typeof Notification !== 'undefined' && Notification.permission !== 'granted';
-    var h = '<div class="tbh"><div><h1>📡 전체</h1><p class="sub">최근 36시간 · 알림 ' + nAl + ' · 대화 ' + (A.list.length - nAl) + ' · 켜 두면 5초마다 새로</p></div></div>';
+    var nLv = A.list.filter(function (x) { return x.t === 'lv'; }).length;
+    var h = '<div class="tbh"><div><h1>📡 전체</h1><p class="sub">최근 36시간 · 알림 ' + nAl + ' · 대화 ' + (A.list.length - nAl - nLv) + (nLv ? ' · 🎬 실시간 ' + nLv : '') + ' · 켜 두면 5초마다 새로</p></div></div>';
     h += '<div class="allp"><button type="button" class="btn' + (A.on ? ' btn-ok' : '') + '" id="allPush" aria-pressed="' + !!A.on + '">' + (A.on ? '🔔 전체 알림 받기 · 켜짐' : '🔕 전체 알림 받기 · 꺼짐') + '</button>' +
       '<span>' + (A.on ? '직원에게 가는 알림이 내 폰에도 와요 (내가 한 일은 빼고)' : '켜면 직원에게 가는 알림이 내 폰에도 같이 와요') + '</span>' +
       (A.on && off ? '<span class="warn">이 폰은 알림이 꺼져 있어요 — 위 🔔를 눌러 켜 주세요</span>' : '') + '</div><p class="msg" id="allMsg"></p>';
-    if (A.sosLive || A.opsOpen) h += '<div class="alllive">' + (A.sosLive ? '<button type="button" class="chip sosl" data-allf="sos">🚨 경호 호출 중 ' + A.sosLive + '</button>' : '') + (A.opsOpen ? '<button type="button" class="chip opsl" data-allf="ops">🛎 운영 대기 ' + A.opsOpen + '</button>' : '') + '</div>';
+    if (A.sosLive || A.opsOpen || A.urgOpen || A.duty) h += '<div class="alllive">' + (A.sosLive ? '<button type="button" class="chip sosl" data-allf="sos">🚨 경호 호출 중 ' + A.sosLive + '</button>' : '') + (A.urgOpen ? '<button type="button" class="chip urgl" data-allf="urg">🆘 긴급모집 중 ' + A.urgOpen + '</button>' : '') + (A.opsOpen ? '<button type="button" class="chip opsl" data-allf="ops">🛎 운영 대기 ' + A.opsOpen + '</button>' : '') + (A.duty ? '<span class="chip dutyl">🕘 출근 ' + A.duty + '명</span>' : '') + '</div>';
     h += '<div class="allf">' + ALL_F.map(function (x) { return '<button type="button" class="chip' + (x[0] === f ? ' on' : '') + '" data-allf="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
     if (!list.length) h += '<p class="empty">아직 없어요.</p>';
     h += '<div class="alll">' + list.slice(0, 300).map(function (x) {
@@ -4051,9 +4083,14 @@ body.popmode .chath .chpop { display: none; }
           '<b>' + esc(x.title) + '</b>' + (x.body ? '<span class="alb">' + esc(x.body) + '</span>' : '') + '<span class="alto">→ ' + esc(to) + '</span></button>';
       }
       var med = [x.ph ? '📷 사진 ' + x.ph : '', x.vd ? '🎬 영상 ' + x.vd : ''].filter(String).join(' ');
+      if (x.t === 'lv') return '<button type="button" class="ali ch' + nw + '" data-allgo="live"><span class="alh"><span class="chip r-live">🎬 실시간 영상</span><time>' + esc(tm(x.at)) + '</time></span>' +
+        '<span><b>' + esc(x.who) + nickH(x.who) + '</b>' + (x.org ? '<small>' + esc(x.org) + '</small>' : '') + '</span>' + (x.text || med ? '<span class="alb">' + esc(x.text) + (x.text && med ? '\n' : '') + esc(med) + '</span>' : '') + '</button>';
+      var wa = x.wh ? ans[x.id] : null;
       return '<button type="button" class="ali ch' + nw + '" data-allroom="' + esc(x.room) + '"><span class="alh"><span class="chip r-' + esc(x.room) + '">' + esc(CHAT_NAME[x.room] || x.room) + '</span><time>' + esc(tm(x.at)) + '</time></span>' +
         '<span><b>' + esc(x.who) + nickH(x.who) + '</b>' + (x.org ? '<small>' + esc(x.org) + '</small>' : '') + '</span>' + (x.re ? '<span class="alre">↩ ' + esc(x.re) + '</span>' : '') +
         (x.text || med ? '<span class="alb">' + esc(x.text) + (x.text && med ? '\n' : '') + esc(med) + '</span>' : '') + (x.req ? '<span class="alq">' + esc(x.req) + '</span>' : '') +
+        (x.wh ? '<span class="alwh' + (wa ? ' ok' : '') + '">' + (wa ? '📍 ' + esc(wa.who) + ': ' + esc(String(wa.text || '').replace(/^📍[^→]*→\s*/, '')) + ' · ' + esc(tm(wa.at)) : '📍 담당 ' + esc(x.wh.md || '') + ' 답 기다리는 중') + '</span>' : '') +
+        (x.ops && x.ops.urgent && x.ops.status === '대기' ? '<span class="alurg">🆘 긴급모집 중 · ' + x.ops.took.length + '/' + x.ops.need + '명</span>' : '') +
         (x.ops ? '<span class="alops' + (x.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(x.ops.kind) + ' · ' + (x.ops.status === '확정' ? '✅ 담당 ' + esc(x.ops.took.map(function (k) { return k.who; }).join(', ')) : x.ops.status === '취소' ? '취소됨' : '담당 대기' + (x.ops.took.length ? ' · ' + esc(x.ops.took.map(function (k) { return k.who; }).join(', ')) : '') + (x.ops.need > 1 ? ' (' + x.ops.took.length + '/' + x.ops.need + ')' : '')) + '</span>' : '') +
         (x.sos ? '<span class="alsos' + (x.sos.status === '해결' ? ' ok' : '') + '">🚨 경호 호출 · ' + (x.sos.status === '호출' ? '출동 대기' : x.sos.status === '출동' ? '🏃 출동 ' + esc(x.sos.go.map(function (k) { return k.who; }).join(', ')) : x.sos.status === '해결' ? '✅ 해결 ' + esc(x.sos.doneBy) + (x.sos.go.length ? ' · 출동 ' + esc(x.sos.go.map(function (k) { return k.who; }).join(', ')) : '') : '취소됨') + '</span>' : '') + '</button>';
     }).join('') + '</div>';
