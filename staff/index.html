@@ -684,6 +684,16 @@ body.hasfab main { padding-bottom: 110px; }
 .yccf { display: flex; gap: 6px; margin: 4px 0 0; }
 .yccf input { flex: 1; min-height: 38px; padding: 6px 10px; font-size: 14px; }
 .yccf .btn { width: auto; min-height: 38px; padding: 0 12px; font-size: 13px; }
+.yccf .chatpic { width: 38px; height: 38px; font-size: 17px; border-radius: 10px; }
+.dec .chatph.decph { padding: 8px 0 0; border-top: 0; }
+.ycc .cph { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 8px; }
+.ycc .cph img { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; background: #000; cursor: zoom-in; }
+.ycc .cphi { position: relative; display: inline-block; }
+.ycc .csave { position: absolute; right: 4px; bottom: 4px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 13px; cursor: pointer; }
+.ycc .cph video { width: 252px; max-width: 100%; max-height: 320px; border-radius: 12px; background: #000; }
+.ycc .cph .cvid { width: auto; min-height: 36px; padding: 0 12px; font-size: 13px; }
+.ycc .cphv { display: grid; gap: 2px; justify-items: start; }
+.ycc .csavev { font-size: 13px; padding: 4px 2px; }
 .ycg { margin-top: 6px; max-height: 120px; overflow-y: auto; }
 /* 도면 보기 (홈페이지 배치도 기준, 좌표는 배치도 픽셀) */
 .tbvw { display: inline-flex; border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; margin: 0 0 10px; }
@@ -1310,7 +1320,7 @@ body.hasfab main { padding-bottom: 110px; }
       ], ['· 사파리 화면에서는 알림이 안 와요. 꼭 <b>홈 화면 아이콘</b>으로 열어 주세요.', '· <b>설정 → 알림 → GROOVE STAFF</b> 에서 알림 허용을 켜요.', '· <b>설정 → 일반 → 소프트웨어 업데이트</b>로 iOS 16.4 이상인지 확인해요.', '· 집중 모드·방해 금지가 켜져 있으면 꺼 주세요.']) +
       '<button class="btn btn-ok" type="button" id="pgOn">🔔 지금 이 폰 알림 켜기</button><p class="note" id="pgSt" style="margin:6px 0 0"></p></div>';
   }
-  // 📘 신규 교육: 스태프 앱 사용법·매장 기본 (대표 승인 2026-11-18). 칸마다 접혀 있음.
+  // 📘 신규 교육: 스태프 앱 사용법·매장 기본 (대표 승인 2026-11-18, 저녁: 출근·입구 호출·업무사항·메시지 그룹·손님 문의 더함). 칸마다 접혀 있음.
   function eduGuideHtml() {
     var sec = function (title, items) { return '<details class="pg"><summary>' + title + '</summary><ul class="steps">' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></details>'; };
     return '<div class="pgw"><h2 class="sec" style="margin:0 0 6px">📘 처음 오신 분 · 스태프 앱 사용법</h2><p class="note" style="margin:0 0 8px">눌러서 펼쳐 보세요.</p>' +
@@ -1325,7 +1335,26 @@ body.hasfab main { padding-bottom: 110px; }
         '<b>그루브.site/staff</b>에서 이름·전화번호·비밀번호(6자 이상)·팀을 넣고 신청 → 대표나 팀장이 승인하면 써요',
         '비밀번호 5번 틀리면 30분 잠겨요. 로그인은 30일 유지',
         '비밀번호를 잊으면 탈퇴 후 <b>같은 이름</b>으로 다시 가입 (킵 손님은 이름으로 다시 이어져요)',
+        '팀: 운영팀·클로버·아룬·고트(영업팀)·DJ팀·<b>경호팀</b> · 직책: <b>수습</b>·직원·부팀장·팀장',
+        '<b>닉네임</b>: 위 내 이름 → <b>✏️ 내 정보 바꾸기</b>에서 정해요. 이름 옆에 보이고 @호출·업무사항에서도 닉네임으로 찾아져요',
         '알림(푸시)은 위 <b>📲 알림 받는 법</b>대로 꼭 켜 두세요'
+      ]) +
+      sec('🕘 출근·퇴근 · 👤 내 프로필', [
+        '맨 위 <b>내 이름</b>을 누르면 👤 내 프로필 → <b>🕘 출근하기</b> / 끝나면 <b>퇴근하기</b>(두 번 눌러 확인)',
+        '<b>출근 전에는 보기만</b>: 테이블·게스트 현황은 볼 수 있지만, 손님 넣기·고치기·승인·비딩·게스트 입력·테이블/게스트 대화 보내기는 출근 버튼을 눌러야 돼요. 누르려고 하면 출근 안내 창이 떠요',
+        '<b>🚪 입구 호출 알림은 출근한 사람만</b> 받아요 (휴무 날도 손님 받으려면 출근 누르기)',
+        '영업팀은 프로필 아래 <b>📊 내 현황</b>: 8주 게스트 추이·내 순위·팀 안 순위·킵 만료 임박 손님·앞으로 잡힌 대기 손님',
+        '출근·퇴근 시각은 대표가 <b>근무표</b>로 확인해요'
+      ]) +
+      sec('🚪 입구 호출 (경호팀 → 운영팀·영업팀)', [
+        '경호팀 화면에는 <b>🚪 입구</b> 탭만 보여요. 층·남/여 인원·메모를 넣고 버튼 하나로 호출',
+        '<b>🙋 안내 직원 호출</b>: 출근 중인 <b>운영팀</b>에게 한 명씩 <b>10초</b>씩 차례로',
+        '<b>🆕 담당 없는 손님 → MD 순번</b>: 출근 중인 <b>영업팀</b>에게 한 명씩 <b>15초</b>씩. 오늘·어제·그제 받은 수가 적은 사람부터 <b>공평하게</b> 돌아가요',
+        '<b>👤 담당 MD 호출</b>: 손님이 찾는 MD 이름을 골라 그 사람에게 <b>60초</b>',
+        '받는 사람: 화면 위 호출 카드 + 알림 → <b>받을게요</b> 또는 <b>넘기기</b>. 시간이 지나면 다음 사람에게 자동으로 넘어가요',
+        '경호팀 화면에 누구에게 갔는지·몇 초 남았는지·다음 차례가 보이고, 한 바퀴 돌아도 없으면 경호팀·대표에게 <b>없음</b> 알림',
+        '안내·순번 호출은 <b>💬 테이블 대화</b>에 한 줄로 올라가서 모두 볼 수 있어요',
+        '<b>수습</b> 직책은 호출에서 빠져요 · <b>경호팀장</b>은 🪑 테이블·🎆 연출을 보기만 할 수 있어요 · 대표는 3일 받은 수 확인'
       ]) +
       sec('🪑 테이블', [
         '영업진이 자기 손님을 넣으면 <b>승인 대기</b> → 대표·김동기·양진호·팀장(그날 권한 받은 직원 포함)이 승인, 또는 코멘트 달아 거절 → 고쳐서 다시 신청',
@@ -1333,11 +1362,13 @@ body.hasfab main { padding-bottom: 110px; }
         '도면·목록 보기, <b>📋 카톡용 복사</b> · 판매석은 <b>노란색</b>, 도면에 담당 이름 · <b>🟢 빈 자리</b> 목록',
         '<b>➕ 빠 확장</b>을 누르면 확장 자리(3층 B10~15 · 2층 B7~12)가 열려요 · 손님 없으면 <b>➖ 닫기</b>',
         '대기 손님은 <b>💰 비딩</b>: 담당이 금액(만원)을 올리면 관리자가 자리를 골라 확정',
+        '넣기·승인·비딩은 <b>출근 후</b>에만 돼요 (출근 전엔 보기만)',
         '주말 자리(SPOT B·V, GROOVE Bar)는 금·토에만 보여요'
       ]) +
       sec('🎆 연출', [
         '<b>+ 연출 요청</b>: 자리(또는 📺 전광만 + 층) · 순서(바로/준비되는 대로/시간/○○ 다음) · 영상·홀로·피켓·망치·VVIP · 전광판 문구 · 노래 · 메모 · 사진·영상',
         '노래: 멜론 링크 또는 사운드클라우드 링크. 다운로드 되는 곡은 <b>⬇️ 다운</b> 버튼으로 조명실에서 받고, 다운로드 없는 곡은 <b>⚠️ 미발매</b>로 표시돼요. 시작 구간은 <b>노래 시작</b> 칸에',
+        '<b>📁 세팅곡</b>: 구글 드라이브 세팅곡 폴더에서 초성으로 찾아 고르기 · DJ팀·관리자는 곡 파일을 올릴 수 있어요',
         '<b>전광 준비</b>(DJ팀·팀장·대표) + <b>술 준비</b>(운영팀)가 되면 요청한 사람에게 알림 → <b>ㄱㄱ 시작</b> → 끝나면 <b>컷</b>',
         '<b>ㄱㄱ·컷</b>은 요청한 사람·DJ팀·관리자(대표·김동기·양진호·팀장), <b>순서(▲▼)</b>는 관리자·DJ팀만',
         '요청을 고치면 전광 준비가 다시 풀리고 카드에 <b>✏️ 수정됨</b>이 떠요',
@@ -1349,19 +1380,33 @@ body.hasfab main { padding-bottom: 110px; }
         '손님 링크를 보내면 손님이 자기 킵을 직접 볼 수 있어요'
       ]) +
       sec('👥 게스트 현황', [
-        '순위는 모두 볼 수 있어요',
-        '입력은 팀장 이상: 게스트 대화창에 날짜·팀·이름+숫자 양식으로 올리면 반영'
+        '순위는 모두 볼 수 있어요 · 게스트 수는 <b>팀</b> 단위로 세요',
+        '팀 카드를 누르면 <b>팀 안 순위</b> (직원은 자기 팀, 승인하는 사람은 모든 팀)',
+        '입력은 팀장 이상(출근 후): 게스트 대화창에 날짜·팀·이름+숫자 양식으로 올리면 반영'
+      ]) +
+      sec('📋 업무사항', [
+        '<b>내가 한 일·할 일은 직접 올려요</b>: 📋 업무사항 → <b>➕ 업무 추가</b> → 할 일·마감 → 추가하기 (직원은 <b>내 일</b>로 들어가요)',
+        '팀장·김동기·양진호·대표는 다른 사람을 담당으로 넣을 수 있어요. 할 일·담당에 <b>이름·닉네임</b>이 나오면 그 사람에게 알림',
+        '상태는 <b>대기 → ▶ 진행 → ✅ 완료</b>로 직접 바꿔요. 완료되면 대표에게 알림',
+        '<b>코멘트</b>로 진행 상황을 남기고 <b>📷 사진·영상</b>도 같이 올려요 (사진 3장·영상 2개, 텍스트 없이 사진만도 돼요)',
+        '직원은 자기 일만, 부팀장 이상은 전부 봐요. 완료된 일은 대표가 확인하고 지워요',
+        '스스로 찾아서 올리고 끝까지 마무리한 기록은 대표가 직접 확인해요'
+      ]) +
+      sec('✉️ 메시지 · 👥 그룹 · 🙋 손님 문의', [
+        '1:1 메시지 + <b>그룹 만들기</b>(2명 이상 골라서) · 그룹 이름 바꾸기·멤버 넣기·나가기 · 보낸 사람·읽음 수 표시',
+        '홈페이지 예약 문의는 영업팀 팀장들의 <b>손님 문의</b> 그룹방으로 와요',
+        '팀장이 <b>제가 받을게요</b> → 날짜·손님 이름·인원·층·담당 MD를 정하면 <b>테이블 대기</b>에 들어가고 담당에게 알림 · 다른 팀장에게는 <b>받음</b>으로 보여요'
       ]) +
       sec('💬 대화창', [
         '오른쪽 아래 💬 · 방은 <b>테이블·연출·게스트</b>',
-        '<b>@호출</b>은 성 빼고·초성만 써도 찾아져요 (예: <code>@동기</code> <code>@ㄷㄱ</code>)',
+        '<b>@호출</b>은 성 빼고·초성·닉네임으로도 찾아져요 (예: <code>@동기</code> <code>@ㄷㄱ</code>)',
+        '테이블·게스트 대화 보내기는 <b>출근 후</b>에 돼요',
         '말풍선 <b>두 번 누르기 = ✅ 확인</b> · <b>꾹 누르기 = ↩️ 답장·📋 복사</b>',
         '📷 사진·영상 올리기 (큰 영상은 자동으로 줄여서, 5분까지)'
       ]) +
       sec('🔎 분실물 · 그 밖의 탭', [
         '분실물은 운영팀·대표가 올리고 홈페이지 /lost/ 에 날짜별로 올라가요. 10일 지나면 자동 삭제',
-        '게시판(팀·전체), 1:1 메시지',
-        '회의록은 부팀장 이상 · <b>📋 업무사항</b>은 내 담당 일이 있으면 보여요 (상태·코멘트를 직접 바꿔요)'
+        '게시판(팀·전체) · 회의록은 부팀장 이상'
       ]) + '</div>';
   }
   function bindPushGuide() {
@@ -1398,8 +1443,8 @@ body.hasfab main { padding-bottom: 110px; }
         '<span class="row">담당 ' + esc(x.who || '-') + ' · 마감 ' + esc(x.due || '-') + ' · <span class="st ' + esc(late ? 'late' : x.status) + '">' + esc(late ? '마감 지남 · ' + x.status : x.status) + '</span>' + (x.done ? ' · 완료 ' + esc(x.done.slice(5)) : '') +
         (x.mine ? ' · <b>내 일</b>' : '') + '</span>' + (x.ppl && x.ppl.length ? '<span class="row decppl">👤 ' + x.ppl.map(function (n) { return esc(n) + nickH(n); }).join(', ') + '</span>' : '');
       if (x.can) c += '<div class="decst" role="group" aria-label="상태">' + ['대기', '진행', '완료'].map(function (st) { return '<button type="button" data-decst="' + st + '" aria-pressed="' + (x.status === st) + '">' + (st === '완료' ? '✅ ' : st === '진행' ? '▶ ' : '') + st + '</button>'; }).join('') + '</div>';
-      if (x.cmts.length) c += '<div class="ycc">' + x.cmts.map(function (m) { return '<p' + (/^상태 → /.test(m.text) ? ' class="sys"' : '') + '><b>' + esc(m.who) + nickH(m.who) + '</b> ' + esc(m.text) + ' <small>' + esc(m.at) + '</small></p>'; }).join('') + '</div>';
-      if (x.can) c += '<form class="yccf" data-deccf="1"><input data-deccmt="1" maxlength="200" placeholder="코멘트 (예: 내일까지 견적 받을게요)" autocomplete="off"><button class="btn" type="submit">보내기</button></form>';
+      if (x.cmts.length) c += '<div class="ycc">' + x.cmts.map(function (m) { return '<p' + (/^상태 → /.test(m.text) ? ' class="sys"' : '') + '><b>' + esc(m.who) + nickH(m.who) + '</b> ' + esc(m.text) + ' <small>' + esc(m.at) + '</small></p>' + chatMedia(m); }).join('') + '</div>';
+      if (x.can) c += '<form class="yccf" data-deccf="1"><label class="chatpic" aria-label="사진·영상 올리기" title="사진·영상">📷<input type="file" data-decfile="1" accept="image/*,video/*" multiple hidden></label><input data-deccmt="1" maxlength="200" placeholder="코멘트 (예: 내일까지 견적 받을게요)" autocomplete="off" value="' + esc((state.decTxt || {})[x.id] || '') + '"><button class="btn" type="submit">보내기</button></form><div class="chatph decph" data-decph="1" hidden></div>';
       if (d.admin && x.status === '완료') c += '<button class="btn btn-bad" type="button" data-decdel="1" style="width:100%;margin-top:8px">🗑 확인·지우기</button>';
       return c + '</div>';
     }).join('') + '</div>';
@@ -1434,20 +1479,76 @@ body.hasfab main { padding-bottom: 110px; }
         }).catch(function () { btn.disabled = false; m.className = 'msg'; m.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
       });
     }
-    function send(id, body, btn) {
+    function send(id, body, btn, okFn) {
       if (btn) btn.disabled = true;
       call(Object.assign({ a: body.del ? 'dec_del' : 'dec_set', token: state.s.token, id: id }, body.del ? {} : body)).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
-        if (!r.ok) { if (btn) btn.disabled = false; var m = $('decMsg'); if (m) m.textContent = { forbidden: '내 이름·닉네임이 나온 일만 바꿀 수 있어요.', state: '완료된 일만 지울 수 있어요.', notfound: '그 사이 지워졌어요.', busy: '잠시 후 다시 해 주세요.', text: '<, > 는 못 써요.' }[r.error] || '안 됐어요. 다시 해 주세요.'; return; }
+        if (!r.ok) { if (btn) btn.disabled = false; var m = $('decMsg'); if (m) m.textContent = { forbidden: '내 이름·닉네임이 나온 일만 바꿀 수 있어요.', state: '완료된 일만 지울 수 있어요.', notfound: '그 사이 지워졌어요.', busy: '잠시 후 다시 해 주세요.', text: '<, > 는 못 써요.', photo: '사진은 jpg·png 3장까지예요.', video: '영상을 다시 올려 주세요.' }[r.error] || '안 됐어요. 다시 해 주세요.'; return; }
+        if (okFn) okFn();
         state.data.decisions = r.decisions; render();
       }).catch(function () { if (btn) btn.disabled = false; var m = $('decMsg'); if (m) m.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
     }
     area.querySelectorAll('[data-decid]').forEach(function (card) {
       var id = card.dataset.decid;
       card.querySelectorAll('[data-decst]').forEach(function (b) { b.addEventListener('click', function () { if (b.getAttribute('aria-pressed') === 'true') return; send(id, { status: b.dataset.decst }, b); }); });
-      var fm = card.querySelector('[data-deccf]'); if (fm) fm.addEventListener('submit', function (e) { e.preventDefault(); var inp = fm.querySelector('input'), v = inp.value.trim(); if (!v) return; send(id, { text: v }, fm.querySelector('button')); });
+      var fm = card.querySelector('[data-deccf]');
+      if (fm) {
+        var inp = fm.querySelector('[data-deccmt]'), fb = fm.querySelector('button[type="submit"]');
+        inp.addEventListener('input', function () { (state.decTxt = state.decTxt || {})[id] = inp.value; });
+        fm.querySelector('[data-decfile]').addEventListener('change', function () { decPick(id, Array.prototype.slice.call(this.files || [])); this.value = ''; });
+        decPaint(id);
+        fm.addEventListener('submit', function (e) {
+          e.preventDefault(); var v = inp.value.trim(), md = decMd(id);
+          if (!v && !md.photos.length && !md.vids.length) return;
+          if (fb.disabled) return;
+          var msg = $('decMsg');
+          if (md.vids.some(function (x) { return x.err; })) { if (msg) msg.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
+          if (md.vids.some(function (x) { return !x.done; })) {   // 영상이 다 올라가면 바로 보냄
+            fb.disabled = true; if (msg) msg.textContent = '영상 올리는 중이에요… 다 올라가면 바로 보내요.';
+            var w = setInterval(function () {
+              if (decMd(id) !== md || !document.body.contains(fm)) { clearInterval(w); return; }
+              if (md.vids.some(function (x) { return x.err; })) { clearInterval(w); fb.disabled = false; if (msg) msg.textContent = '영상을 못 올렸어요. 다시 넣어 주세요.'; }
+              else if (md.vids.every(function (x) { return x.done; })) { clearInterval(w); fb.disabled = false; if (msg) msg.textContent = ''; fm.requestSubmit(); }
+            }, 500);
+            return;
+          }
+          var body = { text: v };
+          if (md.photos.length) body.photos = md.photos.map(function (p) { return { type: p.type, data: p.data }; });
+          if (md.vids.length) body.videos = md.vids.map(function (x) { return x.vid; });
+          send(id, body, fb, function () { state.decMd[id] = null; if (state.decTxt) state.decTxt[id] = ''; });
+        });
+      }
       var del = card.querySelector('[data-decdel]'); if (del) del.addEventListener('click', function () { if (!armed(del, '🗑 확인·지우기')) return; send(id, { del: 1 }, del); });
     });
+    // 코멘트 사진·영상 (대표 요청 2026-11-18)
+    hydrateImgs(area);
+    area.querySelectorAll('.ycc [data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
+    area.querySelectorAll('.ycc [data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
+    area.querySelectorAll('.ycc [data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { if (state.tab === 'dec') render(); }); }); });
+  }
+  // 📋 업무사항 코멘트에 붙일 사진(3장)·영상(2개) — 일마다 따로, 화면이 다시 그려져도 남아 있음
+  function decMd(id) { state.decMd = state.decMd || {}; return state.decMd[id] || (state.decMd[id] = { photos: [], vids: [] }); }
+  function decPaint(id) {
+    var box = document.querySelector('.dec[data-decid="' + id + '"] [data-decph]'); if (!box) return;
+    var md = decMd(id); box.hidden = !md.photos.length && !md.vids.length;
+    box.innerHTML = md.photos.map(function (p, i) { return '<span class="ph"><img src="' + p.url + '" alt=""><button type="button" data-dprm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
+      md.vids.map(function (v, i) { return '<span class="ph' + (v.err ? ' bad' : '') + '">🎬<b>' + vidBadge(v) + '</b><button type="button" data-dvrm="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('');
+    box.querySelectorAll('[data-dprm]').forEach(function (b) { b.addEventListener('click', function () { md.photos.splice(+b.dataset.dprm, 1); decPaint(id); }); });
+    box.querySelectorAll('[data-dvrm]').forEach(function (b) { b.addEventListener('click', function () { var v = md.vids.splice(+b.dataset.dvrm, 1)[0]; if (v) v.gone = true; decPaint(id); }); });
+  }
+  function decPick(id, all) {
+    var md = decMd(id), msg = $('decMsg'), say = function (t) { if (msg) msg.textContent = t; };
+    var ims = all.filter(function (f) { return !ycIsVideo(f); });
+    if (ims.length > 3 - md.photos.length) say('사진은 한 번에 3장까지예요.');
+    ims = ims.slice(0, Math.max(0, 3 - md.photos.length));
+    all.filter(ycIsVideo).forEach(function (f) {
+      if (md.vids.length >= 2) return say('영상은 2개까지예요.');
+      if (vidTooBig(f)) return say(vidSizeMsg(f));
+      var v = { file: f, size: f.size, prog: 0, vid: '', done: false, err: '' }; md.vids.push(v); vidPrep(v, function () { decPaint(id); });
+      if (v.squeeze) say('큰 영상은 줄여서 올려요. 영상 길이만큼 걸리니 이 화면을 켜 두세요.');
+    });
+    decPaint(id);
+    if (ims.length) Promise.all(ims.map(shrink)).then(function (xs) { if (state.decMd[id] !== md) return; md.photos = md.photos.concat(xs).slice(0, 3); decPaint(id); }).catch(function () { say('사진을 못 읽었어요.'); });
   }
 
   // ── 게스트 현황 (영업일 월~일, 같은 수는 같은 등수) ──
