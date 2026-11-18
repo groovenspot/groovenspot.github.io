@@ -993,6 +993,9 @@ body.popmode .chath .chpop { display: none; }
 .ali { display: flex; flex-direction: column; gap: 3px; text-align: left; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; color: var(--txt); font: inherit; cursor: pointer; }
 .ali.al { border-left: 3px solid var(--g); }
 .ali.nw { box-shadow: inset 0 0 0 1px var(--g); }
+/* 🚨 경호 · 🎆 연출 · 🆘 긴급모집 = 빨간 테두리 (대표 요청 2026-11-19) */
+.ali.red, .ali.al.red { border: 2px solid #ff3b5c; border-left-width: 4px; }
+.ali.red .chip.al { border-color: #ff3b5c; color: #ff8a9b; }
 .ali .alh { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .ali time { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .ali .alb { white-space: pre-wrap; word-break: break-word; font-size: 14px; }
@@ -4062,6 +4065,8 @@ body.popmode .chath .chpop { display: none; }
     var isOps = function (x) { return x.t === 'ch' ? !!x.ops : /^(📡 )?(🛎|✅ 운영|🆘)/.test(x.title); }, isSos = function (x) { return x.t === 'ch' ? !!x.sos : /^(📡 )?(🚨|🏃|✅ 경호)/.test(x.title); };
     var isUrg = function (x) { return x.t === 'ch' ? /🆘/.test(x.req || '') || !!(x.ops && x.ops.urgent) : /^(📡 )?🆘/.test(x.title); }, isWhere = function (x) { return x.t === 'ch' ? !!x.wh || /^📍/.test(x.text || '') : /^(📡 )?📍/.test(x.title); };
     var isMove = function (x) { return x.t === 'al' ? /^(📡 )?🔀/.test(x.title) : x.t === 'ch' && /옮기기|→/.test(x.req || ''); }, isLive = function (x) { return x.t === 'lv' || (x.t === 'al' && /^(📡 )?🎬/.test(x.title)); }, isKeep = function (x) { return x.t === 'al' && /^(📡 )?(🍾|✅ 킵|↩️ 킵)/.test(x.title); };
+    var isYcAl = function (x) { return x.t === 'al' ? /^(📡 )?(🎆|🍾 술 준비)/.test(x.title) || x.tab === 'yc' : x.room === 'yc' && /🎆|✍️연출탭/.test(x.req || ''); };
+    var isRed = function (x) { return isSos(x) || isUrg(x) || isYcAl(x); };   // 🚨 경호 · 🎆 연출 · 🆘 긴급모집 = 빨간 테두리
     var FIL = { al: function (x) { return x.t === 'al'; }, ops: isOps, sos: isSos, urg: isUrg, where: isWhere, move: isMove, live: isLive, keep: isKeep };
     var list = A.list.filter(function (x) { return !f || (FIL[f] ? FIL[f](x) : x.t === 'ch' && x.room === f); });
     var ans = {}; A.list.forEach(function (x) { if (x.t === 'ch' && x.rid && (!ans[x.rid] || x.at > ans[x.rid].at)) ans[x.rid] = x; });   // 📍 위치 확인 답
@@ -4079,14 +4084,14 @@ body.popmode .chath .chpop { display: none; }
       var nw = prev && x.at > prev ? ' nw' : '';
       if (x.t === 'al') {
         var to = x.to.length > 8 ? x.to.slice(0, 8).join(', ') + ' 외 ' + (x.to.length - 8) + '명' : x.to.join(', ');
-        return '<button type="button" class="ali al' + nw + '" data-allgo="' + esc(x.tab) + '"><span class="alh"><span class="chip al">🔔 알림</span><time>' + esc(tm(x.at)) + '</time></span>' +
+        return '<button type="button" class="ali al' + nw + (isRed(x) ? ' red' : '') + '" data-allgo="' + esc(x.tab) + '"><span class="alh"><span class="chip al">🔔 알림</span><time>' + esc(tm(x.at)) + '</time></span>' +
           '<b>' + esc(x.title) + '</b>' + (x.body ? '<span class="alb">' + esc(x.body) + '</span>' : '') + '<span class="alto">→ ' + esc(to) + '</span></button>';
       }
       var med = [x.ph ? '📷 사진 ' + x.ph : '', x.vd ? '🎬 영상 ' + x.vd : ''].filter(String).join(' ');
       if (x.t === 'lv') return '<button type="button" class="ali ch' + nw + '" data-allgo="live"><span class="alh"><span class="chip r-live">🎬 실시간 영상</span><time>' + esc(tm(x.at)) + '</time></span>' +
         '<span><b>' + esc(x.who) + nickH(x.who) + '</b>' + (x.org ? '<small>' + esc(x.org) + '</small>' : '') + '</span>' + (x.text || med ? '<span class="alb">' + esc(x.text) + (x.text && med ? '\n' : '') + esc(med) + '</span>' : '') + '</button>';
       var wa = x.wh ? ans[x.id] : null;
-      return '<button type="button" class="ali ch' + nw + '" data-allroom="' + esc(x.room) + '"><span class="alh"><span class="chip r-' + esc(x.room) + '">' + esc(CHAT_NAME[x.room] || x.room) + '</span><time>' + esc(tm(x.at)) + '</time></span>' +
+      return '<button type="button" class="ali ch' + nw + (isRed(x) ? ' red' : '') + '" data-allroom="' + esc(x.room) + '"><span class="alh"><span class="chip r-' + esc(x.room) + '">' + esc(CHAT_NAME[x.room] || x.room) + '</span><time>' + esc(tm(x.at)) + '</time></span>' +
         '<span><b>' + esc(x.who) + nickH(x.who) + '</b>' + (x.org ? '<small>' + esc(x.org) + '</small>' : '') + '</span>' + (x.re ? '<span class="alre">↩ ' + esc(x.re) + '</span>' : '') +
         (x.text || med ? '<span class="alb">' + esc(x.text) + (x.text && med ? '\n' : '') + esc(med) + '</span>' : '') + (x.req ? '<span class="alq">' + esc(x.req) + '</span>' : '') +
         (x.wh ? '<span class="alwh' + (wa ? ' ok' : '') + '">' + (wa ? '📍 ' + esc(wa.who) + ': ' + esc(String(wa.text || '').replace(/^📍[^→]*→\s*/, '')) + ' · ' + esc(tm(wa.at)) : '📍 담당 ' + esc(x.wh.md || '') + ' 답 기다리는 중') + '</span>' : '') +
