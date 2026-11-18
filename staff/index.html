@@ -3907,13 +3907,14 @@ body.popmode .chath .chpop { display: none; }
     var h = '<h2>🚨 경호 호출</h2><p class="sub">출근 중인 경호팀 전원에게 바로 알림이 가요.</p>' +
       '<div class="sosk">' + SOS_KINDS.map(function (k) { return '<button type="button" class="chip' + (k === kind ? ' on' : '') + '" data-sosk="' + esc(k) + '">' + esc(k) + '</button>'; }).join('') + '</div>' +
       '<div class="sosf">' + [['SPOT', '3층 SPOT'], ['GROOVE', '2층 GROOVE'], ['입구', '입구'], ['', '모름']].map(function (x) { return '<button type="button" class="chip' + (x[0] === fl ? ' on' : '') + '" data-sosf="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      '<label>자리<input id="sosSeat" maxlength="20" autocomplete="off" placeholder="예) 4 · L3 · 흡연실 앞 · 아무 말이나 (모르면 비워 두기)"></label>' +
+      '<label>자리<input id="sosSeat" maxlength="20" autocomplete="off" placeholder="예) 1 · ㅅ1 · 엘4 · 흡연실 앞 · 아무 말이나 (모르면 비워 두기)"></label><div class="tbsx tbpick" id="sosSeatP"></div>' +
       '<label>메모<input id="sosMemo" maxlength="100" autocomplete="off" value="' + esc(t.slice(0, 100)) + '" placeholder="예) 남자 둘 시비 · 화장실 앞"></label>' +
       '<p class="msg" id="sosMsg"></p><div id="sosGo"><button class="btn btn-sos" type="button" id="sosSend" style="width:100%;min-height:54px;font-size:18px">🚨 경호팀 부르기</button></div>';
     showSheet(h);
     var sh = $('sheet');
     sh.querySelectorAll('[data-sosk]').forEach(function (b) { b.addEventListener('click', function () { kind = b.dataset.sosk; $('sosMsg').textContent = ''; sh.querySelectorAll('[data-sosk]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
-    sh.querySelectorAll('[data-sosf]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.sosf; sh.querySelectorAll('[data-sosf]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
+    var sosSP = seatHelp($('sosSeat'), $('sosSeatP'), function () { return fl === '입구' ? '입구' : fl; }, function (f) { fl = f; sh.querySelectorAll('[data-sosf]').forEach(function (x) { x.classList.toggle('on', x.dataset.sosf === f); }); });
+    sh.querySelectorAll('[data-sosf]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.sosf; sh.querySelectorAll('[data-sosf]').forEach(function (x) { x.classList.toggle('on', x === b); }); if (sosSP) sosSP(true); }); });
     call({ a: 'sos_get', token: state.s.token }).then(function (r) { if (r.ok) state.sosCrew = r.crew; }).catch(function () {});
     $('sosSend').addEventListener('click', function () {   // 한 번 더 확인 (대표 요청 2026-11-19)
       if (!kind) { $('sosMsg').textContent = '상황을 골라 주세요.'; return; }
@@ -4096,7 +4097,7 @@ body.popmode .chath .chpop { display: none; }
       '<div class="opk">' + O.kinds.map(function (k) { return '<button type="button" class="chip" data-opk="' + esc(k) + '">' + esc(k) + '</button>'; }).join('') + '</div>' +
       '<div class="opi" id="opI" hidden></div>' +
       '<div class="opfl">' + [['SPOT', '3층 SPOT'], ['GROOVE', '2층 GROOVE'], ['', '층 없음']].map(function (x) { return '<button type="button" class="chip' + (x[0] === fl ? ' on' : '') + '" data-opfl="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      '<label>자리<input id="opSeat" maxlength="20" autocomplete="off" placeholder="예) 4 · L3 · D1 · 바 옆 (비우면 층 전체)"></label>' +
+      '<label>자리<input id="opSeat" maxlength="20" autocomplete="off" placeholder="예) 1 · ㅅ1 · 엘4 · 바 옆 (비우면 층 전체)"></label><div class="tbsx tbpick" id="opSeatP"></div>' +
       '<div class="opn"><span>인원</span><button type="button" class="chip" data-opn="-1" aria-label="인원 빼기">−</button><b id="opN">1</b>명<button type="button" class="chip" data-opn="1" aria-label="인원 더하기">＋</button><span class="sub" style="margin:0">운영팀이 이만큼 맡으면 닫혀요</span></div>' +
       '<label>메모<input id="opMemo" maxlength="100" autocomplete="off" placeholder="예) 버켓 2개 · 3-10 생일 퍼레이드"></label>' +
       '<p class="msg" id="opMsg"></p><button class="btn btn-hot" type="button" id="opSave">운영팀에게 보내기</button>';
@@ -4110,7 +4111,8 @@ body.popmode .chath .chpop { display: none; }
       box.querySelectorAll('[data-opi]').forEach(function (c) { c.addEventListener('click', function () { var k = c.dataset.opi, i = items.indexOf(k); if (i >= 0) items.splice(i, 1); else items.push(k); c.classList.toggle('on', i < 0); }); });
       if (kind === '🎆 퍼레이드 지원' && n < 2) { n = 2; $('opN').textContent = n; }
     }); });
-    sh.querySelectorAll('[data-opfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.opfl; sh.querySelectorAll('[data-opfl]').forEach(function (x) { x.classList.toggle('on', x === b); }); }); });
+    var opSP = seatHelp($('opSeat'), $('opSeatP'), function () { return fl; }, function (f) { fl = f; sh.querySelectorAll('[data-opfl]').forEach(function (x) { x.classList.toggle('on', x.dataset.opfl === f); }); });   // 자리 치면 뜨는 버튼 (대표 요청 2026-11-19 새벽)
+    sh.querySelectorAll('[data-opfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.opfl; sh.querySelectorAll('[data-opfl]').forEach(function (x) { x.classList.toggle('on', x === b); }); if (opSP) opSP(true); }); });
     sh.querySelectorAll('[data-opn]').forEach(function (b) { b.addEventListener('click', function () { n = Math.max(1, Math.min(10, n + +b.dataset.opn)); $('opN').textContent = n; }); });
     $('opSave').addEventListener('click', function () {
       var m = $('opMsg'), seat = $('opSeat').value.trim();
@@ -4692,7 +4694,9 @@ body.popmode .chath .chpop { display: none; }
     var h = '<h2>' + (x ? '연출 고치기' : '🎆 연출 요청') + '</h2>';
     if (mineSeats.length && !x) h += '<div class="tbsx"><span class="note" style="margin:0 6px 0 0">내 테이블</span>' + mineSeats.map(function (m) { return '<button type="button" class="chip" data-ycms="' + esc(m.fl + '|' + m.seat) + '">' + esc(m.fl + ' ' + m.seat + (m.g ? ' ' + m.g : '')) + '</button>'; }).join('') + '</div>';
     h += '<div class="tbfl" style="margin:0 0 10px">' + (y.floors || []).map(function (f) { return '<button type="button" data-ycfl="' + esc(f.id) + '" aria-pressed="' + (f.id === fl) + '">' + esc(f.name) + ' <small>' + esc(f.floor) + '</small></button>'; }).join('') + '</div>';
-    h += '<label>자리<select id="ycSeat"></select></label>';
+    // 자리: 고르기 대신 숫자·글자·초성을 치면 뜨는 버튼 (대표 요청 2026-11-19 새벽, 자리표와 같은 방식)
+    h += '<label>자리<input id="ycSeat" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="숫자·글자 치면 떠요 (예: 1 · ㅅ1 · 3ㅅ1 · 엘4 · 3-11)"></label><div class="tbsx tbpick" id="ycSeatP"></div>' +
+      '<div class="tbsx" style="margin-top:-6px"><button type="button" class="chip" id="ycOnly">📺 전광만 (자리 없이)</button></div>';
     h += '<label>순서</label><div class="tbsx" id="ycWhen">' + [['now', '바로'], ['ready', '준비되는 대로'], ['time', '시간'], ['after', '○○ 다음']].map(function (o) { return '<button type="button" class="chip" data-ycwhen="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>' +
       '<div id="ycWhenX"></div>';
     h += '<label>영상</label><div class="tbsx">' + (y.teams || []).map(function (t) { return '<button type="button" class="chip" data-ycv="' + esc(t) + '">' + esc(t) + '팀</button>'; }).join('') + '<button type="button" class="chip" data-ycv="">없음</button></div>' +
@@ -4709,9 +4713,17 @@ body.popmode .chath .chpop { display: none; }
     h += '<p class="msg" id="ycMsg"></p><button class="btn btn-hot" type="button" id="ycSave">' + (x ? '저장' : '요청 보내기') + '</button>';
     showSheet(h);
     var s = $('sheet');
+    function ycSeatOpts() { var o = seatsOf(fl).slice(); if (x && x.floor === fl && /,/.test(x.seat)) o.unshift(x.seat); return o; }
+    function ycSeatHits(q) { var o = ycSeatOpts(), k = tbSeatQ(q), ex = o.filter(function (z) { return z.toUpperCase() === k; }); return ex.concat(tbSeatHits(o, q).filter(function (z) { return ex.indexOf(z) < 0; })); }
+    function ycSeatChips(show) {
+      var q = $('ycSeat').value.trim(), hits = show && q ? ycSeatHits(q).slice(0, 16) : [], box = $('ycSeatP');
+      box.innerHTML = hits.map(function (z) { return '<button type="button" class="chip' + (z === seat ? ' on' : '') + '" data-ycsp="' + esc(z) + '">' + esc(z) + '</button>'; }).join('');
+      box.querySelectorAll('[data-ycsp]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () { seat = b.dataset.ycsp; $('ycSeat').value = seat; $('ycOnly').classList.remove('on'); ycSeatChips(false); }); });
+      if (hits.length) try { box.scrollIntoView({ block: 'nearest' }); } catch (e) {}
+    }
     function paintSeats() {
-      var opts = seatsOf(fl).slice(); if (x && x.floor === fl && /,/.test(x.seat)) opts.unshift(x.seat); if (seat && seat !== '전광만' && opts.indexOf(seat) < 0) seat = '';
-      $('ycSeat').innerHTML = '<option value="">자리 고르기</option><option value="전광만"' + (seat === '전광만' ? ' selected' : '') + '>📺 ' + esc(fl) + ' 전광만 (자리 없이)</option>' + opts.map(function (q) { return '<option' + (q === seat ? ' selected' : '') + '>' + esc(q) + '</option>'; }).join('');
+      var opts = ycSeatOpts(); if (seat && seat !== '전광만' && opts.indexOf(seat) < 0) seat = '';
+      $('ycSeat').value = seat === '전광만' ? '' : seat || ''; $('ycSeatP').innerHTML = ''; $('ycOnly').classList.toggle('on', seat === '전광만'); $('ycOnly').textContent = '📺 ' + fl + ' 전광만 (자리 없이)';
       s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.ycfl === fl); });
     }
     function paintWhen() {
@@ -4763,7 +4775,10 @@ body.popmode .chath .chpop { display: none; }
     paintSeats(); paintWhen(); paintV(); paintTg(); paintPh();
     s.querySelectorAll('[data-ycms]').forEach(function (b) { b.addEventListener('click', function () { var p = b.dataset.ycms.split('|'); fl = p[0]; seat = p[1]; paintSeats(); }); });
     s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.ycfl; paintSeats(); }); });
-    $('ycSeat').addEventListener('change', function () { seat = this.value; });
+    $('ycSeat').addEventListener('input', function () { var q = this.value.trim(), pf = seatFloorOf(q); if (pf && pf !== fl && seatsOf(pf).length) { fl = pf; s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.ycfl === fl); }); $('ycOnly').textContent = '📺 ' + fl + ' 전광만 (자리 없이)'; }
+      var k = tbSeatQ(q), ex = ycSeatOpts().filter(function (z) { return z.toUpperCase() === k; }); seat = !q ? '' : ex.length ? ex[0] : null; $('ycOnly').classList.remove('on'); ycSeatChips(true); });
+    $('ycSeat').addEventListener('focus', function () { this.select(); });
+    $('ycOnly').addEventListener('click', function () { seat = seat === '전광만' ? '' : '전광만'; $('ycSeat').value = ''; ycSeatChips(false); this.classList.toggle('on', seat === '전광만'); });
     s.querySelectorAll('[data-ycwhen]').forEach(function (b) { b.addEventListener('click', function () { var k = b.dataset.ycwhen; when = k === 'time' ? (/^\d{2}:\d{2}$/.test(when) ? when : '') : k === 'after' ? (when.indexOf('after:') === 0 ? when : 'after:') : k; paintWhen(); }); });
     s.querySelectorAll('[data-ycv]').forEach(function (b) { b.addEventListener('click', function () { v.video = b.dataset.ycv; $('ycVQ').value = v.video; paintV(); }); });
     $('ycVQ').addEventListener('input', function () { v.video = this.value.trim(); paintV(); });
@@ -4792,6 +4807,7 @@ body.popmode .chath .chpop { display: none; }
     $('ycSave').addEventListener('click', function () {
       var b = this, m = $('ycMsg');
       v.picket = $('ycPk').value.trim(); v.video = $('ycVQ').value.trim(); v.note = $('ycNote').value.trim(); v.songAt = $('ycSAt').value.trim();
+      if (seat == null) { var sh = ycSeatHits($('ycSeat').value.trim()); if (sh.length === 1) seat = sh[0]; else { m.textContent = '자리를 아래 버튼에서 골라 주세요.'; return; } }
       if (!seat) { m.textContent = '자리를 골라 주세요.'; return; }
       if (!when || when === 'after:') { m.textContent = '순서를 골라 주세요.'; return; }
       b.disabled = true; m.textContent = '';
@@ -5647,6 +5663,34 @@ body.popmode .chath .chpop { display: none; }
     var k = tbSeatQ(q); if (!k) return [];
     return list.filter(function (x) { if (!x) return false; var u = x.toUpperCase(); return u.indexOf(k) === 0 || (/^\d+$/.test(k) && u.replace(/^[A-Z]+/, '').indexOf(k) === 0); })
       .sort(function (a, b) { var A = a.toUpperCase() === k ? 0 : 1, B = b.toUpperCase() === k ? 0 : 1; return A - B || a.length - b.length; });
+  }
+  // 층 자리 목록 (테이블 현황 → 없으면 연출 데이터)
+  function floorSeats(fl) {
+    var out = [], f = state.tb && (state.tb.floors || []).filter(function (x) { return x.id === fl; })[0];
+    if (f) f.zones.forEach(function (z) { z.rows.forEach(function (r) { r.forEach(function (q) { out.push(q); }); }); });
+    if (!out.length && state.yc) { var g = (state.yc.floors || []).filter(function (x) { return x.id === fl; })[0]; if (g) out = g.seats.slice(); }
+    return out;
+  }
+  // 아무 말이나 쓰는 자리 칸(🛎 운영 요청·🚨 경호 호출)에도: 숫자·글자·초성 치면 그 층 자리 버튼 (눌러도 되고 그냥 써도 됨)
+  // 앞에 3·2(3ㅅ1 · 3-11 · 2층 S1)를 쓰면 그 층으로
+  function seatFloorOf(q) { var m = /^\s*([23])\s*(?:-|층|[fF]|(?=[^\d\s]))/.exec(String(q || '')); return m ? (m[1] === '3' ? 'SPOT' : 'GROOVE') : ''; }
+  // 아무 말이나 쓰는 자리 칸(🛎 운영 요청·🚨 경호 호출)에도: 숫자·글자·초성 치면 자리 버튼 (눌러도 되고 그냥 써도 됨)
+  //  층을 골랐으면 그 층 자리 · 층 없음/모름이면 두 층 다 (버튼에 층 표시) · 3ㅅ1처럼 층을 붙여 쓰면 그 층으로 바꿈
+  function seatHelp(inp, box, getFl, setFl) {
+    if (!inp || !box) return;
+    if (!state.tb && !state.tbFly) try { var lp = loadTb(true); if (lp && lp.then) lp.then(function () { if (inp.value.trim() && document.body.contains(inp)) paint(true); }); } catch (e) {}
+    function paint(show) {
+      var q = inp.value.trim(), pf = seatFloorOf(q), fl = getFl();
+      if (pf && pf !== fl && setFl && (fl === 'SPOT' || fl === 'GROOVE' || !fl)) { setFl(pf); fl = pf; }
+      var fls = fl === 'SPOT' || fl === 'GROOVE' ? [fl] : fl ? [] : ['SPOT', 'GROOVE'], hits = [];
+      if (show && q) fls.forEach(function (f) { tbSeatHits(floorSeats(f), q).forEach(function (x) { hits.push([f, x]); }); });
+      hits = hits.slice(0, 18);
+      box.innerHTML = hits.map(function (h) { return '<button type="button" class="chip" data-shp="' + esc(h[1]) + '" data-shf="' + esc(h[0]) + '">' + (fls.length > 1 ? '<small>' + (h[0] === 'SPOT' ? '3층' : '2층') + '</small> ' : '') + esc(h[1]) + '</button>'; }).join('');
+      box.querySelectorAll('[data-shp]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () { if (setFl && b.dataset.shf !== getFl()) setFl(b.dataset.shf); inp.value = b.dataset.shp; paint(false); }); });
+      if (hits.length) try { box.scrollIntoView({ block: 'nearest' }); } catch (e) {}
+    }
+    inp.addEventListener('input', function () { paint(true); });
+    return paint;
   }
   // 카톡용 복사: 지금 쓰는 표 모양 그대로 (승인된 것만)
   function tbText(fl) {
