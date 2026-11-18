@@ -1341,7 +1341,7 @@ body.hasfab main { padding-bottom: 110px; }
       (medal ? '<span class="medal" aria-label="' + r.rank + '등">' + medal + '</span>' : '<span class="no">' + r.rank + '</span>') +
       '<div class="nm"><strong>' + esc(r.name) + nickH(r.name) + '</strong>' + teamChip(r.team) + (r.mine ? ' <span class="chip new">나</span>' : '') +
       '<div class="days">' + days + '</div></div>' +
-      '<div class="tot">' + r.total + '<small>명</small></div></div>';
+      '<div class="tot">' + r.total + '<small>팀</small></div></div>';
   }
   // ── 게스트 입력 (팀장: 자기 팀, 대표: 모든 팀 · 이번 주·지난주 영업일) ──
   function addDays(s, n) { var x = new Date(s + 'T00:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); }
@@ -1375,7 +1375,7 @@ body.hasfab main { padding-bottom: 110px; }
       var cur = guestOf(g, state.gday, a.name), k = state.gday + '|' + a.name, v = state.gdraft[k] != null ? state.gdraft[k] : (cur == null ? '' : String(cur));
       return '<div class="grow"><span class="gn">' + esc(a.name) + nickH(a.name) + roleChip(a.role) + (a.ros ? '<span class="chip ros">명단</span>' : '') + '</span>' +
         (a.ros ? '<button type="button" class="btn btn-bad rdel' + (state.rarm === a.name ? ' arm' : '') + '" data-rdel="' + esc(a.name) + '">' + (state.rarm === a.name ? '빼기' : '✕') + '</button>' : '') +
-        '<input type="number" inputmode="numeric" min="0" max="500" step="1" placeholder="0" data-gn="' + esc(a.name) + '" data-cur="' + (cur == null ? '' : cur) + '" value="' + esc(v) + '" aria-label="' + esc(a.name) + ' 게스트 수"><span class="u">명</span></div>';
+        '<input type="number" inputmode="numeric" min="0" max="500" step="1" placeholder="0" data-gn="' + esc(a.name) + '" data-cur="' + (cur == null ? '' : cur) + '" value="' + esc(v) + '" aria-label="' + esc(a.name) + ' 게스트 팀 수"><span class="u">팀</span></div>';
     }).join('') + '<div class="gbar"><button class="btn btn-hot" id="gSave" type="button">저장</button><p class="msg' + (state.gmsg ? ' ok' : '') + '" id="gMsg" role="alert">' + esc(state.gmsg) + '</p></div>';
     h += '<div class="radd"><input id="rName" maxlength="12" autocomplete="off" placeholder="팀원 이름 (가입 안 한 팀원)" aria-label="추가할 팀원 이름"><button class="btn" id="rAdd" type="button">팀원 추가</button></div>' +
       '<p class="msg rmsg' + (state.rmsg && !state.rbad ? ' ok' : '') + '" id="rMsg" role="alert">' + esc(state.rmsg) + '</p>';
@@ -1468,13 +1468,13 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.gTeam) {
       var tr = w.rows.filter(function (r) { return r.team === state.gTeam; }), tlast = null, trank = 0;
       tr = tr.map(function (r, i) { if (r.total !== tlast) { trank = i + 1; tlast = r.total; } return Object.assign({}, r, { rank: trank }); });
-      h += '<div class="tteam"><h2 class="sec">' + esc(state.gTeam) + ' 팀 안 순위 <small>' + tr.length + '명 · ' + teamSum[state.gTeam] + '명</small><button type="button" class="tclose" data-gteam="">닫기 ✕</button></h2>' +
+      h += '<div class="tteam"><h2 class="sec">' + esc(state.gTeam) + ' 팀 안 순위 <small>' + tr.length + '명 · ' + teamSum[state.gTeam] + '팀</small><button type="button" class="tclose" data-gteam="">닫기 ✕</button></h2>' +
         (tr.length ? '<div class="list">' + tr.map(function (r) { return rankCard(r, ti); }).join('') + '</div>' : '<p class="empty">' + (isNow ? '이번 주' : '지난주') + ' 이 팀 게스트가 아직 없어요.</p>') + '</div>';
     }
-    if (me) h += '<div class="me-card">내 순위 <b>' + me.rank + '위</b> · 게스트 <b>' + me.total + '명</b>' +
-      (me.rank > 3 && top.length ? ' · 3위와 ' + (top[top.length - 1].total - me.total) + '명 차이' : me.rank > 1 && w.rows.length ? ' · 1위와 ' + (w.rows[0].total - me.total) + '명 차이' : '') + '</div>';
+    if (me) h += '<div class="me-card">내 순위 <b>' + me.rank + '위</b> · 게스트 <b>' + me.total + '팀</b>' +
+      (me.rank > 3 && top.length ? ' · 3위와 ' + (top[top.length - 1].total - me.total) + '팀 차이' : me.rank > 1 && w.rows.length ? ' · 1위와 ' + (w.rows[0].total - me.total) + '팀 차이' : '') + '</div>';
     h += '<h2 class="sec">🏆 개인 순위 TOP 3</h2><div class="list">' + top.map(function (r) { return rankCard(r, ti); }).join('');
-    for (var pi = top.length; pi < 3; pi++) h += '<div class="rk ph"><span class="medal" aria-hidden="true">' + ['🥇', '🥈', '🥉'][pi] + '</span><div class="nm"><strong>아직 없음</strong></div><div class="tot">0<small>명</small></div></div>';
+    for (var pi = top.length; pi < 3; pi++) h += '<div class="rk ph"><span class="medal" aria-hidden="true">' + ['🥇', '🥈', '🥉'][pi] + '</span><div class="nm"><strong>아직 없음</strong></div><div class="tot">0<small>팀</small></div></div>';
     h += '</div>';
     if (!w.rows.length) {
       h += '<p class="empty" style="margin-top:12px">' + (isNow ? '이번 주 아직 올라온 게스트가 없어요.' : '지난주 기록이 없어요.') + '</p>';
