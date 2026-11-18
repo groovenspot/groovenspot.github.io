@@ -88,6 +88,8 @@ input:focus, select:focus { outline: none; border-color: var(--g); }
 .chip.adm { background: var(--g); border-color: var(--g); color: #120800; }
 .chip.lead { background: rgba(161,91,255,.18); border-color: var(--s); color: #d6bcff; }
 .chip.vice { border-color: var(--s); color: #d6bcff; }
+.chip.trn { border-color: rgba(255,176,32,.5); color: var(--warn); }
+.chip.t-경호팀 { border-color: #9aa4b2; color: #d3dae4; }
 .title { font-size: 17px; font-weight: 800; line-height: 1.4; }
 .empty { border: 1px dashed var(--line-2); border-radius: 16px; padding: 24px 20px; color: var(--muted); text-align: center; margin: 0; }
 .dec { display: grid; gap: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
@@ -766,7 +768,50 @@ body.hasfab main { padding-bottom: 110px; }
 .wr label { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--muted); margin: 0; } .wr input { width: 110px; }
 .itk { margin: 6px 0 2px; } .itk .btn { min-height: 36px; font-size: 14px; } .itk.done { font-size: 13px; color: var(--ok); }
 .iqfl { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; } .iqfl > span { font-size: 14px; color: var(--muted); min-width: 34px; }
+/* 🚪 입구 호출 · 🔒 출근 후 현황 (2026-11-18) */
+.gform { display: grid; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin: 0 0 12px; }
+.gseg { display: flex; gap: 8px; align-items: center; } .gseg > span, .gstep > span { color: var(--muted); font-size: 14px; min-width: 22px; }
+.gseg button { flex: 1; min-height: 52px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--txt); font: inherit; font-weight: 800; font-size: 17px; cursor: pointer; }
+.gseg button small { display: block; font-size: 11px; font-weight: 600; color: var(--muted); }
+.gseg button[aria-pressed="true"] { border-color: var(--g); background: rgba(255,122,26,.16); }
+.gcnt { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.gstep { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 4px 6px; }
+.gstep b { min-width: 22px; text-align: center; font-size: 22px; font-variant-numeric: tabular-nums; }
+.gstep button { width: 40px; height: 44px; flex: none; border-radius: 10px; border: 1px solid var(--line-2); background: var(--bg); color: var(--txt); font-size: 24px; font-weight: 800; cursor: pointer; }
+.gbtns { display: grid; gap: 10px; margin: 0 0 18px; }
+.gbig { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 14px 18px; border-radius: 18px; border: 0; color: #fff; font: inherit; font-size: 20px; font-weight: 900; text-align: left; cursor: pointer; }
+.gbig small { font-size: 13px; font-weight: 600; opacity: .9; } .gbig:disabled { opacity: .45; cursor: default; }
+.gbig.guide { background: #1f6fd1; } .gbig.md { background: #e2620c; } .gbig.pick { background: #6b3fd6; }
+.gpk { background: var(--card); border: 1px solid var(--line-2); border-radius: 16px; padding: 12px; margin: -4px 0 18px; display: grid; gap: 10px; }
+.gpk .plist { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.gpk .plist button { min-height: 52px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--txt); font: inherit; font-weight: 800; cursor: pointer; }
+.gpk .plist button small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; }
+.glist { display: grid; gap: 8px; }
+.gcall { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; display: grid; gap: 4px; }
+.gcall.live { border-color: var(--g); box-shadow: 0 0 0 1px rgba(255,122,26,.35); }
+.gcall.ok { border-color: rgba(60,207,145,.45); } .gcall.none { border-color: rgba(255,59,92,.65); } .gcall.off { opacity: .55; }
+.gcall .gl1 { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-weight: 800; } .gcall .gl1 small { color: var(--muted); font-weight: 600; }
+.gcall .gl2 { font-size: 15px; } .gcall .gl2 b { font-variant-numeric: tabular-nums; }
+.gcall .gact { display: flex; gap: 8px; flex-wrap: wrap; } .gcall .gact .btn { min-height: 38px; font-size: 14px; }
+.glive { background: #2a1606; border: 2px solid var(--g); border-radius: 16px; padding: 12px 14px; margin: 0 0 12px; display: grid; gap: 8px; }
+.glive.pk { background: #1d1238; border-color: #8f63ff; } .glive.gd { background: #0d1d33; border-color: #4da3ff; }
+.glive .glh { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; } .glive .glh b { font-size: 18px; } .glive .glh .gls { font-size: 30px; font-weight: 900; color: var(--g); font-variant-numeric: tabular-nums; }
+.glive p { margin: 0; font-size: 15px; } .glive p small { color: var(--muted); }
+.gbar { height: 8px; border-radius: 99px; background: rgba(255,255,255,.12); overflow: hidden; } .gbar i { display: block; height: 100%; background: var(--g); border-radius: 99px; transition: width 1s linear; }
+.gorder { font-size: 13px; color: var(--muted); margin: -8px 0 16px; line-height: 1.6; }
+.gstat { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--card); margin: 0 0 16px; }
+.gstat table { border-collapse: collapse; width: 100%; font-size: 14px; } .gstat th, .gstat td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: center; font-variant-numeric: tabular-nums; }
+.gstat th:first-child, .gstat td:first-child { text-align: left; padding-left: 12px; } .gstat thead th { color: var(--muted); font-weight: 800; font-size: 12px; }
+.goffer { position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 40; background: #2a1606; border: 2px solid var(--g); border-radius: 18px; padding: 12px 14px; box-shadow: 0 12px 34px rgba(0,0,0,.65); display: grid; gap: 6px; }
+.goffer .gof-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; } .goffer b { font-size: 17px; }
+.goffer .gof-t { font-size: 28px; font-weight: 900; color: var(--g); font-variant-numeric: tabular-nums; } .goffer .gof-d { font-size: 15px; color: var(--txt); }
+.goffer .gof-b { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; } .goffer .btn { min-height: 54px; font-size: 18px; width: 100%; }
+.goffer.done { background: #0f2a1f; border-color: var(--ok); }
+.lockc { text-align: center; padding: 26px 8px 8px; } .lockc .big { font-size: 46px; margin: 0; line-height: 1; } .lockc h2 { margin: 10px 0 6px; font-size: 20px; } .lockc .punch { text-align: left; margin-top: 16px; }
+.ycro .ycq button:not([data-ycvid]):not([data-ycsv]) { display: none !important; }
+.tbro [data-tbbid], .tbro [data-tbwin], .tbro [data-tbok], .tbro [data-tbno], .tbro [data-tbedit], .tbro [data-eseat], .tbro #tbAdd, .tbro #tbOkAll, .tbro .tbempty { display: none !important; }
 @media (min-width: 900px) {
+  .goffer { left: auto; right: 24px; width: 400px; }
   main { max-width: 1040px; padding: 24px 24px 60px; }
   .tabs { flex-wrap: wrap; overflow: visible; }
   .top { padding-left: max(24px, calc((100% - 1040px) / 2 + 24px)); padding-right: max(24px, calc((100% - 1040px) / 2 + 24px)); }
@@ -817,6 +862,7 @@ body.hasfab main { padding-bottom: 110px; }
 
   <section id="appView" hidden>
     <nav class="tabs" role="tablist" aria-label="스태프 메뉴" id="tabs">
+      <button type="button" role="tab" data-tab="gate" aria-selected="false" hidden>🚪 입구</button>
       <button type="button" role="tab" data-tab="guest" aria-selected="true">게스트 현황</button>
       <button type="button" role="tab" data-tab="table" aria-selected="false" hidden>🪑 테이블</button>
       <button type="button" role="tab" data-tab="yc" aria-selected="false" hidden>🎆 연출</button>
@@ -843,6 +889,7 @@ body.hasfab main { padding-bottom: 110px; }
   <p class="load" id="loading" hidden>불러오는 중…</p>
 </main>
 <div class="sheet" id="sheet" hidden></div>
+<div class="goffer" id="gateOffer" hidden role="alertdialog" aria-live="assertive"></div>
 <button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
 <section class="chatbox" id="chatBox" hidden aria-label="대화">
   <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
@@ -863,7 +910,7 @@ body.hasfab main { padding-bottom: 110px; }
   var API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
   var KEY = 'gs_staff';
   var DKEY = 'gs_staff_data'; // 지난번 받은 목록 — 열자마자 먼저 보여 주고 뒤에서 새로 받는다
-  var TEAMS = ['운영팀', '클로버', '아룬', '고트', 'DJ팀'];
+  var TEAMS = ['운영팀', '클로버', '아룬', '고트', 'DJ팀', '경호팀'];
   var SALES = ['클로버', '아룬', '고트']; // 영업팀
   var DOW = ['월', '화', '수', '목', '금', '토', '일'];
   var $ = function (id) { return document.getElementById(id); };
@@ -930,12 +977,12 @@ body.hasfab main { padding-bottom: 110px; }
   // 닉네임 (2026-11-18): 이름 옆에 작게. 목록 응답의 nicks(이름 key → 닉네임), 본인은 나 → 내 정보에서 정함
   function nickOf(n) { var m = (state.data && state.data.nicks) || {}, k = key(n), x = m[k] || ''; return x && key(x) !== k ? x : ''; }
   function nickH(n) { var x = nickOf(n); return x ? '<span class="nick">' + esc(x) + '</span>' : ''; }   // 닉네임을 정한 사람만 (없으면 이름만)
-  function roleChip(r) { return r === '관리자' ? '<span class="chip adm">대표</span>' : r === '팀장' ? '<span class="chip lead">팀장</span>' : r === '부팀장' ? '<span class="chip vice">부팀장</span>' : ''; }
+  function roleChip(r) { return r === '관리자' ? '<span class="chip adm">대표</span>' : r === '팀장' ? '<span class="chip lead">팀장</span>' : r === '부팀장' ? '<span class="chip vice">부팀장</span>' : r === '수습' ? '<span class="chip trn">수습</span>' : ''; }
   function teamChip(t) { return t ? '<span class="chip t-' + esc(t) + '">' + esc(t) + '</span>' : ''; }
   // 운영팀 / 영업팀(클로버·아룬·고트) / DJ팀
   function teamOptions(cur) {
     function o(t) { return '<option value="' + esc(t) + '"' + (cur === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }
-    return o('운영팀') + '<optgroup label="영업팀">' + SALES.map(o).join('') + '</optgroup>' + o('DJ팀');
+    return o('운영팀') + '<optgroup label="영업팀">' + SALES.map(o).join('') + '</optgroup>' + o('DJ팀') + o('경호팀');
   }
   function fmtPhone(v) {
     var d = String(v).replace(/\D/g, '').slice(0, 11);
@@ -1052,7 +1099,7 @@ body.hasfab main { padding-bottom: 110px; }
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
     if (/^chat:(table|yc)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
-    if (['guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) state.tab = h;
+    if (['gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) state.tab = h;
     swToken(state.s.token); paintBell();
     if (!state.keep) { var kc = kLoad(); if (kc) { state.keep = kc; state.kstale = true; } }
     var c = loadData();
@@ -1063,7 +1110,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'lost') loadLost();
     if (state.tab === 'keep') loadKeep();
     if (state.chatOpenNext) { var co = state.chatOpenNext; state.chatOpenNext = ''; setTimeout(function () { chatOpen(co); }, 400); }
-    else setTimeout(function () { if (state.s && state.tab !== 'keep' && (!state.keep || state.kstale)) loadKeep(); }, 1500);   // 킵 탭을 누르기 전에 미리 받아 둔다
+    else setTimeout(function () { if (state.s && state.tab !== 'keep' && !(state.data && state.data.guard) && (!state.keep || state.kstale)) loadKeep(); }, 1500);   // 킵 탭을 누르기 전에 미리 받아 둔다
   }
   function enterDm() { state.dmView = state.dmWith ? state.dmView : 'list'; loadDm(); startPoll(loadDm, 20000); }
   // 열어 둔 동안 90초마다, 다시 화면에 돌아오면 바로 새로 받기 (글쓰기 중에는 쉬기)
@@ -1105,7 +1152,9 @@ body.hasfab main { padding-bottom: 110px; }
         return;
       }
       $('sync').textContent = ''; state.lastSync = Date.now();
+      state.listAt = Date.now(); (r.gateOffers || []).forEach(function (c) { c.dl = state.listAt + (c.left || 0) * 1000; });
       state.data = r; saveData(r);
+      try { paintGateOffer(); } catch (e) {}
       if (r.pq) flushPush();
       state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; state.s.role = r.role || ''; save(state.s); setWho();
       renderSoon();
@@ -1131,6 +1180,7 @@ body.hasfab main { padding-bottom: 110px; }
       if (state.tab === 'dm') enterDm();
       if (state.tab === 'me' && state.me) loadMe();
       if (state.tab === 'work' && state.work) loadWork();
+      if (state.tab === 'gate') loadGate();
   }
   document.querySelectorAll('#tabs button').forEach(function (b) { b.addEventListener('click', function () { goTab(b.dataset.tab); }); });
 
@@ -1151,7 +1201,8 @@ body.hasfab main { padding-bottom: 110px; }
       yc: ['🎆 연출', d.ycWaiting || 0],
       lost: ['🔎 분실물', 0],
       me: ['👤 내 프로필', 0],
-      work: ['🕘 근무표', 0]
+      work: ['🕘 근무표', 0],
+      gate: ['🚪 입구', (state.gate && state.gate.calls || []).filter(function (c) { return c.status === '호출'; }).length]
     };
     var workOn = !!d.admin;   // 👤 내 프로필(이름을 누르면): 출근·퇴근 + 내 현황 · 🕘 근무표: 대표
     var LEAD_TABS = { notes: 1 }, decOn = !!(d.lead || d.decAdd || (d.decisions && d.decisions.length)), hasBoard = !!(d.board && d.board.teams && d.board.teams.length), canAcc = !!(d.admin || d.approver);
@@ -1163,6 +1214,9 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'yc' && !d.yc) state.tab = 'guest';
     if (state.tab === 'lost' && !d.lost) state.tab = 'guest';
     if (state.tab === 'work' && !workOn) state.tab = 'guest';
+    var gateOn = !!(d.guard || d.gate);   // 🚪 입구: 경호팀 · 대표
+    if (state.tab === 'gate' && !gateOn) state.tab = 'guest';
+    if (d.guard && ['gate', 'me'].concat(d.yc ? ['yc'] : [], d.table ? ['table'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·내 프로필만
     document.querySelectorAll('#tabs button').forEach(function (b) {
       var l = labels[b.dataset.tab];
       if (b.dataset.tab === 'acc') b.hidden = !canAcc;
@@ -1174,6 +1228,8 @@ body.hasfab main { padding-bottom: 110px; }
       if (b.dataset.tab === 'yc') b.hidden = !d.yc;
       if (b.dataset.tab === 'lost') b.hidden = !d.lost;
       if (b.dataset.tab === 'work') b.hidden = !workOn;
+      if (b.dataset.tab === 'gate') b.hidden = !gateOn;
+      if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table));
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = esc(l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
@@ -1198,6 +1254,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (state.tab === 'lost') return renderLost(area);
     if (state.tab === 'me') return renderMe(area, d);
     if (state.tab === 'work') return renderWork(area, d);
+    if (state.tab === 'gate') return renderGate(area, d);
     var list = state.tab === 'edu' ? edu : notes, guide = state.tab === 'edu' ? pushGuideHtml() + eduGuideHtml() : '';
     if (!list.length) { area.innerHTML = guide + '<p class="empty">' + (state.tab === 'edu' ? '아직 올라온 교육 자료가 없어요.' : '아직 올라온 문서가 없어요.') + '</p>'; bindPushGuide(); return; }
     area.innerHTML = guide + '<div class="list">' + list.map(function (n) {
@@ -1499,12 +1556,166 @@ body.hasfab main { padding-bottom: 110px; }
       b.disabled = true;
       call({ a: 'wk_punch', token: state.s.token, kind: kind }).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
-        if (r.ok || r.error === 'already') { state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can }; saveData(state.data); render(); return; }
+        if (r.ok || r.error === 'already') {
+          state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can }; saveData(state.data);
+          if (kind === 'in' && state.data.punchLock) { state.data.punchLock = false; state.me = null; state.tb = null; state.tbErr = ''; render(); refresh(true); return; }   // 출근 → 현황 열기
+          render(); gateSoon(); return;
+        }
         b.disabled = false; alertMsg(r.error === 'noin' ? '출근을 먼저 찍어 주세요.' : r.error === 'busy' ? '잠시 후 다시 해 주세요.' : '찍지 못했어요. 다시 해 주세요.');
       }).catch(function () { b.disabled = false; alertMsg('연결이 안 돼요. 다시 해 주세요.'); });
     }); });
   }
   function alertMsg(t) { var m = $('sync'); if (m) { m.textContent = t; setTimeout(function () { if (m.textContent === t) m.textContent = ''; }, 4000); } }
+
+  // ── 🚪 입구 호출 (2026-11-18 대표 결정) ──────────────────
+  // 경호팀: 입구 화면(버튼 3개)만. 안내 = 출근 중 운영팀 한 명씩 10초 · 순번 = 출근 중 영업팀 한 명씩 15초(3일 받은 수 적은 사람 먼저) · 지정 = 그 MD.
+  // MD·운영팀: 내 차례가 오면 화면 아래 카드 + 알림 → [받을게요]/[넘기기]. 대표: 기록·3일 배정 수.
+  var GK = { guide: '🙋 안내', md: '🆕 순번', pick: '👤 지정' };
+  function gateCanSee(d) { d = d || state.data || {}; return !!(d.guard || d.gate); }
+  function gateMine(d) {   // 받을 수도 있는 사람: 출근 중 영업팀·운영팀 (수습·경호팀 빼고)
+    d = d || state.data || {}; var w = d.work || {};
+    return !d.guard && !d.admin && w.in && !w.out && state.s && state.s.role !== '수습' && (SALES.indexOf(d.team) >= 0 || d.team === '운영팀');
+  }
+  function gateErr(r) {
+    return { nomd: '지금 출근 중인 MD가 없어요.', noguide: '지금 출근 중인 운영팀이 없어요.', off: '그 MD는 지금 출근 중이 아니에요.', name: '호출할 수 없는 사람이에요.', busy: '잠시 후 다시 눌러 주세요.',
+      taken: '이미 다른 사람이 받았어요.', closed: '이미 끝난 호출이에요.', notyou: '지금은 내 차례가 아니에요.', forbidden: '권한이 없어요.', net: '연결이 안 돼요. 다시 해 주세요.' }[r && r.error] || '안 됐어요. 다시 해 주세요.';
+  }
+  function loadGate(quiet) {
+    if (!state.s || state.gateFly) return;
+    state.gateFly = 1;
+    return call({ a: 'gate_get', token: state.s.token }).then(function (r) { state.gateFly = 0; if (r.error === 'auth') return toLogin(AUTH_OUT); if (r.ok) gatePut(r); else if (!quiet) { state.gateErr = gateErr(r); if (state.tab === 'gate') renderSoon(); } })
+      .catch(function () { state.gateFly = 0; });
+  }
+  function gateSoon() { setTimeout(function () { loadGate(true); }, 300); }
+  function gateTyping() { var a = document.activeElement; return !!(a && (a.id === 'gMemo' || a.id === 'gFind')); }
+  function gatePut(r) {
+    var now = Date.now();
+    (r.offers || []).concat(r.calls || []).forEach(function (c) { c.dl = now + (c.left || 0) * 1000; });
+    var sig = function (g) { return g ? JSON.stringify([(g.calls || []).map(function (c) { return [c.id, c.status, c.turn, c.passed, c.took]; }), g.order, g.gorder, g.mds, g.stats]) : ''; }, same = !!state.gate && sig(state.gate) === sig(r);
+    state.gate = r; state.gateErr = ''; state.gateAt = now;
+    if (state.data) state.data.gateOffers = r.offers || [];
+    paintGateOffer();
+    if (state.data && gateCanSee()) renderTabsOnly();
+    if (state.tab === 'gate' && $('sheet').hidden && !gateTyping() && !same) renderSoon();
+  }
+  function gateSend(body, btn, after) {
+    if (btn) btn.disabled = true;
+    body.token = state.s.token;
+    return call(body).then(function (r) {
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (r.ok || r.offers) gatePut(r);
+      if (btn) btn.disabled = false;
+      if (after) after(r);
+    }).catch(function () { if (btn) btn.disabled = false; if (after) after({ error: 'net' }); });
+  }
+  function gateWhat(c) { return [c.floor, c.m ? '남' + c.m : '', c.w ? '여' + c.w : '', c.memo].filter(String).join(' · '); }
+  function gateLeft(c) { return Math.max(0, Math.round(((c.dl || 0) - Date.now()) / 1000)); }
+  function renderGate(area, d) {
+    var g = state.gate, f = state.gform = state.gform || { floor: '', m: 0, w: 0, memo: '' };
+    if (!g || !g.can) { area.innerHTML = state.gateErr ? '<p class="empty">' + esc(state.gateErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.gateFly) loadGate(); return; }
+    var next = (g.order || [])[0], gnext = (g.gorder || [])[0];
+    var h = '<div class="gh"><div><h1>🚪 입구 호출</h1><span class="range">출근 중 · 운영팀 ' + (g.guides || 0) + '명 · MD ' + (g.order || []).length + '명</span></div></div>';
+    if (d.guard) h += punchBar(d);
+    // 지금 부르는 중: 누구에게 갔는지 · 남은 초 · 안 받으면 다음 사람에게 자동으로 (대표 요청 2026-11-18)
+    (g.calls || []).filter(function (c) { return c.status === '호출' && (c.mine || d.admin); }).forEach(function (c) {
+      var who = c.kind === 'pick' ? c.pick : c.turn, pct = Math.max(0, Math.min(100, gateLeft(c) / (c.wait || 15) * 100));
+      h += '<div class="glive' + (c.kind === 'pick' ? ' pk' : c.kind === 'guide' ? ' gd' : '') + '"><div class="glh"><b>📨 ' + esc(who) + ' 님에게 호출을 보냈어요</b><span class="gls"><span data-gdl="' + c.dl + '">' + gateLeft(c) + '</span>초</span></div>' +
+        '<div class="gbar"><i data-gbar="' + c.dl + '" data-gw="' + (c.wait || 15) + '" style="width:' + pct.toFixed(0) + '%"></i></div>' +
+        '<p>' + GK[c.kind] + (gateWhat(c) ? ' · ' + esc(gateWhat(c)) : '') + (c.passed ? ' · <small>' + c.passed + '명 넘김</small>' : '') + '</p>' +
+        '<p>' + (c.kind === 'pick' ? '시간 안에 안 받으면 <b>못 받음</b>으로 알려 드려요.' : c.next ? '시간 안에 안 받으면 <b>' + esc(c.next) + '</b> 님에게 자동으로 넘어가요 (' + (c.wait || 15) + '초씩).' : '마지막 차례예요. 안 받으면 <b>아무도 없음</b>으로 알려 드려요.') + '</p></div>';
+    });
+    if (state.gmsg) { h += '<p class="msg' + (state.gmsgOk ? ' ok' : '') + '" role="alert">' + esc(state.gmsg) + '</p>'; }
+    h += '<div class="gform"><div class="gseg"><span>층</span>' + [['2F', '힙합'], ['3F', 'EDM']].map(function (x) { return '<button type="button" data-gfl="' + x[0] + '" aria-pressed="' + (f.floor === x[0]) + '">' + x[0] + '<small>' + x[1] + '</small></button>'; }).join('') + '</div>' +
+      '<div class="gcnt">' + [['m', '남'], ['w', '여']].map(function (x) { return '<div class="gstep"><span>' + x[1] + '</span><button type="button" data-gstep="' + x[0] + '" data-d="-1" aria-label="' + x[1] + ' 빼기">−</button><b>' + (f[x[0]] || 0) + '</b><button type="button" data-gstep="' + x[0] + '" data-d="1" aria-label="' + x[1] + ' 더하기">+</button></div>'; }).join('') + '</div>' +
+      '<input id="gMemo" maxlength="40" autocomplete="off" placeholder="메모 (예: 생일, 외국인, 예약 이름)" value="' + esc(f.memo || '') + '"></div>';
+    h += '<div class="gbtns">' +
+      '<button type="button" class="gbig guide" data-gnew="guide"' + (g.guides ? '' : ' disabled') + '>🙋 안내 직원 호출<small>' + (g.guides ? '운영팀 한 명씩 ' + g.turn.guide + '초 · 다음 ' + esc(gnext ? gnext.name : '') : '출근 중인 운영팀이 없어요') + '</small></button>' +
+      '<button type="button" class="gbig md" data-gnew="md"' + (next ? '' : ' disabled') + '>🆕 담당 없는 손님 → MD 순번<small>' + (next ? '한 명씩 ' + g.turn.md + '초 · 다음 ' + esc(next.name) : '출근 중인 MD가 없어요') + '</small></button>' +
+      '<button type="button" class="gbig pick" data-gnew="pick"' + ((g.mds || []).length ? '' : ' disabled') + '>👤 담당 MD 호출<small>손님이 찾는 MD 이름 골라서</small></button></div>';
+    if (state.gpick) {
+      var q = state.gq || '', list = (g.mds || []).filter(function (m) { return !q || staffHit(m.name, q) >= 0; });
+      h += '<div class="gpk"><input id="gFind" autocomplete="off" placeholder="이름·닉네임·초성 (예: ㅅㅇ)" value="' + esc(q) + '"><div class="plist">' +
+        (list.length ? list.map(function (m) { return '<button type="button" data-gpick="' + esc(m.name) + '">' + esc(m.name) + nickH(m.name) + '<small>' + esc(m.team) + '</small></button>'; }).join('') : '<p class="note" style="margin:0">출근 중인 MD 중에 없어요.</p>') +
+        '</div><button type="button" class="btn" data-gpick-close>닫기</button></div>';
+    }
+    if ((g.order || []).length) h += '<p class="gorder">MD 순번: ' + g.order.map(function (x) { return esc(x.name) + (x.n ? ' <small>(' + x.n + ')</small>' : ''); }).join(' → ') + ' <small>· 괄호 = 3일 받은 수</small></p>';
+    var calls = g.calls || [];
+    h += '<h2 class="sec">오늘 호출 ' + calls.length + '</h2>';
+    h += calls.length ? '<div class="glist">' + calls.map(function (c) {
+      var cls = c.status === '호출' ? 'live' : c.status === '수락' ? 'ok' : c.status === '없음' ? 'none' : 'off', st;
+      if (c.status === '호출') st = (c.kind === 'pick' ? '⏳ ' + esc(c.pick) + ' 님 부르는 중' : '⏳ <b>' + esc(c.turn) + '</b> 님 차례') + ' · <b data-gdl="' + c.dl + '">' + gateLeft(c) + '</b>초' + (c.passed ? ' · ' + c.passed + '명 넘김' : '');
+      else if (c.status === '수락') st = '✅ <b>' + esc(c.took) + '</b> 님이 받음 · ' + esc(c.tookAt);
+      else if (c.status === '없음') st = '⚠️ 아무도 안 받았어요' + (c.passed ? ' (' + c.passed + '명 넘김)' : '');
+      else st = '취소했어요';
+      var act = c.status === '호출' && (c.mine || d.admin) ? '<button type="button" class="btn" data-gcancel="' + esc(c.id) + '">취소</button>' : c.status === '없음' || (c.status === '취소' && c.mine) ? '<button type="button" class="btn btn-hot" data-gagain="' + esc(c.id) + '">다시 부르기</button>' : '';
+      return '<div class="gcall ' + cls + '"><div class="gl1">' + GK[c.kind] + (c.kind === 'pick' ? ' ' + esc(c.pick) : '') + ' <small>' + esc(c.at) + (d.admin && !c.mine ? ' · ' + esc(c.by) : '') + '</small>' + (gateWhat(c) ? ' <small>' + esc(gateWhat(c)) + '</small>' : '') + '</div>' +
+        '<div class="gl2">' + st + '</div>' + (act ? '<div class="gact">' + act + '</div>' : '') + '</div>';
+    }).join('') + '</div>' : '<p class="empty">오늘 호출이 아직 없어요.</p>';
+    if (d.admin && g.stats) {
+      h += '<h2 class="sec">최근 3일 받은 호출 <small>(' + esc(md(g.from)) + '~오늘)</small></h2>';
+      h += g.stats.length ? '<div class="gstat"><table><thead><tr><th>이름</th><th>순번</th><th>지정</th><th>안내</th><th>평균 응답</th></tr></thead><tbody>' + g.stats.map(function (x) {
+        return '<tr><td>' + esc(x.name) + nickH(x.name) + '</td><td>' + x.md + '</td><td>' + x.pick + '</td><td>' + x.guide + '</td><td>' + (x.avg ? x.avg + '초' : '-') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' : '<p class="empty">아직 받은 호출이 없어요.</p>';
+    }
+    area.innerHTML = h; if (d.guard) bindPunch(area);
+    area.querySelectorAll('[data-gfl]').forEach(function (b) { b.addEventListener('click', function () { f.floor = f.floor === b.dataset.gfl ? '' : b.dataset.gfl; render(); }); });
+    area.querySelectorAll('[data-gstep]').forEach(function (b) { b.addEventListener('click', function () { var k = b.dataset.gstep; f[k] = Math.max(0, Math.min(30, (f[k] || 0) + +b.dataset.d)); render(); }); });
+    var mi = $('gMemo'); if (mi) mi.addEventListener('input', function () { f.memo = mi.value; });
+    function fire(kind, name, btn, again) {
+      var body = again ? { a: 'gate_new', kind: again.kind, name: again.pick, floor: again.floor, m: again.m, w: again.w, memo: again.memo } : { a: 'gate_new', kind: kind, name: name || '', floor: f.floor, m: f.m, w: f.w, memo: (f.memo || '').trim() };
+      state.gmsg = '';
+      gateSend(body, btn, function (r) {
+        if (r.error) { state.gmsg = gateErr(r); state.gmsgOk = false; }
+        else { state.gmsg = (body.kind === 'guide' ? '안내 직원을' : body.kind === 'md' ? 'MD를 순서대로' : body.name + ' 님을') + ' 부르고 있어요.'; state.gmsgOk = true; if (!again) state.gform = { floor: f.floor, m: 0, w: 0, memo: '' }; state.gpick = false; state.gq = ''; }
+        render(); setTimeout(function () { if (state.gmsg && state.gmsgOk) { state.gmsg = ''; if (state.tab === 'gate' && !gateTyping()) render(); } }, 6000);
+      });
+    }
+    area.querySelectorAll('[data-gnew]').forEach(function (b) { b.addEventListener('click', function () {
+      if (b.dataset.gnew === 'pick') { state.gpick = !state.gpick; render(); if (state.gpick && $('gFind')) $('gFind').focus(); return; }
+      fire(b.dataset.gnew, '', b);
+    }); });
+    var fi = $('gFind'); if (fi) fi.addEventListener('input', function () { state.gq = fi.value; var pos = fi.selectionStart; render(); var n = $('gFind'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } });
+    area.querySelectorAll('[data-gpick]').forEach(function (b) { b.addEventListener('click', function () { fire('pick', b.dataset.gpick, b); }); });
+    var pc = area.querySelector('[data-gpick-close]'); if (pc) pc.addEventListener('click', function () { state.gpick = false; state.gq = ''; render(); });
+    area.querySelectorAll('[data-gcancel]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '취소')) return; gateSend({ a: 'gate_cancel', id: b.dataset.gcancel }, b); }); });
+    area.querySelectorAll('[data-gagain]').forEach(function (b) { b.addEventListener('click', function () { var c = (g.calls || []).filter(function (x) { return x.id === b.dataset.gagain; })[0]; if (c) fire(c.kind, c.pick, b, c); }); });
+  }
+  // 내 차례 카드 (MD·운영팀): 화면 아래에 떠 있고, 시간이 지나면 사라진다
+  function paintGateOffer() {
+    var box = $('gateOffer'); if (!box) return;
+    var d = state.data || {}, src = state.gate && (state.gateAt || 0) >= (state.listAt || 0) ? state.gate.offers : d.gateOffers;
+    var offers = (state.s && !d.guard ? src || [] : []).filter(function (c) { return c.dl && gateLeft(c) > 0; });
+    if (state.gdone && Date.now() - state.gdone.at < 8000) {
+      box.className = 'goffer done'; box.hidden = false;
+      box.innerHTML = '<div class="gof-h"><b>✅ 받았어요 — 입구로 가 주세요</b></div><div class="gof-d">' + esc(state.gdone.what || '') + '</div>';
+      return;
+    }
+    if (!offers.length) { box.hidden = true; box.innerHTML = ''; state.gofferId = ''; return; }
+    var c = offers[0];
+    if (state.gofferId !== c.id + '/' + c.turn) { state.gofferId = c.id + '/' + c.turn; try { if (navigator.vibrate) navigator.vibrate([250, 120, 250]); } catch (e) {} }
+    box.className = 'goffer'; box.hidden = false;
+    box.innerHTML = '<div class="gof-h"><b>🚪 입구 호출 · ' + (c.kind === 'md' ? '담당 없는 손님' : c.kind === 'pick' ? '나를 찾는 손님' : '안내 요청') + '</b><span class="gof-t" data-gdl="' + (c.dl || 0) + '">' + gateLeft(c) + '</span></div>' +
+      '<div class="gof-d">' + esc(gateWhat(c) || '입구로 와 주세요') + (c.kind !== 'pick' ? ' · 내 차례' : '') + '</div>' +
+      '<div class="gof-b"><button type="button" class="btn btn-hot" data-gok="' + esc(c.id) + '">받을게요</button><button type="button" class="btn" data-gpass="' + esc(c.id) + '">넘기기</button></div>';
+    var ok = box.querySelector('[data-gok]'), ps = box.querySelector('[data-gpass]');
+    ok.addEventListener('click', function () { gateSend({ a: 'gate_ok', id: c.id }, ok, function (r) { if (r.ok) { state.gdone = { at: Date.now(), what: gateWhat(c) }; paintGateOffer(); setTimeout(paintGateOffer, 8100); } else { alertMsg(gateErr(r)); loadGate(true); } }); });
+    ps.addEventListener('click', function () { gateSend({ a: 'gate_pass', id: c.id }, ps); });
+  }
+  // 1초마다 남은 초 · 시간이 다 되면 새로 받기
+  setInterval(function () {
+    var due = false;
+    document.querySelectorAll('[data-gdl]').forEach(function (el) { var dl = +el.dataset.gdl; if (!dl) return; var n = Math.max(0, Math.round((dl - Date.now()) / 1000)); el.textContent = n; if (n <= 0) due = true; });
+    document.querySelectorAll('[data-gbar]').forEach(function (el) { var dl = +el.dataset.gbar, w = +el.dataset.gw || 15; el.style.width = Math.max(0, Math.min(100, (dl - Date.now()) / (w * 10))).toFixed(0) + '%'; });
+    if (due && state.s && !document.hidden && Date.now() - (state.gateAt || 0) > 2500) { loadGate(true); if (!$('gateOffer').hidden) paintGateOffer(); }
+  }, 1000);
+  // 받아 오기: 입구 화면(경호팀·대표)은 호출 중이면 3초, 아니면 10초 · 받을 수도 있는 사람(출근 중 MD·운영팀)은 8초 (알림이 먼저 감)
+  setInterval(function () {
+    if (!state.s || !state.data || document.hidden) return;
+    var live = state.gate && (state.gate.calls || []).some(function (c) { return c.status === '호출'; }), age = Date.now() - (state.gateAt || 0);
+    if (state.tab === 'gate' && gateCanSee() && age > (live ? 2800 : 9500)) loadGate(true);
+    else if (state.tab !== 'gate' && gateMine() && age > 7800) loadGate(true);
+  }, 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.data && (gateMine() || state.tab === 'gate')) loadGate(true); });
 
   // ── 📊 내 현황 (영업진 개인 대시보드, 2026-11-18) ──
   function loadMe() {
@@ -1518,12 +1729,13 @@ body.hasfab main { padding-bottom: 110px; }
     }).catch(function () { state.meFly = 0; state.me = state.me || { error: 'net' }; if (state.tab === 'me') render(); });
   }
   function meHead(d) {   // 👤 내 프로필 머리: 이름·팀·역할 + 내 정보 바꾸기 + 출근·퇴근
-    var role = state.s.admin ? '대표' : state.s.role === '부팀장' ? '부팀장' : state.s.lead ? '팀장' : '직원';
+    var role = state.s.admin ? '대표' : state.s.role === '부팀장' ? '부팀장' : state.s.role === '수습' ? '수습' : state.s.lead ? '팀장' : '직원';
     return '<div class="gh prof"><div><h1>👤 ' + esc(state.s.name) + nickH(state.s.name) + '</h1><span class="range">' + esc(state.s.team || '팀 없음') + ' · ' + role + '</span></div><button type="button" class="btn" id="meEdit">✏️ 내 정보 바꾸기</button></div>' + punchBar(d);
   }
   function renderMe(area, d) {
     var sales = SALES.indexOf(d.team) >= 0, pick = !!(d.admin || d.gall), h = meHead(d), m = state.me;
     if (!sales && !pick) { area.innerHTML = h; bindMe(area); return; }   // 영업팀이 아니면 출근·퇴근·내 정보만
+    if (d.punchLock && !pick) { area.innerHTML = h + '<p class="empty">🔒 출근하면 내 현황이 보여요.</p>'; bindMe(area); return; }
     if (!m) { area.innerHTML = h + '<p class="load">불러오는 중…</p>'; bindMe(area); loadMe(); return; }
     if (m.error) { area.innerHTML = h + '<p class="empty">현황을 불러오지 못했어요. 다시 열어 주세요.</p>'; bindMe(area); return; }
     var other = key(m.name) !== key(state.s.name);
@@ -1600,7 +1812,11 @@ body.hasfab main { padding-bottom: 110px; }
     area.querySelectorAll('[data-wid]').forEach(function (b) { b.addEventListener('click', function () { var x = null; w.rows.forEach(function (r) { r.days.forEach(function (y) { if (y && y.id === b.dataset.wid) x = y; }); }); if (x) edit(x); }); });
     area.querySelectorAll('[data-wadd]').forEach(function (b) { b.addEventListener('click', function () { var p = b.dataset.wadd.split('|'); edit({ name: p[0], day: p[1] }); }); });
   }
+  function lockHtml(d, what) {   // 🔒 출근 전 (대표 결정 2026-11-18: 출근 버튼을 눌러야 현황을 본다)
+    return '<div class="lockc"><p class="big">🔒</p><h2>출근하면 ' + what + ' 볼 수 있어요</h2><p class="sub" style="margin:0">매장에 도착하면 아래 출근 버튼을 눌러 주세요.</p>' + punchBar(d) + '</div>';
+  }
   function renderGuest(area, d) {
+    if (d.punchLock) { area.innerHTML = lockHtml(d, '게스트 현황을'); bindPunch(area); return; }
     var g = d.guests || {}, w = g[state.week] || { rows: [], total: 0 };
     var isNow = state.week === 'week', ti = isNow && w.start ? Math.round((Date.parse(g.today) - Date.parse(w.start)) / 864e5) : -1;
     var teamSum = {}; SALES.forEach(function (t) { teamSum[t] = 0; });
@@ -2820,7 +3036,7 @@ body.hasfab main { padding-bottom: 110px; }
   // ── 내 정보 (이름·전화번호·비밀번호) ──
   function openMe() {
     if (!state.s) return;
-    var d = state.data || {}, me = d.me || {}, role = state.s.admin ? '대표' : state.s.role === '부팀장' ? '부팀장' : state.s.lead ? '팀장' : '직원';
+    var d = state.data || {}, me = d.me || {}, role = state.s.admin ? '대표' : state.s.role === '부팀장' ? '부팀장' : state.s.role === '수습' ? '수습' : state.s.lead ? '팀장' : '직원';
     showSheet('<h2>내 정보</h2><p class="note" style="margin:0 0 14px">' + esc(state.s.team || '팀 없음') + ' · ' + role + ' — 팀·권한은 대표님이 정해요.</p>' +
       '<form class="meform" id="mName" novalidate><label>이름 (로그인할 때 써요)<input id="mNameI" maxlength="12" autocomplete="off" value="' + esc(state.s.name) + '"></label>' +
       '<button class="btn btn-ok" type="submit">이름 바꾸기</button><p class="msg" id="mNameM" role="alert"></p></form>' +
@@ -2889,7 +3105,8 @@ body.hasfab main { padding-bottom: 110px; }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
     var t = e.data && e.data.tab, ct = /^chat:(table|yc)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
-    if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); }
+    if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
+    if (t && state.data) { state.tab = t; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); }
   });
 
   // ── 🪑 테이블 현황 (2026-11-18) ─────────────────────────
@@ -2909,6 +3126,7 @@ body.hasfab main { padding-bottom: 110px; }
     return call({ a: 'tb_get', token: state.s.token }).then(function (r) {
       state.tbFly = 0;
       if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (r.error === 'punch' && state.data) { state.data.punchLock = true; if (state.tab === 'table' || state.tab === 'guest') renderSoon(); return; }
       if (!r.ok) { state.tbErr = '자리표를 못 불러왔어요.'; if (state.tab === 'table' && !quiet) renderSoon(); return; }
       tbPut(r);
     }).catch(function () { state.tbFly = 0; state.tbErr = '연결이 안 돼요.'; if (state.tab === 'table' && !quiet) renderSoon(); });
@@ -3252,6 +3470,7 @@ body.hasfab main { padding-bottom: 110px; }
     if (end.length) h += '<details class="all"><summary>끝난 연출 ' + end.length + '건</summary><div class="ycq">' + end.slice().reverse().map(function (x, i) { return ycCard(x, i, 0); }).join('') + '</div></details>';
     if (state.ycErr) h += '<p class="msg">' + esc(state.ycErr) + '</p>';
     area.innerHTML = h;
+    area.classList.toggle('ycro', !!y.view);   // 경호팀장: 보기만
     hydrateImgs(area);
     area.querySelectorAll('[data-ycvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.ycvid, b); }); });
     area.querySelectorAll('[data-ycsv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.ycsv); }); });
@@ -3539,7 +3758,12 @@ body.hasfab main { padding-bottom: 110px; }
       '<p>한 줄로 쓸 때는 <code>문구</code> 뒤가 전광판 문구예요: <code>3디2 홀로 망치 문구 오늘달려요 바로</code></p>' +
       '<p>📷 로 사진(3장)·영상(2개)을 같이 보내면 그 연출에 붙어요. 사진만 보내면 내가 올린 연출(ㄱㄱ 전·진행 중)에 붙어요. 같은 자리에 내가 올린 요청이 아직 ㄱㄱ 전이면 다시 쓰면 고쳐져요.</p>'
   };
-  function chatRoom() { return state.tab === 'table' || state.tab === 'yc' || state.tab === 'guest' ? state.tab : ''; }
+  function chatRoom() {
+    var d = state.data || {};
+    if (d.guard) return '';   // 경호팀: 대화 없음
+    if (d.punchLock && (state.tab === 'table' || state.tab === 'guest')) return '';   // 출근 전: 게스트·테이블 대화도 잠금
+    return state.tab === 'table' || state.tab === 'yc' || state.tab === 'guest' ? state.tab : '';
+  }
   function chatSeen(room, at) { var o = {}; try { o = JSON.parse(localStorage.getItem('gs_chat_seen') || '{}'); } catch (e) {} if (at === undefined) return o[room] || ''; if (at > (o[room] || '')) { o[room] = at; try { localStorage.setItem('gs_chat_seen', JSON.stringify(o)); } catch (e) {} } }
   function chatTail(room) { var src = room === 'table' ? state.tb : room === 'yc' ? state.yc : null; return (state.chatTail && state.chatTail[room]) || (src && src.chat) || []; }
   function chatText(m) {   // @이름 은 굵게
@@ -3821,8 +4045,10 @@ body.hasfab main { padding-bottom: 110px; }
     return h;
   }
   function renderTable(area) {
+    if (state.data && state.data.punchLock) { area.innerHTML = lockHtml(state.data, '테이블 현황을'); bindPunch(area); return; }
     if (!state.tb) { area.innerHTML = state.tbErr ? '<p class="empty">' + esc(state.tbErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.tbFly) loadTb(); return; }
     var t = state.tb, fl = state.tbFloor || tbFloorPref(), ix = tbIndex(fl), edit = t.canEdit;
+    area.classList.toggle('tbro', !!t.view);   // 경호팀장: 보기만
     state.tbFloor = fl;
     var used = 0, total = 0;
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !tbShowWeekend()) return; z.rows.forEach(function (row) { row.forEach(function (s) { total++; if (ix.at[s] && !ix.at[s][0].ghost) used++; }); }); });
@@ -3973,6 +4199,7 @@ body.hasfab main { padding-bottom: 110px; }
   function tbCloseSheet() { var s = $('sheet'); s.hidden = true; s.innerHTML = ''; }
   // 자리 누르기: 입력 창 (승인하는 사람은 바로 반영, 그 밖에는 승인 요청)
   function tbOpen(r, seat) {
+    if (state.tb && state.tb.view && !arguments[0]) return;   // 경호팀장: 보기만 (빈 자리 눌러도 넣기 없음)
     var t = state.tb, ap = t.approver, edit = t.canEdit, fl = r ? r.floor : state.tbFloor;
     var v = r ? JSON.parse(JSON.stringify(r.req && !r.req.del ? r.req : r.cur || {})) : { seat: seat };
     if (v.seat == null) v.seat = seat || '';
@@ -4078,8 +4305,8 @@ body.hasfab main { padding-bottom: 110px; }
     function teamSel(a) {
       return '<select data-team aria-label="' + esc(a.name) + ' 팀"><option value="">팀 선택</option>' + teamOptions(a.team) + '</select>';
     }
-    function roleSel(a) {
-      return '<select data-role aria-label="' + esc(a.name) + ' 권한">' + ['직원', '부팀장', '팀장'].map(function (r) {
+    function roleSel(a, only) {
+      return '<select data-role aria-label="' + esc(a.name) + ' 권한">' + (only || ['수습', '직원', '부팀장', '팀장']).map(function (r) {
         return '<option' + (a.role === r ? ' selected' : '') + '>' + r + '</option>';
       }).join('') + '</select>';
     }
@@ -4096,9 +4323,9 @@ body.hasfab main { padding-bottom: 110px; }
           else if (a.status === '승인') ctl = teamSel(a) + roleSel(a) + '<button class="btn" data-op="stop">중지</button><button class="btn btn-bad" data-op="delete">탈퇴</button>';
           else ctl = teamSel(a) + roleSel(a) + '<button class="btn btn-ok" data-op="approve">다시 승인</button><button class="btn btn-bad" data-op="delete">삭제</button>';
         } else {
-          if (a.status === '대기') ctl = '<button class="btn btn-ok" data-op="approve">승인</button><button class="btn btn-bad" data-op="reject">거절</button>';
+          if (a.status === '대기') ctl = roleSel({ name: a.name, role: '직원' }, ['직원', '수습']) + '<button class="btn btn-ok" data-op="approve">승인</button><button class="btn btn-bad" data-op="reject">거절</button>';
           else if (a.self) ctl = '<span class="note" style="margin:0">내 계정</span>';
-          else if (a.role === '직원') ctl = '<button class="btn btn-bad" data-op="delete">퇴사 · 탈퇴</button>';
+          else if (a.role === '직원' || a.role === '수습') ctl = '<button class="btn btn-bad" data-op="delete">퇴사 · 탈퇴</button>';
           else ctl = '<span class="note" style="margin:0">팀장·부팀장 계정은 대표님만 바꿀 수 있어요</span>';
         }
         return '<div class="acc' + (a.status === '대기' ? ' wait' : '') + '" data-name="' + esc(a.name) + '">' +
