@@ -5197,6 +5197,7 @@ body.popmode .chath .chpop { display: none; }
   });
   (function () {
     ['wheel', 'touchstart'].forEach(function (ev) { $('chatL').addEventListener(ev, function () { state.chatStick = 0; }, { passive: true }); });   // 손으로 올리면 맨 아래 붙잡기 멈춤
+    $('chatL').addEventListener('scroll', function () { var L = this; if (L.scrollHeight - L.scrollTop - L.clientHeight > 40) state.chatStick = 0; }, { passive: true });   // 스크롤바를 끌어 올려도 멈춤
     $('chatFab').addEventListener('click', function () { var room = chatRoom(); if (room) chatOpen(room); });
     $('chatX').addEventListener('click', function () {
       if (state.pop) { try { if (window.parent !== window) window.parent.close(); } catch (e) {} try { window.close(); } catch (e) {} return; }   // 따로 띄운 창은 창 닫기
