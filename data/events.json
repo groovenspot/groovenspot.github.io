@@ -2731,6 +2731,38 @@
     "flyer": "/assets/timetables/2026-11-18.webp"
   },
   {
+    "date": "2026-11-19",
+    "title": "THURSDAY NIGHT",
+    "floor": "2F+3F",
+    "id": "2026-11-19-thursday-night",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUMU",
+        "WOOK2",
+        "TARO",
+        "HUNO",
+        "ROAD",
+        "ZINO",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "A:ETH",
+        "MUMU",
+        "EZZY",
+        "N",
+        "MUTE",
+        "DIA",
+        "KUPA",
+        "ROAD",
+        "TARO",
+        "WOOK2",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/flyers/2026-11-19-thursday-night-mwndweq0.jpg"
+  },
+  {
     "date": "2026-11-20",
     "title": "ARUN TEAM PARTY",
     "floor": "2F+3F",
