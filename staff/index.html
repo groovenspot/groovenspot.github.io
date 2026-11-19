@@ -1532,7 +1532,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       a === 'guest_set' ? '👥 게스트 입력' : a === 'dec_add' ? '📋 업무 추가' : a === 'dec_set' ? '📋 업무 코멘트' : a === 'lv_add' ? '🎬 실시간' : a;
   }
   function oqText(it) { var b = it.b || {}; return String(b.text || b.title || b.what || (b.rows ? b.rows.map(function (r) { return r.name + ' ' + r.n; }).join(', ') : '') || (b.photos ? '📷 사진' : '')).slice(0, 80); }
-  var OQ_WHY = { forbidden: '권한이 없어요', punch: '출근 버튼을 먼저 눌러야 해요', text: '쓸 수 없는 글자가 있어요', empty: '내용이 비었어요', notfound: '그 사이 지워졌어요', day: '날짜가 지났어요', member: '팀원이 아니에요', photo: '사진을 다시 넣어 주세요', video: '영상을 다시 올려 주세요', old: '24시간이 지나서 보내지 않았어요' };
+  var OQ_WHY = { forbidden: '권한이 없어요', punch: '출근 버튼을 먼저 눌러야 해요', text: '쓸 수 없는 글자가 있어요', empty: '내용이 비었어요', notfound: '그 사이 지워졌어요', day: '날짜가 지났어요', member: '팀원이 아니에요', photo: '사진을 다시 넣어 주세요', video: '영상을 다시 올려 주세요', old: '24시간이 지나서 보내지 않았어요', net: '여러 번 보내도 서버에 닿지 않았어요' };
   function oqDrop(it, why) {
     var q = oqLoad(); q.items = q.items.filter(function (x) { return x.cid !== it.cid; });
     q.dead.push({ at: Date.now(), label: oqLabel(it), text: oqText(it), why: OQ_WHY[why] || '서버가 받지 않았어요' + (why ? ' (' + why + ')' : '') }); q.dead = q.dead.slice(-20); oqSave(q);
@@ -1563,9 +1563,14 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       oqBusy = false; state.oqAuth = false;
       if (r && (r.ok || r.error === 'dup')) { var q2 = oqLoad(); q2.items = q2.items.filter(function (x) { return x.cid !== it.cid; }); oqSave(q2); oqDone(it, r || {}); return oqFlush(); }
       if (r && r.error === 'auth') { state.oqAuth = true; return oqBar(); }   // 다시 로그인하면 이어서 (같은 이름)
-      if (!r || r.error === 'busy' || r.error === 'server' || r.error === 'queued') { var q3 = oqLoad(); q3.items.forEach(function (x) { if (x.cid === it.cid) x.tries = (x.tries || 0) + 1; }); oqSave(q3); return oqBar(); }
+      if (!r || r.error === 'busy' || r.error === 'server' || r.error === 'queued') return oqTry(it);
       oqDrop(it, r.error); oqFlush();
-    }, function () { oqBusy = false; oqBar(); });   // 아직 끊김 → 나중에
+    }, function () { oqBusy = false; if (navigator.onLine === false) return oqBar(); oqTry(it); });   // 아직 끊김 → 나중에
+  }
+  function oqTry(it) {   // 연결은 됐는데 계속 안 가는 것(서버 오류 등)은 20번(약 5분)까지만 → 뒤에 쌓인 것을 막지 않게
+    var q = oqLoad(), n = 0; q.items.forEach(function (x) { if (x.cid === it.cid) n = x.tries = (x.tries || 0) + 1; }); oqSave(q);
+    if (n >= 20) { oqDrop(it, 'net'); return oqFlush(); }
+    oqBar();
   }
   function oqBar(q) {
     q = q || (state.s ? oqLoad() : { items: [], dead: [] });
