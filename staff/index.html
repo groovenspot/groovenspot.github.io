@@ -614,6 +614,22 @@ body.chatlock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidde
 .chatrep b { display: block; font-size: 12px; color: var(--g); }
 .chatrep span { display: block; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chatrep button { flex: none; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(255,255,255,.08); color: var(--txt); cursor: pointer; }
+/* 👀 보내기 전 미리보기 '이렇게 들어가요' · ⚡ 빠른 버튼 (대표 결정 2026-11-19) — @이름 고르는 줄이 뜨면 둘 다 숨김 */
+.chatat:not([hidden]) ~ .chatprev, .chatat:not([hidden]) ~ .chatqk { display: none; }
+.chatprev { padding: 6px 12px 7px; border-top: 1px solid var(--line); background: var(--card-2); font-size: 13px; line-height: 1.4; transition: opacity .15s; }
+.chatprev.wait { opacity: .55; }
+.chatprev > b { display: block; font-size: 11px; font-weight: 800; color: var(--muted); margin: 0 0 1px; }
+.chatprev > b i { font-style: normal; font-weight: 700; }
+.chatprev .pl { display: block; width: 100%; padding: 0; border: 0; background: none; font: inherit; font-weight: 800; text-align: left; color: var(--ok); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chatprev .pl.k-ops { color: var(--g); }
+.chatprev .pl.k-warn { color: var(--warn); }
+.chatprev .pl.k-sos { color: var(--bad); }
+.chatprev .pl.k-chat { color: var(--muted); font-weight: 700; }
+.chatprev button.pl { cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.chatqk { display: flex; gap: 6px; padding: 6px 12px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; border-top: 1px solid var(--line); }
+.chatqk::-webkit-scrollbar { display: none; }
+.chatqk button { flex: none; min-height: 32px; padding: 0 11px; border-radius: 16px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--txt); font: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.chatqk button:active { border-color: var(--g); color: var(--g); }
 .cmenu { position: fixed; z-index: 30; display: flex; gap: 4px; padding: 6px; border-radius: 14px; background: #2b2b31; border: 1px solid var(--line-2); box-shadow: 0 8px 28px rgba(0,0,0,.6); }
 .cmenu button { min-height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: none; color: var(--txt); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .cmenu button:active, .cmenu button:hover { background: rgba(255,255,255,.08); }
@@ -1289,6 +1305,8 @@ body.popmode .chath .chpop { display: none; }
   <div class="chatrep" id="chatRep" hidden></div>
   <button type="button" class="chatsos" id="chatSos" hidden>🚨 경호팀 부를까요? (눌러서 경호 호출)</button>
   <div class="cmenu" id="chatMenu" hidden></div>
+  <div class="chatprev" id="chatPrev" hidden aria-live="polite"></div>
+  <div class="chatqk" id="chatQk" hidden role="toolbar" aria-label="빠른 버튼"></div>
   <form class="chatf" id="chatF"><label class="chatpic" aria-label="사진·영상 올리기" title="사진·영상">📷<input type="file" id="chatFile" accept="image/*,video/*" multiple hidden></label><textarea id="chatIn" rows="1" maxlength="500" placeholder="메시지" autocomplete="off"></textarea><button class="btn btn-hot" type="submit">보내기</button></form>
 </section>
 
@@ -1837,6 +1855,8 @@ body.popmode .chath .chpop { display: none; }
         '<b>🆘 긴급모집</b>은 🪑 테이블 대화 <b>맨 위에 빨갛게 고정</b> + 💬 버튼도 빨갛게 깜빡',
         '<b>자동 기록</b>: 테이블 대화에 자리표·🛎 운영 탭·🚨 경호 호출에서 한 것도 한 줄씩 (✍️자리표 · ✍️운영탭 · ✍️경호 호출 · 🆘긴급모집 · 📍위치) · 연출 대화에는 ✍️연출탭',
         '<b>폰</b>: 대화창을 여는 동안 뒤 화면은 안 움직여요 · <b>🗗 따로 띄우기</b>(PC): 대화창 위 🗗 → 크롬·엣지는 <b>항상 위에 떠 있는 작은 창</b>이라 아레나 위에 겹쳐 둬도 안 가려져요',
+        '<b>보내기 전 미리보기</b>: 🪑 테이블·🎆 연출·👥 게스트 대화에서 치는 동안 입력칸 위에 <b>이렇게 들어가요</b>가 떠요 — ⚠️나 💬 그냥 대화로 가요가 뜨면 보내기 전에 고쳐 주세요',
+        '<b>빠른 버튼</b>: 입력칸 위 버튼(🪑 넣기·🚪 아웃·🔀 이동·🎆 연출…)을 누르면 양식이 채워져요 → <b>자리·이름만 바꿔서</b> 보내기',
         '1:1·그룹 대화는 이 대화창이 아니라 <b>메시지</b> 탭이에요'
       ]) +
       sec('🔑 가입·로그인', [
@@ -5489,6 +5509,7 @@ body.popmode .chath .chpop { display: none; }
     $('chatIn').placeholder = room === 'table' ? '메시지 · 카톡처럼 쓰면 자리 신청' : room === 'guest' ? '메시지 · 카톡처럼 쓰면 게스트 반영' : room === 'yc' ? '메시지 · 카톡처럼 쓰면 연출 요청' : '메시지 · @이름 부르기';
     $('chatHelp').innerHTML = CHAT_HELP[room] || ''; $('chatHelp').hidden = true; $('chatQ').setAttribute('aria-expanded', 'false');
     if (state.chatMediaReset) state.chatMediaReset();
+    if (state.chatPrevReset) state.chatPrevReset();   // 👀 미리보기 끄고 이 방 ⚡ 빠른 버튼
     chatReplyTo(null); chatMenuClose(); cfClose();
     $('chatBox').hidden = false; $('chatFab').hidden = true; chatLock(true);
     $('chatPop').hidden = !!state.pop || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.matchMedia && matchMedia('(pointer: coarse)').matches);
@@ -5724,6 +5745,70 @@ body.popmode .chath .chpop { display: none; }
     ta.addEventListener('click', chatAtPaint);
     ta.addEventListener('compositionend', chatAtPaint); ta.addEventListener('keyup', chatAtPaint);   // 한글 입력이 끝났을 때도 다시
     ta.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && window.matchMedia('(min-width: 601px)').matches) { e.preventDefault(); $('chatF').requestSubmit(); } });
+    // 👀 보내기 전 미리보기 '이렇게 들어가요' (대표 결정 2026-11-19): 🪑 테이블·🎆 연출·👥 게스트 대화에서 치다가 0.35초 멈추면
+    //   서버가 보낼 때와 같은 규칙으로 읽어서(chat_try — 아무것도 안 바뀜) 입력칸 위에 한 줄씩. 입력칸은 건드리지 않는다(한글 조합 그대로) · 늦게 온 답은 버림
+    // ⚡ 빠른 버튼: 누르면 양식이 채워지고 첫 칸(자리)이 골라져서 바로 치면 바뀜. 남은 칸(이름·문구…)은 미리보기 줄을 누르면 골라짐
+    var PV_ROOMS = { table: 1, yc: 1, guest: 1 }, pv = { key: '', seq: 0, timer: 0, ph: null };
+    var PH_HINT = { '자리': '예: 3l6', '이름': '손님 이름', '팀': '팀 이름 · 예: 고트', '전광판 문구': '전광판에 띄울 말', '문구': '전광판에 띄울 말' };
+    var QK = {
+      table: [{ l: '🪑 넣기', t: '자리 이름 남2', ph: ['자리', '이름'] }, { l: '🟢 게스트', t: '자리 이름 남2 g', ph: ['자리', '이름'] }, { l: '🚪 아웃', t: '자리 아웃', ph: ['자리'] }, { l: '🧹 아웃클', t: '자리 아웃클', ph: ['자리'] },
+        { l: '🔀 이동', t: '자리 → 자리', ph: ['자리'] }, { l: '★ 판매전환', t: '자리 판매전환', ph: ['자리'] }, { l: '🍽 기셋', t: '자리 기셋 부탁드립니다', ph: ['자리'] }, { l: '🧊 얼음', t: '자리 버켓얼음 부탁드립니다', ph: ['자리'] }],
+      yc: [{ l: '🎆 연출', t: '자리 바로\n팀 영상 홀로\n\n전광판 문구', ph: ['자리', '팀', '전광판 문구'] },
+        { l: '📺 전광만', t: function () { return ((state.tbFloor || tbFloorPref()) === 'GROOVE' ? '2' : '3') + ' 전광만 바로\n팀 영상\n\n문구'; }, ph: ['팀', '문구'] },
+        { l: 'ㅈㄱㅈㅂㅇ', t: 'ㅈㄱㅈㅂㅇ' }, { l: 'ㅅㅈㅂㅇ', t: 'ㅅㅈㅂㅇ' }, { l: 'ㄱㄱ', t: 'ㄱㄱ' }, { l: '컷', t: '컷' }],
+      guest: [{ l: '👥 게스트 양식', t: function () { return qkTeam() + '\n이름1'; }, ph: ['이름'], sel: qkTeam }]
+    };
+    function qkTeam() { var t = state.data && state.data.team; return SALES.indexOf(t) >= 0 ? t : '고트'; }
+    function pvOn() { return !!(state.s && PV_ROOMS[state.chatRoom] && !(state.data && state.data.guard)); }   // 경호팀 글은 신청으로 안 읽음
+    function pvHide() { clearTimeout(pv.timer); pv.seq++; pv.key = ''; var b = $('chatPrev'); b.hidden = true; b.innerHTML = ''; b.classList.remove('wait'); }
+    function phRx(w) { return new RegExp('(^|[\\s→])' + w + '(?=[\\s→\\d]|$)'); }
+    function phLeft() { return (pv.ph || []).filter(function (w) { return phRx(w).test(ta.value); }); }
+    function phSel(w) { var m = phRx(w).exec(ta.value); ta.focus(); if (!m) return; var i = m.index + m[1].length; ta.setSelectionRange(i, i + w.length); }
+    function pvPaint(lines, mine) {
+      var b = $('chatPrev'); b.classList.remove('wait');
+      if (!lines || !lines.length) { b.hidden = true; b.innerHTML = ''; return; }
+      b.innerHTML = '<b>이렇게 들어가요' + (lines.length > 3 ? ' <i>· ' + lines.length + '줄 중 3줄</i>' : '') + '</b>' + lines.slice(0, 3).map(function (x) {
+        return x.ph ? '<button type="button" class="pl k-warn" data-pvph="' + esc(x.ph) + '">' + esc(x.t) + '</button>' : '<span class="pl k-' + esc(x.k) + '" title="' + esc(x.t) + '">' + esc(x.t) + '</span>';
+      }).join('');
+      b.hidden = false;
+      b.querySelectorAll('[data-pvph]').forEach(function (x) { x.addEventListener('mousedown', function (e) { e.preventDefault(); }); x.addEventListener('click', function () { phSel(x.dataset.pvph); }); });
+    }
+    function pvAsk(now) {
+      clearTimeout(pv.timer);
+      var t = ta.value.trim(), room = state.chatRoom;
+      if (!t) pv.ph = null;   // 다 지우면 양식도 끝
+      if (!pvOn() || t.length < 2) return pvHide();
+      var left = phLeft();
+      if (left.length) { pv.seq++; pv.key = ''; return pvPaint(left.map(function (w) { return { k: 'warn', ph: w, t: '✏️ ' + w + ' 칸을 바꿔 주세요 (' + PH_HINT[w] + ') · 눌러서 고르기' }; })); }
+      var floor = state.tbFloor || tbFloorPref(), key = room + '|' + floor + '|' + t;
+      if (key === pv.key) { $('chatPrev').classList.remove('wait'); return; }   // 같은 글이면 다시 안 물어봄
+      if (!$('chatPrev').hidden) $('chatPrev').classList.add('wait');
+      pv.timer = setTimeout(function () {
+        pv.key = key; var my = ++pv.seq;
+        fetch(API, { method: 'POST', body: JSON.stringify({ a: 'chat_try', token: state.s.token, room: room, text: t, floor: floor }) }).then(function (r) { return r.json(); }).then(function (r) {   // 미리보기는 다시 보내기 없이 (끊기면 다음 글자에서)
+          if (my !== pv.seq || state.chatRoom !== room || ta.value.trim() !== t) return;
+          if (r && r.ok) pvPaint(r.lines); else { pv.key = ''; if (r && r.error === 'auth') toLogin(AUTH_OUT); else pvHide(); }
+        }).catch(function () { if (my === pv.seq) { pv.key = ''; $('chatPrev').classList.remove('wait'); } });
+      }, now ? 0 : 350);
+    }
+    function qkPaint() {
+      var box = $('chatQk'), list = pvOn() ? QK[state.chatRoom] || [] : [];
+      box.hidden = !list.length; box.scrollLeft = 0;
+      box.innerHTML = list.map(function (q, i) { return '<button type="button" data-qk="' + i + '">' + esc(q.l) + '</button>'; }).join('');
+      box.querySelectorAll('[data-qk]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () { qkUse(list[+b.dataset.qk]); }); });
+    }
+    function qkUse(q) {
+      var cur = ta.value, keep = state.chatRoom !== 'table' && cur.trim() ? cur.replace(/\s+$/, '') + '\n' : '';   // 테이블은 바꿔 넣기 · 연출·게스트는 아래 줄에 붙이기
+      var tpl = typeof q.t === 'function' ? q.t() : q.t, sel = q.sel ? q.sel() : (q.ph || [])[0];
+      ta.value = keep + tpl; pv.ph = (q.ph || []).slice();
+      ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px';
+      ta.focus();
+      var at = sel ? ta.value.indexOf(sel, keep.length) : -1;
+      if (at >= 0) ta.setSelectionRange(at, at + sel.length); else ta.setSelectionRange(ta.value.length, ta.value.length);
+      $('chatAt').hidden = true; pvAsk(true);
+    }
+    state.chatPrevReset = function () { pvHide(); pv.ph = null; qkPaint(); };
+    ta.addEventListener('input', function () { pvAsk(); });
     // 📷 사진(3장)·🎬 영상(2개, 60MB) — 고르면 아래에 미리 보기, 영상은 바로 나눠 올리기 시작
     var md = { photos: [], vids: [] };
     state.chatMediaReset = function () { md.vids.forEach(function (v) { v.gone = true; }); md = { photos: [], vids: [] }; paintMd(); };
@@ -5764,7 +5849,7 @@ body.popmode .chath .chpop { display: none; }
       if (state.chatReply) body.reply = state.chatReply.id;
       call(body).then(function (r) {
         btn.disabled = false;
-        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; $('chatSos').hidden = true; md = { photos: [], vids: [] }; paintMd(); chatReplyTo(null); chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.req && room === 'table') { loadTb(true); flushPush(); } if (c && c.req && room === 'yc') loadYc(true); if (c && /^👥/.test(c.req || '') && room === 'guest') refresh(true); if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
+        if (r.ok) { ta.value = ''; ta.style.height = 'auto'; $('chatAt').hidden = true; $('chatSos').hidden = true; pvHide(); pv.ph = null; md = { photos: [], vids: [] }; paintMd(); chatReplyTo(null); chatPaint(r, true); var c = r.list[r.list.length - 1]; if (c && c.req && room === 'table') { loadTb(true); flushPush(); } if (c && c.req && room === 'yc') loadYc(true); if (c && /^👥/.test(c.req || '') && room === 'guest') refresh(true); if (c && c.at2 && c.at2.length) alertBox('📣 ' + c.at2.join(', ') + '님에게 알림을 보냈어요.', true); flushPush(); }
         else if (r.error === 'auth') toLogin(AUTH_OUT);
         else if (r.error === 'punch') {}   // 출근 버튼 안내가 따로 뜸 (call)
         else alertBox(r.error === 'busy' ? '너무 빨리 보내고 있어요. 잠시 후에 보내 주세요.' : r.error === 'photo' ? '사진은 jpg·png 3장까지예요.' : r.error === 'video' ? '영상을 다시 올려 주세요.' : r.error === 'reply' ? '답장할 글이 지워졌어요.' : '못 보냈어요. 다시 해 주세요.');
