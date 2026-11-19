@@ -1443,7 +1443,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
 <button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
 <button type="button" class="sosfab" id="sosFab" hidden aria-label="경호 호출">🚨</button>
 <section class="chatbox" id="chatBox" hidden aria-label="대화">
-  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chsos" id="chatSos" hidden aria-label="경호 호출" title="경호 호출">🚨</button><button type="button" class="link chpop" id="chatPop" hidden title="따로 띄우기 (항상 위에)" aria-label="대화창 따로 띄우기">🗗</button><button type="button" class="link" id="chatS" aria-label="대화 검색" aria-expanded="false">🔍</button><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
+  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chsos" id="chatSosH" hidden aria-label="경호 호출" title="경호 호출">🚨</button><button type="button" class="link chpop" id="chatPop" hidden title="따로 띄우기 (항상 위에)" aria-label="대화창 따로 띄우기">🗗</button><button type="button" class="link" id="chatS" aria-label="대화 검색" aria-expanded="false">🔍</button><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
   <div class="chathelp" id="chatHelp" hidden></div>
   <div class="chatfind" id="chatFind" hidden><div class="cfind"><input id="cfQ" type="search" placeholder="이 대화에서 찾기 (글·이름)" autocomplete="off" enterkeyhint="search"><span class="cfn" id="cfN"></span><button type="button" id="cfUp" aria-label="이전(위)">▲</button><button type="button" id="cfDn" aria-label="다음(아래)">▼</button><button type="button" id="cfX" aria-label="검색 닫기">✕</button></div><div class="cfmsg" id="cfMsg"></div><div class="cfres" id="cfRes" hidden></div></div>
   <div class="chatpin" id="chatPin" hidden aria-live="polite"></div>
@@ -2177,7 +2177,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   function sosLift() {   // 🚨: 폰에서 메시지·💬 대화창이 열려 있으면 떠 있는 동그라미 대신 위 이름 줄의 🚨 (글을 가리지 않게)
     var b = document.body, dm = b.classList.contains('dmfix'), cb = cbOpen(), no = !$('sosFab') || $('sosFab').hidden;
     b.classList.toggle('soslift', dm || cb);
-    var cs = $('chatSos'), ds = $('dSos'); if (cs) cs.hidden = no || !cb; if (ds) ds.hidden = no || !dm;
+    var cs = $('chatSosH'), ds = $('dSos'); if (cs) cs.hidden = no || !cb; if (ds) ds.hidden = no || !dm;   // (id 는 chatSosH — chatSos 는 '경호팀 부를까요?' 줄)
   }
   function dmFit() {
     var b = document.body; cbFit(); if (!b.classList.contains('dmfix')) return sosLift();
@@ -5058,7 +5058,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     });
   }
   $('sosFab').addEventListener('click', function () { if (state.s) sosForm(); });
-  $('chatSos').addEventListener('click', function () { if (state.s) sosForm(); });   // 💬 대화창 위 줄의 🚨 (폰)
+  $('chatSosH').addEventListener('click', function () { if (state.s) sosForm(); });   // 💬 대화창 위 줄의 🚨 (폰)
 
   // ── 🛎 운영 요청 (2026-11-18): 배달·기본 세팅·아웃 청소·자리 이동·퍼레이드 지원(N명)·온도 → 운영팀에게만 알림. 운영팀이 ✅ 맡으면(인원이 다 차면) 닫힘 ──
   function opsBadge(r) {   // 🛎 탭 숫자: 운영팀은 아직 아무도 안 맡은(내가 안 맡은) 요청 수
