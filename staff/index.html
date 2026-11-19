@@ -1012,6 +1012,13 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .ycc .cphv { display: grid; gap: 2px; justify-items: start; }
 .ycc .csavev { font-size: 13px; padding: 4px 2px; }
 .ycg { margin-top: 6px; max-height: 120px; overflow-y: auto; }
+/* 🕐 연출 시간: 5분 단위 버튼 (2026-11-20) */
+.yctm { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; max-height: 200px; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; margin: 0 0 6px; padding: 2px 2px 4px; }
+.sheet-in .yctm button.chip { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 4px 2px; min-height: 42px; font-size: 14px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.sheet-in .yctm button.chip:disabled { opacity: .4; cursor: not-allowed; border-style: dashed; }
+.sheet-in .yctm button.chip:disabled b { text-decoration: line-through; }
+.yctm small { font-size: 10px; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.yctmn { margin: 0 0 12px; font-size: 12px; } .yctmn.bad { color: var(--bad); }
 /* 도면 보기 (홈페이지 배치도 기준, 좌표는 배치도 픽셀) */
 .tbvw { display: inline-flex; border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; margin: 0 0 10px; }
 .tbvw button { min-height: 38px; padding: 0 16px; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
@@ -5471,6 +5478,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   // ── 🎆 연출 요청 (2026-11-18, 카톡 '불꽃놀이' 방) ─────────────────
   // 영업진이 요청 → DJ팀 전광 준비(ㅈㄱㅈㅂㅇ) · 운영팀 술 준비(ㅅㅈㅂㅇ) → ㄱㄱ(시작) → 컷(끝). ㄱㄱ·컷 = 요청자·DJ팀·관리자, 순서 = 관리자·DJ팀 (대표 결정 2026-11-18).
   function ycErr(r) {
+    if (r.error === 'timetaken') return '그 시간은 이미 ' + (r.floor ? r.floor + ' ' : '') + (r.seat || '전광만') + ' 연출이 잡혀 있어요 (' + [r.at, r.who].filter(Boolean).join(' · ') + '). 5분 이상 띄워 주세요.';   // 🕐 같은 층 앞뒤 5분 (2026-11-20)
     return { seat: '자리를 골라 주세요.', when: '순서를 다시 골라 주세요.', empty: '연출 내용을 하나 이상 넣어 주세요.', text: '<, >, " 는 쓸 수 없어요.', long: '문구는 300자까지예요.', songlink: '노래는 멜론 곡 링크나 사운드클라우드 곡 링크로 넣어 주세요.', drivesong: '📁 세팅곡 폴더에 있는 파일만 쓸 수 있어요.', video: '영상을 다시 올려 주세요.', songsite: '멜론이나 사운드클라우드 링크만 돼요.', unreleased: '사운드클라우드에 다운로드 링크가 없는 곡이에요 · 미발매곡은 안 돼요.', sctrack: '사운드클라우드 곡(트랙) 하나의 링크를 넣어 주세요.', check: '노래 링크를 확인하지 못했어요. 잠시 후 다시 해 주세요.',
       forbidden: '이건 할 수 없어요.', state: '이미 바뀌었어요. 새로고침했어요.', notfound: '이미 지워졌어요.', busy: '잠시 후 다시 해 주세요.', photo: '사진은 3장까지, jpg·png만 돼요.' }[r.error] || '저장이 안 됐어요. 잠시 후 다시 해 주세요.';
   }
@@ -5864,15 +5872,37 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       var opts = ycSeatOpts(); if (seat && seat !== '전광만' && opts.indexOf(seat) < 0) seat = '';
       $('ycSeat').value = seat === '전광만' ? '' : seat || ''; $('ycSeatP').innerHTML = ''; $('ycOnly').classList.toggle('on', seat === '전광만'); $('ycOnly').textContent = '📺 ' + fl + ' 전광만 (자리 없이)';
       s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.ycfl === fl); });
+      if ($('ycTm')) paintWhen();   // 층이 바뀌면 시간 버튼(겹침)도 다시
     }
+    // 🕐 시간: 5분 단위 버튼 (아이폰 시간 휠은 1분 단위라, 대표 요청 2026-11-20) — 지금 다음 5분부터 3시간 (새벽은 08:00 까지).
+    //  같은 층에 앞뒤 5분 안으로 잡힌 연출(요청·진행)이 있으면 회색 + 누가 잡았는지. 자정 넘김은 낮 12시 기준 분으로 비교 (서버 ycTimeClash_ 와 같음)
+    function ycNoonMin(w) { var m = /^(\d{2}):(\d{2})$/.exec(w || ''); return m ? (+m[1] * 60 + +m[2] + 720) % 1440 : -1; }
+    function ycSlots() {
+      var k = new Date(Date.now() + 9 * 3600e3), n = k.getUTCHours() * 60 + k.getUTCMinutes(), end = n + 180, out = [];
+      if (n < 480) end = Math.min(end, 480);
+      for (var t = Math.floor(n / 5) * 5 + 5; t <= end; t += 5) { var m = t % 1440; out.push(('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + m % 60).slice(-2)); }
+      if (/^\d{2}:\d{2}$/.test(when) && out.indexOf(when) < 0) out.unshift(when);   // 고치기: 지난 시간·5분 단위 아닌 예전 값도 그대로 맨 앞에
+      return out;
+    }
+    function ycHold(t) {
+      var a = ycNoonMin(t); if (a < 0 || (x && t === x.when && fl === x.floor)) return null;   // 고치기: 원래 시간·층 그대로면 막지 않음 (서버도 같음)
+      return act.filter(function (q) { var b = ycNoonMin(q.when); return q.floor === fl && b >= 0 && Math.abs(a - b) < 5; })[0] || null;
+    }
+    function ycHoldNm(q) { return q.floor + ' ' + (q.seat || '전광만'); }
     function paintWhen() {
       var k = when === 'now' || when === 'ready' ? when : when.indexOf('after:') === 0 ? 'after' : 'time';
       s.querySelectorAll('[data-ycwhen]').forEach(function (b) { b.classList.toggle('on', b.dataset.ycwhen === k); });
-      var box = $('ycWhenX');
-      if (k === 'time') box.innerHTML = '<input id="ycTime" type="time" value="' + esc(/^\d{2}:\d{2}$/.test(when) ? when : '') + '">';
+      var box = $('ycWhenX'), keep = $('ycTm') ? $('ycTm').scrollTop : -1, lost = '';
+      if (k === 'time') {
+        if (when && ycHold(when)) { lost = when; when = ''; }   // 층을 바꿨더니 그 시간이 이미 잡혀 있으면 다시 고르기
+        box.innerHTML = '<div class="yctm" id="ycTm">' + ycSlots().map(function (t) { var q = ycHold(t); return '<button type="button" class="chip' + (t === when ? ' on' : '') + '" data-yctm="' + t + '"' + (q ? ' disabled title="' + esc(ycHoldNm(q) + ' · ' + q.when + ' · ' + q.by) + '"' : '') + '><b>' + t + '</b>' + (q ? '<small>' + esc(ycHoldNm(q)) + '</small>' : '') + '</button>'; }).join('') + '</div>' +
+          '<p class="note yctmn' + (lost ? ' bad' : '') + '" id="ycTmN">' + (lost ? '⚠️ ' + esc(lost) + '은 ' + esc(fl) + '에 이미 잡혀 있어요 · 다시 골라 주세요' : '5분 단위 · 회색은 ' + esc(fl) + '에 이미 잡힌 시간 (앞뒤 5분)') + '</p>';
+        var g = $('ycTm'), on = g.querySelector('.on');
+        if (keep >= 0) g.scrollTop = keep; else if (on) g.scrollTop = Math.max(0, on.offsetTop - 4);
+        g.querySelectorAll('[data-yctm]').forEach(function (b) { b.addEventListener('click', function () { when = b.dataset.yctm; g.querySelectorAll('[data-yctm]').forEach(function (z) { z.classList.toggle('on', z === b); }); var nn = $('ycTmN'); nn.classList.remove('bad'); nn.textContent = '5분 단위 · 회색은 ' + fl + '에 이미 잡힌 시간 (앞뒤 5분)'; }); });
+      }
       else if (k === 'after') box.innerHTML = act.length ? '<select id="ycAfter">' + act.map(function (q) { return '<option value="' + esc(q.id) + '"' + ('after:' + q.id === when ? ' selected' : '') + '>' + esc(ycSeatTxt(q) + ' · ' + q.by + ' 다음') + '</option>'; }).join('') + '</select>' : '<p class="note" style="margin:0">앞에 기다리는 연출이 없어요.</p>';
       else box.innerHTML = '';
-      if ($('ycTime')) $('ycTime').addEventListener('change', function () { when = this.value || 'now'; });
       if ($('ycAfter')) { if (when.indexOf('after:') !== 0) when = 'after:' + $('ycAfter').value; $('ycAfter').addEventListener('change', function () { when = 'after:' + this.value; }); }
     }
     function paintV() {
@@ -5914,7 +5944,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     paintSeats(); paintWhen(); paintV(); paintTg(); paintPh();
     s.querySelectorAll('[data-ycms]').forEach(function (b) { b.addEventListener('click', function () { var p = b.dataset.ycms.split('|'); fl = p[0]; seat = p[1]; paintSeats(); }); });
     s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.addEventListener('click', function () { fl = b.dataset.ycfl; paintSeats(); }); });
-    $('ycSeat').addEventListener('input', function () { var q = this.value.trim(), pf = seatFloorOf(q); if (pf && pf !== fl && seatsOf(pf).length) { fl = pf; s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.ycfl === fl); }); $('ycOnly').textContent = '📺 ' + fl + ' 전광만 (자리 없이)'; }
+    $('ycSeat').addEventListener('input', function () { var q = this.value.trim(), pf = seatFloorOf(q); if (pf && pf !== fl && seatsOf(pf).length) { fl = pf; s.querySelectorAll('[data-ycfl]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.ycfl === fl); }); $('ycOnly').textContent = '📺 ' + fl + ' 전광만 (자리 없이)'; if ($('ycTm')) paintWhen(); }
       var k = tbSeatQ(q), ex = ycSeatOpts().filter(function (z) { return z.toUpperCase() === k; }); seat = !q ? '' : ex.length ? ex[0] : null; $('ycOnly').classList.remove('on'); ycSeatChips(true); });
     $('ycSeat').addEventListener('focus', function () { this.select(); });
     $('ycOnly').addEventListener('click', function () { seat = seat === '전광만' ? '' : '전광만'; $('ycSeat').value = ''; ycSeatChips(false); this.classList.toggle('on', seat === '전광만'); });
@@ -5948,7 +5978,8 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       v.picket = $('ycPk').value.trim(); v.video = $('ycVQ').value.trim(); v.note = $('ycNote').value.trim(); v.songAt = $('ycSAt').value.trim();
       if (seat == null) { var sh = ycSeatHits($('ycSeat').value.trim()); if (sh.length === 1) seat = sh[0]; else { m.textContent = '자리를 아래 버튼에서 골라 주세요.'; return; } }
       if (!seat) { m.textContent = '자리를 골라 주세요.'; return; }
-      if (!when || when === 'after:') { m.textContent = '순서를 골라 주세요.'; return; }
+      if (!when || when === 'after:') { m.textContent = !when ? '시간을 골라 주세요.' : '순서를 골라 주세요.'; return; }
+      var hq = ycHold(when); if (hq) { m.textContent = ycErr({ error: 'timetaken', at: hq.when, who: hq.by, seat: hq.seat, floor: hq.floor }); return; }
       b.disabled = true; m.textContent = '';
       if (vids.some(function (q) { return q.err; })) { b.disabled = false; m.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
       if (vids.some(function (q) { return !q.done; })) { m.textContent = '영상 올리는 중이에요… 다 올라가면 바로 보내요.'; var w = setInterval(function () { if (!$('ycSave')) return clearInterval(w); if (vids.some(function (q) { return q.err; })) { clearInterval(w); b.disabled = false; m.textContent = '영상을 못 올렸어요. 다시 넣어 주세요.'; } else if (vids.every(function (q) { return q.done; })) { clearInterval(w); b.disabled = false; $('ycSave').click(); } }, 500); return; }
@@ -5957,7 +5988,14 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       if (photos.length) body.photos = photos.map(function (p) { return { type: p.type, data: p.data }; });
       if (vids.length) body.videos = vids.map(function (q) { return q.vid; });
       if (x) { body.id = x.id; body.keepPhotos = oldPh.slice(); body.keepVideos = oldVd.slice(); }   // 고치기: 남길 사진·영상 + 새로 올린 것 (2026-11-18)
-      ycCall(body, function (r) { if (!r.ok) { b.disabled = false; m.textContent = ycErr(r); return; } var sh = $('sheet'); sh.hidden = true; sh.innerHTML = ''; state.ycMsg = x ? '고쳤어요.' : '연출 요청을 보냈어요. DJ·술 준비되면 알려 드려요.'; render(); });
+      ycCall(body, function (r) {
+        if (!r.ok) {
+          b.disabled = false; m.textContent = ycErr(r);
+          if (r.error === 'timetaken' && r.at) { act.push({ id: '', floor: r.floor || fl, seat: r.seat || '', when: r.at, by: r.who || '', status: '요청' }); if ($('ycTm')) { paintWhen(); m.textContent = ycErr(r); } }   // 그 사이 다른 사람이 잡은 시간 → 회색으로
+          return;
+        }
+        var sh = $('sheet'); sh.hidden = true; sh.innerHTML = ''; state.ycMsg = x ? '고쳤어요.' : '연출 요청을 보냈어요. DJ·술 준비되면 알려 드려요.'; render();
+      });
     });
   }
 
