@@ -119,11 +119,11 @@ self.addEventListener('push', function (e) {
 });
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
-  var tab = (e.notification.data && e.notification.data.tab) || '';
+  var tab = (e.notification.data && e.notification.data.tab) || '', ref = (e.notification.data && e.notification.data.ref) || '';
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
     for (var i = 0; i < cs.length; i++) {
-      if (cs[i].url.indexOf('/staff/') >= 0) { cs[i].postMessage({ tab: tab }); return cs[i].focus(); }
+      if (cs[i].url.indexOf('/staff/') >= 0) { cs[i].postMessage({ tab: tab, ref: ref }); return cs[i].focus(); }
     }
-    return self.clients.openWindow('/staff/' + (tab ? '#' + tab : ''));
+    return self.clients.openWindow('/staff/' + (/^dec:[-\w]{1,40}$/.test(ref) ? '#' + ref : tab ? '#' + tab : ''));   // 🔗 업무 알림 → 그 업무로 (2026-11-20)
   }));
 });
