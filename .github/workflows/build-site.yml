@@ -6,6 +6,11 @@ on:
     branches: [main]
     paths: ["data/**", "src/**"]
   workflow_dispatch:
+    inputs:
+      all:
+        description: "IndexNow: 사이트맵 주소 전부 알리기"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -19,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -33,3 +40,8 @@ jobs:
           git commit -m "Rebuild pages from data"
           git pull --rebase origin main
           git push
+      # 🔎 IndexNow: 내용이 바뀐 페이지를 빙·얀덱스·네이버에 바로 알림 (2026-11-19) — 실패해도 빌드는 그대로
+      - name: IndexNow
+        continue-on-error: true
+        run: |
+          if [ "${{ github.event.inputs.all }}" = "true" ]; then node src/indexnow.mjs --all; else node src/indexnow.mjs "${{ github.event.before }}"; fi
