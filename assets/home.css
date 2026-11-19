@@ -55,7 +55,14 @@ body[data-page="home"] { --home-live: #ffac8d; }
 .home-events .cards .empty { grid-column: 1 / -1; }
 .home-events .ev { display: grid; grid-template-columns: minmax(0, 43%) minmax(0, 1fr); }
 .home-events .ev-art { width: 100%; min-height: 144px; aspect-ratio: 4 / 5; background-color: #1b171e; }
-.home-events .ev-art img { object-fit: cover; object-position: center; }   /* 4:5 틀에 꽉 채움 — 정사각 파티 포스터가 위아래 검은 띠로 깨져 보여서 (대표 2026-11-19). 타임테이블은 올릴 때 4:5 로 잘라 둠 */
+/* 카드: 위 = 사진 + 날짜·제목·층, 아래 = 라인업 전체(가로 끝까지) — 라인업이 길어도 사진 옆이 비지 않게 (대표 2026-11-19 20:41·20:48)
+   사진은 자르지 않고(site.css .ev-art.fit) 사진 칸이 윗줄 높이를 다 채움(최소 4:5) */
+.home-events .ev { grid-template-areas: "art meta" "line line"; }
+.home-events .ev-art { grid-area: art; }
+.home-events .ev-meta { grid-area: meta; }
+.home-events .ev-line { grid-area: line; padding: 12px 14px 14px; border-top: 1px solid var(--line); }
+.home-events .ev-art:not(.gen) { aspect-ratio: auto; align-self: stretch; min-height: 0; padding: 0; }
+.home-events .ev-art:not(.gen)::after { content: ''; display: block; padding-top: 125%; }
 .home-events .ev-art.gen { justify-content: center; }
 .home-events .ev-art .gt { display: none; }
 .home-events .ev-art.gen + .ev-meta .ev-title { display: block; }
@@ -72,6 +79,6 @@ body[data-page="home"] { --home-live: #ffac8d; }
   .now { padding: 19px 0 16px; }
   .now-grid { grid-template-columns: 1fr; gap: 7px; }
   .home-events .cards { grid-template-columns: 1fr; }
-  .home-events .ev { grid-template-columns: minmax(90px, 30%) minmax(0, 1fr); }
+  .home-events .ev { grid-template-columns: minmax(110px, 38%) minmax(0, 1fr); }
   .home-events .ev-art { min-height: 120px; }
 }

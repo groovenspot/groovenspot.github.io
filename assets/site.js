@@ -148,7 +148,8 @@
   function art(e, big) {
     var only = e.floors.length === 1 ? ' only-' + e.floors[0] : '';
     var more = moreOf(e);
-    if (e.flyer) return '<div class="ev-art' + (big ? ' full' : '') + '"><img src="' + esc(e.flyer) + '" alt="' + esc(e.title) + '" loading="' + (big ? 'eager' : 'lazy') + '">' +
+    // 카드(big 아님): 사진을 자르지 않고(contain) 남는 곳은 같은 사진을 흐리게 깔아 채움 — 정사각 포스터 글자가 잘려서 (대표 2026-11-19 20:49)
+    if (e.flyer) return '<div class="ev-art' + (big ? ' full' : ' fit') + '"' + (big ? '' : ' style="--bg:url(' + esc(e.flyer) + ')"') + '><img src="' + esc(e.flyer) + '" alt="' + esc(e.title) + '" loading="' + (big ? 'eager' : 'lazy') + '">' +
       (big ? more.map(function (x, i) { return '<img src="' + esc(x) + '" alt="' + esc(e.title) + ' (' + (i + 2) + ')" loading="lazy">'; }).join('') : '') + '</div>';
     var p = e.date.split('-');
     return '<div class="ev-art gen' + only + '" aria-hidden="true"><div class="gd"><small>' + esc(DOW[dowOf(e.date)] || '') + '</small>' + (+p[1]) + '.' + p[2] + '</div><div class="gt">' + esc(e.title) + '</div></div>';
@@ -161,13 +162,24 @@
     return names.filter(function (n) { var k = String(n).toUpperCase(); if (seen[k]) return false; seen[k] = 1; return true; }).join(' · ');
   }
 
+  // 카드 라인업: 끝까지 다 보이게 층별 줄로 (대표 2026-11-19 20:48 "라인업도 끝까지 다 보이게"). 층 라인업에 있는 게스트는 GUEST 줄에서 뺌
+  function lineupRows(e) {
+    if (!e.lineup) return '';
+    var keys = Object.keys(e.lineup), floors = keys.filter(function (k) { return k !== 'GUEST'; }), seen = {}, rows = [];
+    floors.concat(keys.indexOf('GUEST') >= 0 ? ['GUEST'] : []).forEach(function (k) {
+      var names = (e.lineup[k] || []).filter(function (n) { var u = String(n).toUpperCase(); if (seen[u]) return false; seen[u] = 1; return true; });
+      if (names.length) rows.push('<span class="ln"><b class="lf' + (k === '2F' ? ' g' : k === '3F' ? ' s' : '') + '">' + esc(k) + '</b><span>' + esc(names.join(' · ')) + '</span></span>');
+    });
+    return rows.join('');
+  }
   function card(e, past) {
     var tonight = e.date === BIZ ? '<span class="chip hot">' + esc(T.tonight) + '</span>' : '';
-    var sub = lineupText(e) || pick(e.genre);
+    var rows = lineupRows(e), sub = rows ? '' : pick(e.genre);
     return '<a class="ev" href="' + url('event/?id=' + encodeURIComponent(e.id)) + '">' + art(e) +
       '<div class="ev-meta"><span class="ev-date">' + esc(dateLabel(e.date)) + (e.open ? ' · ' + esc(T.open) + ' ' + esc(e.open) : '') + (past ? ' · ' + esc(T.past) : '') + '</span>' +
       '<span class="ev-title">' + esc(e.title) + '</span>' + (sub ? '<span class="ev-sub">' + esc(sub) + '</span>' : '') +
-      '<span class="chips">' + tonight + floorChips(e) + (moreOf(e).length && e.flyer ? '<span class="chip" aria-label="' + (moreOf(e).length + 1) + '">📷 ' + (moreOf(e).length + 1) + '</span>' : '') + '</span></div></a>';
+      '<span class="chips">' + tonight + floorChips(e) + (moreOf(e).length && e.flyer ? '<span class="chip" aria-label="' + (moreOf(e).length + 1) + '">📷 ' + (moreOf(e).length + 1) + '</span>' : '') + '</span></div>' +
+      (rows ? '<div class="ev-line">' + rows + '</div>' : '') + '</a>';
   }
 
   function emptyBox(msg) {
