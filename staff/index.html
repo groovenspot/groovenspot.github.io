@@ -777,6 +777,11 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .lvc .csave { position: absolute; right: 5px; bottom: 5px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 15px; cursor: pointer; }
 .lvc .cphv { display: grid; gap: 4px; width: 100%; justify-items: end; }
 .imgview { width: 100%; border-radius: 12px; display: block; }
+.pvw { overflow: hidden; border-radius: 12px; touch-action: pan-y pinch-zoom; }
+.pvw .imgview { max-height: 72vh; object-fit: contain; cursor: zoom-out; transition: transform .18s ease; -webkit-user-select: none; user-select: none; }
+.pvn { margin: 6px 0 0; text-align: center; color: var(--muted); font-size: 12px; }
+@keyframes pvbump { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-10px); } 60% { transform: translateX(8px); } }
+.imgview.pvbump { animation: pvbump .3s ease; }
 .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.72); display: grid; place-items: end center; padding: 16px; }
 .sheet-in { width: 100%; max-width: 520px; background: var(--card); border: 1px solid var(--line-2); border-radius: 18px; padding: 20px; margin-bottom: env(safe-area-inset-bottom); max-height: 90vh; overflow: auto; }
 .sheet-in.plain { background: #000; padding: 8px; text-align: center; }
@@ -1438,7 +1443,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
 <button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
 <button type="button" class="sosfab" id="sosFab" hidden aria-label="경호 호출">🚨</button>
 <section class="chatbox" id="chatBox" hidden aria-label="대화">
-  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chsos" id="chatSos" hidden aria-label="경호 호출" title="경호 호출">🚨</button><button type="button" class="link chpop" id="chatPop" hidden title="따로 띄우기 (항상 위에)" aria-label="대화창 따로 띄우기">🗗</button><button type="button" class="link" id="chatS" aria-label="대화 검색" aria-expanded="false">🔍</button><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
+  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chsos" id="chatSosH" hidden aria-label="경호 호출" title="경호 호출">🚨</button><button type="button" class="link chpop" id="chatPop" hidden title="따로 띄우기 (항상 위에)" aria-label="대화창 따로 띄우기">🗗</button><button type="button" class="link" id="chatS" aria-label="대화 검색" aria-expanded="false">🔍</button><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
   <div class="chathelp" id="chatHelp" hidden></div>
   <div class="chatfind" id="chatFind" hidden><div class="cfind"><input id="cfQ" type="search" placeholder="이 대화에서 찾기 (글·이름)" autocomplete="off" enterkeyhint="search"><span class="cfn" id="cfN"></span><button type="button" id="cfUp" aria-label="이전(위)">▲</button><button type="button" id="cfDn" aria-label="다음(아래)">▼</button><button type="button" id="cfX" aria-label="검색 닫기">✕</button></div><div class="cfmsg" id="cfMsg"></div><div class="cfres" id="cfRes" hidden></div></div>
   <div class="chatpin" id="chatPin" hidden aria-live="polite"></div>
@@ -2172,7 +2177,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   function sosLift() {   // 🚨: 폰에서 메시지·💬 대화창이 열려 있으면 떠 있는 동그라미 대신 위 이름 줄의 🚨 (글을 가리지 않게)
     var b = document.body, dm = b.classList.contains('dmfix'), cb = cbOpen(), no = !$('sosFab') || $('sosFab').hidden;
     b.classList.toggle('soslift', dm || cb);
-    var cs = $('chatSos'), ds = $('dSos'); if (cs) cs.hidden = no || !cb; if (ds) ds.hidden = no || !dm;
+    var cs = $('chatSosH'), ds = $('dSos'); if (cs) cs.hidden = no || !cb; if (ds) ds.hidden = no || !dm;   // (id 는 chatSosH — chatSos 는 '경호팀 부를까요?' 줄)
   }
   function dmFit() {
     var b = document.body; cbFit(); if (!b.classList.contains('dmfix')) return sosLift();
@@ -3842,7 +3847,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     if (box && c) {
       hydrateImgs(box);
       box.querySelectorAll('img, video').forEach(function (el) { var st = function () { if (Date.now() - (state.dmStick || 0) < 8000) { if (document.body.classList.contains('dmfix')) box.scrollTop = box.scrollHeight; else window.scrollTo(0, document.body.scrollHeight); } }; el.addEventListener('load', st); el.addEventListener('loadedmetadata', st); });
-      box.querySelectorAll('.cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });
+      box.querySelectorAll('.cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src, im); }); });
       box.querySelectorAll('[data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
       box.querySelectorAll('[data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
       box.querySelectorAll('[data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { if (state.dmWith === w) { state.keepY = dmY(); render(); } }); }); });
@@ -4078,7 +4083,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   }
   function alertBox(m) { var b = $('kBox'); if (b) { b.textContent = m; b.hidden = false; } }
   function kBindReqs(root) {
-    if (root.querySelector('.kph img, .tl .ycp img')) { hydrateImgs(root); root.querySelectorAll('.kph img[data-img], .tl .ycp img[data-img]').forEach(function (im) { im.style.cursor = 'zoom-in'; im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); }); }
+    if (root.querySelector('.kph img, .tl .ycp img')) { hydrateImgs(root); root.querySelectorAll('.kph img[data-img], .tl .ycp img[data-img]').forEach(function (im) { im.style.cursor = 'zoom-in'; im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src, im); }); }); }
     root.querySelectorAll('[data-kok]').forEach(function (b) { b.addEventListener('click', function () { kReq(b.dataset.kok, 'ok', '', b); }); });
     root.querySelectorAll('[data-kcx]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '요청 취소')) return; kReq(b.dataset.kcx, 'cancel', '', b); }); });
     root.querySelectorAll('[data-kno]').forEach(function (b) {
@@ -5053,7 +5058,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     });
   }
   $('sosFab').addEventListener('click', function () { if (state.s) sosForm(); });
-  $('chatSos').addEventListener('click', function () { if (state.s) sosForm(); });   // 💬 대화창 위 줄의 🚨 (폰)
+  $('chatSosH').addEventListener('click', function () { if (state.s) sosForm(); });   // 💬 대화창 위 줄의 🚨 (폰)
 
   // ── 🛎 운영 요청 (2026-11-18): 배달·기본 세팅·아웃 청소·자리 이동·퍼레이드 지원(N명)·온도 → 운영팀에게만 알림. 운영팀이 ✅ 맡으면(인원이 다 차면) 닫힘 ──
   function opsBadge(r) {   // 🛎 탭 숫자: 운영팀은 아직 아무도 안 맡은(내가 안 맡은) 요청 수
@@ -5147,7 +5152,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     area.innerHTML = h;
     if (L.list.length) lvSeen(L.list[0].at); renderTabsOnly();
     hydrateImgs(area);
-    area.querySelectorAll('.lvc .cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });
+    area.querySelectorAll('.lvc .cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src, im); }); });
     area.querySelectorAll('.lvc [data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
     area.querySelectorAll('.lvc [data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
     area.querySelectorAll('.lvc [data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { if (state.tab === 'live') render(); }); }); });
@@ -5746,8 +5751,8 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     hydrateImgs(area);
     area.querySelectorAll('[data-ycvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.ycvid, b); }); });
     area.querySelectorAll('[data-ycsv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.ycsv); }); });
-    area.querySelectorAll('.ycp img[data-img]').forEach(function (im) { im.style.cursor = 'zoom-in'; im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });   // 연출 사진: 누르면 크게 + 저장
-    area.querySelectorAll('.ycc .cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });   // 댓글 사진·영상
+    area.querySelectorAll('.ycp img[data-img]').forEach(function (im) { im.style.cursor = 'zoom-in'; im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src, im); }); });   // 연출 사진: 누르면 크게 + 저장
+    area.querySelectorAll('.ycc .cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src, im); }); });   // 댓글 사진·영상
     area.querySelectorAll('.ycc [data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
     area.querySelectorAll('.ycc [data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
     area.querySelectorAll('.ycc [data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { render(); }); }); });
@@ -6268,9 +6273,34 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   }
   function saveImg(id) { mediaSave((state.imgBlob || {})[id], 'groove_photo_' + String(id).slice(-6), state.imgs && state.imgs[id]); }
   function saveVid(id) { mediaSave((state.vidBlob || {})[id], 'groove_video_' + String(id).slice(-6)); }
-  function photoView(id, src) {
-    showSheet('<img class="imgview" src="' + src + '" alt="사진"><button class="btn" type="button" id="pvSave" style="margin-top:10px">⬇️ 사진 저장</button>', true);
-    $('pvSave').addEventListener('click', function () { saveImg(id); });
+  // 📷 사진 크게 보기 (대표 요청 2026-11-20 1시): 사진을 누르면 닫힘 · 옆으로 밀면(PC는 ← →) 같은 곳(대화·메시지·연출 카드)의 이전·다음 사진
+  function photoView(id, src, el) {
+    var list = [], i = 0;
+    if (el && el.closest) {
+      var root = el.closest('#chatL, #dmBox, .ycc, .ycp, .lvc, .kph, .tl') || el.parentNode;
+      [].forEach.call(root.querySelectorAll('img[data-img]'), function (x) { var u = x.getAttribute('src'); if (u && list.every(function (p) { return p.id !== x.dataset.img; })) list.push({ id: x.dataset.img, src: u }); });
+    }
+    i = list.map(function (p) { return p.id; }).indexOf(id); if (i < 0) { list = [{ id: id, src: src }]; i = 0; }
+    showSheet('<div class="pvw"><img class="imgview" id="pvImg" alt="사진" draggable="false"></div><p class="pvn" id="pvN"></p><button class="btn" type="button" id="pvSave" style="margin-top:6px">⬇️ 사진 저장</button>', true);
+    var img = $('pvImg'), sh = $('sheet');
+    function show(k) {
+      if (k < 0 || k >= list.length) { img.classList.remove('pvbump'); void img.offsetWidth; img.classList.add('pvbump'); return; }   // 끝이면 살짝 흔들기
+      i = k; img.src = list[i].src;
+      $('pvN').textContent = (list.length > 1 ? (i + 1) + ' / ' + list.length + ' · 옆으로 밀면 넘겨요 · ' : '') + '사진을 누르면 닫혀요';
+    }
+    function close() { document.removeEventListener('keydown', key); if (sh.contains(img)) { sh.hidden = true; sh.innerHTML = ''; } }
+    function key(e) { if (!sh.contains(img)) return document.removeEventListener('keydown', key); if (e.key === 'ArrowRight') show(i + 1); else if (e.key === 'ArrowLeft') show(i - 1); else if (e.key === 'Escape') close(); }
+    show(i);
+    var x0 = 0, y0 = 0, dx = 0, sw = false;
+    img.addEventListener('touchstart', function (e) { var p = e.touches[0]; x0 = p.clientX; y0 = p.clientY; dx = 0; sw = false; img.style.transition = 'none'; }, { passive: true });
+    img.addEventListener('touchmove', function (e) { var p = e.touches[0]; dx = p.clientX - x0; if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(p.clientY - y0)) { sw = true; img.style.transform = 'translateX(' + dx + 'px)'; } }, { passive: true });
+    img.addEventListener('touchend', function (e) {
+      img.style.transition = ''; img.style.transform = '';
+      if (sw) { e.preventDefault(); if (Math.abs(dx) > 50 && list.length > 1) show(i + (dx < 0 ? 1 : -1)); }   // 민 것은 누른 것(닫기)이 아님
+    });
+    img.addEventListener('click', close);
+    document.addEventListener('keydown', key);
+    $('pvSave').addEventListener('click', function () { saveImg(list[i].id); });
   }
   function chatMedia(m) {
     var ph = m.photos || [], vd = m.videos || []; if (!ph.length && !vd.length) return '';
@@ -6360,7 +6390,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     // 사진·영상이 늦게 뜨면 길이가 늘어나 맨 아래에서 밀려남 → 방금 맨 아래로 보낸 뒤 8초 동안은 다 뜰 때마다 다시 맨 아래로 (손으로 올리면 멈춤)
     L.querySelectorAll('img, video').forEach(function (el) { var st = function () { if (Date.now() - (state.chatStick || 0) < 8000) L.scrollTop = L.scrollHeight; }; el.addEventListener('load', st); el.addEventListener('loadedmetadata', st); });
     hydrateImgs(L);
-    L.querySelectorAll('.cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });
+    L.querySelectorAll('.cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src, im); }); });
     L.querySelectorAll('[data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
     L.querySelectorAll('[data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
     L.querySelectorAll('[data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { chatPaint(state.chat, false, true); }); }); });
