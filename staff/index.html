@@ -2804,7 +2804,8 @@ body.popmode .chath .chpop { display: none; }
   function bDesc(t, d) {
     if (t === '전체') return '대표님 공지예요. 모든 직원이 봐요.';
     if (t === '직원') return '모든 직원이 보고 쓸 수 있어요.';
-    return d.admin && d.team !== t ? t + ' 팀 게시판이에요. 대표님은 모든 팀을 볼 수 있어요.' : t + ' 팀원만 보고 쓸 수 있어요.';
+    if (d.team === t) return t + ' 팀원이 보고 써요. 팀장님·대표님도 볼 수 있어요.';
+    return t + ' 팀 게시판이에요. ' + (d.admin ? '대표님은 모든 팀을 볼 수 있어요.' : '팀장님은 모든 팀 게시판을 볼 수 있어요(글쓰기는 자기 팀만).');
   }
   function tagChip(t) { return t ? '<span class="chip g-' + esc(t) + '">' + esc(t) + '</span>' : ''; }
   function bErr(r) {
