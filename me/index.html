@@ -9,6 +9,8 @@
 <meta name="description" content="그루브앤스팟에 맡기신 술과 내 정보를 확인하는 페이지예요.">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
+<link rel="manifest" href="/me/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/staff/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Groove & Spot">
 <meta property="og:title" content="🪩 내 페이지 · Groove &amp; Spot">
@@ -85,6 +87,14 @@
 #me-bday form { margin-top: 14px; }
 #me-bday .me-msg:empty, #me-bday-choice:empty { display: none; }
 
+/* 손님 웹 알림 (대표 결정 2026-11-20) */
+.me-push-types { display: grid; gap: 13px; margin-top: 14px; }
+.me-push-types:empty, #me-push-msg:empty { display: none; }
+.me-push-ios { padding: 14px; border: 1px solid var(--line-2); border-radius: 12px; margin-bottom: 12px; }
+.me-push-ios ol { margin: 8px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+.me-push-ios li + li { margin-top: 6px; }
+.me-link-form { display: grid; gap: 10px; margin-top: 14px; }
+.me-link-form input { width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--bg); color: var(--txt); font: inherit; }
 /* 내 킵 (keep 페이지와 같은 모양) */
 .kp-items { display: grid; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); padding: 4px 18px; }
 .kp-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
@@ -222,6 +232,7 @@
 <script>window.GS={"lang":"ko","root":"","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","v":"mwnlj9j6","t":{"close":"닫기","share":"공유","linkCopied":"링크가 복사됐어요.","today":"오늘","tonight":"TONIGHT","dow":"일,월,화,수,목,금,토"}};</script>
 <script src="/assets/site.js?v=mwnlj9j6" defer></script>
 <script src="/assets/vendor/qrcode-generator-1.4.4.js"></script>
+<script src="/me/push.js"></script>
 <script>
 (function () {
   'use strict';
@@ -247,6 +258,10 @@
 
   var k = '';
   try { k = new URLSearchParams(location.search).get('k') || ''; } catch (e) {}
+  if (!k && window.GrooveMePush) {
+    k = window.GrooveMePush.remembered();
+    if (k) history.replaceState(null, '', '/me/?k=' + encodeURIComponent(k));
+  }
   var TK = 'gs_me_' + k, memTok = '';
   function tokGet() { var v = ''; try { v = localStorage.getItem(TK) || ''; } catch (e) {} return v || memTok; }
   function tokSet(v) { memTok = v || ''; try { if (v) localStorage.setItem(TK, v); else localStorage.removeItem(TK); } catch (e) {} }
@@ -265,7 +280,26 @@
       '<a class="btn" href="tel:' + CLUB_TEL + '">📞 클럽에 전화하기</a></div><p class="me-note">클럽 전화 ' + CLUB_PH + '</p></div>';
     if (retry) document.getElementById('me-retry').addEventListener('click', load);
   }
-  function notFound() { tokSet(''); fail('링크가 바뀌었어요.<br>담당에게 새 링크를 받아 주세요.'); }
+  function notFound() {
+    tokSet(''); if (window.GrooveMePush) window.GrooveMePush.forget(k);
+    linkView('링크가 바뀌었어요. 담당에게 새 링크를 받아 주세요.');
+  }
+  function linkView(text) {
+    sub.textContent = '';
+    box.innerHTML = '<div><p class="me-empty">' + esc(text) + '</p><form class="me-box me-link-form" id="me-link-form">' +
+      '<label for="me-link-input">받은 내 페이지 링크</label><input id="me-link-input" type="url" autocomplete="off" required>' +
+      '<button class="btn btn-hot me-save" type="submit">내 페이지 열기</button><p class="me-msg" id="me-link-msg" role="status"></p></form></div>';
+    document.getElementById('me-link-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var id = '', input = document.getElementById('me-link-input');
+      try {
+        var u = new URL(input.value.trim());
+        if ((u.origin === location.origin || u.origin === 'https://xn--2i0bl1s25d.site') && /^\/(me|keep)\/$/.test(u.pathname)) id = u.searchParams.get('k') || '';
+      } catch (err) {}
+      if (!/^[A-Za-z0-9]{24,40}$/.test(id)) { document.getElementById('me-link-msg').textContent = '담당에게 받은 내 페이지 링크를 확인해 주세요.'; return; }
+      location.replace('/me/?k=' + encodeURIComponent(id));
+    });
+  }
 
   // ── 처음 열 때 ──
   function load() {
@@ -453,14 +487,15 @@
     }).join('') + '</ul>';
     h += '<p class="me-note">보관 기간은 맡기신 날부터 ' + esc(r.days || 30) + '일이에요.</p></div>';
     // 내 정보
-    if (!limited) h += '<div class="me-box" id="me-info"></div>';
+    if (!limited) h += '<div class="me-box" id="me-info"></div><section class="me-box" id="me-push"></section>';
     h += '<div class="me-foot"><p class="me-note">이 페이지는 링크를 받은 분만 열 수 있어요. 링크를 잃어버리거나 다른 사람에게 갔다면 담당에게 새 링크를 받으세요.</p>' +
       (limited ? '' : '<button class="btn me-out" type="button" id="me-out">이 기기에서 나가기</button>') + '</div>';
     box.innerHTML = h;
     if (!limited) {
       memberQR(member); showBirthday(r.birthday);
       info(r.me || { birth: '', agree: false, delReq: false });
-      document.getElementById('me-out').addEventListener('click', function () { tokSet(''); pinView(); window.scrollTo(0, 0); });
+      var leavePush = window.GrooveMePush ? window.GrooveMePush.mount(document.getElementById('me-push'), { api: api, k: k, token: tokGet }) : function () {};
+      document.getElementById('me-out').addEventListener('click', function () { leavePush(tokGet()); tokSet(''); pinView(); window.scrollTo(0, 0); });
     }
   }
 
@@ -568,7 +603,7 @@
     del();
   }
 
-  if (!/^[A-Za-z0-9]{24,40}$/.test(k)) return fail('담당 직원이 보내 드린 링크로 열어 주세요.<br>링크가 없으면 담당 직원에게 다시 보내 달라고 하세요.');
+  if (!/^[A-Za-z0-9]{24,40}$/.test(k)) return linkView('담당 직원이 보내 드린 링크로 열어 주세요.');
   load();
 })();
 </script>

@@ -115,6 +115,7 @@ button, select { font: inherit; color: inherit; }
 .member-form label, .member-label { font-size: 13px; font-weight: 700; color: var(--muted); }
 .member-form input, .member-form select, .member-form textarea, .member-label input { width: 100%; min-height: 44px; padding: 8px 10px; font: inherit; font-size: 16px; color: var(--txt); background: var(--bg); border: 1px solid var(--line-2); border-radius: 9px; }
 .member-form textarea { resize: vertical; }
+.guest-push-copy { white-space: pre-wrap; overflow-wrap: anywhere; }
 .member-form details label { margin-top: 8px; }
 .member-form .msg:empty, #gateMemberResult:empty { display: none; }
 .member-list { margin-top: 12px; }
@@ -4672,6 +4673,65 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
     });
   }
 
+  // 대표가 직접 보내는 손님 파티 소식. 미리보기와 실제 발송을 별도 요청으로 확인한다 (2026-11-20).
+  function guestPushSheet(draft) {
+    draft = draft || {};
+    showSheet('<h2>손님 웹 알림</h2><button class="btn" id="guestPushLog" type="button">보낸 기록</button>' +
+      '<form class="member-form" id="guestPushForm"><label>제목<input name="title" maxlength="80" required value="' + esc(draft.title || '') + '"></label>' +
+      '<label>본문<textarea name="body" rows="4" maxlength="500" required>' + esc(draft.body || '') + '</textarea></label>' +
+      '<label>링크 (선택)<input name="url" maxlength="500" value="' + esc(draft.url || '') + '"></label>' +
+      '<p class="msg" id="guestPushMsg" role="status"></p><button class="btn btn-hot" type="submit">미리보기</button></form>');
+    $('guestPushLog').addEventListener('click', guestPushHistory);
+    var form = $('guestPushForm');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var values = { title: form.elements.title.value, body: form.elements.body.value, url: form.elements.url.value };
+      var btn = form.querySelector('button[type="submit"]'), msg = $('guestPushMsg'); btn.disabled = true;
+      call(Object.assign({ a: 'guest_push_preview', token: state.s.token }, values)).then(function (r) {
+        if ($('guestPushForm') !== form) return;
+        if (!r.ok) { msg.textContent = guestPushError(r); return; }
+        guestPushConfirm(values, r);
+      }).catch(function () { if (form.isConnected) msg.textContent = guestPushError({}); }).finally(function () { btn.disabled = false; });
+    });
+  }
+  function guestPushError(r) {
+    return { forbidden: '대표만 보낼 수 있어요.', content: '제목·본문·링크를 확인해 주세요. 연락처, 금액, 개인 링크는 사용할 수 없어요.',
+      preview: '미리보기 시간이 지났어요. 다시 확인해 주세요.', daily: '오늘 보낼 수 있는 횟수를 모두 썼어요.',
+      empty: '지금 받을 수 있는 손님이 없어요.', changed: '받을 수 있는 손님 수가 바뀌었어요. 미리보기를 다시 열어 주세요.' }[r.error] || '연결이 안 됐어요. 다시 해 주세요.';
+  }
+  function guestPushConfirm(values, r) {
+    showSheet('<h2>파티 소식 보내기 확인</h2><div class="member-current"><strong>' + esc(r.message.title) + '</strong>' +
+      '<p class="guest-push-copy">' + esc(r.message.body) + '</p>' + (r.message.url ? '<small>' + esc(r.message.url) + '</small>' : '') + '</div>' +
+      '<p id="guestPushCount">받을 손님 <b>' + r.count + '명</b> · 오늘 남은 발송 ' + r.remaining + '회</p>' +
+      '<button id="guestPushSend" class="btn btn-hot" type="button"' + (r.count && r.remaining ? '' : ' disabled') + '>이 내용으로 보내기</button>' +
+      '<button id="guestPushBack" class="btn" type="button">문구 고치기</button><p class="msg" id="guestPushSendMsg" role="status"></p>');
+    $('guestPushBack').addEventListener('click', function () { guestPushSheet(values); });
+    var btn = $('guestPushSend'), msg = $('guestPushSendMsg');
+    btn.addEventListener('click', function () {
+      btn.disabled = true;
+      call(Object.assign({ a: 'guest_push_send', token: state.s.token, preview: r.preview }, values)).then(function (out) {
+        if (!btn.isConnected) return;
+        if (!out.ok) { msg.textContent = guestPushError(out); return; }
+        guestPushHistory('손님 ' + out.count + '명에게 보낼 알림을 접수했어요.');
+      }).catch(function () { if (msg.isConnected) msg.textContent = guestPushError({}); }).finally(function () { btn.disabled = false; });
+    });
+  }
+  function guestPushHistory(text) {
+    showSheet('<h2>손님 알림 기록</h2>' + (text ? '<p class="msg ok" role="status">' + esc(text) + '</p>' : '') +
+      '<button class="btn" id="guestPushCompose" type="button">파티 소식 쓰기</button><div id="guestPushRows"><p class="load">불러오는 중…</p></div>');
+    $('guestPushCompose').addEventListener('click', function () { guestPushSheet(); });
+    var box = $('guestPushRows');
+    call({ a: 'guest_push_log', token: state.s.token }).then(function (r) {
+      if (!box.isConnected) return;
+      if (!r.ok) { box.textContent = guestPushError(r); return; }
+      box.innerHTML = '<p class="note">오늘 남은 파티 소식 발송 ' + r.remaining + '회</p>' +
+        (r.list.length ? r.list.map(function (x) {
+          return '<details class="member-current"><summary>' + esc(x.kind) + ' · ' + x.count + '명 · ' + esc(x.at) + '</summary><b>' + esc(x.title) +
+            '</b><p class="guest-push-copy">' + esc(x.body) + '</p>' + (x.url ? '<small>' + esc(x.url) + '</small>' : '') + '</details>';
+        }).join('') : '<p class="empty">보낸 기록이 없어요.</p>');
+    }).catch(function () { if (box.isConnected) box.textContent = guestPushError({}); });
+  }
+
   function renderKeep(area, d) {
     if (!state.keep) { area.innerHTML = state.kerr ? '<p class="empty">' + esc(state.kerr) + '</p>' : '<p class="load">불러오는 중…</p>'; return; }
     if (state.kview === 'cust' && state.kcur) return renderKCust(area);
@@ -4698,7 +4758,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
     h += '<div class="ksearch"><span aria-hidden="true">🔎</span><input id="kQ" type="search" placeholder="손님 · 담당 · 술 · 연락처 뒤 4자리" value="' + esc(state.kq) + '" aria-label="킵 찾기"></div>';
     h += '<div class="ksum"><div><small>보관 중</small><b>' + bottles + '</b></div><div class="w"><small>7일 안 만료</small><b>' + soon + '</b></div><div class="x"><small>만료 지남</small><b>' + late + '</b></div></div>';
     if (d.memberManage) h += '<div class="member-tools"><button type="button" class="btn" id="memberRoster">멤버 등급</button>' +
-      (d.admin ? '<button type="button" class="btn" id="memberBenefits">멤버 혜택 설정</button>' : '') + '</div>';
+      (d.admin ? '<button type="button" class="btn" id="memberBenefits">멤버 혜택 설정</button><button type="button" class="btn" id="guestPushOpen">손님 알림 보내기</button>' : '') + '</div>';
     if (k.all || k.see) h += '<button class="btn kdaybtn" type="button" id="kDay">📊 킵 하루 결산 · 입고·출고 병 수</button>';
     if (k.grantor && KP_GRANT_UI) { var kgOn = (k.grants || []).filter(function (x) { return x.on; }); h += '<button class="btn kdaybtn" type="button" id="kGrant">👥 킵 승인 권한 (오늘)' + (kgOn.length ? ' · ' + kgOn.map(function (x) { return esc(x.name); }).join(', ') : '') + '</button>'; }
     if (k.granted) h += '<p class="note" style="margin:0 0 10px">✅ 오늘 영업일 동안 킵 승인 권한을 받았어요 (대표가 줌).</p>';
@@ -4712,6 +4772,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
     kBindReqs(area);
     if ($('memberRoster')) $('memberRoster').addEventListener('click', function () { memberRoster(); });
     if ($('memberBenefits')) $('memberBenefits').addEventListener('click', memberBenefitsSheet);
+    if ($('guestPushOpen')) $('guestPushOpen').addEventListener('click', function () { guestPushSheet(); });
     if ($('kDay')) $('kDay').addEventListener('click', function () { kDayOpen(''); });
     if ($('kGrant')) $('kGrant').addEventListener('click', kGrantSheet);
     if ($('kOkAll')) $('kOkAll').addEventListener('click', function () {
