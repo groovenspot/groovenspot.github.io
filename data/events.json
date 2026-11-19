@@ -2810,8 +2810,9 @@
   },
   {
     "date": "2026-11-21",
-    "title": "SCHOOL UNIFORM PARTY",
+    "title": "SATURDAY NIGHT",
     "floor": "2F+3F",
+    "id": "2026-11-21-school-uniform-party",
     "open": "21:00",
     "lineup": {
       "2F": [
@@ -2841,7 +2842,7 @@
         "SPOT DJ"
       ]
     },
-    "flyer": "/assets/timetables/2026-11-21.webp?v=2"
+    "flyer": "/assets/flyers/2026-11-21-school-uniform-party-mwnlitnn.jpg"
   },
   {
     "date": "2026-11-28",
