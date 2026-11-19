@@ -1242,6 +1242,8 @@ body.popmode .chath .chpop { display: none; }
 .bdi .min.late { color: #ff8a9b; }
 .bdi button { flex: none; min-height: 36px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line-2); background: none; color: var(--txt); font-weight: 800; font-size: 12px; cursor: pointer; }
 .bdi button.ok { border-color: var(--ok); color: var(--ok); }
+.bdi { flex-wrap: wrap; } .bdi > div { flex: 1 1 140px; }
+.bdi button.del { border-color: var(--bad); color: var(--bad); } .bdi button.del.arm { background: var(--bad); color: #fff; }
 .bdr { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 13px; }
 .bdr:first-of-type { border-top: 0; }
 .bdr b { font-size: 13px; } .bdr span { text-align: right; font-weight: 800; } .bdr small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
@@ -5081,7 +5083,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     var pend = A.pend || [];
     h += '<details class="bd' + (pend.length ? ' hot' : '') + '" id="bdPend"' + (state.bdPend === false ? '' : ' open') + '><summary>⏳ 안 끝난 일 ' + pend.length + '</summary>' + (pend.length ? pend.map(function (x) {
       return '<div class="bdi" data-bdk="' + esc(x.k) + '" data-bdid="' + esc(x.id) + '"><div><b>' + esc(x.title) + '</b><small>' + esc(x.sub) + '</small></div><span class="min' + (x.min >= 5 ? ' late' : '') + '">' + x.min + '분째</span>' +
-        (x.k === 'tb' || x.k === 'keep' ? '<button type="button" class="ok" data-bdok="1">✅ 승인</button>' : '') + '<button type="button" data-bdnd="1">🔔 다시 알리기</button></div>';
+        (x.k === 'tb' || x.k === 'keep' ? '<button type="button" class="ok" data-bdok="1">✅ 승인</button>' : '') + '<button type="button" data-bdnd="1">🔔 다시 알리기</button><button type="button" class="del" data-bddel="1" aria-label="이 일 지우기">🗑 지우기</button></div>';
     }).join('') : '<p class="note" style="margin:6px 0 0">지금 밀린 일이 없어요 👍</p>') + '<p class="msg" id="bdMsg"></p></details>';
     h += '<details class="bd" id="bdResp"' + (state.bdResp ? ' open' : '') + '><summary>⏱ 오늘 응답 시간</summary>' + respHtml(A.resp) + '</details>';
     h += '<details class="bd" id="bdRep"' + (state.bdRep ? ' open' : '') + '><summary>🌙 영업 마감 리포트' + (A.rep ? ' · ' + esc(tbDayLabel(A.rep.day)) : '') + '</summary>' + (A.rep ? repHtml(A.rep) : '<p class="note" style="margin:6px 0 0">영업일이 끝난 아침(8시쯤)에 알림으로 와요.</p>') +
@@ -5118,6 +5120,15 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     area.querySelectorAll('.bdi [data-bdnd]').forEach(function (b) { b.addEventListener('click', function () {
       var row = b.closest('.bdi'); b.disabled = true;
       call({ a: 'all_nudge', token: state.s.token, k: row.dataset.bdk, id: row.dataset.bdid }).then(function (r) { b.textContent = r.ok ? '✅ ' + r.n + '명에게 알림' : r.error === 'nobody' ? '받을 사람 없음' : '다시 해 주세요'; if (!r.ok) b.disabled = false; flushPush(); }).catch(function () { b.disabled = false; });
+    }); });
+    area.querySelectorAll('.bdi [data-bddel]').forEach(function (b) { b.addEventListener('click', function () {   // 🗑 대표만 (운영·경호·테이블·킵 요청은 취소, 위치 질문은 목록에서만)
+      if (!armed(b, '🗑 지우기')) return;
+      var row = b.closest('.bdi'); b.disabled = true;
+      call({ a: 'all_del', token: state.s.token, k: row.dataset.bdk, id: row.dataset.bdid }).then(function (r) {
+        if (r.ok) { flushPush(); state.allSig = ''; loadAll(true); return; }
+        b.disabled = false; $('bdMsg').textContent = r.error === 'notfound' ? '이미 끝났거나 지워진 일이에요.' : r.error === 'forbidden' ? '대표만 지울 수 있어요.' : r.error === 'state' ? '이미 처리된 일이에요.' : '지우지 못했어요. 다시 해 주세요.';
+        if (r.error === 'notfound' || r.error === 'state') { state.allSig = ''; loadAll(true); }
+      }).catch(function () { b.disabled = false; $('bdMsg').textContent = '연결이 안 돼요.'; });
     }); });
     area.querySelectorAll('.bdi [data-bdok]').forEach(function (b) { b.addEventListener('click', function () {
       var row = b.closest('.bdi'), k = row.dataset.bdk, id = row.dataset.bdid; b.disabled = true;
