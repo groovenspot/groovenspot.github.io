@@ -428,8 +428,9 @@ details.all { margin-top: 14px; }
 /* 🪩 손님 '내 페이지' 정보 (2026-11-20): 생일 · 혜택 안내 동의 · 삭제 요청 */
 .kme { display: flex; flex-wrap: wrap; gap: 6px; margin: -2px 0 10px; }
 .chip.kdel { border-color: var(--bad); color: var(--bad); }
-.kbd { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 6px; }
-.kbd select { padding: 10px 8px; }
+/* 생일 연·월·일 고르기 (이름 주의: body.kbd = 폰 키보드 열림 표시라 .kbd 쓰면 화면 전체가 3칸으로 깨짐 — 2026-11-20 수정) */
+.bdsel { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 6px; }
+.bdsel select { padding: 10px 8px; }
 .knop { border: 1px solid var(--warn); border-radius: 12px; padding: 10px 12px; margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
 .knop .btn { margin-top: 8px; width: 100%; }
 .stp { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
@@ -5083,7 +5084,7 @@ html .cpin .cpme { color: #8fe8c0; }
     function op(list, v, u) { return '<option value="">' + u + '</option>' + list.map(function (x) { return '<option value="' + x + '"' + (x === v ? ' selected' : '') + '>' + x + u + '</option>'; }).join(''); }
     var ms = []; for (var m = 1; m <= 12; m++) ms.push(m);
     var ds = []; for (var d = 1; d <= 31; d++) ds.push(d);
-    return '<div class="kbd" role="group" aria-label="생일"><select id="' + id + 'Y" aria-label="태어난 해">' + op(ys, p ? +p[1] : 0, '년') + '</select><select id="' + id + 'M" aria-label="태어난 달">' + op(ms, p ? +p[2] : 0, '월') + '</select>' +
+    return '<div class="bdsel" role="group" aria-label="생일"><select id="' + id + 'Y" aria-label="태어난 해">' + op(ys, p ? +p[1] : 0, '년') + '</select><select id="' + id + 'M" aria-label="태어난 달">' + op(ms, p ? +p[2] : 0, '월') + '</select>' +
       '<select id="' + id + 'D" aria-label="태어난 날">' + op(ds, p ? +p[3] : 0, '일') + '</select></div>';
   }
   function kBdVal(id) {
