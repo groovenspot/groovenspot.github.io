@@ -2281,6 +2281,133 @@ html .cpin button[data-cpin] { color: #8fe8c0; border-color: #8fe8c0; }
 html .cpin button[data-cpin]:active { background: #8fe8c0; color: #04210f; }
 html .cpin .cpme { color: #8fe8c0; }
 
+/* ── 🎨 교육·알림 안내 읽기 좋게 (2026-11-20) ── */
+.pgw .pg > summary { list-style: none; display: flex; align-items: center; gap: 10px; }
+.pgw .pg > summary::-webkit-details-marker { display: none; }
+.pgw .pg > summary::marker { content: ''; }
+.pgw .eti { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: rgba(255,122,26,.13); color: var(--g); }
+.pgw .etis { width: 18px; height: 18px; }
+.pgw .ett { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pgw .ett b { font-weight: 800; font-size: 15px; line-height: 1.3; color: var(--txt); word-break: keep-all; }
+.pgw .ett small { font-size: 12px; font-weight: 600; color: var(--muted); line-height: 1.3; word-break: keep-all; }
+.pgw .ett .ar { color: var(--muted); }
+.pgw .echev { flex: none; width: 18px; height: 18px; color: var(--muted); transition: transform .2s; }
+.pgw .pg[open] > summary .echev { transform: rotate(180deg); }
+.pgw .edug > .pg > summary { padding: 9px 0; min-height: 56px; }
+.pgw .edug > .pg[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 2px; }
+.pgw .edug > .pg[open] > summary .ett b { font-size: 17px; }
+.pgw .erows { list-style: none; margin: 0; padding: 0; }
+.pgw .er { padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 15px; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere; }
+.pgw .er:last-child { border-bottom: 0; padding-bottom: 6px; }
+.pgw .erl { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 4px; font-size: 15.5px; font-weight: 800; line-height: 1.45; color: var(--txt); }
+.pgw .erl::before { content: ''; flex: none; width: 4px; height: 15px; margin-top: 4px; border-radius: 2px; background: var(--g); }
+.pgw .erb { color: rgba(246,239,235,.86); }
+html:where([data-theme="light"]) .pgw .erb { color: rgba(26,22,20,.86); }
+.pgw .erb p { margin: 0; }
+.pgw .erb p + p { margin-top: 5px; }
+.pgw .erb.multi p { position: relative; padding-left: 15px; }
+.pgw .erb.multi p::before { content: ''; position: absolute; left: 3px; top: .74em; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); opacity: .8; }
+.pgw .erb b, .pgw .esteps b, .pgw .efix b { color: var(--txt); font-weight: 700; }
+.pgw .pn { color: var(--muted); font-size: .92em; }
+.pgw .pn b { color: inherit; }
+.pgw .ar { color: var(--g); font-weight: 800; margin: 0 2px; }
+html:where([data-theme="light"]) .pgw .ar { color: var(--g-ink, var(--g)); }
+.pgw .er code, .pgw .esteps code, .pgw .efix code { display: inline-block; white-space: normal; max-width: 100%; margin: 1px 0; padding: 1px 8px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.07); color: var(--txt); font-family: inherit; font-size: 13.5px; font-weight: 600; line-height: 1.55; overflow-wrap: anywhere; }
+html:where([data-theme="light"]) .pgw .er code, html:where([data-theme="light"]) .pgw .esteps code, html:where([data-theme="light"]) .pgw .efix code { background: rgba(0,0,0,.05); }
+.pgw .edot { display: inline-block; width: 9px; height: 9px; margin: 0 3px 0 1px; border-radius: 50%; background: var(--ok); vertical-align: 1px; }
+.pgw .edot.eblue { background: #4da3ff; }
+.pgw .edot.ered { background: var(--bad); }
+.pgw .estar { font-style: normal; color: var(--bad); }
+.pgw .ein { width: 17px; height: 17px; margin: 0 1px; vertical-align: -3px; color: var(--txt); }
+.pgw .esteps { list-style: none; margin: 4px 0 0; padding: 0; counter-reset: es; }
+.pgw .esteps li { counter-increment: es; display: flex; align-items: flex-start; gap: 11px; padding: 8px 0; font-size: 15px; line-height: 1.65; word-break: keep-all; overflow-wrap: anywhere; }
+.pgw .esteps li > div { flex: 1; min-width: 0; }
+.pgw .esn { flex: none; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%; display: grid; place-items: center; background: var(--g); color: #fff; font-size: 13px; font-weight: 800; }
+.pgw .esn::before { content: counter(es); }
+.pgw .pgf { margin: 8px 0 8px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 12px; background: var(--card-2); color: var(--txt); font-size: 14px; line-height: 1.65; }
+.pgw .pgfh { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; color: var(--warn); font-size: 14px; font-weight: 800; }
+.pgw .pgfh .ein { color: var(--warn); }
+.pgw .efix { list-style: none; margin: 0; padding: 0; }
+.pgw .efix li { position: relative; padding: 3px 0 3px 15px; word-break: keep-all; overflow-wrap: anywhere; }
+.pgw .efix li::before { content: ''; position: absolute; left: 3px; top: 1em; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); }
+.pgw #pgOn { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.pgw #pgOn .ein { color: currentColor; width: 19px; height: 19px; }
+.pgw .pn .ar { color: inherit; font-weight: 600; }
+.pgw .edug > .pg:not([open]) > summary { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 9px; min-height: 0; height: 100%; padding: 13px 0 12px; }
+.pgw .edug > .pg:not([open]) > summary .echev { display: none; }
+.pgw .edug > .pg:not([open]) > summary .ett { width: 100%; }
+.pgw .edug > .pg:not([open]) { display: flex; flex-direction: column; }
+/* ── 💬 대화창 ❔ 쓰는 법 — 읽기 좋게 (2026-11-20): 양식 표 · 자리 글자표 · 줄임말 · 호출 카드 ── */
+html .chathelp { max-height: 55%; padding: 12px 16px 20px; font-size: 14px; line-height: 1.6; color: var(--muted); -webkit-overflow-scrolling: touch;  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), rgba(0,0,0,.1) calc(100% - 1px), #000 calc(100% - 1px)); mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), rgba(0,0,0,.1) calc(100% - 1px), #000 calc(100% - 1px)); }
+html .chathelp b { color: var(--txt); font-weight: 800; }
+html .chathelp p { margin: 0; }
+html .chathelp .cei { width: 16px; height: 16px; vertical-align: -3px; }
+html .chathelp code { display: inline-block; white-space: normal; max-width: 100%; margin: 0; padding: 2px 9px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.07); color: var(--txt); font-family: inherit; font-size: 13.5px; font-weight: 600; line-height: 1.5; letter-spacing: 0; overflow-wrap: anywhere; }
+html:where([data-theme="light"]) .chathelp code { background: rgba(0,0,0,.05); }
+html .chathelp code i { font-style: normal; font-weight: 500; color: var(--muted); font-size: 12px; }
+html .chathelp .ch-in { color: var(--txt); font-size: 15px; line-height: 1.5; margin: 2px 0 0; }
+html .chathelp .ch-in b { color: var(--g); }
+html:where([data-theme="light"]) .chathelp .ch-in b { color: var(--g-ink, var(--g)); }
+html .chathelp .ch-in small { display: block; margin-top: 3px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+html .chathelp .ch-h { display: flex; align-items: center; gap: 8px; margin: 16px 0 8px; font-size: 12px; font-weight: 800; letter-spacing: .08em; color: var(--muted); }
+html .chathelp .ch-h::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+html .chathelp .ch-rows { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+html .chathelp .ch-r { display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 10px; padding: 9px 12px; align-items: start; }
+html .chathelp .ch-r + .ch-r { border-top: 1px solid var(--line); }
+html .chathelp .ch-l { padding-top: 3px; color: var(--txt); font-size: 13px; font-weight: 800; line-height: 1.5; white-space: nowrap; }
+html .chathelp .ch-v { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+html .chathelp .ch-v small { flex-basis: 100%; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+html .chathelp .ch-note, html .chathelp .ch-p { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+html .chathelp .ch-note code, html .chathelp .ch-p code { font-size: 12.5px; padding: 0 7px; }
+html .chathelp .ch-p { color: var(--txt); margin: 0 0 8px; }
+html .chathelp .ch-keys { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+html .chathelp .ch-k { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 7px 10px; border-radius: 10px; background: var(--card-2); }
+html .chathelp .ch-k b { flex: none; min-width: 30px; color: var(--g); font-size: 14.5px; font-weight: 800; }
+html:where([data-theme="light"]) .chathelp .ch-k b { color: var(--g-ink, var(--g)); }
+html .chathelp .ch-k span { min-width: 0; color: var(--txt); font-size: 13.5px; line-height: 1.4; }
+html .chathelp .ch-k span i { display: block; font-style: normal; color: var(--muted); font-size: 12px; }
+html .chathelp .ch-keys1 { grid-template-columns: 1fr; }
+html .chathelp .ch-keys1 .ch-k b { min-width: 84px; }
+html .chathelp .ch-keys1 .ch-k span i { display: inline; margin-left: 6px; }
+html .chathelp .ch-co { margin-top: 14px; padding: 11px 13px 12px; border: 1px solid var(--line-2); border-radius: 14px; background: var(--card-2); }
+html .chathelp .ch-co p { color: var(--txt); font-size: 14px; }
+html .chathelp .ch-co .ch-sub { margin-top: 4px; color: var(--muted); font-size: 13px; }
+html .chathelp .ch-co .ch-v { margin: 8px 0 2px; }
+html .chathelp .ch-cot { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; color: var(--txt); font-size: 15px; font-weight: 800; }
+html .chathelp .ch-cot .cei { width: 18px; height: 18px; vertical-align: 0; }
+html .chathelp .ch-bad { border-color: rgba(255,59,92,.42); background: rgba(255,59,92,.09); }
+html .chathelp .ch-bad .ch-cot .cei { color: var(--bad); }
+html .chathelp .ch-g { border-color: rgba(255,122,26,.42); background: rgba(255,122,26,.08); }
+html .chathelp .ch-g .ch-cot .cei { color: var(--g); }
+html:where([data-theme="light"]) .chathelp .ch-g .ch-cot .cei { color: var(--g-ink, var(--g)); }
+html .chathelp .ch-steps { list-style: none; counter-reset: chs; margin: 0; padding: 0; display: grid; gap: 10px; }
+html .chathelp .ch-steps li { counter-increment: chs; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; color: var(--txt); font-size: 14px; }
+html .chathelp .ch-steps li::before { content: counter(chs); width: 22px; height: 22px; margin-top: 1px; border-radius: 50%; background: var(--g); color: #fff; font-size: 12px; font-weight: 800; line-height: 22px; text-align: center; }
+html .chathelp .ch-steps li b { margin-right: 6px; }
+html .chathelp .ch-steps .ch-v { margin-top: 6px; }
+html .chathelp .ch-ex { padding: 10px 14px 11px 10px; border: 1px solid var(--line); border-radius: 16px 16px 16px 5px; background: var(--card-2); color: var(--txt); font-size: 14px; line-height: 1.55; }
+html .chathelp .ch-exl { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 9px; align-items: start; }
+html .chathelp .ch-exl + .ch-exl { margin-top: 4px; }
+html .chathelp .ch-tag { width: 18px; height: 18px; margin-top: 2px; border-radius: 50%; background: rgba(255,122,26,.18); color: var(--g); font-size: 11px; font-weight: 800; line-height: 18px; text-align: center; }
+html:where([data-theme="light"]) .chathelp .ch-tag { color: var(--g-ink, var(--g)); }
+html .chathelp .ch-exgap { margin: 5px 0 5px 27px; padding: 1px 0 1px 8px; border-left: 2px dashed var(--line-2); color: var(--muted); font-size: 11.5px; line-height: 1.4; }
+html .chathelp .ch-exgst { padding-left: 14px; line-height: 1.45; }
+html .chathelp .ch-exg { display: flex; align-items: center; justify-content: flex-start; gap: 10px; }
+html .chathelp .ch-exg em { font-style: normal; padding: 0 7px; border-radius: 6px; background: rgba(255,122,26,.14); color: var(--g); font-size: 11.5px; font-weight: 700; line-height: 1.6; }
+html:where([data-theme="light"]) .chathelp .ch-exg em { color: var(--g-ink, var(--g)); }
+html .chathelp .ch-exsp { height: 9px; }
+html .chathelp .ch-li { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+html .chathelp .ch-li li { position: relative; padding-left: 15px; color: var(--txt); font-size: 14px; line-height: 1.55; }
+html .chathelp .ch-li li::before { content: ''; position: absolute; left: 3px; top: .62em; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); opacity: .7; }
+html .chathelp .ch-li code { font-size: 12.5px; padding: 0 7px; }
+html .chathelp .ch-irs { margin-top: 12px; border-top: 1px solid var(--line); }
+html .chathelp .ch-ir { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); color: var(--txt); font-size: 14px; line-height: 1.45; }
+html .chathelp .ch-ic { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: var(--card-2); color: var(--txt); font-size: 16px; font-weight: 800; }
+html .chathelp .ch-ic .cei { width: 17px; height: 17px; vertical-align: 0; }
+html .chathelp .ch-ir code { font-size: 13px; padding: 0 7px; margin-right: 3px; }
+html .chathelp .ch-go { margin-top: 12px; padding: 10px 13px; border: 1px dashed var(--line-2); border-radius: 12px; color: var(--txt); font-size: 14.5px; line-height: 1.5; }
+html .chathelp .ch-go small { display: block; margin-bottom: 2px; color: var(--muted); font-size: 12.5px; }
+html .chathelp .ch-go .cei { color: var(--muted); }
 </style>
 </head>
 <body>
@@ -3210,9 +3337,67 @@ html .cpin .cpme { color: #8fe8c0; }
   }
   // 📲 신규 교육 맨 위: 안드로이드·아이폰 알림(푸시) 켜는 법 (대표 요청 2026-11-18). 지금 폰에 맞는 쪽이 펼쳐져 있음.
   function noEmo(t) { try { return String(t).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\uFE0F\u200D]/gu, '').replace(/\s+·\s+·\s+/g, ' · ').replace(/\s+/g, ' ').replace(/^\s*·\s*|\s*·\s*$/g, '').trim(); } catch (e) { return t; } }   // 🎨 2026-11-20: 펼침 제목 앞 그림 글자 빼기
+  // 🎨 2026-11-20 읽기 좋게 (교육·알림 안내): 글은 그대로 두고 화면에서만 → 줄마다 '제목 + 짧은 줄', 앞 그림 글자는 빼고 버튼을 가리키는 것만 선 아이콘, 괄호는 흐리게, 예시는 칩
+  var EDU_ICO = {home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .7-1.5l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', phone: '<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>', key: '<path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>', clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>', wine: '<path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/>', contact: '<path d="M16 2v2"/><path d="M7 22v-2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/><path d="M8 2v2"/><circle cx="12" cy="11" r="3"/><rect x="3" y="4" width="18" height="18" rx="2"/>', mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>', search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>', help: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>', popout: '<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>', trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2"/>', book: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>', chev: '<path d="m6 9 6 6 6-6"/>', task: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>'};
+  var EDU_EMO = {'💬': 'chat', '❔': 'help', '🔕': 'belloff', '🔔': 'bellon', '🗗': 'popout', '⚠': 'alert', '🚨': 'siren', '🆘': 'sos', '🛎': 'bell', '📷': 'cam', '🎆': 'spark', '🪑': 'chair', '✅': 'check', '🗑': 'trash', '📍': 'pin', '↩': 'reply', '📋': 'clip', '⏱': 'clock', '🌙': 'moon', '🌅': 'sun', '🚪': 'door', '🎬': 'film', '👥': 'users'};
+  var EDU_TICO = {'🏠': 'home', '📱': 'phone', '💬': 'chat', '🔑': 'key', '🕘': 'clock', '🌙': 'moon', '🚪': 'door', '🪑': 'chair', '🎆': 'spark', '🚨': 'siren', '🛎': 'bell', '🍾': 'wine', '👥': 'users', '📇': 'contact', '📋': 'task', '✉': 'mail', '🎬': 'film', '🔎': 'search', '🤖': 'phone', '🍎': 'phone'};
+  var EDU_RX = null; try { EDU_RX = new RegExp('([\\u{1F000}-\\u{1FAFF}\\u{2600}-\\u{2604}\\u{2606}-\\u{262F}\\u{2631}-\\u{26FF}\\u{2700}-\\u{2714}\\u{2716}-\\u{27BF}\\u{2B00}-\\u{2BFF}\\u{23E9}-\\u{23FA}\\u{25B6}\\u{21A9}])\\uFE0F?( ?)', 'gu'); } catch (e) {}
+  function eduSvg(n, cls) { var d = EDU_ICO[n] || (typeof CE_ICO !== 'undefined' && CE_ICO[n]); return d ? '<svg class="' + (cls || 'ein') + '" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>' : ''; }
+  function eduEmo(s) {
+    s = String(s == null ? '' : s); if (!EDU_RX) return s;
+    s = s.replace(EDU_RX, function (m, e, sp, off, all) {
+      var nx = sp + all.slice(off + m.length), col = /^ ?<b>[^<]*(초록|빨강|파랑)/.exec(nx);
+      if (e === '🟢' || col) return '<i class="edot' + (col && col[1] === '파랑' ? ' eblue' : col && col[1] === '빨강' ? ' ered' : '') + '" aria-hidden="true"></i>' + sp;
+      var alone = !nx || /^(<\/|\s*→|\s*\)|\s*\/|\s*·|\s*,|\s*$)/.test(nx) || /^\s?((위|아래)(?=[\s<])|(버튼|아이콘)(?=[이을를은가에으로도\s<.,)·]|$))/.test(nx) || /^ ?[를을로가이는은도와과나](?=[\s<.,)·]|$)/.test(nx);
+      if (alone) { var n = EDU_EMO[e]; return n ? eduSvg(n) + sp : m; }
+      return '';
+    });
+    return s.replace(/★(?= ?<b>판매)/g, '<i class="estar">★</i>').replace(/<b>\s*<\/b>/g, '').replace(/\(\s*\)/g, '').replace(/ {2,}/g, ' ');
+  }
+  function eduWalk(s, fn) {   // 글자마다 fn(i, c, 태그 깊이, <code> 안?) · 태그는 건너뜀
+    var i = 0, depth = 0, code = 0;
+    while (i < s.length) {
+      var c = s.charAt(i);
+      if (c === '<') { var j = s.indexOf('>', i); if (j < 0) j = s.length - 1; var tag = s.slice(i, j + 1);
+        if (tag.charAt(1) === '/') { depth = Math.max(0, depth - 1); if (/^<\/code/i.test(tag)) code = Math.max(0, code - 1); }
+        else if (!/\/>$/.test(tag) && !/^<(br|img|hr|input|path|circle|rect)\b/i.test(tag)) { depth++; if (/^<code\b/i.test(tag)) code++; }
+        i = j + 1; continue; }
+      if (fn(i, c, depth, code) === false) return;
+      i++;
+    }
+  }
+  function eduSplit(s, sep) {   // 태그·<code>·괄호 밖의 sep 에서 나누기
+    var cuts = [], par = 0;
+    eduWalk(s, function (i, c, depth, code) { if (code) return; if (c === '(') par++; else if (c === ')' && par) par--; else if (!depth && !par && s.substr(i, sep.length) === sep) cuts.push(i); });
+    var res = [], at = 0; cuts.forEach(function (k) { if (k < at) return; res.push(s.slice(at, k)); at = k + sep.length; }); res.push(s.slice(at)); return res;
+  }
+  function eduParen(s) {   // 바깥 괄호 (…) 는 흐리게
+    var open = [], mk = {};
+    eduWalk(s, function (i, c, depth, code) { if (code) return; if (c === '(') open.push([i, depth]); else if (c === ')' && open.length) { var o = open.pop(); if (!open.length && o[1] === depth) { mk[o[0]] = 1; mk[i] = 2; } } });
+    var r = ''; for (var i = 0; i < s.length; i++) { if (mk[i] === 1) r += '<span class="pn">'; r += s.charAt(i); if (mk[i] === 2) r += '</span>'; } return r;
+  }
+  function eduArrow(s) { return s.replace(/(<code\b[^>]*>[\s\S]*?<\/code>)|(<[^>]+>)|→/g, function (m, c, t) { return c || t || '<span class="ar">→</span>'; }); }
+  function eduLine(x) { return eduArrow(eduParen(eduEmo(x))); }
+  function eduRow(x) {
+    var h = eduEmo(x).trim(), lab = '', parts = eduSplit(h, ':');
+    if (parts.length > 1) { var lv = parts[0].replace(/<[^>]*>/g, '').trim(); if (lv && lv.length <= 24 && parts[0].indexOf('<code') < 0 && !/\d$/.test(lv)) { lab = parts[0].replace(/<\/?b>/g, '').trim(); h = h.slice(parts[0].length + 1).trim(); } }
+    var segs = [], pend = '';   // 짧은 낱말 나열(테이블 · 연출 · 운영 …)은 다음 줄 앞에 붙여 한 줄로
+    eduSplit(h, ' · ').forEach(function (g) { g = g.trim(); if (!g) return; var v = g.replace(/<[^>]*>/g, '').trim();
+      if (segs.length && !pend && /^(<code>[^<]*<\/code>[\s,\/]*)+$/.test(g)) { segs[segs.length - 1] += ' · ' + g; return; }
+      if (v.length <= 7 && !/\s/.test(v)) { pend += g + ' · '; return; }
+      segs.push(pend + g); pend = ''; });
+    if (pend) { pend = pend.replace(/ · $/, ''); if (segs.length) segs[segs.length - 1] += ' · ' + pend; else segs.push(pend); }
+    var body = segs.map(function (g) { return '<p>' + eduArrow(eduParen(g)) + '</p>'; }).join('');
+    return '<li class="er">' + (lab ? '<div class="erl">' + eduArrow(lab) + '</div>' : '') + '<div class="erb' + (segs.length > 1 ? ' multi' : '') + '">' + body + '</div></li>';
+  }
+  function eduSum(title) {
+    var t = String(title), ic = 'book'; for (var k in EDU_TICO) if (t.indexOf(k) === 0) { ic = EDU_TICO[k]; break; }
+    var n = noEmo(t), mm = n.match(/^(.*?)\s*\(([^()]*)\)$/) || (n.length > 8 && n.match(/^(.+?) · (.+)$/)), main = mm ? mm[1] : n, sub = mm ? mm[2] : '';
+    return '<summary><span class="eti">' + eduSvg(ic, 'etis') + '</span><span class="ett"><b>' + eduArrow(main) + '</b>' + (sub ? '<small>' + eduArrow(sub) + '</small>' : '') + '</span>' + eduSvg('chev', 'echev') + '</summary>';
+  }
   function pushGuideHtml() {
     var first = IOS ? 'ios' : 'and';
-    var sec = function (k, title, steps, fix) { return '<details class="pg" data-pg="' + k + '"' + (k === first ? ' open' : '') + '><summary>' + noEmo(title) + '</summary><ol class="steps">' + steps.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol><p class="pgf"><b>알림이 안 오면</b><br>' + fix.join('<br>') + '</p></details>'; };
+    var sec = function (k, title, steps, fix) { return '<details class="pg" data-pg="' + k + '"' + (k === first ? ' open' : '') + '>' + eduSum(title) + '<ol class="esteps">' + steps.map(function (x) { return '<li><span class="esn" aria-hidden="true"></span><div>' + eduLine(x) + '</div></li>'; }).join('') + '</ol><div class="pgf"><b class="pgfh">' + eduSvg('alert') + '알림이 안 오면</b><ul class="efix">' + fix.map(function (x) { return '<li>' + eduLine(String(x).replace(/^·\s*/, '')) + '</li>'; }).join('') + '</ul></div></details>'; };   // 🎨 읽기 좋게 2026-11-20
     return '<div class="pgw"><h2 class="sec pgt" style="margin:0 0 6px"><svg class="isv" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>알림(푸시) 받는 법</h2>' +
       '<p class="note" style="margin:0 0 8px">테이블 승인·연출·@호출·메시지 알림이 폰으로 와요. <b>폰마다 한 번</b> 켜 두세요. <b>카톡 안에서 연 화면에서는 알림을 못 받아요</b> — 안드로이드는 크롬, 아이폰은 사파리로 열어 주세요.</p>' +
       sec('and', '🤖 안드로이드 (갤럭시 등)', [
@@ -3226,11 +3411,11 @@ html .cpin .cpme { color: #8fe8c0; }
         '홈 화면에 생긴 <b>GROOVE STAFF</b> 아이콘으로 열고 로그인해요.',
         '오른쪽 위 <b>🔕</b> 를 누르고 <b>허용</b>을 눌러요. <b>🔔</b> 로 바뀌면 끝이에요.'
       ], ['· 사파리 화면에서는 알림이 안 와요. 꼭 <b>홈 화면 아이콘</b>으로 열어 주세요.', '· <b>설정 → 알림 → GROOVE STAFF</b> 에서 알림 허용을 켜요.', '· <b>설정 → 일반 → 소프트웨어 업데이트</b>로 iOS 16.4 이상인지 확인해요.', '· 집중 모드·방해 금지가 켜져 있으면 꺼 주세요.']) +
-      '<button class="btn btn-ok" type="button" id="pgOn">🔔 지금 이 폰 알림 켜기</button><p class="note" id="pgSt" style="margin:6px 0 0"></p></div>';
+      '<button class="btn btn-ok" type="button" id="pgOn">' + eduSvg('bellon') + '지금 이 폰 알림 켜기</button><p class="note" id="pgSt" style="margin:6px 0 0"></p></div>';
   }
   // 📘 신규 교육: 스태프 앱 사용법·매장 기본 (대표 승인 2026-11-18, 저녁: 출근·입구 호출·업무사항·메시지 그룹·손님 문의 더함 · 2026-11-19 아침: 💬 대화창 쓰는 법·🌙 영업 종료·자리 직접 치기·⏱·메시지 지우기). 칸마다 접혀 있음.
   function eduGuideHtml() {
-    var sec = function (title, items) { return '<details class="pg"><summary>' + noEmo(title) + '</summary><ul class="steps">' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></details>'; };
+    var sec = function (title, items) { return '<details class="pg">' + eduSum(title) + '<ul class="erows">' + items.map(eduRow).join('') + '</ul></details>'; };   // 🎨 읽기 좋게 2026-11-20
     return '<div class="pgw"><h2 class="sec pgt" style="margin:0 0 6px"><svg class="isv" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>기능별 사용법</h2><p class="note" style="margin:0 0 10px">처음 오신 분 · 칸을 누르면 펼쳐져요.</p><div class="edug">' +
       sec('🏠 매장 기본', [
         '영업시간: <b>일~목 21:30~06:00</b>, <b>금·토·공휴일 전날 21:00~07:00</b>',
@@ -7693,31 +7878,30 @@ html .cpin .cpme { color: #8fe8c0; }
   // ── 💬 탭 대화 (2026-11-18): 테이블·연출 탭에서 오른쪽 아래 버튼 → 그 탭 대화방. 안 읽은 수는 탭 목록 응답의 꼬리(chat)로.
   var CHAT_NAME = { table: '🪑 테이블 대화', yc: '🎆 연출 대화', guest: '👥 게스트 대화', ops: '🛎 운영 대화', gate: '🚪 입구 대화', live: '🎬 실시간 대화' };   // 🛎 운영·🚪 입구 대화 (대표 요청 2026-11-19 새벽) · 🎬 실시간 대화 (대표 요청 2026-11-19 저녁)
   // 카톡처럼 쓰면 알아듣는 말 (카톡 테이블방·불꽃놀이방 대화를 보고 만든 규칙, 2026-11-18)
-  var CHAT_HELP = {
-    ops: '<p><b>운영 대화</b>는 그냥 대화예요 (운영 요청으로 바뀌지 않아요). 운영팀을 부르려면 <b>+ 요청</b>이나 🪑 테이블 대화를 써 주세요.</p><p><code>@이름</code>으로 부르면 그 사람에게 알림 · 꾹 눌러 답장 · 📷 사진·영상도 돼요.</p>',
-    live: '<p><b>실시간 대화</b>는 그냥 대화예요. 🎬 실시간 영상 탭을 보는 직원 모두(경호팀 빼고) 같이 봐요. 🎧 DJ 문의(인스타·WhatsApp DM)도 여기에 올라와요.</p><p><code>@이름</code>으로 부르면 그 사람에게 알림 · 꾹 눌러 답장 · 📷 사진·영상도 돼요. 출근한 직원 모두에게 알리려면 위의 <b>+ 올리기</b>를 써 주세요.</p>',
-    gate: '<p><b>입구 대화</b>는 그냥 대화예요. 경호팀도 같이 봐요.</p><p><code>@이름</code>으로 부르면 그 사람에게 알림 · 꾹 눌러 답장 · 📷 사진·영상도 돼요. 손님을 MD에게 보내는 건 위의 <b>입구 호출</b>로 해 주세요.</p>',
-    guest: '<p><b>카톡에 올리던 게스트 집계 그대로</b> 쓰면 게스트/판매 탭에 바로 들어가요.</p>' +
-      '<pre>11/17\n고트\n건호3\n수연4\n요셉5\n\n아룬\n성원1\n\n클로버\n지현1\n은호1</pre>' +
-      '<p>첫 줄 날짜(없으면 오늘 영업일, 이번 주·지난주만) · 팀 줄 · 이름숫자. 이름은 줄여 써도 그 팀에서 한 명이면 알아봐요(<code>건호</code> → 김건호).</p>' +
-      '<p>넣을 수 있는 사람: 대표·%P:guestAll%·팀장 (모든 팀). 같은 날 같은 사람을 다시 쓰면 고쳐져요. 못 찾은 이름은 ⚠️ 로 알려 줘요(팀원 명단에 넣어 주세요).</p>',
-    table: '<p><b>카톡에 쓰던 그대로</b> 쓰면 자리표에 들어가요. 직원은 승인 요청, 팀장·대표·승인 권한 받은 사람은 바로 반영돼요.</p>' +
-      '<p>넣기 <code>3l6 태훈 남2 섭레</code> <code>3ㅅ1 태라여3 넣을게요</code> <code>3-3 백원만 담당 성민 예약</code></p>' +
-      '<p>표시 <code>3-2 현준 남2 g</code> <code>3-2 미나 여게2</code>(🟢 게스트 = 승인 없이 바로) <code>3l8 판매전환</code> <code>3-4 개모임킵</code></p>' +
-      '<p>아웃 <code>2s2 아웃클</code> <code>2s7,8,9 아웃</code> <code>3l4 조판 지워주세요</code></p>' +
-      '<p>이동 <code>3l4->3l2</code> <code>3l4->3l2 판매전환</code>(옮기면서 판매) <code>3ㅣ9에서 3ㅣ10 이동</code> <code>2s5 3l5로 이동</code></p>' +
-      '<p>배정(승인하는 사람) <code>@이정훈 엘4</code> <code>3l5,6 @이성민 @경철</code></p>' +
-      '<p>층: 앞의 3 = SPOT, 2 = GROOVE (없으면 보고 있는 층). 자리 글자: ㅅ·스·s = S, ㅣ·엘·l = L, 디·d = D, 디비·db = DB</p>' +
-      '<p>섭몬 = 카마 · 섭레 = 레몬드랍 · 섭샴·짭몬은 메모. 흡연·화장실·부킹·N출 같은 말은 그냥 대화예요.</p>' +
-      '<p>🚨 <b>경호</b>: 싸움·경호·상황을 쓰면 <b>경호팀 부를까요?</b> 버튼 → 눌러야 호출돼요 (왼쪽 아래 🚨 버튼도 같아요)</p>' +
-      '<p>🛎 <b>운영팀 부르기</b>: 아웃·이동·<code>기셋</code>·<code>버켓얼음</code>·<code>물4</code>·<code>샴잔</code>·<code>방향제</code>·<code>클</code>(청소)·<code>냉가동</code>을 쓰면 운영팀에게만 알림 → 누구나 <b>✅ 내가 할게요</b>(또는 두 번 누르기)로 맡기</p>',
-    yc: '<p><b>불꽃놀이방에 쓰던 그대로</b> 쓰면 연출 요청이 올라가요.</p>' +
-      '<p>첫 줄 = 자리·순서(<code>바로</code> <code>준비되는대로</code> <code>12:10</code> <code>3-12 다음</code>), 다음 줄 = 영상·홀로·피켓·망치·퍼레·노래, <b>빈 줄 뒤 = 전광판 문구</b></p>' +
-      '<pre>3s7 바로 구형딥퍼레 호철이형 컨펌완\n고트영상0 홀로0 생일피켓\n\n다은아 생일축하해\n-서빈 하연-</pre>' +
-      '<p>전광만 <code>2 전광만 바로</code>(그루브 2층) · <code>3 전광만 바로</code>(스팟 3층) 다음 줄 <code>범야영상</code>, 빈 줄 뒤 <code>VVIP 범야 입장</code> · 노래는 멜론·사운드클라우드 링크를 같이 붙여요 (다운로드 없는 곡은 ⚠️ 미발매 표시).</p>' +
-      '<p><code>ㅈㄱㅈㅂㅇ</code> 전광 준비(DJ팀·팀장) · <code>ㅅㅈㅂㅇ</code> 술 준비(운영팀) · <code>ㄱㄱ</code> · <code>컷</code> — 먼저 올라온 요청부터, 자리를 붙이면 그 자리(<code>3-9 ㄱㄱ</code>)</p>' +
-      '<p>한 줄로 쓸 때는 <code>문구</code> 뒤가 전광판 문구예요: <code>3디2 홀로 망치 문구 오늘달려요 바로</code></p>' +
-      '<p>📷 로 사진(3장)·영상(2개)을 같이 보내면 그 연출에 붙어요. 사진만 보내면 내가 올린 연출(ㄱㄱ 전·진행 중)에 붙어요. 같은 자리에 내가 올린 요청이 아직 ㄱㄱ 전이면 다시 쓰면 고쳐져요.</p>'
+  var CHAT_HELP = {   // 🎨 2026-11-20 읽기 좋게: 양식 표·자리 글자표·줄임말·호출 카드 (내용은 그대로)
+    ops: '<div class="ch-in"><b>운영 대화</b>는 그냥 대화예요.<small>운영 요청으로 바뀌지 않아요</small></div><div class="ch-irs"><div class="ch-ir"><span class="ch-ic">@</span><span><code>@이름</code>으로 부르면 그 사람에게 알림</span></div><div class="ch-ir"><span class="ch-ic">↩</span><span>말풍선을 꾹 눌러 답장</span></div><div class="ch-ir"><span class="ch-ic">📷</span><span>사진·영상도 보낼 수 있어요</span></div></div><div class="ch-go"><small>운영팀을 부르려면</small><b>+ 요청</b> 또는 <b>🪑 테이블 대화</b></div>',
+    live: '<div class="ch-in"><b>실시간 대화</b>는 그냥 대화예요.<small>🎬 실시간 영상 탭을 보는 직원 모두(경호팀 빼고) 같이 봐요</small></div><p class="ch-note">DJ 문의(인스타·WhatsApp DM)도 여기에 올라와요</p><div class="ch-irs"><div class="ch-ir"><span class="ch-ic">@</span><span><code>@이름</code>으로 부르면 그 사람에게 알림</span></div><div class="ch-ir"><span class="ch-ic">↩</span><span>말풍선을 꾹 눌러 답장</span></div><div class="ch-ir"><span class="ch-ic">📷</span><span>사진·영상도 보낼 수 있어요</span></div></div><div class="ch-go"><small>출근한 직원 모두에게 알리려면</small>위의 <b>+ 올리기</b></div>',
+    gate: '<div class="ch-in"><b>입구 대화</b>는 그냥 대화예요.<small>경호팀도 같이 봐요</small></div><div class="ch-irs"><div class="ch-ir"><span class="ch-ic">@</span><span><code>@이름</code>으로 부르면 그 사람에게 알림</span></div><div class="ch-ir"><span class="ch-ic">↩</span><span>말풍선을 꾹 눌러 답장</span></div><div class="ch-ir"><span class="ch-ic">📷</span><span>사진·영상도 보낼 수 있어요</span></div></div><div class="ch-go"><small>손님을 MD에게 보내려면</small>위의 <b>입구 호출</b></div>',
+    guest: '<div class="ch-in"><b>카톡에 올리던 게스트 집계 그대로</b> 쓰면<small>게스트/판매 탭에 바로 들어가요</small></div>' +
+      '<h4 class="ch-h">예시</h4><div class="ch-ex ch-exgst"><div class="ch-exg"><span>11/17</span><em>날짜</em></div><div class="ch-exg"><span>고트</span><em>팀</em></div><div class="ch-exg"><span>건호3</span><em>이름+숫자</em></div><div class="ch-exg"><span>수연4</span></div><div class="ch-exg"><span>요셉5</span></div><div class="ch-exsp"></div><div class="ch-exg"><span>아룬</span></div><div class="ch-exg"><span>성원1</span></div><div class="ch-exsp"></div><div class="ch-exg"><span>클로버</span></div><div class="ch-exg"><span>지현1</span></div><div class="ch-exg"><span>은호1</span></div></div>' +
+      '<h4 class="ch-h">규칙</h4><ul class="ch-li"><li><b>첫 줄 날짜</b> · 없으면 오늘 영업일 (이번 주·지난주만)</li><li><b>팀 줄</b> 다음에 <b>이름숫자</b></li><li>이름은 줄여 써도 그 팀에서 한 명이면 알아봐요 <code>건호</code> → 김건호</li><li>같은 날 같은 사람을 다시 쓰면 고쳐져요</li><li>못 찾은 이름은 ⚠️ 로 알려 줘요 (팀원 명단에 넣어 주세요)</li></ul><div class="ch-go"><small>넣을 수 있는 사람 (모든 팀)</small>대표 · %P:guestAll% · 팀장</div>',
+    table: '<div class="ch-in"><b>카톡에 쓰던 그대로</b> 쓰면 자리표에 들어가요.<small>직원은 승인 요청 · 팀장·대표·승인 권한 받은 사람은 바로 반영</small></div>' +
+      '<h4 class="ch-h">양식</h4>' +
+      '<div class="ch-rows"><div class="ch-r"><span class="ch-l">넣기</span><div class="ch-v"><code>3l6 태훈 남2 섭레</code><code>3ㅅ1 태라여3 넣을게요</code><code>3-3 백원만 담당 성민 예약</code></div></div><div class="ch-r"><span class="ch-l">게스트</span><div class="ch-v"><code>3-2 현준 남2 g</code><code>3-2 미나 여게2</code><small>🟢 게스트 = 승인 없이 바로</small></div></div><div class="ch-r"><span class="ch-l">표시</span><div class="ch-v"><code>3l8 판매전환</code><code>3-4 개모임킵</code></div></div><div class="ch-r"><span class="ch-l">아웃</span><div class="ch-v"><code>2s2 아웃클</code><code>2s7,8,9 아웃</code><code>3l4 조판 지워주세요</code></div></div><div class="ch-r"><span class="ch-l">이동</span><div class="ch-v"><code>3l4->3l2</code><code>3l4->3l2 판매전환</code><code>3ㅣ9에서 3ㅣ10 이동</code><code>2s5 3l5로 이동</code><small>판매전환을 붙이면 옮기면서 판매</small></div></div><div class="ch-r"><span class="ch-l">배정</span><div class="ch-v"><code>@이정훈 엘4</code><code>3l5,6 @이성민 @경철</code><small>승인하는 사람만</small></div></div></div>' +
+      '<h4 class="ch-h">자리 쓰는 법</h4><div class="ch-keys"><div class="ch-k"><b>3</b><span>SPOT (3층)</span></div><div class="ch-k"><b>2</b><span>GROOVE (2층)</span></div><div class="ch-k"><b>S</b><span>ㅅ · 스 · s</span></div><div class="ch-k"><b>L</b><span>ㅣ · 엘 · l</span></div><div class="ch-k"><b>D</b><span>디 · d</span></div><div class="ch-k"><b>DB</b><span>디비 · db</span></div></div><p class="ch-note">맨 앞 숫자가 층 · 안 쓰면 지금 보고 있는 층</p>' +
+      '<h4 class="ch-h">줄임말</h4><div class="ch-keys"><div class="ch-k"><b>섭몬</b><span>카마</span></div><div class="ch-k"><b>섭레</b><span>레몬드랍</span></div><div class="ch-k"><b>섭샴</b><span>메모로 들어가요</span></div><div class="ch-k"><b>짭몬</b><span>메모로 들어가요</span></div></div><p class="ch-note">흡연·화장실·부킹·N출 같은 말은 그냥 대화예요</p>' +
+      '<div class="ch-co ch-bad">' +
+      '<div class="ch-cot">🚨 경호팀 부르기</div><p>싸움·경호·상황을 쓰면 <b>경호팀 부를까요?</b> 버튼이 떠요</p><p class="ch-sub">눌러야 호출돼요 · 왼쪽 아래 🚨 버튼도 같아요</p></div>' +
+      '<div class="ch-co ch-g">' +
+      '<div class="ch-cot">🛎 운영팀 부르기</div><p>이런 말을 쓰면 운영팀에게만 알림</p><div class="ch-v"><code>아웃</code><code>이동</code><code>기셋</code><code>버켓얼음</code><code>물4</code><code>샴잔</code><code>방향제</code><code>클 <i>청소</i></code><code>냉가동</code></div><p class="ch-sub">누구나 <b>✅ 내가 할게요</b> 또는 두 번 누르기로 맡아요</p></div>',
+    yc: '<div class="ch-in"><b>불꽃놀이방에 쓰던 그대로</b> 쓰면<small>연출 요청이 올라가요</small></div>' +
+      '<h4 class="ch-h">쓰는 순서</h4><ol class="ch-steps"><li><div><b>첫 줄</b> 자리 · 순서<div class="ch-v"><code>바로</code><code>준비되는대로</code><code>12:10</code><code>3-12 다음</code></div></div></li><li><div><b>다음 줄</b> 영상 · 홀로 · 피켓 · 망치 · 퍼레 · 노래</div></li><li><div><b>빈 줄 뒤</b> 전광판 문구</div></li></ol>' +
+      '<h4 class="ch-h">예시</h4><div class="ch-ex"><div class="ch-exl"><span class="ch-tag">1</span><span>3s7 바로 구형딥퍼레 호철이형 컨펌완</span></div><div class="ch-exl"><span class="ch-tag">2</span><span>고트영상0 홀로0 생일피켓</span></div><div class="ch-exgap">빈 줄</div><div class="ch-exl"><span class="ch-tag">3</span><span>다은아 생일축하해<br>-서빈 하연-</span></div></div>' +
+      '<h4 class="ch-h">전광만</h4>' +
+      '<div class="ch-rows"><div class="ch-r"><span class="ch-l">그루브</span><div class="ch-v"><code>2 전광만 바로</code></div></div><div class="ch-r"><span class="ch-l">스팟</span><div class="ch-v"><code>3 전광만 바로</code></div></div></div><p class="ch-note">다음 줄 <code>범야영상</code> · 빈 줄 뒤 <code>VVIP 범야 입장</code></p><p class="ch-note">노래는 멜론·사운드클라우드 링크를 같이 붙여요 · 다운로드 없는 곡은 ⚠️ 미발매 표시</p>' +
+      '<h4 class="ch-h">준비 · 시작</h4><div class="ch-keys"><div class="ch-k"><b>ㅈㄱㅈㅂㅇ</b><span>전광 준비 <i>DJ팀·팀장</i></span></div><div class="ch-k"><b>ㅅㅈㅂㅇ</b><span>술 준비 <i>운영팀</i></span></div><div class="ch-k"><b>ㄱㄱ</b><span>시작</span></div><div class="ch-k"><b>컷</b><span>끝</span></div></div><p class="ch-note">먼저 올라온 요청부터 · 자리를 붙이면 그 자리 <code>3-9 ㄱㄱ</code></p>' +
+      '<h4 class="ch-h">한 줄로 쓸 때</h4><p class="ch-p"><code>문구</code> 뒤가 전광판 문구예요</p><div class="ch-v"><code>3디2 홀로 망치 문구 오늘달려요 바로</code></div>' +
+      '<h4 class="ch-h">사진 · 고치기</h4><ul class="ch-li"><li>📷 사진(3장)·영상(2개)을 같이 보내면 그 연출에 붙어요</li><li>사진만 보내면 내가 올린 연출(ㄱㄱ 전·진행 중)에 붙어요</li><li>같은 자리에 내가 올린 요청이 아직 ㄱㄱ 전이면 다시 쓰면 고쳐져요</li></ul>'
   };
   function chatRoom() {
     var d = state.data || {};
@@ -7791,7 +7975,7 @@ html .cpin .cpme { color: #8fe8c0; }
     state.chatRoom = room; state.chat = null;
     $('chatT').textContent = cmNoEmo(CHAT_NAME[room]); $('chatL').innerHTML = '<p class="cempty">불러오는 중…</p>';
     $('chatIn').placeholder = room === 'table' ? '메시지 · 카톡처럼 쓰면 자리 신청' : room === 'guest' ? '메시지 · 카톡처럼 쓰면 게스트 반영' : room === 'yc' ? '메시지 · 카톡처럼 쓰면 연출 요청' : '메시지 · @이름 부르기';
-    $('chatHelp').innerHTML = permFill(CHAT_HELP[room]); $('chatHelp').hidden = true; $('chatQ').setAttribute('aria-expanded', 'false');
+    $('chatHelp').innerHTML = ceIco(permFill(CHAT_HELP[room])); $('chatHelp').hidden = true; $('chatQ').setAttribute('aria-expanded', 'false');
     if (state.chatMediaReset) state.chatMediaReset();
     if (state.chatPrevReset) state.chatPrevReset();   // 👀 미리보기 끄고 이 방 ⚡ 빠른 버튼
     chatReplyTo(null); chatMenuClose(); cfClose();
