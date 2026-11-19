@@ -98,6 +98,15 @@
 .me-chk input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--g); }
 .me-chk small { display: block; color: var(--muted); font-size: 13px; font-weight: 500; margin-top: 2px; }
 .me-save { width: 100%; min-height: 50px; }
+.me-ag { display: grid; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.me-ag .lab { margin: 0; font-weight: 700; font-size: 14px; }
+.me-ag .me-msg { margin: 0; }
+.me-note, .me-chk { word-break: keep-all; }
+.me-chk small.at { color: #7be0a4; font-weight: 700; }
+.me-chk.off { cursor: default; color: var(--muted); }
+.me-old { border: 1px solid rgba(255,176,32,.45); background: rgba(255,176,32,.08); border-radius: 14px; padding: 12px 14px; }
+.me-old p { margin: 0 0 10px; font-size: 14px; font-weight: 700; word-break: keep-all; }
+.me-old .me-act { margin-top: 0; }
 .me-del { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
 .me-del .btn { width: 100%; border-color: rgba(255, 59, 92, .5); color: #ff8a9d; }
 .me-del .ask { border: 1px solid rgba(255, 59, 92, .5); border-radius: 14px; padding: 14px; background: rgba(255, 59, 92, .07); }
@@ -229,7 +238,7 @@
 
   function telBtn(ph, staff) {
     var d = String(ph || '').replace(/\D/g, '');
-    return /^01\d{8,9}$/.test(d) ? '<a class="btn" href="tel:' + d + '" id="me-call">📞 담당 ' + esc(staff) + '에게 전화</a>' : '<a class="btn" href="tel:' + CLUB_TEL + '" id="me-call">📞 클럽에 전화하기</a>';
+    return /^01\d{8,9}$/.test(d) ? '<a class="btn" href="tel:' + d + '" id="me-call" aria-label="담당 ' + esc(staff) + '에게 전화하기">📞 담당에게 전화</a>' : '<a class="btn" href="tel:' + CLUB_TEL + '" id="me-call">📞 클럽에 전화하기</a>';
   }
   function fail(msg, retry) {
     stopTick();
@@ -356,7 +365,7 @@
     }
   }
 
-  // 생일 (연·월·일 고르기: 폰에서 날짜 달력보다 빠르다) · 혜택 안내 동의 · 정보 삭제 요청
+  // 생일 (연·월·일 고르기: 폰에서 날짜 달력보다 빠르다) · 혜택 안내 동의(광고성 정보, 생일과 따로 · 대표 결정 2026-11-20) · 정보 삭제 요청
   function info(me) {
     var el = document.getElementById('me-info'); if (!el) return;
     var y0 = new Date().getFullYear(), bp = /^(\d{4})-(\d\d)-(\d\d)$/.exec(me.birth || '') || null;
@@ -370,10 +379,10 @@
       '<select id="me-by" aria-label="태어난 해">' + opts(years, by, '년', '년') + '</select>' +
       '<select id="me-bm" aria-label="태어난 달">' + opts(mons, bm, '월', '월') + '</select>' +
       '<select id="me-bd" aria-label="태어난 날"></select></div></div>' +
-      '<label class="me-chk"><input type="checkbox" id="me-agree"' + (me.agree ? ' checked' : '') + '><span>생일·이벤트 혜택 안내 받기 (선택)<small>담당 직원이 문자·카톡으로 알려 드려요. 언제든 끌 수 있어요.</small></span></label>' +
-      '<button class="btn btn-hot me-save" type="button" id="me-save">저장</button>' +
+      '<button class="btn btn-hot me-save" type="button" id="me-bsave">생일 저장</button>' +
       '<p class="me-msg" id="me-msg" role="status"></p></div>' +
-      '<p class="me-note">생일·동의 여부는 혜택 안내에만 쓰고 1년 동안 보관해요. <a href="/privacy/">개인정보처리방침</a></p>' +
+      '<div class="me-ag" id="me-ag"></div>' +
+      '<p class="me-note">개인정보는 혜택 안내에만 쓰고 1년 동안 보관해요. <a href="/privacy/">개인정보처리방침</a></p>' +
       '<div class="me-del" id="me-del"></div>';
     var sy = document.getElementById('me-by'), sm = document.getElementById('me-bm'), sd = document.getElementById('me-bd'), msg = document.getElementById('me-msg');
     function fillDays() {
@@ -385,21 +394,48 @@
     fillDays();
     sy.addEventListener('change', fillDays); sm.addEventListener('change', fillDays);
     sd.addEventListener('change', function () { sd.classList.toggle('nil', !sd.value); });
-    document.getElementById('me-save').addEventListener('click', function () {
+    // 공통: me_set 보내고 답 처리 (auth → 4자리 화면)
+    function set(body, out, done, undo) {
+      body.a = 'me_set'; body.k = k; body.t = tokGet();
+      out.className = 'me-msg ok'; out.textContent = '저장하는 중…';
+      return api(body).then(function (r) {
+        if (r.error === 'auth') { tokSet(''); return pinView(); }
+        if (r.error === 'notfound') return notFound();
+        if (!r.ok) { if (undo) undo(); out.className = 'me-msg'; out.textContent = r.error === 'birth' ? '생일을 확인해 주세요.' : r.error === 'agree' ? '먼저 혜택·이벤트 안내 받기에 동의해 주세요.' : '저장이 안 됐어요. 다시 해 주세요.'; return; }
+        if (r.me) me = r.me;
+        done(); del();
+      }).catch(function () { if (undo) undo(); out.className = 'me-msg'; out.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+    }
+    document.getElementById('me-bsave').addEventListener('click', function () {
       var btn = this, vals = [sy.value, sm.value, sd.value], filled = vals.filter(String).length, birth = '';
       if (filled && filled < 3) { msg.className = 'me-msg'; msg.textContent = '생일은 연·월·일을 모두 골라 주세요.'; return; }
       if (filled) birth = vals[0] + '-' + ('0' + vals[1]).slice(-2) + '-' + ('0' + vals[2]).slice(-2);
-      btn.disabled = true; msg.className = 'me-msg ok'; msg.textContent = '저장하는 중…';
-      api({ a: 'me_set', k: k, t: tokGet(), birth: birth, agree: document.getElementById('me-agree').checked }).then(function (r) {
-        btn.disabled = false;
-        if (r.error === 'auth') { tokSet(''); return pinView(); }
-        if (r.error === 'notfound') return notFound();
-        if (r.error === 'birth') { msg.className = 'me-msg'; msg.textContent = '생일을 확인해 주세요.'; return; }
-        if (!r.ok) { msg.className = 'me-msg'; msg.textContent = '저장이 안 됐어요. 다시 해 주세요.'; return; }
-        if (r.me) { me = r.me; del(); }
-        msg.className = 'me-msg ok'; msg.textContent = '저장했어요 ✓';
-      }).catch(function () { btn.disabled = false; msg.className = 'me-msg'; msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+      btn.disabled = true;
+      set({ birth: birth }, msg, function () { btn.disabled = false; msg.className = 'me-msg ok'; msg.textContent = birth ? '생일을 저장했어요 ✓' : '생일을 지웠어요 ✓'; }, function () { btn.disabled = false; });
     });
+    // 혜택 안내: ① 광고성 정보 수신 동의 ② 밤 9시~아침 8시에도 (①이 켜져 있을 때만). 누르면 바로 저장, 둘 다 기본 꺼짐
+    function ag(text) {
+      var a = document.getElementById('me-ag'); if (!a) return;
+      var on = !!me.agree;
+      a.innerHTML = '<p class="lab">혜택 안내 (선택)</p>' +
+        '<label class="me-chk"><input type="checkbox" id="me-agree"' + (on ? ' checked' : '') + '><span>(선택) 혜택·이벤트 안내 받기 — 광고성 정보 수신 동의<small>생일 혜택·파티 소식을 보내 드려요. 언제든 여기서 끌 수 있어요.</small>' +
+        (on ? '<small class="at" id="me-agree-at">동의함' + (me.agreeAt ? ' · ' + esc(me.agreeAt) : '') + '</small>' : '') + '</span></label>' +
+        '<label class="me-chk' + (on ? '' : ' off') + '"><input type="checkbox" id="me-night"' + (on && me.agreeNight ? ' checked' : '') + (on ? '' : ' disabled') + '><span>(선택) 밤 9시~아침 8시에도 받기' +
+        (on ? '' : '<small>위의 혜택·이벤트 안내를 켜야 고를 수 있어요.</small>') + '</span></label>' +
+        (on && me.agreeOld ? '<div class="me-old" id="me-old"><p>동의한 지 2년이 지났어요. 계속 받으실래요?</p><div class="me-act"><button class="btn btn-hot" type="button" id="me-old-yes">계속 받기</button><button class="btn" type="button" id="me-old-no">그만 받기</button></div></div>' : '') +
+        '<p class="me-msg" id="me-ag-msg" role="status"></p>';
+      var am = document.getElementById('me-ag-msg'), ca = document.getElementById('me-agree'), cn = document.getElementById('me-night');
+      if (text) { am.className = 'me-msg ok'; am.textContent = text; }
+      function lockAll(v) { [ca, cn, document.getElementById('me-old-yes'), document.getElementById('me-old-no')].forEach(function (x) { if (x) x.disabled = v || (x === cn && !on); }); }
+      function send(body, okText, undo) { lockAll(true); set(body, am, function () { ag(okText); }, function () { undo(); lockAll(false); }); }
+      ca.addEventListener('change', function () { var v = ca.checked; send({ agree: v }, v ? '혜택·이벤트 안내를 받을게요 ✓' : '혜택·이벤트 안내를 껐어요 ✓', function () { ca.checked = !v; }); });
+      cn.addEventListener('change', function () { var v = cn.checked; send({ agreeNight: v }, v ? '밤 9시~아침 8시에도 받을게요 ✓' : '밤 9시~아침 8시에는 안 보내요 ✓', function () { cn.checked = !v; }); });
+      if (document.getElementById('me-old-yes')) {
+        document.getElementById('me-old-yes').addEventListener('click', function () { send({ agree: true }, '계속 받을게요 ✓', function () {}); });
+        document.getElementById('me-old-no').addEventListener('click', function () { send({ agree: false }, '혜택·이벤트 안내를 껐어요 ✓', function () {}); });
+      }
+    }
+    ag();
     function del(ask) {
       var d = document.getElementById('me-del'); if (!d) return;
       if (me.delReq) { d.innerHTML = '<p class="done" id="me-del-done">🗑 삭제 요청됨 · 담당 직원이 확인한 뒤 지워요.</p>'; return; }
@@ -418,7 +454,7 @@
           if (r.error === 'auth') { tokSet(''); return pinView(); }
           if (r.error === 'notfound') return notFound();
           if (!r.ok) { dm.textContent = '요청이 안 됐어요. 다시 해 주세요.'; return; }
-          me = r.me || { birth: me.birth, agree: me.agree, delReq: true }; me.delReq = true; del();
+          me = r.me || me; me.delReq = true; del();
         }).catch(function () { b.disabled = false; dm.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
       });
     }

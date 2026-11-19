@@ -4073,7 +4073,10 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   function kMeChips(c) {
     var o = [];
     if (c.birth) o.push('<span class="chip">🎂 ' + esc(kBirthTxt(c.birth)) + '</span>');
-    if (c.agree != null) o.push('<span class="chip">' + (c.agree ? '✅ 혜택 안내 동의' : '혜택 안내 동의 안 함') + '</span>');
+    // 혜택 안내(광고성 정보) 동의는 손님만 바꾼다 (/me/) — 직원은 보기만
+    if (c.agree != null) o.push('<span class="chip">' + (c.agree ? '✅ 혜택 안내 동의' + (c.agreeAt ? ' · ' + esc(c.agreeAt) : '') : '혜택 안내 동의 안 함') + '</span>');
+    if (c.agree && c.agreeNight) o.push('<span class="chip">🌙 야간(21~08시) 동의</span>');
+    if (c.agree && c.agreeOld) o.push('<span class="chip" style="border-color:var(--warn);color:var(--warn)">⏳ 동의 2년 지남</span>');
     if (c.delReq) o.push('<span class="chip kdel">🗑 삭제 요청됨</span>');
     return o.length ? '<div class="kme">' + o.join('') + '</div>' : '';
   }
@@ -4622,7 +4625,8 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       (boss ? '<label>담당<input id="keS" maxlength="12" list="keSl" value="' + esc(c.staff) + '">' + kStaffList('keSl') + '</label>' : '<p class="note" style="margin:-4px 0 12px">담당 ' + esc(c.staff) + ' · 담당 바꾸기는 대표님이 해요.</p>') +
       '<label>연락처 (선택)<input id="keP" type="tel" inputmode="numeric" maxlength="13" value="' + esc(c.phone || '') + '" placeholder="010-0000-0000"></label>' +
       '<p class="note" style="margin:-8px 0 14px">손님은 내 페이지에 이 번호 뒤 4자리로 들어와요.</p>' +
-      '<div style="margin-bottom:14px"><p style="font-weight:700;font-size:14px;margin:0 0 6px">생일 (선택)</p>' + kBdHtml('keB', c.birth) + '</div>' +
+      '<div style="margin-bottom:14px"><p style="font-weight:700;font-size:14px;margin:0 0 6px">생일 (선택)</p>' + kBdHtml('keB', c.birth) +
+        '<p class="note" style="margin:6px 0 0">혜택 안내(광고성 정보) 동의는 손님이 내 페이지에서 직접 켜고 꺼요.</p></div>' +
       '<label>메모 (선택)<input id="keM" maxlength="60" value="' + esc(c.memo || '') + '"></label>' +
       '<button class="btn btn-hot" type="button" id="keGo">저장</button><p class="msg" id="keMsg" role="alert"></p>');
     $('keP').addEventListener('input', function () { this.value = fmtPhone(this.value); });
