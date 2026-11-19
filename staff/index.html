@@ -561,9 +561,10 @@ body.dmfix .dmshell .send { position: static; }
 body.dmfix.kbd .dmshell .send { padding-bottom: 8px; }
 body.dmfix .dmshell #dMsg:empty { display: none; }
 body.dmfix .dmshell #dMsg { margin: 0 0 6px; }
-/* 🚨 동그라미: 메시지·💬 대화창에서 키보드가 떠 있는 동안은 숨기고, 아니면 입력줄 바로 위로 (대표 요청 2026-11-19 밤). --sosb = 화면 아래에서 입력줄 위까지 */
-body.soslift .sosfab { bottom: var(--sosb, calc(86px + var(--bbh))); z-index: 17; }
-body.soslift.kbd .sosfab, body.soslift.kbd .chatfab { display: none !important; }
+/* 🚨 동그라미: 폰에서 메시지·💬 대화창이 열려 있으면 떠 있는 동그라미는 숨기고 대화창 위 줄(이름 줄)에 🚨 (대표 요청 2026-11-20 0시 반: 동그라미가 글을 가림) */
+body.soslift .sosfab, body.soslift.kbd .chatfab { display: none !important; }
+.chath .chsos { font-size: 17px; margin-right: 2px; border: 1px solid rgba(255,138,155,.65); border-radius: 999px; background: rgba(224,32,63,.18); padding: 3px 9px; }
+.chead .dsos { border-color: rgba(255,138,155,.7); background: rgba(224,32,63,.18); font-size: 17px; }
 /* 📱 폰 💬 대화창도 키보드가 뜨면 '보이는 화면'(키보드 위)에 맞춤 — 페이지째 밀려 대화창 위가 잘리던 것 */
 @media (max-width: 600px) { body.cbkb .chatbox { top: var(--cbt, 0px); bottom: auto; height: var(--cbh, 60vh); border-radius: 0; } }
 .send .btn-hot { width: auto; min-height: 44px; padding: 0 16px; font-size: 15px; }
@@ -1401,7 +1402,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
 <button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
 <button type="button" class="sosfab" id="sosFab" hidden aria-label="경호 호출">🚨</button>
 <section class="chatbox" id="chatBox" hidden aria-label="대화">
-  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chpop" id="chatPop" hidden title="따로 띄우기 (항상 위에)" aria-label="대화창 따로 띄우기">🗗</button><button type="button" class="link" id="chatS" aria-label="대화 검색" aria-expanded="false">🔍</button><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
+  <div class="chath"><b id="chatT">대화</b><span><button type="button" class="link chsos" id="chatSos" hidden aria-label="경호 호출" title="경호 호출">🚨</button><button type="button" class="link chpop" id="chatPop" hidden title="따로 띄우기 (항상 위에)" aria-label="대화창 따로 띄우기">🗗</button><button type="button" class="link" id="chatS" aria-label="대화 검색" aria-expanded="false">🔍</button><button type="button" class="link chq" id="chatQ" aria-expanded="false">❔ 쓰는 법</button><button type="button" class="link" id="chatX" aria-label="닫기">✕</button></span></div>
   <div class="chathelp" id="chatHelp" hidden></div>
   <div class="chatfind" id="chatFind" hidden><div class="cfind"><input id="cfQ" type="search" placeholder="이 대화에서 찾기 (글·이름)" autocomplete="off" enterkeyhint="search"><span class="cfn" id="cfN"></span><button type="button" id="cfUp" aria-label="이전(위)">▲</button><button type="button" id="cfDn" aria-label="다음(아래)">▼</button><button type="button" id="cfX" aria-label="검색 닫기">✕</button></div><div class="cfmsg" id="cfMsg"></div><div class="cfres" id="cfRes" hidden></div></div>
   <div class="chatpin" id="chatPin" hidden aria-live="polite"></div>
@@ -2132,11 +2133,10 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     b.style.setProperty('--cbt', Math.max(0, Math.round(vv.offsetTop)) + 'px'); b.style.setProperty('--cbh', Math.max(200, Math.round(vv.height)) + 'px');
     if (l && low) l.scrollTop = l.scrollHeight;
   }
-  function sosLift() {   // 🚨 를 입력줄(·⚡ 빠른 버튼) 위로 = 말풍선 목록 아래 끝에 (메시지·💬 대화창)
-    var b = document.body, f = b.classList.contains('dmfix') ? dmBox() : cbOpen() ? $('chatL') : null;
-    if (!f) { b.classList.remove('soslift'); return; }
-    b.classList.add('soslift'); if (b.classList.contains('kbd')) return;
-    var r = f.getBoundingClientRect(); if (r.height) b.style.setProperty('--sosb', Math.max(0, Math.round(window.innerHeight - r.bottom + 10)) + 'px');
+  function sosLift() {   // 🚨: 폰에서 메시지·💬 대화창이 열려 있으면 떠 있는 동그라미 대신 위 이름 줄의 🚨 (글을 가리지 않게)
+    var b = document.body, dm = b.classList.contains('dmfix'), cb = cbOpen(), no = !$('sosFab') || $('sosFab').hidden;
+    b.classList.toggle('soslift', dm || cb);
+    var cs = $('chatSos'), ds = $('dSos'); if (cs) cs.hidden = no || !cb; if (ds) ds.hidden = no || !dm;
   }
   function dmFit() {
     var b = document.body; cbFit(); if (!b.classList.contains('dmfix')) return sosLift();
@@ -3717,7 +3717,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     if (state.dmJump && c) { state.dmFind = { q: state.dmJump.q, id: state.dmJump.id, i: -1, jump: state.dmJump.id }; state.dmJump = null; }
     var F = state.dmFind;
     var h = '<div class="chead"><button class="btn back" id="dBack" type="button">←</button><strong>' + (grp ? esc(gtitle) + (c && c.members ? '<button type="button" class="org gmem" id="gMem">' + c.members.length + '명 ▾</button>' : '') : esc(w) + nickH(w) + (c && c.org ? '<span class="org">' + esc(c.org) + '</span>' : '')) + '</strong>' +
-      '<button class="btn back" id="dFindB" type="button" aria-label="대화 안에서 찾기" aria-expanded="' + (F ? 'true' : 'false') + '" style="margin-left:auto">🔍</button></div>';
+      '<button class="btn back" id="dFindB" type="button" aria-label="대화 안에서 찾기" aria-expanded="' + (F ? 'true' : 'false') + '" style="margin-left:auto">🔍</button><button class="btn back dsos" id="dSos" type="button" hidden aria-label="경호 호출" title="경호 호출">🚨</button></div>';
     if (F) h += '<div class="dmfind"><div class="cfind"><input id="dfQ" type="search" placeholder="이 대화에서 찾기" autocomplete="off" enterkeyhint="search" value="' + esc(F.q || '') + '"><span class="cfn" id="dfN"></span><button type="button" id="dfUp" aria-label="이전(위)">▲</button><button type="button" id="dfDn" aria-label="다음(아래)">▼</button><button type="button" id="dfX" aria-label="검색 닫기">✕</button></div><p class="note" id="dfMsg" hidden></p></div>';
     if (grp && c && state.grInfo) {   // 멤버 · 이름 바꾸기 · 넣기 · 나가기
       h += '<div class="ginfo"><p class="note" style="margin:0 0 6px">멤버: ' + c.members.map(function (n) { return esc(n) + nickH(n); }).join(', ') + '</p>';
@@ -3749,6 +3749,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       else h += '<form class="send" id="dForm" novalidate><textarea id="dText" rows="1" maxlength="1000" placeholder="메시지"></textarea><button class="btn btn-hot" id="dBtn" type="submit">보내기</button></form><p class="msg" id="dMsg" role="alert"></p>';
     }
     area.innerHTML = document.body.classList.contains('dmfix') ? '<div class="dmshell" id="dmShell">' + h + '</div>' : h;
+    if ($('dSos')) { $('dSos').addEventListener('click', function () { if (state.s) sosForm(); }); sosLift(); }   // 🚨 (폰: 떠 있는 동그라미 대신 이름 줄)
     $('dBack').addEventListener('click', function () { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; state.dmFind = null; render(); loadDm(); startPoll(loadDm, 20000); });
     if ($('gMem')) $('gMem').addEventListener('click', function () { state.grInfo = !state.grInfo; render(); });
     area.querySelectorAll('[data-itake]').forEach(function (b) { b.addEventListener('click', function () { var m = c.msgs.filter(function (x) { return x.id === b.dataset.itake; })[0]; if (m) inqTakeSheet(c, m); }); });
@@ -4822,6 +4823,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   function paintSos() {
     var bar = $('sosBar'), list = state.sos || [], d = state.data || {}, crew = !!(d.guard || d.admin);
     $('sosFab').hidden = !state.s || !state.data || !!state.data.guard;   // 경호팀은 받는 쪽 (입구 버튼을 가리지 않게)
+    sosLift();
     if (!list.length) { bar.hidden = true; bar.innerHTML = ''; return; }
     bar.innerHTML = list.map(function (x) {
       var who = x.go.map(function (k) { return esc(k.who); }).join(', '), what = esc(x.where + ' · ' + x.kind) + (x.memo ? ' · ' + esc(x.memo) : '');
@@ -4840,7 +4842,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   setInterval(function () {   // 경과 시간 · 호출이 살아 있으면 3초마다 새로
     document.querySelectorAll('[data-sosms]').forEach(function (el) { var ms = +el.dataset.sosms; if (ms) el.textContent = sosAge({ ms: ms }); });
     if (state.s && state.data && !document.hidden && (state.sos || []).length && Date.now() - (state.sosAt || 0) > 2800) loadSos();
-    if (state.s && state.data) $('sosFab').hidden = !!state.data.guard;
+    if (state.s && state.data) { $('sosFab').hidden = !!state.data.guard; sosLift(); }
   }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.data) loadSos(); });
   function sosForm(pre) {
@@ -4879,6 +4881,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     });
   }
   $('sosFab').addEventListener('click', function () { if (state.s) sosForm(); });
+  $('chatSos').addEventListener('click', function () { if (state.s) sosForm(); });   // 💬 대화창 위 줄의 🚨 (폰)
 
   // ── 🛎 운영 요청 (2026-11-18): 배달·기본 세팅·아웃 청소·자리 이동·퍼레이드 지원(N명)·온도 → 운영팀에게만 알림. 운영팀이 ✅ 맡으면(인원이 다 차면) 닫힘 ──
   function opsBadge(r) {   // 🛎 탭 숫자: 운영팀은 아직 아무도 안 맡은(내가 안 맡은) 요청 수
