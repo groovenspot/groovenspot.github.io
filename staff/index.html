@@ -2,6 +2,11 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<!-- 🔒 보안 설정(CSP, 2026-11-19): 이 화면이 부를 수 있는 곳을 정해 둔다 — 서버(API)·사진(구글 드라이브)·이 사이트만. 다른 곳의 코드·연결은 막힘.
+     새 외부 주소를 쓰게 되면 여기에 더해야 해요(안 그러면 그 기능만 막힘). 스크립트·스타일이 이 파일 안에 있어서 'unsafe-inline' 은 필요. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://drive.google.com https://*.googleusercontent.com; media-src 'self' data: blob:; connect-src 'self' https://groove-staff-api.groovenspotbusan.workers.dev; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<!-- 🔄 앱 버전: 깃허브 작업(staff-version)이 이 파일이 바뀔 때마다 자동으로 찍고 staff/version.json 도 같이 바꾼다. 손으로 고치지 않기. -->
+<meta name="gs-ver" content="56b535dea724">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
@@ -1452,6 +1457,8 @@ body.popmode .chath .chpop { display: none; }
   function busy(on) { $('loading').hidden = !on; }
   function show(view) { ['loginView', 'appView', 'docView'].forEach(function (id) { $(id).hidden = id !== view; }); window.scrollTo(0, 0); }
   function today() { var d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); }
+  // 영업일 (서버 bizDay_ 와 같음): 한국 시간 낮 12시 전은 전날 영업 — 새벽 2시에 '어제 마감' 업무가 '마감 지남'으로 뜨지 않게 (2026-11-19)
+  function bizToday() { return new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10); }
   function md(s) { var p = String(s).split('-'); return +p[1] + '/' + +p[2]; }
   // 닉네임 (2026-11-18): 이름 옆에 작게. 목록 응답의 nicks(이름 key → 닉네임), 본인은 나 → 내 정보에서 정함
   function nickOf(n) { var m = (state.data && state.data.nicks) || {}, k = key(n), x = m[k] || ''; return x && key(x) !== k ? x : ''; }
@@ -1604,27 +1611,61 @@ body.popmode .chath .chpop { display: none; }
   function quietSync() { if (state.s && state.data && !document.hidden && state.bview !== 'edit' && Date.now() - state.lastSync > 30000) refresh(true); }
   setInterval(quietSync, 90000);
   document.addEventListener('visibilitychange', quietSync);
-  // 새 버전 자동 반영 (2026-11-18): 머지한 화면이 폰에 옛날 것으로 남지 않게. 앱을 다시 볼 때·5분마다 이 페이지를 새로 받아 보고,
-  // 처음과 달라졌으면 입력 중이 아닐 때 새로고침한다(입력 창이 열려 있으면 닫힌 뒤에).
-  var PAGE_V = null, PAGE_NEW = false;
+  // 🔄 새 버전 자동 반영 (2026-11-18, 2026-11-19 고침): 이 화면에 박힌 버전(<meta name="gs-ver">)과 작은 파일 /staff/version.json 을 비교한다.
+  // 예전엔 '처음 새로 받은 페이지'를 기준으로 삼아서, 옛 화면이 캐시에서 열리면 기준부터 새것이라 계속 옛 화면이었다. 또 5분마다 앱 전체(압축 178KB)를 받았다.
+  // 이제 앱을 다시 볼 때·5분마다 version.json(수십 바이트)만 받는다. 다르면 입력·업로드 중이 아닐 때 새 화면을 먼저 받아 두고 새로고침한다
+  // (같은 버전으로는 2분 안에 다시 새로고침하지 않음 — 새로고침해도 옛 화면이면 되풀이하지 않게). version.json 을 못 받으면 예전처럼 페이지를 받아 비교.
+  var APP_V = (document.querySelector('meta[name="gs-ver"]') || {}).content || '', PAGE_V = null, PAGE_NEW = '', verFly = false, verT = null;
   function pageHash(t) { var h = 0; for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return h; }
   function checkPage() {
     if (PAGE_NEW) return tryReload();
+    if (verFly) return; verFly = true;
+    var end = function () { verFly = false; };
     try {
-      fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : null; }).then(function (t) {
-        if (!t || t.length < 1000) return;
-        var h = pageHash(t);
-        if (PAGE_V === null) PAGE_V = h; else if (h !== PAGE_V) { PAGE_NEW = true; tryReload(); }
-      }).catch(function () {});
-    } catch (e) {}
+      fetch('/staff/version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        var v = j && typeof j.v === 'string' ? j.v : '';
+        if (!v) return checkPageOld().then(end, end);
+        end(); if (v !== APP_V) { PAGE_NEW = v; tryReload(); }
+      }).catch(function () { return checkPageOld().then(end, end); });
+    } catch (e) { end(); }
+  }
+  function checkPageOld() {   // version.json 이 없을 때(못 받음): 페이지를 받아 버전 표시가 다르거나, 처음 받은 것과 내용이 달라졌으면
+    return fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : null; }).then(function (t) {
+      if (!t || t.length < 1000) return;
+      var m = /<meta name="gs-ver" content="([^"]*)">/.exec(t), h = pageHash(t);
+      if (m && m[1] && m[1] !== APP_V) { PAGE_NEW = m[1]; return tryReload(); }
+      if (PAGE_V === null) PAGE_V = h; else if (h !== PAGE_V) { PAGE_NEW = 'p' + h; tryReload(); }
+    }).catch(function () {});
+  }
+  function reloadBusy() {   // 입력·사진 붙이기·업로드 중이면 기다린다
+    var a = document.activeElement, ci = $('chatIn');
+    if (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable) && (state.s || a.value)) return true;   // 로그인 화면의 빈 칸(자동 커서)은 괜찮음
+    if (!$('sheet').hidden || state.bview === 'edit') return true;
+    if (ci && !$('chatBox').hidden && ci.value.trim()) return true;   // 보내지 않은 대화
+    if (document.querySelector('.chatph:not([hidden]), #lvPh:not([hidden])')) return true;   // 붙여 둔 사진·영상
+    return Date.now() - (state.upAt || 0) < 15000;   // 영상·음원 조각을 올리는 중
   }
   function tryReload() {
-    var a = document.activeElement, typing = a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
-    if ($('sheet').hidden && !typing) location.reload();
+    if (!PAGE_NEW) return;
+    clearTimeout(verT);
+    if (reloadBusy()) { verT = setTimeout(tryReload, 20000); return; }
+    var k = 'gs_vtry', last = null; try { last = JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) {}
+    if (last && last.v === PAGE_NEW && Date.now() - last.at < 120000) { verT = setTimeout(tryReload, 120000 - (Date.now() - last.at) + 500); return; }
+    try { sessionStorage.setItem(k, JSON.stringify({ v: PAGE_NEW, at: Date.now() })); } catch (e) {}
+    var gone = false, go = function () { if (!gone) { gone = true; location.reload(); } };
+    setTimeout(go, 6000);   // 느려도 6초 뒤엔 새로고침
+    try { fetch('/staff/', { cache: 'reload' }).then(function (r) { return r.text(); }).catch(function () {}).then(go); } catch (e) { go(); }   // 새 화면을 먼저 받아 둔다(브라우저·앱 저장본도 새것으로)
   }
   checkPage();
   setInterval(function () { if (!document.hidden) checkPage(); }, 300000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) checkPage(); });
+  // 📶 받아 오기 간격 (2026-11-19): 영업 시간(한국 19:00~08:00) 밖에는 3배로 느리게 — 단, 그 화면에 2분 안에 새 내용이 왔거나
+  // 내가 화면을 만졌으면 그대로(낮에 일하는 중이면 느려지지 않게). 가려진 화면·안 보는 탭은 원래부터 안 받는다(따로 띄운 대화창만 예외).
+  function bizHours() { var h = new Date(Date.now() + 9 * 3600e3).getUTCHours(); return h >= 19 || h < 8; }
+  function pace(ms, hot) { return bizHours() || Date.now() - Math.max(state.touchAt || 0, hot || 0) < 120000 ? ms : ms * 3; }
+  ['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, function () { state.touchAt = Date.now(); }, { capture: true, passive: true }); });
+  // 📶 앱 화면 저장(sw.js): 알림을 안 켜도 등록해 두면, 지하·신호 약한 곳에서도 저장된 화면으로 바로 뜬다 (2026-11-19)
+  if ('serviceWorker' in navigator && /^\/staff\//.test(location.pathname)) window.addEventListener('load', function () { try { navigator.serviceWorker.register('/staff/sw.js', { scope: '/staff/' }).catch(function () {}); } catch (e) {} });
 
   function refresh(keepScroll) {
     var soft = keepScroll && state.data;
@@ -2005,7 +2046,7 @@ body.popmode .chath .chpop { display: none; }
   // 📋 업무사항 (2026-11-18, 예전 결정사항): 담당자·팀장 이상이 상태(대기·진행·완료)·코멘트, 완료된 일은 대표가 확인 뒤 지움
   var DEC_ORD = { '진행': 0, '대기': 1, '완료': 2 };
   function renderDec(area, d) {
-    var list = d.decisions || [], t = today(), f = state.decF || '';
+    var list = d.decisions || [], t = bizToday(), f = state.decF || '';
     var h = '<div class="gh"><h1>📋 업무사항</h1></div>';
     if (d.decAdd) h += '<details class="decadd"' + (state.decAddOpen ? ' open' : '') + '><summary>➕ 업무 추가</summary><form id="decAddF" novalidate>' +
       '<label>할 일<textarea id="decAddW" maxlength="300" rows="2" placeholder="예: 우지랑 12월 파티 조명 견적 받기">' + esc(state.decAddDraft || '') + '</textarea></label>' +
@@ -2522,8 +2563,8 @@ body.popmode .chath .chpop { display: none; }
   setInterval(function () {
     if (!state.s || !state.data || document.hidden) return;
     var live = state.gate && (state.gate.calls || []).some(function (c) { return c.status === '호출'; }), age = Date.now() - (state.gateAt || 0);
-    if (state.tab === 'gate' && gateCanSee() && age > (live ? 2800 : 9500)) loadGate(true);
-    else if (state.tab !== 'gate' && gateMine() && age > 7800) loadGate(true);
+    if (state.tab === 'gate' && gateCanSee() && age > (live ? 2800 : pace(9500))) loadGate(true);
+    else if (state.tab !== 'gate' && gateMine() && age > pace(7800)) loadGate(true);
   }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.data && (gateMine() || state.tab === 'gate')) loadGate(true); });
 
@@ -4330,6 +4371,7 @@ body.popmode .chath .chpop { display: none; }
     var t = e.data && e.data.tab, ct = /^chat:(table|yc|guest|ops|gate|live)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
     if (e.data && e.data.peek && /^(🌙 영업 종료|🌅 영업 시작)/.test(e.data.peek.title || '') && state.data) { refresh(true); return; }   // 🌙 영업 종료 알림 → 화면 '수고하셨습니다'
+    if (e.data && e.data.peek && e.data.peek.kind === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출 알림 → 열려 있는 화면에도 바로 빨간 줄
     if (t === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출: 탭이 아니라 위쪽 빨간 줄
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
     if (t && state.data) { state.tab = t; state.tabPick = ''; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); if (t === 'ops') loadOps(); if (t === 'live') loadLive(); }
@@ -4434,12 +4476,12 @@ body.popmode .chath .chpop { display: none; }
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok) { if (!state.ops) { state.opsErr = r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'ops') render(); } return; }
       var sig = JSON.stringify(r.list), same = !!state.ops && JSON.stringify(state.ops.list) === sig;
-      state.ops = r; state.opsErr = ''; opsBadge(r);
+      state.ops = r; state.opsErr = ''; opsBadge(r); if (!same) state.opsHot = Date.now();
       if (state.chatTail) delete state.chatTail.ops; try { paintChatFab(); } catch (e) {}
       if (state.tab === 'ops' && !same && $('sheet').hidden) render();
     }).catch(function () { state.opsFly = 0; state.opsAt = Date.now(); if (!state.ops && state.tab === 'ops') { state.opsErr = '연결이 안 돼요.'; render(); } });
   }
-  setInterval(function () { if (state.s && state.data && state.tab === 'ops' && !document.hidden && Date.now() - (state.opsAt || 0) > 4500) loadOps(true); }, 1000);
+  setInterval(function () { if (state.s && state.data && state.tab === 'ops' && !document.hidden && Date.now() - (state.opsAt || 0) > pace(4500, state.opsHot)) loadOps(true); }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'ops') loadOps(true); });
   function opsErr(r) { return { kind: '종류를 골라 주세요.', empty: '무엇을 갖다 드릴지 골라 주세요.', seat: '자리를 확인해 주세요. (예: 4 · L3 · D1 · S5)', text: '< > 는 쓸 수 없어요.', n: '인원은 1~10명이에요.', busy: '잠시 후 다시 해 주세요.', full: '이미 인원이 다 찼어요.', forbidden: '권한이 없어요.', state: '취소된 요청이에요.', notfound: '없는 요청이에요.', soon: '방금 올렸어요. 1분 뒤에 다시 올릴 수 있어요.' }[r.error] || '다시 해 주세요.'; }
   function opsCall(body, btn, done) {
@@ -4453,12 +4495,12 @@ body.popmode .chath .chpop { display: none; }
   function loadLive(quiet) {
     if (!state.s || state.lvFly) return;
     state.lvFly = 1;
-    if (!state.lvTimer) state.lvTimer = setInterval(function () { if (state.tab === 'live' && !document.hidden && state.s) loadLive(true); }, 10000);
+    if (!state.lvTimer) state.lvTimer = setInterval(function () { if (state.tab === 'live' && !document.hidden && state.s && Date.now() - (state.lvPollAt || 0) > pace(9500, state.lvHot)) { state.lvPollAt = Date.now(); loadLive(true); } }, 10000);
     return call({ a: 'lv_get', token: state.s.token }).then(function (r) {
       state.lvFly = 0;
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok) { if (!state.lv) { state.lvErr = r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'live') render(); } return; }
-      var same = state.lv && JSON.stringify(state.lv.list) === JSON.stringify(r.list); state.lv = r; state.lvErr = '';
+      var same = state.lv && JSON.stringify(state.lv.list) === JSON.stringify(r.list); state.lv = r; state.lvErr = ''; if (!same) state.lvHot = Date.now();
       if (state.data) state.data.lv = r.list.slice(0, 30).map(function (x) { return [x.at, x.mine ? 1 : 0]; });
       if (state.chatTail) delete state.chatTail.live; try { paintChatFab(); } catch (e) {}   // 💬 실시간 대화 안 읽은 수 (lv_get 의 chat 꼬리)
       if (state.tab === 'live' && (!same || !quiet)) render(); else renderTabsOnly();
@@ -4625,11 +4667,11 @@ body.popmode .chath .chpop { display: none; }
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok) { if (!quiet || !state.all) { state.allErr = r.error === 'forbidden' ? '대표만 볼 수 있어요.' : r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'all') render(); } return; }
       var sig = JSON.stringify([r.on, r.opsOpen, r.sosLive, JSON.stringify(r.pend || []), JSON.stringify(r.resp || []), r.rep && r.rep.at, r.list.length, r.list.slice(0, 80).map(function (x) { return x.id + x.at + (x.ops && x.ops.took ? x.ops.status + x.ops.took.length : '') + (x.sos && x.sos.go ? x.sos.status + x.sos.go.length : ''); })]), same = !!state.all && state.allSig === sig;
-      state.all = r; state.allSig = sig; state.allErr = '';
+      state.all = r; state.allSig = sig; state.allErr = ''; if (!same) state.allHot = Date.now();
       if (state.tab === 'all' && !same && $('sheet').hidden) render();
     }).catch(function () { state.allFly = 0; state.allAt = Date.now(); if (!state.all && state.tab === 'all') { state.allErr = '연결이 안 돼요.'; render(); } });
   }
-  setInterval(function () { if (state.s && state.data && state.tab === 'all' && !document.hidden && Date.now() - (state.allAt || 0) > 4500) loadAll(true); }, 1000);
+  setInterval(function () { if (state.s && state.data && state.tab === 'all' && !document.hidden && Date.now() - (state.allAt || 0) > pace(4500, state.allHot)) loadAll(true); }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'all') loadAll(true); });
   function fmtS(s) { if (s == null) return '–'; if (s < 60) return s + '초'; if (s < 3600) return Math.floor(s / 60) + '분' + (s % 60 ? ' ' + (s % 60) + '초' : ''); return Math.floor(s / 3600) + '시간 ' + Math.floor(s % 3600 / 60) + '분'; }
   function respHtml(list) {
@@ -4748,13 +4790,13 @@ body.popmode .chath .chpop { display: none; }
   }
   function tbPut(r) {
     var same = state.tb && JSON.stringify(state.tb.rows) === JSON.stringify(r.rows) && state.tb.day === r.day && state.tb.pending === r.pending && state.tb.approver === r.approver && JSON.stringify(state.tb.grants || []) === JSON.stringify(r.grants || []);
-    state.tb = r; state.tbErr = ''; state.tbAt = Date.now();
+    state.tb = r; state.tbErr = ''; state.tbAt = Date.now(); if (!same) state.tbHot = Date.now();
     if (state.chatTail) delete state.chatTail.table; try { paintChatFab(); } catch (e) {}
     if (state.data && r.approver) { state.data.tablePending = r.pending; renderTabsOnly(); }
     if (state.tab === 'table' && !same && $('sheet').hidden) renderSoon();
   }
   // 열어 둔 동안 8초마다 새로 받기 (입력 창이 열려 있으면 쉰다)
-  setInterval(function () { if (state.s && state.tab === 'table' && !document.hidden && $('sheet').hidden && Date.now() - (state.tbAt || 0) > 7000) loadTb(true); }, 8000);
+  setInterval(function () { if (state.s && state.tab === 'table' && !document.hidden && $('sheet').hidden && Date.now() - (state.tbAt || 0) > pace(7000, state.tbHot)) loadTb(true); }, 8000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'table') loadTb(true); });
   function tbCall(body, after) {
     body.token = state.s.token; state.tbFly = 1;
@@ -4840,14 +4882,14 @@ body.popmode .chath .chpop { display: none; }
   function ycPut(r) {
     var same = state.yc && JSON.stringify(state.yc.list) === JSON.stringify(r.list), had = {}, hadYc = !!state.yc;
     if (hadYc) state.yc.list.forEach(function (x) { had[x.id] = 1; });
-    state.yc = r; state.ycErr = ''; state.ycAt = Date.now();
+    state.yc = r; state.ycErr = ''; state.ycAt = Date.now(); if (!same) state.ycHot = Date.now();
     // 🎆 연출 탭: 새 연출 요청이 오면 그 카드로 내려가고 깜빡 — DJ팀 계정만 (대표 요청 2026-11-19 새벽)
     if (hadYc && state.data && state.data.team === 'DJ팀') { var nw = r.list.filter(function (x) { return x.status !== '끝' && !had[x.id]; }); if (nw.length) state.ycJump = nw[nw.length - 1].id; }
     if (state.chatTail) delete state.chatTail.yc; try { paintChatFab(); } catch (e) {}
     if (state.data) { state.data.ycWaiting = r.waiting; renderTabsOnly(); }
     if (state.tab === 'yc' && !same && $('sheet').hidden) renderSoon();
   }
-  setInterval(function () { if (state.s && state.tab === 'yc' && !document.hidden && $('sheet').hidden && !ycTyping() && Date.now() - (state.ycAt || 0) > 7000) loadYc(true); }, 8000);
+  setInterval(function () { if (state.s && state.tab === 'yc' && !document.hidden && $('sheet').hidden && !ycTyping() && Date.now() - (state.ycAt || 0) > pace(7000, state.ycHot)) loadYc(true); }, 8000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'yc') loadYc(true); });
   function ycTyping() { var a = document.activeElement; return !!(a && a.dataset && a.dataset.yccmt); }
   function ycCall(body, after) {
@@ -4940,6 +4982,7 @@ body.popmode .chath .chpop { display: none; }
     function next() {
       if (v.gone) return;
       if (i >= n) { v.done = true; paint(); return; }
+      state.upAt = Date.now();   // 올리는 중에는 새 버전 새로고침을 미룬다
       ycB64(v.file.slice(i * CH, (i + 1) * CH)).then(function (d) {
         return call({ a: 'vid_up', token: state.s.token, vid: v.vid, part: i, size: v.size, type: type, data: d });
       }).then(function (r) {
@@ -5015,6 +5058,7 @@ body.popmode .chath .chpop { display: none; }
             up = null; state.gdSongs = Object.assign({}, state.gdSongs, { pending: r.pending }); paint(); setTimeout(function () { load(true); }, 3000);
           }).catch(function (e) { up.err = String(e && e.message) === 'forbidden' ? 'DJ팀·관리자만 올릴 수 있어요' : '올리지 못했어요'; paint(); });
         }
+        state.upAt = Date.now();   // 올리는 중에는 새 버전 새로고침을 미룬다
         ycB64(f.slice(i * CH, (i + 1) * CH)).then(function (d) {
           return call({ a: 'vid_up', token: state.s.token, kind: 'song', vid: vid, part: i, size: f.size, type: type, data: d });
         }).then(function (r) {
@@ -5535,7 +5579,10 @@ body.popmode .chath .chpop { display: none; }
     $('chatPop').hidden = !!state.pop || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.matchMedia && matchMedia('(pointer: coarse)').matches);
     state.chatNewN = 0; $('chatNew').hidden = true; tabSave();
     chatLoad(true);
-    clearInterval(state.chatTimer); state.chatTimer = setInterval(function () { if ((state.pop || !document.hidden) && !$('chatBox').hidden) chatLoad(); }, 3000);   // 따로 띄운 창은 다른 창에 가려져도 계속 받기
+    clearInterval(state.chatTimer); state.chatHot = Date.now(); state.chatPollAt = 0;
+    state.chatTimer = setInterval(function () {   // 따로 띄운 창은 다른 창에 가려져도 계속 받기 · 영업 시간 밖·조용하면 9초
+      if ((state.pop || !document.hidden) && !$('chatBox').hidden && Date.now() - (state.chatPollAt || 0) >= pace(3000, state.chatHot) - 500) { state.chatPollAt = Date.now(); chatLoad(); }
+    }, 3000);
   }
   function chatFlash(room) {
     var b = $('chatBox'); b.classList.remove('newreq'); void b.offsetWidth; b.classList.add('newreq');
@@ -5596,7 +5643,12 @@ body.popmode .chath .chpop { display: none; }
   function chatLoad(first) {
     var room = state.chatRoom; if (!room || state.chatFly) return;
     state.chatFly = 1;
-    call({ a: 'chat_get', token: state.s.token, room: room }).then(function (r) { state.chatFly = 0; if (r.ok && r.room === state.chatRoom) chatPaint(r, first); }).catch(function () { state.chatFly = 0; });
+    call({ a: 'chat_get', token: state.s.token, room: room }).then(function (r) {
+      state.chatFly = 0; if (!(r.ok && r.room === state.chatRoom)) return;
+      var a = state.chat && state.chat.room === r.room ? state.chat.list || [] : null, b = r.list || [];   // 새 글이 오면 2분은 3초 그대로
+      if (!a || a.length !== b.length || (b.length && a[a.length - 1].id !== b[b.length - 1].id)) state.chatHot = Date.now();
+      chatPaint(r, first);
+    }).catch(function () { state.chatFly = 0; });
   }
   // ⬇️ 사진·영상 저장 (대표 요청 2026-11-18): 폰은 공유 창(사진 앱에 저장), 컴퓨터는 파일로 내려받기
   function mediaExt(t) { return /png/.test(t) ? '.png' : /webp/.test(t) ? '.webp' : /quicktime/.test(t) ? '.mov' : /webm/.test(t) ? '.webm' : /video/.test(t) ? '.mp4' : '.jpg'; }

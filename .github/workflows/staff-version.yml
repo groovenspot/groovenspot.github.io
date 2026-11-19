@@ -1,0 +1,52 @@
+name: Stamp staff app version
+
+# 스태프 앱(staff/index.html)이 main 에 바뀌면 버전 번호를 자동으로 다시 찍는다 (2026-11-19).
+#  - 버전 = staff/index.html 내용의 sha256 앞 12자리 (<meta name="gs-ver" content="…"> 값은 비우고 계산)
+#  - 같은 값을 staff/index.html 의 gs-ver 와 staff/version.json {"v": "…"} 에 넣는다
+# 앱은 다시 볼 때·5분마다 version.json(수십 바이트)만 받아 자기 gs-ver 와 비교하고, 다르면 새로고침한다.
+# 되풀이 없음: 찍기만 한 커밋은 해시가 같아 바뀌는 게 없고, GITHUB_TOKEN 으로 올린 커밋은 워크플로를 다시 부르지 않는다.
+on:
+  push:
+    branches: [main]
+    paths: ["staff/index.html", "staff/version.json"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: staff-version
+  cancel-in-progress: false
+
+jobs:
+  stamp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main   # 이 실행이 기다리는 동안 들어온 커밋까지 포함한 최신 main 기준
+      - name: Stamp
+        run: |
+          node - <<'EOF'
+          const fs = require('fs'), crypto = require('crypto');
+          const f = 'staff/index.html', vf = 'staff/version.json', s = fs.readFileSync(f, 'utf8');
+          const re = /<meta name="gs-ver" content="[^"]*">/;
+          if (!re.test(s)) { console.log('gs-ver 표시가 없어요 — 건너뜀'); process.exit(0); }
+          const v = crypto.createHash('sha256').update(s.replace(re, '<meta name="gs-ver" content="">')).digest('hex').slice(0, 12);
+          const out = s.replace(re, '<meta name="gs-ver" content="' + v + '">'), j = JSON.stringify({ v }) + '\n';
+          if (out !== s) fs.writeFileSync(f, out);
+          if (!fs.existsSync(vf) || fs.readFileSync(vf, 'utf8') !== j) fs.writeFileSync(vf, j);
+          console.log('version', v);
+          EOF
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add staff/index.html staff/version.json
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "스태프 앱 버전 찍기"
+          for i in 1 2 3; do
+            if git pull --rebase origin main; then git push origin HEAD:main && exit 0; else git rebase --abort || true; fi
+            sleep 5
+          done
+          exit 1
