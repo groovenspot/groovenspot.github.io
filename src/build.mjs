@@ -629,7 +629,8 @@ for (const a of ARTICLES) {
   artPages.push(page);
   for (const lang of LANGS) {
     const A = a[lang], U = ART_UI.related[lang];
-    const fill = (html) => html.replace(/%%a:([a-z0-9-]+)%%/g, (_, s) => href(lang, `guide/${s}/`)).replace(/%%(events|info|reserve|guide|floors|menu)%%/g, (_, p) => href(lang, `${p}/`));
+    const fill = (html) => html.replace(/%%a:([a-z0-9-]+)%%/g, (_, s) => href(lang, `guide/${s}/`)).replace(/%%(events|info|reserve|guide|floors|menu|request|privacy)%%/g, (_, p) => href(lang, `${p}/`))
+      .replace(/%%(youtube|ytmusic|soundcloud)%%/g, (_, k) => ({ youtube: YOUTUBE, ytmusic: YTMUSIC, soundcloud: SOUNDCLOUD })[k]);
     const others = ARTICLES.filter((x) => x !== a);
     const body = `<article>
 <section class="phead wrap"><h1>${A.h1}</h1><p class="lede">${A.lede}</p><p class="muted">${ART_UI.updated[lang]}: ${a.date}</p></section>
