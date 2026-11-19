@@ -143,9 +143,14 @@
     return e.floors.map(function (f) { return '<span class="chip ' + (f === '2F' ? 'g' : 's') + '">' + esc(f) + (f === '2F' ? ' HIPHOP' : ' EDM') + '</span>'; }).join('');
   }
 
+  // 파티 날 사진 전부 (대표 지시 2026-11-19 20:13): flyer = 카드 표지, more = 이벤트 페이지에 같이 보이는 사진(그날 타임테이블 등)
+  function moreOf(e) { return (Array.isArray(e.more) ? e.more : []).filter(function (x) { return typeof x === 'string' && /^\/assets\//.test(x) && x !== e.flyer; }); }
   function art(e, big) {
     var only = e.floors.length === 1 ? ' only-' + e.floors[0] : '';
-    if (e.flyer) return '<div class="ev-art' + (big ? ' full' : '') + '"><img src="' + esc(e.flyer) + '" alt="' + esc(e.title) + '" loading="' + (big ? 'eager' : 'lazy') + '"></div>';
+    var more = moreOf(e);
+    if (e.flyer) return '<div class="ev-art' + (big ? ' full' : '') + '"><img src="' + esc(e.flyer) + '" alt="' + esc(e.title) + '" loading="' + (big ? 'eager' : 'lazy') + '">' +
+      (big ? more.map(function (x, i) { return '<img src="' + esc(x) + '" alt="' + esc(e.title) + ' (' + (i + 2) + ')" loading="lazy">'; }).join('')
+        : (more.length ? '<span class="ev-more" aria-label="+' + more.length + '">+' + more.length + '</span>' : '')) + '</div>';
     var p = e.date.split('-');
     return '<div class="ev-art gen' + only + '" aria-hidden="true"><div class="gd"><small>' + esc(DOW[dowOf(e.date)] || '') + '</small>' + (+p[1]) + '.' + p[2] + '</div><div class="gt">' + esc(e.title) + '</div></div>';
   }
@@ -153,7 +158,8 @@
   function lineupText(e) {
     var names = [];
     if (e.lineup) Object.keys(e.lineup).forEach(function (f) { names = names.concat(e.lineup[f] || []); });
-    return names.join(' · ');
+    var seen = {};   // 게스트가 층 라인업에도 있으면 한 번만
+    return names.filter(function (n) { var k = String(n).toUpperCase(); if (seen[k]) return false; seen[k] = 1; return true; }).join(' · ');
   }
 
   function card(e, past) {
@@ -371,7 +377,7 @@
         startDate: e.date + 'T' + (e.open || hoursFor(dowOf(e.date)).open) + ':00+09:00',
         eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
         location: { '@type': 'NightClub', name: 'Groove & Spot', address: { '@type': 'PostalAddress', streetAddress: '중앙대로680번가길 52', addressLocality: '부산진구', addressRegion: '부산', addressCountry: 'KR' } },
-        image: e.flyer ? [new URL(e.flyer, location.href).href] : undefined,
+        image: e.flyer ? [e.flyer].concat(moreOf(e)).map(function (x) { return new URL(x, location.href).href; }) : undefined,
         performer: lineupText(e) ? lineupText(e).split(' · ').map(function (n) { return { '@type': 'PerformingGroup', name: n }; }) : undefined
       });
       document.head.appendChild(ld);
