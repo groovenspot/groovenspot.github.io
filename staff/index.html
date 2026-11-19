@@ -118,6 +118,37 @@ button, select { font: inherit; color: inherit; }
 .byeov small { font-size: 16px; color: #c9c1ff; font-weight: 700; }
 @keyframes byeflash { 0% { background: #120a2e; } 100% { background: #5b3df5; } }
 .byeov.out { opacity: 0; transition: opacity .4s; }
+/* 🦁 사자후 (대표 요청 2026-11-20 새벽): 대표 문구가 화면 가득 4초 — 번쩍·흔들림·빛줄기·불꽃·고리 */
+.roarov { position: fixed; inset: -24px; z-index: 200; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; -webkit-user-select: none; user-select: none;
+  background: radial-gradient(circle at 50% 50%, #ff2a1a 0%, #8a0606 38%, #1a0000 75%, #000 100%); animation: rshake .09s linear 0s 11, rbeat .5s ease-out 1s 6; }
+.roarov::before { content: ""; position: absolute; inset: -50%; background: repeating-conic-gradient(from 0deg, rgba(255,215,90,.22) 0deg 6deg, transparent 6deg 18deg); animation: rspin 4s linear forwards; }
+.roarov .fl { position: absolute; inset: 0; background: #fff; animation: rflash .5s ease-out forwards; pointer-events: none; }
+.roarov .rg { position: absolute; left: 50%; top: 50%; width: 40vmax; height: 40vmax; margin: -20vmax 0 0 -20vmax; border-radius: 50%; border: 10px solid rgba(255,214,90,.9); box-shadow: 0 0 40px #ffcf3a, inset 0 0 40px #ffcf3a; opacity: 0; animation: rring 1.1s ease-out forwards; pointer-events: none; }
+.roarov .rg.b { animation-delay: .35s; } .roarov .rg.c { animation-delay: .7s; } .roarov .rg.d { animation-delay: 1.6s; } .roarov .rg.e { animation-delay: 2.4s; }
+.roarov .sp { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px; border-radius: 50%; background: #ffe27a; box-shadow: 0 0 12px #ffb300, 0 0 4px #fff; opacity: 0; animation: rspark 1.3s cubic-bezier(.1,.8,.3,1) forwards; pointer-events: none; }
+.roarov .in { position: relative; display: grid; gap: 4px; justify-items: center; width: 92vw; animation: rpunch .55s cubic-bezier(.2,1.6,.4,1) both; }
+.roarov .li { font-size: 64px; line-height: 1; filter: drop-shadow(0 0 18px #ffb800); animation: rlion .5s ease-out .05s both; }
+.roarov .tg { font-size: 15px; font-weight: 900; letter-spacing: .3em; color: #ffd75a; text-shadow: 0 0 10px #ff9d00; }
+.roarov .tx { font-weight: 900; color: #fff; line-height: 1.1; letter-spacing: -.03em; word-break: keep-all; overflow-wrap: anywhere; white-space: pre-wrap; text-shadow: 0 4px 0 #7a0000, 0 0 22px rgba(255,170,0,.95), 0 0 60px rgba(255,60,0,.85); }
+.roarov .by { font-size: 14px; font-weight: 800; color: #ffd9c9; }
+.roarov .bar { position: absolute; left: 24px; bottom: 24px; height: 6px; background: linear-gradient(90deg, #ffd75a, #ff3b1a); animation: rbar 4s linear forwards; }
+.roarov.out { opacity: 0; transform: scale(1.15); transition: opacity .35s, transform .35s; }
+@keyframes rflash { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes rring { 0% { opacity: 1; transform: scale(.1); } 100% { opacity: 0; transform: scale(2.6); } }
+@keyframes rspark { 0% { opacity: 1; transform: translate(0,0) scale(1.4); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.3); } }
+@keyframes rpunch { 0% { transform: scale(3.2); opacity: 0; filter: blur(8px); } 60% { opacity: 1; filter: blur(0); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes rlion { 0% { transform: scale(.2) rotate(-25deg); } 70% { transform: scale(1.35) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes rshake { 0% { transform: translate(0,0); } 25% { transform: translate(-9px,6px); } 50% { transform: translate(8px,-7px); } 75% { transform: translate(-6px,-5px); } 100% { transform: translate(0,0); } }
+@keyframes rbeat { 0% { transform: scale(1.04); } 100% { transform: scale(1); } }
+@keyframes rspin { from { transform: rotate(0); } to { transform: rotate(40deg); } }
+@keyframes rbar { from { width: calc(100% - 48px); } to { width: 0; } }
+#meRoar { width: 100%; margin: 0 0 10px; min-height: 52px; font-weight: 900; color: #fff; border: 0; background: linear-gradient(135deg, #e0261a, #ff7a00); box-shadow: 0 6px 18px rgba(255,60,0,.28); }
+#meRoar small { color: #ffe3c4; font-weight: 700; }
+.roarsh textarea { width: 100%; min-height: 96px; font: inherit; font-size: 20px; font-weight: 800; line-height: 1.35; color: var(--txt); background: var(--bg); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 14px; resize: none; box-sizing: border-box; }
+.roarsh textarea:focus { outline: none; border-color: #ff5a1a; }
+.roarsh .rcnt { text-align: right; font-size: 13px; color: var(--muted); margin: 4px 2px 10px; } .roarsh .rcnt.over { color: #ff3b5c; font-weight: 800; }
+.roarsh .rbtns { display: grid; grid-template-columns: auto 1fr; gap: 8px; margin: 0 0 10px; } .roarsh .rbtns .btn { min-height: 52px; font-size: 16px; white-space: nowrap; padding: 0 14px; }
+#roarGo { color: #fff; border: 0; background: linear-gradient(135deg, #e0261a, #ff7a00); font-weight: 900; }
 .byeov.hi { animation-name: hiflash; } .byeov.hi small { color: #ffd6b0; }
 @keyframes hiflash { 0% { background: #2a1203; } 100% { background: #ff7a1a; } }
 .byebtn.hi { border-color: rgba(255,122,26,.8); background: rgba(255,122,26,.14); color: #ffb27a; }
@@ -2001,6 +2032,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       state.listAt = Date.now(); (r.gateOffers || []).forEach(function (c) { c.dl = state.listAt + (c.left || 0) * 1000; });
       state.data = r; saveData(r); try { sosPut(r.sos || []); } catch (e) {}
       try { byeBtnPaint(r); byeShow(r.bye); byeShow(r.hi, true); } catch (e) {}   // 🌙 영업 종료 · 🌅 영업 시작
+      try { roarShow(r.roar); } catch (e) {}   // 🦁 사자후
       try { paintGateOffer(); } catch (e) {}
       if (r.pq) flushPush();
       state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; state.s.role = r.role || ''; save(state.s); setWho();
@@ -3016,7 +3048,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   }
   function meHead(d) {   // 👤 내 프로필 머리: 이름·팀·역할 + 내 정보 바꾸기 + 출근·퇴근
     var role = state.s.admin ? '대표' : state.s.role === '부팀장' ? '부팀장' : state.s.role === '수습' ? '수습' : state.s.lead ? '팀장' : '직원';
-    return '<div class="gh prof"><div><h1>👤 ' + esc(state.s.name) + nickH(state.s.name) + '</h1><span class="range">' + esc(state.s.team || '팀 없음') + ' · ' + role + '</span></div><button type="button" class="btn" id="meEdit">✏️ 내 정보 바꾸기</button></div>' + punchBar(d) + '<button type="button" class="btn" id="meBrief">☀️ 오늘 브리핑</button>' + themeRow() + '<button type="button" class="btn pprefb" id="pushPrefB">🔔 알림 설정 <small>종류별 켜기·끄기</small></button>';
+    return '<div class="gh prof"><div><h1>👤 ' + esc(state.s.name) + nickH(state.s.name) + '</h1><span class="range">' + esc(state.s.team || '팀 없음') + ' · ' + role + '</span></div><button type="button" class="btn" id="meEdit">✏️ 내 정보 바꾸기</button></div>' + punchBar(d) + (state.s.admin ? '<button type="button" class="btn" id="meRoar">🦁 사자후 <small>전 직원 화면 가득</small></button>' : '') + '<button type="button" class="btn" id="meBrief">☀️ 오늘 브리핑</button>' + themeRow() + '<button type="button" class="btn pprefb" id="pushPrefB">🔔 알림 설정 <small>종류별 켜기·끄기</small></button>';
   }
   function renderMe(area, d) {
     var sales = SALES.indexOf(d.team) >= 0, pick = !!(d.admin || d.gall), h = meHead(d), m = state.me;
@@ -3164,6 +3196,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   function bindMe(area) {
     bindPunch(area); if ($('meEdit')) $('meEdit').addEventListener('click', openMe);
     if ($('meBrief')) $('meBrief').addEventListener('click', openBrief);
+    if ($('meRoar')) $('meRoar').addEventListener('click', roarSheet);   // 🦁 사자후 (대표만)
     bindTheme(area);   // 🎨 화면 배경
     var sel = $('meWho'); if (sel) sel.addEventListener('change', function () { state.meWho = this.value; state.me = null; state.meFly = 0; render(); });
   }
@@ -4788,6 +4821,46 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
     clearTimeout(state.byeT); state.byeT = setTimeout(function () { o.classList.add('out'); setTimeout(function () { o.hidden = true; o.classList.remove('out'); }, 420); }, 3000);
   }
+  // 🦁 사자후 (대표 요청 2026-11-20 새벽): 대표 문구가 화면 가득 4초 · 한 기기에 한 번만(gs_roar) · 15분 지난 건 안 띄움 · 누르면 닫힘
+  function roarShow(r, force) {
+    if (!r || !r.id || !r.text) return;
+    var seen = ''; try { seen = localStorage.getItem('gs_roar') || ''; } catch (e) {}
+    if (seen === r.id && !force) return;
+    if (r.at) { var t = Date.parse(String(r.at).slice(0, 19).replace(' ', 'T') + '+09:00'); if (isFinite(t) && Date.now() - t > 15 * 60e3) return; }
+    if (!force) try { localStorage.setItem('gs_roar', r.id); } catch (e) {}
+    try { if (navigator.serviceWorker) navigator.serviceWorker.getRegistration().then(function (g) { return g && g.getNotifications(); }).then(function (ns) { (ns || []).forEach(function (n) { if (n.data && n.data.ref === 'roar:' + r.id) n.close(); }); }).catch(function () {}); } catch (e) {}   // 본 사자후 알림은 지움
+    var old = document.querySelector('.roarov'); if (old) old.remove();
+    var o = document.createElement('div'), W = window.innerWidth, H = window.innerHeight; o.className = 'roarov'; o.setAttribute('role', 'alert'); o.setAttribute('aria-live', 'assertive');
+    o.innerHTML = '<div class="fl"></div><div class="rg"></div><div class="rg b"></div><div class="rg c"></div><div class="rg d"></div><div class="rg e"></div>' +
+      '<div class="in"><div class="li">🦁</div><div class="tg">사 자 후</div><div class="tx"></div><div class="by"></div></div><div class="bar"></div>';
+    for (var i = 0; i < 36; i++) { var sp = document.createElement('i'), a = Math.random() * 6.283, d = (0.35 + Math.random() * 0.4) * Math.max(W, H);
+      sp.className = 'sp'; sp.style.setProperty('--dx', Math.cos(a) * d + 'px'); sp.style.setProperty('--dy', Math.sin(a) * d + 'px'); sp.style.animationDelay = ((i < 24 ? 0.05 : 1.55) + Math.random() * 0.15) + 's'; o.insertBefore(sp, o.querySelector('.in')); }
+    var tx = o.querySelector('.tx'); tx.textContent = r.text; o.querySelector('.by').textContent = '— ' + (r.by || '대표');
+    document.body.appendChild(o);
+    var fs = 150; tx.style.fontSize = fs + 'px';   // 글자 크기: 화면에 들어가는 가장 큰 크기 (단어는 안 쪼갬)
+    while (fs > 24 && (tx.scrollWidth > W * 0.92 + 1 || tx.offsetHeight > H * 0.58)) { fs -= 2; tx.style.fontSize = fs + 'px'; }
+    try { if (navigator.vibrate) navigator.vibrate([500, 120, 500, 120, 900]); } catch (e) {}
+    var done = function () { if (!o.parentNode) return; clearTimeout(o._t); o.classList.add('out'); setTimeout(function () { o.remove(); }, 360); };
+    o._t = setTimeout(done, 3650); o.addEventListener('click', done);
+  }
+  function roarSheet() {
+    showSheet('<div class="roarsh"><h2>🦁 사자후</h2><p class="note" style="margin:0 0 10px">모든 직원(경호팀 포함)에게 알림이 가고, 앱 화면을 <b>4초 동안 가득</b> 채워요.</p>' +
+      '<textarea id="roarTx" maxlength="60" rows="3" placeholder="예) 전원 집중! 지금부터 피크타임 🔥"></textarea><div class="rcnt" id="roarN">0 / 60</div>' +
+      '<div class="rbtns"><button class="btn" type="button" id="roarPv">👀 미리보기</button><button class="btn" type="button" id="roarGo">🦁 전 직원에게 보내기</button></div><p class="msg" id="roarMsg"></p></div>');
+    var ta = $('roarTx'), len = function () { return Array.from(ta.value.trim()).length; };
+    var paint = function () { var n = len(); $('roarN').textContent = n + ' / 60'; $('roarN').classList.toggle('over', n > 60); };
+    ta.addEventListener('input', function () { paint(); $('roarMsg').textContent = ''; }); setTimeout(function () { try { ta.focus(); } catch (e) {} }, 50);
+    $('roarPv').addEventListener('click', function () { var v = ta.value.trim(); if (!v) { $('roarMsg').textContent = '문구를 적어 주세요.'; return; } $('roarMsg').textContent = ''; roarShow({ id: 'pv', text: v, by: '대표' }, true); });
+    $('roarGo').addEventListener('click', function () {
+      var b = this, v = ta.value.trim(); if (!v) { $('roarMsg').textContent = '문구를 적어 주세요.'; return; } if (len() > 60) { $('roarMsg').textContent = '60자까지 쓸 수 있어요.'; return; }
+      b.disabled = true; b.textContent = '보내는 중…';
+      call({ a: 'roar', token: state.s.token, text: v }).then(function (r) {
+        if (!r.ok) { b.disabled = false; b.textContent = '🦁 전 직원에게 보내기'; $('roarMsg').textContent = r.error === 'forbidden' ? '대표만 쓸 수 있어요.' : r.error === 'busy' ? '10분에 5번까지 보낼 수 있어요.' : r.error === 'long' ? '60자까지 쓸 수 있어요.' : r.error === 'empty' ? '문구를 적어 주세요.' : '보내지 못했어요. 다시 해 주세요.'; return; }
+        $('sheet').hidden = true; $('sheet').innerHTML = ''; flushPush();
+        roarShow(r.roar); toast('🦁 사자후 · ' + r.n + '명에게 보냈어요');
+      }).catch(function () { b.disabled = false; b.textContent = '🦁 전 직원에게 보내기'; $('roarMsg').textContent = '연결이 안 돼요.'; });
+    });
+  }
   function byeBtnPaint(d) { var b = $('byeBtn'); if (!b) return; b.hidden = !(d && d.byeOk); var hi = !!(d && d.bizClosed); b.textContent = hi ? '🌅 영업시작' : '🌙 영업종료'; b.classList.toggle('hi', hi); }
   function hiConfirm() {
     showSheet('<h2>🌅 영업 시작</h2><p style="font-size:18px;font-weight:900;margin:4px 0 10px">영업 시작할까요?</p>' +
@@ -4987,6 +5060,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     var t = e.data && e.data.tab, ct = /^chat:(table|yc|guest|ops|gate|live)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
     if (e.data && e.data.peek && /^(🌙 영업 종료|🌅 영업 시작)/.test(e.data.peek.title || '') && state.data) { refresh(true); return; }   // 🌙 영업 종료 알림 → 화면 '수고하셨습니다'
+    if (e.data && e.data.peek && e.data.peek.kind === 'roar') { var rp = e.data.peek, rid = String(rp.ref || '').replace(/^roar:/, ''); if (rid) roarShow({ id: rid, text: rp.body, by: String(rp.title || '').replace(/^🦁 사자후 · /, '') }); else if (state.data) refresh(true); return; }   // 🦁 사자후 알림 → 열려 있는 화면에 바로
     if (e.data && e.data.peek && e.data.peek.kind === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출 알림 → 열려 있는 화면에도 바로 빨간 줄
     if (t === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출: 탭이 아니라 위쪽 빨간 줄
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
