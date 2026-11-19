@@ -104,7 +104,8 @@ self.addEventListener('push', function (e) {
     // 열려 있는 앱에도 알려 줌 (🌙 영업 종료 → 화면 '수고하셨습니다', 🚨 경호 호출 → 빨간 줄)
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) { cs.forEach(function (c) { try { c.postMessage({ peek: { title: n.title, body: n.body, kind: n.kind || '' } }); } catch (x) {} }); }).catch(noop);
     // 🚨 경호 호출은 따로(gs-sos): 다른 알림이 덮어쓰지 않고, 누를 때까지 남고, 세게 진동 (2026-11-19)
-    var opt = { body: n.body, tag: sos ? 'gs-sos' : 'gs-staff', renotify: true, icon: '/staff/icon-192.png', badge: '/staff/badge-72.png', data: { tab: n.tab || '' } };
+    // 그 밖의 알림은 하나씩 따로 쌓임 — 카톡처럼 (대표 결정 2026-11-20 2시: 예전엔 새 알림이 앞 알림을 덮어 하나만 남았음)
+    var opt = { body: n.body, tag: sos ? 'gs-sos' : 'gs-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), renotify: true, icon: '/staff/icon-192.png', badge: '/staff/badge-72.png', data: { tab: n.tab || '' } };
     if (sos) { opt.requireInteraction = true; opt.vibrate = [300, 100, 300, 100, 600]; opt.silent = false; }
     return self.registration.showNotification(n.title, opt);
   }));
