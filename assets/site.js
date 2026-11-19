@@ -888,14 +888,19 @@
     var draft = store('gs_rv'); // 이름·연락처만 이 기기에 기억
     if (draft) { try { draft = JSON.parse(draft); form.name.value = draft.name || ''; form.phone.value = draft.phone || ''; } catch (e) {} }
 
-    function bookText(needPhone) {
-      var ok = true;
-      (needPhone ? ['name', 'phone'] : ['name']).forEach(function (k) {
-        var bad = !form[k].value.trim();
-        form[k].setAttribute('aria-invalid', bad ? 'true' : 'false');
-        if (bad) ok = false;
-      });
-      if (!ok) { toast(T.need); (form.name.value.trim() ? form.phone : form.name).focus(); return null; }
+    function bookText() {
+      var phone = form.phone.value.trim(), n = phone.replace(/\D/g, '').length;
+      var checks = {
+        name: !!form.name.value.trim() && !/[<>"]/.test(form.name.value),
+        phone: n >= 9 && n <= 15 && /^\+?[\d().\s-]+$/.test(phone),
+        date: !!form.date.value && form.date.value >= form.date.min,
+        bday: !form.bday.value.trim() || !!normBday(form.bday.value)
+      };
+      var invalid = Object.keys(checks).filter(function (k) {
+        form[k].setAttribute('aria-invalid', checks[k] ? 'false' : 'true');
+        return !checks[k];
+      })[0];
+      if (invalid) { toast(T['rv' + { name: 'Name', phone: 'Phone', date: 'Date', bday: 'Bday' }[invalid]] || T.need); form[invalid].focus(); return null; }
       if (!form.consent.checked) { toast(T.consent); form.consent.focus(); return null; }
       store('gs_rv', JSON.stringify({ name: form.name.value.trim(), phone: form.phone.value.trim() }));
       function lab(name) { var el = form[name]; var l = el.closest('label'); return l ? l.firstChild.textContent.trim() : name; }
@@ -925,26 +930,34 @@
     function normBday(v) {
       var d = String(v || '').replace(/\D/g, '');
       if (d.length === 3) d = '0' + d;
-      return d.length === 4 && +d.slice(0, 2) >= 1 && +d.slice(0, 2) <= 12 && +d.slice(2) >= 1 && +d.slice(2) <= 31 ? d.slice(0, 2) + '-' + d.slice(2) : '';
+      var m = +d.slice(0, 2), day = +d.slice(2), max = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1];
+      return d.length === 4 && day >= 1 && day <= max ? d.slice(0, 2) + '-' + d.slice(2) : '';
     }
-    // 그루브 구글 시트에 저장하고 결과({ok, code} 또는 {error})를 돌려준다. 응답이 없으면 null(최대 8초).
-    // 예전에는 저장 요청과 동시에 인스타를 열어서, 인스타 앱 안 브라우저처럼 화면이 바로 닫히는 곳에서는
-    // 요청이 출발하지 못하고 사라졌다(2026-11-17 G1116-JN7T). 이제 저장이 끝난 뒤 DM 버튼을 따로 누른다.
+    // Worker 응답을 받은 뒤 기존 시트에도 같은 신청을 보낸다 (대표 결정 2026-11-20).
+    // 응답이 지연돼도 다음 저장을 시도한다. POST 는 text/plain 단순 요청으로 보낸다.
+    function postBooking(url, payload) {
+      if (!url) return Promise.resolve(null);
+      var timer;
+      var late = new Promise(function (resolve) { timer = setTimeout(function () { resolve(null); }, 8000); });
+      var sent = Promise.resolve().then(function () {
+        return fetch(url, { method: 'POST', keepalive: true, body: JSON.stringify(payload) });
+      }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+      return Promise.race([sent, late]).then(function (r) { clearTimeout(timer); return r; });
+    }
     function saveBooking(b, channel) {
-      if (!GS.bookApi) return Promise.resolve(null);
       var TYPE = { guest: '게스트', table: '테이블', bottle: '바틀', h: 'H존' };
-      var body = JSON.stringify({
+      var booking = {
         code: b.code, name: form.name.value.trim(), phone: form.phone.value.trim(), date: form.date.value,
         party: form.party.value, floor: b.floor === 'any' ? '상관없음' : b.floor, type: TYPE[form.type.value] || form.type.value,
         req: form.req.value.trim(), bday: normBday(form.bday.value), promo: form.promo.checked, consent: form.consent.checked,
         channel: channel, lang: GS.lang, hp: form.website ? form.website.value : ''
+      };
+      var api = form.dataset.rsvApi;
+      return postBooking(api, Object.assign({ a: 'rsv_add' }, booking)).then(function (worker) {
+        if (worker && worker.ok && worker.code) booking.code = worker.code;
+        if (api && form.dataset.rsvDual !== '1') return worker;
+        return postBooking(GS.bookApi, booking).then(function (legacy) { return worker && worker.ok ? worker : legacy; });
       });
-      var req;
-      // text/plain 단순 요청이라 사전 확인(preflight) 없이 가고, Apps Script 응답은 CORS 로 읽을 수 있다
-      try { req = fetch(GS.bookApi, { method: 'POST', keepalive: true, body: body }).then(function (r) { return r.json(); }); }
-      catch (e) { req = Promise.reject(e); }
-      var late = new Promise(function (res) { setTimeout(function () { res(null); }, 8000); });
-      return Promise.race([req, late]).catch(function () { return null; });
     }
 
     var done = $('[data-rv-done]', form), go = $('[data-rv-go]', form), busy = false, last = null;
@@ -970,7 +983,7 @@
 
     function start(channel) {
       if (busy) return;
-      var b = bookText(channel === 'instagram'); if (!b) return;
+      var b = bookText(); if (!b) return;
       if (channel === 'instagram') copy(b.text); // 누른 순간에도 복사해 둔다(브라우저가 복사를 허락하는 때)
       track(channel === 'instagram' ? 'reserve_submit' : 'reserve_whatsapp', { type: form.type.value, floor: b.floor, party: form.party.value });
       // 예전 화면(결과 칸 없음)이 캐시로 남아 있으면 예전처럼 바로 연다
@@ -1000,7 +1013,7 @@
     }
 
     form.addEventListener('submit', function (ev) { ev.preventDefault(); start('instagram'); });
-    // WhatsApp: 사용자 이름(@groovenspot) 링크라 전화번호가 노출되지 않는다. 연락처는 WhatsApp에 있으니 이름만 필수.
+    // WhatsApp은 클럽 사용자 이름(@groovenspot) 링크를 쓴다.
     var wa = $('[data-wa]', form);
     if (wa) wa.addEventListener('click', function () { start('whatsapp'); });
   }

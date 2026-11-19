@@ -326,18 +326,32 @@
   }
 
   // ── 내 페이지 (verified) / 킵만 (limited) ──
+  // 📅 다음 예약·지난 방문 (대표 결정 2026-11-20). 본인 확인 뒤 서버가 준 공개 칸만 쓴다.
+  function reservations(rsv) {
+    var n = rsv.next, past = rsv.past || [];
+    function floor(f) { return { '2F': '2층 GROOVE', '3F': '3층 SPOT', '상관없음': '층 상관없음' }[f] || ''; }
+    function date(d) { return '<time datetime="' + esc(d) + '">' + esc(ymd(d)) + '</time>'; }
+    return '<section id="me-rsv"><h2 class="me-h">📅 다음 예약</h2>' +
+      (n ? '<ul class="kp-hist"><li>' + date(n.day) + [floor(n.floor), n.seat, n.status].filter(Boolean).map(function (x) { return ' · ' + esc(x); }).join('') + '</li></ul>' :
+        '<p class="me-empty">예정된 예약이 없어요.</p>') +
+      '<h2 class="me-h">지난 방문</h2>' +
+      (past.length ? '<ul class="kp-hist">' + past.map(function (v) { return '<li>' + date(v.day) + (floor(v.floor) ? ' · ' + esc(floor(v.floor)) : '') + '</li>'; }).join('') + '</ul>' :
+        '<p class="me-empty">지난 방문 기록이 없어요.</p>') + '</section>';
+  }
+
   function mine(r, limited) {
     stopTick();
     function days(d) { var a = Date.parse(d + 'T00:00:00Z'), b = Date.parse(r.today + 'T00:00:00Z'); return isNaN(a) || isNaN(b) ? null : Math.round((a - b) / 864e5); }
     var items = r.items || [], log = r.log || [], n = 0, soon = null;
     items.forEach(function (i) { n += i.kind === '병' ? i.n : 1; var x = days(i.exp); if (x !== null && (soon === null || x < soon)) soon = x; });
-    sub.textContent = limited ? '맡기신 술을 확인할 수 있어요.' : '맡기신 술과 내 정보를 볼 수 있어요.';
+    sub.textContent = limited ? '맡기신 술을 확인할 수 있어요.' : '예약과 맡기신 술, 내 정보를 볼 수 있어요.';
     var h = '';
     // 멤버 카드 (등급·QR 은 3단계)
     h += '<div class="me-card"><p class="kick">Groove &amp; Spot</p><p class="nm">' + esc(r.name) + '<small>님</small></p>' +
       '<p class="md">담당 <b>' + esc(r.staff || '-') + '</b></p>' +
       '<div class="me-act">' + telBtn(r.staffPhone, r.staff) + '<a class="btn btn-hot" href="/reserve/">예약하기</a></div></div>';
     if (limited) h += '<div class="me-lim" id="me-lim"><b>📱 내 정보는 아직 못 써요</b>담당에게 전화번호 등록을 요청하면 생일 등록 등을 쓸 수 있어요.</div>';
+    if (!limited && r.verified && r.rsv) h += reservations(r.rsv);
     // 내 킵
     h += '<div><h2 class="me-h">🍾 내 킵 <small>모두 ' + n + '병</small></h2>';
     if (soon !== null && soon <= 3) h += '<p class="kp-warn">⏰ ' + (soon < 0 ? '보관 기간이 지난 술이 있어요. 담당 직원에게 연락해 주세요.' : soon === 0 ? '오늘 보관 기간이 끝나는 술이 있어요.' : '보관 기간이 ' + soon + '일 남은 술이 있어요.') + '</p>';

@@ -107,6 +107,18 @@ button, select { font: inherit; color: inherit; }
   padding: calc(10px + env(safe-area-inset-top)) 16px 10px; background: rgba(10,9,9,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .brand { font-weight: 900; letter-spacing: .08em; font-size: 15px; }
 .brand b { color: var(--g); }
+/* 📅 예약 탭과 상태 변경 (대표 결정 2026-11-20) */
+.rsv-filters { display: flex; gap: 8px; margin-bottom: 12px; }
+.rsv-filters .btn[aria-pressed="true"] { border-color: var(--g); color: var(--g); }
+.rsv-detail { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 12px 0 16px; }
+.rsv-detail dt { color: var(--muted); }
+.rsv-detail dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rsv-detail a { color: var(--g); }
+.rsv-fields, .rsv-places { display: grid; gap: 10px; }
+.rsv-places { grid-template-columns: 1fr 1fr; }
+.rsv-fields label { display: grid; gap: 5px; color: var(--muted); font-size: 13px; }
+.rsv-fields select { width: 100%; min-height: 44px; padding: 6px 10px; color: var(--txt); background: var(--bg); border: 1px solid var(--line-2); border-radius: 10px; font: inherit; font-size: 16px; }
+.rsv-fields .msg:empty { display: none; }
 /* 🌙 영업 종료 (대표 요청 2026-11-19 새벽): 대표·팀장 버튼 · 받으면 화면 가득 '수고하셨습니다' 3초 깜빡 */
 .brandw { display: flex; align-items: center; gap: 8px; min-width: 0; }
 @media (max-width: 420px) { .brandw .brand { letter-spacing: .03em; font-size: 14px; } .byebtn { padding: 0 8px !important; font-size: 11px !important; } }
@@ -1558,6 +1570,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
       <button type="button" role="tab" data-tab="board" aria-selected="false">게시판</button>
       <button type="button" role="tab" data-tab="dm" aria-selected="false">메시지</button>
       <button type="button" role="tab" data-tab="keep" aria-selected="false" hidden>🍾 킵</button>
+      <button type="button" role="tab" data-tab="rsv" aria-selected="false" hidden>📅 예약</button>
       <button type="button" role="tab" data-tab="edu" aria-selected="false">신규 교육</button>
       <button type="button" role="tab" data-tab="notes" aria-selected="false" hidden>회의록</button>
       <button type="button" role="tab" data-tab="dec" aria-selected="false" hidden>업무사항</button>
@@ -1922,6 +1935,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
     state.yc = null; state.ycMsg = ''; state.ycErr = ''; state.ycFly = 0;
     state.lf = null; state.lfMsg = ''; state.lfErr = ''; state.lfFly = 0; state.me = null; state.meWho = ''; state.work = null; state.wkStart = '';
     try { document.body.classList.remove('popmode'); state.pop = ''; chatClose(); state.chatTail = {}; $('chatFab').hidden = true; $('sosFab').hidden = true; $('sosBar').hidden = true; state.sos = []; state.sosSig = ''; } catch (e) {}
+    state.reservations = null; state.rsvLoading = null; state.rsvError = ''; state.rsvPast = false;
     state.keep = null; state.kview = 'list'; state.kcur = null; state.kq = ''; state.kf = ''; state.kadd = null; state.kundo = null; state.kstale = false; state.kfly = 0; state.kmulti = false; state.kopt = {}; state.ktmp = {};
     try { localStorage.removeItem(KKEY); } catch (e) {}
     state.bview = 'list'; state.btag = ''; state.bpost = null; state.comp = null; state.cdraft = {}; state.dm = null; state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.dmDraft = {}; state.dmPick = false;
@@ -2040,7 +2054,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
     if (/^chat:(table|yc|guest|ops|gate|live)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
     var pm = /^pop:(table|yc|guest|ops|gate|live)$/.exec(h); if (pm) { state.pop = pm[1]; h = pm[1]; document.body.classList.add('popmode'); try { document.title = CHAT_NAME[pm[1]]; } catch (e) {} }
     if (h === 'sos') setTimeout(function () { loadSos(); }, 600);
-    if (['ops', 'live', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
+    if (['ops', 'live', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'rsv', 'me', 'work'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
     else {   // 다시 불러오면 마지막에 보던 탭·대화창 그대로 (대표 요청 2026-11-19)
       var lt = tabLast(); if (lt) { state.tab = lt.t; state.tabPick = lt.t; if (lt.c && lt.c === lt.t && !state.chatOpenNext) state.chatOpenNext = lt.c; }
     }
@@ -2053,6 +2067,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
     if (state.tab === 'yc') loadYc();
     if (state.tab === 'lost') loadLost();
     if (state.tab === 'keep') loadKeep();
+    if (state.tab === 'rsv') loadReservations();
     if (state.tab === 'all') loadAll();
     if (state.tab === 'ops') loadOps();
     if (state.tab === 'live') loadLive();
@@ -2134,7 +2149,9 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
       }
       $('sync').textContent = ''; state.lastSync = Date.now();
       state.listAt = Date.now(); (r.gateOffers || []).forEach(function (c) { c.dl = state.listAt + (c.left || 0) * 1000; });
-      state.data = r; saveData(r); try { sosPut(r.sos || []); } catch (e) {}
+      state.data = r; saveData(r);
+      if (state.tab === 'rsv' || state.tabPick === 'rsv') { if (r.rsv && r.rsv.show) loadReservations(); else state.reservations = null; }
+      try { sosPut(r.sos || []); } catch (e) {}
       try { byeBtnPaint(r); byeShow(r.bye); byeShow(r.hi, true); } catch (e) {}   // 🌙 영업 종료 · 🌅 영업 시작
       try { roarShow(r.roar); } catch (e) {}   // 🦁 사자후
       try { paintGateOffer(); } catch (e) {}
@@ -2156,6 +2173,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
       if (state.tab === 'keep' && state.kview !== 'add') { state.kview = 'list'; state.kcur = null; }
       render(); window.scrollTo(0, 0);
       if (state.tab === 'keep') loadKeep();
+      if (state.tab === 'rsv') loadReservations();
       if (state.tab === 'table') loadTb();
       if (state.tab === 'yc') loadYc();
       if (state.tab === 'lost') loadLost();
@@ -2183,6 +2201,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
       dec: ['📋 업무사항', d.decisions.filter(function (x) { return x.mine && x.status !== '완료'; }).length],
       acc: ['가입 승인', pending],
       keep: ['🍾 킵', keepDue()],
+      rsv: ['📅 예약', d.rsv && d.rsv.pending || 0],
       table: ['🪑 테이블', d.tableApprove ? (d.tablePending || 0) : 0],
       yc: ['🎆 연출', d.ycWaiting || 0],
       lost: ['🔎 분실물', 0],
@@ -2201,6 +2220,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
     if (LEAD_TABS[state.tab] && !d.lead) state.tab = 'guest';
     if (state.tab === 'dec' && !decOn) state.tab = 'guest';
     if (state.tab === 'keep' && !d.keep) state.tab = 'guest';
+    if (state.tab === 'rsv' && !(d.rsv && d.rsv.show)) state.tab = 'guest';
     if (state.tab === 'table' && !d.table) state.tab = 'guest';
     if (state.tab === 'yc' && !d.yc) state.tab = 'guest';
     if (state.tab === 'lost' && !d.lost) state.tab = 'guest';
@@ -2219,6 +2239,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
       if (LEAD_TABS[b.dataset.tab]) b.hidden = !d.lead;
       if (b.dataset.tab === 'dec') b.hidden = !decOn;   // 업무사항: 모두(내 일 추가). 팀장·부팀장·김동기·양진호·대표는 전부, 직원은 내 이름이 나온 일
       if (b.dataset.tab === 'keep') b.hidden = !d.keep;
+      if (b.dataset.tab === 'rsv') b.hidden = !(d.rsv && d.rsv.show);
       if (b.dataset.tab === 'table') b.hidden = !d.table;
       if (b.dataset.tab === 'yc') b.hidden = !d.yc;
       if (b.dataset.tab === 'lost') b.hidden = !d.lost;
@@ -2366,6 +2387,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
     if (state.tab === 'board') return renderBoard(area, d);
     if (state.tab === 'dm') return renderDm(area, d);
     if (state.tab === 'keep') return renderKeep(area, d);
+    if (state.tab === 'rsv') return renderReservations(area);
     if (state.tab === 'table') return renderTable(area);
     if (state.tab === 'yc') return renderYc(area);
     if (state.tab === 'lost') return renderLost(area);
@@ -4349,6 +4371,122 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
       done();
     });
   }
+  // 📅 예약 연결 (대표 결정 2026-11-20). 연락처가 들어간 목록은 앱 메모리에만 둔다.
+  function loadReservations() {
+    if (!state.s || state.rsvLoading) return;
+    var token = state.s.token, req = call({ a: 'rsv_list', token: token });
+    state.rsvLoading = req;
+    req.then(function (r) {
+      if (!state.s || state.s.token !== token) return;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      state.reservations = r.ok ? r : null;
+      state.rsvError = r.error === 'forbidden' ? '볼 수 있는 예약이 없어요.' : r.ok ? '' : '예약을 불러오지 못했어요.';
+    }).catch(function () {
+      if (state.s && state.s.token === token) { state.reservations = null; state.rsvError = '예약을 불러오지 못했어요.'; }
+    }).then(function () {
+      if (state.rsvLoading === req) state.rsvLoading = null;
+      if (state.s && state.s.token === token && state.tab === 'rsv') renderSoon();
+    });
+  }
+  function reservationPlace(r) {
+    var fl = { '2F': '2층 GROOVE', '3F': '3층 SPOT' }[r.floor] || '층 상관없음';
+    return fl + (r.seat ? ' · ' + r.seat : '');
+  }
+  function renderReservations(area) {
+    var r = state.reservations, all = r ? r.list : [], past = !!state.rsvPast;
+    var list = all.filter(function (x) { return past ? x.day < r.today : x.day >= r.today; });
+    if (past) list.reverse();
+    area.innerHTML = '<div class="kh"><div><h1>📅 ' + (state.data.admin ? '예약' : '내 담당 예약') + '</h1></div><button class="btn" type="button" id="rsvRefresh">새로고침</button></div>' +
+      '<div class="rsv-filters"><button class="btn" type="button" data-rsv-past="0" aria-pressed="' + !past + '">예정</button><button class="btn" type="button" data-rsv-past="1" aria-pressed="' + past + '">지난 예약</button></div>' +
+      (state.rsvError ? '<p class="empty">' + esc(state.rsvError) + '</p>' : !r ? '<p class="load">예약을 불러오는 중…</p>' : !list.length ? '<p class="empty">표시할 예약이 없어요.</p>' :
+        '<div class="list">' + list.map(function (x) {
+          return '<button class="item" type="button" data-rsv-id="' + esc(x.id) + '"><span class="row"><span class="chip ' + (x.status === '접수' ? 'new' : 'done') + '">' + esc(x.status) + '</span>' + esc(x.day) + ' · ' + esc(reservationPlace(x)) + '</span>' +
+            '<span class="title">' + esc(x.name) + ' · ' + esc(x.party) + '명</span><span class="row">' + esc(x.code) + ' · ' + esc(x.type) +
+            (x.staff ? ' · 담당 ' + esc(x.staff) : ' · 담당 미지정') + '</span></button>';
+        }).join('') + '</div>');
+    $('rsvRefresh').addEventListener('click', loadReservations);
+    area.querySelectorAll('[data-rsv-past]').forEach(function (b) { b.addEventListener('click', function () { state.rsvPast = b.dataset.rsvPast === '1'; render(); }); });
+    area.querySelectorAll('[data-rsv-id]').forEach(function (b) { b.addEventListener('click', function () {
+      reservationSheet(list.filter(function (x) { return x.id === b.dataset.rsvId; })[0], r);
+    }); });
+  }
+  function reservationError(code) {
+    return { staff: '승인된 영업팀 담당 MD를 지정해 주세요.', seat: '층과 자리를 다시 골라 주세요.', taken: '이미 배정된 자리예요. 목록을 새로 불러와 주세요.',
+      day: '지난 예약에는 자리를 배정할 수 없어요.', changed: '다른 곳에서 변경됐어요. 예약을 다시 열어 주세요.',
+      status: '현재 상태에서 바꿀 수 없어요.', inuse: '이미 손님이 앉은 자리는 자리표에서 확인해 주세요.',
+      dup: '같은 담당에 같은 이름의 킵 손님이 있어요. 킵 장부에서 연락처를 확인해 주세요.' }[code] || '처리하지 못했어요. 다시 시도해 주세요.';
+  }
+  function reservationSheet(r, data) {
+    var edit = data.admin, opts = function (list, cur) {
+      return list.map(function (s) { return '<option value="' + esc(s) + '"' + (s === cur ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('');
+    };
+    showSheet('<h2>📅 ' + esc(r.name) + ' · ' + esc(r.status) + '</h2><p class="sub">' + esc(r.code) + ' · ' + esc(r.day) + ' · ' + esc(reservationPlace(r)) +
+      '</p><dl class="rsv-detail"><dt>연락처</dt><dd><a href="tel:' + esc(r.phone) + '">' + esc(r.phone) + '</a></dd>' +
+      '<dt>인원·종류</dt><dd>' + esc(r.party) + '명 · ' + esc(r.type) + '</dd><dt>담당 MD</dt><dd>' + esc(r.staff || '미지정') + '</dd>' +
+      (r.memo ? '<dt>요청 사항</dt><dd>' + esc(r.memo) + '</dd>' : '') + '</dl>' +
+      (edit ? '<form id="rsvForm" class="rsv-fields"><label>담당 MD<select id="rsvStaff"><option value="">미지정</option>' +
+        opts(r.staff && data.staffs.indexOf(r.staff) < 0 ? [r.staff].concat(data.staffs) : data.staffs, r.staff) + '</select></label>' +
+        (r.actions.length ? '<label>상태 바꾸기<select id="rsvStatus"><option value="">그대로</option>' + opts(r.actions.filter(function (s) { return s !== '자리 배정' || r.day >= data.today; }), '') + '</select></label>' : '') +
+        '<div id="rsvPlaces" class="rsv-places" hidden><label>층<select id="rsvFloor"></select></label><label>자리<select id="rsvSeat"></select></label></div>' +
+        '<p id="rsvMsg" class="msg" role="status"></p><button class="btn btn-hot" type="submit" id="rsvSave">변경 저장</button>' +
+        '<button class="btn" type="button" id="rsvLink"' + (r.staff ? '' : ' disabled') + '>내 페이지 링크 만들기</button>' +
+        (r.staff ? '' : '<p class="note">담당 MD를 지정하고 저장하면 링크를 만들 수 있어요.</p>') + '</form>' : ''));
+    if (!edit) return;
+    var form = $('rsvForm'), msg = $('rsvMsg'), next = $('rsvStatus'), places = $('rsvPlaces'), floor = $('rsvFloor'), seat = $('rsvSeat'), save = $('rsvSave'), link = $('rsvLink'), floors = null, pending = false;
+    function drawSeats() {
+      var f = floors.filter(function (x) { return x.floor === floor.value; })[0];
+      seat.innerHTML = '<option value="">' + (f && f.seats.length ? '고르기' : '빈자리 없음') + '</option>' + opts(f ? f.seats : [], floor.value === r.floor ? r.seat : '');
+      seat.required = true;
+    }
+    floor.addEventListener('change', drawSeats);
+    if (next) next.addEventListener('change', function () {
+      places.hidden = next.value !== '자리 배정';
+      seat.required = !places.hidden; msg.textContent = '';
+      if (places.hidden || floors || pending) return;
+      pending = true; msg.textContent = '빈자리를 불러오는 중…';
+      call({ a: 'rsv_seats', token: state.s.token, id: r.id }).then(function (x) {
+        if ($('rsvForm') !== form) return;
+        if (!x.ok) { msg.textContent = reservationError(x.error); return; }
+        floors = x.floors;
+        floor.innerHTML = opts(floors.map(function (f) { return f.floor; }), r.floor);
+        drawSeats(); seat.required = !places.hidden; msg.textContent = '';
+      }).catch(function () { if ($('rsvForm') === form) msg.textContent = reservationError(); }).then(function () { pending = false; });
+    });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var status = next && next.value, staff = $('rsvStaff').value, body = { a: 'rsv_set', token: state.s.token, id: r.id, rev: r.rev };
+      if (!status && staff === r.staff) { msg.textContent = '바꿀 내용을 골라 주세요.'; return; }
+      if (staff !== r.staff) body.staff = staff;
+      if (status) body.status = status;
+      if (status === '자리 배정') {
+        if (pending || !seat.value) { msg.textContent = '층과 자리를 골라 주세요.'; return; }
+        body.floor = floor.value; body.seat = seat.value;
+      }
+      if (status === '취소' && !armed(save, '예약 취소하기')) return;
+      save.disabled = link.disabled = true; msg.textContent = '저장하는 중…';
+      call(body).then(function (x) {
+        if ($('rsvForm') !== form) return;
+        if (!x.ok) { msg.textContent = reservationError(x.error); return; }
+        $('sheetX').click(); toast('예약을 변경했어요.'); loadReservations(); refresh(true);
+      }).catch(function () { if ($('rsvForm') === form) msg.textContent = reservationError(); }).then(function () { save.disabled = false; link.disabled = !r.staff; });
+    });
+    link.addEventListener('click', function () {
+      link.disabled = save.disabled = true;
+      call({ a: 'rsv_link', token: state.s.token, id: r.id, rev: r.rev }).then(function (x) {
+        if ($('rsvForm') !== form) return;
+        if (!x.ok) { msg.textContent = reservationError(x.error); return; }
+        showSheet('<h2>내 페이지 링크</h2><p class="note">손님에게 링크를 보내 주세요. 손님은 연락처 뒤 4자리로 본인 확인을 해요.</p>' +
+          '<input class="klink" id="rsvUrl" readonly aria-label="내 페이지 링크" value="' + esc(x.url) + '">' +
+          '<button class="btn btn-hot" type="button" id="rsvCopy">링크 복사</button>');
+        $('rsvCopy').addEventListener('click', function () {
+          var input = $('rsvUrl');
+          if (navigator.clipboard) navigator.clipboard.writeText(input.value).then(function () { toast('링크를 복사했어요.'); }, function () { input.select(); });
+          else input.select();
+        });
+      }).catch(function () { if ($('rsvForm') === form) msg.textContent = reservationError(); }).then(function () { save.disabled = link.disabled = false; });
+    });
+  }
+
   function renderKeep(area, d) {
     if (!state.keep) { area.innerHTML = state.kerr ? '<p class="empty">' + esc(state.kerr) + '</p>' : '<p class="load">불러오는 중…</p>'; return; }
     if (state.kview === 'cust' && state.kcur) return renderKCust(area);
@@ -5223,6 +5361,7 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
     if (e.data && e.data.peek && e.data.peek.kind === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출 알림 → 열려 있는 화면에도 바로 빨간 줄
     if (t === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출: 탭이 아니라 위쪽 빨간 줄
     if (t === 'gate' && state.data && !(state.data.guard || state.data.gate)) { loadGate(); return; }   // MD·운영팀: 받을 호출만 새로
+    if (t === 'rsv' && state.data) { goTab(t); refresh(true); return; }
     if (t && state.data) { state.tab = t; state.tabPick = ''; if (t === 'keep') { state.kview = 'list'; state.kcur = null; } render(); if (t === 'keep') loadKeep(); if (t === 'table') loadTb(); if (t === 'yc') loadYc(); if (t === 'lost') loadLost(); if (t === 'gate') loadGate(); if (t === 'all') loadAll(); if (t === 'ops') loadOps(); if (t === 'live') loadLive(); }
   });
 

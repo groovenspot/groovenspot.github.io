@@ -22,7 +22,10 @@ const XHS = 'https://www.xiaohongshu.com/user/profile/679dc482000000000e01e057';
 const TRIPADVISOR = 'https://www.tripadvisor.com/Attraction_Review-g297884-d34781588-Reviews-Groove_Spot-Busan.html';
 // 신청곡 전달용 ntfy 토픽 (assets/admin.js 의 TOPIC 과 같아야 함)
 const REQ_TOPIC = 'groovenspot-req-6witbq5hriea';
-// 예약 저장: 그루브 구글 계정 시트('GROOVE 예약·손님')의 Apps Script 웹 앱. 비우면 저장 없이 DM만.
+// 예약 신청 이전(대표 결정 2026-11-20): Worker 접수 후 기존 예약 시트에도 기록한다.
+const RSV_API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
+const RSV_DUAL_WRITE = true;
+// 기존 예약 시트 'GROOVE 예약·손님'의 Apps Script 웹 앱.
 const BOOK_API = 'https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec';
 // Google Analytics 4 측정 ID (G-XXXXXXXXXX). 비워 두면 통계 코드를 넣지 않는다. 관리자 페이지에는 넣지 않음.
 const GA_ID = 'G-G4Y93LP9PP';
@@ -392,10 +395,10 @@ ${block('3F', ['dj', 'bar', 'stage', 'table', 'photo', 'smk'])}
     return `<div class="banner wrap"><img src="/assets/img/tables.webp" width="1079" height="430" alt="" fetchpriority="high"></div>
 ${pageHead(lang, 'reserve')}
 <section class="wrap sec rv">
-  <form class="rv-form" id="rv-form" novalidate>
+  <form class="rv-form" id="rv-form" data-rsv-api="${esc(RSV_API)}" data-rsv-dual="${RSV_DUAL_WRITE ? '1' : '0'}" novalidate>
     <p class="full rv-seat" data-rv-seat data-label="${esc(L('st.sel'))}" data-change="${esc(L('rv.seat.change'))}"><a href="${href(lang, 'seats/')}">🪑 ${L('rv.seat.link')} →</a></p>
-    <label>${L('rv.name')}<input name="name" autocomplete="name" placeholder="${esc(L('rv.p.name'))}" required></label>
-    <label>${L('rv.phone')}<input name="phone" type="tel" autocomplete="tel" placeholder="010-0000-0000" required></label>
+    <label>${L('rv.name')}<input name="name" maxlength="20" autocomplete="name" placeholder="${esc(L('rv.p.name'))}" required></label>
+    <label>${L('rv.phone')}<input name="phone" type="tel" maxlength="30" autocomplete="tel" placeholder="010-0000-0000" required></label>
     <label>${L('rv.date')}<input name="date" type="date" required></label>
     <label>${L('rv.party')}<select name="party">${['1', '2', '3-4', '5-6', '7+'].map((v) => opt(v, v)).join('')}</select></label>
     <fieldset class="seg"><legend>${L('rv.floor')}</legend>
@@ -405,7 +408,7 @@ ${pageHead(lang, 'reserve')}
     </fieldset>
     <label>${L('rv.type')}<select name="type">${opt('guest', L('rv.t.guest'))}${opt('table', L('rv.t.table'))}${opt('bottle', L('rv.t.bottle'))}${opt('h', L('rv.t.h'))}</select></label>
     <label>${L('rv.bday')}<input name="bday" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="${esc(L('rv.p.bday'))}"></label>
-    <label class="full">${L('rv.req')}<textarea name="req" rows="3" placeholder="${esc(L('rv.p.req'))}"></textarea></label>
+    <label class="full">${L('rv.req')}<textarea name="req" rows="3" maxlength="500" placeholder="${esc(L('rv.p.req'))}"></textarea></label>
     <label class="full rv-chk"><input type="checkbox" name="consent"><span>${L('rv.consent')} <a href="${href(lang, 'privacy/')}">${PRIVACY[lang].link}</a></span></label>
     <label class="full rv-chk"><input type="checkbox" name="promo"><span>${L('rv.promo')}</span></label>
     <input class="rv-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
