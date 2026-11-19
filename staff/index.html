@@ -2168,12 +2168,52 @@ html:where([data-theme="light"]) .wwk small { color: var(--g-ink); }
 .sheet-in .mfoot + #sheetX { margin-top: 8px; }
 html:where([data-theme="light"]) .acc > .ctl .btn-ok { color: #fff; }
 
+/* ── 예약 · 로그아웃 · 탭 순서 (2026-11-20 디자인 정리) ── */
+html .who .logoutb { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--card); color: var(--muted); font: inherit; font-size: 13px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+html .who .logoutb svg { flex: none; width: 17px; height: 17px; }
+html .who .logoutb:active { background: var(--card-2); color: var(--txt); }
+@media (max-width: 420px) { html .who .logoutb { padding: 0; width: 40px; justify-content: center; } html .who .logoutb span { display: none; } }
+html .tabedit { display: flex; justify-content: flex-end; margin: 0 0 8px; }
+html .tabedit[hidden] { display: none; }
+html .tabedit .tabeditb { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--card); color: var(--muted); font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+html .tabedit .tabeditb svg { width: 15px; height: 15px; flex: none; }
+html .tabedit .tabeditb:active { color: var(--txt); background: var(--card-2); }
+/* 예약 화면 */
+html .rsvh { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+html .rsvh h1 { font-size: 24px; font-weight: 900; margin: 0; }
+html .rsvh .range { display: block; margin-top: 2px; color: var(--muted); font-size: 14px; }
+html .rsvh .rsvnew { color: var(--g-ink, var(--g)); font-weight: 900; }
+html .rsvh .rsvref { flex: none; display: inline-flex; align-items: center; gap: 6px; width: auto; min-height: 44px; padding: 0 14px; border-radius: 14px; font-size: 14px; }
+html .rsvh .rsvref svg { width: 17px; height: 17px; }
+html .rsv-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 0 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+html .rsv-filters .btn { min-height: 46px; border: 0; border-radius: 12px; background: none; color: var(--muted); font-size: 15px; font-weight: 800; width: 100%; }
+html .rsv-filters .btn b { margin-left: 4px; font-weight: 900; }
+html .rsv-filters .btn[aria-pressed="true"] { background: var(--txt); color: var(--bg); border: 0; }
+html .rsvc { display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 16px; border-radius: 20px; border: 1px solid var(--line-2); background: var(--card); text-align: left; }
+html .rsvc.rsv-new { border: 1.5px solid var(--g); }
+html .rsvc.rsv-off { opacity: .6; }
+html .rsvc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+html .rsvc .chip { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 8px; }
+html .rsvc .chip.new { background: var(--g); border-color: var(--g); color: #120800; }
+html .rsvc .chip.done { background: none; border: 1px solid var(--ok); color: var(--ok); }
+html .rsvc .chip.off { background: none; border: 1px solid var(--line-2); color: var(--muted); }
+html .rsvc-day { font-size: 15px; font-weight: 900; color: var(--txt); font-variant-numeric: tabular-nums; }
+html .rsvc-day.today { color: var(--g-ink, var(--g)); }
+html .rsvc-name { font-size: 19px; font-weight: 900; color: var(--txt); display: flex; align-items: baseline; gap: 8px; }
+html .rsvc-name b { font-size: 15px; font-weight: 800; color: var(--muted); }
+html .rsvc-meta { font-size: 14px; color: var(--muted); }
+html .rsvc-meta b { color: var(--txt); font-weight: 800; }
+html .rsvc-nostaff { color: var(--warn); font-weight: 800; }
+html .rsvc-bd { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin-top: 2px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(255,92,168,.45); color: #ff9ccb; font-size: 13px; font-weight: 800; }
+html .rsvc-bd svg { width: 15px; height: 15px; }
+html:where([data-theme="light"]) .rsvc-bd { color: #b0246a; border-color: rgba(176,36,106,.4); }
+
 </style>
 </head>
 <body>
 <header class="top">
   <div class="brandw"><div class="brand">GROOVE <b>STAFF</b></div><button type="button" class="byebtn" id="byeBtn" hidden>🌙 영업종료</button><span class="onpill" id="onPill" hidden></span></div>
-  <div class="who" id="who" hidden><button class="mebtn" id="meBtn" type="button" aria-label="내 프로필"><strong id="whoName"></strong> <span id="whoTeam"></span></button><button class="bell" id="bell" type="button" hidden aria-label="알림 켜기·끄기">🔕</button><button class="link" id="logout" type="button">로그아웃</button></div>
+  <div class="who" id="who" hidden><button class="mebtn" id="meBtn" type="button" aria-label="내 프로필"><strong id="whoName"></strong> <span id="whoTeam"></span></button><button class="bell" id="bell" type="button" hidden aria-label="알림 켜기·끄기">🔕</button><button class="logoutb" id="logout" type="button" aria-label="로그아웃"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg><span>로그아웃</span></button></div>
 </header>
 <div class="sosbar" id="sosBar" hidden role="alert" aria-live="assertive"></div>
 <div class="byeov" id="byeOv" hidden role="alert" aria-live="assertive"><div><b id="byeT">수고하셨습니다</b><span id="byeE">🙏</span><small id="byeBy"></small></div></div>
@@ -2246,7 +2286,7 @@ html:where([data-theme="light"]) .acc > .ctl .btn-ok { color: #fff; }
     </nav>
     <button type="button" class="tabmore" id="tabMore" hidden aria-haspopup="dialog"><span class="ti tsvi" aria-hidden="true"><svg class="tsv" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span><span class="tml">더보기</span><span class="dot" id="tabMoreDot" hidden></span></button>
     </div>
-    <p class="tabedit" id="tabEditW"><button type="button" class="link" id="tabEdit">↕ 탭 순서</button></p>
+    <p class="tabedit" id="tabEditW"><button type="button" class="tabeditb" id="tabEdit"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>탭 순서</button></p>
     <p class="sync" id="sync" aria-live="polite"></p>
     <div id="listArea"></div>
   </section>
@@ -2967,6 +3007,7 @@ html:where([data-theme="light"]) .acc > .ctl .btn-ok { color: #fff; }
   // 📱 아래 탭바 + ☰ 더보기 (4단계 2026-11-19). 탭 버튼(data-tab)은 그대로 #tabs 안에 두고(딥링크·알림 누르면 탭 바꾸기·↕ 탭 순서 그대로),
   // 폰에서 5개가 넘으면 5번째부터는 탭바 오른쪽으로 잘려 숨고 ☰ 더보기(5번째 칸)에서 고른다. 숨은 탭에 숫자가 있으면 더보기에 빨간 점.
   var TAB_SVG = {all: '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2a5.7 5.7 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a5.7 5.7 0 0 1 0 8.4"/><path d="M19.1 4.9c3.9 3.9 3.9 10.3 0 14.2"/>', gate: '<path d="M13 4h3a2 2 0 0 1 2 2v14"/><path d="M2 20h3"/><path d="M13 20h9"/><path d="M10 12v.01"/><path d="M13 4.6v16.2a1 1 0 0 1-1.2 1L5 20V5.6a2 2 0 0 1 1.5-1.9l4-1A2 2 0 0 1 13 4.6z"/>', guest: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>', table: '<path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"/><path d="M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z"/><path d="M5 18v2"/><path d="M19 18v2"/>', yc: '<path d="M9.9 15.5A2 2 0 0 0 8.5 14.1l-6.1-1.6a.5.5 0 0 1 0-1l6.1-1.6a2 2 0 0 0 1.4-1.4l1.6-6.1a.5.5 0 0 1 1 0l1.6 6.1a2 2 0 0 0 1.4 1.4l6.1 1.6a.5.5 0 0 1 0 1l-6.1 1.6a2 2 0 0 0-1.4 1.4l-1.6 6.1a.5.5 0 0 1-1 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/>', ops: '<path d="M3 20h18"/><path d="M20 16a8 8 0 0 0-16 0z"/><path d="M12 4v4"/><path d="M10 4h4"/>', live: '<path d="m16 13 5.2 3.5a.5.5 0 0 0 .8-.4V7.9a.5.5 0 0 0-.8-.4L16 11"/><rect x="2" y="6" width="14" height="12" rx="2"/>', lost: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>', board: '<path d="M12 17v5"/><path d="M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.8l-1.8-.9A2 2 0 0 1 15 10.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>', dm: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', keep: '<path d="M10 2h4"/><path d="M11 2v4.3c0 .5-.3 1-.7 1.3C8.9 8.6 8 10.2 8 12v8a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-8c0-1.8-.9-3.4-2.3-4.4-.4-.3-.7-.8-.7-1.3V2"/><path d="M8 14h8"/>', edu: '<path d="M21.4 10.9a1 1 0 0 0 0-1.8L12.8 5.2a2 2 0 0 0-1.7 0L2.6 9.1a1 1 0 0 0 0 1.8l8.6 3.9a2 2 0 0 0 1.7 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>', notes: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h8"/><path d="M8 17h5"/>', dec: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>', acc: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/>', work: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>', me: '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>', more: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>'};
+  TAB_SVG.rsv = '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/>';   // 📅 예약 (2026-11-20 디자인 정리)
   function tabSvg(t) { var p = TAB_SVG[t]; return p ? '<svg class="tsv" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>' : ''; }   // 🎨 리디자인 2026-11-20: 탭 그림은 선 아이콘
   var TAB_ICON = { all: '📡', gate: '🚪', guest: '👥', table: '🪑', yc: '🎆', ops: '🛎', live: '🎬', lost: '🔎', board: '📌', dm: '✉️', keep: '🍾', edu: '🎓', notes: '📝', dec: '📋', acc: '✅', work: '🕘', me: '👤' };
   var TAB_EMO = /^([^\s0-9A-Za-z\u3131-\u318e\uac00-\ud7a3]+)\s+(.+)$/;   // '🪑 테이블' → 🪑 · 테이블
@@ -5137,18 +5178,29 @@ html:where([data-theme="light"]) .acc > .ctl .btn-ok { color: #fff; }
     var fl = { '2F': '2층 GROOVE', '3F': '3층 SPOT' }[r.floor] || '층 상관없음';
     return fl + (r.seat ? ' · ' + r.seat : '');
   }
+  function rsvDay(d, today) {   // '2026-11-21' → '11/21 (토)' · 오늘이면 '오늘'
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); if (!m) return esc(d || '');
+    if (d === today) return '오늘';
+    var w = '일월화수목금토'.charAt(new Date(+m[1], +m[2] - 1, +m[3]).getDay());
+    return (+m[2]) + '/' + (+m[3]) + ' (' + w + ')';
+  }
   function renderReservations(area) {
     var r = state.reservations, all = r ? r.list : [], past = !!state.rsvPast;
     var list = all.filter(function (x) { return past ? x.day < r.today : x.day >= r.today; });
     if (past) list.reverse();
-    area.innerHTML = '<div class="kh"><div><h1>📅 ' + (state.data.admin ? '예약' : '내 담당 예약') + '</h1></div><button class="btn" type="button" id="rsvRefresh">새로고침</button></div>' +
-      '<div class="rsv-filters"><button class="btn" type="button" data-rsv-past="0" aria-pressed="' + !past + '">예정</button><button class="btn" type="button" data-rsv-past="1" aria-pressed="' + past + '">지난 예약</button></div>' +
+    var nUp = r ? all.filter(function (x) { return x.day >= r.today; }).length : 0, nPast = r ? all.length - nUp : 0;
+    var nNew = r ? all.filter(function (x) { return x.day >= r.today && x.status === '접수'; }).length : 0;
+    area.innerHTML = '<div class="kh rsvh"><div><h1>' + (state.data.admin ? '예약' : '내 담당 예약') + '</h1><span class="range">' + (r ? '예정 ' + nUp + '건' + (nNew ? ' · 접수 대기 <b class="rsvnew">' + nNew + '</b>건' : '') : '홈페이지 예약 · 담당 MD 배정') + '</span></div>' +
+      '<button class="btn rsvref" type="button" id="rsvRefresh" aria-label="새로고침"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 12a9 9 0 1 1-2.64-6.36\"/><path d=\"M21 3v6h-6\"/></svg><span>새로고침</span></button></div>' +
+      '<div class="rsv-filters" role="group" aria-label="예약 고르기"><button class="btn" type="button" data-rsv-past="0" aria-pressed="' + !past + '">예정' + (r ? ' <b>' + nUp + '</b>' : '') + '</button><button class="btn" type="button" data-rsv-past="1" aria-pressed="' + past + '">지난 예약' + (r ? ' <b>' + nPast + '</b>' : '') + '</button></div>' +
       (state.rsvError ? '<p class="empty">' + esc(state.rsvError) + '</p>' : !r ? '<p class="load">예약을 불러오는 중…</p>' : !list.length ? '<p class="empty">표시할 예약이 없어요.</p>' :
         '<div class="list">' + list.map(function (x) {
-          return '<button class="item" type="button" data-rsv-id="' + esc(x.id) + '"><span class="row"><span class="chip ' + (x.status === '접수' ? 'new' : 'done') + '">' + esc(x.status) + '</span>' + esc(x.day) + ' · ' + esc(reservationPlace(x)) + '</span>' +
-            '<span class="title">' + esc(x.name) + ' · ' + esc(x.party) + '명</span><span class="row">' + esc(x.code) + ' · ' + esc(x.type) +
-            (x.staff ? ' · 담당 ' + esc(x.staff) : ' · 담당 미지정') + '</span>' +
-            (x.birthday ? '<span class="row">🎂 생일 혜택 · ' + esc(x.birthday) + '</span>' : '') + '</button>';
+          var st = x.status === '접수' ? 'new' : x.status === '취소' ? 'off' : 'done';
+          return '<button class="item rsvc rsv-' + st + '" type="button" data-rsv-id="' + esc(x.id) + '"><span class="rsvc-top"><span class="chip ' + st + '">' + esc(x.status) + '</span><span class="rsvc-day' + (x.day === r.today ? ' today' : '') + '">' + rsvDay(x.day, r.today) + '</span></span>' +
+            '<span class="rsvc-name">' + esc(x.name) + '<b>' + esc(x.party) + '명</b></span>' +
+            '<span class="rsvc-meta">' + esc(reservationPlace(x)) + ' · ' + esc(x.type) + '</span>' +
+            '<span class="rsvc-meta">' + esc(x.code) + ' · ' + (x.staff ? '담당 <b>' + esc(x.staff) + '</b>' : '<span class="rsvc-nostaff">담당 미지정</span>') + '</span>' +
+            (x.birthday ? '<span class="rsvc-bd"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9 3 12 8 12 8s3-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>생일 혜택 · ' + esc(x.birthday) + '</span>' : '') + '</button>';
         }).join('') + '</div>');
     $('rsvRefresh').addEventListener('click', loadReservations);
     area.querySelectorAll('[data-rsv-past]').forEach(function (b) { b.addEventListener('click', function () { state.rsvPast = b.dataset.rsvPast === '1'; render(); }); });
@@ -5166,7 +5218,7 @@ html:where([data-theme="light"]) .acc > .ctl .btn-ok { color: #fff; }
     var edit = data.admin, opts = function (list, cur) {
       return list.map(function (s) { return '<option value="' + esc(s) + '"' + (s === cur ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('');
     };
-    showSheet('<h2>📅 ' + esc(r.name) + ' · ' + esc(r.status) + '</h2><p class="sub">' + esc(r.code) + ' · ' + esc(r.day) + ' · ' + esc(reservationPlace(r)) +
+    showSheet('<h2>' + esc(r.name) + ' · ' + esc(r.status) + '</h2><p class="sub">' + esc(r.code) + ' · ' + esc(r.day) + ' · ' + esc(reservationPlace(r)) +
       '</p><dl class="rsv-detail"><dt>연락처</dt><dd><a href="tel:' + esc(r.phone) + '">' + esc(r.phone) + '</a></dd>' +
       '<dt>인원·종류</dt><dd>' + esc(r.party) + '명 · ' + esc(r.type) + '</dd><dt>담당 MD</dt><dd>' + esc(r.staff || '미지정') + '</dd>' +
       (r.memo ? '<dt>요청 사항</dt><dd>' + esc(r.memo) + '</dd>' : '') +
