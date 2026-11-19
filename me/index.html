@@ -68,6 +68,23 @@
 .me-card .md b { color: var(--txt); }
 .me-card .me-act { margin-top: 18px; }
 
+
+/* 멤버 등급·생일 혜택 (대표 결정 2026-11-20) */
+.me-member { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center; margin-top: 16px; padding: 14px 0 0; border-top: 1px solid rgba(255,255,255,.18); }
+.me-rank { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #e1e3ec; color: #19151f; font-size: 13px; font-weight: 900; }
+.me-rank[data-grade="VIP"] { background: #f6cc8b; }
+.me-rank[data-grade="VVIP"] { background: #e1ceff; }
+.me-member-label { display: block; margin: 10px 0 2px; font-size: 12px; color: #e4dce1; }
+#me-member-number { display: block; font-size: clamp(17px, 5.2vw, 25px); white-space: nowrap; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+#me-member-qr { display: block; width: 116px; height: 116px; border-radius: 6px; image-rendering: pixelated; background: #fff; }
+#me-benefits ul { margin: 0; padding-left: 20px; }
+#me-benefits h3 { margin: 14px 0 5px; font-size: 15px; }
+.me-benefit-copy { margin: 0; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.5; }
+#me-bday .btn { margin-top: 12px; }
+#me-bday select { width: 100%; min-height: 44px; display: block; margin: 6px 0 0; padding: 0 8px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--bg); color: var(--txt); font: inherit; }
+#me-bday form { margin-top: 14px; }
+#me-bday .me-msg:empty, #me-bday-choice:empty { display: none; }
+
 /* 내 킵 (keep 페이지와 같은 모양) */
 .kp-items { display: grid; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); padding: 4px 18px; }
 .kp-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
@@ -204,6 +221,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>window.GS={"lang":"ko","root":"","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","v":"mwnlj9j6","t":{"close":"닫기","share":"공유","linkCopied":"링크가 복사됐어요.","today":"오늘","tonight":"TONIGHT","dow":"일,월,화,수,목,금,토"}};</script>
 <script src="/assets/site.js?v=mwnlj9j6" defer></script>
+<script src="/assets/vendor/qrcode-generator-1.4.4.js"></script>
 <script>
 (function () {
   'use strict';
@@ -339,6 +357,71 @@
         '<p class="me-empty">지난 방문 기록이 없어요.</p>') + '</section>';
   }
 
+  // 멤버 QR에는 발급한 번호만 넣는다 (대표 결정 2026-11-20).
+  function memberPlate(m) {
+    if (!m || !/^GR-\d{6}$/.test(m.number)) return '';
+    return '<div class="me-member"><div><span class="me-rank" data-grade="' + esc(m.grade) + '">' + esc(m.grade) + '</span>' +
+      '<span class="me-member-label">멤버 번호</span><strong id="me-member-number">' + esc(m.number) + '</strong></div>' +
+      '<canvas id="me-member-qr" aria-label="멤버 번호 QR" role="img"></canvas></div>';
+  }
+  function memberQR(m) {
+    var canvas = document.getElementById('me-member-qr');
+    if (!canvas || !m || !/^GR-\d{6}$/.test(m.number) || typeof window.qrcode !== 'function') return;
+    var qr = window.qrcode(1, 'M'); qr.addData(m.number, 'Alphanumeric'); qr.make();
+    var cells = qr.getModuleCount(), unit = 4, quiet = 4;
+    canvas.width = canvas.height = (cells + 2 * quiet) * unit;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#111';
+    for (var y = 0; y < cells; y++) {
+      for (var x = 0; x < cells; x++) if (qr.isDark(y, x)) ctx.fillRect((x + quiet) * unit, (y + quiet) * unit, unit, unit);
+    }
+  }
+  function membershipBenefits(m) {
+    if (!m || !(m.benefits || m.party || m.next)) return '';
+    return '<section class="me-box" id="me-benefits"><h2 class="me-h">멤버 혜택</h2>' +
+      (m.benefits ? '<ul id="me-grade-benefits">' + m.benefits.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' : '') +
+      (m.party ? '<h3>VIP 파티 날 서비스</h3><p class="me-benefit-copy">' + esc(m.party) + '</p>' : '') +
+      (m.next ? '<h3>다음 등급까지</h3><p class="me-benefit-copy">' + esc(m.next) + '</p>' : '') + '</section>';
+  }
+  function showBirthday(b) {
+    var node = document.getElementById('me-bday'); if (!node) return;
+    node.hidden = !b; node.innerHTML = '';
+    if (!b) return;
+    var r = b.booking, selected = r && r.choice;
+    node.innerHTML = '<h2 class="me-h">🎂 생일 혜택</h2><p class="me-benefit-copy">' + esc(b.text) + '</p>' +
+      (r ? '<p class="me-note">신청할 예약 · ' + esc(ymd(r.day)) + '</p><p id="me-bday-choice" class="me-note" role="status" tabindex="-1">' + (selected ? '신청한 혜택 · ' + esc(selected) : '') + '</p>' +
+        '<button class="btn btn-hot me-save" type="button" id="me-bday-open" aria-expanded="false">' + (selected ? '생일 혜택 바꾸기' : '생일 혜택 쓰기') + '</button>' +
+        '<form id="me-bday-form" hidden><label>신청할 혜택<select id="me-bday-select" required><option value="">고르기</option>' +
+        b.choices.map(function (choice) { return '<option value="' + esc(choice) + '"' + (selected === choice ? ' selected' : '') + '>' + esc(choice) + '</option>'; }).join('') +
+        '</select></label><button type="submit" class="btn btn-hot me-save">신청하기</button><p id="me-bday-msg" class="me-msg" role="status"></p></form>' :
+        '<p class="me-note">예약하고 나서 쓸 수 있어요.</p><a class="btn btn-hot me-save" href="/reserve/">예약하기</a>');
+    if (!r) return;
+    var form = document.getElementById('me-bday-form'), open = document.getElementById('me-bday-open'), select = document.getElementById('me-bday-select');
+    open.addEventListener('click', function () {
+      form.hidden = !form.hidden; open.setAttribute('aria-expanded', String(!form.hidden));
+      if (!form.hidden) select.focus();
+    });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var btn = form.querySelector('button'), msg = document.getElementById('me-bday-msg');
+      btn.disabled = true; msg.textContent = '';
+      api({ a: 'me_birthday', k: k, t: tokGet(), id: r.id, choice: select.value }).then(function (o) {
+        if (!form.isConnected) return;
+        if (o.error === 'auth') { tokSet(''); return pinView(); }
+        if (o.error === 'notfound') return notFound();
+        if (!o.ok) {
+          msg.textContent = { booking: '예약하고 나서 쓸 수 있어요.', changed: '예약이 바뀌었어요. 페이지를 다시 열어 주세요.',
+            ineligible: '지금은 생일 혜택을 신청할 수 없어요.', busy: BUSY }[o.error] || '신청하지 못했어요. 다시 해 주세요.';
+          return;
+        }
+        r.choice = o.choice; showBirthday(b);
+        document.getElementById('me-bday-choice').focus();
+      }).catch(function () { if (form.isConnected) msg.textContent = '연결이 안 됐어요. 다시 해 주세요.'; }).then(function () { btn.disabled = false; });
+    });
+  }
+
   function mine(r, limited) {
     stopTick();
     function days(d) { var a = Date.parse(d + 'T00:00:00Z'), b = Date.parse(r.today + 'T00:00:00Z'); return isNaN(a) || isNaN(b) ? null : Math.round((a - b) / 864e5); }
@@ -346,12 +429,13 @@
     items.forEach(function (i) { n += i.kind === '병' ? i.n : 1; var x = days(i.exp); if (x !== null && (soon === null || x < soon)) soon = x; });
     sub.textContent = limited ? '맡기신 술을 확인할 수 있어요.' : '예약과 맡기신 술, 내 정보를 볼 수 있어요.';
     var h = '';
-    // 멤버 카드 (등급·QR 은 3단계)
+    var member = !limited && r.verified ? r.member : null;
     h += '<div class="me-card"><p class="kick">Groove &amp; Spot</p><p class="nm">' + esc(r.name) + '<small>님</small></p>' +
-      '<p class="md">담당 <b>' + esc(r.staff || '-') + '</b></p>' +
+      '<p class="md">담당 <b>' + esc(r.staff || '-') + '</b></p>' + memberPlate(member) +
       '<div class="me-act">' + telBtn(r.staffPhone, r.staff) + '<a class="btn btn-hot" href="/reserve/">예약하기</a></div></div>';
     if (limited) h += '<div class="me-lim" id="me-lim"><b>📱 내 정보는 아직 못 써요</b>담당에게 전화번호 등록을 요청하면 생일 등록 등을 쓸 수 있어요.</div>';
     if (!limited && r.verified && r.rsv) h += reservations(r.rsv);
+    if (!limited) h += membershipBenefits(member) + '<section id="me-bday" class="me-box" hidden></section>';
     // 내 킵
     h += '<div><h2 class="me-h">🍾 내 킵 <small>모두 ' + n + '병</small></h2>';
     if (soon !== null && soon <= 3) h += '<p class="kp-warn">⏰ ' + (soon < 0 ? '보관 기간이 지난 술이 있어요. 담당 직원에게 연락해 주세요.' : soon === 0 ? '오늘 보관 기간이 끝나는 술이 있어요.' : '보관 기간이 ' + soon + '일 남은 술이 있어요.') + '</p>';
@@ -374,6 +458,7 @@
       (limited ? '' : '<button class="btn me-out" type="button" id="me-out">이 기기에서 나가기</button>') + '</div>';
     box.innerHTML = h;
     if (!limited) {
+      memberQR(member); showBirthday(r.birthday);
       info(r.me || { birth: '', agree: false, delReq: false });
       document.getElementById('me-out').addEventListener('click', function () { tokSet(''); pinView(); window.scrollTo(0, 0); });
     }
@@ -420,12 +505,20 @@
         done(); del();
       }).catch(function () { if (undo) undo(); out.className = 'me-msg'; out.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
     }
+    var birthUpdate = 0;
     document.getElementById('me-bsave').addEventListener('click', function () {
       var btn = this, vals = [sy.value, sm.value, sd.value], filled = vals.filter(String).length, birth = '';
       if (filled && filled < 3) { msg.className = 'me-msg'; msg.textContent = '생일은 연·월·일을 모두 골라 주세요.'; return; }
       if (filled) birth = vals[0] + '-' + ('0' + vals[1]).slice(-2) + '-' + ('0' + vals[2]).slice(-2);
       btn.disabled = true;
-      set({ birth: birth }, msg, function () { btn.disabled = false; msg.className = 'me-msg ok'; msg.textContent = birth ? '생일을 저장했어요 ✓' : '생일을 지웠어요 ✓'; }, function () { btn.disabled = false; });
+      set({ birth: birth }, msg, function () {
+        btn.disabled = false; msg.className = 'me-msg ok'; msg.textContent = birth ? '생일을 저장했어요 ✓' : '생일을 지웠어요 ✓';
+        var update = ++birthUpdate;
+        if (!birth) return showBirthday(null);
+        api({ a: 'me_view', k: k, t: tokGet() }).then(function (r) {
+          if (el.isConnected && r.verified && update === birthUpdate) showBirthday(r.birthday);
+        }).catch(function () {});
+      }, function () { btn.disabled = false; });
     });
     // 혜택 안내: ① 광고성 정보 수신 동의 ② 밤 9시~아침 8시에도 (①이 켜져 있을 때만). 누르면 바로 저장, 둘 다 기본 꺼짐
     function ag(text) {
