@@ -6842,7 +6842,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
         var b = this, m = $('tbWMsg'); b.disabled = true;
         call({ a: 'tb_where', token: state.s.token, id: r.id }).then(function (x) {
           m.hidden = false; m.className = 'msg' + (x.ok ? ' ok' : '');
-          if (x.ok) { m.textContent = '📍 ' + x.md + '님에게 물어봤어요. 답이 오면 알려 드려요. (테이블 대화에도 올렸어요)'; flushPush(); return; }
+          if (x.ok) { m.textContent = x.again ? '📍 이미 물어본 손님이에요 (' + (x.by || '') + ' · ' + (x.min || 0) + '분 전). ' + x.md + '님에게 다시 알렸어요. 답이 오면 알려 드려요.' : '📍 ' + x.md + '님에게 물어봤어요. 답이 오면 알려 드려요. (테이블 대화에도 올렸어요)'; flushPush(); return; }   // 🔁 같은 손님은 새 줄 없이 다시 알림 (2026-11-20)
           b.disabled = false;
           m.textContent = { nomd: '담당이 앱에 가입하지 않아 알림을 못 보내요.', self: '내 손님이에요.', soon: '방금 물어봤어요. 1분 뒤에 다시 할 수 있어요.', busy: '잠시 후 다시 해 주세요.', empty: '빈 자리예요.', notfound: '자리가 바뀌었어요. 다시 열어 주세요.' }[x.error] || '다시 해 주세요.';
         }).catch(function () { b.disabled = false; m.hidden = false; m.className = 'msg'; m.textContent = '연결이 안 돼요.'; });
