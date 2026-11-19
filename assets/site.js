@@ -182,6 +182,95 @@
       (rows ? '<div class="ev-line">' + rows + '</div>' : '') + '</a>';
   }
 
+  /* ---------- 이벤트 목록 새 배치 (2026-11-20 리디자인 '나이트라이프 임팩트') ---------- */
+  var EVSVG = function (d) { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>'; };
+  var EVI = {
+    cal: EVSVG('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
+    clock: EVSVG('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'),
+    music: EVSVG('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'),
+    pin: EVSVG('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>'),
+    nav: EVSVG('<path d="m3 11 19-9-9 19-2-8z"/>')
+  };
+  var MON_EN = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  function monLabel(iso) { var m = +iso.split('-')[1]; return LANG === 'en' ? MON_EN[m - 1] : m + (LANG === 'ko' ? '월' : '月'); }
+  function evHref(e) { return url('event/?id=' + encodeURIComponent(e.id)); }
+  function evRsv(e) { return url('reserve/?date=' + e.date + (e.floors.length === 1 ? '&floor=' + e.floors[0] : '')); }
+  function evKeys(e) { var g = e.lineup && e.lineup.GUEST && e.lineup.GUEST.length ? ' guest' : ''; return e.floors.join(' ') + g; }
+  var evIdUsed = {};
+  function evAnchor(e) { if (evIdUsed[e.date]) return ''; evIdUsed[e.date] = 1; return ' id="ev-' + esc(e.date) + '"'; }
+  function evFeat(e) {
+    var today = e.date === BIZ, rows = lineupRows(e);
+    return '<article class="evf' + (today ? ' is-tonight' : '') + '"' + evAnchor(e) + ' data-evf="' + esc(evKeys(e)) + '">' +
+      '<a class="evf-art" href="' + evHref(e) + '" aria-label="' + esc(e.title) + '">' + art(e) +
+      '<span class="evf-tag' + (today ? ' live' : '') + '">' + esc(today ? T.tonight : 'NEXT UP') + '</span>' +
+      (e.open ? '<span class="evf-open">' + EVI.clock + esc(T.open) + ' ' + esc(e.open) + '</span>' : '') + '</a>' +
+      '<div class="evf-body"><p class="evf-date">' + esc(dateLabel(e.date)) + (today ? ' · ' + esc(T.today) : '') + '</p>' +
+      '<h3 class="evf-title"><a href="' + evHref(e) + '">' + esc(e.title) + '</a></h3>' +
+      '<div class="chips">' + floorChips(e) + '</div>' +
+      (rows ? '<div class="ev-line evf-line">' + rows + '</div>' : (pick(e.genre) ? '<p class="evf-sub">' + esc(pick(e.genre)) + '</p>' : '')) +
+      '<div class="evf-act"><a class="btn btn-hot" href="' + evRsv(e) + '">' + EVI.cal + esc(T.reserveThis) + '</a><a class="btn" href="' + evHref(e) + '">' + esc(T.evLineup) + ' →</a></div></div></article>';
+  }
+  function evRow(e) {
+    var p = e.date.split('-'), lt = lineupText(e) || pick(e.genre);
+    return '<a class="evr" href="' + evHref(e) + '"' + evAnchor(e) + ' data-evf="' + esc(evKeys(e)) + '">' +
+      '<span class="evr-d"><b>' + (+p[2]) + '</b><small>' + esc(monLabel(e.date)) + ' · ' + esc(DOW[dowOf(e.date)] || '') + '</small></span>' +
+      '<span class="evr-art' + (e.flyer ? '' : ' gen') + '">' + (e.flyer ? '<img src="' + esc(e.flyer) + '" alt="" loading="lazy" decoding="async">' : '<i>' + esc(e.title.charAt(0)) + '</i>') + '</span>' +
+      '<span class="evr-b"><span class="evr-t">' + esc(e.title) + '</span>' +
+      (e.open ? '<span class="evr-m">' + EVI.clock + esc(T.open) + ' ' + esc(e.open) + '</span>' : '') +
+      '<span class="chips">' + floorChips(e) + '</span>' + (lt ? '<span class="evr-l">' + esc(lt) + '</span>' : '') + '</span></a>';
+  }
+  function evWeek(all) {
+    var box = $('[data-ev-week]'); if (!box) return;
+    var d0 = new Date(BIZ + 'T00:00:00Z'), mon = addDays(d0, -((d0.getUTCDay() + 6) % 7)), days = [];
+    for (var i = 0; i < 7; i++) days.push(ymd(addDays(mon, i)));
+    box.innerHTML = '<p class="evs-wk-h">' + esc(T.week) + ' · ' + esc(dateLabel(days[0]).split(' ')[0]) + ' – ' + esc(dateLabel(days[6]).split(' ')[0]) + '</p><div class="evs-wk">' + days.map(function (iso) {
+      var ev = all.filter(function (e) { return e.date === iso; })[0], today = iso === BIZ, past = iso < BIZ;
+      var inner = '<small>' + esc(today ? T.today : (DOW[dowOf(iso)] || '')) + '</small><b>' + (+iso.split('-')[2]) + '</b><i aria-hidden="true"></i>';
+      var cls = 'wk-d' + (ev ? ' has' : '') + (today ? ' today' : '') + (past ? ' past' : '');
+      var lab = dateLabel(iso) + (ev ? ' · ' + ev.title : '');
+      return ev ? '<a class="' + cls + '" href="' + (past ? evHref(ev) : '#ev-' + iso) + '" aria-label="' + esc(lab) + '"' + (today ? ' aria-current="date"' : '') + '>' + inner + '</a>'
+        : '<span class="' + cls + '" aria-label="' + esc(lab) + '">' + inner + '</span>';
+    }).join('') + '</div>';
+  }
+  function evFilter(el) {
+    var fb = $('[data-ev-filter]'); if (!fb) return;
+    var opts = [['all', T.evAll, ''], ['2F', '2F GROOVE', ' g'], ['3F', '3F SPOT', ' s'], ['guest', T.evGuest, '']];
+    var cards = $$('[data-evf]', el);
+    opts = opts.filter(function (o) { return o[0] === 'all' || cards.some(function (c) { return (' ' + c.dataset.evf + ' ').indexOf(' ' + o[0] + ' ') >= 0; }); });
+    if (opts.length < 3) { fb.hidden = true; return; }
+    fb.innerHTML = opts.map(function (o) { return '<button type="button" class="evs-chip' + o[2] + '" data-f="' + o[0] + '" aria-pressed="' + (o[0] === 'all') + '">' + esc(o[1]) + '</button>'; }).join('');
+    fb.addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-f]'); if (!b) return;
+      $$('[data-f]', fb).forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      var f = b.dataset.f, shown = 0;
+      cards.forEach(function (c) { var ok = f === 'all' || (' ' + c.dataset.evf + ' ').indexOf(' ' + f + ' ') >= 0; c.hidden = !ok; if (ok) shown++; });
+      var none = $('.evs-none', el); if (none) none.hidden = shown > 0;
+    });
+  }
+  function evPage(el, list) {
+    el.innerHTML = evFeat(list[0]) + (list.length > 1 ? '<div class="evs-rows">' + list.slice(1).map(evRow).join('') + '</div>' : '') + '<p class="empty evs-none" hidden>' + esc(T.evNone) + '</p>';
+    evFilter(el);
+  }
+  function evPast(el, list) {
+    var LIM = 12;
+    el.innerHTML = list.map(function (e, i) { var h = card(e, true); return i >= LIM ? h.replace('<a class="ev"', '<a class="ev" hidden') : h; }).join('');
+    if (list.length > LIM) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'btn evs-morepast';
+      b.textContent = T.evMorePast + ' (' + (list.length - LIM) + ')';
+      b.addEventListener('click', function () { $$('.ev[hidden]', el).forEach(function (x) { x.hidden = false; }); b.remove(); });
+      el.parentNode.appendChild(b);
+    }
+  }
+  // 이벤트 상세 아래 '다른 이벤트' (고정 페이지·?id= 페이지 공통)
+  function evMore(box, all, skip) {
+    var list = all.filter(function (e) { return e.date >= BIZ && e.id !== skip; }).slice(0, 6);
+    if (!list.length) return;
+    box.innerHTML = '<h2 class="sec-h"><span class="evd-kick">MORE NIGHTS</span>' + esc(T.evMore) + '</h2><div class="evm">' + list.map(function (e) {
+      return '<a class="evm-c" href="' + evHref(e) + '">' + art(e) + '<span class="evm-d">' + esc(dateLabel(e.date)) + (e.open ? ' · ' + esc(e.open) : '') + '</span><span class="evm-t">' + esc(e.title) + '</span></a>';
+    }).join('') + '</div><p><a class="more" href="' + url('events/') + '">' + esc(T.evAllLink) + ' →</a></p>';
+    box.hidden = false;
+  }
+
   function emptyBox(msg) {
     return '<p class="empty">' + esc(msg) + ' <a href="' + esc(GS.instagram) + '" rel="noopener">@groovenspot →</a></p>';
   }
@@ -224,6 +313,8 @@
           (e.open ? ' ' + e.open : '') + ' · ' + e.title + ' →';
         savedLine.appendChild(link);
       });
+      var evsPage = document.body.dataset.page === 'events';
+      if (evsPage) evWeek(all);
       evLists.forEach(function (el) {
         var past = el.dataset.events === 'past';
         var list = all.filter(function (e) { return past ? e.date < BIZ : e.date >= BIZ; });
@@ -233,6 +324,8 @@
           if (past) { el.closest('section').hidden = true; return; }
           el.innerHTML = emptyBox(T.noEvents); return;
         }
+        if (evsPage && !past) { evPage(el, list); return; }
+        if (evsPage && past) { evPast(el, list); return; }
         el.innerHTML = list.map(function (e) { return card(e, past); }).join('');
       });
     });
@@ -322,29 +415,34 @@
         var tt = slots(day, f);
         var names = (e.lineup && e.lineup[f]) || [];
         if (!tt.length && !names.length) return '';
-        return '<div><p class="tt-h">' + f + (f === '2F' ? ' · GROOVE' : ' · SPOT') + '</p>' + (tt.length ? ttList(tt, e.date === BIZ && IS_OPEN) : '<ul>' + names.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>') + '</div>';
+        return '<div class="tt-col ' + (f === '2F' ? 'g' : 's') + '"><p class="tt-h">' + f + (f === '2F' ? ' GROOVE<small>HIPHOP · R&amp;B</small>' : ' SPOT<small>EDM</small>') + '</p>' + (tt.length ? ttList(tt, e.date === BIZ && IS_OPEN) : '<ul>' + names.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>') + '</div>';
       }).join('') + Object.keys(e.lineup || {}).filter(function (k) { return e.floors.indexOf(k) < 0; }).map(function (k) {
         var inTT = JSON.stringify(day || {}).toUpperCase();
         var rest = (e.lineup[k] || []).filter(function (n) { return inTT.indexOf(String(n).toUpperCase()) < 0; });
         if (!rest.length) return '';
-        return '<div><p class="tt-h">' + esc(k === 'GUEST' ? 'SPECIAL GUEST' : k) + '</p><ul>' + rest.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></div>';
+        return '<div class="tt-col x"><p class="tt-h">' + esc(k === 'GUEST' ? 'SPECIAL GUEST' : k) + '</p><ul>' + rest.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></div>';
       }).join('');
       var past = e.date < BIZ;
       var reserveHref = url('reserve/?date=' + e.date + (e.floors.length === 1 ? '&floor=' + e.floors[0] : ''));
-      detail.innerHTML = '<article class="evd">' + art(e, true) + '<div>' +
-        '<div class="chips">' + floorChips(e) + (past ? '<span class="chip">' + esc(T.past) + '</span>' : '') + '</div>' +
+      detail.innerHTML = '<article class="evd">' + '<div class="evd-hero"' + (e.flyer ? ' style="--bg:url(' + esc(e.flyer) + ')"' : '') + '>' + art(e, true) + '</div><div class="evd-body">' +
+        '<div class="chips evd-tags">' + (e.date === BIZ ? '<span class="chip hot">' + esc(T.tonight) + '</span>' : '') + floorChips(e) + (past ? '<span class="chip">' + esc(T.past) + '</span>' : '') + '</div>' +
         '<h1>' + esc(e.title) + '</h1>' +
-        '<p class="evd-when">' + esc(dateLabel(e.date)) + (e.open ? ' · ' + esc(T.open) + ' ' + esc(e.open) : '') + '</p>' +
+        '<p class="evd-when">' + EVI.cal + esc(dateLabel(e.date)) + (e.open ? ' · ' + esc(T.open) + ' ' + esc(e.open) : '') + '</p>' +
         (e.genre ? '<p class="muted">' + esc(pick(e.genre)) + '</p>' : '') +
         (e.desc ? '<p class="lede">' + esc(pick(e.desc)) + '</p>' : '') +
         (e.entry ? '<p>' + esc(pick(e.entry)) + '</p>' : '') +
-        (lineup ? '<div class="evd-sec"><div class="lineup">' + lineup + '</div></div>' : '') +
-        '<div class="evd-sec" data-evd-photos hidden><h2 class="sec-h">' + esc(T.photosOf) + '</h2><div data-evd-grid></div></div>' +
-        '<div class="evd-act">' + (past ? '' : '<a class="btn btn-hot btn-lg" href="' + reserveHref + '">' + esc(T.reserveThis) + '</a>') +
+        '<div class="evd-act">' + (past ? '' : '<a class="btn btn-hot btn-lg evd-main" href="' + reserveHref + '">' + EVI.cal + esc(T.reserveThis) + '</a>') +
         (past ? '' : '<button class="btn btn-lg" type="button" data-save-event aria-pressed="false">' + esc(saveLabels[0]) + '</button>') +
-        '<button class="btn btn-lg" type="button" data-share>' + esc(T.share) + '</button></div>' +
+        '<button class="btn btn-lg" type="button" data-share>' + esc(T.share) + '</button>' +
+        (past ? '' : '<a class="btn btn-lg" href="' + url('request/') + '">' + EVI.music + esc(T.req) + '</a>') + '</div>' +
+        (lineup ? '<div class="evd-sec"><h2 class="sec-h"><span class="evd-kick">TIMETABLE</span>' + esc(T.tt) + '</h2><div class="lineup">' + lineup + '</div></div>' : '') +
+        '<div class="evd-sec" data-evd-photos hidden><h2 class="sec-h">' + esc(T.photosOf) + '</h2><div data-evd-grid></div></div>' +
+        '<div class="evd-sec evd-visit"><h2 class="sec-h"><span class="evd-kick">FIND US</span>' + esc(T.visit) + '</h2><p class="evd-addr">' + EVI.pin + '<span>Groove &amp; Spot · ' + esc(T.addr) + '<small>' + esc(T.near) + '</small></span></p>' +
+        '<div class="evd-vb"><a class="btn" href="https://www.google.com/maps/dir/?api=1&amp;destination=' + encodeURIComponent('부산 부산진구 중앙대로680번가길 52') + '" rel="noopener">' + EVI.nav + esc(T.map) + '</a><a class="btn" href="' + url('info/') + '">' + esc(T.info) + ' →</a></div></div>' +
+        '<div class="evd-sec evd-more" data-ev-more="' + esc(e.id) + '" hidden></div>' +
         '<a class="back" href="' + url('events/') + '">← ' + esc(document.querySelector('.nav a').textContent) + '</a>' +
         '</div></article>';
+      var moreBox = $('[data-ev-more]', detail); if (moreBox) evMore(moreBox, normEvents(r[0]), e.id);
       var saveButton = $('[data-save-event]', detail);
       if (saveButton) {
         function updateSaveButton() {
@@ -393,6 +491,20 @@
       });
       document.head.appendChild(ld);
     });
+  }
+
+  // 고정 이벤트 페이지(event/<id>/): 오늘이면 TONIGHT 표시 · 지금 DJ 줄 표시 · 아래 '다른 이벤트'
+  var evStatic = $('article.evd[data-ev-date]');
+  if (evStatic) {
+    var sd = evStatic.dataset.evDate, tags = $('.evd-tags', evStatic);
+    if (sd === BIZ && tags) tags.insertAdjacentHTML('afterbegin', '<span class="chip hot">' + esc(T.tonight) + '</span>');
+    if (sd === BIZ && IS_OPEN) $$('.tt', evStatic).forEach(function (ul) {
+      var lis = $$('li', ul), cur = -1;
+      lis.forEach(function (li, i) { var tm = $('.tm', li); if (tm && nightMins(tm.textContent.trim()) <= nowNight) cur = i; });
+      if (cur >= 0) lis[cur].classList.add('cur');
+    });
+    var sm = $('[data-ev-more]', evStatic);
+    if (sm) load('events').then(function (raw) { evMore(sm, normEvents(raw), sm.dataset.evMore); });
   }
 
   /* ---------- 아티스트 ---------- */
