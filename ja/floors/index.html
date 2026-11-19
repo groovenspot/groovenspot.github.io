@@ -28,11 +28,11 @@
 <link rel="apple-touch-icon" href="/assets/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="/assets/site.css?v=mwo4y6xz">
+<link rel="stylesheet" href="/assets/site.css?v=mwo59ftu">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&display=swap">
-<link rel="stylesheet" href="/assets/shell.css?v=mwo4y6xz">
+<link rel="stylesheet" href="/assets/shell.css?v=mwo59ftu">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4Y93LP9PP"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','G-G4Y93LP9PP');}</script>
 </head>
@@ -51,7 +51,7 @@
     <a href="/club/">バーチャルクラブ</a>
   </nav>
   <details class="lang">
-    <summary aria-label="Language: 日本語"><span class="lang-globe" aria-hidden="true">🌐</span> Language</summary>
+    <summary aria-label="Language: 日本語"><svg class="ic lang-globe" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="lang-cur">JA</span></summary>
     <div class="lang-menu">
       <a href="/floors/" hreflang="ko" data-lang="ko">한국어</a>
       <a href="/en/floors/" hreflang="en" data-lang="en">English</a>
@@ -59,6 +59,7 @@
       <a href="/zh/floors/" hreflang="zh-CN" data-lang="zh">中文</a>
     </div>
   </details>
+  <nav class="lang-inline" aria-label="Language"><a href="/floors/" hreflang="ko">KO</a><a href="/en/floors/" hreflang="en">EN</a><a href="/ja/floors/" hreflang="ja" aria-current="true">日本語</a><a href="/zh/floors/" hreflang="zh-CN">中文</a></nav>
   <a class="btn btn-hot hdr-cta" href="/ja/reserve/">予約する</a>
   <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mnav" aria-label="メニューを開く" data-open="メニューを開く" data-close="メニューを閉じる"><span></span><span></span><span></span></button>
 </header>
@@ -78,29 +79,39 @@
   <a class="btn btn-hot mnav-cta" href="/ja/reserve/">予約する</a>
 </nav>
 <main id="main">
-<section class="phead wrap">
-  <h1>フロア</h1>
-  <p class="lede">2Fはヒップホップ、3FはEDM。一つのビルで二つの夜。</p>
-</section>
-<section class="fbig fbig-g" id="2f">
-  <div class="wrap fbig-in">
-    <div class="fbig-head"><img class="fbig-img" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" loading="lazy" decoding="async"><p class="floor-no">2F</p><h2 class="fbig-name">GROOVE</h2><p class="floor-genre">HIPHOP · R&B</p></div>
-    <div class="fbig-body"><p class="lede">2F GROOVEはヒップホップとR&Bのフロア。一人でも気軽な一人飲みバー（H1–H32）、ステージ前の席、仲間と楽しむテーブルから選べます。ダーツもあります。</p><ul class="tags"><li>DJブース</li><li>メインバー</li><li>一人飲みH席</li><li>ステージ席</li><li>テーブル</li><li>ダーツ</li></ul>
-      <div class="tt-today" data-floor-tt="2F"></div>
-      <p><a class="btn" href="/ja/request/?floor=2F">🎵 リクエストする</a></p>
+<section class="phead wrap cx-head"><p class="cx-kick">TWO FLOORS</p><h1>フロア</h1><p class="lede">2Fはヒップホップ、3FはEDM。一つのビルで二つの夜。</p></section>
+<section class="fbig fx fx-g" id="2f" aria-labelledby="fx-2F">
+  <div class="fx-hero"><img class="fx-img" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" loading="eager" decoding="async">
+    <div class="wrap fx-hero-in"><p class="fx-no">2F · FLOOR 01</p><h2 class="fx-name" id="fx-2F">GROOVE</h2><p class="fx-genre">HIPHOP · R&B</p></div>
+  </div>
+  <div class="wrap fx-body">
+    <div class="fx-main"><p class="fx-lede">2F GROOVEはヒップホップとR&Bのフロア。一人でも気軽な一人飲みバー（H1–H32）、ステージ前の席、仲間と楽しむテーブルから選べます。ダーツもあります。</p><ul class="fx-am"><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg><span>DJブース</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 22h8"/><path d="M12 15v7"/><path d="M5 3h14l-1 7a6 6 0 0 1-12 0z"/></svg><span>メインバー</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 22h8"/><path d="M12 11v11"/><path d="m19 3-7 8-7-8z"/></svg><span>一人飲みH席</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></svg><span>ステージ席</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"/><path d="M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z"/><path d="M5 18v2"/><path d="M19 18v2"/></svg><span>テーブル</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>ダーツ</span></li></ul></div>
+    <div class="fx-side">
+      <div class="tt-today fx-tt" data-floor-tt="2F"></div>
+      <div class="fx-act"><a class="btn btn-hot fx-cta" href="/ja/seats/?floor=2F"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>席を選ぶ</a><a class="btn fx-req" href="/ja/request/?floor=2F"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>リクエストする</a></div>
     </div>
   </div>
 </section>
-<section class="fbig fbig-s" id="3f">
-  <div class="wrap fbig-in">
-    <div class="fbig-head"><img class="fbig-img" src="/assets/img/floor-3f.webp" width="1079" height="606" alt="" loading="lazy" decoding="async"><p class="floor-no">3F</p><h2 class="fbig-name">SPOT</h2><p class="floor-genre">EDM</p></div>
-    <div class="fbig-body"><p class="lede">3F SPOTは大型サウンドシステムでEDMを流すフロア。メインステージ前のL席、フォトゾーン、喫煙ルームがあります。</p><ul class="tags"><li>DJブース</li><li>メインバー</li><li>ステージ席</li><li>テーブル</li><li>フォトゾーン</li><li>喫煙ルーム</li></ul>
-      <div class="tt-today" data-floor-tt="3F"></div>
-      <p><a class="btn" href="/ja/request/?floor=3F">🎵 リクエストする</a></p>
+<section class="wrap fx-bldg" aria-labelledby="fx-bldg-h">
+  <div class="fx-bldg-txt"><p class="cx-kick">ONE BUILDING · TWO STAGES</p><h2 id="fx-bldg-h">一つのビル、二つのステージ</h2><p>2階と3階は館内の階段でつながっています。音楽に合わせて二つのフロアを行き来してみてください。</p></div>
+  <div class="fx-bldg-fig">
+    <div class="fx-stack"><a class="fx-lv fx-lv-s" href="#3f"><small>3F</small><b>SPOT</b><span>EDM</span></a><a class="fx-lv fx-lv-g" href="#2f"><small>2F</small><b>GROOVE</b><span>HIPHOP · R&B</span></a><p class="fx-lv fx-lv-e"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>入口 · 西面駅3番出口から徒歩3分</span></p></div>
+    <p class="fx-stairs"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h5v-5h5v-5h5V6h3"/><path d="m17 3 4 3-4 3"/></svg><b>館内階段</b><small>2F ↔ 3F</small></p>
+  </div>
+</section>
+<section class="fbig fx fx-s" id="3f" aria-labelledby="fx-3F">
+  <div class="fx-hero"><img class="fx-img" src="/assets/img/floor-3f.webp" width="1079" height="606" alt="" loading="lazy" decoding="async">
+    <div class="wrap fx-hero-in"><p class="fx-no">3F · FLOOR 02</p><h2 class="fx-name" id="fx-3F">SPOT</h2><p class="fx-genre">EDM</p></div>
+  </div>
+  <div class="wrap fx-body">
+    <div class="fx-main"><p class="fx-lede">3F SPOTは大型サウンドシステムでEDMを流すフロア。メインステージ前のL席、フォトゾーン、喫煙ルームがあります。</p><ul class="fx-am"><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg><span>DJブース</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 22h8"/><path d="M12 15v7"/><path d="M5 3h14l-1 7a6 6 0 0 1-12 0z"/></svg><span>メインバー</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></svg><span>ステージ席</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"/><path d="M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z"/><path d="M5 18v2"/><path d="M19 18v2"/></svg><span>テーブル</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg><span>フォトゾーン</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg><span>喫煙ルーム</span></li></ul></div>
+    <div class="fx-side">
+      <div class="tt-today fx-tt" data-floor-tt="3F"></div>
+      <div class="fx-act"><a class="btn btn-hot fx-cta" href="/ja/seats/?floor=3F"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>席を選ぶ</a><a class="btn fx-req" href="/ja/request/?floor=3F"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>リクエストする</a></div>
     </div>
   </div>
 </section>
-<section class="wrap sec" aria-labelledby="lay-h"><div class="sec-top"><h2 class="sec-h" id="lay-h">テーブル配置図</h2><a class="btn btn-hot" href="/ja/seats/">席を選ぶ →</a></div><div class="shots"><figure class="shot "><a href="/assets/img/table-layout.webp" target="_blank" rel="noopener"><img src="/assets/img/table-layout.webp" alt="2F・3F テーブル配置図" width="1080" height="1920" loading="lazy" decoding="async"></a><figcaption>2F・3F テーブル配置図</figcaption></figure></div></section>
+<section class="wrap sec fx-layout" aria-labelledby="lay-h"><div class="sec-top"><div><p class="cx-kick">LAYOUT</p><h2 class="sec-h" id="lay-h">テーブル配置図</h2></div><a class="btn btn-hot" href="/ja/seats/"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>席を選ぶ</a></div><div class="shots"><figure class="shot "><a href="/assets/img/table-layout.webp" target="_blank" rel="noopener"><img src="/assets/img/table-layout.webp" alt="2F・3F テーブル配置図" width="1080" height="1920" loading="lazy" decoding="async"></a><figcaption>2F・3F テーブル配置図</figcaption></figure></div></section>
 </main>
 <footer class="ftr">
   <div class="ftr-grid">
@@ -120,12 +131,12 @@
   <p class="ftr-small muted"><a href="/ja/guide/">釜山ナイトライフガイド：西面のクラブ</a> · <a href="/ja/artists/">アーティスト</a> · <a href="/ja/lost/">忘れ物</a> · <a href="/ja/privacy/"><b>プライバシー</b></a> · <a href="/admin/" rel="nofollow">Staff</a> · 当サイトは19歳以上の方を対象としています。 · © 2026 Groove &amp; Spot</p>
 </footer>
 <nav class="dock" aria-label="Quick actions">
-  <a href="/ja/events/">今夜</a>
-  <a class="dock-hot" href="/ja/reserve/">予約する</a>
-  <a href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">地図</a>
-  <a class="dock-sub" href="/ja/request/">🎵 リクエスト</a>
-  <a class="dock-sub" href="/ja/menu/">🍾 メニュー</a>
-  <a class="dock-sub" href="/ja/info/">📍 案内</a>
+  <a class="dock-hot" href="/ja/reserve/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg><span>予約する</span></a>
+  <a class="dock-b" href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>地図</span></a>
+  <a class="dock-b" href="/ja/events/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span>今夜</span></a>
+  <a class="dock-sub" href="/ja/request/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg><span>リクエスト</span></a>
+  <a class="dock-sub" href="/ja/menu/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 22h8"/><path d="M12 11v11"/><path d="m19 3-7 8-7-8Z"/></svg><span>メニュー</span></a>
+  <a class="dock-sub" href="/ja/info/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>案内</span></a>
 </nav>
 <div class="gate" id="gate" hidden>
   <div class="gate-box" role="dialog" aria-modal="true" aria-labelledby="gate-q">
@@ -142,8 +153,8 @@
   <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="次の写真">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>window.GS={"lang":"ja","root":"/ja","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","bookApi":"https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec","v":"mwo4y6xz","topic":"groovenspot-req-6witbq5hriea","t":{"nowPlaying":"NOW PLAYING","tonightLineup":"{d} 今夜のラインナップ","startsAt":"{t}スタート","lineupSoon":"ラインナップ近日公開","setsOf":"この日のDJのライブセット","rqNoResult":"見つかりませんでした。入力したまま送れます。","rqSearching":"検索中…","rqSearchOff":"今は検索できません。曲名を入力してそのまま送ってください。","rqLocal":"ネット検索が遅いため、保存済みの人気曲リストから表示しています。なければ直接入力して送ってください。","noPhotos":"まだ写真はありません。","photoCount":"{n}枚","photosOf":"この日の写真","close":"閉じる","prevPhoto":"前の写真","nextPhoto":"次の写真","rqSent":"リクエストを送りました！🎵","rqWait":"{s}秒後にまた送れます","rqNeed":"曲名を入力してください。","rqFail":"送信できませんでした。しばらくしてからお試しください。","lostEmpty":"現在保管中の忘れ物はありません。","lostLoad":"忘れ物を読み込み中…","lostFail":"忘れ物を読み込めませんでした。しばらくしてから再度お試しください。","lostCount":"{n}点","openNow":"営業中 · {t}まで","opensAt":"今夜{t} OPEN","noEvents":"次のラインナップを準備中です。Instagramでいち早く公開します。","noArtists":"アーティスト紹介は準備中です。","since":"{t}から","next":"次 {n} · {t}","notFound":"イベントが見つかりません。","copied":"予約内容をコピーしました。@groovenspotのDMに貼り付けて送信してください。","need":"お名前と電話番号を入力してください。","consent":"必須の同意にチェックしてください。","bk.code":"予約コード","rvName":"お名前を確認してください。","rvPhone":"電話番号を9〜15桁で入力してください。","rvDate":"予約日を確認してください。","rvBday":"誕生日を月-日の形式で確認してください。","rvSaving":"予約を保存しています…","rvSaved":"✅ 予約リクエストを受け付けました","rvSavedSub":"担当マネージャーが確認後ご連絡します。下のボタンからDMも送っていただくと、より早く確認できます。","rvUnsure":"⚠️ 保存を確認できませんでした","rvUnsureSub":"下のボタンからDMを送っていただければ、そのまま受け付けます。","rvOpenIg":"Instagram DMを開く（内容は自動コピー）","rvOpenWa":"WhatsAppを開く（内容は自動入力）","share":"共有","linkCopied":"リンクをコピーしました。","reserveThis":"この日を予約","open":"OPEN","past":"終了","bk.title":"[Groove & Spot 予約リクエスト]","today":"今日","tonight":"TONIGHT","dow":"日,月,火,水,木,金,土","evAll":"すべて","evGuest":"ゲストDJ","evLineup":"ラインナップを見る","evNone":"該当するイベントはありません。","evMorePast":"過去のイベントをもっと見る","evMore":"ほかのイベント","week":"今週","visit":"アクセス","addr":"釜山広域市 釜山鎮区 中央大路680番街キル 52（2・3階）","near":"西面駅3番出口から徒歩3分","map":"地図","info":"案内","req":"リクエスト","tt":"タイムテーブル","evAllLink":"すべてのイベント","seat":"席"}};</script>
-<script src="/assets/site.js?v=mwo4y6xz" defer></script>
-<script src="/assets/chat.js?v=mwo4y6xz" defer></script>
+<script>window.GS={"lang":"ja","root":"/ja","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","bookApi":"https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec","v":"mwo59ftu","topic":"groovenspot-req-6witbq5hriea","t":{"nowPlaying":"NOW PLAYING","tonightLineup":"{d} 今夜のラインナップ","startsAt":"{t}スタート","lineupSoon":"ラインナップ近日公開","setsOf":"この日のDJのライブセット","rqNoResult":"見つかりませんでした。入力したまま送れます。","rqSearching":"検索中…","rqSearchOff":"今は検索できません。曲名を入力してそのまま送ってください。","rqLocal":"ネット検索が遅いため、保存済みの人気曲リストから表示しています。なければ直接入力して送ってください。","noPhotos":"まだ写真はありません。","photoCount":"{n}枚","photosOf":"この日の写真","close":"閉じる","prevPhoto":"前の写真","nextPhoto":"次の写真","rqSent":"リクエストを送りました！🎵","rqWait":"{s}秒後にまた送れます","rqNeed":"曲名を入力してください。","rqFail":"送信できませんでした。しばらくしてからお試しください。","lostEmpty":"現在保管中の忘れ物はありません。","lostLoad":"忘れ物を読み込み中…","lostFail":"忘れ物を読み込めませんでした。しばらくしてから再度お試しください。","lostCount":"{n}点","openNow":"営業中 · {t}まで","opensAt":"今夜{t} OPEN","noEvents":"次のラインナップを準備中です。Instagramでいち早く公開します。","noArtists":"アーティスト紹介は準備中です。","since":"{t}から","next":"次 {n} · {t}","notFound":"イベントが見つかりません。","copied":"予約内容をコピーしました。@groovenspotのDMに貼り付けて送信してください。","need":"お名前と電話番号を入力してください。","consent":"必須の同意にチェックしてください。","bk.code":"予約コード","rvName":"お名前を確認してください。","rvPhone":"電話番号を9〜15桁で入力してください。","rvDate":"予約日を確認してください。","rvBday":"誕生日を月-日の形式で確認してください。","rvSaving":"予約を保存しています…","rvSaved":"✅ 予約リクエストを受け付けました","rvSavedSub":"担当マネージャーが確認後ご連絡します。下のボタンからDMも送っていただくと、より早く確認できます。","rvUnsure":"⚠️ 保存を確認できませんでした","rvUnsureSub":"下のボタンからDMを送っていただければ、そのまま受け付けます。","rvOpenIg":"Instagram DMを開く（内容は自動コピー）","rvOpenWa":"WhatsAppを開く（内容は自動入力）","share":"共有","linkCopied":"リンクをコピーしました。","reserveThis":"この日を予約","open":"OPEN","past":"終了","bk.title":"[Groove & Spot 予約リクエスト]","today":"今日","tonight":"TONIGHT","dow":"日,月,火,水,木,金,土","evAll":"すべて","evGuest":"ゲストDJ","evLineup":"ラインナップを見る","evNone":"該当するイベントはありません。","evMorePast":"過去のイベントをもっと見る","evMore":"ほかのイベント","week":"今週","visit":"アクセス","addr":"釜山広域市 釜山鎮区 中央大路680番街キル 52（2・3階）","near":"西面駅3番出口から徒歩3分","map":"地図","info":"案内","req":"リクエスト","tt":"タイムテーブル","evAllLink":"すべてのイベント","seat":"席"}};</script>
+<script src="/assets/site.js?v=mwo59ftu" defer></script>
+<script src="/assets/chat.js?v=mwo59ftu" defer></script>
 </body>
 </html>

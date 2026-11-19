@@ -28,12 +28,12 @@
 <link rel="apple-touch-icon" href="/assets/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="/assets/site.css?v=mwo4y6xz">
+<link rel="stylesheet" href="/assets/site.css?v=mwo59ftu">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&display=swap">
-<link rel="stylesheet" href="/assets/shell.css?v=mwo4y6xz">
-<link rel="stylesheet" href="/assets/home.css?v=mwo4y6xz">
+<link rel="stylesheet" href="/assets/shell.css?v=mwo59ftu">
+<link rel="stylesheet" href="/assets/home.css?v=mwo59ftu">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4Y93LP9PP"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','G-G4Y93LP9PP');}</script>
 </head>
@@ -52,7 +52,7 @@
     <a href="/club/">虚拟俱乐部</a>
   </nav>
   <details class="lang">
-    <summary aria-label="Language: 中文"><span class="lang-globe" aria-hidden="true">🌐</span> Language</summary>
+    <summary aria-label="Language: 中文"><svg class="ic lang-globe" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="lang-cur">ZH</span></summary>
     <div class="lang-menu">
       <a href="/" hreflang="ko" data-lang="ko">한국어</a>
       <a href="/en/" hreflang="en" data-lang="en">English</a>
@@ -60,6 +60,7 @@
       <a href="/zh/" hreflang="zh-CN" data-lang="zh" aria-current="true">中文</a>
     </div>
   </details>
+  <nav class="lang-inline" aria-label="Language"><a href="/" hreflang="ko">KO</a><a href="/en/" hreflang="en">EN</a><a href="/ja/" hreflang="ja">日本語</a><a href="/zh/" hreflang="zh-CN" aria-current="true">中文</a></nav>
   <a class="btn btn-hot hdr-cta" href="/zh/reserve/">立即预订</a>
   <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mnav" aria-label="打开菜单" data-open="打开菜单" data-close="关闭菜单"><span></span><span></span><span></span></button>
 </header>
@@ -82,13 +83,14 @@
 <section class="hero">
   <img class="hero-bg" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" fetchpriority="high">
   <div class="hero-in wrap">
+    <p class="status" data-status></p>
     <p class="kicker">BUSAN · SEOMYEON · 2 FLOORS</p>
-    <h1 class="hero-logo"><img src="/assets/logo.png" width="564" height="229" alt="Groove &amp; Spot"></h1>
+    <h1 class="hero-word"><span class="hw-g">GROOVE</span> <span class="hw-amp">&amp;</span> <span class="hw-s">SPOT</span></h1>
     <p class="hero-tag">一栋楼，两个舞台。2楼HIPHOP，3楼EDM——釜山西面的夜晚。</p>
     <div class="hero-act">
-      <a class="btn btn-hot" href="/zh/reserve/">立即预订 <span aria-hidden="true">↗</span></a>
-      <a class="btn" href="#home-lineup">今晚阵容 <span aria-hidden="true">↓</span></a>
-      <p class="status" data-status></p>
+      <a class="btn btn-hot btn-lg" href="/zh/reserve/">立即预订<svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      <a class="btn btn-lg" href="#home-lineup">今晚阵容<svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></a>
+      <a class="btn btn-lg hero-map" href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>导航</a>
     </div>
   </div>
 </section>
@@ -96,7 +98,7 @@
   <div class="wrap">
     <h2 class="sec-h" id="now-h"><span class="home-title" aria-hidden="true">TONIGHT</span><span class="home-subtitle"><span class="live-dot" aria-hidden="true"></span><span id="now-h-txt">正在播放</span></span></h2>
     <div class="now-grid" data-now-grid></div>
-    <p class="now-act"><a class="btn" href="/zh/request/">🎵 点歌</a><a class="more" href="/zh/floors/">时间表 →</a></p>
+    <p class="now-act"><a class="btn" href="/zh/request/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>点歌</a><a class="more" href="/zh/floors/">时间表 →</a></p>
   </div>
 </section>
 <section class="wrap sec home-events" aria-labelledby="up-h">
@@ -105,7 +107,7 @@
   <div class="cards" data-events="upcoming" data-limit="6"></div>
 </section>
 <section class="wrap sec" aria-labelledby="fl-h">
-  <div class="sec-top"><h2 class="sec-h" id="fl-h">两个楼层</h2><a class="more" href="/zh/floors/">楼层详情 →</a></div>
+  <div class="sec-top"><h2 class="sec-h" id="fl-h"><span class="home-title" aria-hidden="true">TWO FLOORS</span><span class="home-subtitle">两个楼层</span></h2><a class="more" href="/zh/floors/">楼层详情 →</a></div>
   <div class="floors">
     <article class="floor floor-g">
       <img class="floor-bg" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" loading="lazy" decoding="async">
@@ -124,28 +126,31 @@
   </div>
 </section>
 <section class="wrap sec" aria-labelledby="ph-h" data-photos-sec hidden>
-  <div class="sec-top"><h2 class="sec-h" id="ph-h">最新照片</h2><a class="more" href="/zh/gallery/">查看相册 →</a></div>
+  <div class="sec-top"><h2 class="sec-h" id="ph-h"><span class="home-title" aria-hidden="true">PHOTOS</span><span class="home-subtitle">最新照片</span></h2><a class="more" href="/zh/gallery/">查看相册 →</a></div>
   <div class="ph-strip" data-photos="latest" data-limit="8"></div>
 </section>
 <section class="wrap sec" aria-labelledby="sets-h">
-  <h2 class="sec-h" id="sets-h">现场录像</h2>
+  <h2 class="sec-h" id="sets-h"><span class="home-title" aria-hidden="true">LIVE SETS</span><span class="home-subtitle">GROOVE SESSIONS · 现场录像</span></h2>
   <div class="videos" data-videos data-limit="6"></div>
+  <div class="sc-row">
   <a class="sc yt" href="https://www.youtube.com/@GROOVEBUSAN" rel="noopener"><span class="yt-play" aria-hidden="true"></span><span>在YouTube观看现场录像 · GROOVE CLUB BUSAN →</span></a>
   <a class="sc ytm" href="https://music.youtube.com/channel/UCdS6A_RNPeys5ZBkvFSwuQg" rel="noopener"><span class="ytm-ic" aria-hidden="true"></span><span>在YouTube Music收听现场DJ Set · GROOVE CLUB BUSAN →</span></a>
   <a class="sc" href="https://on.soundcloud.com/IWtEmqOHfTecbn1cBI" rel="noopener"><span class="sc-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span>在SoundCloud收听官方混音 →</span></a>
+  </div>
 </section>
 <section class="wrap sec" aria-labelledby="ig-h" data-ig-sec hidden>
-  <div class="sec-top"><h2 class="sec-h" id="ig-h">Instagram</h2><a class="more" href="https://www.instagram.com/groovenspot/" rel="noopener">@groovenspot →</a></div>
+  <div class="sec-top"><h2 class="sec-h" id="ig-h"><span class="home-title" aria-hidden="true">INSTAGRAM</span><span class="home-subtitle">@groovenspot</span></h2><a class="more" href="https://www.instagram.com/groovenspot/" rel="noopener">@groovenspot →</a></div>
   <div class="ig" data-ig></div>
 </section>
 <section class="wrap sec visit" aria-labelledby="vi-h">
-  <h2 class="sec-h" id="vi-h">交通</h2>
+  <h2 class="sec-h" id="vi-h"><span class="home-title" aria-hidden="true">FIND US</span><span class="home-subtitle">西面站3号出口步行3分钟</span></h2>
   <div class="visit-grid">
-    <p class="visit-addr">釜山 釜山镇区 中央大路680番街路 52（2·3楼）<br><span class="muted">西面站3号出口步行3分钟</span></p>
+    <p class="visit-addr"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>釜山 釜山镇区 中央大路680番街路 52（2·3楼）<br><span class="muted">西面站3号出口步行3分钟</span></span></p>
+    <div class="visit-hours"><p class="vh-h"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>营业时间</p><p class="vh-r"><span>周日~周四</span><b>21:30 – 06:00</b></p><p class="vh-r"><span>周五·周六</span><b>21:00 – 07:00</b></p><p class="muted vh-n">全年无休</p></div>
     <div class="visit-act">
       <a class="btn" href="https://map.kakao.com/link/search/%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">KakaoMap</a>
       <a class="btn" href="https://map.naver.com/v5/search/%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">NAVER地图</a><a class="btn" href="https://www.google.com/maps/search/?api=1&query=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">谷歌地图</a>
-      <a class="btn" href="tel:050713015970">0507-1301-5970</a>
+      <a class="btn visit-tel" href="tel:050713015970"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>0507-1301-5970</a>
     </div>
   </div>
   <div class="gmap"><iframe src="https://maps.google.com/maps?q=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052&hl=zh-CN&z=17&output=embed" title="谷歌地图 · Groove &amp; Spot" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
@@ -169,12 +174,12 @@
   <p class="ftr-small muted"><a href="/zh/guide/">釜山夜生活指南：西面夜店</a> · <a href="/zh/artists/">艺人</a> · <a href="/zh/lost/">失物招领</a> · <a href="/zh/privacy/"><b>隐私政策</b></a> · <a href="/admin/" rel="nofollow">Staff</a> · 本网站仅面向19岁以上成年人。 · © 2026 Groove &amp; Spot</p>
 </footer>
 <nav class="dock" aria-label="Quick actions">
-  <a href="/zh/events/">今晚</a>
-  <a class="dock-hot" href="/zh/reserve/">立即预订</a>
-  <a href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">导航</a>
-  <a class="dock-sub" href="/zh/request/">🎵 点歌</a>
-  <a class="dock-sub" href="/zh/menu/">🍾 酒单</a>
-  <a class="dock-sub" href="/zh/info/">📍 须知</a>
+  <a class="dock-hot" href="/zh/reserve/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg><span>立即预订</span></a>
+  <a class="dock-b" href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>导航</span></a>
+  <a class="dock-b" href="/zh/events/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span>今晚</span></a>
+  <a class="dock-sub" href="/zh/request/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg><span>点歌</span></a>
+  <a class="dock-sub" href="/zh/menu/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 22h8"/><path d="M12 11v11"/><path d="m19 3-7 8-7-8Z"/></svg><span>酒单</span></a>
+  <a class="dock-sub" href="/zh/info/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>须知</span></a>
 </nav>
 <div class="gate" id="gate" hidden>
   <div class="gate-box" role="dialog" aria-modal="true" aria-labelledby="gate-q">
@@ -191,8 +196,8 @@
   <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="下一张">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>window.GS={"lang":"zh","root":"/zh","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","bookApi":"https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec","v":"mwo4y6xz","topic":"groovenspot-req-6witbq5hriea","t":{"nowPlaying":"正在播放","tonightLineup":"{d} 今晚阵容","startsAt":"{t} 开始","lineupSoon":"阵容即将公布","setsOf":"当晚DJ的现场录像","rqNoResult":"没有找到。也可以直接发送输入的内容。","rqSearching":"搜索中…","rqSearchOff":"暂时无法搜索，请直接输入歌名发送。","rqLocal":"网络搜索较慢，以下来自已保存的热门歌曲。没有的话直接输入即可。","noPhotos":"还没有照片。","photoCount":"{n}张","photosOf":"当晚照片","close":"关闭","prevPhoto":"上一张","nextPhoto":"下一张","rqSent":"点歌已发送！🎵","rqWait":"{s}秒后可再次发送","rqNeed":"请输入歌名。","rqFail":"发送失败，请稍后再试。","lostEmpty":"目前没有保管中的失物。","lostLoad":"正在加载失物…","lostFail":"无法加载失物，请稍后再试。","lostCount":"{n}件","openNow":"营业中 · 至{t}","opensAt":"今晚{t} OPEN","noEvents":"下一期阵容正在筹备中，将在Instagram首发。","noArtists":"艺人介绍即将上线。","since":"{t}起","next":"下一位 {n} · {t}","notFound":"找不到该活动。","copied":"预订信息已复制，请粘贴到@groovenspot私信发送。","need":"请输入姓名和电话。","consent":"请勾选必填的同意项。","bk.code":"预订编号","rvName":"请确认姓名。","rvPhone":"请输入包含9至15位数字的电话号码。","rvDate":"请确认预订日期。","rvBday":"请按月-日格式确认生日。","rvSaving":"正在保存预订…","rvSaved":"✅ 已收到预订申请","rvSavedSub":"经理确认后会与您联系。也可以通过下方按钮发私信，确认更快。","rvUnsure":"⚠️ 未能确认是否保存成功","rvUnsureSub":"请通过下方按钮发私信，我们会照常受理。","rvOpenIg":"打开Instagram私信（内容自动复制）","rvOpenWa":"打开WhatsApp（内容自动填写）","share":"分享","linkCopied":"链接已复制。","reserveThis":"预订这一天","open":"OPEN","past":"已结束","bk.title":"[Groove & Spot 预订申请]","today":"今天","tonight":"TONIGHT","dow":"周日,周一,周二,周三,周四,周五,周六","evAll":"全部","evGuest":"嘉宾DJ","evLineup":"查看阵容","evNone":"没有符合条件的活动。","evMorePast":"查看更多往期活动","evMore":"更多活动","week":"本周","visit":"交通","addr":"釜山 釜山镇区 中央大路680番街路 52（2·3楼）","near":"西面站3号出口步行3分钟","map":"导航","info":"须知","req":"点歌","tt":"时间表","evAllLink":"全部活动","seat":"座位"}};</script>
-<script src="/assets/site.js?v=mwo4y6xz" defer></script>
-<script src="/assets/chat.js?v=mwo4y6xz" defer></script>
+<script>window.GS={"lang":"zh","root":"/zh","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","bookApi":"https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec","v":"mwo59ftu","topic":"groovenspot-req-6witbq5hriea","t":{"nowPlaying":"正在播放","tonightLineup":"{d} 今晚阵容","startsAt":"{t} 开始","lineupSoon":"阵容即将公布","setsOf":"当晚DJ的现场录像","rqNoResult":"没有找到。也可以直接发送输入的内容。","rqSearching":"搜索中…","rqSearchOff":"暂时无法搜索，请直接输入歌名发送。","rqLocal":"网络搜索较慢，以下来自已保存的热门歌曲。没有的话直接输入即可。","noPhotos":"还没有照片。","photoCount":"{n}张","photosOf":"当晚照片","close":"关闭","prevPhoto":"上一张","nextPhoto":"下一张","rqSent":"点歌已发送！🎵","rqWait":"{s}秒后可再次发送","rqNeed":"请输入歌名。","rqFail":"发送失败，请稍后再试。","lostEmpty":"目前没有保管中的失物。","lostLoad":"正在加载失物…","lostFail":"无法加载失物，请稍后再试。","lostCount":"{n}件","openNow":"营业中 · 至{t}","opensAt":"今晚{t} OPEN","noEvents":"下一期阵容正在筹备中，将在Instagram首发。","noArtists":"艺人介绍即将上线。","since":"{t}起","next":"下一位 {n} · {t}","notFound":"找不到该活动。","copied":"预订信息已复制，请粘贴到@groovenspot私信发送。","need":"请输入姓名和电话。","consent":"请勾选必填的同意项。","bk.code":"预订编号","rvName":"请确认姓名。","rvPhone":"请输入包含9至15位数字的电话号码。","rvDate":"请确认预订日期。","rvBday":"请按月-日格式确认生日。","rvSaving":"正在保存预订…","rvSaved":"✅ 已收到预订申请","rvSavedSub":"经理确认后会与您联系。也可以通过下方按钮发私信，确认更快。","rvUnsure":"⚠️ 未能确认是否保存成功","rvUnsureSub":"请通过下方按钮发私信，我们会照常受理。","rvOpenIg":"打开Instagram私信（内容自动复制）","rvOpenWa":"打开WhatsApp（内容自动填写）","share":"分享","linkCopied":"链接已复制。","reserveThis":"预订这一天","open":"OPEN","past":"已结束","bk.title":"[Groove & Spot 预订申请]","today":"今天","tonight":"TONIGHT","dow":"周日,周一,周二,周三,周四,周五,周六","evAll":"全部","evGuest":"嘉宾DJ","evLineup":"查看阵容","evNone":"没有符合条件的活动。","evMorePast":"查看更多往期活动","evMore":"更多活动","week":"本周","visit":"交通","addr":"釜山 釜山镇区 中央大路680番街路 52（2·3楼）","near":"西面站3号出口步行3分钟","map":"导航","info":"须知","req":"点歌","tt":"时间表","evAllLink":"全部活动","seat":"座位"}};</script>
+<script src="/assets/site.js?v=mwo59ftu" defer></script>
+<script src="/assets/chat.js?v=mwo59ftu" defer></script>
 </body>
 </html>

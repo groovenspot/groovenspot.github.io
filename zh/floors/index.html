@@ -28,11 +28,11 @@
 <link rel="apple-touch-icon" href="/assets/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="/assets/site.css?v=mwo4y6xz">
+<link rel="stylesheet" href="/assets/site.css?v=mwo59ftu">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&display=swap">
-<link rel="stylesheet" href="/assets/shell.css?v=mwo4y6xz">
+<link rel="stylesheet" href="/assets/shell.css?v=mwo59ftu">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4Y93LP9PP"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','G-G4Y93LP9PP');}</script>
 </head>
@@ -51,7 +51,7 @@
     <a href="/club/">虚拟俱乐部</a>
   </nav>
   <details class="lang">
-    <summary aria-label="Language: 中文"><span class="lang-globe" aria-hidden="true">🌐</span> Language</summary>
+    <summary aria-label="Language: 中文"><svg class="ic lang-globe" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="lang-cur">ZH</span></summary>
     <div class="lang-menu">
       <a href="/floors/" hreflang="ko" data-lang="ko">한국어</a>
       <a href="/en/floors/" hreflang="en" data-lang="en">English</a>
@@ -59,6 +59,7 @@
       <a href="/zh/floors/" hreflang="zh-CN" data-lang="zh" aria-current="true">中文</a>
     </div>
   </details>
+  <nav class="lang-inline" aria-label="Language"><a href="/floors/" hreflang="ko">KO</a><a href="/en/floors/" hreflang="en">EN</a><a href="/ja/floors/" hreflang="ja">日本語</a><a href="/zh/floors/" hreflang="zh-CN" aria-current="true">中文</a></nav>
   <a class="btn btn-hot hdr-cta" href="/zh/reserve/">立即预订</a>
   <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mnav" aria-label="打开菜单" data-open="打开菜单" data-close="关闭菜单"><span></span><span></span><span></span></button>
 </header>
@@ -78,29 +79,39 @@
   <a class="btn btn-hot mnav-cta" href="/zh/reserve/">立即预订</a>
 </nav>
 <main id="main">
-<section class="phead wrap">
-  <h1>楼层</h1>
-  <p class="lede">2楼Hip-hop，3楼EDM。一栋楼里的两种夜晚。</p>
-</section>
-<section class="fbig fbig-g" id="2f">
-  <div class="wrap fbig-in">
-    <div class="fbig-head"><img class="fbig-img" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" loading="lazy" decoding="async"><p class="floor-no">2F</p><h2 class="fbig-name">GROOVE</h2><p class="floor-genre">HIPHOP · R&B</p></div>
-    <div class="fbig-body"><p class="lede">2楼GROOVE以Hip-hop和R&B为主。一个人也能轻松坐的单人吧台（H1–H32）、舞台前座位、和朋友一起的卡座任你选，还有飞镖。</p><ul class="tags"><li>DJ台</li><li>主吧台</li><li>单人吧台H座</li><li>舞台座</li><li>卡座</li><li>飞镖</li></ul>
-      <div class="tt-today" data-floor-tt="2F"></div>
-      <p><a class="btn" href="/zh/request/?floor=2F">🎵 点歌</a></p>
+<section class="phead wrap cx-head"><p class="cx-kick">TWO FLOORS</p><h1>楼层</h1><p class="lede">2楼Hip-hop，3楼EDM。一栋楼里的两种夜晚。</p></section>
+<section class="fbig fx fx-g" id="2f" aria-labelledby="fx-2F">
+  <div class="fx-hero"><img class="fx-img" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" loading="eager" decoding="async">
+    <div class="wrap fx-hero-in"><p class="fx-no">2F · FLOOR 01</p><h2 class="fx-name" id="fx-2F">GROOVE</h2><p class="fx-genre">HIPHOP · R&B</p></div>
+  </div>
+  <div class="wrap fx-body">
+    <div class="fx-main"><p class="fx-lede">2楼GROOVE以Hip-hop和R&B为主。一个人也能轻松坐的单人吧台（H1–H32）、舞台前座位、和朋友一起的卡座任你选，还有飞镖。</p><ul class="fx-am"><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg><span>DJ台</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 22h8"/><path d="M12 15v7"/><path d="M5 3h14l-1 7a6 6 0 0 1-12 0z"/></svg><span>主吧台</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 22h8"/><path d="M12 11v11"/><path d="m19 3-7 8-7-8z"/></svg><span>单人吧台H座</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></svg><span>舞台座</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"/><path d="M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z"/><path d="M5 18v2"/><path d="M19 18v2"/></svg><span>卡座</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>飞镖</span></li></ul></div>
+    <div class="fx-side">
+      <div class="tt-today fx-tt" data-floor-tt="2F"></div>
+      <div class="fx-act"><a class="btn btn-hot fx-cta" href="/zh/seats/?floor=2F"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>选座位</a><a class="btn fx-req" href="/zh/request/?floor=2F"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>点歌</a></div>
     </div>
   </div>
 </section>
-<section class="fbig fbig-s" id="3f">
-  <div class="wrap fbig-in">
-    <div class="fbig-head"><img class="fbig-img" src="/assets/img/floor-3f.webp" width="1079" height="606" alt="" loading="lazy" decoding="async"><p class="floor-no">3F</p><h2 class="fbig-name">SPOT</h2><p class="floor-genre">EDM</p></div>
-    <div class="fbig-body"><p class="lede">3楼SPOT用大型音响播放EDM，设有主舞台前的L座、拍照区和吸烟室。</p><ul class="tags"><li>DJ台</li><li>主吧台</li><li>舞台座</li><li>卡座</li><li>拍照区</li><li>吸烟室</li></ul>
-      <div class="tt-today" data-floor-tt="3F"></div>
-      <p><a class="btn" href="/zh/request/?floor=3F">🎵 点歌</a></p>
+<section class="wrap fx-bldg" aria-labelledby="fx-bldg-h">
+  <div class="fx-bldg-txt"><p class="cx-kick">ONE BUILDING · TWO STAGES</p><h2 id="fx-bldg-h">一栋楼，两个舞台</h2><p>2楼和3楼由室内楼梯相连，可以跟着音乐在两层之间自由切换。</p></div>
+  <div class="fx-bldg-fig">
+    <div class="fx-stack"><a class="fx-lv fx-lv-s" href="#3f"><small>3F</small><b>SPOT</b><span>EDM</span></a><a class="fx-lv fx-lv-g" href="#2f"><small>2F</small><b>GROOVE</b><span>HIPHOP · R&B</span></a><p class="fx-lv fx-lv-e"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>入口 · 西面站3号出口步行3分钟</span></p></div>
+    <p class="fx-stairs"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h5v-5h5v-5h5V6h3"/><path d="m17 3 4 3-4 3"/></svg><b>室内楼梯</b><small>2F ↔ 3F</small></p>
+  </div>
+</section>
+<section class="fbig fx fx-s" id="3f" aria-labelledby="fx-3F">
+  <div class="fx-hero"><img class="fx-img" src="/assets/img/floor-3f.webp" width="1079" height="606" alt="" loading="lazy" decoding="async">
+    <div class="wrap fx-hero-in"><p class="fx-no">3F · FLOOR 02</p><h2 class="fx-name" id="fx-3F">SPOT</h2><p class="fx-genre">EDM</p></div>
+  </div>
+  <div class="wrap fx-body">
+    <div class="fx-main"><p class="fx-lede">3楼SPOT用大型音响播放EDM，设有主舞台前的L座、拍照区和吸烟室。</p><ul class="fx-am"><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg><span>DJ台</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 22h8"/><path d="M12 15v7"/><path d="M5 3h14l-1 7a6 6 0 0 1-12 0z"/></svg><span>主吧台</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></svg><span>舞台座</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"/><path d="M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z"/><path d="M5 18v2"/><path d="M19 18v2"/></svg><span>卡座</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg><span>拍照区</span></li><li><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg><span>吸烟室</span></li></ul></div>
+    <div class="fx-side">
+      <div class="tt-today fx-tt" data-floor-tt="3F"></div>
+      <div class="fx-act"><a class="btn btn-hot fx-cta" href="/zh/seats/?floor=3F"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>选座位</a><a class="btn fx-req" href="/zh/request/?floor=3F"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>点歌</a></div>
     </div>
   </div>
 </section>
-<section class="wrap sec" aria-labelledby="lay-h"><div class="sec-top"><h2 class="sec-h" id="lay-h">桌位分布图</h2><a class="btn btn-hot" href="/zh/seats/">选座位 →</a></div><div class="shots"><figure class="shot "><a href="/assets/img/table-layout.webp" target="_blank" rel="noopener"><img src="/assets/img/table-layout.webp" alt="2楼·3楼桌位分布图" width="1080" height="1920" loading="lazy" decoding="async"></a><figcaption>2楼·3楼桌位分布图</figcaption></figure></div></section>
+<section class="wrap sec fx-layout" aria-labelledby="lay-h"><div class="sec-top"><div><p class="cx-kick">LAYOUT</p><h2 class="sec-h" id="lay-h">桌位分布图</h2></div><a class="btn btn-hot" href="/zh/seats/"><svg class="cx-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>选座位</a></div><div class="shots"><figure class="shot "><a href="/assets/img/table-layout.webp" target="_blank" rel="noopener"><img src="/assets/img/table-layout.webp" alt="2楼·3楼桌位分布图" width="1080" height="1920" loading="lazy" decoding="async"></a><figcaption>2楼·3楼桌位分布图</figcaption></figure></div></section>
 </main>
 <footer class="ftr">
   <div class="ftr-grid">
@@ -120,12 +131,12 @@
   <p class="ftr-small muted"><a href="/zh/guide/">釜山夜生活指南：西面夜店</a> · <a href="/zh/artists/">艺人</a> · <a href="/zh/lost/">失物招领</a> · <a href="/zh/privacy/"><b>隐私政策</b></a> · <a href="/admin/" rel="nofollow">Staff</a> · 本网站仅面向19岁以上成年人。 · © 2026 Groove &amp; Spot</p>
 </footer>
 <nav class="dock" aria-label="Quick actions">
-  <a href="/zh/events/">今晚</a>
-  <a class="dock-hot" href="/zh/reserve/">立即预订</a>
-  <a href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">导航</a>
-  <a class="dock-sub" href="/zh/request/">🎵 点歌</a>
-  <a class="dock-sub" href="/zh/menu/">🍾 酒单</a>
-  <a class="dock-sub" href="/zh/info/">📍 须知</a>
+  <a class="dock-hot" href="/zh/reserve/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg><span>立即预订</span></a>
+  <a class="dock-b" href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>导航</span></a>
+  <a class="dock-b" href="/zh/events/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span>今晚</span></a>
+  <a class="dock-sub" href="/zh/request/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg><span>点歌</span></a>
+  <a class="dock-sub" href="/zh/menu/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 22h8"/><path d="M12 11v11"/><path d="m19 3-7 8-7-8Z"/></svg><span>酒单</span></a>
+  <a class="dock-sub" href="/zh/info/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>须知</span></a>
 </nav>
 <div class="gate" id="gate" hidden>
   <div class="gate-box" role="dialog" aria-modal="true" aria-labelledby="gate-q">
@@ -142,8 +153,8 @@
   <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="下一张">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>window.GS={"lang":"zh","root":"/zh","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","bookApi":"https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec","v":"mwo4y6xz","topic":"groovenspot-req-6witbq5hriea","t":{"nowPlaying":"正在播放","tonightLineup":"{d} 今晚阵容","startsAt":"{t} 开始","lineupSoon":"阵容即将公布","setsOf":"当晚DJ的现场录像","rqNoResult":"没有找到。也可以直接发送输入的内容。","rqSearching":"搜索中…","rqSearchOff":"暂时无法搜索，请直接输入歌名发送。","rqLocal":"网络搜索较慢，以下来自已保存的热门歌曲。没有的话直接输入即可。","noPhotos":"还没有照片。","photoCount":"{n}张","photosOf":"当晚照片","close":"关闭","prevPhoto":"上一张","nextPhoto":"下一张","rqSent":"点歌已发送！🎵","rqWait":"{s}秒后可再次发送","rqNeed":"请输入歌名。","rqFail":"发送失败，请稍后再试。","lostEmpty":"目前没有保管中的失物。","lostLoad":"正在加载失物…","lostFail":"无法加载失物，请稍后再试。","lostCount":"{n}件","openNow":"营业中 · 至{t}","opensAt":"今晚{t} OPEN","noEvents":"下一期阵容正在筹备中，将在Instagram首发。","noArtists":"艺人介绍即将上线。","since":"{t}起","next":"下一位 {n} · {t}","notFound":"找不到该活动。","copied":"预订信息已复制，请粘贴到@groovenspot私信发送。","need":"请输入姓名和电话。","consent":"请勾选必填的同意项。","bk.code":"预订编号","rvName":"请确认姓名。","rvPhone":"请输入包含9至15位数字的电话号码。","rvDate":"请确认预订日期。","rvBday":"请按月-日格式确认生日。","rvSaving":"正在保存预订…","rvSaved":"✅ 已收到预订申请","rvSavedSub":"经理确认后会与您联系。也可以通过下方按钮发私信，确认更快。","rvUnsure":"⚠️ 未能确认是否保存成功","rvUnsureSub":"请通过下方按钮发私信，我们会照常受理。","rvOpenIg":"打开Instagram私信（内容自动复制）","rvOpenWa":"打开WhatsApp（内容自动填写）","share":"分享","linkCopied":"链接已复制。","reserveThis":"预订这一天","open":"OPEN","past":"已结束","bk.title":"[Groove & Spot 预订申请]","today":"今天","tonight":"TONIGHT","dow":"周日,周一,周二,周三,周四,周五,周六","evAll":"全部","evGuest":"嘉宾DJ","evLineup":"查看阵容","evNone":"没有符合条件的活动。","evMorePast":"查看更多往期活动","evMore":"更多活动","week":"本周","visit":"交通","addr":"釜山 釜山镇区 中央大路680番街路 52（2·3楼）","near":"西面站3号出口步行3分钟","map":"导航","info":"须知","req":"点歌","tt":"时间表","evAllLink":"全部活动","seat":"座位"}};</script>
-<script src="/assets/site.js?v=mwo4y6xz" defer></script>
-<script src="/assets/chat.js?v=mwo4y6xz" defer></script>
+<script>window.GS={"lang":"zh","root":"/zh","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","bookApi":"https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec","v":"mwo59ftu","topic":"groovenspot-req-6witbq5hriea","t":{"nowPlaying":"正在播放","tonightLineup":"{d} 今晚阵容","startsAt":"{t} 开始","lineupSoon":"阵容即将公布","setsOf":"当晚DJ的现场录像","rqNoResult":"没有找到。也可以直接发送输入的内容。","rqSearching":"搜索中…","rqSearchOff":"暂时无法搜索，请直接输入歌名发送。","rqLocal":"网络搜索较慢，以下来自已保存的热门歌曲。没有的话直接输入即可。","noPhotos":"还没有照片。","photoCount":"{n}张","photosOf":"当晚照片","close":"关闭","prevPhoto":"上一张","nextPhoto":"下一张","rqSent":"点歌已发送！🎵","rqWait":"{s}秒后可再次发送","rqNeed":"请输入歌名。","rqFail":"发送失败，请稍后再试。","lostEmpty":"目前没有保管中的失物。","lostLoad":"正在加载失物…","lostFail":"无法加载失物，请稍后再试。","lostCount":"{n}件","openNow":"营业中 · 至{t}","opensAt":"今晚{t} OPEN","noEvents":"下一期阵容正在筹备中，将在Instagram首发。","noArtists":"艺人介绍即将上线。","since":"{t}起","next":"下一位 {n} · {t}","notFound":"找不到该活动。","copied":"预订信息已复制，请粘贴到@groovenspot私信发送。","need":"请输入姓名和电话。","consent":"请勾选必填的同意项。","bk.code":"预订编号","rvName":"请确认姓名。","rvPhone":"请输入包含9至15位数字的电话号码。","rvDate":"请确认预订日期。","rvBday":"请按月-日格式确认生日。","rvSaving":"正在保存预订…","rvSaved":"✅ 已收到预订申请","rvSavedSub":"经理确认后会与您联系。也可以通过下方按钮发私信，确认更快。","rvUnsure":"⚠️ 未能确认是否保存成功","rvUnsureSub":"请通过下方按钮发私信，我们会照常受理。","rvOpenIg":"打开Instagram私信（内容自动复制）","rvOpenWa":"打开WhatsApp（内容自动填写）","share":"分享","linkCopied":"链接已复制。","reserveThis":"预订这一天","open":"OPEN","past":"已结束","bk.title":"[Groove & Spot 预订申请]","today":"今天","tonight":"TONIGHT","dow":"周日,周一,周二,周三,周四,周五,周六","evAll":"全部","evGuest":"嘉宾DJ","evLineup":"查看阵容","evNone":"没有符合条件的活动。","evMorePast":"查看更多往期活动","evMore":"更多活动","week":"本周","visit":"交通","addr":"釜山 釜山镇区 中央大路680番街路 52（2·3楼）","near":"西面站3号出口步行3分钟","map":"导航","info":"须知","req":"点歌","tt":"时间表","evAllLink":"全部活动","seat":"座位"}};</script>
+<script src="/assets/site.js?v=mwo59ftu" defer></script>
+<script src="/assets/chat.js?v=mwo59ftu" defer></script>
 </body>
 </html>

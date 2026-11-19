@@ -28,12 +28,12 @@
 <link rel="apple-touch-icon" href="/assets/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="/assets/site.css?v=mwo4y6xz">
+<link rel="stylesheet" href="/assets/site.css?v=mwo59ftu">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&display=swap">
-<link rel="stylesheet" href="/assets/shell.css?v=mwo4y6xz">
-<link rel="stylesheet" href="/assets/home.css?v=mwo4y6xz">
+<link rel="stylesheet" href="/assets/shell.css?v=mwo59ftu">
+<link rel="stylesheet" href="/assets/home.css?v=mwo59ftu">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4Y93LP9PP"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}if(!/^(localhost|127\.)/.test(location.hostname)){gtag('js',new Date());gtag('config','G-G4Y93LP9PP');}</script>
 </head>
@@ -52,7 +52,7 @@
     <a href="/club/">Virtual club</a>
   </nav>
   <details class="lang">
-    <summary aria-label="Language: English"><span class="lang-globe" aria-hidden="true">🌐</span> Language</summary>
+    <summary aria-label="Language: English"><svg class="ic lang-globe" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="lang-cur">EN</span></summary>
     <div class="lang-menu">
       <a href="/" hreflang="ko" data-lang="ko">한국어</a>
       <a href="/en/" hreflang="en" data-lang="en" aria-current="true">English</a>
@@ -60,6 +60,7 @@
       <a href="/zh/" hreflang="zh-CN" data-lang="zh">中文</a>
     </div>
   </details>
+  <nav class="lang-inline" aria-label="Language"><a href="/" hreflang="ko">KO</a><a href="/en/" hreflang="en" aria-current="true">EN</a><a href="/ja/" hreflang="ja">日本語</a><a href="/zh/" hreflang="zh-CN">中文</a></nav>
   <a class="btn btn-hot hdr-cta" href="/en/reserve/">Book a table</a>
   <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mnav" aria-label="Open menu" data-open="Open menu" data-close="Close menu"><span></span><span></span><span></span></button>
 </header>
@@ -82,13 +83,14 @@
 <section class="hero">
   <img class="hero-bg" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" fetchpriority="high">
   <div class="hero-in wrap">
+    <p class="status" data-status></p>
     <p class="kicker">BUSAN · SEOMYEON · 2 FLOORS</p>
-    <h1 class="hero-logo"><img src="/assets/logo.png" width="564" height="229" alt="Groove &amp; Spot"></h1>
+    <h1 class="hero-word"><span class="hw-g">GROOVE</span> <span class="hw-amp">&amp;</span> <span class="hw-s">SPOT</span></h1>
     <p class="hero-tag">One building, two stages. HIPHOP on 2F, EDM on 3F — the night of Seomyeon, Busan.</p>
     <div class="hero-act">
-      <a class="btn btn-hot" href="/en/reserve/">Book a table <span aria-hidden="true">↗</span></a>
-      <a class="btn" href="#home-lineup">Tonight’s lineup <span aria-hidden="true">↓</span></a>
-      <p class="status" data-status></p>
+      <a class="btn btn-hot btn-lg" href="/en/reserve/">Book a table<svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      <a class="btn btn-lg" href="#home-lineup">Tonight’s lineup<svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></a>
+      <a class="btn btn-lg hero-map" href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>Directions</a>
     </div>
   </div>
 </section>
@@ -96,7 +98,7 @@
   <div class="wrap">
     <h2 class="sec-h" id="now-h"><span class="home-title" aria-hidden="true">TONIGHT</span><span class="home-subtitle"><span class="live-dot" aria-hidden="true"></span><span id="now-h-txt">Now playing</span></span></h2>
     <div class="now-grid" data-now-grid></div>
-    <p class="now-act"><a class="btn" href="/en/request/">🎵 Request a song</a><a class="more" href="/en/floors/">Timetable →</a></p>
+    <p class="now-act"><a class="btn" href="/en/request/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Request a song</a><a class="more" href="/en/floors/">Timetable →</a></p>
   </div>
 </section>
 <section class="wrap sec home-events" aria-labelledby="up-h">
@@ -105,7 +107,7 @@
   <div class="cards" data-events="upcoming" data-limit="6"></div>
 </section>
 <section class="wrap sec" aria-labelledby="fl-h">
-  <div class="sec-top"><h2 class="sec-h" id="fl-h">Two floors</h2><a class="more" href="/en/floors/">About the floors →</a></div>
+  <div class="sec-top"><h2 class="sec-h" id="fl-h"><span class="home-title" aria-hidden="true">TWO FLOORS</span><span class="home-subtitle">Two floors</span></h2><a class="more" href="/en/floors/">About the floors →</a></div>
   <div class="floors">
     <article class="floor floor-g">
       <img class="floor-bg" src="/assets/img/floor-2f.webp" width="1079" height="606" alt="" loading="lazy" decoding="async">
@@ -124,28 +126,31 @@
   </div>
 </section>
 <section class="wrap sec" aria-labelledby="ph-h" data-photos-sec hidden>
-  <div class="sec-top"><h2 class="sec-h" id="ph-h">Latest photos</h2><a class="more" href="/en/gallery/">Open the gallery →</a></div>
+  <div class="sec-top"><h2 class="sec-h" id="ph-h"><span class="home-title" aria-hidden="true">PHOTOS</span><span class="home-subtitle">Latest photos</span></h2><a class="more" href="/en/gallery/">Open the gallery →</a></div>
   <div class="ph-strip" data-photos="latest" data-limit="8"></div>
 </section>
 <section class="wrap sec" aria-labelledby="sets-h">
-  <h2 class="sec-h" id="sets-h">Live sets</h2>
+  <h2 class="sec-h" id="sets-h"><span class="home-title" aria-hidden="true">LIVE SETS</span><span class="home-subtitle">GROOVE SESSIONS · Live sets</span></h2>
   <div class="videos" data-videos data-limit="6"></div>
+  <div class="sc-row">
   <a class="sc yt" href="https://www.youtube.com/@GROOVEBUSAN" rel="noopener"><span class="yt-play" aria-hidden="true"></span><span>Watch live sets on YouTube · GROOVE CLUB BUSAN →</span></a>
   <a class="sc ytm" href="https://music.youtube.com/channel/UCdS6A_RNPeys5ZBkvFSwuQg" rel="noopener"><span class="ytm-ic" aria-hidden="true"></span><span>Listen to live sets on YouTube Music · GROOVE CLUB BUSAN →</span></a>
   <a class="sc" href="https://on.soundcloud.com/IWtEmqOHfTecbn1cBI" rel="noopener"><span class="sc-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Official mixes on SoundCloud →</span></a>
+  </div>
 </section>
 <section class="wrap sec" aria-labelledby="ig-h" data-ig-sec hidden>
-  <div class="sec-top"><h2 class="sec-h" id="ig-h">Instagram</h2><a class="more" href="https://www.instagram.com/groovenspot/" rel="noopener">@groovenspot →</a></div>
+  <div class="sec-top"><h2 class="sec-h" id="ig-h"><span class="home-title" aria-hidden="true">INSTAGRAM</span><span class="home-subtitle">@groovenspot</span></h2><a class="more" href="https://www.instagram.com/groovenspot/" rel="noopener">@groovenspot →</a></div>
   <div class="ig" data-ig></div>
 </section>
 <section class="wrap sec visit" aria-labelledby="vi-h">
-  <h2 class="sec-h" id="vi-h">Getting here</h2>
+  <h2 class="sec-h" id="vi-h"><span class="home-title" aria-hidden="true">FIND US</span><span class="home-subtitle">Seomyeon Station Exit 3, 3 min walk</span></h2>
   <div class="visit-grid">
-    <p class="visit-addr">52 Jungang-daero 680beon-ga-gil, Busanjin-gu, Busan (2F–3F)<br><span class="muted">Seomyeon Station Exit 3, 3 min walk</span></p>
+    <p class="visit-addr"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>52 Jungang-daero 680beon-ga-gil, Busanjin-gu, Busan (2F–3F)<br><span class="muted">Seomyeon Station Exit 3, 3 min walk</span></span></p>
+    <div class="visit-hours"><p class="vh-h"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Hours</p><p class="vh-r"><span>Sun – Thu</span><b>21:30 – 06:00</b></p><p class="vh-r"><span>Fri · Sat</span><b>21:00 – 07:00</b></p><p class="muted vh-n">Open 365 days</p></div>
     <div class="visit-act">
       <a class="btn" href="https://map.kakao.com/link/search/%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">KakaoMap</a>
       <a class="btn" href="https://map.naver.com/v5/search/%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">Naver Map</a><a class="btn" href="https://www.google.com/maps/search/?api=1&query=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">Google Maps</a>
-      <a class="btn" href="tel:050713015970">0507-1301-5970</a>
+      <a class="btn visit-tel" href="tel:050713015970"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>0507-1301-5970</a>
     </div>
   </div>
   <div class="gmap"><iframe src="https://maps.google.com/maps?q=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052&hl=en&z=17&output=embed" title="Google map · Groove &amp; Spot" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
@@ -169,12 +174,12 @@
   <p class="ftr-small muted"><a href="/en/guide/">Busan Nightlife Guide: Seomyeon Clubs</a> · <a href="/en/artists/">Artists</a> · <a href="/en/lost/">Lost & Found</a> · <a href="/en/privacy/"><b>Privacy</b></a> · <a href="/admin/" rel="nofollow">Staff</a> · This site is for adults aged 19 and over. · © 2026 Groove &amp; Spot</p>
 </footer>
 <nav class="dock" aria-label="Quick actions">
-  <a href="/en/events/">Tonight</a>
-  <a class="dock-hot" href="/en/reserve/">Book a table</a>
-  <a href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">Directions</a>
-  <a class="dock-sub" href="/en/request/">🎵 Requests</a>
-  <a class="dock-sub" href="/en/menu/">🍾 Menu</a>
-  <a class="dock-sub" href="/en/info/">📍 Info</a>
+  <a class="dock-hot" href="/en/reserve/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg><span>Book a table</span></a>
+  <a class="dock-b" href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Directions</span></a>
+  <a class="dock-b" href="/en/events/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span>Tonight</span></a>
+  <a class="dock-sub" href="/en/request/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg><span>Requests</span></a>
+  <a class="dock-sub" href="/en/menu/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 22h8"/><path d="M12 11v11"/><path d="m19 3-7 8-7-8Z"/></svg><span>Menu</span></a>
+  <a class="dock-sub" href="/en/info/"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Info</span></a>
 </nav>
 <div class="gate" id="gate" hidden>
   <div class="gate-box" role="dialog" aria-modal="true" aria-labelledby="gate-q">
@@ -191,8 +196,8 @@
   <button class="lb-nav lb-next" type="button" data-lb="next" aria-label="Next photo">›</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>window.GS={"lang":"en","root":"/en","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","bookApi":"https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec","v":"mwo4y6xz","topic":"groovenspot-req-6witbq5hriea","t":{"nowPlaying":"Now playing","tonightLineup":"Tonight · {d}","startsAt":"from {t}","lineupSoon":"Lineup coming soon","setsOf":"Live sets by tonight's DJs","rqNoResult":"No matches. You can still send what you typed.","rqSearching":"Searching…","rqSearchOff":"Search is unavailable right now. Type the title and send it.","rqLocal":"Online search is slow, so these come from our saved list of popular tracks. Not there? Just type it in.","noPhotos":"No photos yet.","photoCount":"{n} photos","photosOf":"Photos from this night","close":"Close","prevPhoto":"Previous photo","nextPhoto":"Next photo","rqSent":"Request sent! 🎵","rqWait":"You can send another in {s}s","rqNeed":"Please enter a song title.","rqFail":"Could not send. Please try again shortly.","lostEmpty":"No lost items right now.","lostLoad":"Loading lost items…","lostFail":"Couldn't load lost items. Please try again later.","lostCount":"{n} items","openNow":"Open now · until {t}","opensAt":"Opens tonight at {t}","noEvents":"We're putting the next lineup together. Instagram gets it first.","noArtists":"Artist profiles are coming soon.","since":"since {t}","next":"Next: {n} · {t}","notFound":"We couldn't find that event.","copied":"Booking copied. Paste it into our @groovenspot DM.","need":"Please enter your name and phone.","consent":"Please tick the required consent box.","bk.code":"Booking code","rvName":"Check your name.","rvPhone":"Enter a phone number with 9 to 15 digits.","rvDate":"Check your booking date.","rvBday":"Check your birthday in MM-DD format.","rvSaving":"Saving your booking…","rvSaved":"✅ Booking request received","rvSavedSub":"Our manager will confirm and contact you. Send it by DM too for a faster reply.","rvUnsure":"⚠️ We couldn’t confirm it was saved","rvUnsureSub":"Send it by DM with the button below and we’ll take it from there.","rvOpenIg":"Open Instagram DM (auto-copied)","rvOpenWa":"Open WhatsApp (pre-filled)","share":"Share","linkCopied":"Link copied.","reserveThis":"Book this night","open":"OPEN","past":"Ended","bk.title":"[Groove & Spot booking request]","today":"Today","tonight":"TONIGHT","dow":"Sun,Mon,Tue,Wed,Thu,Fri,Sat","evAll":"All","evGuest":"Guest DJ","evLineup":"See lineup","evNone":"No events match this filter.","evMorePast":"Show more past events","evMore":"More nights","week":"This week","visit":"Getting here","addr":"52 Jungang-daero 680beon-ga-gil, Busanjin-gu, Busan (2F–3F)","near":"Seomyeon Station Exit 3, 3 min walk","map":"Directions","info":"Info","req":"Requests","tt":"Timetable","evAllLink":"All events","seat":"Seat"}};</script>
-<script src="/assets/site.js?v=mwo4y6xz" defer></script>
-<script src="/assets/chat.js?v=mwo4y6xz" defer></script>
+<script>window.GS={"lang":"en","root":"/en","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","bookApi":"https://script.google.com/macros/s/AKfycbwhY9z5tEh7zkadb_3nWjQTRnBRKRStUxGkCotbG9n72f2t0FBZVXvp39afJI7-sdRe/exec","v":"mwo59ftu","topic":"groovenspot-req-6witbq5hriea","t":{"nowPlaying":"Now playing","tonightLineup":"Tonight · {d}","startsAt":"from {t}","lineupSoon":"Lineup coming soon","setsOf":"Live sets by tonight's DJs","rqNoResult":"No matches. You can still send what you typed.","rqSearching":"Searching…","rqSearchOff":"Search is unavailable right now. Type the title and send it.","rqLocal":"Online search is slow, so these come from our saved list of popular tracks. Not there? Just type it in.","noPhotos":"No photos yet.","photoCount":"{n} photos","photosOf":"Photos from this night","close":"Close","prevPhoto":"Previous photo","nextPhoto":"Next photo","rqSent":"Request sent! 🎵","rqWait":"You can send another in {s}s","rqNeed":"Please enter a song title.","rqFail":"Could not send. Please try again shortly.","lostEmpty":"No lost items right now.","lostLoad":"Loading lost items…","lostFail":"Couldn't load lost items. Please try again later.","lostCount":"{n} items","openNow":"Open now · until {t}","opensAt":"Opens tonight at {t}","noEvents":"We're putting the next lineup together. Instagram gets it first.","noArtists":"Artist profiles are coming soon.","since":"since {t}","next":"Next: {n} · {t}","notFound":"We couldn't find that event.","copied":"Booking copied. Paste it into our @groovenspot DM.","need":"Please enter your name and phone.","consent":"Please tick the required consent box.","bk.code":"Booking code","rvName":"Check your name.","rvPhone":"Enter a phone number with 9 to 15 digits.","rvDate":"Check your booking date.","rvBday":"Check your birthday in MM-DD format.","rvSaving":"Saving your booking…","rvSaved":"✅ Booking request received","rvSavedSub":"Our manager will confirm and contact you. Send it by DM too for a faster reply.","rvUnsure":"⚠️ We couldn’t confirm it was saved","rvUnsureSub":"Send it by DM with the button below and we’ll take it from there.","rvOpenIg":"Open Instagram DM (auto-copied)","rvOpenWa":"Open WhatsApp (pre-filled)","share":"Share","linkCopied":"Link copied.","reserveThis":"Book this night","open":"OPEN","past":"Ended","bk.title":"[Groove & Spot booking request]","today":"Today","tonight":"TONIGHT","dow":"Sun,Mon,Tue,Wed,Thu,Fri,Sat","evAll":"All","evGuest":"Guest DJ","evLineup":"See lineup","evNone":"No events match this filter.","evMorePast":"Show more past events","evMore":"More nights","week":"This week","visit":"Getting here","addr":"52 Jungang-daero 680beon-ga-gil, Busanjin-gu, Busan (2F–3F)","near":"Seomyeon Station Exit 3, 3 min walk","map":"Directions","info":"Info","req":"Requests","tt":"Timetable","evAllLink":"All events","seat":"Seat"}};</script>
+<script src="/assets/site.js?v=mwo59ftu" defer></script>
+<script src="/assets/chat.js?v=mwo59ftu" defer></script>
 </body>
 </html>
