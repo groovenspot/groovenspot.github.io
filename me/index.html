@@ -210,7 +210,7 @@
   // 손님 '내 페이지' (대표 결정 2026-11-20, 1단계): 담당 직원이 보내 준 링크(?k=) + 전화번호 뒤 4자리로 본인 확인.
   // 확인되면 서버가 준 표(t)를 이 기기에 둔다(gs_me_+k). 링크 키 k 는 화면·로그 어디에도 보이지 않는다.
   var API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
-  var CLUB_TEL = '050713015970', CLUB_PH = '0507-1301-5970';
+  var CLUB_TEL = '050713015970', CLUB_PH = '0507-1301-5970', BUSY = '잠깐 사이에 너무 많이 바꿨어요. 잠시 후 다시 해 주세요.';
   var box = document.getElementById('me'), sub = document.getElementById('me-sub');
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function md(s) { var p = String(s).split('-'); return p.length === 3 ? +p[1] + '/' + +p[2] : ''; }
@@ -401,7 +401,7 @@
       return api(body).then(function (r) {
         if (r.error === 'auth') { tokSet(''); return pinView(); }
         if (r.error === 'notfound') return notFound();
-        if (!r.ok) { if (undo) undo(); out.className = 'me-msg'; out.textContent = r.error === 'birth' ? '생일을 확인해 주세요.' : r.error === 'agree' ? '먼저 혜택·이벤트 안내 받기에 동의해 주세요.' : '저장이 안 됐어요. 다시 해 주세요.'; return; }
+        if (!r.ok) { if (undo) undo(); out.className = 'me-msg'; out.textContent = r.error === 'birth' ? '생일을 확인해 주세요.' : r.error === 'agree' ? '먼저 혜택·이벤트 안내 받기에 동의해 주세요.' : r.error === 'busy' ? BUSY : '저장이 안 됐어요. 다시 해 주세요.'; return; }
         if (r.me) me = r.me;
         done(); del();
       }).catch(function () { if (undo) undo(); out.className = 'me-msg'; out.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
@@ -453,7 +453,7 @@
           b.disabled = false;
           if (r.error === 'auth') { tokSet(''); return pinView(); }
           if (r.error === 'notfound') return notFound();
-          if (!r.ok) { dm.textContent = '요청이 안 됐어요. 다시 해 주세요.'; return; }
+          if (!r.ok) { dm.textContent = r.error === 'busy' ? BUSY : '요청이 안 됐어요. 다시 해 주세요.'; return; }
           me = r.me || me; me.delReq = true; del();
         }).catch(function () { b.disabled = false; dm.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
       });
