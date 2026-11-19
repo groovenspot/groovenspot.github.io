@@ -584,6 +584,8 @@ const DOWS = { ko: ['일', '월', '화', '수', '목', '금', '토'], en: ['Sun'
 const dLabel = (d, lang) => { const [y, m, dd] = d.split('-').map(Number); const w = DOWS[lang][new Date(Date.UTC(y, m - 1, dd)).getUTCDay()]; return lang === 'en' ? `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m - 1]} ${dd}, ${y} (${w})` : lang === 'ko' ? `${y}년 ${m}월 ${dd}일 (${w})` : lang === 'ja' ? `${y}年${m}月${dd}日（${w}）` : `${y}年${m}月${dd}日（周${w}）`; };
 const nmin = (t) => { const [h, m] = t.split(':').map(Number); const v = h * 60 + m; return v < 720 ? v + 1440 : v; };
 const evPages = [];
+// 파티 날 사진 전부 (대표 지시 2026-11-19 20:13): flyer = 카드 표지(파티 포스터), more = 같이 보여 줄 사진(그날 타임테이블 등)
+const moreOf = (e) => (Array.isArray(e.more) ? e.more : []).filter((x) => typeof x === 'string' && /^\/assets\//.test(x) && x !== e.flyer);
 for (const e of EVENTS) {
   if (!e || !e.date || !e.title) continue;
   const id = e.id || `${e.date}-${slugE(e.title)}`;
@@ -602,9 +604,9 @@ for (const e of EVENTS) {
     const desc = `${pickL(e.desc, lang) || e.title} — ${dLabel(e.date, lang)} · ${EV_DESC[lang]}. ${names.length ? 'DJ: ' + names.slice(0, 12).join(', ') : ''}`.trim();
     const EI = EV_INFO[lang];
     const evInfo = `<div class="evd-sec"><h2 class="sec-h">${EI.h}</h2><dl class="hours guide-quick">${EI.rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl><p><a class="more" href="${href(lang, 'guide/')}">${EI.more}: ${GUIDE[lang].t} →</a></p></div>`;
-    const ld = { '@context': 'https://schema.org', '@type': 'MusicEvent', name: `${e.title} · Groove & Spot`, startDate: `${e.date}T${e.open || '21:30'}:00+09:00`, eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', isAccessibleForFree: true, description: desc, url: `${SITE}${href(lang, page)}`, image: e.flyer ? [SITE + e.flyer] : [SITE + '/assets/og.png'], location: { '@type': 'NightClub', name: 'Groove & Spot', address: { '@type': 'PostalAddress', streetAddress: '52 Jungang-daero 680beonga-gil', addressLocality: 'Busanjin-gu, Busan', addressCountry: 'KR' } }, organizer: { '@type': 'Organization', name: 'Groove & Spot', url: SITE + '/' }, performer: names.slice(0, 30).map((n) => ({ '@type': 'PerformingGroup', name: n })) };
+    const ld = { '@context': 'https://schema.org', '@type': 'MusicEvent', name: `${e.title} · Groove & Spot`, startDate: `${e.date}T${e.open || '21:30'}:00+09:00`, eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', isAccessibleForFree: true, description: desc, url: `${SITE}${href(lang, page)}`, image: e.flyer ? [e.flyer, ...moreOf(e)].map((x) => SITE + x) : [SITE + '/assets/og.png'], location: { '@type': 'NightClub', name: 'Groove & Spot', address: { '@type': 'PostalAddress', streetAddress: '52 Jungang-daero 680beonga-gil', addressLocality: 'Busanjin-gu, Busan', addressCountry: 'KR' } }, organizer: { '@type': 'Organization', name: 'Groove & Spot', url: SITE + '/' }, performer: names.slice(0, 30).map((n) => ({ '@type': 'PerformingGroup', name: n })) };
     const body = `<article class="evd wrap">
-  <div class="ev-art full">${e.flyer ? `<img src="${esc(e.flyer)}" alt="${esc(e.title)} · Groove &amp; Spot Busan ${esc(e.date)}" loading="eager">` : ''}</div>
+  <div class="ev-art full">${e.flyer ? `<img src="${esc(e.flyer)}" alt="${esc(e.title)} · Groove &amp; Spot Busan ${esc(e.date)}" loading="eager">` + moreOf(e).map((x, i) => `<img src="${esc(x)}" alt="${esc(e.title)} · Groove &amp; Spot Busan ${esc(e.date)} (${i + 2})" loading="lazy">`).join('') : ''}</div>
   <div>
     <div class="chips">${floors.map((f) => `<span class="chip ${f === '2F' ? 'g' : 's'}">${f}${f === '2F' ? ' HIPHOP' : ' EDM'}</span>`).join('')}</div>
     <h1>${esc(e.title)}</h1>
