@@ -55,7 +55,7 @@ body[data-page="home"] { --home-live: #ffac8d; }
 .home-events .cards .empty { grid-column: 1 / -1; }
 .home-events .ev { display: grid; grid-template-columns: minmax(0, 43%) minmax(0, 1fr); }
 .home-events .ev-art { width: 100%; min-height: 144px; aspect-ratio: 4 / 5; background-color: #1b171e; }
-.home-events .ev-art img { object-fit: contain; object-position: center; }
+.home-events .ev-art img { object-fit: cover; object-position: center; }   /* 4:5 틀에 꽉 채움 — 정사각 파티 포스터가 위아래 검은 띠로 깨져 보여서 (대표 2026-11-19). 타임테이블은 올릴 때 4:5 로 잘라 둠 */
 .home-events .ev-art.gen { justify-content: center; }
 .home-events .ev-art .gt { display: none; }
 .home-events .ev-art.gen + .ev-meta .ev-title { display: block; }

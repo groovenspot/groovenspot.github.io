@@ -149,8 +149,7 @@
     var only = e.floors.length === 1 ? ' only-' + e.floors[0] : '';
     var more = moreOf(e);
     if (e.flyer) return '<div class="ev-art' + (big ? ' full' : '') + '"><img src="' + esc(e.flyer) + '" alt="' + esc(e.title) + '" loading="' + (big ? 'eager' : 'lazy') + '">' +
-      (big ? more.map(function (x, i) { return '<img src="' + esc(x) + '" alt="' + esc(e.title) + ' (' + (i + 2) + ')" loading="lazy">'; }).join('')
-        : (more.length ? '<span class="ev-more" aria-label="+' + more.length + '">+' + more.length + '</span>' : '')) + '</div>';
+      (big ? more.map(function (x, i) { return '<img src="' + esc(x) + '" alt="' + esc(e.title) + ' (' + (i + 2) + ')" loading="lazy">'; }).join('') : '') + '</div>';
     var p = e.date.split('-');
     return '<div class="ev-art gen' + only + '" aria-hidden="true"><div class="gd"><small>' + esc(DOW[dowOf(e.date)] || '') + '</small>' + (+p[1]) + '.' + p[2] + '</div><div class="gt">' + esc(e.title) + '</div></div>';
   }
@@ -168,7 +167,7 @@
     return '<a class="ev" href="' + url('event/?id=' + encodeURIComponent(e.id)) + '">' + art(e) +
       '<div class="ev-meta"><span class="ev-date">' + esc(dateLabel(e.date)) + (e.open ? ' · ' + esc(T.open) + ' ' + esc(e.open) : '') + (past ? ' · ' + esc(T.past) : '') + '</span>' +
       '<span class="ev-title">' + esc(e.title) + '</span>' + (sub ? '<span class="ev-sub">' + esc(sub) + '</span>' : '') +
-      '<span class="chips">' + tonight + floorChips(e) + '</span></div></a>';
+      '<span class="chips">' + tonight + floorChips(e) + (moreOf(e).length && e.flyer ? '<span class="chip" aria-label="' + (moreOf(e).length + 1) + '">📷 ' + (moreOf(e).length + 1) + '</span>' : '') + '</span></div></a>';
   }
 
   function emptyBox(msg) {
