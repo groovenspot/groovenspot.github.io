@@ -1,8 +1,17 @@
 // 검색 유입용 안내 글 (guide/<slug>/) — 4개 언어
 // 사실관계는 guide.mjs·i18n.mjs·menu.json·timetable.json 과 맞춘다. 확인 안 된 내용(다른 매장, 추정 혼잡 시간 등)은 쓰지 않는다.
 // 링크는 %%events%% 같은 자리표시자로 쓰고, 빌드 때 언어별 주소로 바뀐다:
-//   %%events%% %%info%% %%reserve%% %%guide%% %%floors%% %%menu%% %%a:<slug>%%
+//   %%events%% %%info%% %%reserve%% %%guide%% %%floors%% %%menu%% %%request%% %%privacy%% %%a:<slug>%%
+//   외부 채널(build.mjs 상수): %%youtube%% %%ytmusic%% %%soundcloud%%
+import { readFileSync } from 'node:fs';
 const BY = new Date(Date.now() + 9 * 3600e3).getUTCFullYear() - 19; // 연 나이 19세 기준 출생연도
+
+// GROOVE SESSIONS 라이브셋 (data/videos.json) — 세션 번호로 유튜브 링크·길이·제목을 가져온다. 영상이 목록에서 빠지면 링크 없이 번호만.
+const VIDEOS = (() => { try { const v = JSON.parse(readFileSync(new URL('../data/videos.json', import.meta.url), 'utf8')); return Array.isArray(v) ? v.filter((x) => x && x.youtube) : []; } catch { return []; } })();
+const NV = VIDEOS.length;
+const vs = (n) => VIDEOS.find((v) => v.session === n);
+const ss = (n) => { const v = vs(n), no = `GROOVE SESSIONS ${String(n).padStart(3, '0')}`; return v ? `<a href="https://www.youtube.com/watch?v=${v.youtube}" rel="noopener"><b>${v.dj}</b> · ${no}</a>${v.duration ? ` (${v.duration})` : ''}` : no; };
+const sk = (n) => { const v = vs(n); return ss(n) + (v && v.title ? ` — ${v.title}` : ''); }; // 한국어: 유튜브 제목 그대로
 
 export const ART_UI = {
   more: { ko: '더 읽어보기', en: 'More guides', ja: 'もっと読む', zh: '更多攻略' },
@@ -280,6 +289,328 @@ export const ARTICLES = [
         ['3楼香槟套餐', `<p>按酒水单标注分三档（3+1 / 3B · 6+2 / 5B · 10B）：</p><ul><li>Deep、King、Queen、Aurora：600,000 · 1,200,000 · 1,550,000韩元</li><li>酩悦香槟：700,000 · 1,200,000 · 2,300,000韩元</li><li>酩悦N.I.R：1,000,000 · 1,650,000 · 3,250,000韩元</li></ul><p>更高档的套餐（巴黎之花、唐培里侬、黑桃A）见<a href="%%menu%%">酒水单页面</a>。</p>`],
         ['同一款酒，楼层不同价格不同', `<ul><li>野格：2楼140,000 · 3楼200,000韩元</li><li>灰雁：2楼190,000 · 3楼250,000韩元</li><li>酩悦香槟：2楼200,000 · 3楼250,000韩元</li></ul><p>两层氛围也不同，可以看看<a href="%%a:busan-club-hiphop-vs-edm-floor%%">2楼嘻哈 vs 3楼EDM</a>。</p>`],
         ['付款与预约', `<ul><li>接受信用卡、借记卡和NFC手机支付</li><li>周五、周六和客座DJ之夜建议预订卡座 —— 在<a href="%%reserve%%">预约页面</a>留下日期、人数和想要的酒套餐</li><li>电话：+82-507-1301-5970</li></ul>`],
+      ],
+    },
+  },
+  {
+    slug: 'how-to-get-to-seomyeon-club',
+    date: '2026-11-19',
+    ko: {
+      t: '부산역·해운대·김해공항에서 서면 클럽 가는 법 (지하철·택시)',
+      s: '부산역에서 지하철 1호선 약 15분, 해운대에서 2호선 약 35분·택시 약 25분, 김해공항에서 경전철+2호선 약 45분. 서면역 3번 출구 도보 3분, 그루브앤스팟 가는 길과 귀가 팁.',
+      h1: '부산역·해운대·김해공항에서 서면 클럽 가는 법',
+      lede: '그루브앤스팟은 서면역 3번 출구에서 걸어서 3분이에요. 부산 어디에서 출발하든 서면역까지만 오면 됩니다. 출발지별로 가장 간단한 방법과 택시 타는 법, 집에 가는 방법까지 정리했어요.',
+      secs: [
+        ['한눈에 보기', `<ul><li><b>부산역에서</b>: 지하철 1호선 약 15분</li><li><b>해운대에서</b>: 지하철 2호선 약 35분 · 택시 약 25분</li><li><b>김해공항에서</b>: 경전철로 사상역 → 2호선 환승, 약 45분</li><li><b>내리는 곳</b>: 서면역 3번 출구, 걸어서 3분</li><li><b>주소</b>: 부산 부산진구 중앙대로680번가길 52 (2·3층)</li></ul>`],
+        ['목적지는 서면역 3번 출구', `<p>서면역은 부산 지하철 <b>1호선과 2호선</b>이 함께 서는 역이에요. 어느 노선으로 왔든 <b>3번 출구</b>로 나오면 3분이면 도착합니다.</p>
+<p>그루브앤스팟은 한 건물의 2층과 3층이에요. <b>2층 GROOVE</b>는 힙합·R&B, <b>3층 SPOT</b>은 EDM입니다. 지도 앱으로 바로 찾고 싶다면 <a href="%%info%%">안내 페이지</a>의 카카오맵·네이버지도·구글맵 버튼을 누르세요.</p>`],
+        ['부산역에서: 1호선 한 번에', `<p>부산역에서 지하철 <b>1호선</b>을 타면 갈아타지 않고 서면역까지 약 15분이에요. 서면역에서 내려 3번 출구로 나오면 됩니다.</p>`],
+        ['해운대에서: 2호선 또는 택시', `<ul><li><b>지하철</b>: 2호선으로 약 35분. 서면역에서 내려 3번 출구로 나오세요.</li><li><b>택시</b>: 약 25분.</li></ul>
+<p>시간은 대략적인 기준이라 도로 사정 등에 따라 달라질 수 있어요.</p>`],
+        ['김해공항에서: 경전철 → 사상역 → 2호선', `<ol><li>김해공항에서 <b>경전철</b>을 타고 <b>사상역</b>까지 가요.</li><li>사상역에서 지하철 <b>2호선</b>으로 갈아타요.</li><li><b>서면역</b>에서 내려 3번 출구로 나오면 끝.</li></ol>
+<p>전체 약 45분이에요. 비행기에서 내려 바로 온다면, 입구에서 확인하는 <b>실물 신분증</b>(외국인은 여권 원본)을 바로 꺼낼 수 있게 챙겨 두세요.</p>`],
+        ['택시 탈 때 보여 줄 주소', `<p>기사님께 아래 주소를 보여 주면 됩니다.</p>
+<p><b>서면 그루브앤스팟, 부산 부산진구 중앙대로680번가길 52</b></p>
+<p>택시는 카카오T 앱으로 부르면 편해요.</p>`],
+        ['차를 가져온다면', `<p>그루브앤스팟 전용 주차장은 없어요. 서면역 근처 공영·민영 주차장을 이용해야 하고, 술을 마실 계획이라면 차는 두고 지하철이나 택시로 오세요.</p>`],
+        ['집에 갈 때는 택시', `<p>부산 지하철은 자정 무렵 끊겨요. 클럽은 일–목 06:00, 금·토·공휴일 전날 07:00까지 영업하니, 늦게까지 놀 계획이라면 귀가는 택시(카카오T)로 생각해 두세요.</p>`],
+        ['출발 전 체크리스트', `<ul><li>입장료 무료, 연 나이 19세 이상 — ${BY}년생까지</li><li>실물 신분증 필수, 사진·사본은 안 돼요. 외국인은 여권 원본</li><li>트레이닝복·슬리퍼·과도한 캐주얼은 제한될 수 있어요 → <a href="%%a:seomyeon-club-dress-code-id%%">드레스코드·신분증 정리</a></li><li>문 여는 시간: 일–목 21:30, 금·토·공휴일 전날 21:00</li><li>오늘 밤 DJ는 매일 오후 <a href="%%events%%">이벤트 페이지</a>에 올라와요</li><li>외국인 친구와 함께라면 <a href="%%a:busan-club-foreigners-faq%%">외국인 FAQ</a>도 확인하세요</li></ul>`],
+      ],
+    },
+    en: {
+      t: 'How to Get to Seomyeon from Busan Station, Haeundae & Gimhae Airport',
+      s: 'Getting to a Seomyeon club in Busan: Line 1 from Busan Station (about 15 min), Line 2 or a taxi from Haeundae, light rail + Line 2 from Gimhae Airport (about 45 min). Then 3 min from Exit 3.',
+      h1: 'How to get to Seomyeon from Busan Station, Haeundae and Gimhae Airport',
+      lede: 'Groove & Spot is a 3-minute walk from Seomyeon Station Exit 3, so wherever you start in Busan, all you have to do is reach Seomyeon Station. Here is the simplest route from each starting point, plus taxi tips and how to get back to your hotel.',
+      secs: [
+        ['Quick routes', `<ul><li><b>From Busan Station</b>: Metro Line 1, about 15 min</li><li><b>From Haeundae</b>: Metro Line 2, about 35 min — or about 25 min by taxi</li><li><b>From Gimhae Airport</b>: light rail to Sasang, then Line 2 — about 45 min</li><li><b>Get off at</b>: Seomyeon Station, Exit 3, then a 3-minute walk</li><li><b>Address</b>: 52 Jungang-daero 680beon-ga-gil, Busanjin-gu, Busan (2F–3F)</li></ul>`],
+        ['Your target: Seomyeon Station Exit 3', `<p>Seomyeon Station is served by both Busan Metro <b>Line 1 and Line 2</b>. Whichever line you arrive on, leave by <b>Exit 3</b> and you'll be at the club in about 3 minutes.</p>
+<p>The club takes up the 2nd and 3rd floors of one building: <b>2F GROOVE</b> for hip-hop and R&B, <b>3F SPOT</b> for EDM. To open it in a map app, use the KakaoMap, Naver Map or Google Maps buttons on our <a href="%%info%%">info page</a>.</p>`],
+        ['Busan Station to Seomyeon: one ride on Line 1', `<p>From Busan Station, take Metro <b>Line 1</b> straight to Seomyeon — no transfer, about 15 minutes. Get off at Seomyeon and head for Exit 3.</p>`],
+        ['Haeundae to Seomyeon: Line 2 or a taxi', `<ul><li><b>Metro</b>: Line 2, about 35 minutes. Get off at Seomyeon and take Exit 3.</li><li><b>Taxi</b>: about 25 minutes.</li></ul>
+<p>Times are rough guides and can change with traffic.</p>`],
+        ['Gimhae Airport to Seomyeon: light rail, then Line 2', `<ol><li>At Gimhae Airport, take the <b>light rail</b> to <b>Sasang</b>.</li><li>At Sasang, change to Metro <b>Line 2</b>.</li><li>Get off at <b>Seomyeon</b> and take Exit 3.</li></ol>
+<p>About 45 minutes in total. Coming straight from your flight? Keep your <b>original passport</b> where you can reach it — it's checked at the door.</p>`],
+        ['Taking a taxi: show this address', `<p>Show your driver the Korean address:</p>
+<p><b>서면 그루브앤스팟, 부산 부산진구 중앙대로680번가길 52</b></p>
+<p>The Kakao T app is the easiest way to call a taxi.</p>`],
+        ['Driving?', `<p>There's no private parking at the club, so you'd need a public or private lot near Seomyeon Station. If you plan to drink, leave the car behind and take the metro or a taxi.</p>`],
+        ['Getting back to your hotel', `<p>The Busan metro stops running around midnight, while the club stays open until 6 AM Sunday to Thursday and 7 AM on Fridays, Saturdays and nights before holidays. If you're staying late, plan on a taxi home — Kakao T makes it easy.</p>`],
+        ['Before you leave', `<ul><li>Entry is free; 19+ by Korean year-age — born in ${BY} or earlier</li><li>Bring your original passport — photos and copies are not accepted</li><li>Tracksuits, slippers and overly casual outfits may be refused → <a href="%%a:seomyeon-club-dress-code-id%%">dress code & ID guide</a></li><li>Doors open at 9:30 PM Sunday to Thursday, 9 PM on Fridays, Saturdays and nights before holidays</li><li>Tonight's DJs go up every afternoon on our <a href="%%events%%">events page</a></li><li>More answers for travelers in our <a href="%%a:busan-club-foreigners-faq%%">clubbing in Busan as a foreigner FAQ</a></li></ul>`],
+      ],
+    },
+    ja: {
+      t: '釜山駅・海雲台・金海空港から西面のクラブへの行き方（地下鉄・タクシー）',
+      s: '釜山駅から地下鉄1号線で約15分、海雲台から2号線で約35分・タクシーで約25分、金海空港から軽電鉄＋2号線で約45分。西面駅3番出口から徒歩3分のGroove & Spotへの行き方と帰り方。',
+      h1: '釜山駅・海雲台・金海空港から西面のクラブへの行き方',
+      lede: 'Groove & Spotは西面駅3番出口から徒歩3分。釜山のどこから出発しても、西面駅まで来ればほぼ到着です。出発地ごとのいちばん簡単なルートと、タクシーの乗り方、ホテルへの帰り方をまとめました。',
+      secs: [
+        ['ルートまとめ', `<ul><li><b>釜山駅から</b>：地下鉄1号線で約15分</li><li><b>海雲台から</b>：地下鉄2号線で約35分／タクシーで約25分</li><li><b>金海空港から</b>：軽電鉄で沙上へ→2号線に乗り換え、約45分</li><li><b>降りる駅</b>：西面駅3番出口から徒歩3分</li><li><b>住所</b>：釜山広域市 釜山鎮区 中央大路680番街キル52（2・3階）</li></ul>`],
+        ['目指すのは西面駅3番出口', `<p>西面駅には釜山地下鉄の<b>1号線と2号線</b>が乗り入れています。どちらの路線で来ても、<b>3番出口</b>を出れば3分ほどで着きます。</p>
+<p>クラブは一つのビルの2階と3階。<b>2階GROOVE</b>はヒップホップ・R&B、<b>3階SPOT</b>はEDMです。地図アプリで開くなら、<a href="%%info%%">アクセスページ</a>のKakaoMap・NAVER地図・Googleマップのボタンが便利です。</p>`],
+        ['釜山駅から：1号線で乗り換えなし', `<p>釜山駅から地下鉄<b>1号線</b>に乗れば、乗り換えなしで西面駅まで約15分。西面駅で降りたら3番出口へ向かってください。</p>`],
+        ['海雲台から：2号線かタクシー', `<ul><li><b>地下鉄</b>：2号線で約35分。西面駅で降りて3番出口へ。</li><li><b>タクシー</b>：約25分。</li></ul>
+<p>所要時間は目安です。道路状況などによって変わります。</p>`],
+        ['金海空港から：軽電鉄→沙上→2号線', `<ol><li>金海空港から<b>軽電鉄</b>で<b>沙上（ササン）</b>へ。</li><li>沙上で地下鉄<b>2号線</b>に乗り換え。</li><li><b>西面</b>で降りて3番出口へ。</li></ol>
+<p>全体で約45分です。飛行機を降りてそのまま来るなら、入口で確認する<b>パスポート原本</b>をすぐ出せるところに入れておきましょう。</p>`],
+        ['タクシーではこの住所を見せて', `<p>運転手さんには韓国語の住所を見せてください。</p>
+<p><b>서면 그루브앤스팟, 부산 부산진구 중앙대로680번가길 52</b></p>
+<p>タクシーはKakao Tアプリで呼ぶと便利です。</p>`],
+        ['車で来る場合', `<p>専用駐車場はありません。西面駅周辺の駐車場を利用することになります。お酒を飲むなら車は置いて、地下鉄かタクシーで来てください。</p>`],
+        ['帰りはタクシーで', `<p>釜山の地下鉄は深夜0時ごろに終わります。クラブは日〜木曜は翌6:00、金・土曜と祝前日は翌7:00まで営業しているので、遅くまで遊ぶならホテルへはタクシー（Kakao T）で帰るつもりでいましょう。</p>`],
+        ['出発前のチェックリスト', `<ul><li>入場無料、韓国の数え方で19歳以上 — ${BY}年生まれまで</li><li>パスポート原本が必須。写真・コピーは不可</li><li>ジャージ・スリッパ・カジュアルすぎる服装はお断りする場合があります → <a href="%%a:seomyeon-club-dress-code-id%%">ドレスコード・身分証まとめ</a></li><li>オープン：日〜木曜21:30、金・土曜と祝前日21:00</li><li>今夜のDJは毎日午後に<a href="%%events%%">イベントページ</a>で公開</li><li>そのほかの疑問は<a href="%%a:busan-club-foreigners-faq%%">外国人向けよくある質問</a>へ</li></ul>`],
+      ],
+    },
+    zh: {
+      t: '从釜山站、海云台、金海机场去西面夜店怎么走（地铁·打车）',
+      s: '釜山站坐地铁1号线约15分钟，海云台坐2号线约35分钟或打车约25分钟，金海机场坐轻轨换乘2号线约45分钟。西面站3号出口步行3分钟到Groove & Spot，附回程建议。',
+      h1: '从釜山站、海云台、金海机场去西面夜店：交通攻略',
+      lede: 'Groove & Spot在西面站3号出口步行3分钟。不管你从釜山哪里出发，只要到了西面站就差不多到了。下面按出发地整理了最简单的路线，还有打车和回酒店的小贴士。',
+      secs: [
+        ['路线速览', `<ul><li><b>从釜山站</b>：地铁1号线约15分钟</li><li><b>从海云台</b>：地铁2号线约35分钟／打车约25分钟</li><li><b>从金海机场</b>：轻轨到沙上站，换乘2号线，约45分钟</li><li><b>下车站</b>：西面站3号出口，步行3分钟</li><li><b>地址</b>：釜山 釜山镇区 中央大路680番街路52号（2–3楼）</li></ul>`],
+        ['目的地：西面站3号出口', `<p>西面站是釜山地铁<b>1号线和2号线</b>都经过的车站。不管坐哪条线来，从<b>3号出口</b>出来走3分钟左右就到。</p>
+<p>夜店在同一栋楼的2楼和3楼：<b>2楼GROOVE</b>是嘻哈和R&B，<b>3楼SPOT</b>是EDM。想用地图App导航，可以点<a href="%%info%%">须知页面</a>上的KakaoMap、NAVER地图、谷歌地图按钮。</p>`],
+        ['从釜山站：1号线直达', `<p>在釜山站坐地铁<b>1号线</b>，不用换乘，约15分钟到西面站。下车后走3号出口。</p>`],
+        ['从海云台：2号线或打车', `<ul><li><b>地铁</b>：2号线约35分钟，在西面站下车走3号出口。</li><li><b>打车</b>：约25分钟。</li></ul>
+<p>时间仅供参考，会因路况等有所变化。</p>`],
+        ['从金海机场：轻轨→沙上→2号线', `<ol><li>在金海机场坐<b>轻轨</b>到<b>沙上站</b>。</li><li>在沙上站换乘地铁<b>2号线</b>。</li><li>在<b>西面站</b>下车，走3号出口。</li></ol>
+<p>全程约45分钟。如果下了飞机直接过来，请把<b>护照原件</b>放在随手能拿到的地方，入场时要查验。</p>`],
+        ['打车时给司机看这个地址', `<p>请给司机看韩文地址：</p>
+<p><b>서면 그루브앤스팟, 부산 부산진구 중앙대로680번가길 52</b></p>
+<p>用Kakao T App叫车最方便。</p>`],
+        ['开车来的话', `<p>夜店没有专用停车场，需要使用西面站附近的停车场。如果要喝酒，请把车留下，坐地铁或打车过来。</p>`],
+        ['回酒店建议打车', `<p>釜山地铁大约午夜停运，而夜店周日至周四营业到次日6:00，周五、周六及节假日前夜营业到次日7:00。玩到很晚的话，回程请打算打车（Kakao T）。</p>`],
+        ['出发前确认清单', `<ul><li>免费入场，按韩国年份计算19岁以上 —— ${BY}年及以前出生</li><li>必须携带护照原件，照片和复印件无效</li><li>运动服、拖鞋和过于随意的穿着可能被拒绝入场 → <a href="%%a:seomyeon-club-dress-code-id%%">着装与证件攻略</a></li><li>开门时间：周日至周四21:30，周五、周六及节假日前夜21:00</li><li>今晚的DJ阵容每天下午更新在<a href="%%events%%">活动页面</a></li><li>更多问题见<a href="%%a:busan-club-foreigners-faq%%">外国游客常见问题</a></li></ul>`],
+      ],
+    },
+  },
+  {
+    slug: 'busan-club-alone-solo-bar',
+    date: '2026-11-19',
+    ko: {
+      t: '부산 클럽 혼자 가도 될까? 서면 혼술바 H석 혼자 놀기 가이드',
+      s: '혼자 클럽 가도 괜찮을까? 서면 그루브앤스팟 2층 혼술바존 H석(H1–H32), 입장 무료·연 나이 19세·실물 신분증, 칵테일 6,000원부터 바 메뉴 가격, 층 이동과 귀가 팁까지.',
+      h1: '부산 서면 클럽, 혼자 가도 괜찮아요',
+      lede: '"혼자 클럽 가면 이상하지 않을까?" 걱정하지 않아도 돼요. 그루브앤스팟 2층에는 혼자 와도 편하게 앉을 수 있는 혼술바존이 있습니다. 혼자 가는 날 알아 두면 좋은 것만 모았어요.',
+      secs: [
+        ['한눈에 보기', `<ul><li>혼자 와도 OK — 2층 혼술바존 H석(H1–H32, 32석)</li><li>입장료 무료, 예약 없이도 입장 가능 (금·토는 게스트리스트 추천)</li><li>연 나이 19세 이상(${BY}년생까지), 실물 신분증 필수 · 외국인은 여권 원본</li><li>바 메뉴: 칵테일 6,000–10,000원 · 샷 6,000원부터 · 병맥주 8,000–10,000원</li><li>영업: 일–목 21:30–06:00 · 금·토·공휴일 전날 21:00–07:00</li></ul>`],
+        ['혼자라면 2층 혼술바존 H석', `<p>2층 GROOVE에는 혼자 와도 편한 <b>혼술바존</b>이 있어요. 자리 번호는 <b>H1부터 H32까지, 모두 32석</b>이에요. 힙합·R&B를 들으며 한 잔 하기 좋은 자리입니다.</p>
+<p>2층에는 다트도 있어서 음악 사이사이 즐길 거리가 있어요. 층 전체 배치는 <a href="%%floors%%">플로어 안내</a>의 테이블 배치도에서 볼 수 있어요.</p>`],
+        ['H존 자리를 미리 말해 두려면', `<p>예약 없이 와도 됩니다. 다만 금·토요일이나 게스트 DJ 날은 미리 예약하는 걸 추천해요. <a href="%%reserve%%">예약 페이지</a>에서 예약 종류를 <b>'혼술 H존'</b>으로 골라 남기면 되고, WhatsApp·인스타그램 DM(@groovenspot)이나 전화 0507-1301-5970으로도 문의할 수 있어요.</p>`],
+        ['입구에서: 신분증 하나면 돼요', `<ul><li>입장료는 없어요.</li><li>연 나이 19세 이상 — 올해는 ${BY}년생까지 들어올 수 있어요.</li><li>주민등록증·운전면허증·여권 같은 실물 신분증이 꼭 필요해요. 휴대폰 사진이나 사본은 안 되고, 외국인은 여권 원본이에요.</li><li>트레이닝복, 슬리퍼·스포츠 샌들, 과도한 캐주얼은 입장이 제한될 수 있어요.</li></ul>
+<p>자세한 기준은 <a href="%%a:seomyeon-club-dress-code-id%%">드레스코드·신분증 정리</a>를 보세요.</p>`],
+        ['바에서 한 잔씩 주문하기', `<p>혼자라면 바틀보다 바 메뉴로 한 잔씩 마시는 게 부담이 적어요. 가격은 원화, 부가세 포함이고 현장 사정에 따라 바뀔 수 있어요.</p>
+<ul><li>칵테일: 보드카토닉·진토닉·럼콕 6,000원, 잭콕·제임슨 진저엘 8,000원, 롱아일랜드 아이스티 10,000원</li><li>샷·밤: 예거샷·예거밤·보드카샷 6,000원, 잭샷 7,000원</li><li>병맥주: 호가든 8,000원, 버드와이저·코로나 9,000원, 스텔라·기네스 10,000원</li><li>무알콜: 자몽주스 7,000원, 신데렐라 8,000원, 카스 제로 9,000원</li></ul>
+<p>메뉴에 없는 칵테일·슈터·밤은 직원에게 물어보고, 주문지는 바텐더에게 주면 돼요. 전체 가격은 <a href="%%menu%%">메뉴 페이지</a>에 있어요.</p>`],
+        ['혼자서 두 층 다 즐기기', `<p>입장료 없이 두 층을 모두 오갈 수 있어요. 두 층은 건물 안 계단으로 이어져 있습니다.</p>
+<ul><li><b>2층 GROOVE</b>: 힙합·R&B · 혼술바존 H석 · 다트</li><li><b>3층 SPOT</b>: 대형 사운드의 EDM · 메인 스테이지 앞 L석 · 포토존 · 흡연실</li></ul>
+<p>흡연은 3층 흡연실에서만 가능해요. 어느 층이 맞을지 고민된다면 <a href="%%a:busan-club-hiphop-vs-edm-floor%%">2층 힙합 vs 3층 EDM 비교</a>를 참고하세요.</p>`],
+        ['몇 시에 갈까', `<p>문은 일–목 21:30, 금·토·공휴일 전날 21:00에 열어요. 그날 어떤 DJ가 몇 시에 나오는지는 매일 오후 <a href="%%events%%">이벤트 페이지</a>와 인스타그램 @groovenspot 스토리에 올라와요. 좋아하는 DJ 시간에 맞춰 오면 혼자서도 지루할 틈이 없어요.</p>`],
+        ['혼자여도 안심하고 놀려면', `<ul><li>서로 존중하는 플로어예요. 불쾌한 일이 생기면 바로 직원에게 알려 주세요.</li><li>물건을 잃어버렸다면 홈페이지 분실물 페이지를 확인하세요. 클럽에서 찾은 물건을 날짜별로 사진과 함께 올려요. 본인 물건이 보이면 전화나 인스타그램 DM으로 날짜와 사진을 알려 주세요. 본인 확인 후 매장에서 돌려드려요.</li><li>부산 지하철은 자정 무렵 끊기니, 늦게까지 논다면 귀가는 택시(카카오T)로 생각해 두세요. 오는 길은 <a href="%%a:how-to-get-to-seomyeon-club%%">부산역·해운대·김해공항에서 서면 가는 법</a>에 정리했어요.</li></ul>`],
+      ],
+    },
+    en: {
+      t: 'Going Clubbing Alone in Busan: Solo Night Out Guide (Seomyeon)',
+      s: 'Solo in Busan and want a night out? Groove & Spot in Seomyeon has a 32-seat solo bar (H seats) on 2F, free entry, cocktails from ₩6,000 and two floors of hip-hop and EDM. What to know before you go alone.',
+      h1: 'Going clubbing alone in Busan: a solo night out in Seomyeon',
+      lede: "Traveling solo, or just nobody free tonight? Going to a club alone in Busan is no big deal — Groove & Spot has a solo bar on 2F that's easy to settle into when you come on your own. Here's what to know before you go.",
+      secs: [
+        ['Quick answers', `<ul><li>Yes, you can go alone — 2F has a solo bar with 32 seats (H1–H32)</li><li>Entry is free and walk-ins are welcome (guest list recommended on Fridays and Saturdays)</li><li>19+ by Korean year-age (born in ${BY} or earlier); foreigners need an original passport</li><li>Bar menu: cocktails ₩6,000–₩10,000 · shots from ₩6,000 · bottled beer ₩8,000–₩10,000</li><li>Hours: Sun–Thu 9:30 PM – 6 AM · Fri, Sat & nights before holidays 9 PM – 7 AM</li></ul>`],
+        ['The solo bar on 2F (H seats)', `<p>On 2F GROOVE there's a <b>solo bar</b> that's easy if you come alone — seats <b>H1 to H32</b>, 32 in total. It's a good spot to sit with a drink while the hip-hop and R&B plays.</p>
+<p>2F also has darts, so there's something to do between songs. You can see where everything is on the table layout on our <a href="%%floors%%">floors page</a>.</p>`],
+        ['Want an H seat held for you?', `<p>Walk-ins are fine. On Fridays, Saturdays and guest DJ nights, though, we recommend booking ahead: choose <b>"Solo bar H"</b> as the booking type on our <a href="%%reserve%%">booking page</a>, message us on WhatsApp or Instagram (@groovenspot), or call +82-507-1301-5970.</p>`],
+        ['At the door: just bring your ID', `<ul><li>No cover charge.</li><li>19+ by Korean year-age — this year, anyone born in ${BY} or earlier.</li><li>Physical ID only: foreigners need their original passport. Photos on your phone and copies are not accepted.</li><li>Tracksuits, slippers, sports sandals and overly casual outfits may be refused.</li></ul>
+<p>Details in our <a href="%%a:seomyeon-club-dress-code-id%%">dress code & ID guide</a>.</p>`],
+        ['Ordering at the bar', `<p>On your own, ordering one drink at a time from the bar menu is the easy way to go. Prices are in Korean won with VAT included and may change on site.</p>
+<ul><li>Cocktails: vodka tonic, gin tonic, rum & coke ₩6,000 · Jack & coke, Jameson ginger ale ₩8,000 · Long Island iced tea ₩10,000</li><li>Shots & bombs: Jäger shot, Jäger bomb, vodka shot ₩6,000 · Jack shot ₩7,000</li><li>Bottled beer: Hoegaarden ₩8,000 · Budweiser, Corona ₩9,000 · Stella, Guinness ₩10,000</li><li>Non-alcoholic: grapefruit juice ₩7,000 · Cinderella ₩8,000 · Cass Zero ₩9,000</li></ul>
+<p>Want a cocktail, shooter or bomb that isn't listed? Ask the staff, and hand your order slip to the bartender. Full prices are on our <a href="%%menu%%">menu page</a>.</p>`],
+        ['Two floors, one free entry', `<p>You can move between both floors at no extra cost — they're connected by stairs inside the building.</p>
+<ul><li><b>2F GROOVE</b>: hip-hop & R&B · solo bar (H seats) · darts</li><li><b>3F SPOT</b>: EDM on a big-room sound system · L seats facing the main stage · photo zone · smoking room</li></ul>
+<p>Smoking is only allowed in the 3F smoking room. Not sure which floor is for you? Read <a href="%%a:busan-club-hiphop-vs-edm-floor%%">hip-hop (2F) vs EDM (3F)</a>.</p>`],
+        ['When to go', `<p>Doors open at 9:30 PM Sunday to Thursday and 9 PM on Fridays, Saturdays and nights before holidays. Every afternoon, the night's DJ timetable goes up on our <a href="%%events%%">events page</a> and Instagram stories (@groovenspot) — pick a DJ you like and time your arrival to their set.</p>`],
+        ['Feeling at ease on your own', `<ul><li>Respect each other on the floor. If anything feels wrong, tell our staff right away.</li><li>Lost something? Items found at the club are posted by date, with photos, on our Lost & Found page. If you see yours, send us the date and the photo by phone or Instagram DM — we return it at the club after checking your ID.</li><li>The metro stops around midnight, so if you're out late, plan on a taxi (Kakao T) back to your hotel. Getting here: <a href="%%a:how-to-get-to-seomyeon-club%%">how to get to Seomyeon from Busan Station, Haeundae and Gimhae Airport</a>.</li></ul>`],
+      ],
+    },
+    ja: {
+      t: '釜山のクラブに一人で行っても大丈夫？西面の一人飲みH席ガイド',
+      s: '一人でクラブに行っても大丈夫？釜山・西面Groove & Spotの2階には一人飲みバー（H1–H32、全32席）。入場無料、19歳ルール、パスポート、カクテル6,000ウォン〜のバーメニュー、フロア移動と帰り方まで。',
+      h1: '釜山・西面のクラブは一人でも楽しめます',
+      lede: '「一人でクラブって浮かない？」と心配しなくて大丈夫。Groove & Spotの2階には、一人でも気軽に座れる一人飲みバーがあります。一人で行く日に知っておきたいことをまとめました。',
+      secs: [
+        ['ひと目でわかるポイント', `<ul><li>一人でもOK — 2階に一人飲みバー（H1–H32、全32席）</li><li>入場無料、予約なしでも入場可（金・土曜はゲストリストがおすすめ）</li><li>韓国の数え方で19歳以上（${BY}年生まれまで）、外国人はパスポート原本</li><li>バーメニュー：カクテル6,000〜10,000ウォン・ショット6,000ウォン〜・瓶ビール8,000〜10,000ウォン</li><li>営業：日〜木 21:30–翌6:00・金土・祝前日 21:00–翌7:00</li></ul>`],
+        ['一人なら2階の一人飲みバー（H席）へ', `<p>2階GROOVEには、一人でも気軽な<b>一人飲みバー</b>があります。席番号は<b>H1〜H32の全32席</b>。ヒップホップやR&Bを聴きながら一杯やるのにぴったりです。</p>
+<p>2階にはダーツもあるので、曲の合間の楽しみもあります。フロア全体の配置は<a href="%%floors%%">フロア案内</a>のテーブル配置図で確認できます。</p>`],
+        ['H席をお願いしておきたいなら', `<p>予約なしでも入れます。ただ、金・土曜やゲストDJの日は事前の予約がおすすめです。<a href="%%reserve%%">予約ページ</a>で予約の種類を<b>「一人飲みH席」</b>にしてリクエストするか、WhatsApp・InstagramのDM（@groovenspot）、電話（+82-507-1301-5970）でお問い合わせください。</p>`],
+        ['入口では身分証だけ', `<ul><li>入場料はかかりません。</li><li>韓国の数え方で19歳以上 — 今年は${BY}年生まれまで入場できます。</li><li>実物の身分証が必須です。外国人はパスポート原本で、スマホの写真やコピーは使えません。</li><li>ジャージ、スリッパ・スポーツサンダル、カジュアルすぎる服装はお断りする場合があります。</li></ul>
+<p>詳しくは<a href="%%a:seomyeon-club-dress-code-id%%">ドレスコード・身分証まとめ</a>へ。</p>`],
+        ['バーで一杯ずつ注文', `<p>一人なら、ボトルよりバーメニューで一杯ずつ頼むのが気軽です。料金は韓国ウォン・税込で、現場の事情により変わる場合があります。</p>
+<ul><li>カクテル：ウォッカトニック・ジントニック・ラムコーク6,000ウォン、ジャックコーク・ジェムソンジンジャーエール8,000ウォン、ロングアイランドアイスティー10,000ウォン</li><li>ショット・ボム：イエーガーショット・イエーガーボム・ウォッカショット6,000ウォン、ジャックショット7,000ウォン</li><li>瓶ビール：ヒューガルデン8,000ウォン、バドワイザー・コロナ9,000ウォン、ステラ・ギネス10,000ウォン</li><li>ノンアルコール：グレープフルーツジュース7,000ウォン、シンデレラ8,000ウォン、カスゼロ9,000ウォン</li></ul>
+<p>メニューにないカクテル・ショット・ボムはスタッフにお尋ねください。注文用紙はバーテンダーに渡します。全料金は<a href="%%menu%%">メニューページ</a>にあります。</p>`],
+        ['一人で2フロアを楽しむ', `<p>入場料なしで2つのフロアを行き来できます。フロアは館内の階段でつながっています。</p>
+<ul><li><b>2階 GROOVE</b>：ヒップホップ・R&B／一人飲みバー（H席）／ダーツ</li><li><b>3階 SPOT</b>：大型サウンドのEDM／メインステージ前のL席／フォトゾーン／喫煙室</li></ul>
+<p>喫煙は3階の喫煙室のみです。どちらのフロアが合うか迷ったら<a href="%%a:busan-club-hiphop-vs-edm-floor%%">2階ヒップホップ vs 3階EDM</a>もどうぞ。</p>`],
+        ['何時に行く？', `<p>日〜木曜は21:30、金・土曜と祝前日は21:00オープン。その日のDJと出演時間は毎日午後に<a href="%%events%%">イベントページ</a>とInstagram（@groovenspot）のストーリーで公開します。好きなDJの時間に合わせて行けば、一人でも退屈しません。</p>`],
+        ['一人でも安心して遊ぶために', `<ul><li>お互いを尊重するフロアです。何かあればすぐスタッフへ。</li><li>忘れ物をしたら、サイトの忘れ物ページを確認してください。クラブで見つかった物を日付ごとに写真で掲載しています。ご自身の物があれば、電話またはInstagramのDMで日付と写真をお知らせください。本人確認のうえ店舗でお返しします。</li><li>釜山の地下鉄は深夜0時ごろ終わるので、遅くなったら帰りはタクシー（Kakao T）で。来るときのルートは<a href="%%a:how-to-get-to-seomyeon-club%%">釜山駅・海雲台・金海空港から西面への行き方</a>にまとめています。</li></ul>`],
+      ],
+    },
+    zh: {
+      t: '一个人去釜山夜店可以吗？西面单人吧台H座独自玩攻略',
+      s: '一个人去夜店也没问题。釜山西面Groove & Spot的2楼有单人吧台（H1–H32，共32座）。免费入场、19岁规定、护照、鸡尾酒6,000韩元起的吧台酒水、换楼层和回酒店，一篇看懂。',
+      h1: '一个人也能玩：釜山西面夜店独自攻略',
+      lede: '"一个人去夜店会不会很尴尬？"完全不用担心。Groove & Spot的2楼有一个人来也能轻松坐的单人吧台。一个人去之前需要知道的事，都整理在这里。',
+      secs: [
+        ['重点一览', `<ul><li>一个人来没问题 —— 2楼有单人吧台（H1–H32，共32座）</li><li>免费入场，不预约也可以直接来（周五、周六建议登记宾客名单）</li><li>按韩国年份计算19岁以上（${BY}年及以前出生），外国游客请带护照原件</li><li>吧台酒水：鸡尾酒6,000–10,000韩元 · 子弹杯6,000韩元起 · 瓶装啤酒8,000–10,000韩元</li><li>营业：周日至周四 21:30–次日6:00 · 周五、周六及节假日前夜 21:00–次日7:00</li></ul>`],
+        ['一个人就去2楼单人吧台（H座）', `<p>2楼GROOVE有一个人来也能轻松坐的<b>单人吧台</b>，座位号<b>H1到H32，共32个</b>。边听嘻哈和R&B边喝一杯，正合适。</p>
+<p>2楼还有飞镖，歌与歌之间也有得玩。整层的布局可以在<a href="%%floors%%">楼层介绍</a>的桌位分布图里查看。</p>`],
+        ['想提前留H座？', `<p>不预约也可以直接来。不过周五、周六和客座DJ之夜建议提前预约：在<a href="%%reserve%%">预约页面</a>把预约类型选为<b>"单人吧台H"</b>提交，或者通过WhatsApp、Instagram私信（@groovenspot）、电话（+82-507-1301-5970）联系我们。</p>`],
+        ['入口：带好证件就行', `<ul><li>不收门票。</li><li>按韩国年份计算19岁以上 —— 今年${BY}年及以前出生可以入场。</li><li>只认实体证件，外国游客请带护照原件，手机照片和复印件都不行。</li><li>运动服、拖鞋和运动凉鞋、过于随意的穿着可能被拒绝入场。</li></ul>
+<p>详情见<a href="%%a:seomyeon-club-dress-code-id%%">着装与证件攻略</a>。</p>`],
+        ['在吧台一杯一杯点', `<p>一个人的话，比起整瓶，在吧台一杯一杯点更轻松。价格以韩元计，含增值税，以现场为准。</p>
+<ul><li>鸡尾酒：伏特加汤力、金汤力、朗姆可乐6,000韩元；杰克可乐、尊美醇姜汁汽水8,000韩元；长岛冰茶10,000韩元</li><li>子弹杯·炸弹酒：野格子弹杯、野格炸弹、伏特加子弹杯6,000韩元；杰克丹尼子弹杯7,000韩元</li><li>瓶装啤酒：福佳白8,000韩元；百威、科罗娜9,000韩元；时代、健力士10,000韩元</li><li>无酒精：西柚汁7,000韩元；灰姑娘（Cinderella）8,000韩元；Cass Zero 9,000韩元</li></ul>
+<p>菜单上没有的鸡尾酒、子弹杯、炸弹酒可以问工作人员，点单纸请交给调酒师。完整价格见<a href="%%menu%%">酒水单页面</a>。</p>`],
+        ['一个人玩转两层', `<p>不用另付门票，两层都可以随意去，楼内有楼梯相通。</p>
+<ul><li><b>2楼 GROOVE</b>：嘻哈、R&B · 单人吧台（H座）· 飞镖</li><li><b>3楼 SPOT</b>：大型音响的EDM · 主舞台前L座 · 拍照区 · 吸烟室</li></ul>
+<p>只能在3楼吸烟室吸烟。不知道哪层适合自己？看看<a href="%%a:busan-club-hiphop-vs-edm-floor%%">2楼嘻哈 vs 3楼EDM</a>。</p>`],
+        ['几点去？', `<p>周日至周四21:30开门，周五、周六及节假日前夜21:00开门。当晚哪位DJ几点上场，每天下午会发布在<a href="%%events%%">活动页面</a>和Instagram（@groovenspot）快拍。挑一位喜欢的DJ按时间过来，一个人也不会无聊。</p>`],
+        ['一个人也玩得安心', `<ul><li>请彼此尊重。遇到任何不舒服的情况，请马上告诉工作人员。</li><li>丢了东西，请看网站的失物招领页面：在店里捡到的失物会按日期附照片公布。看到自己的东西，请通过电话或Instagram私信告诉我们日期和照片，核实身份后在店内归还。</li><li>釜山地铁大约午夜停运，玩到很晚的话回程请打车（Kakao T）。怎么过来请看<a href="%%a:how-to-get-to-seomyeon-club%%">从釜山站、海云台、金海机场去西面的交通攻略</a>。</li></ul>`],
+      ],
+    },
+  },
+  {
+    // DJ 이름·층: data/timetable.json (2026-08-10 ~ 11-18) 출연 기록 기준. 세트·길이·제목: data/videos.json
+    slug: 'busan-club-dj-live-sets-youtube',
+    date: '2026-11-19',
+    ko: {
+      t: '부산 클럽 DJ 라이브셋, 유튜브로 미리 듣기 — 서면 그루브앤스팟 GROOVE SESSIONS',
+      s: '서면 그루브앤스팟 무대에 서는 DJ와 유튜브 GROOVE SESSIONS 라이브셋 모음. 2층 힙합·3층 EDM에서 자주 보는 DJ별 세트, 운동·작업·드라이브할 때 틀기 좋은 믹스까지 정리했어요.',
+      h1: '가기 전에 먼저 들어 보세요: 그루브앤스팟 DJ와 유튜브 라이브셋',
+      lede: '클럽이 나랑 맞는지는 음악을 들어 보면 바로 알 수 있어요. 서면 그루브앤스팟 DJ들의 라이브셋은 유튜브 채널 GROOVE CLUB BUSAN(@GROOVEBUSAN)에 GROOVE SESSIONS라는 이름으로 올라옵니다. 어느 층에서 누가 트는지, 어떤 세트부터 들으면 좋은지 정리했어요.',
+      secs: [
+        ['한눈에 보기', `<ul><li>GROOVE SESSIONS: 그루브앤스팟 DJ 라이브셋 영상 시리즈 — 지금 ${NV}편</li><li>채널: 유튜브 <a href="%%youtube%%" rel="noopener">GROOVE CLUB BUSAN (@GROOVEBUSAN)</a></li><li>길이: 힙합 세트는 1시간 안팎, EDM 세트는 대부분 40분 안팎</li><li>음악 앱으로 듣기: <a href="%%ytmusic%%" rel="noopener">유튜브 뮤직</a> · 공식 믹스는 <a href="%%soundcloud%%" rel="noopener">사운드클라우드</a></li><li>최신 영상은 홈 화면 '라이브셋' 코너에도 올라오고, 사이트의 <a href="/club/">가상 클럽</a>에서도 들을 수 있어요</li></ul>`],
+        ['두 층을 오가는 DJ', `<p>8–11월 타임테이블을 보면 이 DJ들은 하룻밤에 2층과 3층 무대에 모두 서는 날이 많아요. 여러 장르를 한 번에 듣고 싶다면 여기서 시작하세요.</p><ul><li>${sk(37)}</li><li>${sk(27)}</li><li>${sk(21)}</li><li>${sk(23)}</li></ul><p>MUMU도 두 층 타임테이블에 자주 이름을 올리는 DJ예요.</p>`],
+        ['3층 SPOT(EDM)에서 자주 보는 DJ', `<ul><li>${sk(33)}</li><li>${sk(16)}</li><li>${sk(15)}</li><li>${sk(17)}</li></ul><p>N, BILL, A:ETH, KUPA도 3층 타임테이블의 단골 이름이에요.</p>`],
+        ['2층 GROOVE(힙합)에서 자주 보는 DJ', `<ul><li>${sk(22)}</li><li>${sk(24)}</li><li>${sk(28)}</li><li>${sk(18)}</li></ul><p>ZINO도 2층 타임테이블에 자주 오르는 DJ예요.</p>`],
+        ['운동할 때 틀기 좋은 세트', `<p>제목부터 헬스장을 겨냥한 세트들이에요. 운동 플레이리스트 대신 틀어 보세요.</p><ul><li>${sk(26)}</li><li>${sk(12)}</li><li>${sk(19)}</li><li>${sk(4)}</li><li>${sk(7)}</li></ul>`],
+        ['작업·퇴근길·드라이브 BGM', `<p>DJ 믹스는 곡이 끊기지 않고 30–40분 이어져서, 일하거나 운전할 때 틀어 두기 좋아요. 앞에서 소개한 UZI(새벽 작업실)와 JOHNYRIGHTHERE(퇴근길) 세트에 더해 이것도 들어 보세요.</p><ul><li>${sk(6)}</li><li>${sk(25)}</li><li>${sk(2)}</li><li>${sk(34)}</li></ul>`],
+        ['힙합·K-POP 떼창 세트 더 듣기', `<ul><li>${sk(36)}</li><li>${sk(32)}</li><li>${sk(13)}</li><li>${sk(1)}</li><li>${sk(38)}</li><li>${sk(20)}</li></ul>`],
+        ['들어 보고 마음에 들었다면', `<ul><li>오늘 밤 누가 나오는지는 매일 오후 <a href="%%events%%">이벤트 페이지</a>와 인스타그램 @groovenspot 스토리에 올라와요.</li><li>영업 중에는 <a href="%%floors%%">플로어 안내</a>에서 층별 타임테이블을 볼 수 있어요. 보통 3층은 40분, 2층은 1시간 단위로 DJ가 바뀌어요.</li><li>듣고 싶은 곡이 있다면 <a href="%%request%%">신청곡 페이지</a>로 DJ에게 보내 보세요 — <a href="%%a:busan-club-dj-song-request%%">신청곡 보내는 법</a></li><li>문은 일–목 21:30, 금·토·공휴일 전날 21:00에 열어요. 입장은 무료, 연 나이 19세 이상(${BY}년생까지)이고 실물 신분증이 꼭 필요해요.</li></ul>`],
+      ],
+    },
+    en: {
+      t: 'Busan Club DJ Live Sets on YouTube: Hear Seomyeon Club Music First',
+      s: 'GROOVE SESSIONS: live DJ sets from Groove & Spot in Seomyeon, Busan, on YouTube. Who plays hip-hop on 2F and EDM on 3F, plus Korean club DJ mixes for the gym, work and late-night drives.',
+      h1: 'Hear the DJs before you go: Groove & Spot live sets on YouTube',
+      lede: "The quickest way to know if a club is your kind of night is to listen to it. We post live sets from the DJs at Groove & Spot in Seomyeon, Busan on our YouTube channel GROOVE CLUB BUSAN (@GROOVEBUSAN) as GROOVE SESSIONS. Here's who plays which floor, and where to start.",
+      secs: [
+        ['Quick facts', `<ul><li>GROOVE SESSIONS: our series of DJ live set videos — ${NV} sets so far</li><li>Channel: <a href="%%youtube%%" rel="noopener">GROOVE CLUB BUSAN (@GROOVEBUSAN)</a> on YouTube</li><li>Length: hip-hop sets run about an hour, most EDM sets about 40 minutes</li><li>Prefer a music app? Listen on <a href="%%ytmusic%%" rel="noopener">YouTube Music</a>, or hear our official mixes on <a href="%%soundcloud%%" rel="noopener">SoundCloud</a></li><li>The newest sets also appear in the Live sets section of our home page</li></ul>`],
+        ['DJs who play both floors', `<p>On our timetable from August to November 2026, these DJs often play both 2F and 3F on the same night — a good place to start if you like a bit of everything.</p><ul><li>${ss(37)} — from hard-hitting bass house to late-night melodic techno</li><li>${ss(27)} — melodic drum & bass and bounce</li><li>${ss(21)} — tech house and afro for late nights in the studio</li><li>${ss(23)} — tech house and breakbeat for a night drive</li></ul><p>MUMU is another regular on both floors' timetables.</p>`],
+        ['Regulars on 3F SPOT (EDM)', `<ul><li>${ss(33)} — melodic bounce and tech house, a Friday-night EDM party mix</li><li>${ss(16)} — melodic bounce made for windows-down driving</li><li>${ss(15)} — addictive Vinahouse melodic bounce</li><li>${ss(17)} — tech house and Korea bounce for the ride home from work</li></ul><p>N, BILL, A:ETH and KUPA are also regular names on the 3F timetable.</p>`],
+        ['Regulars on 2F GROOVE (hip-hop)', `<ul><li>${ss(22)} — heavy-bass hard hip-hop and trap</li><li>${ss(24)} — hip-hop, K-pop and R&B party mix</li><li>${ss(28)} — sing-along hip-hop, K-pop and old school</li><li>${ss(18)} — spicy hip-hop and trap rave</li></ul><p>ZINO also plays 2F often.</p>`],
+        ['Sets for the gym', `<p>Their Korean titles say it outright: these were made for the gym, heavy lifts and new PRs. Swap them in for your workout playlist.</p><ul><li>${ss(26)} — rave, hard dance and speed house</li><li>${ss(12)} — tech house and breakbeat, a gym session in a mix</li><li>${ss(19)} — speed house and bounce to hit a new PR</li><li>${ss(4)} — melodic bounce for heavy lifting</li><li>${ss(7)} — speed house and bounce that gets your heart rate up</li></ul>`],
+        ['For work, the commute and night drives', `<p>A DJ mix keeps going without gaps for 30–40 minutes, so you can leave one running while you work or drive. Start with the UZI (late-night studio) and JOHNYRIGHTHERE (ride home) sets above, then try:</p><ul><li>${ss(6)} — the ultimate driving-mood melodic house bounce</li><li>${ss(25)} — Korea bounce and melodic house for a late-night drive</li><li>${ss(2)} — an emotional melodic bounce driving mix</li><li>${ss(34)} — speed house, future house and tech house, foot on the gas</li></ul>`],
+        ['More hip-hop and K-pop sing-alongs', `<ul><li>${ss(36)} — hip-hop and trap from a scratch specialist</li><li>${ss(32)} — street-dance hip-hop and R&B groove</li><li>${ss(13)} — hip-hop dance party mix</li><li>${ss(1)} — a hip-hop rock band, live at the club</li><li>${ss(38)} — K-pop remixes and hard dance, festival style</li><li>${ss(20)} — Vinahouse and K-EDM sing-alongs</li></ul>`],
+        ['Liked what you heard?', `<ul><li>Tonight's lineup goes up every afternoon on our <a href="%%events%%">events page</a> and Instagram stories (@groovenspot).</li><li>During opening hours, the <a href="%%floors%%">floors page</a> shows each floor's timetable. DJs usually change every 40 minutes on 3F and every hour on 2F.</li><li>Want to hear a certain track? Send it from our <a href="%%request%%">song request page</a> — <a href="%%a:busan-club-dj-song-request%%">here's how</a>.</li><li>Doors open at 9:30 PM Sunday to Thursday and 9 PM on Fridays, Saturdays and nights before holidays. Entry is free; you need to be 19+ by Korean year-age (born in ${BY} or earlier) with a physical ID — foreigners need an original passport.</li></ul>`],
+      ],
+    },
+    ja: {
+      t: '釜山クラブDJのライブセットをYouTubeで予習｜西面Groove & Spot',
+      s: '釜山・西面Groove & SpotのDJライブセット「GROOVE SESSIONS」をYouTubeで。2階ヒップホップ・3階EDMでよく見るDJのセット、ジム・作業・ドライブ向けの韓国クラブDJミックスまでまとめました。',
+      h1: '行く前に聴いておこう：Groove & SpotのDJとYouTubeライブセット',
+      lede: 'クラブが自分に合うかどうかは、音を聴くのがいちばん早い。釜山・西面Groove & SpotのDJのライブセットは、YouTubeチャンネル GROOVE CLUB BUSAN（@GROOVEBUSAN）で「GROOVE SESSIONS」として公開しています。どのフロアで誰がプレイしているのか、どのセットから聴けばいいのかをまとめました。',
+      secs: [
+        ['ひと目でわかるポイント', `<ul><li>GROOVE SESSIONS：Groove & SpotのDJライブセット動画シリーズ — 現在${NV}本</li><li>チャンネル：YouTube <a href="%%youtube%%" rel="noopener">GROOVE CLUB BUSAN（@GROOVEBUSAN）</a></li><li>長さ：ヒップホップのセットは約1時間、EDMのセットはほとんどが40分前後</li><li>音楽アプリで聴くなら<a href="%%ytmusic%%" rel="noopener">YouTube Music</a>、公式ミックスは<a href="%%soundcloud%%" rel="noopener">SoundCloud</a>でも</li><li>最新の動画はホームの「ライブセット」コーナーにも載ります</li></ul>`],
+        ['両方のフロアでプレイするDJ', `<p>2026年8〜11月のタイムテーブルを見ると、このDJたちは一晩で2階と3階の両方に立つ日がよくあります。いろいろなジャンルを聴きたいならここから。</p><ul><li>${ss(37)} — ズシンと来るベースハウスから明け方のメロディックテクノまで</li><li>${ss(27)} — メロディックなドラムンベース＆バウンス</li><li>${ss(21)} — 深夜の作業部屋に似合うテックハウス＆アフロ</li><li>${ss(23)} — 夜のドライブを盛り上げるテックハウス＆ブレイクビーツ</li></ul><p>MUMUも両フロアのタイムテーブルによく名前が載るDJです。</p>`],
+        ['3階SPOT（EDM）でよく見るDJ', `<ul><li>${ss(33)} — メロディカルなバウンス＆テックハウスの金曜夜EDMミックス</li><li>${ss(16)} — 窓を開けて流したくなるメロディックバウンス</li><li>${ss(15)} — クセになるビナハウス系メロディックバウンス</li><li>${ss(17)} — 帰り道のテンションを上げるテックハウス＆コリアバウンス</li></ul><p>N、BILL、A:ETH、KUPAも3階タイムテーブルの常連です。</p>`],
+        ['2階GROOVE（ヒップホップ）でよく見るDJ', `<ul><li>${ss(22)} — ベースが効いたハードなヒップホップ＆トラップ</li><li>${ss(24)} — ヒップホップ・K-POP・R&Bのパーティーミックス</li><li>${ss(28)} — みんなで歌えるヒップホップ・K-POP・オールドスクール</li><li>${ss(18)} — 激辛ヒップホップ＆トラップレイブ</li></ul><p>ZINOも2階によく出演するDJです。</p>`],
+        ['ジムで流したいセット', `<p>韓国語のタイトルからしてジム向け。トレーニングのプレイリスト代わりにどうぞ。</p><ul><li>${ss(26)} — 自己ベスト更新を狙えるレイブ・ハードダンス・スピードハウス</li><li>${ss(12)} — ジムのお供にぴったりのテックハウス＆ブレイクビーツ</li><li>${ss(19)} — トレーニング中に自己ベストが出そうなスピードハウス＆バウンス</li><li>${ss(4)} — 高重量の日に合うメロディックバウンス</li><li>${ss(7)} — 心拍数を上げるスピードハウス＆バウンス</li></ul>`],
+        ['作業・帰り道・ドライブのBGMに', `<p>DJミックスは曲が途切れずに30〜40分続くので、作業中や運転中に流しっぱなしにできます。上で紹介したUZI（深夜の作業部屋）とJOHNYRIGHTHERE（帰り道）に加えて、こちらもどうぞ。</p><ul><li>${ss(6)} — ドライブ気分を極めるメロディックハウスバウンス</li><li>${ss(25)} — 深夜ドライブに合うコリアバウンス＆メロディックハウス</li><li>${ss(2)} — エモいメロディックバウンスのドライブミックス</li><li>${ss(34)} — アクセルを踏みたくなるスピードハウス・フューチャーハウス・テックハウス</li></ul>`],
+        ['ヒップホップ・K-POPで盛り上がるセット', `<ul><li>${ss(36)} — スクラッチ職人によるヒップホップ＆トラップ</li><li>${ss(32)} — ダンサーが反応するストリート系ヒップホップ＆R&B</li><li>${ss(13)} — 体が先に動くヒップホップダンスパーティーミックス</li><li>${ss(1)} — クラブで盛り上がったヒップホップ・ロックバンドのライブ</li><li>${ss(38)} — K-POPリミックスで歌ってハードダンスで弾けるフェス系ミックス</li><li>${ss(20)} — 韓国人なら思わず歌うビナハウス＆K-EDM</li></ul>`],
+        ['気に入ったら', `<ul><li>今夜の出演DJは毎日午後に<a href="%%events%%">イベントページ</a>とInstagram（@groovenspot）のストーリーで公開しています。</li><li>営業中は<a href="%%floors%%">フロア案内</a>でフロア別のタイムテーブルが見られます。DJの交代は、3階はだいたい40分、2階は1時間ごとです。</li><li>聴きたい曲があれば<a href="%%request%%">リクエストページ</a>からDJへ — <a href="%%a:busan-club-dj-song-request%%">リクエストの送り方</a></li><li>日〜木曜は21:30、金・土曜と祝前日は21:00オープン。入場無料、韓国の数え方で19歳以上（${BY}年生まれまで）、実物の身分証が必須です（外国人はパスポート原本）。</li></ul>`],
+      ],
+    },
+    zh: {
+      t: '釜山夜店DJ现场Set，先上YouTube听｜西面Groove & Spot',
+      s: '在YouTube看釜山西面Groove & Spot的DJ现场Set「GROOVE SESSIONS」。2楼嘻哈、3楼EDM常见哪些DJ，还有适合健身、工作和兜风的韩国夜店DJ混音。',
+      h1: '去之前先听听：Groove & Spot的DJ和YouTube现场Set',
+      lede: '想知道一家夜店合不合你的口味，最快的办法就是先听。釜山西面Groove & Spot的DJ现场Set都以「GROOVE SESSIONS」为名，发布在我们的YouTube频道GROOVE CLUB BUSAN（@GROOVEBUSAN）。哪层是谁在打碟、先听哪一套，这里帮你整理好了。',
+      secs: [
+        ['重点一览', `<ul><li>GROOVE SESSIONS：Groove & Spot的DJ现场Set视频系列，目前共${NV}套</li><li>频道：YouTube <a href="%%youtube%%" rel="noopener">GROOVE CLUB BUSAN（@GROOVEBUSAN）</a></li><li>时长：嘻哈Set约1小时，EDM Set大多40分钟左右</li><li>想用音乐App听，可以上<a href="%%ytmusic%%" rel="noopener">YouTube Music</a>；官方混音也在<a href="%%soundcloud%%" rel="noopener">SoundCloud</a></li><li>最新视频也会出现在首页的「现场录像」栏目</li></ul>`],
+        ['两层都打的DJ', `<p>从2026年8月到11月的时间表来看，这几位DJ常常一晚之内在2楼和3楼都上台。想一次听多种风格，就从这里开始。</p><ul><li>${ss(37)} —— 从重击心脏的Bass House到凌晨感性的旋律Techno</li><li>${ss(27)} —— 旋律Drum & Bass与Bounce</li><li>${ss(21)} —— 适合深夜工作室的Tech House与Afro</li><li>${ss(23)} —— 为凌晨兜风加速的Tech House与Breakbeat</li></ul><p>MUMU也经常出现在两层的时间表上。</p>`],
+        ['3楼SPOT（EDM）常见DJ', `<ul><li>${ss(33)} —— 旋律Bounce与Tech House的周五EDM派对混音</li><li>${ss(16)} —— 适合摇下车窗听的旋律Bounce</li><li>${ss(15)} —— 超上头的Vinahouse（越南鼓）旋律Bounce</li><li>${ss(17)} —— 下班路上提神的Tech House与Korea Bounce</li></ul><p>N、BILL、A:ETH、KUPA也是3楼时间表上的常客。</p>`],
+        ['2楼GROOVE（嘻哈）常见DJ', `<ul><li>${ss(22)} —— 低音炸裂的硬核嘻哈与Trap</li><li>${ss(24)} —— 嘻哈、K-pop与R&B派对混音</li><li>${ss(28)} —— 全场合唱的嘻哈、K-pop与Old School</li><li>${ss(18)} —— 重口味嘻哈与Trap Rave</li></ul><p>ZINO也经常在2楼打碟。</p>`],
+        ['健身时听的Set', `<p>光看韩文标题就知道，这几套是为健身房准备的，可以直接当训练歌单。</p><ul><li>${ss(26)} —— 冲击PR的Rave、Hard Dance与Speed House</li><li>${ss(12)} —— 健身房专用的Tech House与Breakbeat</li><li>${ss(19)} —— 练着练着就破PR的Speed House与Bounce</li><li>${ss(4)} —— 适合大重量训练的旋律Bounce</li><li>${ss(7)} —— 让心跳加速的Speed House与Bounce</li></ul>`],
+        ['工作、下班路上、兜风BGM', `<p>DJ混音一首接一首不中断，一套能连放30–40分钟，工作或开车时开着正合适。除了上面介绍的UZI（深夜工作室）和JOHNYRIGHTHERE（下班路上），还可以听：</p><ul><li>${ss(6)} —— 兜风氛围拉满的旋律House Bounce</li><li>${ss(25)} —— 凌晨兜风感的Korea Bounce与旋律House</li><li>${ss(2)} —— 情绪满满的旋律Bounce兜风混音</li><li>${ss(34)} —— 让人想踩油门的Speed House、Future House与Tech House</li></ul>`],
+        ['嘻哈、K-pop大合唱Set', `<ul><li>${ss(36)} —— 搓碟高手的嘻哈与Trap混音</li><li>${ss(32)} —— 街舞向的嘻哈与R&B Groove</li><li>${ss(13)} —— 让身体先动起来的嘻哈舞曲派对混音</li><li>${ss(1)} —— 夜店现场的嘻哈摇滚乐队演出</li><li>${ss(38)} —— K-pop混音大合唱再接Hard Dance的音乐节派对混音</li><li>${ss(20)} —— 韩国人必合唱的Vinahouse与K-EDM</li></ul>`],
+        ['听了喜欢的话', `<ul><li>今晚阵容每天下午发布在<a href="%%events%%">活动页面</a>和Instagram（@groovenspot）快拍。</li><li>营业时间内可以在<a href="%%floors%%">楼层介绍</a>看各层时间表，一般3楼每40分钟、2楼每1小时换一位DJ。</li><li>想听哪首歌，可以通过<a href="%%request%%">点歌页面</a>发给DJ —— <a href="%%a:busan-club-dj-song-request%%">点歌教程</a></li><li>周日至周四21:30开门，周五、周六及节假日前夜21:00开门。免费入场，按韩国年份计算19岁以上（${BY}年及以前出生），必须携带实体证件（外国游客请带护照原件）。</li></ul>`],
+      ],
+    },
+  },
+  {
+    // 신청곡 페이지(request/) 실제 동작 기준: src/build.mjs 'request/' 폼 + assets/site.js 신청곡 블록, 문구는 i18n.mjs rq.*, 보관 기간은 privacy.mjs
+    slug: 'busan-club-dj-song-request',
+    date: '2026-11-19',
+    ko: {
+      t: '클럽 DJ에게 신청곡 보내는 법 — 서면 그루브앤스팟 신청곡 페이지 사용법',
+      s: '서면 그루브앤스팟에서는 휴대폰으로 DJ에게 신청곡을 보낼 수 있어요. 앱·로그인 없이 곡 검색 → 층 선택 → 보내기. 1분에 한 곡, 2층 힙합·3층 EDM 어디서든.',
+      h1: '클럽에서 DJ에게 신청곡 보내는 법',
+      lede: '듣고 싶은 곡이 있어도 DJ 부스까지 갈 필요 없어요. 그루브앤스팟에서는 휴대폰으로 보낸 신청곡이 DJ 화면에 바로 전달됩니다. 신청곡 페이지가 실제로 어떻게 동작하는지 순서대로 정리했어요.',
+      secs: [
+        ['한눈에 보기', `<ul><li>어디서: <a href="%%request%%">신청곡 페이지</a> — 휴대폰 브라우저에서 바로 열려요(앱 설치·로그인 없음)</li><li>꼭 적을 것: 곡 제목 하나 (아티스트·닉네임·한마디는 선택)</li><li>층 선택: 2층 힙합 / 3층 EDM</li><li>보내면 DJ 화면으로 바로 전달돼요</li><li>한 곡 보내고 1분 뒤에 다음 곡을 보낼 수 있어요</li><li>모든 곡이 나오지는 않아요 — 분위기에 맞으면 틀어 드려요</li></ul>`],
+        ['신청곡 페이지 여는 곳', `<ul><li>사이트 상단 메뉴의 <b>신청곡</b></li><li>휴대폰 화면 아래 바의 <b>🎵 신청곡</b></li><li>홈 화면 <b>TONIGHT</b> 박스의 <b>신청곡 보내기</b> — 영업 중에는 지금 트는 DJ와 다음 DJ가 같이 보여요</li><li><a href="%%floors%%">플로어 안내</a>의 층별 <b>신청곡 보내기</b> 버튼 — 그 층이 미리 선택된 채로 열려요</li></ul>`],
+        ['1단계: 곡 찾기', `<p><b>곡 제목</b> 칸에 제목이나 가수 이름을 두 글자 이상 입력하면 아래에 곡 목록이 떠요. 하나를 누르면 제목과 아티스트가 자동으로 채워집니다.</p><ul><li>가수 한글 이름이나 초성으로도 찾을 수 있어요(예: ㅈㅋ → 지코).</li><li>목록에 없거나 검색이 안 될 때는 제목을 직접 입력해서 그대로 보내도 돼요.</li></ul>`],
+        ['오늘 신청된 곡에 같이 신청하기', `<p>최근 12시간 동안 들어온 신청곡이 있으면 입력 칸 아래에 <b>🔥 오늘 신청된 곡</b>이 최대 6곡까지 보여요. 누르면 그 곡이 그대로 채워져서 바로 같이 신청할 수 있어요.</p>`],
+        ['2단계: 층 고르고 보내기', `<ul><li><b>어느 층에서?</b> — 2F · HIPHOP 또는 3F · EDM. 지금 있는 층을 고르세요. 신청곡은 층 표시와 함께 전달돼요.</li><li><b>닉네임</b>(선택, 20자까지) — 한 번 적으면 다음에 이 휴대폰에서 자동으로 채워져요.</li><li><b>DJ에게 한마디</b>(선택, 60자까지)</li><li><b>신청곡 보내기</b>를 누르고 "신청곡을 보냈어요! 🎵"가 뜨면 전송 완료예요.</li></ul>`],
+        ['꼭 알아 두세요', `<ul><li>한 곡을 보내면 1분 뒤에 다음 곡을 보낼 수 있어요. 그 전에 누르면 남은 시간이 표시돼요.</li><li>모든 곡을 틀어 드리지는 못해요. 분위기에 맞으면 DJ가 틀어 드려요.</li><li>전화번호 같은 개인정보는 적지 마세요.</li><li>신청 내용(곡·아티스트·층·닉네임·한마디)은 전달용 서비스에서 12시간 뒤 자동으로 지워져요. <a href="%%privacy%%">개인정보처리방침</a></li><li>전송에 실패하면 잠시 후 다시 눌러 주세요.</li></ul>`],
+        ['신청곡이 잘 통하는 요령', `<ul><li>층 장르에 맞는 곡을 고르세요. 2층은 힙합·R&B, 3층은 EDM이에요. <a href="%%a:busan-club-hiphop-vs-edm-floor%%">2층 힙합 vs 3층 EDM 비교</a></li><li>지금 누가 트는지 먼저 확인하세요. 홈 화면 TONIGHT와 <a href="%%floors%%">플로어 안내</a>에 층별 타임테이블이 나와요.</li><li>DJ 스타일이 궁금하다면 유튜브 GROOVE SESSIONS로 미리 들어 보세요 — <a href="%%a:busan-club-dj-live-sets-youtube%%">DJ 라이브셋 가이드</a></li></ul>`],
+        ['처음 오신다면', `<p>입장은 무료, 연 나이 19세 이상(${BY}년생까지)이고 실물 신분증이 꼭 필요해요(외국인은 여권 원본). 문은 일–목 21:30, 금·토·공휴일 전날 21:00에 열어요. 자세한 내용은 <a href="%%a:seomyeon-club-dress-code-id%%">드레스코드·신분증 정리</a>와 <a href="%%guide%%">서면 클럽 가이드</a>를 보세요.</p>`],
+      ],
+    },
+    en: {
+      t: 'How to Request a Song at a Busan Club: Send It Straight to the DJ',
+      s: 'At Groove & Spot in Seomyeon, Busan, you can send the DJ a song request from your phone — no app, no login. Search the track, pick 2F hip-hop or 3F EDM, and send. One request per minute.',
+      h1: 'How to request a song from the DJ at a Busan club',
+      lede: "Want to hear a certain track tonight? You don't have to shout over the music at the DJ booth. At Groove & Spot, requests sent from your phone go straight to the DJ's screen. Here's exactly how our request page works.",
+      secs: [
+        ['Quick answers', `<ul><li>Where: our <a href="%%request%%">song request page</a> — it opens in your phone's browser, no app or login</li><li>Required: just the song title (artist, nickname and note are optional)</li><li>Floor: 2F hip-hop or 3F EDM</li><li>Your request goes straight to the DJ's screen</li><li>One request per minute</li><li>Not every track gets played — if it fits the vibe, the DJ plays it</li></ul>`],
+        ['Where to find the request page', `<ul><li><b>Requests</b> in the top menu</li><li><b>🎵 Requests</b> in the bar at the bottom of your phone screen</li><li>The <b>Request a song</b> button in the <b>TONIGHT</b> box on our home page — during opening hours it also shows who's playing now and who's next</li><li>The <b>Request a song</b> button for each floor on our <a href="%%floors%%">floors page</a> — it opens with that floor already selected</li></ul>`],
+        ['Step 1: Find the song', `<p>Type at least two characters of a title or artist into the <b>Song title</b> box and matching tracks appear below. Tap one and the title and artist fill in automatically.</p><ul><li>K-pop and Korean hip-hop artists can be found by their English or Korean names.</li><li>Can't find it, or search isn't working? Just type the title and send it as is.</li></ul>`],
+        ['Join a song someone already requested', `<p>If people have sent requests in the last 12 hours, up to six of them appear under the box as <b>🔥 Requested tonight</b>. Tap one to fill it in and request it too.</p>`],
+        ['Step 2: Pick your floor and send', `<ul><li><b>Which floor?</b> — 2F · HIPHOP or 3F · EDM. Pick the floor you're on; your request reaches the DJ with the floor attached.</li><li><b>Nickname</b> (optional, up to 20 characters) — your phone remembers it for next time.</li><li><b>Note to the DJ</b> (optional, up to 60 characters)</li><li>Tap <b>Send request</b>. When you see "Request sent! 🎵", you're done.</li></ul>`],
+        ['Good to know', `<ul><li>After one request, you can send the next one a minute later. Tap too early and you'll see how many seconds are left.</li><li>Not every track can be played. If it fits the vibe, the DJ will play it.</li><li>Don't include phone numbers or other personal info.</li><li>Requests (song, artist, floor, nickname, note) are deleted automatically by the relay service after 12 hours. See our <a href="%%privacy%%">privacy policy</a>.</li><li>If sending fails, wait a moment and try again.</li></ul>`],
+        ['Tips to boost your chances', `<ul><li>Match the floor: 2F plays hip-hop and R&B, 3F plays EDM. See <a href="%%a:busan-club-hiphop-vs-edm-floor%%">hip-hop (2F) vs EDM (3F)</a>.</li><li>Check who's playing first. The TONIGHT box on our home page and the <a href="%%floors%%">floors page</a> show each floor's timetable.</li><li>Curious about a DJ's style? Hear their GROOVE SESSIONS sets on YouTube first — <a href="%%a:busan-club-dj-live-sets-youtube%%">DJ live sets guide</a>.</li></ul>`],
+        ['First time at Groove & Spot?', `<p>Entry is free. You need to be 19+ by Korean year-age (born in ${BY} or earlier) and bring a physical ID — foreigners need an original passport. Doors open at 9:30 PM Sunday to Thursday and 9 PM on Fridays, Saturdays and nights before holidays. More in our <a href="%%a:seomyeon-club-dress-code-id%%">dress code & ID guide</a> and <a href="%%guide%%">Busan nightlife guide</a>.</p>`],
+      ],
+    },
+    ja: {
+      t: '釜山のクラブでDJに曲をリクエストする方法｜西面Groove & Spot',
+      s: '釜山・西面のGroove & Spotでは、スマホからDJにリクエスト曲を送れます。アプリ・ログイン不要。曲を検索→フロアを選んで→送信。1分に1曲、2階ヒップホップ・3階EDMどちらでも。',
+      h1: 'クラブでDJに曲をリクエストする方法',
+      lede: '聴きたい曲があっても、DJブースまで行く必要はありません。Groove & Spotでは、スマホから送ったリクエストがDJの画面にすぐ届きます。リクエストページの実際の使い方を順番にまとめました。',
+      secs: [
+        ['ひと目でわかるポイント', `<ul><li>場所：<a href="%%request%%">リクエストページ</a> — スマホのブラウザですぐ開けます（アプリ・ログイン不要）</li><li>必須：曲名だけ（アーティスト・ニックネーム・ひとことは任意）</li><li>フロア：2階ヒップホップ／3階EDM</li><li>送信するとDJの画面にすぐ届きます</li><li>1曲送ったら、次は1分後から</li><li>すべての曲がかかるわけではありません — 雰囲気に合えばかけます</li></ul>`],
+        ['リクエストページの開き方', `<ul><li>サイト上部メニューの<b>リクエスト</b></li><li>スマホ画面下のバーの<b>🎵 リクエスト</b></li><li>ホームの<b>TONIGHT</b>ボックスにある<b>リクエストする</b> — 営業中は今プレイ中のDJと次のDJも表示されます</li><li><a href="%%floors%%">フロア案内</a>の各フロアの<b>リクエストする</b>ボタン — そのフロアが選ばれた状態で開きます</li></ul>`],
+        ['ステップ1：曲を探す', `<p><b>曲名</b>の欄に曲名かアーティスト名を2文字以上入力すると、下に候補が出ます。選ぶと曲名とアーティストが自動で入ります。</p><ul><li>K-POPや韓国ヒップホップのアーティストは、英語名でもハングル名でも探せます。</li><li>見つからないときや検索が使えないときは、曲名をそのまま入力して送ってOKです。</li></ul>`],
+        ['今夜のリクエストに乗っかる', `<p>直近12時間にリクエストがあれば、入力欄の下に<b>🔥 今夜リクエストされた曲</b>が最大6曲表示されます。タップするとその曲が入るので、そのまま一緒にリクエストできます。</p>`],
+        ['ステップ2：フロアを選んで送信', `<ul><li><b>どのフロア？</b> — 2F · HIPHOP か 3F · EDM。今いるフロアを選びましょう。リクエストはフロア名と一緒に届きます。</li><li><b>ニックネーム</b>（任意・20文字まで）— 一度入れると、次からこのスマホで自動入力されます。</li><li><b>DJへひとこと</b>（任意・60文字まで）</li><li><b>リクエストを送る</b>を押して「リクエストを送りました！🎵」と出たら完了です。</li></ul>`],
+        ['知っておきたいこと', `<ul><li>1曲送ると、次の曲は1分後から送れます。それより前に押すと残り秒数が表示されます。</li><li>すべての曲をかけられるわけではありません。雰囲気に合えばDJがかけます。</li><li>電話番号などの個人情報は書かないでください。</li><li>リクエスト内容（曲名・アーティスト・フロア・ニックネーム・ひとこと）は、中継サービスで12時間後に自動削除されます。<a href="%%privacy%%">プライバシーポリシー</a></li><li>送信できなかったときは、少し待ってからもう一度押してください。</li></ul>`],
+        ['リクエストが通りやすくなるコツ', `<ul><li>フロアのジャンルに合う曲を選びましょう。2階はヒップホップ・R&B、3階はEDMです。<a href="%%a:busan-club-hiphop-vs-edm-floor%%">2階ヒップホップ vs 3階EDM</a></li><li>今だれがプレイしているか先にチェック。ホームのTONIGHTと<a href="%%floors%%">フロア案内</a>にフロア別タイムテーブルが出ます。</li><li>DJのスタイルが気になるなら、YouTubeのGROOVE SESSIONSで予習を — <a href="%%a:busan-club-dj-live-sets-youtube%%">DJライブセットガイド</a></li></ul>`],
+        ['初めての方へ', `<p>入場無料、韓国の数え方で19歳以上（${BY}年生まれまで）、実物の身分証が必須です（外国人はパスポート原本）。日〜木曜は21:30、金・土曜と祝前日は21:00オープン。詳しくは<a href="%%a:seomyeon-club-dress-code-id%%">ドレスコード・身分証まとめ</a>と<a href="%%guide%%">西面クラブガイド</a>をご覧ください。</p>`],
+      ],
+    },
+    zh: {
+      t: '釜山夜店怎么给DJ点歌？西面Groove & Spot点歌教程',
+      s: '在釜山西面Groove & Spot，用手机就能给DJ点歌，不用下载App、不用登录。搜歌→选楼层→发送，每分钟可点一首，2楼嘻哈、3楼EDM都可以。',
+      h1: '在夜店怎么给DJ点歌',
+      lede: '想听某首歌，不用挤到DJ台前。在Groove & Spot，用手机发出的点歌会直接出现在DJ的屏幕上。下面按步骤说明点歌页面实际怎么用。',
+      secs: [
+        ['重点一览', `<ul><li>在哪：<a href="%%request%%">点歌页面</a> —— 手机浏览器直接打开（不用App、不用登录）</li><li>必填：只有歌名（歌手、昵称、留言可选）</li><li>楼层：2楼嘻哈／3楼EDM</li><li>发送后直接传到DJ屏幕</li><li>点一首后，1分钟后才能点下一首</li><li>不保证每首都播 —— 合适就会播放</li></ul>`],
+        ['从哪里打开点歌页面', `<ul><li>网站顶部菜单的<b>点歌</b></li><li>手机屏幕底部栏的<b>🎵 点歌</b></li><li>首页<b>TONIGHT</b>区块里的<b>点歌</b>按钮 —— 营业时间内还会显示正在打碟和下一位DJ</li><li><a href="%%floors%%">楼层介绍</a>每层的<b>点歌</b>按钮 —— 打开时已选好该楼层</li></ul>`],
+        ['第一步：找歌', `<p>在<b>歌名</b>栏输入歌名或歌手，至少两个字，下面就会出现候选歌曲。点一下，歌名和歌手会自动填好。</p><ul><li>K-pop和韩国嘻哈歌手用英文名或韩文名都能搜到。</li><li>找不到或暂时无法搜索时，直接输入歌名发送也可以。</li></ul>`],
+        ['跟着点「今晚已点的歌」', `<p>最近12小时内有人点过歌的话，输入栏下方会显示<b>🔥 今晚已点的歌</b>，最多6首。点一下就会填好，可以直接一起点。</p>`],
+        ['第二步：选楼层并发送', `<ul><li><b>在哪一层？</b> —— 选2F · HIPHOP或3F · EDM，也就是你现在所在的楼层。点歌会连同楼层一起发给DJ。</li><li><b>昵称</b>（可选，最多20个字）—— 填过一次，下次在这部手机上会自动填好。</li><li><b>给DJ留言</b>（可选，最多60个字）</li><li>按<b>发送点歌</b>，出现「点歌已发送！🎵」就完成了。</li></ul>`],
+        ['需要注意', `<ul><li>点一首后，1分钟后才能点下一首，提前按会显示剩余秒数。</li><li>不保证每首都能播放，合适就会播放。</li><li>请勿填写电话号码等个人信息。</li><li>点歌内容（歌名、歌手、楼层、昵称、留言）会在中转服务上12小时后自动删除。<a href="%%privacy%%">隐私政策</a></li><li>发送失败的话，请稍等片刻再试。</li></ul>`],
+        ['点歌更容易被播放的小技巧', `<ul><li>选符合楼层风格的歌：2楼是嘻哈、R&B，3楼是EDM。<a href="%%a:busan-club-hiphop-vs-edm-floor%%">2楼嘻哈 vs 3楼EDM</a></li><li>先看看现在是谁在打碟：首页TONIGHT和<a href="%%floors%%">楼层介绍</a>有各楼层时间表。</li><li>想先了解DJ风格，可以在YouTube上听GROOVE SESSIONS —— <a href="%%a:busan-club-dj-live-sets-youtube%%">DJ现场Set攻略</a></li></ul>`],
+        ['第一次来？', `<p>免费入场，按韩国年份计算19岁以上（${BY}年及以前出生），必须携带实体证件（外国游客请带护照原件）。周日至周四21:30开门，周五、周六及节假日前夜21:00开门。详情见<a href="%%a:seomyeon-club-dress-code-id%%">着装与证件攻略</a>和<a href="%%guide%%">西面夜店指南</a>。</p>`],
       ],
     },
   },
