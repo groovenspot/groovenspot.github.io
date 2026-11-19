@@ -1114,7 +1114,7 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 /* 🍋 섭레콜 · 💬 출근 전 대화 · 🔔 알림 설정 (2026-11-19 밤) */
 .gbig.sub { background: #b8a400; color: #1a1600; } .subw { display: grid; gap: 8px; margin: -8px 0 18px; } .subrow { display: grid; gap: 8px; }
 .goffer.subo { background: #262106; border-color: #e8d21d; } .goffer.subo .gof-h small { color: var(--muted); font-size: 13px; } .goffer.subo .gof-b { grid-template-columns: 1fr; }
-.goffer.subo.gone { background: #1d1d1f; border-color: var(--line-2); } .goffer.subo.stack { bottom: calc(190px + var(--bbh) + env(safe-area-inset-bottom)); }
+.goffer.subo .msg:empty { display: none; } .goffer.subo.gone { background: #1d1d1f; border-color: var(--line-2); } .goffer.subo.stack { bottom: calc(190px + var(--bbh) + env(safe-area-inset-bottom)); }
 .chatvo { padding: 6px 12px; border-top: 1px solid var(--line); background: rgba(255,176,32,.1); color: var(--txt); font-size: 13px; }
 .pprefb { width: 100%; margin: 10px 0 0; } .pprefb small { color: var(--muted); font-weight: 600; }
 .ppall { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .ppall .btn { width: 100%; } .ppall .btn-bad.arm { background: var(--bad); border-color: var(--bad); color: #fff; }
@@ -1537,6 +1537,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     var q = oqLoad(); q.items = q.items.filter(function (x) { return x.cid !== it.cid; });
     q.dead.push({ at: Date.now(), label: oqLabel(it), text: oqText(it), why: OQ_WHY[why] || '서버가 받지 않았어요' + (why ? ' (' + why + ')' : '') }); q.dead = q.dead.slice(-20); oqSave(q);
     alertMsg('⚠️ 못 보낸 것이 있어요: ' + oqLabel(it) + ' · ' + (OQ_WHY[why] || '서버가 받지 않았어요'));
+    oqPaintChat(); if (['dm', 'board', 'dec', 'guest', 'live'].indexOf(state.tab) >= 0) renderSoon();   // '보내는 중' 줄 지우기
   }
   function oqDone(it, r) {   // 보낸 뒤 화면 맞추기 (원래 화면이 이미 바뀌었을 수 있음)
     var b = it.b || {};
