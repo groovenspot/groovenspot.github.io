@@ -1568,8 +1568,8 @@ body.popmode .chath .chpop { display: none; }
   function openApp() {
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
-    if (/^chat:(table|yc|guest|ops|gate)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
-    var pm = /^pop:(table|yc|guest|ops|gate)$/.exec(h); if (pm) { state.pop = pm[1]; h = pm[1]; document.body.classList.add('popmode'); try { document.title = CHAT_NAME[pm[1]]; } catch (e) {} }
+    if (/^chat:(table|yc|guest|ops|gate|live)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
+    var pm = /^pop:(table|yc|guest|ops|gate|live)$/.exec(h); if (pm) { state.pop = pm[1]; h = pm[1]; document.body.classList.add('popmode'); try { document.title = CHAT_NAME[pm[1]]; } catch (e) {} }
     if (h === 'sos') setTimeout(function () { loadSos(); }, 600);
     if (['ops', 'live', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
     else {   // 다시 불러오면 마지막에 보던 탭·대화창 그대로 (대표 요청 2026-11-19)
@@ -1842,9 +1842,9 @@ body.popmode .chath .chpop { display: none; }
         '<b>🎨 화면 배경</b>: 내 프로필에서 <b>⚫ 검정 / ⚪ 흰색</b> 고르기 (밝기를 낮추면 흰색이 더 잘 보여요 · 내 계정에 저장)'
       ]) +
       sec('💬 대화창 쓰는 법', [
-        '<b>여는 법</b>: 🪑 테이블 · 🎆 연출 · 게스트/판매 · 🛎 운영 · 🚪 입구 탭에서 오른쪽 아래 <b>💬</b> → <b>지금 보는 탭의 방</b>이 열려요 (탭을 바꾸면 방도 바뀜) · 💬 위 숫자 = 안 읽은 메시지 · 닫기는 위 <b>✕</b>',
-        '<b>방마다 하는 일</b>: 🪑 <b>테이블 대화</b> = 자리 넣기·아웃·이동·운영팀 부르기 · 🎆 <b>연출 대화</b> = 연출 요청·<code>ㅈㄱㅈㅂㅇ</code>·<code>ㄱㄱ</code>·<code>컷</code> · 👥 <b>게스트 대화</b> = 게스트 집계 · 🛎 <b>운영 대화</b>·🚪 <b>입구 대화</b> = 그냥 대화 (요청으로 안 바뀜)',
-        '<b>누가 보나</b>: 그 탭이 보이는 사람 · 👥 게스트 대화는 <b>팀장·대표·김동기·양진호</b>만 · 🚪 입구 대화는 <b>경호팀·입구 탭 쓰는 사람</b>만 · 경호팀은 🚪 입구 대화만 (경호팀장은 🪑 테이블·🎆 연출 대화도)',
+        '<b>여는 법</b>: 🪑 테이블 · 🎆 연출 · 게스트/판매 · 🛎 운영 · 🚪 입구 · 🎬 실시간 탭에서 오른쪽 아래 <b>💬</b> → <b>지금 보는 탭의 방</b>이 열려요 (탭을 바꾸면 방도 바뀜) · 💬 위 숫자 = 안 읽은 메시지 · 닫기는 위 <b>✕</b>',
+        '<b>방마다 하는 일</b>: 🪑 <b>테이블 대화</b> = 자리 넣기·아웃·이동·운영팀 부르기 · 🎆 <b>연출 대화</b> = 연출 요청·<code>ㅈㄱㅈㅂㅇ</code>·<code>ㄱㄱ</code>·<code>컷</code> · 👥 <b>게스트 대화</b> = 게스트 집계 · 🛎 <b>운영 대화</b>·🚪 <b>입구 대화</b>·🎬 <b>실시간 대화</b> = 그냥 대화 (요청으로 안 바뀜 · 🎧 DJ 문의는 🎬 실시간 대화에 올라와요)',
+        '<b>누가 보나</b>: 그 탭이 보이는 사람 · 👥 게스트 대화는 <b>팀장·대표·김동기·양진호</b>만 · 🚪 입구 대화는 <b>경호팀·입구 탭 쓰는 사람</b>만 · 🎬 실시간 대화는 <b>경호팀 빼고 모두</b> · 경호팀은 🚪 입구 대화만 (경호팀장은 🪑 테이블·🎆 연출 대화도)',
         '<b>❔ 쓰는 법</b>: 대화창 위 <b>❔</b>를 누르면 그 방에서 카톡처럼 쓰는 양식이 나와요 (예: <code>3l6 태훈 남2 섭레</code> → 자리표에 바로)',
         '<b>보내기</b>: 글 · 📷 <b>사진 3장·영상 2개</b> (큰 영상은 자동으로 줄여서, 5분까지) · 🪑 테이블·👥 게스트 대화는 <b>출근 후</b>에 보내져요',
         '<b>@호출</b>: <code>@</code>를 치면 직원 목록이 떠요 → 성 빼고·초성·닉네임으로 찾기 (<code>@동기</code> <code>@ㄷㄱ</code>) → 부른 사람에게 알림',
@@ -4316,7 +4316,7 @@ body.popmode .chath .chpop { display: none; }
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
     if (state.pop) return;   // 따로 띄운 대화창은 그대로
-    var t = e.data && e.data.tab, ct = /^chat:(table|yc|guest|ops|gate)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
+    var t = e.data && e.data.tab, ct = /^chat:(table|yc|guest|ops|gate|live)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
     if (e.data && e.data.peek && /^(🌙 영업 종료|🌅 영업 시작)/.test(e.data.peek.title || '') && state.data) { refresh(true); return; }   // 🌙 영업 종료 알림 → 화면 '수고하셨습니다'
     if (t === 'sos' && state.data) { loadSos(); return; }   // 🚨 경호 호출: 탭이 아니라 위쪽 빨간 줄
@@ -4449,6 +4449,7 @@ body.popmode .chath .chpop { display: none; }
       if (!r.ok) { if (!state.lv) { state.lvErr = r.error === 'unknown' ? '업데이트 중이에요. 잠시 후 자동으로 다시 불러와요.' : '불러오지 못했어요. 다시 불러오는 중…'; if (state.tab === 'live') render(); } return; }
       var same = state.lv && JSON.stringify(state.lv.list) === JSON.stringify(r.list); state.lv = r; state.lvErr = '';
       if (state.data) state.data.lv = r.list.slice(0, 30).map(function (x) { return [x.at, x.mine ? 1 : 0]; });
+      if (state.chatTail) delete state.chatTail.live; try { paintChatFab(); } catch (e) {}   // 💬 실시간 대화 안 읽은 수 (lv_get 의 chat 꼬리)
       if (state.tab === 'live' && (!same || !quiet)) render(); else renderTabsOnly();
     }).catch(function () { state.lvFly = 0; if (!state.lv) { state.lvErr = '연결이 안 돼요.'; if (state.tab === 'live') render(); } });
   }
@@ -4634,7 +4635,7 @@ body.popmode .chath .chpop { display: none; }
     A.list.forEach(function (x) { if (x.ops && !x.ops.took) x.ops = null; if (x.sos && !x.sos.go) x.sos = null; });   // 배포 직후 서버가 아직 예전 버전이면 (몇 분) 진행 상황 없이
     var isOps = function (x) { return x.t === 'ch' ? !!x.ops : /^(📡 )?(🛎|✅ 운영|🆘)/.test(x.title); }, isSos = function (x) { return x.t === 'ch' ? !!x.sos : /^(📡 )?(🚨|🏃|✅ 경호)/.test(x.title); };
     var isUrg = function (x) { return x.t === 'ch' ? /🆘/.test(x.req || '') || !!(x.ops && x.ops.urgent) : /^(📡 )?🆘/.test(x.title); }, isWhere = function (x) { return x.t === 'ch' ? !!x.wh || /^📍/.test(x.text || '') : /^(📡 )?📍/.test(x.title); };
-    var isMove = function (x) { return x.t === 'al' ? /^(📡 )?🔀/.test(x.title) : x.t === 'ch' && /옮기기|→/.test(x.req || ''); }, isLive = function (x) { return x.t === 'lv' || (x.t === 'al' && /^(📡 )?🎬/.test(x.title)); }, isKeep = function (x) { return x.t === 'al' && /^(📡 )?(🍾|✅ 킵|↩️ 킵)/.test(x.title); };
+    var isMove = function (x) { return x.t === 'al' ? /^(📡 )?🔀/.test(x.title) : x.t === 'ch' && /옮기기|→/.test(x.req || ''); }, isLive = function (x) { return x.t === 'lv' || (x.t === 'ch' && x.room === 'live') || (x.t === 'al' && /^(📡 )?🎬/.test(x.title)); }, isKeep = function (x) { return x.t === 'al' && /^(📡 )?(🍾|✅ 킵|↩️ 킵)/.test(x.title); };
     var isYcAl = function (x) { return x.t === 'al' ? /^(📡 )?(🎆|🍾 술 준비)/.test(x.title) || x.tab === 'yc' : x.room === 'yc' && /🎆|✍️연출탭/.test(x.req || ''); };
     var isRed = function (x) { return isSos(x) || isUrg(x) || isYcAl(x); };   // 🚨 경호 · 🎆 연출 · 🆘 긴급모집 = 빨간 테두리
     var FIL = { al: function (x) { return x.t === 'al'; }, ops: isOps, sos: isSos, urg: isUrg, where: isWhere, move: isMove, live: isLive, keep: isKeep };
@@ -4701,7 +4702,7 @@ body.popmode .chath .chpop { display: none; }
     });
     area.querySelectorAll('[data-allroom]').forEach(function (b) { b.addEventListener('click', function () { chatOpen(b.dataset.allroom); }); });
     area.querySelectorAll('[data-allgo]').forEach(function (b) { b.addEventListener('click', function () {
-      var t = b.dataset.allgo, m = t.match(/^chat:(table|yc|guest|ops|gate)$/);
+      var t = b.dataset.allgo, m = t.match(/^chat:(table|yc|guest|ops|gate|live)$/);
       if (m) chatOpen(m[1]); else if (ALL_TABS.indexOf(t) >= 0) goTab(t);
     }); });
   }
@@ -5410,10 +5411,11 @@ body.popmode .chath .chpop { display: none; }
     });
   }
   // ── 💬 탭 대화 (2026-11-18): 테이블·연출 탭에서 오른쪽 아래 버튼 → 그 탭 대화방. 안 읽은 수는 탭 목록 응답의 꼬리(chat)로.
-  var CHAT_NAME = { table: '🪑 테이블 대화', yc: '🎆 연출 대화', guest: '👥 게스트 대화', ops: '🛎 운영 대화', gate: '🚪 입구 대화' };   // 🛎 운영·🚪 입구 대화 (대표 요청 2026-11-19 새벽)
+  var CHAT_NAME = { table: '🪑 테이블 대화', yc: '🎆 연출 대화', guest: '👥 게스트 대화', ops: '🛎 운영 대화', gate: '🚪 입구 대화', live: '🎬 실시간 대화' };   // 🛎 운영·🚪 입구 대화 (대표 요청 2026-11-19 새벽) · 🎬 실시간 대화 (대표 요청 2026-11-19 저녁)
   // 카톡처럼 쓰면 알아듣는 말 (카톡 테이블방·불꽃놀이방 대화를 보고 만든 규칙, 2026-11-18)
   var CHAT_HELP = {
     ops: '<p><b>운영 대화</b>는 그냥 대화예요 (운영 요청으로 바뀌지 않아요). 운영팀을 부르려면 <b>+ 요청</b>이나 🪑 테이블 대화를 써 주세요.</p><p><code>@이름</code>으로 부르면 그 사람에게 알림 · 꾹 눌러 답장 · 📷 사진·영상도 돼요.</p>',
+    live: '<p><b>실시간 대화</b>는 그냥 대화예요. 🎬 실시간 영상 탭을 보는 직원 모두(경호팀 빼고) 같이 봐요. 🎧 DJ 문의(인스타·WhatsApp DM)도 여기에 올라와요.</p><p><code>@이름</code>으로 부르면 그 사람에게 알림 · 꾹 눌러 답장 · 📷 사진·영상도 돼요. 출근한 직원 모두에게 알리려면 위의 <b>+ 올리기</b>를 써 주세요.</p>',
     gate: '<p><b>입구 대화</b>는 그냥 대화예요. 경호팀도 같이 봐요.</p><p><code>@이름</code>으로 부르면 그 사람에게 알림 · 꾹 눌러 답장 · 📷 사진·영상도 돼요. 손님을 MD에게 보내는 건 위의 <b>입구 호출</b>로 해 주세요.</p>',
     guest: '<p><b>카톡에 올리던 게스트 집계 그대로</b> 쓰면 게스트/판매 탭에 바로 들어가요.</p>' +
       '<pre>11/17\n고트\n건호3\n수연4\n요셉5\n\n아룬\n성원1\n\n클로버\n지현1\n은호1</pre>' +
@@ -5441,10 +5443,10 @@ body.popmode .chath .chpop { display: none; }
     var d = state.data || {};
     if (d.guard) return state.tab === 'gate' || (state.tab === 'table' && d.table) || (state.tab === 'yc' && d.yc) ? state.tab : '';   // 경호팀: 🚪 입구 대화 · 경호팀장은 테이블·연출 대화도 (2026-11-18)
     if (state.tab === 'guest' && !d.guestChat) return '';   // 👥 게스트 대화: 팀장·대표·김동기·양진호만 (대표 결정 2026-11-19 새벽)
-    return ['table', 'yc', 'guest', 'ops', 'gate'].indexOf(state.tab) >= 0 ? state.tab : '';
+    return ['table', 'yc', 'guest', 'ops', 'gate', 'live'].indexOf(state.tab) >= 0 ? state.tab : '';   // 🎬 실시간 대화: 실시간 탭 보는 사람 = 경호팀 빼고 모두 (경호팀은 위에서 걸러짐)
   }
   function chatSeen(room, at) { var o = {}; try { o = JSON.parse(localStorage.getItem('gs_chat_seen') || '{}'); } catch (e) {} if (at === undefined) return o[room] || ''; if (at > (o[room] || '')) { o[room] = at; try { localStorage.setItem('gs_chat_seen', JSON.stringify(o)); } catch (e) {} } }
-  function chatTail(room) { var src = room === 'table' ? state.tb : room === 'yc' ? state.yc : room === 'ops' ? state.ops : room === 'gate' ? state.gate : null; return (state.chatTail && state.chatTail[room]) || (src && src.chat) || []; }
+  function chatTail(room) { var src = room === 'table' ? state.tb : room === 'yc' ? state.yc : room === 'ops' ? state.ops : room === 'gate' ? state.gate : room === 'live' ? state.lv : null; return (state.chatTail && state.chatTail[room]) || (src && src.chat) || []; }
   function chatText(m) {   // @이름 은 굵게
     var t = esc(m.text);
     (m.at2 || []).forEach(function (n) { [n, nickOf(n)].forEach(function (w) { if (!w) return; var e = esc(w); t = t.split('@' + e).join('<b class="at">@' + e + '</b>'); }); });
