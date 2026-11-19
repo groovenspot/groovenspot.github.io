@@ -3,3 +3,5 @@ Disallow: /admin/
 Disallow: /staff/
 Disallow: /keep/
 Sitemap: https://xn--2i0bl1s25d.site/sitemap.xml
+
+#DaumWebMasterTool:f335e90dae51bde47b4d54d26c59e9f7fe6f58658c687280b2e9cb4a026775bc:MqfNpbtb2g8b8TIcUfNFlQ==
