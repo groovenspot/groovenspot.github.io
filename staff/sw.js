@@ -92,11 +92,16 @@ function goneOff() {
     .catch(noop)
     .then(clearToken);
 }
+// 📱 끝난 일 알림 지우기 (대표 요청 2026-11-20 2시): 떠 있는 알림의 ref(ops:ID 등)를 peek 에 같이 보내고, 답의 done(끝났거나 다른 사람이 받아 간 일)은 새 알림을 띄운 뒤 닫음
+function openRefs() { try { return self.registration.getNotifications().then(function (ns) { return ns.map(function (x) { return x.data && x.data.ref; }).filter(Boolean).slice(-60); }).catch(function () { return []; }); } catch (x) { return Promise.resolve([]); } }
+function closeDone(done) { if (!done || !done.length) return; try { return self.registration.getNotifications().then(function (ns) { ns.forEach(function (x) { if (x.data && x.data.ref && done.indexOf(x.data.ref) >= 0) x.close(); }); }).catch(noop); } catch (x) {} }
 self.addEventListener('push', function (e) {
-  e.waitUntil(token().then(function (t) {
+  e.waitUntil(Promise.all([token(), openRefs()]).then(function (v) {
+    var t = v[0], refs = v[1];
     if (t === '') return { gone: true };   // 로그아웃한 기기 (토큰을 지웠는데 구독이 남아 있음)
     if (!t) return null;   // 토큰을 못 읽음 → 예전처럼
-    return fetch(API, { method: 'POST', body: JSON.stringify({ a: 'peek', token: t }) }).then(function (r) { return r.json(); }).catch(function () { return null; });
+    var body = { a: 'peek', token: t }; if (refs.length) body.refs = refs;
+    return fetch(API, { method: 'POST', body: JSON.stringify(body) }).then(function (r) { return r.json(); }).catch(function () { return null; });
   }).then(function (n) {
     if (n && n.gone) return goneOff();
     n = n && n.ok ? n : { title: 'GROOVE STAFF', body: '새 소식이 있어요', tab: '' };
@@ -104,9 +109,11 @@ self.addEventListener('push', function (e) {
     // 열려 있는 앱에도 알려 줌 (🌙 영업 종료 → 화면 '수고하셨습니다', 🚨 경호 호출 → 빨간 줄)
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) { cs.forEach(function (c) { try { c.postMessage({ peek: { title: n.title, body: n.body, kind: n.kind || '' } }); } catch (x) {} }); }).catch(noop);
     // 🚨 경호 호출은 따로(gs-sos): 다른 알림이 덮어쓰지 않고, 누를 때까지 남고, 세게 진동 (2026-11-19)
-    var opt = { body: n.body, tag: sos ? 'gs-sos' : 'gs-staff', renotify: true, icon: '/staff/icon-192.png', badge: '/staff/badge-72.png', data: { tab: n.tab || '' } };
+    // 그 밖의 알림은 하나씩 따로 쌓임 — 카톡처럼 (대표 결정 2026-11-20 2시: 예전엔 새 알림이 앞 알림을 덮어 하나만 남았음)
+    var opt = { body: n.body, tag: sos ? 'gs-sos' : 'gs-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), renotify: true, icon: '/staff/icon-192.png', badge: '/staff/badge-72.png', data: { tab: n.tab || '', ref: n.ref || '' } };
     if (sos) { opt.requireInteraction = true; opt.vibrate = [300, 100, 300, 100, 600]; opt.silent = false; }
-    return self.registration.showNotification(n.title, opt);
+    var done = n.done;
+    return self.registration.showNotification(n.title, opt).then(function () { return closeDone(done); });
   }));
 });
 self.addEventListener('notificationclick', function (e) {
