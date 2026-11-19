@@ -90,6 +90,13 @@ img { max-width: 100%; display: block; }
 .ev-art.full, .evd .ev-art.full { aspect-ratio: auto; padding: 0; width: 100%; max-width: 520px; flex: none; }
 .ev-art.full img { position: static; height: auto; object-fit: contain; display: block; }
 .ev-art.full img + img { margin-top: 12px; }
+.ev-art.fit::before { content: ''; position: absolute; inset: -20px; background: var(--bg) center / cover no-repeat; filter: blur(16px) brightness(.45); }
+.ev-art.fit img { object-fit: contain; object-position: center; }
+.ev-line { display: grid; gap: 4px; padding: 0 16px 16px; font-size: 14px; line-height: 1.45; color: var(--muted); overflow-wrap: anywhere; }
+.ev-line .ln { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; align-items: baseline; }
+.ev-line .lf { min-width: 2.2em; font-size: 12px; font-weight: 800; letter-spacing: .04em; color: var(--text, #fff); }
+.ev-line .lf.g { color: var(--g); }
+.ev-line .lf.s { color: var(--s); }
 .ev-art.gen { background: radial-gradient(120% 80% at 0% 0%, rgba(255, 122, 26, .55), transparent 60%), radial-gradient(120% 80% at 100% 100%, rgba(161, 91, 255, .55), transparent 60%), #120d10; }
 .ev-art.gen.only-2F { background: radial-gradient(130% 90% at 20% 0%, rgba(255, 122, 26, .7), transparent 65%), #140b06; }
 .ev-art.gen.only-3F { background: radial-gradient(130% 90% at 80% 0%, rgba(161, 91, 255, .7), transparent 65%), #0e0918; }
@@ -115,6 +122,9 @@ img { max-width: 100%; display: block; }
   .ev-art .gt { display: none; }
   .ev-art.gen + .ev-meta .ev-title { display: block; }
   .ev-meta { padding: 12px 14px; align-content: center; }
+  .ev { flex-wrap: wrap; }   /* 라인업 줄(.ev-line)은 사진·제목 아래 가로 전체 */
+  .ev-meta { flex: 1 1 0; min-width: 0; }
+  .ev-line { flex: 1 0 100%; padding: 10px 14px 12px; border-top: 1px solid var(--line); }
 }
 .cards-past .ev { opacity: .72; }
 .cards-past .ev-art { aspect-ratio: 16 / 9; }
