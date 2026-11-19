@@ -2382,7 +2382,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
         '<b>내 손님 자리 아웃은 승인 없이 바로</b> (자리 창 <b>자리 비우기</b> · 대화 <code>3-11 아웃</code> · <code>2s2 아웃클</code>)',
         '이름 바꾸기: 대화에 <code>3L8 이름변경 원영입니다</code> · <code>3l4 지훈으로 이름변경</code> → 자리표에 바로 (내 테이블은 승인 없이)',
         '다른 사람이 내 손님 자리를 옮기면 <b>🔀 자리 이동</b> 알림이 와요 (예: <code>3층 L2 → L6</code>)',
-        '<b>📍 손님 위치 확인</b>: 다른 담당 손님 자리를 눌러 📍 → 담당 MD에게 알림 + 테이블 대화 한 줄 → 담당은 <b>자리에 있어요 / 흡연실 / 화장실 / 밖에 잠깐 / 나갔어요</b>를 한 번 눌러 답해요 (물어본 사람에게 알림)',
+        '<b>📍 손님 위치 확인</b>: 다른 담당 손님 자리를 눌러 📍 → 담당 MD에게 알림 + 테이블 대화 한 줄 → 담당은 <b>자리에 있어요 / 흡연실 / 화장실 / 밖에 잠깐 / 나갔어요</b>를 한 번 눌러 답해요 (물어본 사람에게 알림) · <b>나갔어요</b>는 누르면 바로 자리 비우기 + 🧹 아웃 청소 알림 (자리 비우기 따로 안 눌러도 돼요)',
         '💬 대화창에 카톡처럼 써도 돼요: <code>3-2 민성 남4(동기)</code> · 🟢 게스트는 <code>g</code> 또는 <code>여게</code>·<code>남게</code> <code>3-2 현준 남2 g</code> <code>3-2 미나 여게2</code> · <code>3층 DB7 아웃</code>(<code>캔슬</code>도 돼요) · <code>3L3 → 3L5</code> · 옮기면서 판매 전환 <code>3L3 → 3L5 판매전환</code>(한 번에) · 맞교환 <code>3L3 ↔ 3L5</code>(승인권자)',
         '보기는 <b>↔ 가로 / ↕ 세로</b>(폰 폭에 맞춘 도면) <b>/ ☰ 목록</b> — 고른 보기는 내 계정에 저장 · <b>📋 카톡용 복사</b> · 도면에 담당 이름 · <b>🟢 빈 자리</b> 목록',
         '<b>➕ 빠 확장</b>을 누르면 확장 자리가 열려요 — 3층: <b>빠끝·빠입구·3·4사이·6·7사이</b> · 2층: <b>섭빠1·섭빠2·3·4사이·4·5사이</b> · 손님 없으면 <b>➖ 닫기</b>',
@@ -6578,8 +6578,8 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       e.stopPropagation(); var m = r.list.filter(function (x) { return x.id === b.dataset.cwq; })[0]; if (!m) return;
       var pre = '📍 ' + (m.where.seat || '') + ' 손님 → ';
       if (b.dataset.cwe) { chatReplyTo(m); var ta = $('chatIn'); ta.value = pre; ta.focus(); ta.setSelectionRange(pre.length, pre.length); return; }
-      b.disabled = true;
-      call({ a: 'chat_send', token: state.s.token, room: 'table', text: pre + b.dataset.cwa, reply: m.id }).then(function (x) { if (x.ok) { chatPaint(x, true); flushPush(); } else b.disabled = false; }).catch(function () { b.disabled = false; });
+      b.disabled = true; var wout = /나갔/.test(b.dataset.cwa);   // '나갔어요 (아웃)' 한 번 = 자리 비우기 + 🧹 아웃 청소 (대표 결정 2026-11-20)
+      call({ a: 'chat_send', token: state.s.token, room: 'table', text: pre + b.dataset.cwa, reply: m.id, wout: wout ? 1 : 0 }).then(function (x) { if (x.ok) { chatPaint(x, true); flushPush(); if (wout) loadTb(true); } else b.disabled = false; }).catch(function () { b.disabled = false; });
     }); });
     L.querySelectorAll('[data-copst]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.copst }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else b.disabled = false; }).catch(function () { b.disabled = false; }); }); });
     L.querySelectorAll('[data-chdel]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '✕')) return; call({ a: 'chat_del', token: state.s.token, id: b.dataset.chdel }).then(function (x) { if (x.ok) chatPaint(x, false); }); }); });
