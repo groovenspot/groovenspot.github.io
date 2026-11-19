@@ -550,6 +550,19 @@ mark.hl.cur { background: #ffd60a; color: #120800; box-shadow: 0 0 0 2px rgba(25
 .send { position: sticky; bottom: var(--bbh); display: flex; gap: 8px; align-items: flex-end; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
 .send textarea { flex: 1; min-height: 44px; max-height: 140px; resize: none; font: inherit; color: var(--txt); background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 12px; }
 .send textarea:focus { outline: none; border-color: var(--g); }
+/* 📱 메시지(1:1·그룹) 화면은 폰에서 '지금 보이는 화면'에 딱 맞춘 틀 (2026-11-19 밤): 키보드가 뜨면 아이폰이 페이지를 통째로 위로 밀어 위(이름 줄)가 잘리고 입력칸 아래가 비던 것.
+   틀 = 위 이름 줄 · 가운데 말풍선(여기만 스크롤) · 아래 입력줄. 키보드가 열리면 틀이 키보드 위 보이는 부분만큼 줄어든다(visualViewport → --dmt 위치·--dmh 높이). */
+body.dmfix { overflow: hidden; overscroll-behavior: none; }
+body.dmfix .dmshell { position: fixed; left: 0; right: 0; top: var(--dmt, 0px); height: var(--dmh, 100vh); z-index: 6; display: flex; flex-direction: column; max-width: 760px; margin: 0 auto; padding: 0 16px; background: var(--bg); }
+body.dmfix .dmshell .chead { position: static; flex: none; padding-top: 8px; }
+body.dmfix .dmshell > :not(#dmBox) { flex: none; }
+body.dmfix .dmshell #dmBox { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+body.dmfix .dmshell .send { position: static; }
+body.dmfix.kbd .dmshell .send { padding-bottom: 8px; }
+body.dmfix .dmshell #dMsg:empty { display: none; }
+body.dmfix .dmshell #dMsg { margin: 0 0 6px; }
+body.dmfix.kbd .sosfab, body.dmfix.kbd .chatfab { display: none !important; }
+body.dmfix:not(.kbd) .sosfab { bottom: calc(86px + var(--bbh) + env(safe-area-inset-bottom)); }
 .send .btn-hot { width: auto; min-height: 44px; padding: 0 16px; font-size: 15px; }
 /* 알림·시트 */
 .mebtn { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; background: none; border: 0; padding: 4px 2px; color: inherit; font: inherit; cursor: pointer; text-align: right; }
@@ -2102,7 +2115,26 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
   var COARSE_MQ = window.matchMedia ? window.matchMedia('(pointer: coarse)') : null;
   function kbdEl(el) { return !!el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && /^(text|search|tel|number|password|email|url)$/.test(el.type || 'text'))); }
   document.addEventListener('focusin', function (e) { if (COARSE_MQ && COARSE_MQ.matches && kbdEl(e.target)) document.body.classList.add('kbd'); });
-  document.addEventListener('focusout', function () { setTimeout(function () { if (!kbdEl(document.activeElement)) document.body.classList.remove('kbd'); }, 120); });
+  document.addEventListener('focusout', function () { setTimeout(function () { if (!kbdEl(document.activeElement)) document.body.classList.remove('kbd'); dmFitSoon(); }, 120); });
+  // 📱 메시지 화면 틀을 '지금 보이는 화면'(키보드 위)에 맞춤 (2026-11-19 밤)
+  var DMFIX_OK = !!(window.visualViewport && COARSE_MQ);
+  function dmFixOn() { return DMFIX_OK && COARSE_MQ.matches && state.tab === 'dm' && state.dmView === 'chat' && !!state.dmWith && !state.pop; }
+  var dmFitT = 0;
+  function dmFitSoon() { if (!document.body.classList.contains('dmfix')) return; cancelAnimationFrame(dmFitT); dmFitT = requestAnimationFrame(dmFit); }
+  function dmFit() {
+    var b = document.body; if (!b.classList.contains('dmfix')) return;
+    var vv = window.visualViewport, kb = b.classList.contains('kbd'), box = dmBox();
+    var top = document.querySelector('header.top'), th = kb || !top ? 0 : top.getBoundingClientRect().bottom;
+    var tb = document.querySelector('.tabbar'), bb = 0; if (!kb && tb && getComputedStyle(tb).display !== 'none' && getComputedStyle(tb).position === 'fixed') bb = tb.getBoundingClientRect().height;
+    var low = box ? box.scrollHeight - box.scrollTop - box.clientHeight < 60 : false;   // 맨 아래를 보고 있었으면 줄어든 뒤에도 맨 아래
+    var t = Math.max(0, Math.round(vv.offsetTop + Math.max(0, th))), h = Math.max(160, Math.round(vv.height - Math.max(0, th) - bb));
+    b.style.setProperty('--dmt', t + 'px'); b.style.setProperty('--dmh', h + 'px');
+    if (box && low) box.scrollTop = box.scrollHeight;
+  }
+  if (DMFIX_OK) { window.visualViewport.addEventListener('resize', dmFitSoon); window.visualViewport.addEventListener('scroll', dmFitSoon); window.addEventListener('resize', dmFitSoon); document.addEventListener('focusin', function () { setTimeout(dmFitSoon, 60); setTimeout(dmFitSoon, 350); }); }
+  function dmBox() { return $('dmBox'); }
+  function dmY() { var bx = dmBox(); return document.body.classList.contains('dmfix') && bx ? bx.scrollTop : window.scrollY; }
+  function dmSetY(y) { var bx = dmBox(); if (document.body.classList.contains('dmfix') && bx) bx.scrollTop = y; else window.scrollTo(0, y); }
   function render() {
     var d = state.data; if (!d) return;
     if (d.mustChange && state.s && !state.s.mustChange && !state.pop) { state.s.mustChange = true; save(state.s); return mustChangeView(); }   // 🔑 초기화된 계정 (목록에서 알려 줌)
@@ -2110,6 +2142,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     try { paintChatFab(); } catch (e) {}
     var L = paintTabs(d), edu = L.edu, notes = L.notes;
     var area = $('listArea');
+    document.body.classList.toggle('dmfix', dmFixOn());
     if (state.tab === 'dec') return renderDec(area, d);
     if (state.tab === 'guest') return renderGuest(area, d);
     if (state.tab === 'acc') return renderAcc(area, d);
@@ -3683,7 +3716,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       var lastWho = '', canDel = !c.sysNote, boss = !!(state.data && state.data.admin);
       var delLbl = function (m) { return m.mine || boss ? '🗑 모두에게서 삭제' : '🗑 내 화면에서 삭제'; };
       if (canDel && c.msgs.length && !state.bubTip) h += '<p class="note" style="margin:0 0 4px">💡 말풍선을 누르면 그 메시지를 지울 수 있어요. 내가 보낸 메시지는 상대방 화면에서도 지워져요.</p>';
-      h += '<div class="chat" id="chatBox">' + (c.msgs.length ? c.msgs.map(function (m) {
+      h += '<div class="chat" id="dmBox">' + (c.msgs.length ? c.msgs.map(function (m) {
         var who = grp && !m.mine && m.who !== lastWho ? '<span class="bwho">' + (m.who === '손님 문의' ? '📩 ' : '') + esc(m.who) + nickH(m.who) + '</span>' : ''; lastWho = m.mine ? '' : m.who;
         var tk = '';
         if (m.inq && m.take) tk = '<div class="itk done">✅ <b>' + esc(m.take.by) + nickH(m.take.by) + '</b> 받음 · 담당 ' + esc(m.take.st) + ' · ' + esc(md(m.take.day)) + '(' + dowOf(m.take.day) + ') ' + (m.take.fl === 'SPOT' ? '3층' : '2층') + ' 대기' + (m.take.mine ? ' <button type="button" class="link" data-iun="' + esc(m.id) + '">취소</button>' : '') + '</div>';
@@ -3697,17 +3730,17 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       else if (c.active === false) h += '<p class="note">지금은 메시지를 받을 수 없는 계정이에요.</p>';
       else h += '<form class="send" id="dForm" novalidate><textarea id="dText" rows="1" maxlength="1000" placeholder="메시지"></textarea><button class="btn btn-hot" id="dBtn" type="submit">보내기</button></form><p class="msg" id="dMsg" role="alert"></p>';
     }
-    area.innerHTML = h;
+    area.innerHTML = document.body.classList.contains('dmfix') ? '<div class="dmshell" id="dmShell">' + h + '</div>' : h;
     $('dBack').addEventListener('click', function () { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; state.dmFind = null; render(); loadDm(); startPoll(loadDm, 20000); });
     if ($('gMem')) $('gMem').addEventListener('click', function () { state.grInfo = !state.grInfo; render(); });
     area.querySelectorAll('[data-itake]').forEach(function (b) { b.addEventListener('click', function () { var m = c.msgs.filter(function (x) { return x.id === b.dataset.itake; })[0]; if (m) inqTakeSheet(c, m); }); });
     area.querySelectorAll('[data-bsel]').forEach(function (el) { el.addEventListener('click', function (e) {
       if (e.target.closest('button,a') || (window.getSelection && String(window.getSelection())) ) return;
-      state.keepY = window.scrollY; state.bubSel = state.bubSel === el.dataset.bsel ? '' : el.dataset.bsel; state.bubTip = 1; render();
+      state.keepY = dmY(); state.bubSel = state.bubSel === el.dataset.bsel ? '' : el.dataset.bsel; state.bubTip = 1; render();
     }); });
     area.querySelectorAll('[data-bdel]').forEach(function (b) { b.addEventListener('click', function () {
       if (!armed(b, b.dataset.dlbl)) return;
-      b.disabled = true; var y = window.scrollY;
+      b.disabled = true; var y = dmY();
       call({ a: 'dm_hide', token: state.s.token, with: w, id: b.dataset.bdel }).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
         if (!r.ok) { b.disabled = false; alertMsg(dmHideErr(r)); return; }
@@ -3733,26 +3766,27 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     if ($('gRenB')) $('gRenB').addEventListener('click', function () { gEdit({ title: $('gRen').value.trim() }, function (r) { state.chat = r; render(); }); });
     if ($('gAddB')) $('gAddB').addEventListener('click', function () { var n = $('gAddS').value; if (n) gEdit({ add: [n] }, function (r) { state.chat = r; render(); }); });
     if ($('gLeave')) $('gLeave').addEventListener('click', function () { var b = this; if (!armed(b, '그룹 나가기')) return; gEdit({ leave: true }, function (r) { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; state.dm = r; render(); startPoll(loadDm, 20000); }); });
-    var box = $('chatBox');
-    if (state.keepY != null) { window.scrollTo(0, state.keepY); state.keepY = null; }   // 🗑 말풍선 고르기·지우기는 보던 자리 그대로
-    else { if (box) box.scrollTop = box.scrollHeight; if (box) window.scrollTo(0, document.body.scrollHeight); }
+    var box = $('dmBox');   // (2026-11-19 밤: 예전 id chatBox 는 떠 있는 💬 대화창과 겹쳐서, 대화창 닫기가 이 목록을 숨기던 것)
+    if (document.body.classList.contains('dmfix')) dmFit();
+    if (state.keepY != null) { dmSetY(state.keepY); state.keepY = null; }   // 🗑 말풍선 고르기·지우기는 보던 자리 그대로
+    else { if (box) box.scrollTop = box.scrollHeight; if (box && !document.body.classList.contains('dmfix')) window.scrollTo(0, document.body.scrollHeight); }
     // 🔍 대화 안에서 찾기 (2026-11-19): 칠하고 ▲▼ 로 메시지마다 (처음엔 가장 최근)
     function dfApply(dir, keepScroll) {
       var Fx = state.dmFind; if (!Fx || !$('dfQ')) return;
-      var y = window.scrollY, marks = markHits(area, '.bub .bt', Fx.q);
-      var u = findGo(marks, Fx, '.bub', $('dfN'), $('dfUp'), $('dfDn'), dir, null);
-      if (keepScroll && !u) window.scrollTo(0, y);
+      var y = dmY(), marks = markHits(area, '.bub .bt', Fx.q);
+      var u = findGo(marks, Fx, '.bub', $('dfN'), $('dfUp'), $('dfDn'), dir, document.body.classList.contains('dmfix') ? dmBox() : null);
+      if (keepScroll && !u) dmSetY(y);
       var msg = $('dfMsg');
       if (Fx.jump && c) { var found = c.msgs.some(function (x) { return x.id === Fx.jump; }); msg.hidden = found; if (!found) msg.textContent = '찾은 메시지가 오래돼서 이 화면(최근 200개)에는 안 보여요. 내용은 메시지 검색 결과에서 볼 수 있어요.'; Fx.jump = ''; }
     }
     if (F && c) { dfApply(0); if (hadF && $('dfQ')) { var fq = $('dfQ'); fq.focus(); try { fq.setSelectionRange(fq.value.length, fq.value.length); } catch (e) {} } }
-    $('dFindB').addEventListener('click', function () { state.dmFind = state.dmFind ? null : { q: '', i: -1, id: '' }; state.keepY = window.scrollY; render(); if (state.dmFind && $('dfQ')) $('dfQ').focus(); else markHits(area, '.bub .bt', ''); });
+    $('dFindB').addEventListener('click', function () { state.dmFind = state.dmFind ? null : { q: '', i: -1, id: '' }; state.keepY = dmY(); render(); if (state.dmFind && $('dfQ')) $('dfQ').focus(); else markHits(area, '.bub .bt', ''); });
     if ($('dfQ')) {
       $('dfQ').addEventListener('input', function () { state.dmFind.q = this.value; state.dmFind.id = ''; state.dmFind.i = -1; $('dfMsg').hidden = true; dfApply(0, true); });
       $('dfQ').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); dfApply(-1); } if (e.key === 'Escape') $('dfX').click(); });
       $('dfUp').addEventListener('click', function () { dfApply(-1); });
       $('dfDn').addEventListener('click', function () { dfApply(1); });
-      $('dfX').addEventListener('click', function () { state.dmFind = null; state.keepY = window.scrollY; render(); });
+      $('dfX').addEventListener('click', function () { state.dmFind = null; state.keepY = dmY(); render(); });
     }
     var f = $('dForm'); if (!f) return;
     var ta = $('dText'); ta.value = state.dmDraft[w] || '';
