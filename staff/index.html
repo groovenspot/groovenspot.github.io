@@ -547,6 +547,42 @@ mark.hl.cur { background: #ffd60a; color: #120800; box-shadow: 0 0 0 2px rgba(25
 .bub.me { align-self: flex-end; text-align: right; }
 .bub.me .bt { background: var(--g); border-color: var(--g); color: #120800; border-radius: 16px 16px 4px 16px; text-align: left; }
 .bub .bat { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+/* ✉️ 메시지 ↩️ 꾹 눌러 답장 · 📣 @태그 · 📷🎬 (2026-11-19 밤, 💬 대화창과 같게) */
+.bub .bt .brep { display: block; width: 100%; min-height: 0; margin: 0 0 6px; padding: 0 0 6px; border: 0; border-bottom: 1px solid rgba(255,255,255,.18); border-radius: 0; background: none; color: inherit; font: inherit; font-size: 13px; line-height: 1.35; text-align: left; cursor: pointer; white-space: normal; }
+.bub.me .bt .brep { border-bottom-color: rgba(0,0,0,.2); }
+.bub .bt .brep b { display: block; font-size: 12px; }
+.bub .bt .brep span { display: block; opacity: .8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
+.bub .bt b.at { color: #7cc0ff; font-weight: 800; }
+.bub.me .bt b.at { color: #3a1d00; text-decoration: underline; }
+.bub.pressing .bt, .bub.pressing .cph { opacity: .7; }
+.bub.flash .bt { outline: 2px solid var(--ok); outline-offset: 2px; }
+.bub .cph { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 0; max-width: 260px; }
+.bub.me .cph { justify-content: flex-end; margin-left: auto; }
+.bub .cph img { width: 124px; height: 124px; object-fit: cover; border-radius: 12px; background: #000; cursor: zoom-in; }
+.bub .cph video { width: 252px; max-width: 100%; max-height: 320px; border-radius: 12px; background: #000; }
+.bub .cph .cvid { width: auto; min-height: 40px; padding: 0 14px; font-size: 14px; }
+.bub .cphi { position: relative; display: inline-block; }
+.bub .csave { position: absolute; right: 5px; bottom: 5px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 15px; cursor: pointer; }
+.bub .cphv { display: grid; gap: 2px; justify-items: end; }
+.bub .csavev { font-size: 13px; padding: 4px 2px; }
+@media (pointer: coarse) { .bub .bt, .bub .cph { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; } }   /* 폰: 꾹 누르기 = 메뉴 (📋 복사) */
+#dForm { flex-wrap: wrap; }
+#dForm > .dmat, #dForm > .dmrep, #dForm > .dmph { flex: 0 0 100%; min-width: 0; }
+#dForm textarea { min-width: 0; }
+#dForm .dpic { width: 44px; height: 44px; }
+.dmat { display: flex; flex-wrap: wrap; gap: 6px; max-height: 96px; overflow-y: auto; }
+.dmat button { min-height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid var(--line-2); background: none; color: var(--txt); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.dmat button:first-child { border-color: var(--g); color: var(--g); }
+.dmrep { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--card); font-size: 13px; }
+.dmrep div { flex: 1; min-width: 0; }
+.dmrep b { display: block; font-size: 12px; color: var(--g); }
+.dmrep span { display: block; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dmrep button { flex: none; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 10px; background: rgba(255,255,255,.08); color: var(--txt); font: inherit; cursor: pointer; }
+#dForm > .dmph { padding: 0; border-top: 0; }
+html:where([data-theme="light"]) .bub .bt b.at { color: #0b5cad; }
+html:where([data-theme="light"]) .bub .bt .brep { border-bottom-color: rgba(0,0,0,.14); }
+html:where([data-theme="light"]) .dmrep b, html:where([data-theme="light"]) .dmat button:first-child { color: var(--g-ink); }
+html:where([data-theme="light"]) .dmrep button { background: rgba(0,0,0,.07); }
 .send { position: sticky; bottom: var(--bbh); display: flex; gap: 8px; align-items: flex-end; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
 .send textarea { flex: 1; min-height: 44px; max-height: 140px; resize: none; font: inherit; color: var(--txt); background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 12px; }
 .send textarea:focus { outline: none; border-color: var(--g); }
@@ -1627,7 +1663,7 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     L.insertAdjacentHTML('beforeend', its.map(function (it) { return '<div class="cm me oqm"><p>' + esc(it.b.text || (it.b.photos ? '📷 사진' : '')) + '</p><small class="oqs">' + OQ_PEND + '</small></div>'; }).join(''));
     L.scrollTop = L.scrollHeight;
   }
-  function oqBubH(w) { return oqItems().filter(function (it) { return it.b && it.b.a === 'dm_send' && it.b.to === w; }).map(function (it) { return '<div class="bub me oqm" data-oqc="' + esc(it.cid) + '"><div class="bt">' + esc(it.b.text) + '</div><span class="bat">' + OQ_PEND + '</span></div>'; }).join(''); }
+  function oqBubH(w) { return oqItems().filter(function (it) { return it.b && it.b.a === 'dm_send' && it.b.to === w; }).map(function (it) { return '<div class="bub me oqm" data-oqc="' + esc(it.cid) + '"><div class="bt">' + esc(it.b.text || (it.b.videos && it.b.videos.length ? '🎬 영상' : it.b.photos && it.b.photos.length ? '📷 사진' : '')) + '</div><span class="bat">' + OQ_PEND + '</span></div>'; }).join(''); }
   function oqPostH(t) { return oqItems().filter(function (it) { return it.b && it.b.a === 'post' && it.b.team === t; }).map(function (it) { return '<div class="list" style="margin-bottom:8px"><div class="pitem sending"><span class="pt"><strong>' + esc(it.b.title || String(it.b.text || '').split('\n')[0].slice(0, 40)) + '</strong></span><span class="row">' + OQ_PEND + '</span></div></div>'; }).join(''); }
   function oqCmtH(pid) { return oqItems().filter(function (it) { return it.b && it.b.a === 'cmt_add' && it.b.post === pid; }).map(function (it) { return '<div class="cmt mine oqm"><div class="ch"><strong>' + esc(state.s.name) + '</strong>' + OQ_PEND + '</div><div class="ctx">' + esc(it.b.text) + '</div></div>'; }).join(''); }
   window.addEventListener('online', function () { setTimeout(oqFlush, 800); });
@@ -2355,6 +2391,9 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
       ]) +
       sec('✉️ 메시지 · 👥 그룹 · 🙋 손님 문의', [
         '1:1 메시지 + <b>그룹 만들기</b>(2명 이상 골라서) · 그룹 이름 바꾸기·멤버 넣기·나가기 · 보낸 사람·읽음 수 표시',
+        '<b>↩️ 답장</b>: 말풍선을 <b>꾹 누르면</b>(PC는 오른쪽 클릭) <b>↩️ 답장 · 📋 복사</b> → 입력칸 위 답장 줄 · 말풍선의 인용을 누르면 원래 메시지로',
+        '<b>📣 @태그</b>: <b>@</b>를 치면 이름(성 빼고)·초성·닉네임으로 골라요 · 👥 그룹에서 불린 사람은 알림이 <b>📣 호출</b>로 와요',
+        '<b>📷 사진·🎬 영상</b>: 입력줄 왼쪽 📷 (사진 3장·영상 2개, 큰 영상은 줄여서) · 그 대화 사람만 볼 수 있어요 · 영상은 3일 보관',
         '<b>🗑 지우기</b>: 말풍선을 누르면 <b>🗑 모두에게서 삭제</b>(내 메시지) · <b>🗑 내 화면에서 삭제</b>(남의 메시지) · 목록 위 <b>🗑 대화 삭제</b> → 1:1은 나와 상대방 화면 모두에서, 👥 그룹은 만든 사람·대표가 지우면 모두에게서 (손님 문의 방은 못 지움)',
         '홈페이지 예약 문의는 영업팀 팀장들의 <b>손님 문의</b> 그룹방으로 와요',
         '팀장이 <b>제가 받을게요</b> → 날짜·손님 이름·인원·층·담당 MD를 정하면 <b>테이블 대기</b>에 들어가고 담당에게 알림 · 다른 팀장에게는 <b>받음</b>으로 보여요'
@@ -3733,28 +3772,38 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     else {
       var lastWho = '', canDel = !c.sysNote, boss = !!(state.data && state.data.admin);
       var delLbl = function (m) { return m.mine || boss ? '🗑 모두에게서 삭제' : '🗑 내 화면에서 삭제'; };
-      if (canDel && c.msgs.length && !state.bubTip) h += '<p class="note" style="margin:0 0 4px">💡 말풍선을 누르면 그 메시지를 지울 수 있어요. 내가 보낸 메시지는 상대방 화면에서도 지워져요.</p>';
+      var me0 = c.me || (state.s && state.s.name) || '';
+      if (canDel && c.msgs.length && !state.bubTip) h += '<p class="note" style="margin:0 0 4px">💡 말풍선을 누르면 지우기(내 메시지는 상대방 화면에서도) · <b>꾹 누르면 ↩️ 답장·📋 복사</b> · <b>@</b>로 이름 부르기</p>';
       h += '<div class="chat" id="dmBox">' + (c.msgs.length ? c.msgs.map(function (m) {
         var who = grp && !m.mine && m.who !== lastWho ? '<span class="bwho">' + (m.who === '손님 문의' ? '📩 ' : '') + esc(m.who) + nickH(m.who) + '</span>' : ''; lastWho = m.mine ? '' : m.who;
         var tk = '';
         if (m.inq && m.take) tk = '<div class="itk done">✅ <b>' + esc(m.take.by) + nickH(m.take.by) + '</b> 받음 · 담당 ' + esc(m.take.st) + ' · ' + esc(md(m.take.day)) + '(' + dowOf(m.take.day) + ') ' + (m.take.fl === 'SPOT' ? '3층' : '2층') + ' 대기' + (m.take.mine ? ' <button type="button" class="link" data-iun="' + esc(m.id) + '">취소</button>' : '') + '</div>';
         else if (m.inq && c.take && c.take.can) tk = '<div class="itk"><button type="button" class="btn btn-hot" data-itake="' + esc(m.id) + '">🙋 제가 받을게요</button></div>';
         var sel = canDel && state.bubSel === m.id;   // 🗑 메시지 하나 지우기 (2026-11-19): 말풍선을 누르면 삭제 버튼
-        return '<div class="bub' + (m.mine ? ' me' : '') + (m.who === '손님 문의' ? ' inqm' : '') + (sel ? ' sel' : '') + '" data-mid="' + esc(m.id) + '"' + (canDel ? ' data-bsel="' + esc(m.id) + '"' : '') + '>' + who + '<div class="bt">' + esc(m.text) + '</div>' + tk + '<span class="bat">' + esc(m.at.slice(5)) + (grp ? (m.mine && m.seen ? ' · 읽음 ' + m.seen : '') : (m.mine && m.read ? ' · 읽음' : '')) + '</span>' +
+        // ↩️ 답장 인용(누르면 원래 메시지로) · 📣 @이름 굵게 · 📷🎬 (2026-11-19 밤)
+        var rq = m.rep ? '<button type="button" class="brep" data-goto="' + esc(m.rep.id) + '"><b>↩️ ' + (key(m.rep.who) === key(me0) ? '나' : esc(m.rep.who)) + '에게 답장</b><span>' + esc(m.rep.text) + '</span></button>' : '';
+        var hasMd = (m.photos && m.photos.length) || (m.videos && m.videos.length);
+        return '<div class="bub' + (m.mine ? ' me' : '') + (m.who === '손님 문의' ? ' inqm' : '') + (sel ? ' sel' : '') + '" data-mid="' + esc(m.id) + '"' + (canDel ? ' data-bsel="' + esc(m.id) + '"' : '') + '>' + who + (m.text || rq || !hasMd ? '<div class="bt">' + rq + chatText(m) + '</div>' : '') + (hasMd ? chatMedia(m) : '') + tk + '<span class="bat">' + esc(m.at.slice(5)) + (grp ? (m.mine && m.seen ? ' · 읽음 ' + m.seen : '') : (m.mine && m.read ? ' · 읽음' : '')) + '</span>' +
           (sel ? '<button type="button" class="btn btn-bad bdel" data-bdel="' + esc(m.id) + '" data-dlbl="' + delLbl(m) + '">' + delLbl(m) + '</button>' : '') + '</div>';
       }).join('') : '<p class="empty">첫 메시지를 보내 보세요.</p>') + oqBubH(w) + '</div>';
       if (c.sysNote) h += '<p class="note">📩 인스타·홈페이지 등으로 들어온 손님 문의가 영업팀 팀장 모두에게 동시에 와요. \'🙋 제가 받을게요\'를 누르면 담당이 정해지고 그 날짜 테이블 대기에 바로 올라가요. 손님에게는 연락처로 직접 연락해 주세요.</p>';
       if (c.system) h += '<p class="note">📩 홈페이지·인스타로 들어온 손님 문의를 자동으로 전달한 메시지예요. 손님 연락처로 직접 연락해 주세요. (여기에는 답장할 수 없어요)</p>';
       else if (c.active === false) h += '<p class="note">지금은 메시지를 받을 수 없는 계정이에요.</p>';
-      else h += '<form class="send" id="dForm" novalidate><textarea id="dText" rows="1" maxlength="1000" placeholder="메시지"></textarea><button class="btn btn-hot" id="dBtn" type="submit">보내기</button></form><p class="msg" id="dMsg" role="alert"></p>';
+      else h += '<form class="send" id="dForm" novalidate><div class="dmat" id="dAt" hidden></div><div class="dmrep" id="dRep" hidden></div><div class="chatph dmph" id="dPh" hidden></div>' +
+        '<label class="chatpic dpic" aria-label="사진·영상 올리기" title="사진·영상">📷<input type="file" id="dFile" accept="image/*,video/*" multiple hidden></label>' +
+        '<textarea id="dText" rows="1" maxlength="1000" placeholder="' + (grp ? '메시지 · @이름 부르기' : '메시지') + '"></textarea><button class="btn btn-hot" id="dBtn" type="submit">보내기</button></form><p class="msg" id="dMsg" role="alert"></p>';
     }
     area.innerHTML = document.body.classList.contains('dmfix') ? '<div class="dmshell" id="dmShell">' + h + '</div>' : h;
     if ($('dSos')) { $('dSos').addEventListener('click', function () { if (state.s) sosForm(); }); sosLift(); }   // 🚨 (폰: 떠 있는 동그라미 대신 이름 줄)
-    $('dBack').addEventListener('click', function () { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; state.dmFind = null; render(); loadDm(); startPoll(loadDm, 20000); });
+    $('dBack').addEventListener('click', function () { stopPoll(); dmMenuClose(); state.dmRep = null; dmMdReset(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; state.dmFind = null; render(); loadDm(); startPoll(loadDm, 20000); });
+    if (state.dmMenuW && state.dmMenuW !== w) dmMenuClose();
+    if (state.dmMd && state.dmMd.w !== w) dmMdReset();
+    if (state.dmRep && state.dmRep.w !== w) state.dmRep = null;
     if ($('gMem')) $('gMem').addEventListener('click', function () { state.grInfo = !state.grInfo; render(); });
     area.querySelectorAll('[data-itake]').forEach(function (b) { b.addEventListener('click', function () { var m = c.msgs.filter(function (x) { return x.id === b.dataset.itake; })[0]; if (m) inqTakeSheet(c, m); }); });
     area.querySelectorAll('[data-bsel]').forEach(function (el) { el.addEventListener('click', function (e) {
-      if (e.target.closest('button,a') || (window.getSelection && String(window.getSelection())) ) return;
+      if (e.target.closest('button,a,img,video') || (window.getSelection && String(window.getSelection())) ) return;
+      if (Date.now() - (state.dmPressUp || 0) < 600 || Date.now() - (state.dmMenuShut || 0) < 400) return;   // 꾹 누르고 뗀 뒤·메뉴 닫는 누르기는 고르기 아님
       state.keepY = dmY(); state.bubSel = state.bubSel === el.dataset.bsel ? '' : el.dataset.bsel; state.bubTip = 1; render();
     }); });
     area.querySelectorAll('[data-bdel]').forEach(function (b) { b.addEventListener('click', function () {
@@ -3788,7 +3837,24 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     var box = $('dmBox');   // (2026-11-19 밤: 예전 id chatBox 는 떠 있는 💬 대화창과 겹쳐서, 대화창 닫기가 이 목록을 숨기던 것)
     if (document.body.classList.contains('dmfix')) dmFit();
     if (state.keepY != null) { dmSetY(state.keepY); state.keepY = null; }   // 🗑 말풍선 고르기·지우기는 보던 자리 그대로
-    else { if (box) box.scrollTop = box.scrollHeight; if (box && !document.body.classList.contains('dmfix')) window.scrollTo(0, document.body.scrollHeight); }
+    else { if (box) box.scrollTop = box.scrollHeight; if (box && !document.body.classList.contains('dmfix')) window.scrollTo(0, document.body.scrollHeight); state.dmStick = Date.now(); }
+    // 📷🎬 말풍선 사진·영상 (💬 대화창과 같은 길: 눌러서 크게·⬇️ 저장·🎬 영상 보기) — 사진이 늦게 뜨면 맨 아래 그대로
+    if (box && c) {
+      hydrateImgs(box);
+      box.querySelectorAll('img, video').forEach(function (el) { var st = function () { if (Date.now() - (state.dmStick || 0) < 8000) { if (document.body.classList.contains('dmfix')) box.scrollTop = box.scrollHeight; else window.scrollTo(0, document.body.scrollHeight); } }; el.addEventListener('load', st); el.addEventListener('loadedmetadata', st); });
+      box.querySelectorAll('.cph img[data-img]').forEach(function (im) { im.addEventListener('click', function () { if (im.src) photoView(im.dataset.img, im.src); }); });
+      box.querySelectorAll('[data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
+      box.querySelectorAll('[data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
+      box.querySelectorAll('[data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { if (state.dmWith === w) { state.keepY = dmY(); render(); } }); }); });
+      // ↩️ 꾹 누르기(0.45초) 또는 오른쪽 클릭 → 답장·복사 메뉴
+      var canRep = !!(!c.system && c.active !== false);
+      box.querySelectorAll('.bub[data-mid] > .bt, .bub[data-mid] > .cph').forEach(function (el) { var m = c.msgs.filter(function (x) { return x.id === el.parentNode.dataset.mid; })[0]; if (m) dmPress(el, m, canRep, w); });
+      box.querySelectorAll('.brep[data-goto]').forEach(function (q) { q.addEventListener('click', function (e) {
+        e.stopPropagation(); var id = q.dataset.goto, t = /^[-\w]+$/.test(id) ? box.querySelector('.bub[data-mid="' + id + '"]') : null;
+        if (!t) return dmNote('원래 메시지가 오래됐거나 지워져서 이 화면에는 없어요.');
+        t.scrollIntoView({ block: 'center', behavior: 'smooth' }); t.classList.add('flash'); setTimeout(function () { t.classList.remove('flash'); }, 1400);
+      }); });
+    }
     // 🔍 대화 안에서 찾기 (2026-11-19): 칠하고 ▲▼ 로 메시지마다 (처음엔 가장 최근)
     function dfApply(dir, keepScroll) {
       var Fx = state.dmFind; if (!Fx || !$('dfQ')) return;
@@ -3809,19 +3875,125 @@ html:where([data-theme="light"]) .oqbar { background: #fff4dd; color: #6b3d00; }
     }
     var f = $('dForm'); if (!f) return;
     var ta = $('dText'); ta.value = state.dmDraft[w] || '';
-    ta.addEventListener('input', function () { state.dmDraft[w] = ta.value; ta.style.height = 'auto'; ta.style.height = Math.min(140, ta.scrollHeight) + 'px'; });
+    // 📣 @태그: 그룹은 멤버(나 빼고), 1:1 은 상대 한 명 — 이름(성 빼고)·초성·닉네임 (💬 대화창 chatAtPaint 와 같은 찾기)
+    var atList = grp ? (c.members || []).filter(function (n) { return key(n) !== key(me0); }) : [c.with || w];
+    function atPaint() {
+      var bx = $('dAt'); if (!bx) return;
+      var mm = ta.value.slice(0, ta.selectionStart).match(/@([^\s@]{0,12})$/), was = !bx.hidden;
+      var list = mm && atList.length ? (mm[1] ? staffFind(atList, mm[1], me0) : atList.slice()).slice(0, 30) : [];
+      bx.hidden = !list.length;
+      bx.innerHTML = list.map(function (n) { return '<button type="button" data-dat="' + esc(n) + '">@' + esc(n) + nickH(n) + '</button>'; }).join('');
+      bx.querySelectorAll('[data-dat]').forEach(function (b) { b.addEventListener('mousedown', function (e) { e.preventDefault(); }); b.addEventListener('click', function () {
+        var pos = ta.selectionStart, pre = ta.value.slice(0, pos).replace(/@([^\s@]{0,12})$/, '@' + b.dataset.dat + ' ');
+        ta.value = pre + ta.value.slice(pos); state.dmDraft[w] = ta.value; ta.focus(); ta.setSelectionRange(pre.length, pre.length); bx.hidden = true; dmFitSoon();
+      }); });
+      if (was !== !bx.hidden) dmFitSoon();
+    }
+    ta.addEventListener('input', function () { state.dmDraft[w] = ta.value; ta.style.height = 'auto'; ta.style.height = Math.min(140, ta.scrollHeight) + 'px'; atPaint(); });
+    ta.addEventListener('click', atPaint); ta.addEventListener('keyup', function (e) { if (/^Arrow|^Home$|^End$/.test(e.key)) atPaint(); });
+    // ↩️ 답장 줄 · 📷🎬 고른 것 (다시 그려도 남게 state 에)
+    dmRepPaint(); dmMdPaint();
+    $('dFile').addEventListener('change', function () {
+      var all = Array.prototype.slice.call(this.files || []); this.value = '';
+      var M = dmMdOf(w), ims = all.filter(function (x) { return !ycIsVideo(x); });
+      if (ims.length > 3 - M.photos.length) dmNote('사진은 한 번에 3장까지예요.');
+      ims = ims.slice(0, Math.max(0, 3 - M.photos.length));
+      all.filter(ycIsVideo).forEach(function (x) {
+        if (M.vids.length >= 2) return dmNote('영상은 2개까지예요.');
+        if (vidTooBig(x)) return dmNote(vidSizeMsg(x));
+        var v = { file: x, size: x.size, prog: 0, vid: '', done: false, err: '' }; M.vids.push(v); vidPrep(v, dmMdPaint);
+        if (v.squeeze) dmNote('큰 영상은 줄여서 올려요. 영상 길이만큼 걸리니 이 화면을 켜 두세요.', true);
+      });
+      dmMdPaint();
+      if (ims.length) Promise.all(ims.map(shrink)).then(function (xs) { if (state.dmMd !== M) return; M.photos = M.photos.concat(xs).slice(0, 3); dmMdPaint(); }).catch(function () { dmNote('사진을 못 읽었어요.'); });
+    });
     ta.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && window.matchMedia('(pointer:fine)').matches) { e.preventDefault(); f.requestSubmit ? f.requestSubmit() : $('dBtn').click(); } });
     f.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      var text = ta.value.trim(); if (!text) return ta.focus();
-      $('dBtn').disabled = true; $('dMsg').textContent = '';
-      call({ a: 'dm_send', token: state.s.token, to: w, text: text }, { q: 1, m: { title: grp ? gtitle : '' } }).then(function (r) {
+      var text = ta.value.trim(), M = dmMdOf(w), btn = $('dBtn'); if (!text && !M.photos.length && !M.vids.length) return ta.focus();
+      if (btn.disabled) return;
+      if (M.vids.some(function (v) { return v.err; })) return dmNote('올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.');
+      if (M.vids.some(function (v) { return !v.done; })) {   // 영상이 다 올라가면 바로 보냄
+        btn.disabled = true; dmNote('영상 올리는 중이에요… 다 올라가면 바로 보내요.', true);
+        var tw = setInterval(function () { var b2 = $('dBtn'), f2 = $('dForm'); if (state.dmMd !== M || !b2 || !f2) { clearInterval(tw); if (b2) b2.disabled = false; return; } if (M.vids.some(function (v) { return v.err; })) { clearInterval(tw); b2.disabled = false; dmNote('영상을 못 올렸어요. 다시 넣어 주세요.'); } else if (M.vids.every(function (v) { return v.done; })) { clearInterval(tw); b2.disabled = false; f2.requestSubmit ? f2.requestSubmit() : b2.click(); } }, 500);
+        return;
+      }
+      btn.disabled = true; $('dMsg').textContent = '';
+      var body = { a: 'dm_send', token: state.s.token, to: w, text: text }, rp = state.dmRep && state.dmRep.w === w ? state.dmRep : null;
+      if (M.photos.length) body.photos = M.photos.map(function (x) { return { type: x.type, data: x.data }; });
+      if (M.vids.length) body.videos = M.vids.map(function (v) { return v.vid; });
+      if (rp) body.reply = rp.id;
+      var sent = function () { state.dmDraft[w] = ''; if (state.dmRep === rp) state.dmRep = null; if (state.dmMd === M) state.dmMd = null; };
+      call(body, { q: 1, m: { title: grp ? gtitle : '' } }).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
-        if (r.queued) { state.dmDraft[w] = ''; $('dBtn').disabled = false; render(); if ($('dText')) $('dText').focus(); return; }   // 📶 말풍선 '보내는 중'
-        if (!r.ok) { $('dMsg').textContent = bErr(r); $('dBtn').disabled = false; return; }
-        state.dmDraft[w] = ''; state.chat = r; render(); flushPush(); if ($('dText')) $('dText').focus();
-      }).catch(function () { $('dMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; $('dBtn').disabled = false; });
+        if (r.queued) { sent(); if ($('dBtn')) $('dBtn').disabled = false; render(); if ($('dText')) $('dText').focus(); return; }   // 📶 말풍선 '보내는 중'
+        if (!r.ok) {
+          if (r.error === 'reply' && state.dmRep === rp) { state.dmRep = null; dmRepPaint(); }
+          if ($('dMsg')) $('dMsg').textContent = r.error === 'video' ? '영상을 다시 올려 주세요.' : r.error === 'photo' ? '사진은 jpg·png 3장까지예요.' : r.error === 'reply' ? '답장할 메시지가 지워졌어요. 그냥 다시 보내 주세요.' : bErr(r);
+          if ($('dBtn')) $('dBtn').disabled = false; return;
+        }
+        sent(); state.chat = r; render(); flushPush(); if ($('dText')) $('dText').focus();
+        var lm = r.msgs && r.msgs[r.msgs.length - 1]; if (grp && lm && lm.mine && lm.at2 && lm.at2.length) dmNote('📣 ' + lm.at2.join(', ') + '님에게 알림을 보냈어요.', true);
+      }).catch(function () { if ($('dMsg')) $('dMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; if ($('dBtn')) $('dBtn').disabled = false; });
     });
+  }
+  // ── ✉️ 메시지: ↩️ 꾹 눌러 답장 · 📋 복사 · 📷🎬 고른 것 (대표 요청 2026-11-19 밤 "대화창처럼") ──
+  function dmNote(t, good) { var m = $('dMsg'); if (!m) return alertMsg(t); m.textContent = t; m.style.color = good ? 'var(--ok)' : ''; clearTimeout(state.dmNoteT); state.dmNoteT = setTimeout(function () { if (m.textContent === t) { m.textContent = ''; m.style.color = ''; } }, 4000); }
+  function dmPress(el, m, canRep, w) {
+    var t = null, x0 = 0, y0 = 0, fired = false, bub = el.parentNode;
+    function cancel() { if (t) { clearTimeout(t); t = null; } bub.classList.remove('pressing'); }
+    el.addEventListener('touchstart', function (e) { fired = false; if (e.touches.length !== 1) return cancel(); var p = e.touches[0]; x0 = p.clientX; y0 = p.clientY; cancel(); bub.classList.add('pressing'); t = setTimeout(function () { t = null; fired = true; bub.classList.remove('pressing'); dmMenu(m, el, canRep, w); }, 450); }, { passive: true });
+    el.addEventListener('touchmove', function (e) { var p = e.touches[0]; if (Math.abs(p.clientX - x0) > 10 || Math.abs(p.clientY - y0) > 10) cancel(); }, { passive: true });
+    el.addEventListener('touchend', function (e) { cancel(); if (fired) { fired = false; state.dmPressUp = Date.now(); if (e.cancelable) e.preventDefault(); } });   // 꾹 누른 뒤 손을 떼도 '누르기'(고르기)가 되지 않게
+    el.addEventListener('touchcancel', cancel);
+    el.addEventListener('contextmenu', function (e) { e.preventDefault(); dmMenu(m, el, canRep, w); });
+  }
+  function dmMenu(m, el, canRep, w) {
+    if (Date.now() - (state.dmMenuAt || 0) < 700) return; state.dmMenuAt = Date.now();
+    try { if (navigator.vibrate) navigator.vibrate(15); } catch (e) {}
+    var box = $('dmMenu'); if (!box) { box = document.createElement('div'); box.className = 'cmenu dmmenu'; box.id = 'dmMenu'; box.setAttribute('role', 'menu'); box.hidden = true; document.body.appendChild(box); }
+    box.innerHTML = (canRep ? '<button type="button" data-dmr="1">↩️ 답장</button>' : '') + (m.text ? '<button type="button" data-dmc="1">📋 복사</button>' : '');
+    if (!box.innerHTML) return;
+    box.hidden = false; state.dmMenuW = w;
+    var r = el.getBoundingClientRect(), bw = box.offsetWidth, bh = box.offsetHeight, top = r.top - bh - 6;
+    if (top < 8) top = r.bottom + 6;
+    box.style.top = Math.max(8, Math.min(window.innerHeight - bh - 8, top)) + 'px';
+    box.style.left = Math.max(8, Math.min(window.innerWidth - bw - 8, (m.mine ? r.right - bw : r.left))) + 'px';
+    if (box.querySelector('[data-dmr]')) box.querySelector('[data-dmr]').addEventListener('click', function () { dmMenuClose(); dmReplyTo(m, w); });
+    if (box.querySelector('[data-dmc]')) box.querySelector('[data-dmc]').addEventListener('click', function () { dmMenuClose(); dmCopy(m.text); });
+    setTimeout(function () { document.addEventListener('touchstart', dmMenuOut, { passive: true }); document.addEventListener('mousedown', dmMenuOut); var bx = dmBox(); if (bx) bx.addEventListener('scroll', dmMenuClose, { once: true }); window.addEventListener('scroll', dmMenuClose, { once: true, passive: true }); }, 0);
+  }
+  function dmMenuOut(e) { var b = $('dmMenu'); if (b && !b.contains(e.target)) { state.dmMenuShut = Date.now(); dmMenuClose(); } }
+  function dmMenuClose() { var b = $('dmMenu'); if (b) b.hidden = true; state.dmMenuW = ''; document.removeEventListener('touchstart', dmMenuOut); document.removeEventListener('mousedown', dmMenuOut); }
+  function dmCopy(t) {
+    var done = function () { dmNote('📋 복사했어요.', true); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () {}); else { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); done(); } catch (e) {} a.remove(); }
+  }
+  function dmReplyTo(m, w) {
+    var c = state.chat || {}, me = c.me || (state.s && state.s.name) || '';
+    state.dmRep = m ? { w: w, id: m.id, who: m.mine ? me : (m.who || c.with || w), mine: !!m.mine, text: m.text || (m.videos && m.videos.length ? '🎬 영상' : m.photos && m.photos.length ? '📷 사진' : '') } : null;
+    dmRepPaint();
+    var ta = $('dText'); if (ta && m) ta.focus();
+  }
+  function dmRepPaint() {
+    var bar = $('dRep'); if (!bar) return;
+    var r = state.dmRep && state.dmRep.w === state.dmWith ? state.dmRep : null, was = !bar.hidden;
+    bar.hidden = !r;
+    bar.innerHTML = r ? '<div><b>↩️ ' + (r.mine ? '내 메시지에 답장' : esc(r.who) + '에게 답장') + '</b><span>' + esc(r.text) + '</span></div><button type="button" id="dRepX" aria-label="답장 취소">✕</button>' : '';
+    if (r) $('dRepX').addEventListener('click', function () { state.dmRep = null; dmRepPaint(); var ta = $('dText'); if (ta) ta.focus(); });
+    if (was !== !!r) dmFitSoon();
+  }
+  function dmMdOf(w) { if (!state.dmMd || state.dmMd.w !== w) { dmMdReset(); state.dmMd = { w: w, photos: [], vids: [] }; } return state.dmMd; }
+  function dmMdReset() { if (state.dmMd) state.dmMd.vids.forEach(function (v) { v.gone = true; }); state.dmMd = null; }
+  function dmMdPaint() {
+    var bx = $('dPh'); if (!bx) return;
+    var M = state.dmMd && state.dmMd.w === state.dmWith ? state.dmMd : { photos: [], vids: [] }, was = !bx.hidden;
+    bx.hidden = !M.photos.length && !M.vids.length;
+    bx.innerHTML = M.photos.map(function (x, i) { return '<span class="ph"><img src="' + x.url + '" alt=""><button type="button" data-dprm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
+      M.vids.map(function (v, i) { return '<span class="ph' + (v.err ? ' bad' : '') + '">🎬<b>' + vidBadge(v) + '</b><button type="button" data-dvrm="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('');
+    bx.querySelectorAll('[data-dprm]').forEach(function (b) { b.addEventListener('click', function () { M.photos.splice(+b.dataset.dprm, 1); dmMdPaint(); }); });
+    bx.querySelectorAll('[data-dvrm]').forEach(function (b) { b.addEventListener('click', function () { var v = M.vids.splice(+b.dataset.dvrm, 1)[0]; if (v) v.gone = true; dmMdPaint(); }); });
+    if (was !== !bx.hidden) dmFitSoon();
   }
 
   // ── 킵 장부 (대표·팀장) ─────────────────────────────
