@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<script>if(location.protocol==='http:'&&!/^(localhost|127\.|\[)/.test(location.hostname))location.replace('https:'+location.href.slice(5))</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101014">
+<title>내 페이지 · Groove &amp; Spot</title>
+<meta name="description" content="그루브앤스팟에 맡기신 술과 내 정보를 확인하는 페이지예요.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Groove & Spot">
+<meta property="og:title" content="🪩 내 페이지 · Groove &amp; Spot">
+<meta property="og:description" content="맡기신 술·보관 기간과 내 정보를 확인하세요.">
+<meta property="og:image" content="https://xn--2i0bl1s25d.site/assets/og.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/icon.png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..900&family=Black+Han+Sans&family=Dela+Gothic+One&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="/assets/site.css?v=mwnlj9j6">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&display=swap">
+<link rel="stylesheet" href="/assets/shell.css?v=mwnlj9j6">
+<style>
+/* 손님 '내 페이지' (1단계): 4자리 본인 확인 → 멤버 카드 · 내 킵 · 내 정보 */
+.me-phead { padding-top: 32px; }
+.me-phead h1 { font-size: clamp(32px, 8vw, 56px); }
+#me { padding-top: 24px; display: grid; gap: 28px; max-width: 640px; margin-left: 0; }
+.me-box { border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); padding: 20px 18px; }
+.me-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 18px; font-weight: 800; margin: 0 0 10px; }
+.me-h small { font-size: 14px; color: var(--muted); font-weight: 700; }
+.me-note { margin: 10px 0 0; font-size: 13px; color: var(--muted); line-height: 1.55; }
+.me-note a { color: inherit; }
+.me-msg { min-height: 1.4em; margin: 10px 0 0; font-size: 14px; font-weight: 700; color: #ff8a9d; }
+.me-msg.ok { color: #7be0a4; }
+.me-empty { border: 1px dashed var(--line-2); border-radius: var(--radius); padding: 28px 20px; text-align: center; color: var(--muted); margin: 0; }
+.me-act { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.me-act .btn { justify-content: center; white-space: nowrap; padding-left: 10px; padding-right: 10px; }
+
+/* 4자리 */
+.me-pin { text-align: center; padding: 28px 18px 24px; }
+.me-pin h2 { margin: 0; font-size: 20px; font-weight: 800; word-break: keep-all; }
+.me-pin .sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; word-break: keep-all; }
+.me-digits { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 300px; margin: 22px auto 0; }
+.me-digits .d { display: grid; place-items: center; aspect-ratio: 4 / 5; border-radius: 16px; border: 1.5px solid var(--line-2); background: #0f0d0d;
+  font: 900 clamp(34px, 11vw, 44px)/1 var(--body); font-variant-numeric: tabular-nums; color: var(--txt); transition: border-color .15s, background .15s; }
+.me-digits .d.on { border-color: var(--txt); }
+.me-digits:focus-within .d.cur { border-color: var(--g); box-shadow: 0 0 0 3px rgba(255, 122, 26, .22); }
+.me-digits input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0; margin: 0; font-size: 16px; color: transparent; caret-color: transparent; background: transparent; cursor: pointer; }
+.me-digits.busy .d { opacity: .55; }
+.me-digits.lock .d { opacity: .35; border-style: dashed; }
+.me-digits.bad .d { border-color: #ff3b5c; animation: me-shake .32s; }
+@keyframes me-shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .me-digits.bad .d { animation: none; } }
+.me-pin .me-msg { text-align: center; }
+.me-lock { font-variant-numeric: tabular-nums; }
+
+/* 멤버 카드 */
+.me-card { position: relative; overflow: hidden; border-radius: 22px; padding: 22px 20px 20px; border: 1px solid rgba(255, 255, 255, .14);
+  background: radial-gradient(120% 90% at 100% 0%, rgba(161, 91, 255, .35), transparent 60%), radial-gradient(110% 90% at 0% 100%, rgba(255, 122, 26, .3), transparent 60%), #141112; }
+.me-card .kick { margin: 0; font: 700 12px/1 "Barlow Condensed", var(--body); letter-spacing: .22em; color: var(--site-silver, #e1e3ec); text-transform: uppercase; }
+.me-card .nm { margin: 14px 0 0; font: 900 clamp(28px, 8vw, 38px)/1.15 var(--body); word-break: keep-all; overflow-wrap: anywhere; }
+.me-card .nm small { font-size: 16px; font-weight: 700; color: var(--muted); margin-left: 4px; }
+.me-card .md { margin: 8px 0 0; font-size: 15px; color: #d9cfcb; }
+.me-card .md b { color: var(--txt); }
+.me-card .me-act { margin-top: 18px; }
+
+/* 내 킵 (keep 페이지와 같은 모양) */
+.kp-items { display: grid; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); padding: 4px 18px; }
+.kp-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.kp-row:first-child { border-top: 0; }
+.kp-row .nm { flex: 1; min-width: 0; font-size: 17px; font-weight: 700; word-break: keep-all; overflow-wrap: anywhere; }
+.kp-pic { flex: none; width: 54px; height: 94px; border-radius: 12px; overflow: hidden; background: #0a0a0c; border: 1px solid var(--line); display: grid; place-items: center; }
+.kp-pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.kp-pic.none { font-size: 24px; opacity: .55; }
+.kp-row .nm small { display: block; color: var(--muted); font-size: 12px; font-weight: 600; margin-top: 2px; }
+.kp-row .q { flex: none; font: 900 24px/1 var(--body); color: var(--g); font-variant-numeric: tabular-nums; text-align: right; }
+.kp-row .q small { font-size: 14px; color: var(--muted); font-weight: 700; margin-left: 2px; }
+.kp-row .q.op { color: #c9a3ff; font-size: 19px; }
+.kp-dd { display: inline-block; margin-left: 4px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 800; border: 1px solid var(--line-2); color: var(--muted); }
+.kp-dd.soon { border-color: #ffb020; color: #ffb020; }
+.kp-dd.late { border-color: #ff3b5c; background: #ff3b5c; color: #fff; }
+.kp-warn { margin: 0 0 14px; padding: 12px 14px; border-radius: 14px; background: rgba(255,176,32,.1); border: 1px solid rgba(255,176,32,.45); font-size: 15px; }
+.kp-hist { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+.kp-h { font-size: 15px; font-weight: 800; color: var(--muted); margin: 20px 0 8px; }
+
+/* 내 정보 */
+.me-form { display: grid; gap: 14px; }
+.me-form .lab { display: block; font-weight: 700; font-size: 14px; margin: 0 0 6px; }
+.me-bd { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
+.me-bd select { width: 100%; min-height: 50px; padding: 10px 12px; font: 600 16px/1.2 var(--body); color: var(--txt); background: #0f0d0d; border: 1px solid var(--line-2); border-radius: 12px; }
+.me-bd select:focus { outline: none; border-color: var(--g); }
+.me-bd select.nil { color: var(--muted); }
+.me-chk { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; font-weight: 600; line-height: 1.45; cursor: pointer; }
+.me-chk input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--g); }
+.me-chk small { display: block; color: var(--muted); font-size: 13px; font-weight: 500; margin-top: 2px; }
+.me-save { width: 100%; min-height: 50px; }
+.me-ag { display: grid; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.me-ag .lab { margin: 0; font-weight: 700; font-size: 14px; }
+.me-ag .me-msg { margin: 0; }
+.me-note, .me-chk { word-break: keep-all; }
+.me-chk small.at { color: #7be0a4; font-weight: 700; }
+.me-chk.off { cursor: default; color: var(--muted); }
+.me-old { border: 1px solid rgba(255,176,32,.45); background: rgba(255,176,32,.08); border-radius: 14px; padding: 12px 14px; }
+.me-old p { margin: 0 0 10px; font-size: 14px; font-weight: 700; word-break: keep-all; }
+.me-old .me-act { margin-top: 0; }
+.me-del { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.me-del .btn { width: 100%; border-color: rgba(255, 59, 92, .5); color: #ff8a9d; }
+.me-del .ask { border: 1px solid rgba(255, 59, 92, .5); border-radius: 14px; padding: 14px; background: rgba(255, 59, 92, .07); }
+.me-del .ask p { margin: 0 0 12px; font-size: 14px; word-break: keep-all; }
+.me-del .ask .me-act { margin-top: 0; }
+.me-del .ask .btn-go { background: #ff3b5c; border-color: transparent; color: #fff; }
+.me-del .done { margin: 0; font-size: 14px; font-weight: 700; color: #ff8a9d; }
+.me-lim { border: 1px solid rgba(255,176,32,.45); background: rgba(255,176,32,.08); border-radius: var(--radius); padding: 16px 18px; font-size: 15px; word-break: keep-all; }
+.me-lim b { display: block; margin-bottom: 4px; }
+.me-foot { display: grid; gap: 12px; }
+.me-foot .me-note { margin: 0; }
+.me-out { justify-self: start; }
+</style>
+</head>
+<body class="site-public" data-page="me">
+<a class="skip" href="#main">Skip to content</a>
+<header class="hdr">
+  <a class="brand logo site-brand" href="/"><img src="/assets/logo.png" width="564" height="229" alt="Groove &amp; Spot"></a>
+  <nav class="nav" aria-label="Main">
+    <a href="/events/">이벤트</a>
+    <a href="/floors/">플로어</a>
+    <a href="/menu/">메뉴</a>
+    <a href="/gallery/">사진첩</a>
+    <a href="/request/">신청곡</a>
+    <a href="/info/">안내</a>
+    <a href="/partners/">제휴 매장</a>
+    <a href="/club/">가상 클럽</a>
+  </nav>
+  <details class="lang">
+    <summary aria-label="Language: 한국어"><span class="lang-globe" aria-hidden="true">🌐</span> Language</summary>
+    <div class="lang-menu">
+      <a href="/" hreflang="ko" data-lang="ko" aria-current="true">한국어</a>
+      <a href="/en/" hreflang="en" data-lang="en">English</a>
+      <a href="/ja/" hreflang="ja" data-lang="ja">日本語</a>
+      <a href="/zh/" hreflang="zh-CN" data-lang="zh">中文</a>
+    </div>
+  </details>
+  <a class="btn btn-hot hdr-cta" href="/reserve/">예약하기</a>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mnav" aria-label="메뉴 열기" data-open="메뉴 열기" data-close="메뉴 닫기"><span></span><span></span><span></span></button>
+</header>
+<nav class="mnav" id="mnav" aria-label="Mobile" hidden>
+  <a href="/">홈</a>
+  <a href="/events/">이벤트</a>
+  <a href="/floors/">플로어</a>
+  <a href="/menu/">메뉴</a>
+  <a href="/gallery/">사진첩</a>
+  <a href="/request/">신청곡</a>
+  <a href="/info/">안내</a>
+  <a href="/partners/">제휴 매장</a>
+  <a href="/club/">가상 클럽</a>
+  <a href="/artists/">아티스트</a>
+  <a href="/guide/">부산 서면 클럽 가이드</a>
+  <a class="btn btn-hot mnav-cta" href="/reserve/">예약하기</a>
+</nav>
+<main id="main">
+<section class="phead wrap me-phead">
+  <h1>내 페이지</h1>
+  <p class="lede" id="me-sub">확인하는 중이에요…</p>
+</section>
+<section class="wrap" id="me" aria-live="polite"></section>
+</main>
+<footer class="ftr">
+  <div class="ftr-grid">
+    <div>
+      <a class="brand logo site-brand" href="/"><img src="/assets/logo.png" width="564" height="229" alt="Groove &amp; Spot"></a>
+      <p class="muted">부산 부산진구 중앙대로680번가길 52 (2·3층)<br>서면역 3번 출구에서 도보 3분</p>
+    </div>
+    <div>
+      <h2 class="ftr-h">영업시간</h2>
+      <p>일 ~ 목 21:30 – 06:00<br>금 · 토 21:00 – 07:00<br><span class="muted">연중무휴 · 365일 OPEN</span></p>
+    </div>
+    <div>
+      <h2 class="ftr-h">연락처</h2>
+      <p><a href="tel:050713015970">0507-1301-5970</a><br><a href="https://www.instagram.com/groovenspot/" rel="noopener">Instagram @groovenspot</a><br><a href="https://music.youtube.com/channel/UCdS6A_RNPeys5ZBkvFSwuQg" rel="noopener">YouTube Music</a><br><a href="https://on.soundcloud.com/IWtEmqOHfTecbn1cBI" rel="noopener">SoundCloud</a><br><a href="https://www.youtube.com/@GROOVEBUSAN" rel="noopener">YouTube @GROOVEBUSAN</a><br><a href="https://www.tripadvisor.com/Attraction_Review-g297884-d34781588-Reviews-Groove_Spot-Busan.html" rel="noopener">Tripadvisor</a><br><a href="https://www.xiaohongshu.com/user/profile/679dc482000000000e01e057" rel="noopener">小红书 Xiaohongshu</a></p>
+    </div>
+  </div>
+  <p class="ftr-small muted"><a href="/guide/">부산 서면 클럽 가이드</a> · <a href="/artists/">아티스트</a> · <a href="/privacy/"><b>개인정보처리방침</b></a> · <a href="/admin/" rel="nofollow">Staff</a> · 본 사이트는 만 19세 이상 성인을 위한 안내 페이지입니다. · © 2026 Groove &amp; Spot</p>
+</footer>
+<nav class="dock" aria-label="Quick actions">
+  <a href="/events/">오늘 이벤트</a>
+  <a class="dock-hot" href="/reserve/">예약하기</a>
+  <a href="https://www.google.com/maps/dir/?api=1&destination=%EB%B6%80%EC%82%B0%20%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C680%EB%B2%88%EA%B0%80%EA%B8%B8%2052" rel="noopener">길찾기</a>
+  <a class="dock-sub" href="/request/">🎵 신청곡</a>
+  <a class="dock-sub" href="/menu/">🍾 메뉴</a>
+  <a class="dock-sub" href="/info/">📍 안내</a>
+</nav>
+<div class="gate" id="gate" hidden>
+  <div class="gate-box" role="dialog" aria-modal="true" aria-labelledby="gate-q">
+    <p class="gate-badge">19+</p>
+    <h2 id="gate-q">만 19세 이상이신가요?</h2>
+    <p class="muted">클럽 입장 시 신분증 확인이 필요합니다.</p>
+    <div class="gate-act"><a class="btn" href="https://www.google.com/">아니요</a><button class="btn btn-hot" type="button" id="gate-yes">네, 19세 이상입니다</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>window.GS={"lang":"ko","root":"","phone":"0507-1301-5970","instagram":"https://www.instagram.com/groovenspot/","whatsapp":"https://wa.me/groovenspot","v":"mwnlj9j6","t":{"close":"닫기","share":"공유","linkCopied":"링크가 복사됐어요.","today":"오늘","tonight":"TONIGHT","dow":"일,월,화,수,목,금,토"}};</script>
+<script src="/assets/site.js?v=mwnlj9j6" defer></script>
+<script>
+(function () {
+  'use strict';
+  // 손님 '내 페이지' (대표 결정 2026-11-20, 1단계): 담당 직원이 보내 준 링크(?k=) + 전화번호 뒤 4자리로 본인 확인.
+  // 확인되면 서버가 준 표(t)를 이 기기에 둔다(gs_me_+k). 링크 키 k 는 화면·로그 어디에도 보이지 않는다.
+  var API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
+  var CLUB_TEL = '050713015970', CLUB_PH = '0507-1301-5970', BUSY = '잠깐 사이에 너무 많이 바꿨어요. 잠시 후 다시 해 주세요.';
+  var box = document.getElementById('me'), sub = document.getElementById('me-sub');
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function md(s) { var p = String(s).split('-'); return p.length === 3 ? +p[1] + '/' + +p[2] : ''; }
+  function ymd(s) { var p = String(s).split('-'); return p.length === 3 ? p[0] + '. ' + +p[1] + '. ' + +p[2] + '.' : ''; }
+  // 술 사진 (매장 메뉴판 사진에서 병만 잘라 씀, /assets/keep/). 없는 술은 빈 칸
+  var KIMG = { '딥 루미너스': 'deep', '킹': 'king', '퀸': 'queen', '오로라': 'aurora', '오페라 프리마 브뤼': 'opera', '모엣 샹동': 'moet', '모엣 니르': 'moet-nir',
+    '모엣 샹동 골든 라이트업': 'moet-golden', '페리에주에 루미너스': 'perrier', '돔페리뇽 루미너스': 'dom', '아르망디 골드': 'armand-gold', '아르망디 골드 매그넘 1.5L': 'armand-gold-magnum',
+    '아르망디 드미섹': 'armand-demisec', '아르망디 로제': 'armand-rose', '아르망디 블랑 드 누아': 'armand-bdn', '예거마이스터': 'jager', '말리부': 'malibu', '콰이 페리치': 'kwai',
+    '쿠엘보 모히토': 'cuervo-mojito', '코카레로': 'cocalero', '파이어볼': 'fireball', '아그와': 'agwa', '힙노틱': 'hpnotiq', '엑스레이티드': 'xrated', '앱솔루트': 'absolut',
+    '앱솔루트 어피치': 'absolut', '스미노프': 'smirnoff', '그레이구스': 'greygoose', '봄베이': 'bombay', '핸드릭스': 'hendricks', '론디아즈 151': 'landiaz', '헤네시 VSOP': 'hennessy',
+    '씨에라': 'sierra', '호세 쿠엘보': 'jose', '제임슨': 'jameson', '조니워커 블랙': 'jw-black', '잭다니엘스': 'jd', '잭다니엘스 허니': 'jd-honey', '잭다니엘스 애플': 'jd-apple', '조니워커 블루라벨': 'jw-blue' };
+  function pic(liq) {
+    var f = Object.prototype.hasOwnProperty.call(KIMG, liq) ? KIMG[liq] : '';
+    return f ? '<div class="kp-pic"><img src="/assets/keep/' + f + '.webp" width="54" height="94" alt="" loading="lazy" decoding="async"></div>' : '<div class="kp-pic none" aria-hidden="true">🍾</div>';
+  }
+
+  var k = '';
+  try { k = new URLSearchParams(location.search).get('k') || ''; } catch (e) {}
+  var TK = 'gs_me_' + k, memTok = '';
+  function tokGet() { var v = ''; try { v = localStorage.getItem(TK) || ''; } catch (e) {} return v || memTok; }
+  function tokSet(v) { memTok = v || ''; try { if (v) localStorage.setItem(TK, v); else localStorage.removeItem(TK); } catch (e) {} }
+  function api(b) { return fetch(API, { method: 'POST', body: JSON.stringify(b) }).then(function (r) { return r.json(); }); }
+  var tick = null;
+  function stopTick() { if (tick) { clearInterval(tick); tick = null; } }
+
+  function telBtn(ph, staff) {
+    var d = String(ph || '').replace(/\D/g, '');
+    return /^01\d{8,9}$/.test(d) ? '<a class="btn" href="tel:' + d + '" id="me-call" aria-label="담당 ' + esc(staff) + '에게 전화하기">📞 담당에게 전화</a>' : '<a class="btn" href="tel:' + CLUB_TEL + '" id="me-call">📞 클럽에 전화하기</a>';
+  }
+  function fail(msg, retry) {
+    stopTick();
+    sub.textContent = '';
+    box.innerHTML = '<div><p class="me-empty">' + msg + '</p><div class="me-act">' + (retry ? '<button class="btn btn-hot" type="button" id="me-retry">다시 열기</button>' : '<a class="btn btn-hot" href="/reserve/">예약하기</a>') +
+      '<a class="btn" href="tel:' + CLUB_TEL + '">📞 클럽에 전화하기</a></div><p class="me-note">클럽 전화 ' + CLUB_PH + '</p></div>';
+    if (retry) document.getElementById('me-retry').addEventListener('click', load);
+  }
+  function notFound() { tokSet(''); fail('링크가 바뀌었어요.<br>담당에게 새 링크를 받아 주세요.'); }
+
+  // ── 처음 열 때 ──
+  function load() {
+    stopTick();
+    sub.textContent = '확인하는 중이에요…'; box.innerHTML = '';
+    var t = tokGet(), b = { a: 'me_view', k: k };
+    if (t) b.t = t;
+    api(b).then(function (r) {
+      if (r.error === 'notfound') return notFound();
+      if (r.error === 'locked') return pinView(+r.left || 600);
+      if (r.error === 'auth') { tokSet(''); return pinView(); }
+      if (!r.ok) return fail('지금 열 수 없어요. 잠시 후 다시 열어 주세요.', true);
+      if (r.need === 'pin') { if (t) tokSet(''); return pinView(); }
+      if (r.verified) return mine(r, false);
+      if (r.limited) return mine(r, true);
+      return pinView();
+    }).catch(function () { fail('지금 연결이 안 돼요. 잠시 후 다시 열어 주세요.', true); });
+  }
+
+  // ── 4자리 화면 ──
+  function pinView(lockSec) {
+    stopTick();
+    sub.textContent = '처음 한 번만 본인 확인을 해요.';
+    box.innerHTML = '<div class="me-box me-pin"><h2 id="me-pin-q">전화번호 뒤 4자리를 입력해 주세요</h2>' +
+      '<p class="sub">담당 직원에게 알려 주신 전화번호예요.</p>' +
+      '<div class="me-digits" id="me-digits"><span class="d" aria-hidden="true"></span><span class="d" aria-hidden="true"></span><span class="d" aria-hidden="true"></span><span class="d" aria-hidden="true"></span>' +
+      '<input id="me-pin" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-labelledby="me-pin-q" aria-describedby="me-pin-msg"></div>' +
+      '<p class="me-msg" id="me-pin-msg" role="alert"></p>' +
+      '<p class="me-note">번호를 바꿨거나 들어오지 못하면 담당 직원에게 물어봐 주세요.<br>링크를 잃어버리면 담당에게 새 링크를 받으세요.</p></div>';
+    var inp = document.getElementById('me-pin'), wrap = document.getElementById('me-digits'), msg = document.getElementById('me-pin-msg'), ds = wrap.querySelectorAll('.d'), busy = false;
+    function paint() {
+      var v = inp.value;
+      for (var i = 0; i < 4; i++) { ds[i].textContent = v[i] || ''; ds[i].className = 'd' + (v[i] ? ' on' : '') + (i === Math.min(v.length, 3) ? ' cur' : ''); }
+    }
+    function lock(sec) {
+      var end = Date.now() + sec * 1000;
+      inp.value = ''; inp.disabled = true; wrap.className = 'me-digits lock'; paint();
+      function show() {
+        var s = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+        if (!s) { stopTick(); inp.disabled = false; wrap.className = 'me-digits'; msg.className = 'me-msg ok'; msg.textContent = '다시 입력해 주세요.'; paint(); return; }
+        msg.className = 'me-msg me-lock'; msg.textContent = '여러 번 틀려서 잠겼어요. ' + Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2) + ' 뒤에 다시 해 주세요.';
+      }
+      stopTick(); show(); tick = setInterval(show, 1000);
+    }
+    function go() {
+      var v = inp.value;
+      if (busy || !/^\d{4}$/.test(v)) return;
+      // 폰 키보드가 닫히지 않게 입력칸은 그대로 두고, 확인하는 동안만 더 못 치게 막는다
+      busy = v; wrap.className = 'me-digits busy'; msg.className = 'me-msg ok'; msg.textContent = '확인하는 중…';
+      api({ a: 'me_pin', k: k, pin: v }).then(function (r) {
+        busy = false;
+        if (r.ok && r.t) { tokSet(r.t); return load(); }
+        wrap.className = 'me-digits';
+        if (r.error === 'notfound') return notFound();
+        if (r.error === 'locked') return lock(+r.left || 600);
+        if (r.error === 'nophone') { msg.className = 'me-msg'; msg.textContent = '등록된 전화번호가 없어요. 담당에게 전화번호 등록을 요청해 주세요.'; inp.value = ''; paint(); return; }
+        inp.value = ''; paint();
+        void wrap.offsetWidth; wrap.className = 'me-digits bad';
+        msg.className = 'me-msg';
+        msg.textContent = r.error === 'pin' ? '번호가 맞지 않아요.' + (r.left != null ? ' 남은 기회 ' + Math.max(0, +r.left) + '번' : '') : '숫자 4자리를 넣어 주세요.';
+        inp.focus();
+      }).catch(function () { busy = false; inp.value = ''; paint(); wrap.className = 'me-digits'; msg.className = 'me-msg'; msg.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+    }
+    inp.addEventListener('input', function () {
+      if (busy) { inp.value = busy; return; }
+      var v = inp.value.replace(/\D/g, '').slice(0, 4);
+      if (v !== inp.value) inp.value = v;
+      if (wrap.className.indexOf('bad') >= 0) wrap.className = 'me-digits';
+      if (msg.textContent && v) msg.textContent = '';
+      paint();
+      if (v.length === 4) go();
+    });
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
+    paint();
+    if (lockSec) lock(lockSec); else try { inp.focus({ preventScroll: true }); } catch (e) {}
+  }
+
+  // ── 내 페이지 (verified) / 킵만 (limited) ──
+  function mine(r, limited) {
+    stopTick();
+    function days(d) { var a = Date.parse(d + 'T00:00:00Z'), b = Date.parse(r.today + 'T00:00:00Z'); return isNaN(a) || isNaN(b) ? null : Math.round((a - b) / 864e5); }
+    var items = r.items || [], log = r.log || [], n = 0, soon = null;
+    items.forEach(function (i) { n += i.kind === '병' ? i.n : 1; var x = days(i.exp); if (x !== null && (soon === null || x < soon)) soon = x; });
+    sub.textContent = limited ? '맡기신 술을 확인할 수 있어요.' : '맡기신 술과 내 정보를 볼 수 있어요.';
+    var h = '';
+    // 멤버 카드 (등급·QR 은 3단계)
+    h += '<div class="me-card"><p class="kick">Groove &amp; Spot</p><p class="nm">' + esc(r.name) + '<small>님</small></p>' +
+      '<p class="md">담당 <b>' + esc(r.staff || '-') + '</b></p>' +
+      '<div class="me-act">' + telBtn(r.staffPhone, r.staff) + '<a class="btn btn-hot" href="/reserve/">예약하기</a></div></div>';
+    if (limited) h += '<div class="me-lim" id="me-lim"><b>📱 내 정보는 아직 못 써요</b>담당에게 전화번호 등록을 요청하면 생일 등록 등을 쓸 수 있어요.</div>';
+    // 내 킵
+    h += '<div><h2 class="me-h">🍾 내 킵 <small>모두 ' + n + '병</small></h2>';
+    if (soon !== null && soon <= 3) h += '<p class="kp-warn">⏰ ' + (soon < 0 ? '보관 기간이 지난 술이 있어요. 담당 직원에게 연락해 주세요.' : soon === 0 ? '오늘 보관 기간이 끝나는 술이 있어요.' : '보관 기간이 ' + soon + '일 남은 술이 있어요.') + '</p>';
+    if (!items.length) h += '<p class="me-empty">지금 맡겨 두신 술이 없어요.</p>';
+    else h += '<div class="kp-items">' + items.map(function (i) {
+      var x = days(i.exp), dd = x === null || x > 7 ? '' : '<span class="kp-dd' + (x < 0 ? ' late' : ' soon') + '">' + (x < 0 ? '기간 지남' : x === 0 ? '오늘까지' : 'D-' + x) + '</span>';
+      var sm = [i.memo, i.exp ? '보관 ' + ymd(i.exp) + '까지' : ''].filter(String).join(' · ');
+      return '<div class="kp-row">' + pic(i.liq) + '<div class="nm">' + esc(i.liq) + dd + (sm ? '<small>' + esc(sm) + '</small>' : '') + '</div>' +
+        (i.kind === '병' ? '<div class="q">' + esc(i.n) + '<small>병</small></div>' : '<div class="q op">' + esc(i.amt) + ' 남음</div>') + '</div>';
+    }).join('') + '</div>';
+    if (log.length) h += '<h3 class="kp-h">최근 기록</h3><ul class="kp-hist">' + log.map(function (l) {
+      var t = l.what === '맡김' ? (l.from && l.to && /^\d+$/.test(l.to) ? '맡기심 · ' + l.liq + ' ' + (Math.max(0, +l.to - (+l.from || 0))) + '병' : '맡기심 · ' + l.liq + (l.to ? ' ' + l.to : ''))
+        : l.what === '꺼냄' ? '꺼내 드심 · ' + l.liq + ' ' + Math.max(1, (+l.from || 0) - (+l.to || 0)) + '병' : '다 드심 · ' + l.liq;
+      return '<li>' + esc(md(l.at)) + ' ' + esc(t) + '</li>';
+    }).join('') + '</ul>';
+    h += '<p class="me-note">보관 기간은 맡기신 날부터 ' + esc(r.days || 30) + '일이에요.</p></div>';
+    // 내 정보
+    if (!limited) h += '<div class="me-box" id="me-info"></div>';
+    h += '<div class="me-foot"><p class="me-note">이 페이지는 링크를 받은 분만 열 수 있어요. 링크를 잃어버리거나 다른 사람에게 갔다면 담당에게 새 링크를 받으세요.</p>' +
+      (limited ? '' : '<button class="btn me-out" type="button" id="me-out">이 기기에서 나가기</button>') + '</div>';
+    box.innerHTML = h;
+    if (!limited) {
+      info(r.me || { birth: '', agree: false, delReq: false });
+      document.getElementById('me-out').addEventListener('click', function () { tokSet(''); pinView(); window.scrollTo(0, 0); });
+    }
+  }
+
+  // 생일 (연·월·일 고르기: 폰에서 날짜 달력보다 빠르다) · 혜택 안내 동의(광고성 정보, 생일과 따로 · 대표 결정 2026-11-20) · 정보 삭제 요청
+  function info(me) {
+    var el = document.getElementById('me-info'); if (!el) return;
+    var y0 = new Date().getFullYear(), bp = /^(\d{4})-(\d\d)-(\d\d)$/.exec(me.birth || '') || null;
+    var by = bp ? +bp[1] : 0, bm = bp ? +bp[2] : 0, bd = bp ? +bp[3] : 0;
+    var years = []; for (var y = y0 - 19; y >= y0 - 90; y--) years.push(y);
+    if (by && years.indexOf(by) < 0) years.push(by);
+    function opts(list, cur, unit, ph) { return '<option value="">' + ph + '</option>' + list.map(function (v) { return '<option value="' + v + '"' + (v === cur ? ' selected' : '') + '>' + v + unit + '</option>'; }).join(''); }
+    var mons = []; for (var m = 1; m <= 12; m++) mons.push(m);
+    el.innerHTML = '<h2 class="me-h">🎂 내 정보</h2><div class="me-form">' +
+      '<div><span class="lab" id="me-bd-l">생일 (선택)</span><div class="me-bd" role="group" aria-labelledby="me-bd-l">' +
+      '<select id="me-by" aria-label="태어난 해">' + opts(years, by, '년', '년') + '</select>' +
+      '<select id="me-bm" aria-label="태어난 달">' + opts(mons, bm, '월', '월') + '</select>' +
+      '<select id="me-bd" aria-label="태어난 날"></select></div></div>' +
+      '<button class="btn btn-hot me-save" type="button" id="me-bsave">생일 저장</button>' +
+      '<p class="me-msg" id="me-msg" role="status"></p></div>' +
+      '<div class="me-ag" id="me-ag"></div>' +
+      '<p class="me-note">생일·혜택 안내 동의는 여기서 언제든 지우거나 끌 수 있어요. 보관 기간은 <a href="/privacy/">개인정보처리방침</a>에서 확인하세요.</p>' +
+      '<div class="me-del" id="me-del"></div>';
+    var sy = document.getElementById('me-by'), sm = document.getElementById('me-bm'), sd = document.getElementById('me-bd'), msg = document.getElementById('me-msg');
+    function fillDays() {
+      var cur = +sd.value || bd, y = +sy.value || 2000, mo = +sm.value || 1, last = new Date(Date.UTC(y, mo, 0)).getUTCDate(), ds = [];
+      for (var d = 1; d <= last; d++) ds.push(d);
+      sd.innerHTML = opts(ds, cur > last ? 0 : cur, '일', '일'); bd = 0;
+      [sy, sm, sd].forEach(function (s) { s.classList.toggle('nil', !s.value); });
+    }
+    fillDays();
+    sy.addEventListener('change', fillDays); sm.addEventListener('change', fillDays);
+    sd.addEventListener('change', function () { sd.classList.toggle('nil', !sd.value); });
+    // 공통: me_set 보내고 답 처리 (auth → 4자리 화면)
+    function set(body, out, done, undo) {
+      body.a = 'me_set'; body.k = k; body.t = tokGet();
+      out.className = 'me-msg ok'; out.textContent = '저장하는 중…';
+      return api(body).then(function (r) {
+        if (r.error === 'auth') { tokSet(''); return pinView(); }
+        if (r.error === 'notfound') return notFound();
+        if (!r.ok) { if (undo) undo(); out.className = 'me-msg'; out.textContent = r.error === 'birth' ? '생일을 확인해 주세요.' : r.error === 'agree' ? '먼저 혜택·이벤트 안내 받기에 동의해 주세요.' : r.error === 'busy' ? BUSY : '저장이 안 됐어요. 다시 해 주세요.'; return; }
+        if (r.me) me = r.me;
+        done(); del();
+      }).catch(function () { if (undo) undo(); out.className = 'me-msg'; out.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+    }
+    document.getElementById('me-bsave').addEventListener('click', function () {
+      var btn = this, vals = [sy.value, sm.value, sd.value], filled = vals.filter(String).length, birth = '';
+      if (filled && filled < 3) { msg.className = 'me-msg'; msg.textContent = '생일은 연·월·일을 모두 골라 주세요.'; return; }
+      if (filled) birth = vals[0] + '-' + ('0' + vals[1]).slice(-2) + '-' + ('0' + vals[2]).slice(-2);
+      btn.disabled = true;
+      set({ birth: birth }, msg, function () { btn.disabled = false; msg.className = 'me-msg ok'; msg.textContent = birth ? '생일을 저장했어요 ✓' : '생일을 지웠어요 ✓'; }, function () { btn.disabled = false; });
+    });
+    // 혜택 안내: ① 광고성 정보 수신 동의 ② 밤 9시~아침 8시에도 (①이 켜져 있을 때만). 누르면 바로 저장, 둘 다 기본 꺼짐
+    function ag(text) {
+      var a = document.getElementById('me-ag'); if (!a) return;
+      var on = !!me.agree;
+      a.innerHTML = '<p class="lab">혜택 안내 (선택)</p>' +
+        '<label class="me-chk"><input type="checkbox" id="me-agree"' + (on ? ' checked' : '') + '><span>(선택) 혜택·이벤트 안내 받기 — 광고성 정보 수신 동의<small>생일 혜택·파티 소식을 보내 드려요. 언제든 여기서 끌 수 있어요.</small>' +
+        (on ? '<small class="at" id="me-agree-at">동의함' + (me.agreeAt ? ' · ' + esc(me.agreeAt) : '') + '</small>' : '') + '</span></label>' +
+        '<label class="me-chk' + (on ? '' : ' off') + '"><input type="checkbox" id="me-night"' + (on && me.agreeNight ? ' checked' : '') + (on ? '' : ' disabled') + '><span>(선택) 밤 9시~아침 8시에도 받기' +
+        (on ? '' : '<small>위의 혜택·이벤트 안내를 켜야 고를 수 있어요.</small>') + '</span></label>' +
+        (on && me.agreeOld ? '<div class="me-old" id="me-old"><p>동의한 지 2년이 지났어요. 계속 받으실래요?</p><div class="me-act"><button class="btn btn-hot" type="button" id="me-old-yes">계속 받기</button><button class="btn" type="button" id="me-old-no">그만 받기</button></div></div>' : '') +
+        '<p class="me-msg" id="me-ag-msg" role="status"></p>';
+      var am = document.getElementById('me-ag-msg'), ca = document.getElementById('me-agree'), cn = document.getElementById('me-night');
+      if (text) { am.className = 'me-msg ok'; am.textContent = text; }
+      function lockAll(v) { [ca, cn, document.getElementById('me-old-yes'), document.getElementById('me-old-no')].forEach(function (x) { if (x) x.disabled = v || (x === cn && !on); }); }
+      function send(body, okText, undo) { lockAll(true); set(body, am, function () { ag(okText); }, function () { undo(); lockAll(false); }); }
+      ca.addEventListener('change', function () { var v = ca.checked; send({ agree: v }, v ? '혜택·이벤트 안내를 받을게요 ✓' : '혜택·이벤트 안내를 껐어요 ✓', function () { ca.checked = !v; }); });
+      cn.addEventListener('change', function () { var v = cn.checked; send({ agreeNight: v }, v ? '밤 9시~아침 8시에도 받을게요 ✓' : '밤 9시~아침 8시에는 안 보내요 ✓', function () { cn.checked = !v; }); });
+      if (document.getElementById('me-old-yes')) {
+        document.getElementById('me-old-yes').addEventListener('click', function () { send({ agree: true }, '계속 받을게요 ✓', function () {}); });
+        document.getElementById('me-old-no').addEventListener('click', function () { send({ agree: false }, '혜택·이벤트 안내를 껐어요 ✓', function () {}); });
+      }
+    }
+    ag();
+    function del(ask) {
+      var d = document.getElementById('me-del'); if (!d) return;
+      if (me.delReq) { d.innerHTML = '<p class="done" id="me-del-done">🗑 삭제 요청됨 · 담당 직원이 확인한 뒤 지워요.</p>'; return; }
+      if (!ask) {
+        d.innerHTML = '<button class="btn" type="button" id="me-del-btn">정보 삭제 요청</button>';
+        document.getElementById('me-del-btn').addEventListener('click', function () { del(true); });
+        return;
+      }
+      d.innerHTML = '<div class="ask" role="alertdialog" aria-labelledby="me-del-q"><p id="me-del-q">생일·연락처 같은 내 정보를 지워 달라고 요청할까요?<br>담당 직원이 확인한 뒤 지워요.</p>' +
+        '<div class="me-act"><button class="btn" type="button" id="me-del-no">취소</button><button class="btn btn-go" type="button" id="me-del-go">삭제 요청하기</button></div><p class="me-msg" id="me-del-msg" role="alert"></p></div>';
+      document.getElementById('me-del-no').addEventListener('click', function () { del(false); });
+      document.getElementById('me-del-go').addEventListener('click', function () {
+        var b = this, dm = document.getElementById('me-del-msg'); b.disabled = true;
+        api({ a: 'me_del', k: k, t: tokGet() }).then(function (r) {
+          b.disabled = false;
+          if (r.error === 'auth') { tokSet(''); return pinView(); }
+          if (r.error === 'notfound') return notFound();
+          if (!r.ok) { dm.textContent = r.error === 'busy' ? BUSY : '요청이 안 됐어요. 다시 해 주세요.'; return; }
+          me = r.me || me; me.delReq = true; del();
+        }).catch(function () { b.disabled = false; dm.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+      });
+    }
+    del();
+  }
+
+  if (!/^[A-Za-z0-9]{24,40}$/.test(k)) return fail('담당 직원이 보내 드린 링크로 열어 주세요.<br>링크가 없으면 담당 직원에게 다시 보내 달라고 하세요.');
+  load();
+})();
+</script>
+</body>
+</html>

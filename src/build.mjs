@@ -655,7 +655,7 @@ ${smPages.flatMap((p) => LANGS.map((l) => `  <url><loc>${SITE}${href(l, p)}</loc
 `);
 // 다음 웹마스터도구 소유 인증 (2026-11-19) — robots.txt 맨 아래에 있어야 함
 const DAUM_WMT = '#DaumWebMasterTool:f335e90dae51bde47b4d54d26c59e9f7fe6f58658c687280b2e9cb4a026775bc:MqfNpbtb2g8b8TIcUfNFlQ==';
-write('robots.txt', `User-agent: *\nDisallow: /admin/\nDisallow: /staff/\nDisallow: /keep/\nSitemap: ${SITE}/sitemap.xml\n\n${DAUM_WMT}\n`);
+write('robots.txt', `User-agent: *\nDisallow: /admin/\nDisallow: /staff/\nDisallow: /keep/\nDisallow: /me/\nSitemap: ${SITE}/sitemap.xml\n\n${DAUM_WMT}\n`);
 
 console.log(`built ${LANGS.length * PAGES.length + 1} pages`);
 
