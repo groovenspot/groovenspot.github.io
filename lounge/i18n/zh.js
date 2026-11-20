@@ -139,6 +139,8 @@ Lounge.i18n({zh: {
   "tonight.closed": "未营业",
   "tonight.unknown": "暂无营业信息",
   "tonight.now": "当前 DJ",
+  "tonight.poster": "派对海报",
+  "tonight.posterZoom": "查看大图",
   "tonight.next": "下一位 DJ",
   "tonight.crowd0": "暂无信息",
   "tonight.crowd1": "人少",
