@@ -241,6 +241,8 @@
       '</fieldset><p role="alert" class="shell-error" data-pref-error hidden></p><button type="button" class="btn" data-pref-retry hidden>' +
       e(t('retry')) + '</button></section>';
 
+    void L.profileFollows.requests(root, true);
+
     const inbox = root.querySelector('[data-notices]');
     const status = root.querySelector('[data-unread]');
     const readAll = root.querySelector('[data-read-all]');
