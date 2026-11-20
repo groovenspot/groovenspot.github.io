@@ -50,7 +50,7 @@
       floorError: 'Choose 2F or 3F.', seatError: 'Use up to 40 characters for the seat.',
       seatPlainError: 'Use up to 40 characters without angle brackets or line breaks. Start with a character other than =, +, -, or @.',
       safetyBusy: 'You can call twice per hour. Please tell a nearby staff member now.',
-      busy: 'Wait a moment and try again.', translateBusy: 'You’ve used today’s translations.',
+      busy: 'Wait a moment and try again.', translateBusy: 'You’ve reached today’s translation limit.',
       dup: 'Already done.', kicked: 'You can’t enter this room today.',
       roomClosed: 'This room is closed right now.', missing: 'We couldn’t find the room or message.',
       historyExpired: 'Your message was sent and has since left the room history.',
@@ -178,7 +178,12 @@
       const result = await L.api('report', { kind: 'room_msg', id: message.id, why: panel.querySelector('select').value });
       if (!panel.isConnected) return;
       submit.disabled = false;
-      if (result.error) { panel.querySelector('[role=status]').textContent = problem(result.error === 'target' ? 'not_found' : result.error); return; }
+      if (result.error) {
+        const key = ['target', 'not_found'].includes(result.error) ? 'screens.reportUnavailable'
+          : result.error === 'busy' ? 'screens.reportLimit' : '';
+        panel.querySelector('[role=status]').textContent = key ? L.t(key) : problem(result.error);
+        return;
+      }
       L.closeSheet();
       L.toast(t('reported'));
     };
@@ -215,7 +220,7 @@
 
   function chatScreen(root, id, flags) {
     root.querySelector('section').innerHTML = back() + '<h1>' + e('title') + '</h1><p data-room-state class="muted" aria-live="polite"></p>' +
-      '<p class="muted">' + e('rules') + '</p><aside class="shell-card rooms-pin" data-pin hidden></aside>' +
+      '<p data-live-status class="muted" role="status" hidden></p><p class="muted">' + e('rules') + '</p><aside class="shell-card rooms-pin" data-pin hidden></aside>' +
       '<div data-vote></div><div class="shell-actions">' + btn('older', 'data-older hidden') + btn('latest', 'data-latest hidden') +
       btn('retry', 'data-retry hidden') + '</div><ol class="rooms-chat" aria-label="' + e('title') + '"></ol>' +
       '<p class="muted" data-empty hidden>' + e('empty') + '</p>' +
@@ -229,7 +234,8 @@
     const form = query('form');
     const input = query('textarea');
     const submit = form.querySelector('button');
-    const status = query('[role=status]');
+    const connectionStatus = query('[data-live-status]');
+    const status = query('p.shell-error[role=status]');
     const older = query('[data-older]');
     const latest = query('[data-latest]');
     const retry = query('[data-retry]');
@@ -283,12 +289,17 @@
       url.searchParams.set('ch', channel);
       if (result.ticket) url.searchParams.set('ticket', result.ticket);
       else if (result.error === 'ticket_off') url.searchParams.set('token', token);
-      else return retryConnection();
+      else {
+        connectionStatus.textContent = L.t('screens.liveUnavailable');
+        connectionStatus.hidden = false;
+        return retryConnection();
+      }
       let connection;
       try { connection = new WebSocket(url); } catch { return retryConnection(); }
       socket = connection;
       connection.onopen = () => {
         if (socket !== connection) return;
+        connectionStatus.hidden = true;
         refresh();
       };
       connection.onmessage = event => {

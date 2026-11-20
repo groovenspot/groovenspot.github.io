@@ -41,6 +41,7 @@
   }
 
   function live(view, refresh, clear) {
+    const connectionStatus = view.querySelector('[data-live-status]');
     let ws, handshake, revision = 0;
     let refreshing = false, queued = false;
     async function update() {
@@ -67,9 +68,14 @@
       url.searchParams.set('ch', 'dm');
       if (result.ticket) url.searchParams.set('ticket', result.ticket);
       else if (result.error === 'ticket_off') url.searchParams.set('token', current);
-      else return;
+      else {
+        connectionStatus.textContent = L.t('screens.liveUnavailable');
+        connectionStatus.hidden = false;
+        return;
+      }
       try {
         const connection = ws = new WebSocket(url);
+        connection.onopen = () => { if (ws === connection) connectionStatus.hidden = true; };
         connection.onmessage = event => {
           let packet;
           try { packet = JSON.parse(event.data); } catch { return; }
@@ -97,7 +103,7 @@
       document.removeEventListener('visibilitychange', onReturn);
       window.removeEventListener('online', onReturn);
       revision++;
-      if (ws) { ws.onmessage = ws.onclose = null; ws.close(); }
+      if (ws) { ws.onopen = ws.onmessage = ws.onclose = null; ws.close(); }
     } };
   }
 
@@ -143,7 +149,7 @@
   function list(view) {
     view.innerHTML = '<header style="' + header + '"><h1>' + t('title') + '</h1>' +
       '<div class="shell-actions">' + U.link('#/dm?settings=1', t('settings')) + U.button(t('refresh'), 'data-refresh') +
-      '</div></header><div data-list>' + U.status('loading', true) + '</div>';
+      '</div></header><p data-live-status class="muted" role="status" hidden></p><div data-list>' + U.status('loading', true) + '</div>';
     const target = view.querySelector('[data-list]');
     function entries(rows) {
       return rows.map(row => '<a class="shell-row" style="' + U.card + ';color:inherit;text-decoration:none" href="' +
@@ -216,7 +222,7 @@
     view.innerHTML = '<header style="' + header + '">' + U.link('#/dm', t('back')) +
       '<h1 data-peer></h1><div class="shell-actions">' + U.button(t('menu'), 'data-menu hidden') +
       U.button(t('refresh'), 'data-refresh') + '</div></header>' +
-      '<p data-mutual class="muted"></p><div style="' + layout + ';margin-top:14px"><div data-state></div>' +
+      '<p data-live-status class="muted" role="status" hidden></p><p data-mutual class="muted"></p><div style="' + layout + ';margin-top:14px"><div data-state></div>' +
       U.button(t('older'), 'data-older hidden') + '<div data-messages role="log" aria-label="' + t('title') +
       '" style="' + layout + ';max-height:min(58vh,560px);overflow:auto"></div>' +
       '<form data-send hidden style="' + layout + '"><label class="sr-only" for="dm-text">' + t('placeholder') + '</label>' +
@@ -261,6 +267,7 @@
           const result = await L.api('translate', { text: item.text, to: L.lang });
           if (!article.isConnected) return;
           translate.disabled = false;
+          if (result.error === 'busy') return L.toast(L.t('rooms.translateBusy'));
           if (result.error) return error(result);
           const translated = result.text ?? result.translation;
           if (typeof translated === 'string') article.querySelector('[data-translation]').textContent = translated;
