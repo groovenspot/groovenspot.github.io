@@ -36,15 +36,19 @@
 
   async function renderMe(root) {
     const me = L.me;
+    const profile2 = L.open('profile2');
     const photo = me.photo
       ? '<img class="shell-avatar" src="' + L.esc(L.img(me.photo)) + '" alt="">'
       : '<span class="shell-avatar" aria-hidden="true">' + L.esc(Array.from(me.nick || '')[0] || 'G') + '</span>';
-    root.innerHTML = '<div class="shell-stack"><header class="shell-profile">' + photo +
+    const legacy = '<header class="shell-profile">' + photo +
       '<div><h1>' + L.whoTag(me) + '</h1><p class="muted">' + t('member') +
       (['2F', '3F'].includes(me.floor) ? ' · ' + me.floor : '') + '</p></div></header>' +
-      (me.bio ? '<p class="shell-bio">' + L.esc(me.bio) + '</p>' : '') +
-      '<div class="shell-actions"><a class="btn" href="#/me/edit">' + t('edit') +
-      '</a><a class="btn" href="#/me/settings">' + t('settings') + '</a>' +
+      (me.bio ? '<p class="shell-bio">' + L.esc(me.bio) + '</p>' : '');
+    const editLink = '<a class="btn" href="#/me/edit">' + t('edit') + '</a>';
+    root.innerHTML = '<div class="shell-stack">' +
+      (profile2 ? '<div class="shell-stack" data-own-profile>' + LoungeScreenUI.status('loading', true) + '</div>' : legacy) +
+      '<div class="shell-actions" data-me-actions>' + (profile2 ? '' : editLink) +
+      '<a class="btn" href="#/me/settings">' + t('settings') + '</a>' +
       '<a class="btn" href="#/alerts">' + L.esc(L.t('core.alerts')) + '</a>' +
       (L.open('rewards') ? '<a class="btn" href="#/rewards">' + t('rewards') + '</a>' :
         '<p class="muted">' + t('rewards') + ' · ' + L.esc(L.t('core.soon')) + '</p>') + '</div>' +
@@ -52,6 +56,13 @@
       (L.canInstall() ? '<button class="btn" data-install>' + L.esc(L.t('core.install')) + '</button>' : '') + '</div>';
     const install = root.querySelector('[data-install]');
     if (install) install.onclick = () => L.showInstall(false);
+    if (profile2) void L.api('user', { nick: me.nick }).then(response => {
+      if (!root.isConnected || L.me !== me) return;
+      const view = root.querySelector('[data-own-profile]');
+      if (response.user) return L.renderProfile3(view, response.user, true);
+      view.innerHTML = legacy;
+      root.querySelector('[data-me-actions]').insertAdjacentHTML('afterbegin', editLink);
+    });
     const result = await L.api('points');
     if (!root.isConnected) return;
     const panel = root.querySelector('[data-points]');
@@ -187,7 +198,7 @@
     nav: 'me',
     auth: true,
     render(root, { id }) {
-      if (id === 'edit') return edit(root);
+      if (id === 'edit') return L.open('profile2') ? L.profileEdit(root) : edit(root);
       if (id === 'settings') return settings(root);
       return renderMe(root);
     }

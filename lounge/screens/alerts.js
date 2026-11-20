@@ -12,7 +12,7 @@
       unsupported: '이 브라우저는 폰 알림을 지원하지 않아요.', denied: '브라우저 설정에서 알림을 허용해 주세요.',
       failed: '알림을 불러오거나 저장하지 못했어요. 다시 시도해 주세요.', retry: '다시 시도',
       lostPage: '분실물 확인', dj: '팔로우한 DJ', lost: '분실물', keep: '킵 만료', dm: '메시지',
-      rooms: '대화방', social: '팔로우와 활동', md: '담당 MD', rewards: '보상'
+      rooms: '오픈 대화방', social: '팔로우와 활동', md: '담당 MD', rewards: '보상'
     },
     en: {
       title: 'Notifications', empty: 'No notifications yet.', unread: '{n} unread', read: 'Read',
@@ -25,7 +25,7 @@
       unsupported: 'This browser does not support push notifications.', denied: 'Allow notifications in your browser settings.',
       failed: 'Could not load or save notifications. Please try again.', retry: 'Try again',
       lostPage: 'Check lost and found', dj: 'DJs you follow', lost: 'Lost and found', keep: 'Keep expiry', dm: 'Messages',
-      rooms: 'Chat rooms', social: 'Follows and activity', md: 'Your host', rewards: 'Rewards'
+      rooms: 'Open Chat', social: 'Follows and activity', md: 'Your host', rewards: 'Rewards'
     },
     ja: {
       preview: 'ロック画面の通知プレビュー', sensitive: 'メッセージ・通報・安全通知の内容を隠す',
@@ -240,6 +240,8 @@
       '</select></label>' +
       '</fieldset><p role="alert" class="shell-error" data-pref-error hidden></p><button type="button" class="btn" data-pref-retry hidden>' +
       e(t('retry')) + '</button></section>';
+
+    void L.profileFollows.requests(root, true);
 
     const inbox = root.querySelector('[data-notices]');
     const status = root.querySelector('[data-unread]');
