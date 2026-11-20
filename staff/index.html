@@ -4351,7 +4351,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   }
   function punchBar(d) {
     var w = d.work; if (!w || !w.can) return '';
-    if (w.in && w.out) return '<div class="punch done"><span>🕘 출근 <b>' + esc(w.in) + '</b> · 퇴근 <b>' + esc(w.out) + '</b></span><button type="button" class="link" data-punch="out">퇴근 다시 찍기</button></div>';
+    if (w.in && w.out) return '<div class="punch done"><span>🕘 출근 <b>' + esc(w.in) + '</b> · 퇴근 <b>' + esc(w.out) + '</b></span><button type="button" class="link" data-punch="out">퇴근 다시 찍기</button><button type="button" class="btn btn-hot" data-punch="in">다시 출근하기</button></div>';   // 🔁 퇴근 뒤 다시 출근 (대표 요청 2026-11-20)
     if (w.in) return '<div class="punch on"><span>🕘 출근 <b>' + esc(w.in) + '</b> · 수고 많아요</span><button type="button" class="btn btn-hot" data-punch="out">퇴근하기</button></div>';
     return '<div class="punch"><span>🕘 오늘 아직 출근 전이에요</span><button type="button" class="btn btn-hot" data-punch="in">출근하기</button></div>';
   }
@@ -4365,7 +4365,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         if (r.ok || r.error === 'already') {
           state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can };
           if (kind === 'in') state.data.inputLock = false;   // 출근 → 넣기·승인 가능
-          saveData(state.data); render(); gateSoon(); if (kind === 'in' && r.ok) openBrief(); return;   // ☀️ 출근하면 오늘 브리핑
+          saveData(state.data); render(); gateSoon(); if (kind === 'in' && r.again) alertMsg('🔁 다시 출근했어요'); else if (kind === 'in' && r.ok) openBrief(); return;   // ☀️ 출근하면 오늘 브리핑 (다시 출근은 안내만)
         }
         b.disabled = false; alertMsg(r.error === 'noin' ? '출근을 먼저 찍어 주세요.' : r.error === 'busy' ? '잠시 후 다시 해 주세요.' : '찍지 못했어요. 다시 해 주세요.');
       }).catch(function () { b.disabled = false; alertMsg('연결이 안 돼요. 다시 해 주세요.'); });
