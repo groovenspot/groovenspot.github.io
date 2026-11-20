@@ -7147,6 +7147,9 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       reset_digits: '전화번호 뒤 네 자리를 숫자로 입력해 주세요. / Enter the last four digits.',
       reset_qr: '재설정 QR을 만들지 못했어요. 다시 시도해 주세요. / Could not create the reset QR. Try again.',
       stage_confirm: '공개할 기능을 확인해 주세요. / Confirm the features going live.',
+      stage_snapshot: '서버에서 전체 스위치 값을 읽은 뒤 저장할 수 있어요. / Saving requires the complete switch settings from the server.',
+      recovery_confirm: '선택한 손님의 본인을 확인해 주세요. / Confirm the selected guest’s identity.',
+      points: '0~1,000 사이의 정수 포인트를 입력해 주세요. / Enter whole points from 0 to 1,000.',
       blocked: '차단으로 이 작업을 할 수 없어요. / A block prevents this action.',
       limit: '보낼 수 있는 횟수를 다 썼어요. / Sending limit reached.',
       weekly: '이번 주 안내를 이미 보냈어요. / This week’s update was already sent.',
@@ -7345,6 +7348,20 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       '<div class="lounge-qr" hidden><canvas role="img" aria-label="비밀번호 재설정 QR / Password reset QR"></canvas>' +
       '<p class="lounge-clock"></p></div>';
     const form = panel.querySelector('form'), msg = form.querySelector('.lounge-msg');
+    const qr = loungeRecoveryQr(panel, session, msg);
+    form.elements.p4.addEventListener('input', () => { qr.clear(); msg.textContent = ''; });
+    loungeSubmit(form, data => {
+      qr.clear();
+      if (state.s?.token !== session || !loungeRoles().manage) throw new Error('forbidden');
+      const p4 = data.get('p4');
+      if (!/^[0-9]{4}$/.test(p4)) throw new Error('reset_digits');
+      return loungeStaff(session, 'lounge_reset_qr', { p4 });
+    }, result => {
+      qr.show(result, true);
+      form.reset();
+    });
+  }
+  function loungeRecoveryQr(panel, session, msg) {
     const box = panel.querySelector('.lounge-qr'), canvas = box.querySelector('canvas'), countdown = box.querySelector('p');
     let exp = 0, timer;
     const observer = new MutationObserver(() => { if (!panel.isConnected) clearQr(); });
@@ -7361,30 +7378,24 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       const seconds = Math.ceil((exp - Date.now()) / 1000);
       if (seconds <= 0) {
         clearQr();
-        msg.textContent = 'QR 시간이 지났어요. 번호를 넣고 새로 만들어 주세요. / The QR expired. Enter the digits to create a new one.';
+        msg.textContent = 'QR 시간이 지났어요. 새로 만들어 주세요. / The QR expired. Create a new one.';
         return;
       }
       countdown.textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0') + ' · 남은 시간 / Time left';
     }
-    form.elements.p4.addEventListener('input', () => { clearQr(); msg.textContent = ''; });
-    loungeSubmit(form, data => {
-      clearQr();
-      if (state.s?.token !== session || !loungeRoles().manage) throw new Error('forbidden');
-      const p4 = data.get('p4');
-      if (!/^[0-9]{4}$/.test(p4)) throw new Error('reset_digits');
-      return loungeStaff(session, 'lounge_reset_qr', { p4 });
-    }, result => {
-      if (state.s?.token !== session || !loungeRoles().manage) return;
+    function show(result, legacy) {
+      if (!panel.isConnected || state.s?.token !== session || !loungeRoles().manage) return;
       if (typeof result.r !== 'string' || !/^r1\.[\w-]+\.[\w-]+$/.test(result.r) || !Number.isSafeInteger(result.exp) || result.exp <= Date.now()) {
         throw new Error('reset_qr');
       }
       const url = new URL('https://그루브.site/lounge/#/reset?r=' + result.r);
-      let returned;
-      try { returned = new URL(result.url); } catch (_) { throw new Error('reset_qr'); }
-      if (returned.href !== url.href) throw new Error('reset_qr');
+      if (legacy) {
+        let returned;
+        try { returned = new URL(result.url); } catch (_) { throw new Error('reset_qr'); }
+        if (returned.href !== url.href) throw new Error('reset_qr');
+      }
       loungeDrawQr(canvas, url.href);
       exp = Math.min(result.exp, Date.now() + 300000);
-      form.reset();
       box.hidden = false;
       observer.observe(panel.parentElement, { childList: true });
       observer.observe($('sheet'), { childList: true });
@@ -7392,7 +7403,42 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       timer = setInterval(tick, 250);
       tick();
       if (!box.hidden) msg.textContent = '손님이 이 QR을 찍으면 비밀번호를 바꿀 수 있어요. / The guest can scan this QR to reset their password.';
-    });
+    }
+    return { clear: clearQr, show };
+  }
+  function loungeBoundRecovery(panel, session) {
+    if (state.s?.token !== session || !loungeRoles().manage) throw new Error('forbidden');
+    panel.innerHTML = '<p class="note">선택한 손님만 쓸 수 있는 5분 QR이에요. 본인을 확인하고 해당 손님에게만 보여 주세요. / This five-minute QR works only for the selected guest. Verify their identity and show it only to them.</p>' +
+      '<div data-recovery-search></div><div data-recovery-selection></div><div class="lounge-qr" hidden>' +
+      '<canvas role="img" aria-label="비밀번호 재설정 QR / Password reset QR"></canvas><p class="lounge-clock"></p></div>';
+    const search = panel.querySelector('[data-recovery-search]');
+    const selection = panel.querySelector('[data-recovery-selection]');
+    function find() {
+      selection.replaceChildren();
+      search.hidden = false;
+      loungeMemberSearch(search, session, select, true);
+    }
+    function select(member) {
+      search.hidden = true;
+      selection.innerHTML = '<form><p><strong>' + esc(member.nick) + '</strong> · …' + esc(member.phone4) + '</p>' +
+        '<div class="lounge-options"><label><input type="checkbox" name="confirmed"> 선택한 손님의 본인을 확인했어요. / I verified the selected guest’s identity.</label></div>' +
+        loungeButton('5분 복구 QR 만들기 / Create five-minute recovery QR', 'type="submit"', true) +
+        loungeButton('다시 찾기 / Search again', 'type="button" data-search-again') + '<p class="msg lounge-msg" role="status"></p></form>';
+      const form = selection.querySelector('form'), msg = form.querySelector('.lounge-msg');
+      const qr = loungeRecoveryQr(panel, session, msg);
+      form.querySelector('[data-search-again]').onclick = () => { qr.clear(); find(); };
+      form.elements.confirmed.onchange = () => { qr.clear(); msg.textContent = ''; };
+      loungeSubmit(form, data => {
+        qr.clear();
+        if (state.s?.token !== session || !loungeRoles().manage) throw new Error('forbidden');
+        if (!data.has('confirmed')) throw new Error('recovery_confirm');
+        return loungeRequest('adm_recovery_grant', { mid: member.id, confirmed: true }, session);
+      }, result => {
+        form.reset();
+        qr.show(result);
+      });
+    }
+    find();
   }
   function loungeSubmit(form, task, done) {
     const msg = form.querySelector('.lounge-msg') || form.closest('.lounge-screen').querySelector('.lounge-msg');
@@ -7484,12 +7530,18 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     if (!Number.isFinite(timestamp)) return '—';
     return new Date(timestamp).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' });
   }
-  function loungeMemberSearch(panel, session, select) {
-    panel.innerHTML = '<form><label>닉네임 또는 전화번호 뒤 4자리 / Nickname or last 4 digits' +
+  function loungeMemberSearch(panel, session, select, nicknameOnly = false) {
+    panel.innerHTML = '<form><label>' + (nicknameOnly ? '닉네임 / Nickname' : '닉네임 또는 전화번호 뒤 4자리 / Nickname or last 4 digits') +
       '<input name="q" maxlength="100" required autocomplete="off"></label>' +
       loungeButton('찾기 / Search', 'type="submit"', true) + '</form><div class="lounge-cards"></div>';
     const list = panel.querySelector('.lounge-cards');
-    loungeSubmit(panel.querySelector('form'), data => loungeRequest('adm_members', { q: data.get('q').trim() }, session),
+    loungeSubmit(panel.querySelector('form'), async data => {
+      const q = data.get('q').trim();
+      if (nicknameOnly && !q) throw new Error('text');
+      const result = await loungeRequest('adm_members', { q }, session);
+      if (nicknameOnly) result.members = result.members.filter(m => m.nick.toLowerCase().includes(q.toLowerCase()));
+      return result;
+    },
       ({ members }) => {
         list.innerHTML = members.length ? members.map((m, i) => '<article><strong>' + esc(m.nick) + '</strong>' +
           '<div>…' + esc(m.phone4) + ' · 가입 / Joined ' + esc(loungeDate(m.joined)) + '</div>' +
@@ -7524,6 +7576,11 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         const body = { mid: member.id, keepId: cust.id };
         try {
           if (!link.staffSaved) {
+            const { open } = await loungeRequest('adm_review_config', {}, session).catch(err => {
+              if (['action', 'unknown'].includes(err.message)) return {};
+              throw err;
+            });
+            if (open?.keepScope === true) await loungeRequest('adm_link_keep', { ...body, checkOnly: true }, session);
             await loungeStaff(session, 'lounge_link_set', { ...body, nick: member.nick });
             link.staffSaved = true;
           }
@@ -7644,8 +7701,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       split: '조각 모집 / Shared table', goods: '굿즈 / Merchandise' };
     const reasons = { me: '내 사진 / My photo', ad: '광고 / Advertising', sexual: '성적 콘텐츠 / Sexual content',
       abuse: '괴롭힘 / Abuse', illegal: '불법 / Illegal', etc: '기타 / Other' };
-    panel.innerHTML = open.length ? '<div class="lounge-cards">' + open.map((report, i) => {
-      const preview = report.preview || {};
+    function evidence(report, preview = {}, note) {
+      preview ||= {};
       const postPhotos = preview.photoKeys || preview.photos;
       const images = [loungeReportImage(preview.key, report.hidden), loungeReportImage(preview.photo),
         ...(Array.isArray(postPhotos) ? postPhotos.slice(0, 5).map(photo => loungeReportImage(photo, report.kind === 'post')) : [])
@@ -7657,26 +7714,51 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
           messages.slice(-20).map(row => '<li><strong>' + esc(row.nick || row.author?.nick || row.from || row.by) +
             '</strong> <small>' + esc(loungeDate(row.at)) + '</small><br>' + esc(row.text) +
             loungeReportImage(row.photo) + '</li>').join('') + '</ol></details>' : '';
+      return images +
+        '<div class="note">' + esc([preview.room?.title || preview.room || preview.roomId, preview.nick || preview.author?.nick,
+          preview.floor, preview.at ? loungeDate(preview.at) : ''].filter(Boolean).join(' · ')) + '</div>' +
+        '<p>' + esc(preview.text || preview.title || preview.bio || report.target_id) + '</p>' + context +
+        (note ? '<p class="note">' + esc(note) + '</p>' : '');
+    }
+    function loadImages(scope) {
+      scope.querySelectorAll('img').forEach(img => {
+        const hide = () => { img.hidden = true; };
+        img.addEventListener('error', hide, { once: true });
+        if (img.hasAttribute('data-report-photo')) loungeLoadReportPhoto(img, session);
+        else if (img.complete && !img.naturalWidth) hide();
+      });
+    }
+    panel.innerHTML = open.length ? '<div class="lounge-cards">' + open.map((report, i) => {
       const acts = report.kind === 'user' ? [] : [report.hidden ? 'show' : 'hide', 'delete'];
       if (report.kind !== 'photo') acts.push('warn', 'suspend7', 'ban');
-      return '<form data-report="' + i + '"' + (report.hidden ? ' class="lounge-hidden"' : '') + '><article>' + images +
+      const protectedEvidence = report.id && !Object.hasOwn(report, 'preview');
+      return '<form data-report="' + i + '"' + (report.hidden ? ' class="lounge-hidden"' : '') + '><article>' +
         '<strong>' + esc(kinds[report.kind] || report.kind) + (report.hidden ? ' · 가려짐 / Hidden' : '') + '</strong>' +
-        '<div class="note">' + esc([preview.room?.title || preview.room || preview.roomId, preview.nick || preview.author?.nick,
-          preview.at ? loungeDate(preview.at) : ''].filter(Boolean).join(' · ')) + '</div>' +
-        '<p>' + esc(preview.text || preview.title || preview.bio || report.target_id) + '</p>' + context +
-        '<p class="note">' + esc(reasons[report.why] || report.why) + (report.note ? ' · ' + esc(report.note) : '') + '</p>' +
+        (protectedEvidence ? loungeButton('신고 증거 보기 / View report evidence', 'type="button" data-load-evidence') +
+          '<div data-report-evidence></div>' : evidence(report, report.preview)) +
+        '<p class="note">' + esc(reasons[report.why] || report.why) + (!protectedEvidence && report.note ? ' · ' + esc(report.note) : '') + '</p>' +
         '<label>처리 메모 (선택) / Note (optional)<input name="note" maxlength="200"></label>' +
         '<div class="lounge-options">' + acts.map(act => loungeButton(LOUNGE_MOD[act],
           'type="submit" name="act" value="' + act + '"', act === 'delete')).join('') + '</div><p class="msg lounge-msg" role="status"></p></article></form>';
     }).join('') + '</div>' : '<p class="note">처리할 신고가 없어요. / No pending reports.</p>';
-    panel.querySelectorAll('article img').forEach(img => {
-      const hide = () => { img.hidden = true; };
-      img.addEventListener('error', hide, { once: true });
-      if (img.hasAttribute('data-report-photo')) loungeLoadReportPhoto(img, session);
-      else if (img.complete && !img.naturalWidth) hide();
-    });
+    loadImages(panel);
     panel.querySelectorAll('form').forEach(form => {
       const report = open[+form.dataset.report];
+      const load = form.querySelector('[data-load-evidence]');
+      if (load) load.onclick = async () => {
+        load.disabled = true;
+        const output = form.querySelector('[data-report-evidence]');
+        output.textContent = '불러오는 중… / Loading…';
+        try {
+          const result = await loungeRequest('adm_report_evidence', { id: report.id }, session);
+          if (!output.isConnected) return;
+          output.innerHTML = evidence(report, result.evidence, result.note);
+          loadImages(output);
+          load.hidden = true;
+        } catch (err) {
+          if (output.isConnected) output.textContent = loungeError(err);
+        } finally { load.disabled = false; }
+      };
       // Confirm moderation with the app’s existing two-tap control.
       form.querySelectorAll('[name="act"]').forEach(b => {
         b.onclick = ev => { if (!armed(b, LOUNGE_MOD[b.value])) ev.preventDefault(); };
@@ -7778,7 +7860,14 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     ['split', '조각 모집 / Shared tables', '손님이 함께 앉을 사람을 모아요. / Guests can find others to share a table.'],
     ['translate', '번역 / Translation', '손님이 글을 자기 언어로 번역해 봐요. / Guests can translate messages into their language.'],
     ['songs', '곡 목록 / Track list', '손님이 어젯밤에 나온 곡을 찾아봐요. / Guests can see which songs played last night.'],
-    ['safety', '안심 호출 / Safety calls', '체크인한 손님이 경호팀에 도움을 요청해요. / Checked-in guests can call security for help.']
+    ['safety', '안심 호출 / Safety calls', '체크인한 손님이 경호팀에 도움을 요청해요. / Checked-in guests can call security for help.'],
+    ['guess', 'DJ 맞히기 / Guess the DJ', '손님이 DJ를 맞히고 포인트를 받아요. / Guests earn points for guessing the DJ.'],
+    ['ws_ticket', '실시간 접속 티켓 / Live connection tickets', '대화방과 메시지에 채널별 단기 접속 티켓을 써요. / Chat rooms and messages use short-lived channel tickets.'],
+    ['signed_events', '이벤트 서명 / Signed events', '스태프 서버가 보내는 이벤트에 재처리 방지용 ID를 요구해요. / Staff events require an ID to prevent duplicate processing.'],
+    ['accountRecovery', '계정 복구 / Account recovery', '대상 지정 복구를 사용하기 전에 켜야 해요. / Turn this on before switching to guest-specific recovery.'],
+    ['bound_reset', '대상 지정 복구 / Guest-specific recovery', '선택한 손님에게만 쓸 수 있는 복구 QR을 발급해요. / Recovery QR codes work only for the selected guest.'],
+    ['reportSecurity', '신고 증거 접근 기록 / Report evidence audit', '증거를 따로 열고 누가 열었는지 기록해요. / Evidence opens on request and each access is logged.'],
+    ['keepScope', '킵 연결 검색 제한 / Restricted Keep linking', '링크 권한 계정은 정확한 닉네임이나 전화번호 뒤 네 자리로만 손님을 찾아요. / Link accounts search by exact nickname or last four digits.']
   ];
   const LOUNGE_SAVED = '저장했어요. / Saved.';
   const LOUNGE_EMPTY = '<p class="note">표시할 항목이 없어요. / No entries.</p>';
@@ -7849,38 +7938,103 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     return '<div class="lounge-counts">' + rows.map(([label, value]) =>
       '<article>' + label + '<strong>' + loungeCount(value) + '</strong></article>').join('') + '</div>';
   }
+  async function loungeOpenSnapshot(request) {
+    const { open } = await request('adm_open_config', {});
+    if (!open || typeof open !== 'object' || Array.isArray(open) || !Object.values(open).every(value => typeof value === 'boolean')) {
+      throw new Error('stage_snapshot');
+    }
+    return open;
+  }
+  function loungeStageOn(open, key) {
+    return (key === 'bound_reset' && !Object.hasOwn(open, key) ? open.accountRecovery : open[key]) === true;
+  }
+  function loungeReadyCheck(panel, request) {
+    const labels = {
+      staff_queue_unverified: '스태프 서버 대기열을 확인할 수 없어요. / The Staff API queue could not be verified.',
+      legacy_queue_pending: '이전 형식으로 쌓인 이벤트의 처리가 남아 있어요. / Legacy events are still queued.',
+      staff_recovery_unverified: '스태프 서버의 대상 지정 복구 지원을 확인할 수 없어요. / Staff API recovery support could not be verified.',
+      account_recovery_closed: '계정 복구 스위치를 켜 주세요. / Turn on account recovery.',
+      recovery_flow_unconfirmed: '실제 복구 흐름을 시험한 뒤 체크해 주세요. / Test the recovery flow, then tick the box.'
+    };
+    const form = document.createElement('form');
+    form.dataset.action = 'adm_ready_check';
+    form.innerHTML = '<fieldset><legend>켜기 전 점검 / Readiness check</legend>' +
+      '<div class="lounge-options"><label><input type="checkbox" name="recoveryVerified"> 대상 지정 QR로 실제 계정 복구를 시험했어요. / I tested account recovery with a guest-specific QR.</label></div>' +
+      loungeButton('준비 상태 점검 / Check readiness', 'type="submit"', true) +
+      '<p class="msg lounge-msg" role="status"></p><div data-ready-results></div></fieldset>';
+    panel.append(form);
+    const results = form.querySelector('[data-ready-results]');
+    form.elements.recoveryVerified.onchange = () => results.replaceChildren();
+    loungeSubmit(form, data => {
+      results.replaceChildren();
+      return request('adm_ready_check', { recoveryVerified: data.has('recoveryVerified') });
+    }, result => {
+      const checks = [['signed_events', '이벤트 서명 / Signed events'], ['bound_reset', '대상 지정 복구 / Guest-specific recovery']];
+      results.innerHTML = loungeCards(checks, ([key, label]) => {
+        const check = result[key] || {};
+        const status = check.ok === true ? '준비 완료 / Ready' : '점검 필요 / Needs attention';
+        const enabled = check.enabled === true ? '켜짐 / On' : '꺼짐 / Off';
+        const queue = key === 'signed_events' && Number.isSafeInteger(check.pending) && Number.isSafeInteger(check.legacy)
+          ? '<p>대기 이벤트 / Queued events · ' + loungeCount(check.pending) + ' · 이전 형식 / Legacy · ' + loungeCount(check.legacy) + '</p>' : '';
+        return '<article><strong>' + label + '</strong><p>' + status + ' · ' + enabled + '</p>' + queue +
+          (Array.isArray(check.issues) && check.issues.length ? '<ul>' + check.issues.map(issue =>
+            '<li>' + esc(Object.hasOwn(labels, issue) ? labels[issue] : issue) + '</li>').join('') + '</ul>' : '') + '</article>';
+      });
+    });
+  }
   async function loungeSettings(panel, request, stages) {
-    const config = await loungeRequest('config');
-    if (!panel.isConnected) return;
-    panel.textContent = '';
     if (stages) {
-      const initial = config.open || {};
+      let unavailable = false;
+      let initial;
+      try { initial = await loungeOpenSnapshot(request); }
+      catch (err) {
+        if (!['action', 'unknown', 'stage_snapshot'].includes(err.message)) throw err;
+        unavailable = true;
+        const [config, review] = await Promise.all([
+          loungeRequest('config'), request('adm_review_config', {}).catch(() => ({}))
+        ]);
+        initial = { ...config.open, ...review.open };
+      }
+      if (!panel.isConnected) return;
+      panel.textContent = '';
       let savedOpen;
       const fields = '<div class="lounge-options lounge-stage-list">' + LOUNGE_FEATURES.map(([key, label, description]) =>
-        '<label><input type="checkbox" name="' + key + '"' + (initial[key] === true ? ' checked' : '') + '>' +
+        '<label><input type="checkbox" name="' + key + '"' + (loungeStageOn(initial, key) ? ' checked' : '') + (unavailable ? ' disabled' : '') + '>' +
         '<span>' + label + '<small>' + description + '</small></span></label>'
       ).join('') + '</div><fieldset class="lounge-stage-confirm" hidden>' +
         '<legend>공개하기 전 확인 / Review before going live</legend>' +
-        '<p>저장하면 고른 기능이 손님에게 바로 공개돼요. / Saving makes these features available to guests immediately.</p>' +
+        '<p>저장하면 선택한 설정이 바로 적용돼요. / Saving applies these settings immediately.</p>' +
         '<ul></ul><div class="lounge-options"><label><input type="checkbox" name="confirmOpen">' +
         '공개할 기능을 확인했어요. / I’ve checked the features going live.</label></div></fieldset>';
       const form = loungeAction(panel, '손님에게 열 기능 / Guest features', 'adm_kv_set', fields, async (_, data) => {
-        const changed = LOUNGE_FEATURES.filter(([key]) => data.has(key) !== (initial[key] === true));
+        if (unavailable) throw new Error('stage_snapshot');
+        const changed = LOUNGE_FEATURES.filter(([key]) => data.has(key) !== loungeStageOn(initial, key));
         if (!changed.length) throw new Error('no_change');
         if (changed.some(([key]) => data.has(key)) && !data.has('confirmOpen')) {
           throw new Error('stage_confirm');
         }
-        const latest = (await loungeRequest('config')).open || {};
+        let latest;
+        try { latest = await loungeOpenSnapshot(request); }
+        catch (err) {
+          if (['action', 'unknown'].includes(err.message)) throw new Error('stage_snapshot');
+          throw err;
+        }
         savedOpen = { ...latest, ...Object.fromEntries(changed.map(([key]) => [key, data.has(key)])) };
         return { k: 'open', v: savedOpen };
       }, request, { label: '공개 설정 저장 / Save visibility', done: (_, saved) => {
-        for (const [key] of LOUNGE_FEATURES) saved.elements[key].checked = initial[key] = savedOpen[key] === true;
+        initial = savedOpen;
+        for (const [key] of LOUNGE_FEATURES) saved.elements[key].checked = loungeStageOn(initial, key);
         reviewChanges();
       } });
       form.dataset.settings = 'open';
+      if (unavailable) {
+        form.querySelector('[type=submit]').disabled = true;
+        form.querySelector('.lounge-msg').textContent = loungeError(new Error('stage_snapshot'));
+        for (const [key] of LOUNGE_FEATURES) form.elements[key].indeterminate = !Object.hasOwn(initial, key);
+      }
       const review = form.querySelector('.lounge-stage-confirm');
       function reviewChanges() {
-        const enabled = LOUNGE_FEATURES.filter(([key]) => initial[key] !== true && form.elements[key].checked);
+        const enabled = LOUNGE_FEATURES.filter(([key]) => !loungeStageOn(initial, key) && form.elements[key].checked);
         form.elements.confirmOpen.checked = false;
         review.querySelector('ul').replaceChildren(...enabled.map(([, label]) => {
           const item = document.createElement('li');
@@ -7890,15 +8044,19 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         review.hidden = !enabled.length;
       }
       form.querySelector('.lounge-stage-list').addEventListener('change', reviewChanges);
+      loungeReadyCheck(panel, request);
       return;
     }
+    const config = await loungeRequest('config');
+    if (!panel.isConnected) return;
+    panel.textContent = '';
     const pointLabels = {
       invite: '친구 초대 / Invite', checkin: '체크인 / Check-in', attend: '출석 / Daily visit',
       streak: '연속 출석 / Streak', streak7: '7일 연속 출석 / 7-day streak', vote: '투표 / Vote',
       cup: '월드컵 / World Cup', survey: '설문 / Survey', radio: '라디오 / Radio',
       post: '사진 글 / Photo post', photo: '사진 글 / Photo post', mission: '미션 / Mission'
     };
-    const points = Object.entries(config.rules || {}).filter(([, pts]) => Number.isSafeInteger(pts));
+    const points = Object.entries(config.rules || {}).filter(([key, pts]) => key !== 'guess' && Number.isSafeInteger(pts));
     loungeAction(panel, '포인트 값 / Point values', 'adm_kv_set', points.map(([key, pts]) =>
       loungeInput(esc(pointLabels[key] || key), esc(key), 'type="number" min="0" step="1" required', pts)
     ).join(''), value => ({
@@ -7909,6 +8067,23 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       loungeArea('한 줄에 하나 · 키 | 이름 | 재생목록 ID / One per line · Key | Name | Playlist ID', 'radio', 'rows="5"', radio),
       value => ({ k: 'radio', v: value('radio') ? loungeRows(value('radio'), 3).map(([key, label, playlist]) =>
         ({ key, label, playlist })) : [] }), request);
+    try {
+      const { points: current } = await request('adm_guess_set', {});
+      if (!panel.isConnected) return;
+      loungeAction(panel, 'DJ 맞히기 포인트 / Guess the DJ points', 'adm_guess_set',
+        loungeInput('정답 포인트 / Points per correct guess', 'points', 'type="number" min="0" max="1000" step="1" required', current),
+        value => {
+          const points = Number(value('points'));
+          if (!value('points') || !Number.isSafeInteger(points) || points < 0 || points > 1000) throw new Error('points');
+          return { points };
+        }, request, { done: (result, form) => { form.elements.points.value = result.points; } });
+    } catch (err) {
+      if (!panel.isConnected) return;
+      const note = document.createElement('p');
+      note.className = 'note';
+      note.textContent = 'DJ 맞히기 포인트 / Guess the DJ points · ' + loungeError(err);
+      panel.append(note);
+    }
   }
   function loungeRooms(panel, request) {
     panel.textContent = '';
@@ -8293,7 +8468,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     const session = state.s.token;
     const request = (a, b) => loungeRequest(a, b, session);
     const tabs = [['reports', '검수 / Review'], ['rooms', '대화방 / Rooms'], ['members', '회원 / Members'],
-      ['resetqr', '비밀번호 재설정 QR / Password reset QR'], ['post', '공식 글 / Official post'],
+      ['resetqr', '비밀번호 재설정 QR / Password reset QR'], ['boundreset', '대상 지정 복구 QR / Guest recovery QR'],
+      ['post', '공식 글 / Official post'],
       ['album', '사진 앨범 / Photo album'], ['vote', '투표 / Vote'],
       ['programming', '월드컵 · 챌린지 / Events'], ['rewards', '보상 / Rewards'], ['orders', '굿즈 주문 / Orders'],
       ['display', '전광판 예약 / Display'], ['stats', '통계 / Stats'], ['analytics', '설문 · 주간 / Reports']];
@@ -8301,6 +8477,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     const screens = {
       reports: panel => loungeReports(panel, session), rooms: panel => loungeRooms(panel, request),
       members: panel => loungeMemberSearch(panel, session), resetqr: panel => loungeResetQr(panel, session),
+      boundreset: panel => loungeBoundRecovery(panel, session),
       stats: panel => loungeStats(panel, session),
       programming: panel => loungeProgramming(panel, request), rewards: panel => loungeRewardSetup(panel, session, request),
       analytics: panel => loungeAnalytics(panel, request),
