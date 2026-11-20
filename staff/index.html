@@ -3949,7 +3949,7 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       '<label class="decaddpic">' + cmIco('cam') + '사진·영상 붙이기 <small>(사진 3장·영상 2개)</small><input type="file" id="decAddFile" accept="image/*,video/*" multiple hidden></label><div class="chatph decph decaddph" id="decAddPh" hidden></div>' +
       '<p class="note" style="margin:0 0 8px">' + (d.decAdd === 'all' ? '할 일·담당에 이름이나 닉네임을 쓰면 그 사람에게 알림이 가요.' : '<b>내 일</b>로 추가돼요. 다른 사람을 태그해서 추가하는 건 ' + permH('decAdd', ['팀장'], ['대표님']) + '만 해요.') + '</p>' +
       '<button class="btn btn-ok" type="submit" style="width:100%">추가하기</button><p class="msg" id="decAddM" role="alert"></p></form></details>';
-    h += dxH('top', d, list);
+    h += dxH('top', d, all0);   // 🔁 반복 틀(tpl)도 넘겨야 ② 가 '반복 업무' 칸을 그림
     if (!list.length) {
       area.innerHTML = h + '<p class="empty">아직 업무가 없어요. 회의록이 올라오면 여기에 담당·마감이 나와요.</p>';
       bindDecAdd(); DX.bind.forEach(function (fn) { try { fn(area, d, send); } catch (e) {} }); return;   // 📋 넓히기 이벤트 (위 top 칸만 있어도)
