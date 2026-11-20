@@ -7,6 +7,12 @@ var API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
 var SHELL = 'gs-shell-v1', WAIT = 3500;
 var PAGE = '/staff/', STATIC = ['/staff/manifest.webmanifest', '/staff/icon-192.png', '/staff/icon-512.png', '/staff/badge-72.png'];
 function noop() {}
+var WHERE_ACTIONS = [
+  { action: 'where-seat', title: '자리에 있음' },
+  { action: 'where-moved', title: '이동함' },
+  { action: 'where-left', title: '나가심' },
+  { action: 'where-unknown', title: '모름' }
+];
 self.addEventListener('install', function (e) {
   self.skipWaiting();
   // 미리 저장 (실패해도 설치는 그대로 — 알림이 먼저)
@@ -111,19 +117,45 @@ self.addEventListener('push', function (e) {
     // 🚨 경호 호출은 따로(gs-sos): 다른 알림이 덮어쓰지 않고, 누를 때까지 남고, 세게 진동 (2026-11-19)
     // 그 밖의 알림은 하나씩 따로 쌓임 — 카톡처럼 (대표 결정 2026-11-20 2시: 예전엔 새 알림이 앞 알림을 덮어 하나만 남았음)
     var opt = { body: n.body, tag: sos ? 'gs-sos' : 'gs-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), renotify: true, icon: '/staff/icon-192.png', badge: '/staff/badge-72.png', data: { tab: n.tab || '', ref: n.ref || '' } };
+    if (n.kind === 'where' && /^where:[-\w]{1,40}$/.test(n.ref || '')) {
+      opt.tag = 'gs-' + n.ref;
+      opt.vibrate = [240, 120, 240]; opt.silent = false;
+      if (/Android.*Chrome\//i.test((self.navigator || {}).userAgent || '')) {
+        var max = typeof Notification !== 'undefined' ? Notification.maxActions : undefined;
+        opt.actions = WHERE_ACTIONS.slice(0, Number.isFinite(max) ? max : WHERE_ACTIONS.length);
+      }
+    }
     if (sos) { opt.requireInteraction = true; opt.vibrate = [300, 100, 300, 100, 600]; opt.silent = false; }
     if (n.kind === 'roar') { opt.requireInteraction = true; opt.vibrate = [500, 120, 500, 120, 900]; opt.silent = false; }   // 🦁 사자후: 누를 때까지 남고 세게 진동 (2026-11-20)
     var done = n.done;
     return self.registration.showNotification(n.title, opt).then(function () { return closeDone(done); });
   }));
 });
+function openStaff(tab, ref) {
+  return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
+    for (var i = 0; i < cs.length; i++) {
+      if (new URL(cs[i].url).pathname.indexOf('/staff/') === 0) { cs[i].postMessage({ tab: tab, ref: ref }); return cs[i].focus(); }
+    }
+    return self.clients.openWindow('/staff/' + (/^dec:[-\w]{1,40}$/.test(ref) ? '#' + ref : tab ? '#' + tab : ''));
+  });
+}
+function whereAction(ref, action) {
+  var id = /^where:([-\w]{1,40})$/.exec(ref);
+  if (!id || !WHERE_ACTIONS.some(function (x) { return x.action === action; })) return Promise.resolve(false);
+  return token().then(function (t) {
+    if (typeof t !== 'string' || !t) return false;
+    return fetch(API, { method: 'POST', body: JSON.stringify({ a: 'where_answer', token: t, id: id[1], answer: action.slice(6) }) })
+      .then(function (r) { return r.json(); }).then(function (r) { return !!r.ok; });
+  }).catch(function () { return false; });
+}
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
   var tab = (e.notification.data && e.notification.data.tab) || '', ref = (e.notification.data && e.notification.data.ref) || '';
-  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
-    for (var i = 0; i < cs.length; i++) {
-      if (cs[i].url.indexOf('/staff/') >= 0) { cs[i].postMessage({ tab: tab, ref: ref }); return cs[i].focus(); }
-    }
-    return self.clients.openWindow('/staff/' + (/^dec:[-\w]{1,40}$/.test(ref) ? '#' + ref : tab ? '#' + tab : ''));   // 🔗 업무 알림 → 그 업무로 (2026-11-20)
+  if (tab !== 'where' || !e.action) { e.waitUntil(openStaff(tab, ref)); return; }
+  e.waitUntil(whereAction(ref, e.action).then(function (ok) {
+    if (!ok) return openStaff('where', ref);
+    return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
+      cs.forEach(function (c) { if (new URL(c.url).pathname.indexOf('/staff/') === 0) c.postMessage({ whereDone: true }); });
+    });
   }));
 });

@@ -1519,6 +1519,17 @@ html:where([data-theme="light"]) .punch.on b { color: #062d1c; }
 .goffer.gofs { position: fixed; inset: 0; left: 0; right: 0; top: 0; bottom: 0; width: auto; z-index: 60; border: 0; border-radius: 0; margin: 0; background: #a3112d; color: #fff; box-shadow: none;
   display: flex; flex-direction: column; gap: 18px; padding: calc(28px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom)); overflow: auto; }
 .goffer.gofs.subo { background: #a84300; }
+html .goffer.gofs.whereoff { background: #182d58; z-index: 59; }
+.goffer.gofs.whereoff .gof-b { grid-template-columns: 1fr 1fr; }
+.whereoff.gofs .gof-b button { min-height: 64px; font-size: 19px; }
+.whereoff.gofs .gof-d { color: #e7eeff; }
+.whereoff [data-where-dismiss] { grid-column: 1 / -1; }
+.whereoff .msg { text-align: center; color: #fff; margin: 0; }
+.whereoff .msg:empty { display: none; }
+.wherewarn { display: block; font-weight: 700; margin-block: 4px; }
+.where-enable { position: fixed; z-index: 58; top: calc(10px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(440px, calc(100% - 18px)); box-sizing: border-box; border-radius: 14px; border: 1px solid var(--line-2); background: var(--card); color: var(--txt); box-shadow: 0 6px 32px #0005; padding: 12px; }
+.where-enable p { margin: 0 0 8px; }
+.where-enable .btn { margin-right: 6px; }
 html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: #a84300; }
 .goffer.gofs .gof-k { font-size: 15px; font-weight: 900; letter-spacing: .1em; opacity: .9; }
 .goffer.gofs .gof-h { flex-direction: column; align-items: center; gap: 18px; margin-top: auto; text-align: center; }
@@ -2697,6 +2708,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 </main>
 <div class="sheet" id="sheet" hidden></div>
 <div class="goffer" id="gateOffer" hidden role="alertdialog" aria-live="assertive"></div>
+<div class="goffer gofs whereoff" id="whereOffer" hidden role="alertdialog" aria-modal="true" aria-labelledby="whereTitle"></div>
+<div class="where-enable" id="wherePushGuide" hidden role="status"></div>
 <div class="goffer subo" id="subOffer" hidden role="alertdialog" aria-live="assertive"></div>
 <button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
 <button type="button" class="sosfab" id="sosFab" hidden aria-label="경호 호출">🚨</button>
@@ -2961,7 +2974,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         if (r.error === 'auth') return toLogin(AUTH_OUT);
         if (r.ok || r.error === 'already') {
           state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can }; state.data.inputLock = false; saveData(state.data);
-          $('sheet').hidden = true; $('sheet').innerHTML = ''; render(); gateSoon(); alertMsg('🕘 출근했어요 · 이제 넣을 수 있어요'); if (r.ok) openBrief(); return;
+          $('sheet').hidden = true; $('sheet').innerHTML = ''; render(); gateSoon(); alertMsg('🕘 출근했어요 · 이제 넣을 수 있어요'); if (r.ok) openBrief(); wherePunchGuide(); return;
         }
         b.disabled = false; $('ppMsg').textContent = r.error === 'forbidden' ? '대표 계정은 출근 없이 넣을 수 있어요.' : r.error === 'busy' ? '잠시 후 다시 해 주세요.' : '찍지 못했어요. 다시 해 주세요.';
       }).catch(function () { b.disabled = false; $('ppMsg').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
@@ -3035,6 +3048,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 
   function toLogin(msg) {
     saveData(null); stopPoll(); swToken('');
+    whereReset();
     loungeAdmin = null;
     loungeReportCache = null;
     loungeReportsNext = false;
@@ -3168,6 +3182,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     var pm = /^pop:(table|yc|guest|ops|gate|live)$/.exec(h); if (pm) { state.pop = pm[1]; h = pm[1]; document.body.classList.add('popmode'); try { document.title = CHAT_NAME[pm[1]]; } catch (e) {} }
     var lh = /^live:([a-f0-9]{12})$/.exec(h);
     if (lh) { state.lvJump = lh[1]; h = 'live'; }
+    if (h === 'where') { h = ''; history.replaceState(null, '', location.pathname + location.search); }
+    whereLoad();
     if (h === 'sos') setTimeout(function () { loadSos(); }, 600);
     if (['ops', 'live', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'rsv', 'me', 'work'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
     else {   // 다시 불러오면 마지막에 보던 탭·대화창 그대로 (대표 요청 2026-11-19)
@@ -4375,7 +4391,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         if (r.ok || r.error === 'already') {
           state.data.work = { day: r.day, in: r.in, out: r.out, can: r.can };
           if (kind === 'in') state.data.inputLock = false;   // 출근 → 넣기·승인 가능
-          saveData(state.data); render(); gateSoon(); if (kind === 'in' && r.again) alertMsg('🔁 다시 출근했어요'); else if (kind === 'in' && r.ok) openBrief(); return;   // ☀️ 출근하면 오늘 브리핑 (다시 출근은 안내만)
+          saveData(state.data); render(); gateSoon(); if (kind === 'in' && r.again) alertMsg('🔁 다시 출근했어요'); else if (kind === 'in' && r.ok) openBrief(); if (kind === 'in') wherePunchGuide(); return;   // ☀️ 출근하면 오늘 브리핑 (다시 출근은 안내만)
         }
         b.disabled = false; alertMsg(r.error === 'noin' ? '출근을 먼저 찍어 주세요.' : r.error === 'busy' ? '잠시 후 다시 해 주세요.' : '찍지 못했어요. 다시 해 주세요.');
       }).catch(function () { b.disabled = false; alertMsg('연결이 안 돼요. 다시 해 주세요.'); });
@@ -7014,19 +7030,21 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       '<button class="btn btn-ok" type="button" id="ubRe" style="width:100%;margin:0 0 8px">다 했어요 · 다시 켜기</button>');
     $('ubRe').addEventListener('click', function () { $('sheet').hidden = true; $('sheet').innerHTML = ''; bellClick(); });
   }
-  function bellClick() {
-    bellState().then(function (st) {
+  function bellClick() { updateBell(false); }
+  function updateBell(enableOnly) {
+    return bellState().then(function (st) {
       if (st === 'ios') return showSheet('<h2>아이폰 알림 켜기</h2><ol class="steps"><li>사파리 아래쪽 <b>공유 버튼(□↑)</b>을 눌러요.</li><li><b>홈 화면에 추가</b>를 눌러요.</li><li>홈 화면에 생긴 <b>GROOVE STAFF</b> 아이콘으로 열어요.</li><li>오른쪽 위 🔕 를 눌러 알림을 켜요.</li></ol><p class="note">아이폰은 홈 화면 앱에서만 알림을 받을 수 있어요 (iOS 16.4 이상).</p>');
       if (st === 'no') return ANDROID ? unblockSheet('no') : toast('이 브라우저는 알림을 못 받아요. 크롬이나 사파리 최신 버전에서 열어 주세요.');
       if (st === 'denied') return ANDROID ? unblockSheet('denied') : toast('알림이 막혀 있어요. 휴대폰 설정에서 이 사이트(앱) 알림을 허용해 주세요.');
       if (st === 'on') {
+        if (enableOnly) return;
         return swReg().then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (s) {
           if (!s) return;
           call({ a: 'push_unsub', token: state.s.token, endpoint: s.endpoint }).catch(function () {});
           return s.unsubscribe();
         }).then(function () { toast('이 기기 알림을 껐어요.'); paintBell(); });
       }
-      Notification.requestPermission().then(function (perm) {
+      return Notification.requestPermission().then(function (perm) {
         if (perm !== 'granted') { paintBell(); return ANDROID ? unblockSheet(perm === 'denied' ? 'denied' : 'quiet') : toast('알림을 허용해야 받을 수 있어요.'); }   // 크롬이 허용 창을 안 띄우고 넘긴 경우(여러 번 닫으면 조용히 막음)도
         toast('알림 켜는 중…');
         return Promise.all([swReg(), call({ a: 'push_key' })]).then(function (x) {
@@ -8711,6 +8729,12 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       if (document.querySelector('[data-lounge-report-count]')) loungeRefreshReportBadges(true);
       return;
     }
+    var data = e.data || {};
+    if (data.tab === 'where' || (data.peek && data.peek.kind === 'where')) {
+      if (data.ref || data.peek?.ref) whereDismissed.delete(String(data.ref || data.peek.ref).slice(6));
+      whereLoad(); return;
+    }
+    if (data.whereDone || data.peek?.kind === 'where-answer') { whereChanged(); return; }
     if (state.pop) return;   // 따로 띄운 대화창은 그대로
     var t = e.data && e.data.tab, ct = /^chat:(table|yc|guest|ops|gate|live)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
@@ -9164,8 +9188,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     // ⏳ 안 끝난 일 · ⏱ 오늘 응답 시간 · 🌙 영업 마감 리포트 (대표 요청 2026-11-19)
     var pend = A.pend || [];
     h += '<details class="bd' + (pend.length ? ' hot' : '') + '" id="bdPend"' + (state.bdPend === false ? '' : ' open') + '><summary>' + opIco('clock') + '<span>안 끝난 일</span><b class="osn">' + pend.length + '</b></summary>' + (pend.length ? pend.map(function (x) {
-      return '<div class="bdi" data-bdk="' + esc(x.k) + '" data-bdid="' + esc(x.id) + '"><div class="bdt"><b>' + esc(x.title) + '</b><small>' + esc(x.sub) + '</small></div><span class="min' + (x.min >= 5 ? ' late' : '') + '">' + x.min + '분째</span>' +
-        '<div class="bdb">' + (x.k === 'tb' || x.k === 'keep' ? '<button type="button" class="ok" data-bdok="1">' + opIco('check', 16) + ' 승인</button>' : '') + '<button type="button" data-bdnd="1">' + opIco('bell', 16) + ' 다시 알리기</button><button type="button" class="del" data-bddel="1" aria-label="이 일 지우기">' + opIco('trash', 16) + ' 지우기</button></div></div>';
+      return '<div class="bdi" data-bdk="' + esc(x.k) + '" data-bdid="' + esc(x.id) + '"><div class="bdt"><b>' + esc(x.title) + '</b><small>' + esc(x.sub) + '</small>' + (x.pushOff ? whereWarn() : '') + '</div><span class="min' + (x.min >= 5 ? ' late' : '') + '">' + x.min + '분째</span>' +
+        '<div class="bdb">' + (x.k === 'tb' || x.k === 'keep' ? '<button type="button" class="ok" data-bdok="1">' + opIco('check', 16) + ' 승인</button>' : '') + (x.resolve ? whereResolveButton(x.resolve) : '') + '<button type="button" data-bdnd="1">' + opIco('bell', 16) + ' 다시 알리기</button><button type="button" class="del" data-bddel="1" aria-label="이 일 지우기">' + opIco('trash', 16) + ' 지우기</button></div></div>';
     }).join('') : '<p class="note" style="margin:6px 0 0">지금 밀린 일이 없어요.</p>') + '<p class="msg" id="bdMsg"></p></details>';
     h += '<details class="bd" id="bdResp"' + (state.bdResp ? ' open' : '') + '><summary>' + opIco('timer') + '<span>오늘 응답 시간</span></summary>' + respHtml(A.resp) + '</details>';
     h += '<details class="bd" id="bdRep"' + (state.bdRep ? ' open' : '') + '><summary>' + opIco('moon') + '<span>영업 마감 리포트' + (A.rep ? ' · ' + esc(tbDayLabel(A.rep.day)) : '') + '</span></summary>' + (A.rep ? repHtml(A.rep) : '<p class="note" style="margin:6px 0 0">영업일이 끝난 아침(8시쯤)에 알림으로 와요.</p>') +
@@ -9186,7 +9210,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       return '<button type="button" class="ali ch' + nw + (isRed(x) ? ' red' : '') + '" data-allroom="' + esc(x.room) + '"><span class="alh"><span class="chip r-' + esc(x.room) + '">' + esc(CHAT_NAME[x.room] || x.room) + '</span><time>' + esc(tm(x.at)) + '</time></span>' +
         '<span><b>' + esc(x.who) + nickH(x.who) + '</b>' + (x.org ? '<small>' + esc(x.org) + '</small>' : '') + '</span>' + (x.re ? '<span class="alre">↩ ' + esc(x.re) + '</span>' : '') +
         (x.text || med ? '<span class="alb">' + esc(x.text) + (x.text && med ? '\n' : '') + esc(med) + '</span>' : '') + (x.req ? '<span class="alq">' + esc(x.req) + '</span>' : '') +
-        (x.wh ? '<span class="alwh' + (wa ? ' ok' : '') + '">' + (wa ? '📍 ' + esc(wa.who) + ': ' + esc(String(wa.text || '').replace(/^📍[^→]*→\s*/, '')) + ' · ' + esc(tm(wa.at)) : '📍 담당 ' + esc(x.wh.md || '') + ' 답 기다리는 중') + '</span>' : '') +
+        (x.wh ? '<span class="alwh' + (wa || x.wh.status ? ' ok' : '') + '">📍 ' + esc(whereSummary(x.wh, wa, wa && tm(wa.at))) + '</span>' + (x.wh.pushOff ? whereWarn() : '') : '') +
         (x.ops && x.ops.urgent && x.ops.status === '대기' ? '<span class="alurg">🆘 긴급모집 중 · ' + x.ops.took.length + '/' + x.ops.need + '명</span>' : '') +
         (x.ops ? '<span class="alops' + (x.ops.status === '확정' ? ' ok' : '') + '">🛎 운영 요청 · ' + esc(x.ops.kind) + ' · ' + (x.ops.status === '확정' ? '✅ 담당 ' + esc(x.ops.took.map(function (k) { return k.who; }).join(', ')) : x.ops.status === '취소' ? '취소됨' : '담당 대기' + (x.ops.took.length ? ' · ' + esc(x.ops.took.map(function (k) { return k.who; }).join(', ')) : '') + (x.ops.need > 1 ? ' (' + x.ops.took.length + '/' + x.ops.need + ')' : '')) + '</span>' : '') +
         (x.sos ? '<span class="alsos' + (x.sos.status === '해결' ? ' ok' : '') + '">🚨 경호 호출 · ' + (x.sos.status === '호출' ? '출동 대기' : x.sos.status === '출동' ? '🏃 출동 ' + esc(x.sos.go.map(function (k) { return k.who; }).join(', ')) : x.sos.status === '해결' ? '✅ 해결 ' + esc(x.sos.doneBy) + (x.sos.go.length ? ' · 출동 ' + esc(x.sos.go.map(function (k) { return k.who; }).join(', ')) : '') : '취소됨') + '</span>' : '') + '</button>';
@@ -10149,7 +10173,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       if (!state.cfF || state.cfF.q !== q || state.chatRoom !== room) return;
       if (!r.ok) { res.innerHTML = '<p class="cfmsg">' + (r.error === 'busy' ? '잠깐 사이에 너무 많이 찾았어요. 잠시 후 다시 해 주세요.' : '찾지 못했어요. 다시 해 주세요.') + '</p>'; return; }
       res.innerHTML = r.hits.length ? r.hits.map(function (t) {
-        return '<button type="button" class="cfhit' + (t.cur ? '' : ' old') + '"' + (t.cur ? ' data-cfgo="' + esc(t.id) + '"' : '') + '><small>' + esc(String(t.at).slice(5).replace('-', '/')) + ' · ' + esc(t.who) + nickH(t.who) + (t.cur ? ' · 눌러서 이동' : ' · 지난 기록') + '</small>' + hlText(t.text, q) + '</button>';
+        return '<button type="button" class="cfhit' + (t.cur ? '' : ' old') + '"' + (t.cur ? ' data-cfgo="' + esc(t.id) + '"' : '') + '><small>' + esc(String(t.at).slice(5).replace('-', '/')) + ' · ' + esc(t.who) + nickH(t.who) + (t.cur ? ' · 눌러서 이동' : ' · 지난 기록') + (t.whereLabel ? ' · ' + esc(t.whereLabel) : '') + '</small>' + hlText(t.text, q) + '</button>';
       }).join('') + (r.more ? '<p class="cfmsg">최근 60개만 보여요.</p>' : '') : '<p class="cfmsg">\'' + esc(q) + '\' 가 들어간 대화가 없어요.</p>';
       res.querySelectorAll('[data-cfgo]').forEach(function (b) { b.addEventListener('click', function () { state.cfF.id = b.dataset.cfgo; state.cfF.i = -1; res.hidden = true; cfApply(0); }); });
     }).catch(function () { res.innerHTML = '<p class="cfmsg">연결이 안 돼요. 다시 해 주세요.</p>'; });
@@ -10262,12 +10286,136 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     }).join(''));
     box.querySelectorAll('[data-cpin]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.cpin }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else { b.disabled = false; if (x.error === 'full') chatLoad(); } }).catch(function () { b.disabled = false; }); }); });
   }
-  // 📍 손님 위치 확인 줄: 답(마지막 답장) 보이기 · 담당에게는 바로 답하는 버튼
-  var WHERE_ANS = ['자리에 있어요', '흡연실', '화장실', '밖에 잠깐', '나갔어요 (아웃)'];
+  // 📍 손님 위치 확인
+  var WHERE_CHOICES = [['seat', '자리에 있음'], ['moved', '이동함'], ['left', '나가심'], ['unknown', '모름']];
+  var whereDismissed = new Set(), whereList = [], whereId = '', whereFlight = null, whereQueued = false, whereAudio;
+  function whereWarn() { return '<span class="wherewarn">🔕 알림 꺼짐 — 직접 찾아가세요</span>'; }
+  function whereResolveButton(id) {
+    return '<button type="button" class="btn" data-where-resolve="' + esc(id) + '">해결됨</button>';
+  }
+  function whereAnswerButtons(id, full) {
+    return WHERE_CHOICES.map(function (x) {
+      return '<button type="button"' + (full ? ' class="btn"' : '') + ' data-where-id="' + esc(id) + '" data-where-answer="' + x[0] + '">' + x[1] + '</button>';
+    }).join('');
+  }
+  function whereReset() {
+    whereDismissed.clear(); whereList = []; whereId = ''; whereFlight = null; whereQueued = false;
+    $('whereOffer').hidden = true; $('wherePushGuide').hidden = true;
+  }
+  function whereUnlock() {
+    if (!state.s) return;
+    try {
+      var C = window.AudioContext || window.webkitAudioContext;
+      if (!whereAudio && C) whereAudio = new C();
+      if (whereAudio && whereAudio.state !== 'running') whereAudio.resume().catch(function () {});
+    } catch (e) {}
+  }
+  document.addEventListener('pointerdown', whereUnlock, { passive: true });
+  document.addEventListener('keydown', whereUnlock);
+  function whereRing() {
+    try { if (navigator.vibrate) navigator.vibrate([240, 120, 240]); } catch (e) {}
+    if (!whereAudio || whereAudio.state !== 'running') return;
+    [0, .25].forEach(function (offset) {
+      var o = whereAudio.createOscillator(), gain = whereAudio.createGain(), t = whereAudio.currentTime + offset;
+      o.frequency.value = 660;
+      gain.gain.setValueAtTime(.12, t); gain.gain.exponentialRampToValueAtTime(.001, t + .16);
+      o.connect(gain); gain.connect(whereAudio.destination); o.start(t); o.stop(t + .17);
+    });
+  }
+  function wherePaint() {
+    var box = $('whereOffer'), q = whereList.find(function (x) { return !whereDismissed.has(x.chat); });
+    if (!q) { box.hidden = true; box.innerHTML = ''; whereId = ''; return; }
+    if ($('gateOffer').matches('.gofs:not([hidden])')) { box.hidden = true; return; }
+    if (whereId === q.chat && !box.hidden) return;
+    whereId = q.chat;
+    box.innerHTML = '<div class="gof-k" id="whereTitle">📍 손님 위치 질문</div><div class="gof-h"><b>' + esc(q.seat) + ' ' + esc(q.guest) + '</b></div>' +
+      '<div class="gof-d">' + esc(q.by) + '님이 물어봤어요</div><div class="gof-b">' + whereAnswerButtons(q.chat, true) +
+      '<button type="button" class="btn" data-where-dismiss>나가기</button></div><p class="msg" role="status"></p>';
+    box.hidden = false; box.querySelector('button').focus(); whereRing();
+  }
+  function whereLoad() {
+    if (!state.s || document.hidden || state.data?.guard || state.s.team === '경호팀') return;
+    if (whereFlight) { whereQueued = true; return; }
+    var token = state.s.token, req = call({ a: 'where_get', token: token });
+    whereFlight = req;
+    req.then(function (r) {
+      if (r.ok && state.s?.token === token) { whereList = r.list || []; wherePaint(); }
+    }).catch(function () {}).finally(function () {
+      if (whereFlight !== req) return;
+      whereFlight = null;
+      if (whereQueued) { whereQueued = false; whereLoad(); }
+    });
+  }
+  function whereChanged() {
+    whereLoad();
+    if (state.chatRoom === 'table' && !$('chatBox').hidden) chatLoad();
+    if (state.tab === 'all') { state.allSig = ''; loadAll(true); }
+    state.pcAt = 0; pushClean();
+  }
+  function wherePunchGuide() {
+    var token = state.s && state.s.token; if (!token) return;
+    var guide = $('wherePushGuide'), pref = state.data?.pref?.pushOff || [];
+    bellState().then(function (st) {
+      if (state.s?.token !== token || (st === 'on' && !pref.includes('table'))) return;
+      guide.innerHTML = '<p><b>🔕 알림이 꺼져 있어요.</b> 위치 질문을 놓치지 않게 알림을 켜 주세요.' +
+        (IOS && !standalone() ? ' 아이폰은 사파리 공유 메뉴에서 <b>홈 화면에 추가</b>한 뒤 앱을 열어 주세요.' : '') +
+        '</p><button type="button" class="btn btn-hot" data-where-enable>알림 켜기</button><button type="button" class="btn" data-where-guide-close>닫기</button>';
+      guide.hidden = false;
+    });
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) whereLoad(); });
+  setInterval(whereLoad, 10000);
+  new MutationObserver(wherePaint).observe($('gateOffer'), { attributes: true, attributeFilter: ['hidden', 'class'] });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-where-answer], [data-where-resolve], [data-where-dismiss], [data-where-enable], [data-where-guide-close]');
+    if (!b || !state.s) return;
+    if ('whereDismiss' in b.dataset) { whereDismissed.add(whereId); wherePaint(); return; }
+    if ('whereGuideClose' in b.dataset) { $('wherePushGuide').hidden = true; return; }
+    if ('whereEnable' in b.dataset) {
+      $('wherePushGuide').hidden = true;
+      var off = state.data?.pref?.pushOff || [];
+      updateBell(true);
+      if (off.includes('table')) {
+        var next = off.filter(function (x) { return x !== 'table'; }), token = state.s.token;
+        call({ a: 'me_pref', token: token, k: 'pushOff', v: next }).then(function (r) {
+          if (r.ok && state.s?.token === token && state.data) { state.data.pref = r.pref || Object.assign({}, state.data.pref, { pushOff: next }); saveData(state.data); }
+          else if (!r.ok) toast('테이블 알림을 켜지 못했어요. 다시 해 주세요.');
+        }).catch(function () { toast('테이블 알림을 켜지 못했어요. 다시 해 주세요.'); });
+      }
+      return;
+    }
+    var code = b.dataset.whereAnswer, id = b.dataset.whereId || b.dataset.whereResolve;
+    var body = { a: code ? 'where_answer' : 'where_resolve', id: id, token: state.s.token };
+    if (code) body.answer = code;
+    var box = b.closest('#whereOffer'), buttons = box ? box.querySelectorAll('button') : [b];
+    buttons.forEach(function (x) { x.disabled = true; });
+    var failed = function () {
+      buttons.forEach(function (x) { x.disabled = false; });
+      if (box && whereId === id) box.querySelector('.msg').textContent = '처리하지 못했어요. 다시 눌러 주세요.';
+      else toast('처리하지 못했어요. 다시 눌러 주세요.');
+    };
+    call(body).then(function (r) {
+      if (state.s?.token !== body.token) return;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok && r.error !== 'notfound') return failed();
+      whereDismissed.add(id); wherePaint(); whereChanged();
+      if (!code && r.ok) b.textContent = '✅ 해결됨';
+    }).catch(failed);
+  });
+
+  function whereSummary(w, reply, time) {
+    var answer = w.answer || (reply && String(reply.text || '').replace(/^📍[^→]*→\s*/, ''));
+    if (answer && (!w.status || w.status === 'answered')) return (w.answeredBy || reply?.who || w.md) + ': ' + answer + (time ? ' · ' + time : '');
+    return w.label || '담당 ' + w.md + ' 답 기다리는 중';
+  }
   function chatWhere(m, r) {
-    var ans = r.list.filter(function (x) { return x.reply && x.reply.id === m.id; }).pop(), isMd = m.where.md === r.me;
-    var h = '<em class="cwhere' + (ans ? ' ok' : '') + '">' + (ans ? '📍 ' + esc(ans.who) + ': ' + esc(String(ans.text || '').replace(/^📍[^→]*→\s*/, '')) + ' · ' + esc(ans.hm) : '📍 담당 ' + esc(m.where.md) + ' 답 기다리는 중') + '</em>';
-    if (isMd) h += '<span class="cwq">' + WHERE_ANS.map(function (o) { return '<button type="button" data-cwq="' + esc(m.id) + '" data-cwa="' + esc(o) + '">' + esc(o) + '</button>'; }).join('') + '<button type="button" data-cwq="' + esc(m.id) + '" data-cwe="1">✏️ 직접 쓰기</button></span>';
+    var w = m.where, ans = r.list.filter(function (x) { return x.reply && x.reply.id === m.id; }).pop();
+    var h = '<em class="cwhere' + (ans || w.status ? ' ok' : '') + '">📍 ' + esc(whereSummary(w, ans, ans && ans.hm)) + '</em>';
+    if (w.pushOff) h += whereWarn();
+    if (w.canResolve) h += whereResolveButton(m.id);
+    if (w.canAnswer || (!('status' in w) && w.md === r.me)) {
+      h += '<span class="cwq">' + whereAnswerButtons(m.id, false) + '<button type="button" data-cwq="' + esc(m.id) + '" data-cwa="나갔어요 (아웃)">자리 비우기 · 아웃 청소</button>' + '<button type="button" data-cwq="' + esc(m.id) + '" data-cwe="1">✏️ 직접 쓰기</button></span>';
+    }
     return ceIco(h);
   }
   function chatPaint(r, toEnd, force) {
@@ -10776,7 +10924,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         var b = this, m = $('tbWMsg'); b.disabled = true;
         call({ a: 'tb_where', token: state.s.token, id: r.id }).then(function (x) {
           m.hidden = false; m.className = 'msg' + (x.ok ? ' ok' : '');
-          if (x.ok) { m.textContent = x.again ? '📍 이미 물어본 손님이에요 (' + (x.by || '') + ' · ' + (x.min || 0) + '분 전). ' + x.md + '님에게 다시 알렸어요. 답이 오면 알려 드려요.' : '📍 ' + x.md + '님에게 물어봤어요. 답이 오면 알려 드려요. (테이블 대화에도 올렸어요)'; flushPush(); return; }   // 🔁 같은 손님은 새 줄 없이 다시 알림 (2026-11-20)
+          if (x.ok) { m.textContent = x.again ? '📍 이미 물어본 손님이에요 (' + (x.by || '') + ' · ' + (x.min || 0) + '분 전). ' + (x.pushOff ? '열려 있는 질문을 확인해 주세요.' : x.md + '님에게 다시 알렸어요. 답이 오면 알려 드려요.') : '📍 ' + x.md + '님에게 물어봤어요. 답이 오면 알려 드려요. (테이블 대화에도 올렸어요)'; if (x.pushOff) m.insertAdjacentHTML('beforeend', whereWarn()); if (x.mine) m.insertAdjacentHTML('beforeend', whereResolveButton(x.chat)); flushPush(); return; }   // 🔁 같은 손님은 새 줄 없이 다시 알림 (2026-11-20)
           b.disabled = false;
           m.textContent = { nomd: '담당이 앱에 가입하지 않아 알림을 못 보내요.', self: '내 손님이에요.', soon: '방금 물어봤어요. 1분 뒤에 다시 할 수 있어요.', busy: '잠시 후 다시 해 주세요.', empty: '빈 자리예요.', notfound: '자리가 바뀌었어요. 다시 열어 주세요.' }[x.error] || '다시 해 주세요.';
         }).catch(function () { b.disabled = false; m.hidden = false; m.className = 'msg'; m.textContent = '연결이 안 돼요.'; });
