@@ -1,9 +1,9 @@
 /* 그루브 라운지 서비스워커 */
-const CACHE = 'groove-lounge-shell-v2';
+const CACHE = 'groove-lounge-shell-v3';
 const API = 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
 const SHELL = [
   '/lounge/', '/lounge/app.css', '/lounge/core.js', '/lounge/manifest.webmanifest',
-  '/lounge/screens/auth.js', '/lounge/screens/me.js', '/lounge/screens/tonight.js',
+  '/assets/media-share.js', '/lounge/screens/auth.js', '/lounge/screens/me.js', '/lounge/screens/tonight.js',
   '/lounge/screens/feed.js', '/lounge/screens/photos.js', '/lounge/screens/user.js',
   '/lounge/screens/play.js', '/lounge/screens/radio.js', '/lounge/screens/vote.js', '/lounge/screens/guess.js',
   '/lounge/screens/alerts.js', '/lounge/screens/rooms.js', '/lounge/screens/dm.js',

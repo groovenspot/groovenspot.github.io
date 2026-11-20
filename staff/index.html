@@ -901,6 +901,7 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .days span i { display: block; font-style: normal; font-size: 10px; opacity: .7; }
 .how { color: var(--muted); font-size: 13px; margin: 16px 0 0; }
 .how code { color: var(--txt); background: var(--card-2); padding: 1px 6px; border-radius: 6px; }
+.lv-share { display: inline-flex; align-items: center; gap: 5px; margin-inline: 8px 4px; min-height: 44px; }
 /* 가입 승인 */
 .acc { display: grid; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
 .acc.wait { border-color: rgba(255,176,32,.6); }
@@ -2712,6 +2713,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 </section>
 
 <script src="/assets/vendor/qrcode-generator-1.4.4.js"></script>
+<script src="/assets/media-share.js"></script>
 <script>
 (function () {
   'use strict';
@@ -3031,6 +3033,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     loungeReportCache = null;
     loungeReportsNext = false;
     loungePendingLinks.clear();
+    state.lvShare = null;
     if ($('sheet').querySelector('.lounge-screen')) $('sheetX').click();
     state.s = null; state.data = null; state.tab = 'guest'; state.tabPick = ''; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
     state.tb = null; state.tbDay = ''; state.tbMsg = ''; state.tbErr = ''; state.tbFly = 0;
@@ -3157,6 +3160,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     if (/^chat:(table|yc|guest|ops|gate|live)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
     var dh = /^dec:([-\w]{1,40})$/.exec(h); if (dh) { decGo(dh[1]); h = 'dec'; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }   // 🔗 업무 알림 → 그 업무로
     var pm = /^pop:(table|yc|guest|ops|gate|live)$/.exec(h); if (pm) { state.pop = pm[1]; h = pm[1]; document.body.classList.add('popmode'); try { document.title = CHAT_NAME[pm[1]]; } catch (e) {} }
+    var lh = /^live:([a-f0-9]{12})$/.exec(h);
+    if (lh) { state.lvJump = lh[1]; h = 'live'; }
     if (h === 'sos') setTimeout(function () { loadSos(); }, 600);
     if (['ops', 'live', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'rsv', 'me', 'work'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
     else {   // 다시 불러오면 마지막에 보던 탭·대화창 그대로 (대표 요청 2026-11-19)
@@ -5031,12 +5036,12 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   function hydrateImgs(root) {
     function viaApi(im, id) {
       if (state.imgs[id]) { im.src = state.imgs[id]; return; }
-      call({ a: 'img', token: state.s.token, id: id }).then(function (r) {
-        if (!r.ok) { im.alt = '사진을 못 불러왔어요'; return; }
-        var bin = atob(r.data), u8 = new Uint8Array(bin.length);
-        for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-        var bl = new Blob([u8], { type: r.type || 'image/jpeg' }); state.imgBlob = state.imgBlob || {}; state.imgBlob[id] = bl;
-        state.imgs[id] = URL.createObjectURL(bl);
+      getStaffImage(id).then(function (bl) {
+        if (!state.imgs[id]) {
+          state.imgBlob = state.imgBlob || {}; state.imgBlob[id] = bl;
+          state.imgs[id] = URL.createObjectURL(bl);
+        }
+        im.src = state.imgs[id];
         document.querySelectorAll('img[data-img="' + id + '"]').forEach(function (x) { x.src = state.imgs[id]; });
       }).catch(function () { im.alt = '사진을 못 불러왔어요'; });
     }
@@ -8802,6 +8807,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       return '<div class="lvc' + (m.kind === 'tt' ? ' tt' : '') + (nw ? ' new' : '') + '" data-lvid="' + esc(m.id) + '"><div class="lvh"><b>' + esc(m.who) + nickH(m.who) + '</b>' + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') +
         (m.kind === 'tt' ? '<span class="lvtt">' + opIco('clock', 13) + ' 타임테이블</span>' : '') + (nw ? '<span class="lvnew">새 글</span>' : '') + '<time>' + (m.day !== L.today ? esc(tbDayLabel(m.day)) + ' ' : '') + esc(m.hm) + '</time>' + (m.mine || admin ? '<button class="link" type="button" data-lvdel="1">지우기</button>' : '') + '</div>' +
         (m.text ? '<p class="lvt">' + esc(m.text) + '</p>' : '') + chatMedia(m) +
+        ((m.photos.length || m.videos.length) && window.GrooveMediaShare ?
+          '<button class="link lv-share" type="button" data-lv-share="' + esc(m.id) + '"></button>' : '') +
         (m.canLounge ? '<button class="link" type="button" data-lv-lounge="' + (m.lounge ? 'hide' : 'show') + '">' +
           (m.lounge ? '라운지에서 내리기' : '라운지에 다시 올리기') + '</button>' : '') + '</div>';
     }).join('') + '</div>' : '<p class="empty">아직 올라온 영상이 없어요. 첫 영상을 올려 보세요.</p>';
@@ -8812,6 +8819,29 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     area.querySelectorAll('.lvc [data-csi]').forEach(function (b) { b.addEventListener('click', function () { saveImg(b.dataset.csi); }); });
     area.querySelectorAll('.lvc [data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
     area.querySelectorAll('.lvc [data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { if (state.tab === 'live') render(); }); }); });
+    area.querySelectorAll('[data-lv-share]').forEach(function (button) {
+      var save = button.closest('.lvc').querySelector('[data-csv]');
+      if (save) save.after(button);
+      var post = L.list.find(function (m) { return m.id === button.dataset.lvShare; });
+      var cache = state.lvShare || (state.lvShare = {}), token = state.s.token;
+      var items = post.photos.map(function (id) {
+        return { name: 'groove_photo_' + id.slice(-6), load: function () {
+          return (state.imgBlob || {})[id] || getStaffImage(id, token);
+        } };
+      }).concat(post.videos.map(function (id) {
+        return { name: 'groove_video_' + id.slice(-6), video: true, load: function (progress) {
+          return (state.vidBlob || {})[id] || getStaffVideo(id, progress, token);
+        } };
+      }));
+      GrooveMediaShare.bind(button, { items: items, state: cache[post.id] || (cache[post.id] = {}),
+        url: location.origin + '/staff/#live:' + encodeURIComponent(post.id),
+        labels: { share: '공유', ready: '지금 공유', save: '저장', progress: function (n) { return '준비 중 ' + n + '%'; },
+          error: function () { alertMsg('사진이나 영상을 준비하지 못했어요. 다시 시도해 주세요.'); } } });
+    });
+    if (state.lvJump) {
+      var card = area.querySelector('[data-lvid="' + state.lvJump + '"]');
+      if (card) { state.lvJump = ''; requestAnimationFrame(function () { card.scrollIntoView({ block: 'center' }); }); }
+    }
     area.querySelectorAll('.lvc [data-lvdel]').forEach(function (b) { b.addEventListener('click', function () {
       if (!armed(b, '지우기')) return; var id = b.closest('[data-lvid]').dataset.lvid; b.disabled = true;
       call({ a: 'lv_del', token: state.s.token, id: id }).then(function (r) { if (r.ok) { state.lv = r; state.lvMsg = '지웠어요.'; } else { b.disabled = false; state.lvMsg = lvErr(r); } render(); }).catch(function () { b.disabled = false; });
@@ -9330,23 +9360,36 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     }
     next();
   }
+  function staffMediaBytes(data) {
+    var bin = atob(data), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+  async function getStaffImage(id, token) {
+    var r = await call({ a: 'img', token: token || state.s.token, id: id });
+    if (!r.ok) throw new Error(r.error || 'img');
+    return new Blob([staffMediaBytes(r.data)], { type: r.type || 'image/jpeg' });
+  }
+  async function getStaffVideo(id, progress, token) {
+    var parts = [], total = 1, type = 'video/mp4';
+    token = token || state.s.token;
+    for (var i = 0; i < total; i++) {
+      var r = await call({ a: 'vid_get', token: token, vid: id, part: i });
+      if (!r.ok) throw new Error(r.error || 'get');
+      total = r.parts; type = r.type;
+      parts.push(staffMediaBytes(r.data));
+      progress((i + 1) / total);
+    }
+    return new Blob(parts, { type: type });
+  }
   function ycLoadVid(id, b, done) {
     state.vidUrl = state.vidUrl || {};
-    var parts = [], total = 1, type = 'video/mp4', i = 0;
     b.disabled = true; b.textContent = '🎬 받는 중…';
-    function next() {
-      call({ a: 'vid_get', token: state.s.token, vid: id, part: i }).then(function (r) {
-        if (!r.ok) throw new Error(r.error || 'get');
-        total = r.parts; type = r.type;
-        var bin = atob(r.data), u = new Uint8Array(bin.length); for (var k = 0; k < bin.length; k++) u[k] = bin.charCodeAt(k);
-        parts.push(u); i++; b.textContent = '🎬 받는 중… ' + Math.floor(i / total * 100) + '%';
-        if (i < total) return next();
-        var vb = new Blob(parts, { type: type }), url = URL.createObjectURL(vb); state.vidBlob = state.vidBlob || {}; state.vidBlob[id] = vb;
-        state.vidUrl[id] = { url: url, ext: type === 'video/quicktime' ? '.mov' : type === 'video/webm' ? '.webm' : '.mp4' };
-        if (done) done(); else renderSoon();
-      }).catch(function () { b.disabled = false; b.textContent = '🎬 다시 받기 (실패)'; });
-    }
-    next();
+    getStaffVideo(id, function (fraction) { b.textContent = '🎬 받는 중… ' + Math.floor(fraction * 100) + '%'; }).then(function (vb) {
+      var type = vb.type, url = URL.createObjectURL(vb); state.vidBlob = state.vidBlob || {}; state.vidBlob[id] = vb;
+      state.vidUrl[id] = { url: url, ext: type === 'video/quicktime' ? '.mov' : type === 'video/webm' ? '.webm' : '.mp4' };
+      if (done) done(); else renderSoon();
+    }).catch(function () { b.disabled = false; b.textContent = '🎬 다시 받기 (실패)'; });
   }
   // 📁 세팅곡 고르기·올리기 (구글 드라이브 'GROOVE 직원앱/세팅곡' 폴더, 2026-11-18). 올리기는 DJ팀·관리자
   function gdSongType(f) {
