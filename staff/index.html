@@ -7086,7 +7086,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         (bt.length > 1 || !i ? '<p class="lab" style="font-weight:700;font-size:14px;margin:0 0 6px">술</p><div class="tbgr" id="ktL">' + bt.map(function (x) { return '<button type="button" class="chip' + (i && i.id === x.id ? ' on' : '') + '" data-kti="' + esc(x.id) + '">' + esc(x.liq) + ' ' + x.n + '병</button>'; }).join('') + '</div>' : '<p class="note" style="margin:0 0 10px"><b>' + esc(i.liq) + '</b> · 지금 ' + i.n + '병</p>') +
         (i ? '<label>몇 병<span class="knum"><button type="button" id="ktDn" aria-label="한 병 덜"' + (st.n <= 1 ? ' disabled' : '') + '>−</button><input id="ktN" type="number" inputmode="numeric" min="1" max="' + mx + '" value="' + st.n + '"><button type="button" id="ktUp" aria-label="한 병 더"' + (st.n >= mx ? ' disabled' : '') + '>+</button></span></label>' +
           (mx < i.n ? '<p class="note" style="margin:-6px 0 10px">⏳ ' + (i.n - mx) + '병은 이미 빼기 요청 중이에요.</p>' : '') : '') +
-        '<label>몇 번 자리로?<input id="ktSeat" maxlength="12" autocomplete="off" placeholder="예) 3-11 · L4" value="' + esc(seat) + '"></label>' +
+        '<label>몇 번 자리로?' + (direct ? '' : ' <b style="color:var(--hot,#ff7a1a)">(필수)</b>') + '<input id="ktSeat" maxlength="12" autocomplete="off" placeholder="예) 3-11 · L4" value="' + esc(seat) + '"></label>' +
         '<p class="lab" style="font-weight:700;font-size:14px;margin:0 0 6px">어떻게 나가요?</p><div class="tbgr">' + KEEP_HOW.map(function (w) { return '<button type="button" class="chip' + (st.how === w ? ' on' : '') + '" data-kth="' + esc(w) + '" aria-pressed="' + (st.how === w) + '">' + esc(w) + '</button>'; }).join('') + '</div>' +
         '<label>메모 (선택)<input id="ktMemo" maxlength="40" autocomplete="off" placeholder="예) 12시 생일 · 얼음 같이" value="' + esc(memo) + '"></label>' +
         (direct ? '' : '<p class="note" style="margin:0 0 10px">⏳ ' + approversTxt() + ' 승인 후 빠져요. 자리·메모도 승인 화면에 보여요.</p>') +
@@ -7099,6 +7099,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       $('ktGo').addEventListener('click', function () {
         var i2 = st.it; if (!i2) return;
         var n = st.n, s2 = $('ktSeat').value.trim().replace(/^([a-z])/i, function (x) { return x.toUpperCase(); }), m2 = $('ktMemo').value.trim();
+        if (!s2 && !direct) { $('ktMsg').textContent = '몇 번 자리로 갈지 자리 번호를 넣어 주세요.'; $('ktSeat').focus(); return; }   // 주류창고 배달 요청은 자리 번호를 넣어야 (대표 요청 2026-11-21)
         if (/[<>"]/.test(s2 + m2)) { $('ktMsg').textContent = '< > " 는 쓸 수 없어요.'; return; }
         var note = [s2 ? s2 + ' 자리' : '', st.how, m2].filter(String).join(' · ');
         var txt = '<b>' + esc(i2.liq) + ' ' + n + '병 꺼냄' + (direct ? '' : ' 요청') + '</b> · ' + i2.n + ' → ' + (i2.n - n) + (note ? ' · ' + esc(note) : '');
