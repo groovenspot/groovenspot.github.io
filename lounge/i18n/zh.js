@@ -58,6 +58,7 @@ Lounge.i18n({zh: {
   "auth.termsBody": "年满 19 周岁的客人可到店注册 Groove Lounge。上传他人的照片前，请先征得同意。禁止广告、骚扰、色情内容和违法帖子。违规内容可能被隐藏或删除，账号也可能被限制使用。",
   "auth.privacyTitle": "个人信息的收集和使用",
   "auth.policyPending": "还有 {count} 项待确认。",
+  "auth.policyAnnouncement": "公告日期 · {date}",
   "auth.policyEffective": "生效日期 · {date}",
   "auth.privacyBody": "我们使用昵称、手机号和密码来注册和管理账号。手机号和密码以哈希值保存。编辑资料时，我们会保存照片、简介和偏好的楼层。注销后，账号、帖子和照片会被删除；举报和处理记录仅保留会员 ID，最长 6 个月。",
   "auth.error.qr": "二维码无效或已过期，请到店向工作人员索取新的二维码。",
