@@ -277,21 +277,7 @@
     en: { 'core.nav': 'Main navigation', 'core.close': 'Close', 'core.soon': 'Coming soon',
       'core.unavailable': 'Could not open this screen. Please try again.', 'core.offline': 'You’re offline',
       'core.install': 'Add to Home Screen', 'core.installBody': 'In Safari, tap Share, then choose Add to Home Screen.',
-      'core.alerts': 'Notifications', 'core.dm': 'Messages', 'core.unread': '{label}, {count} unread' },
-    ja: {
-      'nav.tonight': '今夜', 'nav.feed': 'フィード', 'nav.play': '楽しむ', 'nav.rooms': 'チャット', 'nav.me': 'マイページ',
-      'core.nav': 'メインメニュー', 'core.need': 'お店で会員登録してください', 'core.needBody': 'スタッフに登録用のQRコードをお尋ねください。会員の方はログインしてください。',
-      'core.login': 'ログイン', 'core.close': '閉じる', 'core.soon': '準備中', 'core.unavailable': '画面を開けませんでした。もう一度お試しください。',
-      'core.offline': 'オフラインです', 'core.install': 'ホーム画面に追加', 'core.installBody': 'Safariで共有ボタンを押し、「ホーム画面に追加」を選択してください。',
-      'core.alerts': '通知', 'core.dm': 'メッセージ', 'core.unread': '{label}、未読{count}件'
-    },
-    zh: {
-      'nav.tonight': '今晚', 'nav.feed': '动态', 'nav.play': '娱乐', 'nav.rooms': '聊天室', 'nav.me': '我的',
-      'core.nav': '主菜单', 'core.need': '请到店注册后使用', 'core.needBody': '请向工作人员索取注册二维码。已有账号？请登录。',
-      'core.login': '登录', 'core.close': '关闭', 'core.soon': '准备中', 'core.unavailable': '无法打开页面，请重试。',
-      'core.offline': '网络已断开', 'core.install': '添加到主屏幕', 'core.installBody': '在 Safari 中轻点分享按钮，再选择“添加到主屏幕”。',
-      'core.alerts': '通知', 'core.dm': '私信', 'core.unread': '{label}，{count} 条未读'
-    }
+      'core.alerts': 'Notifications', 'core.dm': 'Messages', 'core.unread': '{label}, {count} unread' }
   });
-  L.screen('rooms', { nav: 'rooms', render: function (root) { root.innerHTML = '<h1>' + L.esc(L.t('nav.rooms')) + '</h1><p class="muted">' + (L.lang === 'ko' ? '준비 중이에요' : 'Coming soon') + '</p>'; } });
+  L.screen('rooms', { nav: 'rooms', render: function (root) { root.innerHTML = '<h1>' + L.esc(L.t('nav.rooms')) + '</h1><p class="muted">' + L.esc(L.t('core.soon')) + '</p>'; } });
 })();
