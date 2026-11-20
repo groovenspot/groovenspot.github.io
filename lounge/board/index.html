@@ -17,6 +17,12 @@
       --line: #ffdfed31;
     }
     * { box-sizing: border-box; }
+    .lounge-who-tag {
+      display:inline-flex; vertical-align:middle; white-space:nowrap;
+      padding:2px 6px; border-radius:6px; background:#fff3ed; color:#120f17;
+      font-size:.58em; font-weight:800; line-height:1.25;
+    }
+    .lounge-who-tag[data-kind="vip"] { background:#ffd66b; color:#2d1b00; }
     [hidden] { display: none !important; }
     body {
       display: grid;
@@ -157,6 +163,7 @@
     <p class="offline" role="status" data-offline hidden>최근 결과 · 연결 확인 중 <span lang="en">/ Last results · Reconnecting</span></p>
   </footer>
 
+  <script src="/lounge/core.js"></script>
   <script>
     (() => {
       const SCENE_MS = 30000;
@@ -193,7 +200,7 @@
         copy.className = 'empty';
         target.replaceChildren(copy);
       }
-      function row(label, value, position) {
+      function row(label, value, position, person) {
         const item = element('li');
         if (position !== undefined) {
           const rank = element('span', String(position));
@@ -201,7 +208,9 @@
           rank.setAttribute('aria-hidden', 'true');
           item.append(rank);
         }
-        item.append(element('b', label), element('strong', value));
+        const title = element('b', label);
+        if (person) title.innerHTML = Lounge.whoTag(person, 'ko');
+        item.append(title, element('strong', value));
         return item;
       }
       function pages(polls) {
@@ -252,14 +261,16 @@
         if (data.top.length) {
           const list = element('ol');
           list.className = 'rank';
-          data.top.slice(0, 10).forEach((item, i) => list.append(row(item.nick, number.format(item.points) + 'P', i + 1)));
+          data.top.slice(0, 10).forEach((item, i) => list.append(row(item.nick, number.format(item.points) + 'P', i + 1, item)));
           rank.replaceChildren(list);
         } else empty(rank, '이번 주 순위가 아직 없어요', 'No rankings this week yet');
         if (data.challenge) {
           const winner = element('div');
           winner.className = 'winner';
           const likes = bilingual('좋아요 ' + number.format(data.challenge.likes), number.format(data.challenge.likes) + ' likes', 'span');
-          winner.append(element('h3', data.challenge.title), element('p', data.challenge.nick), likes);
+          const author = element('p');
+          author.innerHTML = Lounge.whoTag(data.challenge, 'ko');
+          winner.append(element('h3', data.challenge.title), author, likes);
           challenge.replaceChildren(winner);
         } else empty(challenge, '아직 우승자가 없어요', 'The winner has yet to be announced');
         votePages = pages(data.votes);

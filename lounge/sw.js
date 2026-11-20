@@ -1,15 +1,17 @@
 /* 그루브 라운지 서비스워커 */
-const CACHE = 'groove-lounge-shell-v3';
+const CACHE = 'groove-lounge-shell-v5';
 const API = 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
 const SHELL = [
   '/lounge/', '/lounge/app.css', '/lounge/core.js', '/lounge/manifest.webmanifest',
   '/assets/media-share.js', '/lounge/screens/auth.js', '/lounge/screens/me.js', '/lounge/screens/tonight.js',
   '/lounge/screens/feed.js', '/lounge/screens/photos.js', '/lounge/screens/user.js',
+  '/lounge/screens/profile_edit.js', '/lounge/screens/follows.js',
   '/lounge/screens/play.js', '/lounge/screens/radio.js', '/lounge/screens/vote.js', '/lounge/screens/guess.js',
   '/lounge/screens/alerts.js', '/lounge/screens/rooms.js', '/lounge/screens/dm.js',
   '/lounge/screens/compose.js', '/lounge/screens/challenge.js', '/lounge/screens/rewards.js',
   '/lounge/screens/shop.js', '/lounge/screens/table.js', '/lounge/screens/dj.js',
   '/lounge/screens/rank.js', '/lounge/screens/songs.js',
+  '/lounge/screens/share.js',
   '/lounge/i18n/ja.js', '/lounge/i18n/zh.js',
   '/assets/icon.png', '/assets/icon-512.png'
 ];

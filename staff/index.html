@@ -2576,6 +2576,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 .lounge-counts article, .lounge-cards article, .lounge-screen fieldset { border: 1px solid var(--line-2); border-radius: var(--rad); padding: 12px; min-width: 0; overflow-wrap: anywhere; background: var(--card-2); }
 .lounge-counts strong { display: block; font-size: 26px; }
 .lounge-cards { display: grid; gap: 10px; margin-top: 12px; }
+.lounge-member-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.lounge-member-vip { background: #ffd66b; color: #2d1b00; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 800; }
 .lounge-cards article img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; float: right; margin-left: 8px; }
 .lounge-cards article p { white-space: pre-wrap; }
 .lounge-cards .lounge-hidden article { border-color: var(--warn); }
@@ -7187,6 +7189,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   }
   function loungeError(err) {
     const messages = {
+      vote_limit: '오늘은 투표를 10개까지 만들 수 있어요. / You can create up to 10 votes per day.',
       closed: '아직 손님에게 열린 기능이 아니에요. / This guest feature is still closed.',
       reset_digits: '전화번호 뒤 네 자리를 숫자로 입력해 주세요. / Enter the last four digits.',
       reset_qr: '재설정 QR을 만들지 못했어요. 다시 시도해 주세요. / Could not create the reset QR. Try again.',
@@ -7222,7 +7225,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       img: '사진을 읽을 수 없어요. / Couldn’t read this photo.',
       size: '사진 용량이 너무 커요. / The photo is too large.',
       dates: '끝나는 시간이 시작보다 늦어야 해요. / End time must follow start time.',
-      choices: '서로 다른 선택지를 2~32개 적어 주세요. / Enter 2–32 distinct choices.',
+      choices: '서로 다른 선택지를 2~8개 적어 주세요. / Enter 2–8 distinct choices.',
       partial: '회원 연결을 마치지 못했어요. 같은 회원으로 다시 시도해 주세요. / Retry with the same member.',
       linked: '이미 연결된 손님이에요. / This guest is already linked.',
       photo: '사진을 확인해 주세요. / Check the selected photos.',
@@ -7239,7 +7242,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     const s = state.s, admin = s.admin, ops = s.team === '운영팀', guard = s.team === '경호팀' || state.data?.guard;
     const md = ['클로버', '아룬', '고트'].includes(s.team);
     return { dj: admin || s.team === 'DJ팀', crowd: admin || ops, line: admin || guard,
-      checkin: admin || ops || guard, manage: admin || ops, sales: admin || ops || md, md };
+      checkin: admin || ops || guard, manage: admin || ops, vote: admin || s.role === '팀장', sales: admin || ops || md, md };
   }
   function loungeButton(label, attrs = '', hot = false) {
     return '<button class="btn' + (hot ? ' btn-hot' : '') + '" ' + attrs + '>' + label + '</button>';
@@ -7251,6 +7254,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     if (roles.checkin) links.push(['checkin', '입구 체크인 QR / Check-in QR', 'shield']);
     if (roles.dj || roles.crowd || roles.line) links.push(['tonight', '오늘 밤 입력 / Tonight setup', 'clock']);
     if (roles.manage) links.push(['manage', '손님 라운지 관리 / Manage Lounge', 'note']);
+    else if (roles.vote) links.push(['vote', '투표 만들기 / Create vote', 'note']);
     if (roles.sales) links.push(['sales', '라운지 손님 요청 / Lounge guest requests', 'users']);
     return '<div class="lounge-menu">' + links.map(([page, label, icon]) =>
       loungeButton(opIco(icon) + ' ' + label + (page === 'manage' ? loungeReportBadge() : ''),
@@ -7577,6 +7581,48 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     if (!Number.isFinite(timestamp)) return '—';
     return new Date(timestamp).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' });
   }
+  function loungeMemberVipLabel(vip) {
+    const language = (navigator.language || 'ko').slice(0, 2);
+    const labels = {
+      ko: ['VIP 달기', 'VIP 떼기'], en: ['Add VIP', 'Remove VIP'],
+      ja: ['VIPを付ける', 'VIPを外す'], zh: ['添加 VIP', '移除 VIP']
+    };
+    return (labels[language] || labels.en)[Number(vip)];
+  }
+  function loungeMemberActions(article, member, session) {
+    const form = article.querySelector('[data-member-actions]');
+    if (!form) return;
+    const vip = form.querySelector('[name="vip"]');
+    const chip = article.querySelector('[data-member-vip]');
+    const status = article.querySelector('[data-member-status]');
+    const paintVip = () => {
+      const hasVip = member.tag?.kind === 'vip';
+      chip.hidden = !hasVip;
+      if (vip) vip.textContent = loungeMemberVipLabel(hasVip);
+    };
+    paintVip();
+    form.querySelectorAll('[name="act"]').forEach(button => {
+      button.onclick = event => { if (!armed(button, LOUNGE_MOD[button.value])) event.preventDefault(); };
+    });
+    loungeSubmit(form, async data => {
+      if (data.has('vip')) {
+        return loungeRequest('adm_vip_set', { mid: member.id, vip: member.tag?.kind !== 'vip' }, session);
+      }
+      const act = data.get('act');
+      if (!act) throw new Error('act');
+      await loungeRequest('adm_mod', { target: { kind: 'user', id: member.id }, act }, session);
+      return { act };
+    }, (result, msg) => {
+      if (typeof result.vip === 'boolean') {
+        member.tag = result.vip ? { kind: 'vip', label: 'VIP' } : null;
+        paintVip();
+      } else {
+        if (result.act === 'suspend7') status.textContent = '정지 / Suspended';
+        if (result.act === 'ban') status.textContent = '영구 정지 / Banned';
+      }
+      msg.textContent = LOUNGE_SAVED;
+    });
+  }
   function loungeMemberSearch(panel, session, select, nicknameOnly = false) {
     panel.innerHTML = '<form><label>' + (nicknameOnly ? '닉네임 / Nickname' : '닉네임 또는 전화번호 뒤 4자리 / Nickname or last 4 digits') +
       '<input name="q" maxlength="100" required autocomplete="off"></label>' +
@@ -7591,13 +7637,19 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     },
       ({ members }) => {
         list.innerHTML = members.length ? members.map((m, i) => '<article><strong>' + esc(m.nick) + '</strong>' +
+          (select ? '' : ' <span data-member-vip class="lounge-member-vip" hidden>VIP</span>') +
           '<div>…' + esc(m.phone4) + ' · 가입 / Joined ' + esc(loungeDate(m.joined)) + '</div>' +
           (select ? loungeButton('이 회원 선택 / Select member', 'type="button" data-member="' + i + '"') :
             '<div>담당 / Staff ' + esc(m.staff_name || '—') + ' · ' + loungeCount(m.points) + 'P · ' +
-            esc(({ ok: '이용 중 / Active', suspended: '정지 / Suspended', banned: '영구 정지 / Banned' })[m.status] || '—') +
-            '</div><small>회원 ID / Member ID · ' + esc(m.id) + '</small>') +
+            '<span data-member-status>' + esc(({ ok: '이용 중 / Active', suspended: '정지 / Suspended', banned: '영구 정지 / Banned' })[m.status] || '—') + '</span>' +
+            '</div><small>회원 ID / Member ID · ' + esc(m.id) + '</small>' +
+            '<form data-member-actions class="lounge-member-actions">' +
+            ['warn', 'suspend7', 'ban'].map(act => loungeButton(LOUNGE_MOD[act], 'type="submit" name="act" value="' + act + '"')).join('') +
+            (state.s?.admin && m.tag?.kind !== 'staff' ? loungeButton(loungeMemberVipLabel(m.tag?.kind === 'vip'),
+              'type="submit" name="vip" value="1"') : '') + '</form>') +
           '</article>').join('') : '<p class="note">찾은 회원이 없어요. / No members found.</p>';
         list.querySelectorAll('[data-member]').forEach(b => { b.onclick = () => select(members[+b.dataset.member]); });
+        if (!select) list.querySelectorAll('article').forEach((article, i) => loungeMemberActions(article, members[i], session));
       });
   }
   const loungePendingLinks = new Map();
@@ -7859,7 +7911,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       vote: '<label>제목 / Title<input name="title" maxlength="120" required></label>' +
         '<label>종류 / Type<select name="kind"><option value="theme">테마 / Theme</option><option value="dj">DJ</option>' +
         '<option value="etc">기타 / Other</option></select></label>' +
-        '<label>선택지 (한 줄에 하나) / Choices (one per line)<textarea name="choices" rows="4" required></textarea></label>' +
+        '<label>선택지 2~8개 (한 줄에 하나) / 2–8 choices (one per line)<textarea name="choices" rows="4" required></textarea></label>' +
         '<label>시작 (한국 시각) / Starts (KST)<input type="datetime-local" name="opens" required></label>' +
         '<label>끝 (한국 시각) / Ends (KST)<input type="datetime-local" name="closes" required></label>'
     };
@@ -7875,7 +7927,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         const choices = value('choices').split(/\r?\n/).map(choice => choice.trim()).filter(Boolean);
         const opens = Date.parse(value('opens') + ':00+09:00'), closes = Date.parse(value('closes') + ':00+09:00');
         if (!(closes > opens)) throw new Error('dates');
-        if (choices.length < 2 || choices.length > 32 || new Set(choices).size !== choices.length) throw new Error('choices');
+        if (choices.length < 2 || choices.length > 8 || new Set(choices).size !== choices.length) throw new Error('choices');
         return loungeRequest('adm_vote_set', { title: value('title'), kind: value('kind'), choices, opens, closes }, session);
       }
       const body = type === 'album' ? { day: value('day'), title: value('title') } : { text: value('text'), floor: value('floor') };
@@ -8572,13 +8624,21 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     refresh();
   }
   function loungeManage(initial = 'reports') {
-    if (!state.s || !loungeRoles().manage) return;
+    if (!state.s) return;
+    const roles = loungeRoles();
     const session = state.s.token;
+    if (!roles.manage) {
+      if (roles.vote && initial === 'vote') {
+        const root = loungeSheet('투표 만들기 / Create vote', '<div class="lounge-body"></div>');
+        loungePublish(root.querySelector('.lounge-body'), 'vote', session);
+      }
+      return;
+    }
     const request = (a, b) => loungeRequest(a, b, session);
     const tabs = [['reports', '검수 / Review'], ['rooms', '대화방 / Rooms'], ['members', '회원 / Members'],
       ['resetqr', '비밀번호 재설정 QR / Password reset QR'], ['boundreset', '대상 지정 복구 QR / Guest recovery QR'],
       ['post', '공식 글 / Official post'],
-      ['album', '사진 앨범 / Photo album'], ['vote', '투표 / Vote'],
+      ['album', '사진 앨범 / Photo album'], ...(roles.vote ? [['vote', '투표 / Vote']] : []),
       ['programming', '월드컵 · 챌린지 / Events'], ['rewards', '보상 / Rewards'], ['orders', '굿즈 주문 / Orders'],
       ['display', '전광판 예약 / Display'], ['stats', '통계 / Stats'],
       ['analytics', state.s.admin ? '설문 · 주간 / Reports' : '설문 결과 / Surveys']];
@@ -8637,7 +8697,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     show(typeof initial === 'string' && initial === 'display' ? 'display' : 'reports');
   }
   function bindLoungeMenu(area) {
-    const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), tonight: loungeTonight, manage: loungeManage, sales: loungeSales };
+    const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), tonight: loungeTonight, manage: loungeManage,
+      vote: () => loungeManage('vote'), sales: loungeSales };
     area.querySelectorAll('[data-lounge]').forEach(b => { b.onclick = screens[b.dataset.lounge]; });
     if (area.querySelector('[data-lounge=manage]')) {
       loungePaintReportBadges();

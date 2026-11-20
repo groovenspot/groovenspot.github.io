@@ -131,8 +131,8 @@
       const response = await L.api('blocks');
       if (!blocks.isConnected) return;
       if (response.error) { blocks.innerHTML = U.status('error'); return; }
-      blocks.innerHTML = response.blocks.map(({ nick }, i) =>
-        '<div class="shell-row"><span>' + L.esc(nick) + '</span>' + U.button(t('unblock'), 'data-unblock="' + i + '"') + '</div>'
+      blocks.innerHTML = response.blocks.map((person, i) =>
+        '<div class="shell-row"><span>' + L.whoTag(person) + '</span>' + U.button(t('unblock'), 'data-unblock="' + i + '"') + '</div>'
       ).join('') || U.status('empty');
       for (const button of blocks.querySelectorAll('[data-unblock]')) button.onclick = async () => {
         button.disabled = true;
@@ -153,7 +153,7 @@
     const target = view.querySelector('[data-list]');
     function entries(rows) {
       return rows.map(row => '<a class="shell-row" style="' + U.card + ';color:inherit;text-decoration:none" href="' +
-        L.esc(dmPath(row.nick)) + '"><strong>' + L.esc(row.nick) + '</strong><span class="muted">' +
+        L.esc(dmPath(row.nick)) + '"><strong>' + L.whoTag(row) + '</strong><span class="muted">' +
         (row.unread ? t('unread', { n: Number(row.unread) }) : row.state === 'outgoing' ? t('outgoing') :
           U.time(row.at, { month: 'short', day: 'numeric' })) + '</span></a>').join('');
     }
@@ -218,7 +218,7 @@
     return result.key;
   }
 
-  function thread(view, nick, canTranslate) {
+  function thread(view, nick, canTranslate, canShare) {
     view.innerHTML = '<header style="' + header + '">' + U.link('#/dm', t('back')) +
       '<h1 data-peer></h1><div class="shell-actions">' + U.button(t('menu'), 'data-menu hidden') +
       U.button(t('refresh'), 'data-refresh') + '</div></header>' +
@@ -255,12 +255,13 @@
         return '<article data-id="' + L.esc(item.id) + '" style="justify-self:' + bubble +
           ';max-width:84%;padding:10px 14px;min-width:0"><p style="white-space:pre-wrap">' + L.esc(item.text) + '</p>' +
           (item.photo ? '<img alt="' + t('photoAlt') + '" style="display:block;max-width:100%;max-height:300px;border-radius:12px">' : '') +
+          (canShare ? window.LoungeShare?.reference(item.ref) || '' : '') +
           '<small>' + U.time(item.at, { hour: 'numeric', minute: '2-digit' }) +
           (item.mine ? '<span data-receipt' + (item.seq > data.peerRead ? ' hidden' : '') + '> · ' + t('read') + '</span>' : '') + '</small>' +
           (canTranslate && item.text ? U.button(t('translate'), 'data-translate') + '<p data-translation></p>' : '') + '</article>';
       }).join('');
       for (const [i, article] of [...messages.children].entries()) {
-        const item = all[i], img = article.querySelector('img'), translate = article.querySelector('[data-translate]');
+        const item = all[i], img = article.querySelector(':scope > img'), translate = article.querySelector('[data-translate]');
         if (img) void loadPhoto(img, item.id);
         if (translate) translate.onclick = async () => {
           translate.disabled = true;
@@ -293,7 +294,7 @@
           code === 'not_found' ? status('missing') : U.status('error');
         return;
       }
-      peer.innerHTML = '<a style="color:inherit" href="#/u/' + L.esc(encodeURIComponent(data.nick)) + '">' + L.esc(data.nick) + '</a>';
+      peer.innerHTML = '<a style="color:inherit" href="#/u/' + L.esc(encodeURIComponent(data.nick)) + '">' + L.whoTag(data) + '</a>';
       mutual.textContent = data.mutual ? L.t('dm.mutual') : '';
       menu.hidden = false;
       form.hidden = !data.canSend;
@@ -427,7 +428,7 @@
       return;
     }
     if (params.settings) return settings(view, enabled);
-    return params.id ? thread(view, params.id, config.open.translate) : list(view);
+    return params.id ? thread(view, params.id, config.open.translate, config.open.share === true) : list(view);
   }
 
   L.screen('dm', { title: 'dm.title', selfGate: true, render, leave() { dispose?.(); dispose = undefined; } });

@@ -6,6 +6,13 @@
   var features = Object.create(null), configPending;
   var gates = { rooms: 'rooms', dm: 'dm', challenge: 'challenge', compose: 'posts',
     rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety' };
+  var STAFF_API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
+  var staffTeamLabels = {
+    'GROOVE 영업팀': { ko: '영업팀', en: 'Sales', ja: '営業チーム', zh: '销售团队' },
+    'GROOVE 운영팀': { ko: '운영팀', en: 'Operations', ja: '運営チーム', zh: '运营团队' },
+    'GROOVE DJ팀': { ko: 'DJ팀', en: 'DJ Team', ja: 'DJチーム', zh: 'DJ 团队' },
+    'GROOVE 경호팀': { ko: '경호팀', en: 'Security', ja: '警備チーム', zh: '安保团队' }
+  };
   function read(key) { try { return localStorage.getItem(key) || ''; } catch (e) { return ''; } }
   function save(key, value) {
     try { if (value) localStorage.setItem(key, value); else localStorage.removeItem(key); } catch (e) {}
@@ -53,9 +60,35 @@
       paintStatus();
     },
     api: function (a, body) {
-      var b = Object.assign({}, body, { a: a }); var t = session; if (t && !b.token) b.token = t;
+      var b = Object.assign({}, body, { a: a }); var t = session; if (t && !b.token && !b.admin) b.token = t;
       return fetch(API, { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify(b) }).then(function (r) { return r.json(); })
-        .then(function (j) { if (j && j.error === 'auth' && t && b.token === t && session === t) { L.setToken(''); L.me = null; } return j && typeof j === 'object' ? j : { error: 'server' }; }).catch(function () { return { error: 'network' }; });
+        .then(function (j) { if (j && j.error === 'auth' && !b.admin && t && b.token === t && session === t) { L.setToken(''); L.me = null; } return j && typeof j === 'object' ? j : { error: 'server' }; }).catch(function () { return { error: 'network' }; });
+    },
+    // The profile menu can use an already signed-in Staff app session on this origin.
+    staffAdmin: async function () {
+      try {
+        const saved = read('gs_staff');
+        const staff = JSON.parse(saved);
+        if (staff?.admin !== true || typeof staff.token !== 'string' || !staff.token || !Number.isFinite(staff.exp) || staff.exp <= Date.now()) return '';
+        const response = await fetch(STAFF_API, {
+          method: 'POST', headers: { 'content-type': 'text/plain' },
+          body: JSON.stringify({ a: 'lounge_admin_token', token: staff.token })
+        });
+        if (!response.ok) return '';
+        const result = await response.json();
+        return read('gs_staff') === saved && result.r === 'admin' && typeof result.a === 'string' ? result.a : '';
+      } catch { return ''; }
+    },
+    tagLabel: function (tag, locale = L.lang) {
+      if (tag?.kind === 'vip') return 'VIP';
+      if (tag?.kind !== 'staff') return '';
+      const team = Object.hasOwn(staffTeamLabels, tag.label) ? staffTeamLabels[tag.label][locale] : '';
+      return team ? 'GROOVE ' + team : 'GROOVE';
+    },
+    whoTag: function (person, locale = L.lang) {
+      const nick = L.esc(person?.nick);
+      const label = L.tagLabel(person?.tag, locale);
+      return label ? nick + ' <span class="lounge-who-tag" data-kind="' + person.tag.kind + '">' + L.esc(label) + '</span>' : nick;
     },
     img: function (key) { return key ? API.replace(/\/$/, '') + '/img/' + encodeURIComponent(key).replace(/%2F/g, '/') : ''; },
     upload: async function (file, kind) {
@@ -224,8 +257,8 @@
       await L.route();
     }
   };
-  L.i18n({ ko: { 'nav.tonight': '오늘 밤', 'nav.feed': '피드', 'nav.play': '놀거리', 'nav.rooms': '대화방', 'nav.me': '나', 'core.need': '매장에서 가입하면 쓸 수 있어요', 'core.needBody': '직원에게 가입 QR을 보여 달라고 하세요. 이미 가입했다면 로그인하세요.', 'core.login': '로그인' },
-           en: { 'nav.tonight': 'Tonight', 'nav.feed': 'Feed', 'nav.play': 'Play', 'nav.rooms': 'Rooms', 'nav.me': 'Me', 'core.need': 'Join at the club to use this', 'core.needBody': 'Ask a staff member for the sign-up QR. Already a member? Log in.', 'core.login': 'Log in' } });
+  L.i18n({ ko: { 'nav.tonight': '오늘 밤', 'nav.feed': '피드', 'nav.play': '놀거리', 'nav.rooms': '오픈 대화방', 'nav.me': '나', 'core.need': '매장에서 가입하면 쓸 수 있어요', 'core.needBody': '직원에게 가입 QR을 보여 달라고 하세요. 이미 가입했다면 로그인하세요.', 'core.login': '로그인' },
+           en: { 'nav.tonight': 'Tonight', 'nav.feed': 'Feed', 'nav.play': 'Play', 'nav.rooms': 'Open Chat', 'nav.me': 'Me', 'core.need': 'Join at the club to use this', 'core.needBody': 'Ask a staff member for the sign-up QR. Already a member? Log in.', 'core.login': 'Log in' } });
   function paintStatus() {
     document.documentElement.lang = L.lang;
     document.getElementById('tabbar').setAttribute('aria-label', L.t('core.nav'));
