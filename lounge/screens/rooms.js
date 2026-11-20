@@ -35,7 +35,7 @@
     },
     en: {
       title: 'Open Chat', intro: 'Any signed-in member can join an open room.',
-      name2F: 'Tonight · 2F Hip-hop', name3F: 'Tonight · 3F EDM', nameEnglish: 'English Lounge',
+      name2F: 'Tonight · 2F Hip-hop', name3F: 'Tonight · 3F EDM', nameEnglish: 'English Open Chat',
       hours: 'Open Chat is available during club hours. Chats disappear at noon the next day.',
       open: 'Open', closed: 'Club closed', people: '{n} online', back: 'Back to Open Chat',
       rules: 'Text only. Please keep ads and requests for contact details out of the chat.',
@@ -84,7 +84,9 @@
   const e = (key, vars) => esc(t(key, vars));
   const builtinNames = { '2F': 'name2F', '3F': 'name3F', english: 'nameEnglish' };
   const nameOf = room => {
-    if (room.id === 'english' && room.title === '영어 대화방' && room.en === copy.en.nameEnglish) return t('nameEnglish');
+    // Both server defaults predate the Open Chat name. Keep custom room titles intact.
+    if (room.id === 'english' && room.en === 'English Lounge' &&
+        ['English Lounge', '영어 대화방'].includes(room.title)) return t('nameEnglish');
     if (L.lang === 'ko') return room.title;
     const key = Object.hasOwn(builtinNames, room.id) && builtinNames[room.id];
     if (key && ['ja', 'zh'].includes(L.lang) && room.en === copy.en[key]) return t(key);
