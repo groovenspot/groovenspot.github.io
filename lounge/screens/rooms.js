@@ -23,6 +23,7 @@
       busy: '잠깐 쉬었다가 다시 해 주세요.', translateBusy: '오늘 쓸 수 있는 번역을 다 썼어요.',
       dup: '이미 했어요.', kicked: '오늘은 이 방에 들어갈 수 없어요.',
       roomClosed: '지금은 방이 닫혀 있어요.', missing: '방이나 글을 찾을 수 없어요.',
+      historyExpired: '이미 보낸 글이 이전 기록에서 지워졌어요.',
       text: '내용을 500자 안으로 써 주세요.', retry: '다시 불러오기',
       network: '연결이 끊겼어요. 다시 확인하고 있어요.', loading: '불러오는 중…'
     },
@@ -48,19 +49,18 @@
       busy: 'Wait a moment and try again.', translateBusy: 'You’ve used today’s translations.',
       dup: 'Already done.', kicked: 'You can’t enter this room today.',
       roomClosed: 'This room is closed right now.', missing: 'We couldn’t find the room or message.',
+      historyExpired: 'Your message was sent and has since left the room history.',
       text: 'Write a message of up to 500 characters.', retry: 'Reload',
       network: 'Connection lost. Reconnecting…', loading: 'Loading…'
-    }
+    },
+    ja: { historyExpired: '送信済みのメッセージは履歴から削除されました。' },
+    zh: { historyExpired: '消息已发送，现已从聊天记录中清除。' }
   };
   L.i18n(Object.fromEntries(Object.entries(copy).map(([lang, words]) =>
     [lang, Object.fromEntries(Object.entries(words).map(([key, value]) => ['rooms.' + key, value]))])));
 
   const esc = L.esc;
-  const t = (key, vars) => {
-    const translated = L.t('rooms.' + key, vars);
-    if (L.lang === 'ko' || L.lang === 'en' || !copy.en[key]) return translated;
-    return Object.entries(vars || {}).reduce((text, [k, v]) => text.replaceAll('{' + k + '}', v), copy.en[key]);
-  };
+  const t = (key, vars) => L.t('rooms.' + key, vars);
   const e = (key, vars) => esc(t(key, vars));
   const nameOf = room => L.lang === 'ko' ? room.title : room.en || room.title;
   const time = ms => new Intl.DateTimeFormat(L.lang, { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit' }).format(ms);
@@ -99,7 +99,7 @@
     if (error === 'busy') return t(type === 'safety' ? 'safetyBusy' : type === 'translate' ? 'translateBusy' : 'busy');
     const key = { kicked: 'kicked', room_closed: 'roomClosed', closed: 'roomClosed', dup: 'dup', not_found: 'missing',
       text: 'text', vote_closed: 'voteClosed', staff: 'staff', checkin: 'checkin', floor: 'floorError',
-      seat: 'seatError', network: 'network' }[error];
+      seat: 'seatError', history_expired: 'historyExpired', network: 'network' }[error];
     return key ? t(key) : L.t('core.unavailable');
   }
 
@@ -215,7 +215,8 @@
     const latest = query('[data-latest]');
     const retry = query('[data-retry]');
     const translations = new Map();
-    let socket, pending, timer, reconnectTimer, data, pageCursor, wantedCursor, request = 0, stopped = false, syncing = false, refreshAgain = false;
+    const translating = new Set();
+    let socket, pending, timer, reconnectTimer, refreshTimer, data, pageCursor, wantedCursor, request = 0, stopped = false, syncing = false, refreshAgain = false;
     let sending = false;
     let nextConnect = 0;
     let reconnectDelay = 1000;
@@ -250,14 +251,14 @@
       socket = connection;
       connection.onopen = () => {
         if (socket !== connection) return;
-        reconnectDelay = 1000;
         refresh();
       };
       connection.onmessage = event => {
         if (socket !== connection) return;
         let data;
         try { data = JSON.parse(event.data); } catch { return; }
-        if (data.type === 'refresh') refresh();
+        if (data.type === 'ready') reconnectDelay = 1000;
+        if (data.type === 'refresh') scheduleRefresh();
         if (data.type === 'sent' && data.nonce === pending?.nonce) finishPending(data);
       };
       connection.onclose = () => {
@@ -279,7 +280,8 @@
         '<p class="rooms-bubble">' + esc(message.text) + '</p><div class="rooms-options">' +
         (message.mine ? '' : '<button class="shell-link" type="button" data-report>' + e('report') +
           '</button><button class="shell-link" type="button" data-block>' + e('block') + '</button>') +
-        (flags.translate ? '<button class="shell-link" type="button" data-translate>' + e('translate') + '</button>' : '') +
+        (flags.translate ? '<button class="shell-link" type="button" data-translate' +
+          (translating.has(message.id) ? ' disabled>' + e('translating') : '>' + e('translate')) + '</button>' : '') +
         '</div><small class="muted" data-translation>' + esc(translations.get(message.id) || '') + '</small></li>').join('');
     }
 
@@ -344,7 +346,16 @@
       syncing = true;
       await load(wantedCursor);
       syncing = false;
-      if (refreshAgain) { refreshAgain = false; refresh(); }
+      if (refreshAgain) { refreshAgain = false; scheduleRefresh(); }
+    }
+
+    // Coalesce a burst of socket notices into at most one snapshot per interval.
+    function scheduleRefresh() {
+      if (stopped || refreshTimer) return;
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        refresh();
+      }, 400);
     }
 
     function showPage(cursor) {
@@ -362,16 +373,25 @@
       if (!message || !button) return;
       if (button.hasAttribute('data-report')) report(message);
       if (button.hasAttribute('data-block')) block(message, refresh);
-      if (button.hasAttribute('data-translate')) {
+      if (button.hasAttribute('data-translate') && !translating.has(message.id)) {
+        const alreadyTranslated = translations.get(message.id);
+        if (alreadyTranslated) return;
+        translating.add(message.id);
         button.disabled = true;
         button.textContent = t('translating');
         const result = await L.api('translate', { text: message.text, to: ['ko', 'en', 'ja', 'zh'].includes(L.lang) ? L.lang : 'en' });
+        translating.delete(message.id);
         if (stopped) return;
-        button.disabled = false;
-        button.textContent = t('translate');
+        const current = chat.querySelector('[data-message="' + CSS.escape(message.id) + '"]');
+        const control = current?.querySelector('[data-translate]');
+        if (control) {
+          control.disabled = false;
+          control.textContent = t('translate');
+        }
         if (result.error) { L.toast(problem(result.error, 'translate')); return; }
         translations.set(message.id, result.text);
-        chat.querySelector('[data-message="' + CSS.escape(message.id) + '"] [data-translation]')?.replaceChildren(result.text);
+        if (translations.size > 80) translations.delete(translations.keys().next().value);
+        current?.querySelector('[data-translation]').replaceChildren(result.text);
       }
     };
     query('[data-vote]').onclick = async event => {
@@ -407,8 +427,13 @@
       result ??= await L.api('room_send', { id, text, nonce });
       if (stopped) return;
       sending = submit.disabled = false;
-      if (result.error) { status.textContent = problem(result.error); await refresh(); return; }
+      if (result.error && result.error !== 'history_expired') {
+        status.textContent = problem(result.error);
+        await refresh();
+        return;
+      }
       if (input.value.trim() === text) input.value = '';
+      if (result.error) status.textContent = problem(result.error);
       await showPage(undefined);
     };
     function refreshIfVisible() {
@@ -417,10 +442,11 @@
 
     window.addEventListener('online', refresh);
     document.addEventListener('visibilitychange', refreshIfVisible);
-    timer = setInterval(refreshIfVisible, 5000);
+    timer = setInterval(refreshIfVisible, 4500 + Math.random() * 1000);
     active = () => {
       stopped = true;
       clearInterval(timer);
+      clearTimeout(refreshTimer);
       window.removeEventListener('online', refresh);
       document.removeEventListener('visibilitychange', refreshIfVisible);
       disconnect();
