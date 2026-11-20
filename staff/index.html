@@ -901,7 +901,7 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .days span i { display: block; font-style: normal; font-size: 10px; opacity: .7; }
 .how { color: var(--muted); font-size: 13px; margin: 16px 0 0; }
 .how code { color: var(--txt); background: var(--card-2); padding: 1px 6px; border-radius: 6px; }
-.lv-share { display: inline-flex; align-items: center; gap: 5px; margin-inline-end: 12px; min-height: 44px; }
+.lv-share { display: inline-flex; align-items: center; gap: 5px; margin-inline: 8px 4px; min-height: 44px; }
 /* 가입 승인 */
 .acc { display: grid; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
 .acc.wait { border-color: rgba(255,176,32,.6); }
@@ -8820,6 +8820,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     area.querySelectorAll('.lvc [data-csv]').forEach(function (b) { b.addEventListener('click', function () { saveVid(b.dataset.csv); }); });
     area.querySelectorAll('.lvc [data-cvid]').forEach(function (b) { b.addEventListener('click', function () { ycLoadVid(b.dataset.cvid, b, function () { if (state.tab === 'live') render(); }); }); });
     area.querySelectorAll('[data-lv-share]').forEach(function (button) {
+      var save = button.closest('.lvc').querySelector('[data-csv]');
+      if (save) save.after(button);
       var post = L.list.find(function (m) { return m.id === button.dataset.lvShare; });
       var cache = state.lvShare || (state.lvShare = {}), token = state.s.token;
       var items = post.photos.map(function (id) {
