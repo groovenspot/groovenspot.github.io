@@ -16,13 +16,20 @@
     locked: ['비공개 계정이에요', 'This account is private'],
     lockedHelp: ['팔로우 요청이 수락되면 게시물을 볼 수 있어요.', 'When your follow request is accepted, you can see their posts.'],
     highlights: ['하이라이트', 'Highlights'],
-    post: ['게시물 {n}', 'Post {n}']
+    post: ['게시물 {n}', 'Post {n}'],
+    first: ['첫 방문', 'First visit'],
+    visit5: ['5번 방문', '5 visits'],
+    visit10: ['10번 방문', '10 visits'],
+    attend7: ['7일 연속 출석', '7-day attendance streak'],
+    voter: ['5번 투표', '5 votes']
   });
   const esc = L.esc;
   const count = value => Math.max(0, Number(value) || 0);
   const format = value => new Intl.NumberFormat(L.lang).format(count(value));
   const path = (screen, nick) => '#/' + screen + '/' + encodeURIComponent(nick);
   const followingState = user => user.me?.state || (user.me?.following ? 'following' : 'none');
+  const earnedBadges = new Set(['first', 'visit5', 'visit10', 'attend7', 'voter']);
+  L.profileBadgeLabel = (key, fallback) => earnedBadges.has(key) ? L.t('profile3.' + key) : fallback || key;
 
   function actionLabel(user) {
     const state = followingState(user);
@@ -78,7 +85,8 @@
 
   function postTiles(rows, start = 0) {
     return rows.filter(row => typeof row?.id === 'string').map((row, index) => {
-      const thumb = U.image(row.thumb || row.photos?.[0]);
+      const image = row.thumb || row.photos?.[0];
+      const thumb = U.image(typeof image === 'string' ? image : image?.thumb || image?.src);
       return '<a href="' + esc(path('feed', row.id)) + '" aria-label="' + profile('post', { n: start + index + 1 }) +
         '">' + (thumb ? '<img src="' + esc(thumb) + '" alt="" loading="lazy">' : '') +
         (count(row.count) > 1 ? '<span aria-hidden="true">' + esc(format(row.count)) + '</span>' : '') + '</a>';
@@ -146,7 +154,7 @@
 
     void L.api('highlights', { nick: user.nick }).then(result => {
       if (!view.isConnected || result.error) return;
-      const items = [...(result.auto || []), ...(result.list || [])];
+      const items = [...(result.auto || []).filter(item => count(item.count) > 0), ...(result.list || [])];
       if (!items.length) return;
       highlights.hidden = false;
       for (const item of items) {
@@ -155,16 +163,13 @@
           : item.key === 'tagged' ? profile('tagged') : esc(item.title);
         const label = '<span class="profile3-highlight-cover">' + (cover ? '<img src="' + esc(cover) + '" alt="" loading="lazy">' :
           '<span aria-hidden="true">✦</span>') + '</span><span>' + title + '</span>';
-        if (item.key === 'challenge') {
-          highlights.insertAdjacentHTML('beforeend', '<a class="profile3-highlight" href="#/challenge">' + label + '</a>');
-        } else {
-          const button = document.createElement('button');
-          button.className = 'profile3-highlight';
-          button.type = 'button';
-          button.innerHTML = label;
-          button.onclick = () => item.key === 'tagged' ? choose(tabs[1]) : highlight(button, item.id);
-          highlights.append(button);
-        }
+        const button = document.createElement('button');
+        button.className = 'profile3-highlight';
+        button.type = 'button';
+        button.innerHTML = label;
+        const id = item.key ? item.key + ':' + user.id : item.id;
+        button.onclick = () => highlight(button, id);
+        highlights.append(button);
       }
     });
     return load();
@@ -178,8 +183,9 @@
     const avatar = photos.length ? '<button class="profile3-avatar-button" type="button" data-profile-avatar aria-label="' +
       esc(L.t('profileEdit.photos')) + '"><img class="shell-avatar" src="' + esc(photos[mainIndex].src) + '" alt=""></button>' :
       L.profileFollows.avatar(user);
-    const badge = typeof user.badge === 'string'
-      ? (user.badges || []).find(item => item.key === user.badge)?.label || user.badge : user.badge?.label;
+    const badgeKey = typeof user.badge === 'string' ? user.badge : user.badge?.key;
+    const badge = badgeKey ? L.profileBadgeLabel(badgeKey,
+      user.badge?.label || (user.badges || []).find(item => item.key === badgeKey)?.label) : '';
     const showInstagram = typeof user.link === 'string' && /^[A-Za-z0-9._]{1,30}$/.test(user.link);
     const shareUI = typeof LoungeShare === 'undefined' ? null : LoungeShare;
     const canShare = own && L.open('share') && typeof shareUI?.open === 'function';

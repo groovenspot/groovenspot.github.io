@@ -217,7 +217,7 @@
       ' autocapitalize="none" spellcheck="false" aria-describedby="profile-link-help" value="' + esc(user.link) + '"></label>' +
       '<small id="profile-link-help" class="muted">' + t('instagramHelp') + '</small>' +
       '<label class="shell-field">' + t('badge') + '<select name="badge">' +
-      option('', t('noBadge'), selected || '') + earned.map(badge => option(badge.key, esc(badge.label || badge.key), selected)).join('') +
+      option('', t('noBadge'), selected || '') + earned.map(badge => option(badge.key, esc(L.profileBadgeLabel(badge.key, badge.label)), selected)).join('') +
       '</select></label><label class="shell-choice"><input name="private" type="checkbox" aria-describedby="profile-private-help"' +
       (user.private ? ' checked' : '') + '>' + t('private') + '</label><p id="profile-private-help" class="muted">' + t('privateHelp') +
       '</p><p class="shell-error" role="alert" hidden></p><button type="submit" class="btn btn-hot">' + meText('save') + '</button></form>';
