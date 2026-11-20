@@ -5228,6 +5228,17 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     var GT = SALES.concat(['운영팀']);
     var teamSum = {}; GT.forEach(function (t) { teamSum[t] = 0; });
     w.rows.forEach(function (r) { if (teamSum[r.team] != null) teamSum[r.team] += r.total; });
+    // 운영팀은 게스트가 0 이어도 개인 순위에 보이게 (대표 결정 2026-11-21): 게스트 입력과 같은 명단(승인 직원 + 팀원 명단)
+    var gkey = function (x) { return String(x || '').replace(/\s+/g, '').toLowerCase(); }, gHave = {}, opsZero = [];
+    w.rows.forEach(function (r) { gHave[gkey(r.name)] = 1; });
+    if (!sold) {
+      var myKey = gkey(d.name || (state.s && state.s.name));
+      (d.gmem || (d.accounts || []).filter(function (a) { return a.status === '승인'; })).concat(d.roster || []).forEach(function (a) {
+        var k = gkey(a.name); if (a.team !== '운영팀' || !k || gHave[k]) return; gHave[k] = 1;
+        opsZero.push({ name: a.name, team: '운영팀', total: 0, days: [0, 0, 0, 0, 0, 0, 0], mine: k === myKey, rank: w.rows.length + 1 });
+      });
+      opsZero.sort(function (x, y) { return String(x.name).localeCompare(String(y.name), 'ko'); });
+    }
     var best = Math.max.apply(null, GT.map(function (t) { return teamSum[t]; }));
     var me = w.rows.filter(function (r) { return r.mine; })[0];
     var top = w.rows.filter(function (r) { return r.rank <= 3; });
@@ -5252,7 +5263,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         : '<div' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '><small>' + esc(t) + '</small><b>' + teamSum[t] + '</b>' + todayS(tToday[t]) + '</div>';
     }).join('') + '</div>';
     if (state.gTeam) {
-      var tr = w.rows.filter(function (r) { return r.team === state.gTeam; }), tlast = null, trank = 0;
+      var tr = w.rows.filter(function (r) { return r.team === state.gTeam; }).concat(state.gTeam === '운영팀' ? opsZero : []), tlast = null, trank = 0;
       tr = tr.map(function (r, i) { if (r.total !== tlast) { trank = i + 1; tlast = r.total; } return Object.assign({}, r, { rank: trank }); });
       h += '<div class="tteam"><h2 class="sec">' + esc(state.gTeam) + ' 팀 안 순위 <small>' + tr.length + '명 · ' + teamSum[state.gTeam] + '팀</small><button type="button" class="tclose" data-gteam="">닫기 ✕</button></h2>' +
         (tr.length ? '<div class="list">' + tr.map(function (r) { return rankCard(r, ti); }).join('') + '</div>' : '<p class="empty">' + (isNow ? '이번 주' : '지난주') + ' 이 팀 ' + (sold ? '★ 판매' : '게스트') + '가 아직 없어요.</p>') + '</div>';
@@ -5260,12 +5271,13 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     h += '<h2 class="sec">개인 순위 TOP 3</h2><div class="list gtop3">' + top.map(function (r) { return rankCard(r, ti); }).join('');
     for (var pi = top.length; pi < 3; pi++) h += '<div class="rk ph"><span class="no r' + (pi + 1) + '" aria-hidden="true">' + (pi + 1) + '</span><div class="nm"><strong>아직 없음</strong></div><div class="tot">0<small>팀</small></div></div>';
     h += '</div>';
-    if (!w.rows.length) {
+    var allRows = w.rows.concat(opsZero);
+    if (!allRows.length) {
       h += '<p class="empty" style="margin-top:12px">' + (isNow ? (sold ? '이번 주 아직 승인된 ★ 판매 테이블이 없어요.' : '이번 주 아직 올라온 게스트가 없어요.') : '지난주 기록이 없어요.') + '</p>';
     } else {
-      if ((d.admin || d.guestAll) && w.rows.length > top.length) {   // 승인하는 사람(대표·김동기·양진호·팀장)은 모든 직원 (대표 결정 2026-11-18)
-        h += '<details class="all" open><summary>전체 순위 (' + w.rows.length + '명 · 승인하는 사람만 보여요)</summary><div class="list">' +
-          w.rows.map(function (r) { return rankCard(r, ti); }).join('') + '</div></details>';
+      if ((d.admin || d.guestAll) && allRows.length > top.length) {   // 승인하는 사람(대표·김동기·양진호·팀장)은 모든 직원 (대표 결정 2026-11-18)
+        h += '<details class="all" open><summary>전체 순위 (' + allRows.length + '명 · 승인하는 사람만 보여요)</summary><div class="list">' +
+          allRows.map(function (r) { return rankCard(r, ti); }).join('') + '</div></details>';
       }
     }
     if (canIn && !sold) h += ginHtml(d);   // 🎨 리디자인 2026-11-20: 게스트 입력은 순위 아래
