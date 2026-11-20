@@ -164,6 +164,35 @@
     }
   }
 
+  async function uploadPhoto(file, nick) {
+    const session = token();
+    if (!session) throw new Error('auth');
+    const image = new Image();
+    const source = URL.createObjectURL(file);
+    let blob;
+    try {
+      image.src = source;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      let scale = Math.min(1, 1440 / Math.max(image.naturalWidth, image.naturalHeight));
+      do {
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        canvas.getContext('2d', { alpha: false }).drawImage(image, 0, 0, canvas.width, canvas.height);
+        blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+        if (!blob) throw new Error('photo');
+        scale *= 0.75;
+      } while (blob.size > 1500000);
+    } finally { URL.revokeObjectURL(source); }
+    if (session !== token()) throw new Error('auth');
+    const url = apiURL('dm-upload');
+    url.search = new URLSearchParams({ token: session, nick });
+    const response = await fetch(url, { method: 'POST', body: blob, referrerPolicy: 'no-referrer' });
+    const result = await response.json();
+    if (!response.ok || !result.key) throw new Error(result.error || 'photo');
+    return result.key;
+  }
+
   function thread(view, nick, canTranslate) {
     view.innerHTML = '<header style="' + header + '">' + U.link('#/dm', t('back')) +
       '<h1 data-peer></h1><div class="shell-actions">' + U.button(t('menu'), 'data-menu hidden') +
@@ -299,10 +328,13 @@
 
     menu.onclick = () => {
       if (data.error) return;
-      const reportable = data.messages.filter(item => !item.mine).at(-1);
+      const reportable = older.concat(data.messages).filter(item => !item.mine).at(-1);
       const panel = U.sheet('<h2>' + t('menu') + '</h2><div class="shell-actions">' +
         (reportable ? U.button(U.t('report'), 'data-report') : '') + U.button(t('block'), 'data-block') + '</div>');
-      if (reportable) panel.querySelector('[data-report]').onclick = () => U.report('dm', reportable.id);
+      if (reportable) panel.querySelector('[data-report]').onclick = () => U.reason({
+        title: U.t('report'), reasons: ['ad', 'sexual', 'abuse', 'illegal', 'etc'],
+        submit: why => L.api('dm_report', { id: reportable.id, why })
+      });
       panel.querySelector('[data-block]').onclick = () => {
         const confirmation = U.sheet('<h2>' + t('block') + '</h2><p>' + t('blockConfirm') + '</p>' +
           U.button(t('block'), 'data-confirm', true));
@@ -328,7 +360,8 @@
       if ([...text.trim()].length > 500) return error({ error: 'text' });
       button.disabled = true;
       try {
-        const photo = file && data.mutual ? await L.upload(file, 'dm') : undefined;
+        if (file && !data.mutual) return error({ error: 'mutual_only' });
+        const photo = file ? await uploadPhoto(file, nick) : undefined;
         if (!view.isConnected) return;
         const result = await L.api('dm_send', { nick, text, photo });
         if (!view.isConnected) return;
