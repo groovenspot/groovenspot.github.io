@@ -30,7 +30,7 @@
           (winner ? ' class="post-winner"' : '') + ' data-post-layout' + (floor ? ' data-floor="' + floor + '"' : '') + '>' +
           '<span class="post-rank" aria-hidden="true">' + (Number(rank) || 1) + '</span>' +
           (src ? P.image(src) : '<span class="post-media" aria-hidden="true"></span>') +
-          '<span class="post-rank-body"><strong>' + (winner ? t('winner') + ' · ' : '') + L.esc(post.author?.nick) + '</strong>' +
+          '<span class="post-rank-body"><strong>' + (winner ? t('winner') + ' · ' : '') + L.whoTag(post.author) + '</strong>' +
           '<span class="post-meta"><span>' + t('likes', { n: Number(likes) || 0 }) + '</span>' +
           (floor ? '<span class="post-floor">' + floor + '</span>' : '') + '</span></span></a></li>';
       }).join('');

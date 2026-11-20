@@ -160,9 +160,9 @@
 
   const copy = {
     join: ['그루브 멤버 가입', 'Join Groove Lounge'],
-    invite: ['{name}님이 초대했어요', '{name} invited you'],
     scan: ['매장 직원에게 새 QR을 받아 찍어 주세요.', 'Ask a staff member for a new QR at the club.'],
     nick: ['닉네임', 'Nickname'],
+    invite: ['{name}님이 초대했어요', '{name} invited you'],
     nickHint: [
       '다른 손님에게 보이는 이름이에요. 한글(가~힣), 영문, 숫자, 점(.), 밑줄(_)로 2~12자를 써 주세요.',
       'Other guests can see this name. Use 2–12 Hangul syllables, English letters, digits, periods (.) or underscores (_).'
@@ -199,10 +199,10 @@
     retry: ['다시 시도', 'Try again'],
     termsTitle: ['이용약관과 커뮤니티 규칙', 'Terms and community rules'],
     termsBody: [
-      '만 19세 이상 손님이 매장에서 가입할 수 있어요. 사진 글·대화방·1:1 메시지에서는 타인의 권리와 개인정보를 지켜 주세요. 문제가 있으면 차단하거나 신고할 수 있어요. 보상과 굿즈의 이용 조건은 전문에서 확인해 주세요.',
-      'Guests aged 19 or older can join at the club. Respect other people’s rights and privacy in photo posts, chat rooms and direct messages. You can block or report problems. Read the full text for the rewards and merchandise terms.',
-      '満19歳以上のお客様が店内で登録できます。写真投稿、チャットルーム、個別メッセージで、他の人の権利とプライバシーを守ってください。問題があればブロックや通報ができます。特典とグッズの条件は全文をご確認ください。',
-      '年满 19 周岁的客人可到店注册。发布照片、使用聊天室或发送私信时，请尊重他人的权利与隐私。遇到问题可以屏蔽或举报。奖励和周边商品的条件请阅读全文。'
+      '만 19세 이상 손님이 매장에서 가입할 수 있어요. 사진 글·오픈 대화방·1:1 메시지에서는 타인의 권리와 개인정보를 지켜 주세요. 문제가 있으면 차단하거나 신고할 수 있어요. 보상과 굿즈의 이용 조건은 전문에서 확인해 주세요.',
+      'Guests aged 19 or older can join at the club. Respect other people’s rights and privacy in photo posts, Open Chat and direct messages. You can block or report problems. Read the full text for the rewards and merchandise terms.',
+      '満19歳以上のお客様が店内で登録できます。写真投稿、オープンチャット、個別メッセージで、他の人の権利とプライバシーを守ってください。問題があればブロックや通報ができます。特典とグッズの条件は全文をご確認ください。',
+      '年满 19 周岁的客人可到店注册。发布照片、使用公开聊天室或发送私信时，请尊重他人的权利与隐私。遇到问题可以屏蔽或举报。奖励和周边商品的条件请阅读全文。'
     ],
     privacyTitle: ['개인정보 수집·이용', 'Use of personal information'],
     policyPending: ['확인이 필요한 항목이 {count}개 남아 있어요.', '{count} items are still under review.'],
@@ -283,22 +283,48 @@
       '<input name="' + name + '" type="' + type + '" autocomplete="' + autocomplete + '" required' + min + '></label>';
   }
 
-  function inviter(q) {
-    try {
-      const [kind, payload] = q.split('.');
-      if (kind !== 'j1' || !payload) return '';
-      const bytes = Uint8Array.from(atob(payload.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
-      const { n } = JSON.parse(new TextDecoder().decode(bytes));
-      return typeof n === 'string' ? n : '';
-    } catch (e) { return ''; }
-  }
-
   const policyLink = ['전문 보기 (새 탭)', 'Read the full text (new tab)', '全文を読む（新しいタブ）', '阅读全文（新标签页）'];
+  const socialPolicy = {
+    terms: {
+      follow2: [
+        '비공개 계정을 팔로우하려면 요청을 보내고 승인을 받아야 해요.',
+        'Following a private account requires an approved request.',
+        '非公開アカウントをフォローするには、リクエストの承認が必要です。',
+        '关注私密账号需要发送请求并获得同意。'
+      ],
+      share: [
+        '외부 링크는 공개 계정의 공개 글에만 제공해요. 비공개 글을 메시지로 전달해도 승인된 팔로워만 열 수 있어요.',
+        'Only public posts from public accounts have external links. Only followers approved by the author can open a private post sent in a direct message.',
+        '外部リンクは公開アカウントの公開投稿に限ります。個別メッセージで送られた非公開投稿も、投稿者が承認したフォロワーだけが開けます。',
+        '只有公开账号的公开帖子提供外部链接。私密帖子即使通过私信转发，也只有作者批准的关注者可以打开。'
+      ]
+    },
+    privacy: {
+      profile2: [
+        '새 계정은 공개로 시작하고 프로필 편집에서 비공개로 바꿀 수 있어요. 게시물 태그는 태그된 회원이 승인한 뒤 그 회원의 프로필에 표시돼요.',
+        'New accounts start public and can switch to private in Edit profile. Tags appear on the tagged member’s profile after they approve them.',
+        '新規アカウントは公開で始まり、プロフィール編集で非公開に変更できます。タグは、タグ付けされた会員が承認するとプロフィールに表示されます。',
+        '新账号默认为公开，可在编辑个人主页时改为私密。标记经被标记会员同意后才会显示在其个人主页上。'
+      ],
+      follow2: [
+        '팔로워·팔로잉 목록은 로그인한 회원에게 보이며, 비공개 계정의 목록은 본인과 승인된 팔로워만 볼 수 있어요.',
+        'Signed-in members can see follower and following lists. Only the owner and approved followers can see a private account’s lists.',
+        'フォロワーとフォロー中の一覧はログインした会員に表示され、非公開アカウントの一覧は本人と承認されたフォロワーだけが閲覧できます。',
+        '已登录的会员可查看粉丝和关注列表；私密账号的列表仅账号本人及获准关注者可见。'
+      ],
+      share: [
+        '저장한 글은 본인만 볼 수 있어요.',
+        'Only you can see your saved posts.',
+        '保存した投稿は本人だけが閲覧できます。',
+        '收藏列表仅本人可见。'
+      ]
+    }
+  };
   const consentDetails = [
-    '동의하기 전에 사진 글·대화방·메시지·보상·굿즈·번역의 이용과 개인정보 안내를 확인해 주세요.',
-    'Before agreeing, review how photo posts, chat rooms, messages, rewards, merchandise and translation work and how we handle your data.',
-    '同意の前に、写真投稿、チャットルーム、メッセージ、特典、グッズ、翻訳の利用と個人情報の案内をご確認ください。',
-    '请先阅读照片帖子、聊天室、私信、奖励、周边及翻译的使用规则和个人信息说明，再选择是否同意。'
+    '동의하기 전에 사진 글·오픈 대화방·메시지·보상·굿즈·번역의 이용과 개인정보 안내를 확인해 주세요.',
+    'Before agreeing, review how photo posts, Open Chat, messages, rewards, merchandise and translation work and how we handle your data.',
+    '同意の前に、写真投稿、オープンチャット、メッセージ、特典、グッズ、翻訳の利用と個人情報の案内をご確認ください。',
+    '请先阅读照片帖子、公开聊天室、私信、奖励、周边及翻译的使用规则和个人信息说明，再选择是否同意。'
   ];
   function policyDates(lang) {
     const announced = t('policyAnnouncement', { date: policyReview.announcementText(lang) });
@@ -308,12 +334,15 @@
     return '<p class="muted">' + announced + '<br>' + status + '</p>';
   }
 
-  function policy(key) {
+  function policy(key, isOpen = feature => L.open(feature)) {
     const locale = localeIndex();
     const lang = policyLocales[locale];
     const path = '/lounge/policy.html#' + lang + '-' + key;
+    const items = Object.entries(socialPolicy[key]).filter(([feature]) => isOpen(feature))
+      .map(([, lines]) => '<li>' + L.esc(lines[locale]) + '</li>').join('');
     return '<h2>' + t(key + 'Title') + '</h2><p>' + L.esc(copy[key + 'Body'][locale]) +
-      '</p>' + policyDates(lang) + '<a class="shell-link" href="' + path + '" target="_blank" rel="noopener noreferrer">' +
+      '</p>' + (items ? '<ul>' + items + '</ul>' : '') + policyDates(lang) +
+      '<a class="shell-link" href="' + path + '" target="_blank" rel="noopener noreferrer">' +
       L.esc(policyLink[locale]) + '</a>';
   }
 
@@ -334,10 +363,9 @@
     const loggingIn = action === 'login';
     const title = joining ? 'join' : loggingIn ? 'login' : 'reset';
     const qr = params.q || params.r || '';
-    const name = joining ? inviter(qr) : '';
     const hint = key => '<small class="muted">' + t(key) + '</small>';
     root.innerHTML = '<section class="shell-auth"><header class="shell-brand">GROOVE</header><h1>' + t(title) + '</h1>' +
-      (name ? '<p class="muted">' + t('invite', { name }) + '</p>' : '') +
+      (joining && qr ? '<p class="muted" data-inviter hidden></p>' : '') +
       (!loggingIn && !qr ? '<p role="alert">' + t('scan') + '</p></section>' :
         '<form class="shell-form">' +
         (joining ? input('nick', 'text', 'nickname', hint('nickHint')) : '') +
@@ -351,6 +379,12 @@
     const form = root.querySelector('form');
     if (!form) return;
     if (joining) {
+      const byline = root.querySelector('[data-inviter]');
+      L.api('join_inviter', { q: qr }).then(({ inviter }) => {
+        if (!byline?.isConnected || !inviter) return;
+        byline.innerHTML = t('invite').replace('{name}', () => L.whoTag(inviter));
+        byline.hidden = false;
+      });
       const { all } = form.elements;
       const boxes = [...form.querySelectorAll('.shell-consent-row input')];
       all.onchange = () => boxes.forEach(box => { box.checked = all.checked; });
@@ -408,7 +442,14 @@
   L.screen('login', { title: 'auth.login', render: (root, params) => formScreen('login', params, root) });
   L.screen('reset', { title: 'auth.reset', render: (root, params) => formScreen('reset_pw', params, root) });
   for (const key of ['terms', 'privacy']) {
-    L.screen(key, { title: 'auth.' + key + 'Title', render: root => { root.innerHTML = policy(key); } });
+    L.screen(key, { title: 'auth.' + key + 'Title', async render(root) {
+      const initial = policy(key);
+      root.innerHTML = initial;
+      const { open } = await L.api('config');
+      if (!root.isConnected || !open) return;
+      const updated = policy(key, feature => open[feature] === true);
+      if (updated !== initial) root.innerHTML = updated;
+    } });
   }
 
   // 직원 계정으로 로그인 (2026-11-20): 직원 앱 이름·비밀번호 → 처음이면 닉네임·동의

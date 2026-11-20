@@ -71,7 +71,7 @@
 
   function stats(data) {
     const score = row => '<li class="shell-row" style="gap:8px;flex-wrap:wrap;padding:.25rem 0">' +
-      '<span style="overflow-wrap:anywhere">' + L.esc(row.place) + '. ' + L.esc(row.nick) + '</span>' +
+      '<span style="overflow-wrap:anywhere">' + L.esc(row.place) + '. ' + L.whoTag(row) + '</span>' +
       '<span class="muted">' + t('correctCount', { n: row.correct }) + ' · ' + L.esc(row.points) + 'P</span></li>';
     const entry = row => '<li class="shell-row" style="gap:8px;flex-wrap:wrap;padding:.25rem 0">' +
       '<time datetime="' + L.esc(row.day) + '">' + date(row.day) + '</time><span>' +

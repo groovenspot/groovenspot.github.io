@@ -3,6 +3,19 @@
   const t = U.words('vote', {
     title: ['투표', 'Vote'], back: ['놀거리', 'Play'], choose: ['{choice}에 투표', 'Vote for {choice}'],
     count: ['{n}표', '{n} votes'], mine: ['내 선택', 'My choice'],
+    create: ['투표 만들기', 'Create vote'], edit: ['투표 수정', 'Edit vote'], pollTitle: ['제목', 'Title'],
+    pollKind: ['종류', 'Type'], theme: ['테마', 'Theme'], dj: ['DJ', 'DJ'], etc: ['기타', 'Other'],
+    choices: ['선택지 2~8개 (한 줄에 하나)', '2–8 choices, one per line'],
+    ends: ['끝나는 시각 (한국 시간)', 'Ends (KST)'], oneHour: ['1시간', '1 hour'], threeHours: ['3시간', '3 hours'],
+    businessEnd: ['영업 끝 · 05:00', 'Closing · 05:00'], oneDay: ['24시간', '24 hours'],
+    closePoll: ['투표 끝내기', 'End vote'], deletePoll: ['투표 삭제', 'Delete vote'], manage: ['예정·종료된 투표', 'Scheduled and ended votes'],
+    confirmClose: ['지금 투표를 끝낼까요?', 'End this vote now?'],
+    confirmDelete: ['투표와 결과를 삭제할까요?', 'Delete this vote and its results?'],
+    locked: ['이미 표가 있어 선택지와 종류를 바꿀 수 없어요.', 'Votes have been cast. Choices and type are locked.'],
+    invalidChoices: ['서로 다른 선택지를 2~8개 입력해 주세요.', 'Enter 2–8 distinct choices.'],
+    invalidEnd: ['현재 시각보다 늦은 종료 시각을 입력해 주세요.', 'Choose an end time in the future.'],
+    forbidden: ['팀장 또는 대표 권한이 필요해요.', 'Only team leads and the owner can manage votes.'],
+    voteLimit: ['오늘은 투표를 10개까지 만들 수 있어요.', 'You can create up to 10 votes per day.'],
     cup: ['DJ 월드컵', 'DJ World Cup'], start: ['16강 시작', 'Start round of 16'],
     round: ['{n}강 · {match}/{total}', 'Round of {n} · {match}/{total}'], final: ['결승', 'Final'],
     winner: ['내가 고른 우승', 'Your winner'], save: ['결과 저장', 'Save result'],
@@ -12,6 +25,85 @@
     earned: ['{n}P 받았어요', 'You earned {n}P']
   });
   const pointsToast = gained => L.toast(Number(gained) > 0 ? L.t('vote.earned', { n: Number(gained) }) : L.t('screens.saved'));
+  const HOUR = 3_600_000;
+  const asKstInput = ms => new Date(ms + 9 * HOUR).toISOString().slice(0, 16);
+  const voteError = error => ({
+    locked: 'locked', choices: 'invalidChoices', dates: 'invalidEnd', forbidden: 'forbidden', vote_limit: 'voteLimit'
+  })[error];
+
+  function voteForm(vote, defaultCloses, done) {
+    const label = vote ? 'edit' : 'create';
+    const locked = Boolean(vote?.manage?.locked);
+    const panel = U.sheet('<h2>' + t(label) + '</h2><form class="shell-form" data-vote-form>' +
+      '<label class="shell-field">' + t('pollTitle') + '<input name="title" required maxlength="120" value="' +
+      L.esc(vote?.title) + '"></label><label class="shell-field">' + t('pollKind') + '<select name="kind"' +
+      (locked ? ' disabled' : '') + '>' + ['theme', 'dj', 'etc'].map(kind => '<option value="' + kind + '"' +
+        (vote?.kind === kind ? ' selected' : '') + '>' + t(kind) + '</option>').join('') + '</select></label>' +
+      '<label class="shell-field">' + t('choices') + '<textarea name="choices" required rows="4"' +
+      (locked ? ' readonly' : '') + '>' + L.esc(vote?.choices?.join('\n')) + '</textarea></label>' +
+      (locked ? '<p class="muted">' + t('locked') + '</p>' : '') +
+      '<label class="shell-field">' + t('ends') + '<input name="closes" type="datetime-local" required value="' +
+      asKstInput(vote?.closes || defaultCloses) + '"></label><div class="shell-actions">' +
+      [[1, 'oneHour'], [3, 'threeHours'], [0, 'businessEnd'], [24, 'oneDay']]
+        .map(([hours, text]) => U.button(t(text), 'data-vote-hours="' + hours + '"')).join('') +
+      '</div><p class="shell-error" role="status"></p><button class="btn btn-hot">' + t(label) + '</button></form>');
+    const form = panel.querySelector('form');
+    const msg = form.querySelector('[role=status]');
+    for (const button of form.querySelectorAll('[data-vote-hours]')) button.onclick = () => {
+      const hours = Number(button.dataset.voteHours);
+      form.elements.closes.value = asKstInput(hours ? Date.now() + hours * HOUR : defaultCloses);
+    };
+    form.onsubmit = async event => {
+      event.preventDefault();
+      const submit = form.querySelector('button:not([type])');
+      if (submit.disabled) return;
+      const { title, kind, choices: input, closes: end } = form.elements;
+      const choices = input.value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      const max = Math.max(8, vote?.choices.length || 0);
+      const closes = Date.parse(end.value + '+09:00');
+      if (choices.length < 2 || choices.length > max || new Set(choices).size !== choices.length || choices.some(x => x.length > 120)) {
+        msg.innerHTML = t('invalidChoices');
+        return;
+      }
+      if (!(closes > Date.now())) { msg.innerHTML = t('invalidEnd'); return; }
+      submit.disabled = true;
+      msg.textContent = '';
+      const result = await L.api(vote ? 'vote_update' : 'vote_create', {
+        title: title.value.trim(), kind: kind.value, choices, closes, ...(vote && { id: vote.id })
+      });
+      if (!form.isConnected) return;
+      submit.disabled = false;
+      if (result?.error) {
+        const key = voteError(result.error);
+        msg.innerHTML = key ? t(key) : U.t('failed');
+        return;
+      }
+      L.closeSheet();
+      await done();
+    };
+  }
+
+  function confirmVote(vote, action, done) {
+    const close = action === 'close';
+    const label = close ? 'closePoll' : 'deletePoll';
+    const panel = U.sheet('<h2>' + t(label) + '</h2><p>' + t(close ? 'confirmClose' : 'confirmDelete') +
+      '</p><p class="shell-error" role="status"></p>' + U.button(t(label), 'data-confirm-vote', true));
+    const button = panel.querySelector('[data-confirm-vote]');
+    button.onclick = async () => {
+      if (button.disabled) return;
+      button.disabled = true;
+      const result = await L.api('vote_' + action, { id: vote.id });
+      if (!button.isConnected) return;
+      button.disabled = false;
+      if (result?.error) {
+        const key = voteError(result.error);
+        panel.querySelector('[role=status]').innerHTML = key ? t(key) : U.t('failed');
+        return;
+      }
+      L.closeSheet();
+      await done();
+    };
+  }
 
   function survey(view, data, points) {
     if (!L.me) return;
@@ -48,24 +140,47 @@
   async function votes(root) {
     const view = U.mount(root, '<h1>' + t('title') + '</h1>' + U.link('#/play', t('back')));
     const [data, points] = await Promise.all([L.api('votes'), L.me ? L.api('points') : null]);
-    if (!view.isConnected) return;
-    view.innerHTML = '';
-    if (!data?.votes?.length) view.innerHTML = U.status(data?.error && data.error !== 'action' ? 'error' : 'empty');
-    for (const event of data?.votes || []) {
+    async function refresh() { draw(await L.api('votes')); }
+    function draw(data) {
+      if (!view.isConnected) return;
+      view.innerHTML = data?.canCreate ? U.button(t('create'), 'data-vote-create style="margin-top:12px"', true) : '';
+      const create = view.querySelector('[data-vote-create]');
+      if (create) create.onclick = () => voteForm(null, data.defaultCloses, refresh);
+      if (!data?.votes?.length) view.insertAdjacentHTML('beforeend', U.status(data?.error && data.error !== 'action' ? 'error' : 'empty'));
+      for (const event of data?.votes || []) appendCard(view, event, true, data.defaultCloses);
+      if (data?.managedVotes?.length) {
+        const history = document.createElement('details');
+        history.innerHTML = '<summary>' + t('manage') + '</summary>';
+        view.append(history);
+        for (const event of data.managedVotes) appendCard(history, event, false, data.defaultCloses);
+      }
+      survey(view, data, points);
+    }
+
+    function appendCard(parent, event, active, defaultCloses) {
       const card = document.createElement('article');
       card.style.cssText = U.card;
-      view.append(card);
+      parent.append(card);
       function paint(vote) {
         const results = vote.results || [];
         const total = results.reduce((sum, count) => sum + (Number(count) || 0), 0);
-        card.innerHTML = '<h2>' + L.esc(vote.title) + '</h2>' + (vote.choices || []).map((label, i) => {
+        card.innerHTML = '<h2>' + L.esc(vote.title) + '</h2>' +
+          (vote.closes ? '<p class="muted">' + U.time(vote.closes, { dateStyle: 'medium', timeStyle: 'short' }) + ' KST</p>' : '') +
+          (vote.choices || []).map((label, i) => {
           const count = Number(results[i]) || 0;
-          const select = vote.myChoice == null
+          const select = active && vote.myChoice == null
             ? U.button(t('choose', { choice: label }), 'data-choice="' + i + '" style="width:100%"')
             : '<strong>' + L.esc(label) + (vote.myChoice === i ? ' · ' + t('mine') : '') + '</strong>';
           return '<div style="margin:12px 0">' + select + '<div><progress style="width:75%;accent-color:var(--s)" max="' +
             Math.max(1, total) + '" value="' + count + '" aria-label="' + L.esc(label) + '"></progress> ' + t('count', { n: count }) + '</div></div>';
-        }).join('');
+        }).join('') + '<div class="shell-actions">' + [['edit', 'edit'], ['close', 'closePoll'], ['delete', 'deletePoll']]
+          .filter(([action]) => vote.manage?.[action]).map(([action, label]) => U.button(t(label), 'data-vote-action="' + action + '"'))
+          .join('') + '</div>';
+        for (const button of card.querySelectorAll('[data-vote-action]')) button.onclick = () => {
+          const action = button.dataset.voteAction;
+          if (action === 'edit') voteForm(vote, defaultCloses, refresh);
+          else confirmVote(vote, action, refresh);
+        };
         const buttons = Array.from(card.querySelectorAll('[data-choice]'));
         for (const button of buttons) {
           button.onclick = async () => {
@@ -80,14 +195,15 @@
             }
             const updated = results.slice();
             updated[choice] = (Number(updated[choice]) || 0) + 1;
-            paint(result.vote || { ...vote, myChoice: choice, results: updated });
+            paint({ ...vote, myChoice: choice, results: updated, ...result.vote,
+              ...(vote.manage && { manage: { ...vote.manage, locked: true } }) });
             pointsToast(result.gained);
           };
         }
       }
       paint(event);
     }
-    survey(view, data, points);
+    draw(data);
   }
 
   function bracket(view, cup) {

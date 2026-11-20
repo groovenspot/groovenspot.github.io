@@ -1,11 +1,11 @@
-// 대화방 목록, 대화, 피크타임 곡 투표, 안심 호출.
+// 오픈 대화방 목록, 대화, 피크타임 곡 투표, 안심 호출.
 (function (L) {
   const copy = {
     ko: {
-      title: '대화방', intro: '오늘 밤 그루브에서 함께 이야기해요.',
-      name2F: '오늘 밤 2F 힙합', name3F: '오늘 밤 3F EDM', nameEnglish: '영어 대화방',
+      title: '오픈 대화방', intro: '로그인한 회원은 누구나 열린 방에 참여할 수 있어요.',
+      name2F: '오늘 밤 2F 힙합', name3F: '오늘 밤 3F EDM', nameEnglish: '영어 오픈 대화방',
       hours: '영업 중에 열려요. 대화는 다음 날 낮 12시에 지워져요.',
-      open: '열림', closed: '영업 마감', people: '접속 {n}명', back: '대화방 목록으로',
+      open: '열림', closed: '영업 마감', people: '접속 {n}명', back: '오픈 대화방 목록으로',
       rules: '광고·홍보와 연락처 요구는 안 돼요. 글로만 이야기해요.',
       pin: '스태프 공지', empty: '아직 대화가 없어요.', message: '메시지', send: '보내기',
       older: '이전 대화', latest: '최근 대화', report: '신고', reportTitle: '이 글을 신고할까요?',
@@ -27,13 +27,17 @@
       roomClosed: '지금은 방이 닫혀 있어요.', missing: '방이나 글을 찾을 수 없어요.',
       historyExpired: '이미 보낸 글이 이전 기록에서 지워졌어요.',
       text: '내용을 500자 안으로 써 주세요.', retry: '다시 불러오기',
-      network: '연결이 끊겼어요. 다시 확인하고 있어요.', loading: '불러오는 중…'
+      network: '연결이 끊겼어요. 다시 확인하고 있어요.', loading: '불러오는 중…',
+      entered: '오픈 대화방에 입장했어요.', roomMenu: '오픈 대화방 메뉴', messageMenu: '메시지 메뉴',
+      guidelines: '이용 규칙', leave: '나가기', newMessages: '새 메시지 ↓', reply: '답장',
+      replyTo: '{nick} 님에게 답장', cancelReply: '답장 취소', copyText: '복사',
+      copied: '메시지를 복사했어요.', copyFailed: '메시지를 복사할 수 없어요.'
     },
     en: {
-      title: 'Rooms', intro: 'Chat with others at Groove tonight.',
-      name2F: 'Tonight · 2F Hip-hop', name3F: 'Tonight · 3F EDM', nameEnglish: 'English Lounge',
-      hours: 'Rooms open during club hours. Chats disappear at noon the next day.',
-      open: 'Open', closed: 'Club closed', people: '{n} online', back: 'Back to rooms',
+      title: 'Open Chat', intro: 'Any signed-in member can join an open room.',
+      name2F: 'Tonight · 2F Hip-hop', name3F: 'Tonight · 3F EDM', nameEnglish: 'English Open Chat',
+      hours: 'Open Chat is available during club hours. Chats disappear at noon the next day.',
+      open: 'Open', closed: 'Club closed', people: '{n} online', back: 'Back to Open Chat',
       rules: 'Text only. Please keep ads and requests for contact details out of the chat.',
       pin: 'Staff announcement', empty: 'No messages yet.', message: 'Message', send: 'Send',
       older: 'Older messages', latest: 'Latest messages', report: 'Report', reportTitle: 'Report this message?',
@@ -55,7 +59,11 @@
       roomClosed: 'This room is closed right now.', missing: 'We couldn’t find the room or message.',
       historyExpired: 'Your message was sent and has since left the room history.',
       text: 'Write a message of up to 500 characters.', retry: 'Reload',
-      network: 'Connection lost. Reconnecting…', loading: 'Loading…'
+      network: 'Connection lost. Reconnecting…', loading: 'Loading…',
+      entered: 'You joined Open Chat.', roomMenu: 'Open Chat menu', messageMenu: 'Message menu',
+      guidelines: 'Room rules', leave: 'Leave', newMessages: 'New messages ↓', reply: 'Reply',
+      replyTo: 'Reply to {nick}', cancelReply: 'Cancel reply', copyText: 'Copy',
+      copied: 'Message copied.', copyFailed: 'Could not copy the message.'
     },
     ja: {
       historyExpired: '送信済みのメッセージは履歴から削除されました。',
@@ -76,12 +84,14 @@
   const e = (key, vars) => esc(t(key, vars));
   const builtinNames = { '2F': 'name2F', '3F': 'name3F', english: 'nameEnglish' };
   const nameOf = room => {
+    // Both server defaults predate the Open Chat name. Keep custom room titles intact.
+    if (room.id === 'english' && room.en === 'English Lounge' &&
+        ['English Lounge', '영어 대화방'].includes(room.title)) return t('nameEnglish');
     if (L.lang === 'ko') return room.title;
     const key = Object.hasOwn(builtinNames, room.id) && builtinNames[room.id];
     if (key && ['ja', 'zh'].includes(L.lang) && room.en === copy.en[key]) return t(key);
     return room.en || room.title;
   };
-  const time = ms => new Intl.DateTimeFormat(L.lang, { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit' }).format(ms);
   const btn = (key, extra = '') => '<button type="button" class="btn" ' + extra + '>' + e(key) + '</button>';
   const back = () => '<a class="shell-link" href="#/rooms">' + e('back') + '</a>';
   let active;
@@ -97,16 +107,45 @@
     .rooms-label{display:grid;gap:2px;min-width:0;flex:1}
     .rooms-preview{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
     .rooms-meta{display:grid;text-align:right;flex:none}
-    .rooms-pin{background:#15111d;border-color:var(--s)}
-    .rooms-chat{padding:4px 2px;overflow-y:auto;min-height:100px;max-height:min(42dvh,480px)}
-    .rooms-chat li{display:grid;justify-items:start;justify-self:start;max-width:90%;gap:2px}
-    .rooms-chat li[data-mine="true"]{justify-self:end;justify-items:end}
-    .rooms-bubble{background:#221d1c;border-radius:6px 16px 16px 16px;padding:8px 13px;white-space:pre-wrap}
-    .rooms-chat li[data-mine="true"] .rooms-bubble{background:#ffb27a;color:var(--g-ink);border-radius:16px 6px 16px 16px}
-    .rooms-compose{display:flex;align-items:start;gap:8px}
-    .rooms-compose textarea{min-width:0;resize:vertical}
-    .rooms-options{display:flex;flex-wrap:wrap;gap:0 12px}
-    .rooms-options button{font-size:.8rem}
+    .rooms-conversation{--rooms-tabs:calc(74px + env(safe-area-inset-bottom));position:fixed;z-index:8;
+      inset:var(--rooms-top,0px) max(0px,calc((100% - 640px)/2)) calc(var(--lounge-bottom-inset,0px) + var(--rooms-tabs));
+      display:flex;flex-direction:column;gap:0;min-width:0;background:var(--bg);overflow:hidden}
+    html[data-lounge-keyboard] .rooms-conversation{--rooms-tabs:0px}
+    .rooms-header{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:7px 12px}
+    .rooms-heading{flex:1;min-width:0}.rooms-heading h1{font-size:1.13rem;overflow-wrap:anywhere}
+    .rooms-header .btn{min-width:44px;padding:0 10px}
+    .rooms-pin{padding:7px 14px;background:#241b16;border-bottom:1px solid var(--line-2);max-height:5.1em;overflow:auto}
+    .rooms-pin strong{color:#ffb784;margin-inline-end:.5em}
+    .rooms-log{flex:1;min-height:0;display:flex;flex-direction:column;overflow-y:auto;
+      overscroll-behavior:contain;overflow-anchor:none;padding:8px 12px}
+    .rooms-chat{display:flex;flex-direction:column;gap:4px;margin-block-start:auto}
+    .rooms-chat li[data-message]{display:grid;grid-template-columns:36px minmax(0,1fr);column-gap:8px;align-items:start}
+    .rooms-chat li[data-mine="true"]{grid-template-columns:minmax(0,1fr)}
+    .rooms-chat [data-group-start="true"]{margin-top:8px}
+    .rooms-avatar{grid-column:1;grid-row:1 / span 2;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+      background:#30302d;color:var(--txt);font-weight:700;overflow:hidden}
+    .rooms-avatar img{width:100%;height:100%;object-fit:cover}
+    .rooms-author,.rooms-line,.rooms-chat [data-translation]{grid-column:2;min-width:0}
+    .rooms-chat [data-mine="true"] .rooms-own-author{grid-column:1;justify-self:end}
+    .rooms-author{font-size:.83rem;font-weight:700;margin-bottom:2px;overflow-wrap:anywhere}
+    .rooms-line{display:flex;align-items:flex-end;gap:6px}
+    .rooms-chat [data-mine="true"] .rooms-line{grid-column:1;flex-direction:row-reverse}
+    .rooms-bubble{color:inherit;background:#272425;border:1px solid var(--line);border-radius:6px 16px 16px 16px;
+      padding:7px 11px;min-width:0;min-height:44px;max-width:min(82%,28rem);white-space:pre-wrap;overflow-wrap:anywhere;text-align:start;cursor:pointer;font:inherit}
+    .rooms-chat [data-mine="true"] .rooms-bubble{background:var(--g);color:var(--g-ink);border-radius:16px 6px 16px 16px}
+    .rooms-time{font-size:.68rem;white-space:nowrap}
+    .rooms-meta-line{text-align:center;font-size:.78rem;margin:4px 0;color:var(--muted)}
+    .rooms-chat [data-mine="true"] [data-translation]{grid-column:1;justify-self:end}
+    .rooms-quote{display:block;border-inline-start:2px solid currentColor;padding:0 0 0 6px;margin-bottom:4px;font-size:.79rem;
+      overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+    .rooms-footer{position:relative;padding:7px 12px;border-top:1px solid var(--line);background:var(--bg)}
+    .rooms-footer [data-latest]{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap}
+    .rooms-compose,.rooms-reply{display:flex;align-items:center;gap:8px}
+    .rooms-compose textarea{min-width:0;resize:none;max-height:6em}
+    .rooms-send{width:48px;flex:0 0 48px;padding:0;white-space:nowrap}
+    .rooms-reply .rooms-quote{flex:1}.rooms-reply button{flex:none;padding:0 10px}
+    .rooms-actions{display:flex;flex-wrap:wrap;gap:8px;margin-block:10px}
+    .rooms-log [data-older]{align-self:center}.rooms-log [data-vote]:not(:empty){margin-bottom:8px}
     .rooms-vote-list button{width:100%;gap:8px;justify-content:space-between;text-align:left}
     .rooms-vote-list button[aria-pressed="true"]{border-color:var(--g)}
     .rooms-page button:disabled{cursor:default}
@@ -158,7 +197,7 @@
         '<span class="rooms-icon" data-floor="' + esc(room.floor) + '" aria-hidden="true">' +
         esc(room.floor || (room.id === 'english' ? 'EN' : '♪')) + '</span><span class="rooms-label"><strong>' +
         esc(nameOf(room)) + '</strong>' + (room.latest ? '<small class="muted rooms-preview">' +
-        esc(room.latest.nick + ' · ' + room.latest.text) + '</small>' : '') + '</span><small class="rooms-meta muted">' +
+        L.whoTag(room.latest) + ' · ' + esc(room.latest.text) + '</small>' : '') + '</span><small class="rooms-meta muted">' +
         (room.kicked ? e('kicked') : e(room.open ? 'open' : 'closed') + (room.online ? '<span>' + e('people', { n: room.online }) + '</span>' : '')) +
         '</small></a></li>').join('') + '</ul><p class="shell-card muted">' + e('hours') + '</p>');
     section.querySelector('[role=status]').remove();
@@ -219,21 +258,36 @@
   }
 
   function chatScreen(root, id, flags) {
-    root.querySelector('section').innerHTML = back() + '<h1>' + e('title') + '</h1><p data-room-state class="muted" aria-live="polite"></p>' +
-      '<p data-live-status class="muted" role="status" hidden></p><p class="muted">' + e('rules') + '</p><aside class="shell-card rooms-pin" data-pin hidden></aside>' +
-      '<div data-vote></div><div class="shell-actions">' + btn('older', 'data-older hidden') + btn('latest', 'data-latest hidden') +
-      btn('retry', 'data-retry hidden') + '</div><ol class="rooms-chat" aria-label="' + e('title') + '"></ol>' +
-      '<p class="muted" data-empty hidden>' + e('empty') + '</p>' +
-      (flags.translate ? '<p class="muted" data-translation-notice aria-live="polite" hidden></p>' : '') +
+    const section = root.querySelector('section');
+    section.classList.add('rooms-conversation');
+    section.innerHTML = '<header class="rooms-header"><a class="btn" href="#/rooms" aria-label="' + e('back') +
+      '">‹</a><div class="rooms-heading"><h1>' + e('title') + '</h1><p data-room-state class="muted" aria-live="polite"></p></div>' +
+      '<button class="btn" type="button" data-room-menu aria-label="' + e('roomMenu') + '">⋯</button></header>' +
+      '<p data-live-status class="rooms-meta-line" role="status" hidden></p><aside class="rooms-pin" data-pin hidden></aside>' +
+      '<div class="rooms-log"><div data-vote></div>' + btn('older', 'data-older hidden') +
+      '<p class="rooms-meta-line" data-empty hidden>' + e('empty') + '</p>' +
+      '<ol class="rooms-chat" aria-label="' + e('title') + '"></ol></div>' +
+      '<div class="rooms-footer">' + btn('newMessages', 'data-latest hidden') + btn('retry', 'data-retry hidden') +
+      (flags.translate ? '<p class="rooms-meta-line" data-translation-notice aria-live="polite" hidden></p>' : '') +
+      '<div class="rooms-reply" data-reply-draft hidden><div class="rooms-quote" data-reply-preview></div>' +
+      '<button class="btn" type="button" data-reply-cancel aria-label="' + e('cancelReply') + '">×</button></div>' +
       '<form class="rooms-compose" hidden><label for="room-message" class="sr-only">' + e('message') +
       '</label><textarea rows="1" id="room-message" placeholder="' + e('message') +
-      '" maxlength="1000" required></textarea><button class="btn btn-hot">' + e('send') + '</button></form><p role="status" class="shell-error"></p>' +
-      (flags.safety ? '<a class="shell-link" href="#/safety">' + e('safety') + '</a>' : '');
+      '" maxlength="1000" enterkeyhint="send" required></textarea><button class="btn btn-hot rooms-send" aria-label="' + e('send') +
+      '"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></button></form>' +
+      '<p role="status" class="shell-error"></p></div>';
     const query = selector => root.querySelector(selector);
-    const chat = query('ol');
-    const form = query('form');
+    const chat = query('.rooms-chat');
+    const log = query('.rooms-log');
+    const form = query('.rooms-compose');
     const input = query('textarea');
     const submit = form.querySelector('button');
+    submit.onpointerdown = event => { if (document.activeElement === input) event.preventDefault(); };
+    input.onkeydown = event => {
+      if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+      event.preventDefault();
+      form.requestSubmit();
+    };
     const connectionStatus = query('[data-live-status]');
     const status = query('p.shell-error[role=status]');
     const older = query('[data-older]');
@@ -241,11 +295,47 @@
     const retry = query('[data-retry]');
     const translations = new Map();
     const translating = new Set();
+    const replyTargets = new Map();
+    const time = new Intl.DateTimeFormat(L.lang, { timeZone: 'Asia/Seoul', hour: 'numeric', minute: '2-digit' });
+    const date = new Intl.DateTimeFormat(L.lang, { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' });
     let socket, pending, timer, reconnectTimer, refreshTimer, data, pageCursor, wantedCursor, request = 0, stopped = false, syncing = false, refreshAgain = false;
     let sending = false;
     let handshake, nextConnect = 0;
     let reconnectDelay = 1000;
     let live = false, lastSnapshot = 0, snapshotMessages;
+    let replying, longPress, pressed, suppressClick = false, layoutObserver, unread = false, enteredAt;
+
+    const nearEnd = () => log.scrollHeight - log.scrollTop - log.clientHeight < 32;
+    function jumpToEnd() {
+      log.scrollTop = log.scrollHeight;
+      unread = false;
+      latest.hidden = pageCursor == null;
+    }
+
+    function adjustTop() {
+      const pinned = nearEnd();
+      const header = document.querySelector('#app > header');
+      section.style.setProperty('--rooms-top', Math.max(0, window.visualViewport?.offsetTop || 0,
+        header?.getBoundingClientRect().bottom || 0) + 'px');
+      if (pinned && pageCursor == null) jumpToEnd();
+    }
+
+    function selectReply(message) {
+      replying = message;
+      query('[data-reply-draft]').hidden = !message;
+      query('[data-reply-preview]').textContent = message ? t('replyTo', { nick: message.nick }) + ' · ' + message.text : '';
+    }
+    query('[data-reply-cancel]').onclick = () => { selectReply(); input.focus(); };
+    query('[data-room-menu]').onclick = () => {
+      const panel = L.sheet('<h2>' + e('roomMenu') + '</h2><div class="rooms-actions">' +
+        (flags.safety ? '<a class="btn" href="#/safety">' + e('safety') + '</a>' : '') +
+        btn('guidelines', 'data-rules') + '<a class="btn" href="#/rooms">' + e('leave') + '</a></div>');
+      panel.querySelector('[data-rules]').onclick = () => {
+        const rules = L.sheet('<h2>' + e('guidelines') + '</h2><p>' + e('rules') + '</p><p>' + e('hours') +
+          '</p><div class="rooms-actions"><button class="btn" type="button">' + esc(L.t('core.close')) + '</button></div>');
+        rules.querySelector('button').onclick = L.closeSheet;
+      };
+    };
 
     function finishPending(value) {
       if (!pending) return;
@@ -337,43 +427,75 @@
     }
 
     function messagesMarkup(messages) {
-      return messages.map(message => '<li data-message="' + esc(message.id) + '" data-mine="' + !!message.mine +
-        '"><small class="muted"><strong>' + esc(message.nick) + '</strong> · ' + esc(time(message.at)) + '</small>' +
-        '<p class="rooms-bubble">' + esc(message.text) + '</p><div class="rooms-options">' +
-        (message.mine ? '' : '<button class="shell-link" type="button" data-report>' + e('report') +
-          '</button><button class="shell-link" type="button" data-block>' + e('block') + '</button>') +
-        (flags.translate ? '<button class="shell-link" type="button" data-translate' +
-          (translating.has(message.id) ? ' disabled>' + e('translating') : '>' + e('translate')) + '</button>' : '') +
-        '</div><small class="muted" data-translation>' + esc(translations.get(message.id) || '') + '</small></li>').join('');
+      const byId = new Map(messages.map(message => [message.id, message]));
+      const sameSender = (first, second) => second && first.mine === second.mine && first.nick === second.nick;
+      const entry = '<li class="rooms-meta-line">' + e('entered') + '</li>';
+      let result = '';
+      let previousDay;
+      let entryShown = pageCursor != null;
+      messages.forEach((message, i) => {
+        const day = date.format(message.at), prior = messages[i - 1], following = messages[i + 1];
+        if (day !== previousDay) result += '<li class="rooms-meta-line">' + esc(day) + '</li>';
+        const showEntry = !entryShown && enteredAt != null && message.at > enteredAt;
+        if (showEntry) { result += entry; entryShown = true; }
+        const groupStart = day !== previousDay || showEntry || !sameSender(message, prior);
+        previousDay = day;
+        const showTime = !sameSender(message, following) || Math.floor(message.at / 60_000) !== Math.floor(following.at / 60_000);
+        const photo = typeof message.photo === 'string' && /^p\/[\w:-]+\/[\w-]+\.(jpe?g|webp)$/.test(message.photo)
+          ? '<img src="' + esc(L.img(message.photo)) + '" alt="" loading="lazy">' : '';
+        const author = groupStart && !message.mine ? '<span class="rooms-avatar" aria-hidden="true">' +
+          (photo || esc([...message.nick][0] || 'G')) + '</span><span class="rooms-author">' + L.whoTag(message) + '</span>' : groupStart && message.tag
+            ? '<span class="rooms-author rooms-own-author">' + L.whoTag(message) + '</span>' : '';
+        const quote = byId.get(replyTargets.get(message.id));
+        result += '<li data-message="' + esc(message.id) + '" data-mine="' + !!message.mine +
+          '" data-group-start="' + groupStart + '">' + author +
+          '<div class="rooms-line"><button type="button" class="rooms-bubble" data-message-menu>' +
+          (quote ? '<span class="rooms-quote">' + L.whoTag(quote) + ' · ' + esc(quote.text) + '</span>' : '') +
+          '<span>' + esc(message.text) + '</span><span class="sr-only"> · ' + e('messageMenu') + '</span></button>' +
+          (showTime ? '<small class="muted rooms-time">' + esc(time.format(message.at)) + '</small>' : '') + '</div>' +
+          '<small class="muted" data-translation>' + esc(translations.get(message.id) || '') + '</small></li>';
+      });
+      return result + (!entryShown && enteredAt != null ? entry : '');
     }
 
     function paint(next, cursor) {
       const changedPage = pageCursor !== cursor;
-      const wasNearEnd = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 32;
+      const wasNearEnd = nearEnd();
+      const firstPaint = !data;
+      if (enteredAt == null && next.room.open) enteredAt = next.messages.at(-1)?.at ?? 0;
       pageCursor = cursor;
       query('h1').textContent = nameOf(next.room);
       query('[data-room-state]').textContent =
         t(next.room.open ? 'open' : 'closed') + ' · ' + t('people', { n: next.room.online });
       const pin = query('[data-pin]');
       pin.hidden = !next.pin;
-      pin.innerHTML = next.pin ? '<h2>' + e('pin') + '</h2><p class="shell-bio">' + esc(next.pin.text) + '</p>' : '';
+      pin.innerHTML = next.pin ? '<strong>' + e('pin') + '</strong><span class="shell-bio">' + esc(next.pin.text) + '</span>' : '';
       const vote = query('[data-vote]');
       if (JSON.stringify(data?.vote) !== JSON.stringify(next.vote) || data?.room.open !== next.room.open) {
         vote.innerHTML = voteMarkup(next.vote, next.room.open);
       }
       if (changedPage || JSON.stringify(data?.messages) !== JSON.stringify(next.messages)) {
-        const focus = chat.contains(document.activeElement) ? document.activeElement : null;
-        const focusedMessage = focus?.closest('[data-message]')?.dataset.message;
-        const focusedAction = focus?.hasAttribute('data-report') ? 'report' : focus?.hasAttribute('data-block') ? 'block' : 'translate';
+        const focusedMessage = chat.contains(document.activeElement) && document.activeElement.closest('[data-message]')?.dataset.message;
+        const anchor = !changedPage && !wasNearEnd && [...chat.querySelectorAll('[data-message]')].find(row =>
+          row.getBoundingClientRect().bottom > log.getBoundingClientRect().top);
+        const distance = anchor ? anchor.getBoundingClientRect().top : 0;
+        if (data && cursor == null && !wasNearEnd && next.messages.at(-1)?.id !== data.messages.at(-1)?.id) unread = true;
         chat.innerHTML = messagesMarkup(next.messages);
-        if (focusedMessage) chat.querySelector('[data-message="' + CSS.escape(focusedMessage) + '"] [data-' + focusedAction + ']')?.focus({ preventScroll: true });
-        if (changedPage || wasNearEnd) chat.scrollTop = cursor == null ? chat.scrollHeight : 0;
+        if (focusedMessage) chat.querySelector('[data-message="' + CSS.escape(focusedMessage) + '"] [data-message-menu]')?.focus({ preventScroll: true });
+        if (cursor == null && (changedPage || firstPaint || wasNearEnd)) jumpToEnd();
+        else if (changedPage) log.scrollTop = 0;
+        else if (anchor) {
+          const refreshed = chat.querySelector('[data-message="' + CSS.escape(anchor.dataset.message) + '"]');
+          if (refreshed) log.scrollTop += refreshed.getBoundingClientRect().top - distance;
+        }
       }
       query('[data-empty]').hidden = Boolean(next.messages.length);
       older.hidden = next.before == null;
-      latest.hidden = cursor == null;
+      latest.hidden = cursor == null && !unread;
       retry.hidden = true;
       form.hidden = !next.room.open;
+      if (!next.room.open || replying && !next.messages.some(message => message.id === replying.id)) selectReply();
+      if (cursor == null && (firstPaint || wasNearEnd)) jumpToEnd();
       if (!next.room.open) disconnect();
       data = next;
       connect();
@@ -454,40 +576,82 @@
     }
 
     older.onclick = () => showPage(data.before);
-    latest.onclick = () => showPage(undefined);
+    latest.onclick = () => pageCursor == null ? jumpToEnd() : showPage(undefined);
+    log.onscroll = () => { if (pageCursor == null && unread && nearEnd()) jumpToEnd(); };
     retry.onclick = () => { status.textContent = ''; refresh(); };
-    chat.onclick = async event => {
-      const row = event.target.closest('[data-message]');
-      const message = data?.messages.find(msg => msg.id === row?.dataset.message);
-      const button = event.target.closest('button');
-      if (!message || !button) return;
-      if (button.hasAttribute('data-report')) report(message);
-      if (button.hasAttribute('data-block')) block(message, refresh);
-      if (button.hasAttribute('data-translate') && !translating.has(message.id)) {
-        const alreadyTranslated = translations.get(message.id);
-        if (alreadyTranslated) return;
-        const notice = query('[data-translation-notice]');
-        if (notice?.hidden) {
-          notice.hidden = false;
-          notice.textContent = t('translateNotice');
-        }
-        translating.add(message.id);
-        button.disabled = true;
-        button.textContent = t('translating');
-        const result = await L.api('translate', { text: message.text, to: ['ko', 'en', 'ja', 'zh'].includes(L.lang) ? L.lang : 'en' });
-        translating.delete(message.id);
-        if (stopped) return;
-        const current = chat.querySelector('[data-message="' + CSS.escape(message.id) + '"]');
-        const control = current?.querySelector('[data-translate]');
-        if (control) {
-          control.disabled = false;
-          control.textContent = t('translate');
-        }
-        if (result.error) { L.toast(problem(result.error, 'translate')); return; }
-        translations.set(message.id, result.text);
-        if (translations.size > 80) translations.delete(translations.keys().next().value);
-        current?.querySelector('[data-translation]').replaceChildren(result.text);
+    async function translateMessage(message) {
+      if (translations.has(message.id) || translating.has(message.id)) return;
+      const notice = query('[data-translation-notice]');
+      if (notice?.hidden) {
+        notice.hidden = false;
+        notice.textContent = t('translateNotice');
       }
+      translating.add(message.id);
+      const result = await L.api('translate', { text: message.text, to: ['ko', 'en', 'ja', 'zh'].includes(L.lang) ? L.lang : 'en' });
+      translating.delete(message.id);
+      if (stopped) return;
+      if (result.error) { L.toast(problem(result.error, 'translate')); return; }
+      const pinned = nearEnd();
+      translations.set(message.id, result.text);
+      if (translations.size > 80) translations.delete(translations.keys().next().value);
+      chat.querySelector('[data-message="' + CSS.escape(message.id) + '"] [data-translation]')?.replaceChildren(result.text);
+      if (pinned && pageCursor == null) jumpToEnd();
+    }
+
+    function messageMenu(target) {
+      const row = target.closest('[data-message]');
+      const message = data?.messages.find(item => item.id === row?.dataset.message);
+      if (!message) return;
+      const panel = L.sheet('<h2>' + e('messageMenu') + '</h2><div class="rooms-actions">' +
+        (data.room.open ? btn('reply', 'data-reply') : '') + btn('copyText', 'data-copy') +
+        (flags.translate ? btn(translating.has(message.id) ? 'translating' : 'translate',
+          'data-translate' + (translating.has(message.id) ? ' disabled' : '')) : '') +
+        (message.mine ? '' : btn('report', 'data-report') + btn('block', 'data-block')) +
+        '<button class="btn" type="button" data-dismiss>' + esc(L.t('core.close')) + '</button></div>');
+      panel.onclick = async event => {
+        const button = event.target.closest('button');
+        if (!button) return;
+        if (button.hasAttribute('data-report')) return report(message);
+        if (button.hasAttribute('data-block')) return block(message, refresh);
+        L.closeSheet();
+        if (button.hasAttribute('data-reply')) { selectReply(message); input.focus(); }
+        if (button.hasAttribute('data-translate')) await translateMessage(message);
+        if (button.hasAttribute('data-copy')) {
+          try { await navigator.clipboard.writeText(message.text); L.toast(t('copied')); }
+          catch { L.toast(t('copyFailed')); }
+        }
+      };
+    }
+
+    function cancelPress() { clearTimeout(longPress); pressed = null; }
+    chat.onpointerdown = event => {
+      const target = event.target.closest('[data-message-menu]');
+      if (!target || event.button !== 0) return;
+      cancelPress();
+      suppressClick = false;
+      pressed = [event.clientX, event.clientY];
+      longPress = setTimeout(() => {
+        if (!target.isConnected) return;
+        suppressClick = true;
+        messageMenu(target);
+      }, 500);
+    };
+    chat.onpointermove = event => {
+      if (pressed && Math.hypot(event.clientX - pressed[0], event.clientY - pressed[1]) > 8) cancelPress();
+    };
+    chat.onpointerup = chat.onpointercancel = chat.onpointerleave = cancelPress;
+    chat.oncontextmenu = event => {
+      const target = event.target.closest('[data-message-menu]');
+      if (!target) return;
+      event.preventDefault();
+      cancelPress();
+      if (!suppressClick) messageMenu(target);
+    };
+    chat.onclick = event => {
+      const target = event.target.closest('[data-message-menu]');
+      if (!target) return;
+      if (!suppressClick || event.detail === 0) messageMenu(target);
+      suppressClick = false;
     };
     query('[data-vote]').onclick = async event => {
       const button = event.target.closest('[data-choice]');
@@ -505,6 +669,7 @@
     form.onsubmit = async event => {
       event.preventDefault();
       const text = input.value.trim();
+      const reply = replying;
       if (sending || !text) return;
       if ([...text].length > 500) { status.textContent = t('text'); return; }
       sending = submit.disabled = true;
@@ -528,21 +693,46 @@
         return;
       }
       if (input.value.trim() === text) input.value = '';
+      // Keep only the target ID in this tab. The server currently accepts plain text only.
+      if (reply && result.message?.id) {
+        replyTargets.set(result.message.id, reply.id);
+        if (replyTargets.size > 80) replyTargets.delete(replyTargets.keys().next().value);
+      }
+      if (replying === reply) selectReply();
       if (result.error) status.textContent = problem(result.error);
       if (!live || wantedCursor != null || !receiveMessage(result.message)) await showPage(undefined);
+      if (result.message?.id && replyTargets.has(result.message.id) && data?.messages.some(message => message.id === result.message.id)) {
+        chat.innerHTML = messagesMarkup(data.messages);
+      }
+      if (!stopped) jumpToEnd();
     };
     function refreshIfVisible() {
       if (document.visibilityState !== 'hidden' && (!live || Date.now() - lastSnapshot >= 30_000)) scheduleRefresh();
     }
 
     window.addEventListener('online', scheduleRefresh);
+    window.addEventListener('resize', adjustTop);
+    window.visualViewport?.addEventListener('resize', adjustTop);
+    window.visualViewport?.addEventListener('scroll', adjustTop);
+    if (typeof ResizeObserver === 'function') {
+      const header = document.querySelector('#app > header');
+      layoutObserver = new ResizeObserver(adjustTop);
+      if (header) layoutObserver.observe(header);
+      layoutObserver.observe(log);
+    }
+    adjustTop();
     document.addEventListener('visibilitychange', refreshIfVisible);
     timer = setInterval(refreshIfVisible, 4500 + Math.random() * 1000);
     active = () => {
       stopped = true;
       clearInterval(timer);
       clearTimeout(refreshTimer);
+      cancelPress();
+      layoutObserver?.disconnect();
       window.removeEventListener('online', scheduleRefresh);
+      window.removeEventListener('resize', adjustTop);
+      window.visualViewport?.removeEventListener('resize', adjustTop);
+      window.visualViewport?.removeEventListener('scroll', adjustTop);
       document.removeEventListener('visibilitychange', refreshIfVisible);
       disconnect();
     };
