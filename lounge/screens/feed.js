@@ -45,6 +45,9 @@ const LoungePostUI = (() => {
     .post-screen .post-cover { aspect-ratio:16/9; }
     .post-screen .post-feed-media { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:3px; }
     .post-screen .post-feed-media > :first-child { grid-column:1/-1; }
+    .post-screen .post-video { position:relative; display:block; color:var(--txt); }
+    .post-screen .post-video span { position:absolute; inset:auto auto 12px 12px; padding:6px 9px; border-radius:8px;
+      background:var(--bg); font-size:13px; font-weight:800; }
     .post-screen .post-feed-media .post-photo-button, .post-screen .post-album-grid .post-photo-button {
       display:block; width:100%; min-width:44px; min-height:44px; padding:0; border:0; cursor:pointer; background:var(--bg-2);
     }
@@ -57,7 +60,8 @@ const LoungePostUI = (() => {
     .post-screen .post-album-list .btn { justify-self:start; margin-top:4px; }
     .post-screen .post-section { margin:0 0 8px; }
     .post-screen .post-state { border:1px dashed var(--line-2); border-radius:var(--radius); padding:18px 14px; color:var(--muted); font-size:14px; }
-    .post-screen [data-posts]:not(:empty) + [data-page]:not(:empty) { margin-top:var(--post-gap); }
+    .post-screen [data-posts]:not(:empty) + [data-page]:not(:empty),
+    .post-screen .post-album-list + [data-page]:not(:empty) { margin-top:var(--post-gap); }
     .post-screen [data-page] > .btn { width:100%; }
     .post-screen .post-skeleton { display:grid; gap:10px; padding:14px; }
     .post-screen .post-shimmer { display:block; border-radius:8px; background:color-mix(in srgb,var(--card) 85%,var(--muted));
@@ -118,14 +122,24 @@ const LoungePostUI = (() => {
     return view;
   }
 
-  function image(src, alt = '', cover = false) {
-    return '<img class="post-media' + (cover ? ' post-cover' : '') + '" width="' + (cover ? 640 : 512) +
-      '" height="' + (cover ? 360 : 512) + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="' +
+  function photo(value) {
+    const src = U.image(value?.src || value?.url || value?.key || value);
+    return { src, thumb: U.image(value?.thumb) || src, w: value?.w, h: value?.h };
+  }
+
+  function dimensions(value, width, height) {
+    const usable = Number.isSafeInteger(value?.w) && value.w > 0 && Number.isSafeInteger(value?.h) && value.h > 0;
+    return ' width="' + (usable ? value.w : width) + '" height="' + (usable ? value.h : height) + '"';
+  }
+
+  function image(src, alt = '', cover = false, size) {
+    return '<img class="post-media' + (cover ? ' post-cover' : '') + '"' + dimensions(size, cover ? 640 : 512, cover ? 360 : 512) +
+      ' loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="' +
       alt + '" src="' + L.esc(src) + '">';
   }
 
-  function zoomImage(src, alt) {
-    return '<img width="512" height="512" loading="lazy" referrerpolicy="no-referrer" alt="' + alt +
+  function zoomImage(src, alt, size) {
+    return '<img' + dimensions(size, 512, 512) + ' loading="lazy" referrerpolicy="no-referrer" alt="' + alt +
       '" style="' + U.media + ';height:auto;aspect-ratio:1;max-height:65vh;object-fit:contain" src="' + L.esc(src) + '">';
   }
 
@@ -146,7 +160,7 @@ const LoungePostUI = (() => {
       (feed ? '<div class="post-card-body"><span class="post-shimmer post-skeleton-line" aria-hidden="true"></span></div>' : '') + '</div>';
   }
 
-  return { mount, image, zoomImage, state, skeleton };
+  return { mount, image, photo, zoomImage, state, skeleton };
 })();
 
 (() => {
@@ -247,27 +261,33 @@ const LoungePostUI = (() => {
       const date = U.time(post.at, { dateStyle: 'medium', timeStyle: 'short' });
       const album = post.kind === 'album';
       const member = post.kind === 'member';
-      const images = (post.photos || []).map(photo => U.image(photo?.url || photo?.key || photo)).filter(Boolean);
+      const images = (post.photos || []).map(P.photo).filter(photo => photo.src);
+      const videoUrl = /^[A-Za-z0-9_-]{11}$/.test(post.youtube || '') ? 'https://www.youtube.com/watch?v=' + post.youtube : '';
       const author = post.author?.nick || post.author?.name || 'GROOVE';
-      const media = images.map((src, index) => member
-        ? '<button type="button" class="post-photo-button" data-member-photo="' + index + '">' +
-          P.image(src, t('photo', { n: index + 1 })) + '</button>'
-        : P.image(src)).join('');
+      const media = images.map((photo, index) => {
+        if (member) return '<button type="button" class="post-photo-button" data-member-photo="' + index + '">' +
+          P.image(photo.thumb, t('photo', { n: index + 1 }), false, photo) + '</button>';
+        const img = P.image(photo.thumb, '', Boolean(videoUrl), photo);
+        return videoUrl && index === 0 ? '<a class="post-video" href="' + videoUrl + '">' + img +
+          '<span>' + t('youtube') + '</span></a>' : img;
+      }).join('');
+      const video = post.video;
+      const credits = video && Number.isSafeInteger(video.session) ? '<div class="post-meta" data-video-session="' + video.session + '">' +
+        L.esc(['GROOVE SESSION #' + video.session, video.dj, video.duration].filter(Boolean).join(' · ')) + '</div>' : '';
       card.innerHTML = '<header class="post-card-header"><span class="post-avatar" aria-hidden="true">' +
         L.esc(Array.from(author)[0]?.toUpperCase()) + '</span><div><div class="post-author"><strong>' +
         L.esc(author) + '</strong>' + (post.kind === 'official' ? '<span class="post-badge">' + t('official') + '</span>' : '') +
         '</div><div class="post-meta">' +
         (card.dataset.floor ? '<span class="post-floor">' + post.floor + ' ' + (post.floor === '2F' ? 'GROOVE' : 'SPOT') + '</span>' : '') +
         (album || member ? '<span>' + t(album ? 'photos' : 'member') + '</span>' : '') +
-        (date ? '<span>' + date + '</span>' : '') + '</div></div></header>' +
+        (date ? '<span>' + date + '</span>' : '') + '</div>' + credits + '</div></header>' +
         (media ? '<div class="post-feed-media" data-post-layout>' + media + '</div>' : '') +
         '<div class="post-card-body"><p class="post-caption">' + L.esc(post.text) + '</p><div class="post-bar post-actions" data-post-layout>' +
         U.button('', 'data-like') + U.button(t('comments') + ' ' + (Number(post.comments) || 0), 'data-comments-button') +
         U.button(U.t('report'), 'data-report') + (member && post.mine ? U.button(t('delete'), 'data-delete') : '') +
         '</div>' + (album ? '<div>' + U.link('#/photos/' + encodeURIComponent(post.albumId ?? post.id), t('photos')) + '</div>' : '') +
         (post.challenge ? '<div>' + U.link('#/challenge', t('challenge')) + '</div>' : '') +
-        (/^[A-Za-z0-9_-]{11}$/.test(post.youtube || '') ?
-          '<div>' + U.link('https://www.youtube.com/watch?v=' + post.youtube, t('youtube')) + '</div>' : '') + '</div>';
+        (videoUrl && !images.length ? '<div>' + U.link(videoUrl, t('youtube')) + '</div>' : '') + '</div>';
       const like = card.querySelector('[data-like]');
       function paintLike() {
         like.setAttribute('aria-pressed', Boolean(post.liked));
@@ -310,10 +330,11 @@ const LoungePostUI = (() => {
       };
       card.querySelectorAll('[data-member-photo]').forEach(button => {
         button.onclick = () => {
-          const src = images[Number(button.dataset.memberPhoto)];
+          const photo = images[Number(button.dataset.memberPhoto)];
+          const src = photo.src;
           const key = new URL(src).pathname.match(/^\/img\/(p\/[\w:-]+\/[\w-]+\.(?:jpg|webp))$/)?.[1];
           const sheet = U.sheet('<figure style="margin:12px 0">' + P.zoomImage(src,
-            t('photo', { n: Number(button.dataset.memberPhoto) + 1 })) + '</figure>' +
+            t('photo', { n: Number(button.dataset.memberPhoto) + 1 }), photo) + '</figure>' +
             (key ? U.button(t('take'), 'data-take') : ''));
           const take = sheet.querySelector('[data-take]');
           if (take) take.onclick = () => U.reason({
