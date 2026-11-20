@@ -1161,6 +1161,9 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .tbt.tbm b { font-size: 13px; line-height: 1.2; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .tbt.tbm span { font-size: 11px; line-height: 1.15; white-space: nowrap; }
 .tbt.tbm em { display: none; }
+.tbt.tbm.rv { border-style: dashed; border-color: #7fb4ff; }   /* 📅 예약 · 아직 안 옴: 도면(가로·세로)에도 보이게 (대표 요청 2026-11-21) */
+.tbt.tbm em.rvb { display: block; position: absolute; top: 2px; right: 4px; font-size: 9px; line-height: 1; font-weight: 900; color: #7fb4ff; }
+.tbt.tbm.rd em.rvb { top: auto; bottom: 2px; right: 50%; transform: translateX(50%); }
 .tbmode { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 10px; } .tbmode .tbvw { margin: 0; } .tbmode small { color: var(--muted); font-size: 12px; } .tbmode .link { font-size: 12px; padding: 0; }
 .tbt.tbm small { display: block; font-size: 10.5px; line-height: 1.15; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }   /* 도면에도 담당 이름 늘 (대표 요청 2026-11-18) */
 .tbt.tbm.rd small { font-size: 10px; }
