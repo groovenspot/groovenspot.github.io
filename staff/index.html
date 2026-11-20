@@ -2719,7 +2719,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 </section>
 
 <script src="/assets/vendor/qrcode-generator-1.4.4.js"></script>
-<script src="/assets/media-share.js"></script>
+<script src="/assets/media-share.js?v=2"></script>
 <script>
 (function () {
   'use strict';
@@ -8933,8 +8933,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         } };
       }));
       GrooveMediaShare.bind(button, { items: items, state: cache[post.id] || (cache[post.id] = {}),
-        url: location.origin + '/staff/#live:' + encodeURIComponent(post.id),
         labels: { share: '공유', ready: '지금 공유', save: '저장', progress: function (n) { return '준비 중 ' + n + '%'; },
+          unsupported: function () { showSheet('<p>이 폰은 바로 공유가 안 돼요. 영상 저장 후 인스타에서 올려 주세요.</p><button type="button" class="btn" id="lvShareSave">저장</button>'); $('lvShareSave').onclick = function () { $('sheetX').click(); button.click(); }; },
           error: function () { alertMsg('사진이나 영상을 준비하지 못했어요. 다시 시도해 주세요.'); } } });
     });
     if (state.lvJump) {

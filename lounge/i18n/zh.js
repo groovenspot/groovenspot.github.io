@@ -155,6 +155,7 @@ Lounge.i18n({zh: {
   "tonight.soundOn": "关闭声音",
   "tonight.share": "分享",
   "tonight.shareReady": "立即分享",
+  "tonight.shareUnsupported": "此手机无法直接分享。请保存视频后在 Instagram 中上传。",
   "tonight.shareSave": "保存",
   "tonight.shareProgress": "准备中 {n}%",
   "tonight.shareError": "无法准备文件。",
