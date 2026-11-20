@@ -52,7 +52,7 @@
     };
   }
 
-  function wireMenu(button, user) {
+  function wireMenu(button, user, enhanced = false) {
     if (!button) return;
     button.onclick = async () => {
       const allowed = !L.me || (await L.api('blocks')).error !== 'action';
@@ -220,7 +220,7 @@
         U.button(esc(L.t('follows.more')), 'data-gallery-more hidden'));
     const follow = view.querySelector('[data-follow]');
     if (follow) wireFollow(follow, user);
-    wireMenu(view.querySelector('[data-menu]'), user);
+    wireMenu(view.querySelector('[data-menu]'), user, true);
     const share = view.querySelector('[data-profile-share]');
     if (share) share.onclick = () => shareUI.open({ profile: { nick: user.nick, private: Boolean(user.private) } });
     const portrait = view.querySelector('[data-profile-avatar]');
