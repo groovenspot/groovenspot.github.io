@@ -1994,6 +1994,41 @@ html[data-theme="light"] .conv.inq { background: #eef6ff; }
 /* 📋 넓히기 ② 마감 알림·주간 요약·반복 (작업창 2) */
 
 /* 📋 넓히기 ③ 체크리스트·완료 사진·👍 (작업창 3) */
+.dec .dbadge.chk3 { background: var(--card-2); border: 1px solid var(--line-2); color: var(--txt); font-variant-numeric: tabular-nums; }
+.dec .dbadge.chk3.ok { background: rgba(60,207,145,.14); border-color: var(--ok); color: var(--ok); }
+.dec .dbadge.pic3 { background: var(--card-2); border: 1px solid var(--line-2); padding: 0 8px; }
+.dchk3 { display: grid; gap: 8px; padding: 12px 12px 10px; border-radius: 14px; background: var(--card-2); }
+.dchk3h { display: flex; align-items: baseline; justify-content: space-between; font-size: 14px; }
+.dchk3h span { font-weight: 900; font-variant-numeric: tabular-nums; color: var(--g-ink, var(--g)); }
+.dchk3bar { display: block; position: relative; height: 6px; border-radius: 3px; background: var(--line-2); overflow: hidden; }
+.dchk3bar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--ok); transition: width .3s; }
+.dchk3l { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.dchk3l li { display: flex; align-items: stretch; gap: 2px; }
+.dchk3t { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 2px; border: 0; background: none; color: var(--txt); font: inherit; font-size: 15px; font-weight: 600; text-align: left; }
+button.dchk3t { cursor: pointer; }
+.dchk3b { flex: none; display: grid; place-items: center; width: 24px; height: 24px; box-sizing: border-box; border-radius: 7px; border: 2px solid var(--line-2); background: var(--card); }
+.dchk3b .cmi { width: 16px; height: 16px; stroke-width: 3; }
+.dchk3l li.on .dchk3b { background: var(--ok); border-color: var(--ok); color: #04210f; }
+.dchk3w { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.dchk3l li.on .dchk3w { color: var(--muted); text-decoration: line-through; }
+.dchk3t small { flex: none; color: var(--muted); font-size: 12px; font-weight: 700; }
+.dchk3x { flex: none; width: 40px; border: 0; border-radius: 10px; background: none; color: var(--muted); font: inherit; font-size: 20px; cursor: pointer; }
+.dchk3f { display: flex; gap: 8px; margin-top: 2px; }
+.dchk3f input { flex: 1; min-width: 0; min-height: 44px; padding: 8px 12px; font-size: 15px; }
+.dchk3f .btn { flex: none; min-height: 44px; padding: 0 14px; font-size: 14px; }
+.dchk3o { justify-self: start; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border: 1px dashed var(--line-2); border-radius: 12px; background: none; color: var(--muted); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.dchk3o .cmi { width: 16px; height: 16px; }
+.dreact3 { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; margin: 0; padding: 0 14px; box-sizing: border-box; border-radius: 14px; border: 1px solid var(--line-2); background: none; color: var(--txt); font: inherit; font-size: 16px; font-weight: 800; text-align: left; }
+button.dreact3 { cursor: pointer; }
+.dreact3[aria-pressed="true"] { border-color: var(--g); background: rgba(255,122,26,.12); }
+.dreact3 span { min-width: 0; font-size: 14px; font-weight: 700; color: var(--muted); overflow-wrap: anywhere; }
+p.dreact3 { border-style: dashed; }
+.dpic3 { justify-self: start; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line-2); background: none; color: var(--muted); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.dpic3 b { font-weight: 900; }
+.dpic3[aria-pressed="true"] { border-color: var(--g); color: var(--txt); background: rgba(255,122,26,.12); }
+.decadd .dx3s, .decadd .dx3pic small { color: var(--muted); font-weight: 600; }
+.decadd label.dx3pic { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-bottom: 10px; }
+.decadd .dx3pic input { flex: none; width: 22px; height: 22px; min-height: 0; padding: 0; accent-color: var(--g); }
 
 .decadd { border-radius: 16px; padding: 0; overflow: hidden; }
 .decadd summary { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; list-style: none; background: var(--g); color: #120800; font-size: 16px; font-weight: 900; }
@@ -3648,6 +3683,99 @@ html .chathelp .ch-go .cei { color: var(--muted); }
   // ② 마감 알림·주간 요약·반복 (작업창 2)
 
   // ③ 체크리스트·완료 사진·👍 (작업창 3)
+  // ☑️ 세부 할 일: 진행 막대 + 줄마다 체크(바꿀 수 있는 사람 x.can 만, 나머지는 보기만) · 📸 완료할 때 사진(완료 누르면 사진 고르기 → 사진과 같이 완료) · 👍 잘했어요(팀장 이상, 완료된 일)
+  var DX3_PICW = /수리|고장|청소|비품|교체|설치|정리|파손|보충|채우기/;   // 할 일에 이 말이 있으면 '📸 완료할 때 사진 받기'를 자동으로 켬 (직접 끄면 그대로)
+  DX.err.needpic = '완료 사진 1장을 같이 올려 주세요 📸';
+  DX.err.chkmax = '세부 할 일은 20개까지예요.';
+  DX.err.chk = '세부 할 일을 다시 써 주세요.';
+  function dx3Cnt(x) { var l = x.chk || []; return { n: l.filter(function (c) { return c.ok; }).length, all: l.length }; }
+  function dx3Msg(t) { var m = $('decMsg'); if (m) m.textContent = t; }
+  function dx3Call(id, body, btn) {   // dec_chk·dec_pic·dec_react → { ok, decisions }
+    if (btn) btn.disabled = true;
+    return call(Object.assign({ token: state.s.token, id: id }, body)).then(function (r) {
+      if (r.error === 'auth') { toLogin(AUTH_OUT); return r; }
+      if (!r.ok) { if (btn) btn.disabled = false; dx3Msg(Object.assign({ forbidden: '이 일은 바꿀 수 없어요.', notfound: '그 사이 바뀌었어요. 다시 해 주세요.', state: '완료된 일에만 누를 수 있어요.', busy: '잠시 후 다시 해 주세요.', text: '< > 는 쓸 수 없어요.', empty: '세부 할 일을 써 주세요.' }, DX.err)[r.error] || '안 됐어요. 다시 해 주세요.'); return r; }
+      state.data.decisions = r.decisions; render(); return r;
+    }).catch(function () { if (btn) btn.disabled = false; dx3Msg('연결이 안 돼요. 다시 해 주세요.'); return {}; });
+  }
+  DX.badges.push(function (x) {
+    var c = dx3Cnt(x), h = '';
+    if (c.all) h += '<span class="dbadge chk3' + (c.n === c.all ? ' ok' : '') + '" title="세부 할 일">☑️ ' + c.n + '/' + c.all + '</span>';
+    if (x.needPic && x.status !== '완료') h += '<span class="dbadge pic3" title="완료할 때 사진">📸</span>';
+    return h;
+  });
+  DX.card.push(function (x) {
+    var l = x.chk || [], c = dx3Cnt(x), open = x.can && x.status !== '완료' && l.length < 20, opened = l.length || (state.dx3Open || {})[x.id];
+    if (!l.length && !open) return '';
+    if (!opened) return '<button type="button" class="dchk3o" data-dchk3open="1">' + cmIco('plus') + '세부 할 일 더하기</button>';
+    var h = '<div class="dchk3">';
+    if (l.length) h += '<div class="dchk3h"><b>세부 할 일</b><span>' + c.n + '/' + c.all + '</span></div>' +
+      '<span class="dchk3bar" role="progressbar" aria-label="세부 할 일 ' + c.n + '/' + c.all + '" aria-valuemin="0" aria-valuemax="' + c.all + '" aria-valuenow="' + c.n + '"><i style="width:' + Math.round(c.n / c.all * 100) + '%"></i></span>' +
+      '<ul class="dchk3l">' + l.map(function (k, i) {
+        var in1 = '<span class="dchk3b" aria-hidden="true">' + (k.ok ? cmIco('check') : '') + '</span><span class="dchk3w">' + esc(k.t) + '</span>' + (k.ok && k.by ? '<small>' + esc(k.by) + '</small>' : '');
+        return '<li' + (k.ok ? ' class="on"' : '') + '>' + (x.can ? '<button type="button" class="dchk3t" data-dchk3tog="' + i + '" aria-pressed="' + !!k.ok + '">' + in1 + '</button><button type="button" class="dchk3x" data-dchk3del="' + i + '" aria-label="' + esc(k.t) + ' 지우기">×</button>' : '<span class="dchk3t">' + in1 + '</span>') + '</li>';
+      }).join('') + '</ul>';
+    if (open) h += '<form class="dchk3f" data-dchk3f="1"><input data-dchk3in="1" maxlength="80" placeholder="세부 할 일 더하기" autocomplete="off" aria-label="세부 할 일 더하기"><button class="btn" type="submit">더하기</button></form>';
+    return h + '</div>';
+  });
+  DX.cardEnd.push(function (x, d) {
+    var h = '', rl = x.react || [];
+    if (x.status === '완료') {
+      var rt = rl.length ? '<b>' + rl.length + '</b><span>· ' + rl.map(esc).join(', ') + '</span>' : '<span>잘했어요</span>';
+      if (x.canReact) h += '<button type="button" class="dreact3" data-dreact3="1" aria-pressed="' + !!x.myReact + '">👍 ' + rt + '</button>';
+      else if (rl.length) h += '<p class="dreact3">👍 ' + rt + '</p>';
+    } else {
+      if (x.picFlag) h += '<button type="button" class="dpic3" data-dpic3="1" aria-pressed="' + !!x.needPic + '">📸 완료 사진 받기 <b>' + (x.needPic ? '켬' : '끔') + '</b></button>';
+      if (x.needPic && x.can && !d.admin) h += '<input type="file" data-dpicf3="1" accept="image/*" hidden>';   // 완료 누르면 여는 사진 고르기 (대표는 사진 없이 완료)
+    }
+    return h;
+  });
+  DX.add.push(function () {
+    if (!state.decAddDraft && !state.decAddOpen) { state.dx3Chk = ''; state.dx3Pic = null; }   // 추가가 끝나면(폼이 닫히고 할 일이 비면) 비움
+    var on = state.dx3Pic == null ? DX3_PICW.test(state.decAddDraft || '') : state.dx3Pic;
+    return '<label><span>세부 할 일 <small class="dx3s">(줄마다 하나, 선택)</small></span><textarea id="dx3Chk" rows="3" placeholder="예: 전구 사기&#10;교체하기&#10;불 켜서 확인">' + esc(state.dx3Chk || '') + '</textarea></label>' +
+      '<label class="dx3pic"><input type="checkbox" id="dx3Pic"' + (on ? ' checked' : '') + '>📸 완료할 때 사진 받기 <small>(수리·청소·비품 등은 자동)</small></label>';
+  });
+  DX.addData.push(function () {
+    var c = $('dx3Chk'), p = $('dx3Pic'), o = {}, l = c ? c.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean) : [];
+    if (l.length) o.chk = l;
+    if (p && p.checked) o.needPic = true;
+    return o;
+  });
+  DX.bind.push(function (area, d, send) {
+    var w = $('decAddW'), ca = $('dx3Chk'), pa = $('dx3Pic');
+    if (ca) ca.addEventListener('input', function () { state.dx3Chk = ca.value; });
+    if (pa) pa.addEventListener('change', function () { state.dx3Pic = pa.checked; });
+    if (w && pa) w.addEventListener('input', function () { if (state.dx3Pic == null) pa.checked = DX3_PICW.test(w.value); });
+    area.querySelectorAll('[data-decid]').forEach(function (card) {
+      var id = card.dataset.decid, x = (d.decisions || []).filter(function (y) { return y.id === id; })[0]; if (!x) return;
+      var tx = function (i) { return ((x.chk || [])[i] || {}).t || ''; };
+      card.querySelectorAll('[data-dchk3tog]').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.dchk3tog; dx3Call(id, { a: 'dec_chk', op: 'tog', i: i, t: tx(i) }, b); }); });
+      card.querySelectorAll('[data-dchk3del]').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.dchk3del; dx3Call(id, { a: 'dec_chk', op: 'del', i: i, t: tx(i) }, b); }); });
+      var ob = card.querySelector('[data-dchk3open]');
+      if (ob) ob.addEventListener('click', function () { (state.dx3Open = state.dx3Open || {})[id] = 1; render(); var i = document.querySelector('.dec[data-decid="' + id + '"] [data-dchk3in]'); if (i) i.focus(); });
+      var f = card.querySelector('[data-dchk3f]');
+      if (f) {
+        var inp = f.querySelector('[data-dchk3in]'), fb = f.querySelector('button'); state.dx3Txt = state.dx3Txt || {};
+        inp.value = state.dx3Txt[id] || '';
+        inp.addEventListener('input', function () { state.dx3Txt[id] = inp.value; });
+        f.addEventListener('submit', function (e) {
+          e.preventDefault(); var v = inp.value.trim(); if (!v || fb.disabled) return;
+          dx3Call(id, { a: 'dec_chk', op: 'add', t: v }, fb).then(function (r) { if (r && r.ok) { state.dx3Txt[id] = ''; var i = document.querySelector('.dec[data-decid="' + id + '"] [data-dchk3in]'); if (i) { i.value = ''; i.focus(); } } });
+        });
+      }
+      var rb = card.querySelector('[data-dreact3]'); if (rb) rb.addEventListener('click', function () { dx3Call(id, { a: 'dec_react' }, rb); });
+      var pb = card.querySelector('[data-dpic3]'); if (pb) pb.addEventListener('click', function () { dx3Call(id, { a: 'dec_pic', on: !x.needPic }, pb); });
+      var pf = card.querySelector('[data-dpicf3]');   // 📸 완료 사진: 코멘트 첨부와 같은 압축(shrink → jpg) 으로 사진과 같이 '완료'
+      if (pf) pf.addEventListener('change', function () {
+        var fl = Array.prototype.slice.call(this.files || []).filter(function (f) { return !ycIsVideo(f); }).slice(0, 3); this.value = '';
+        if (!fl.length) { dx3Msg(DX.err.needpic); return; }
+        var btn = card.querySelector('[data-decst="완료"]'); if (btn) btn.disabled = true; dx3Msg('📸 사진 올리는 중이에요…');
+        Promise.all(fl.map(shrink)).then(function (xs) { dx3Msg(''); send(id, { status: '완료', photos: xs.map(function (p) { return { type: p.type, data: p.data }; }) }, btn); })
+          .catch(function () { if (btn) btn.disabled = false; dx3Msg('사진을 못 읽었어요. 다른 사진으로 해 주세요.'); });
+      });
+    });
+  });
 
   function renderDec(area, d) {
     var all0 = d.decisions || [], list = all0.filter(function (x) { return x.tpl !== true; }), t = bizToday(), f = decFx(d);   // 🔁 반복 틀(tpl)은 목록·개수에서 뺌 (② 가 따로 보여 줌) · 처음 보기: 팀장 이상 '전체', 나머지 '내 일'
@@ -3774,7 +3902,7 @@ html .chathelp .ch-go .cei { color: var(--muted); }
     DX.bind.forEach(function (f) { try { f(area, d, send); } catch (e) {} });   // 📋 넓히기 이벤트
     area.querySelectorAll('[data-decid]').forEach(function (card) {
       var id = card.dataset.decid;
-      card.querySelectorAll('[data-decst]').forEach(function (b) { b.addEventListener('click', function () { if (b.getAttribute('aria-pressed') === 'true') return; send(id, { status: b.dataset.decst }, b); }); });
+      card.querySelectorAll('[data-decst]').forEach(function (b) { b.addEventListener('click', function () { if (b.getAttribute('aria-pressed') === 'true') return; var pf = b.dataset.decst === '완료' && card.querySelector('[data-dpicf3]'); if (pf) { dx3Msg('📸 완료 사진을 골라 주세요 — 사진과 같이 완료돼요.'); pf.click(); return; } send(id, { status: b.dataset.decst }, b); }); });   // 📸 완료 사진이 필요한 일: 사진 고르기 → 사진과 같이 완료 (③)
       var fm = card.querySelector('[data-deccf]');
       if (fm) {
         var inp = fm.querySelector('[data-deccmt]'), fb = fm.querySelector('button[type="submit"]');
