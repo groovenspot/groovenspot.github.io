@@ -107,11 +107,44 @@ const LoungeScreenUI = (() => {
     crowd1: ['여유', 'Quiet'], crowd2: ['보통', 'Moderate'], crowd3: ['꽉 참', 'Full'],
     line: ['입구 줄', 'Entry queue'], none: ['줄 없음', 'No queue'], mins: ['약 {n}분', 'About {n} min'],
     live: ['매장 영상', 'Club live'], timetable: ['타임테이블', 'Timetable'],
+    poster: ['파티 포스터', 'Party poster'], posterZoom: ['포스터 크게 보기', 'View poster full size'],
     going: ['갈래요', 'I’m going'], undo: ['갈래요 취소', 'Cancel going'],
     people: ['{n}명 갈래요', '{n} going'], friends: ['같이 가는 친구', 'Friends going'],
     stale: ['마지막으로 받은 정보예요', 'Showing the last update'],
     safety: ['안심 버튼', 'Call club security'], djs: ['DJ 목록', 'DJs']
   });
+  L.i18n({
+    ja: { 'tonight.poster': 'パーティーポスター', 'tonight.posterZoom': 'ポスターを拡大' },
+    zh: { 'tonight.poster': '派对海报', 'tonight.posterZoom': '查看大图' }
+  });
+  function timetableMarkup(slots) {
+    return '<h2>' + t('timetable') + '</h2>' +
+      (slots?.length ? '<ul style="' + U.card + ';padding-left:36px">' + slots.map(slot =>
+        '<li>' + L.esc(slot.at) + ' · ' + L.esc(slot.floor) + ' · ' + L.esc(slot.dj) + '</li>').join('') + '</ul>' :
+        U.status('empty'));
+  }
+
+  function paintSchedule(section, { poster, timetable }) {
+    const image = U.url(poster?.url);
+    const fallback = () => { section.innerHTML = timetableMarkup(timetable); };
+    if (!image) return fallback();
+    const desc = poster.desc?.[L.lang] || poster.desc?.en || poster.desc?.ko;
+    const caption = L.esc([poster.title, desc].filter(Boolean).join(' · '));
+    const src = L.esc(image);
+    section.innerHTML = '<h2>' + t('poster') + '</h2><figure style="margin:0">' +
+      '<button type="button" data-poster-zoom aria-label="' + t('posterZoom') +
+      '" style="display:block;width:100%;padding:0;border:0;border-radius:14px;background:transparent;cursor:zoom-in">' +
+      '<img alt="" loading="lazy" style="' + U.media + '" src="' + src + '"></button>' +
+      (caption ? '<figcaption title="' + caption + '" style="margin:8px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
+        caption + '</figcaption>' : '') + '</figure>';
+    section.querySelector('img').addEventListener('error', fallback, { once: true });
+    section.querySelector('[data-poster-zoom]').onclick = () => {
+      const panel = U.sheet('<h2>' + (L.esc(poster.title) || t('poster')) + '</h2>' +
+        '<img alt="" style="' + U.media + '" src="' + src + '">' +
+        (desc ? '<p>' + L.esc(desc) + '</p>' : ''));
+      panel.style.width = 'min(100%, 960px)';
+    };
+  }
   let timer;
   let lastGoing;
 
@@ -191,9 +224,8 @@ const LoungeScreenUI = (() => {
             photos.map(photo => '<img alt="" loading="lazy" style="' + U.media + '" src="' + L.esc(photo) + '">').join('') +
             '<figcaption>' + (live.floor ? L.esc(live.floor) + ' · ' : '') + (typeof live.at === 'number'
               ? U.time(live.at, { timeStyle: 'short' }) : L.esc(live.at)) + '</figcaption></figure>';
-        }).join('') || U.status('empty')) + '<h2>' + t('timetable') + '</h2>' +
-        ((data.timetable || []).length ? '<ul style="' + U.card + ';padding-left:36px">' + data.timetable.map(slot =>
-          '<li>' + L.esc(slot.at) + ' · ' + L.esc(slot.floor) + ' · ' + L.esc(slot.dj) + '</li>').join('') + '</ul>' : U.status('empty'));
+        }).join('') || U.status('empty')) + '<section data-tonight-schedule></section>';
+      paintSchedule(view.querySelector('[data-tonight-schedule]'), data);
       paintGoing();
     }
     refresh();
