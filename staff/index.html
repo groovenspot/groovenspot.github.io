@@ -2522,11 +2522,12 @@ html .chathelp .ch-go .cei { color: var(--muted); }
 .lounge-menu { margin: 12px 0; }
 .lounge-quick { grid-template-columns: repeat(auto-fit, minmax(min(100%, 92px), 1fr)); margin: 0 0 12px; }
 .lounge-quick .btn {
-  position: relative; display: grid; justify-items: center; align-content: center; gap: 4px;
+  display: grid; justify-items: center; align-content: center; gap: 4px;
   background: var(--card-2);
 }
 .lounge-quick .btn small { display: block; color: var(--muted); font-size: 12px; }
-.lounge-quick .lounge-report-badge { position: absolute; inset-block-start: 6px; inset-inline-end: 6px; font-size: 12px; }
+.lounge-quick-icon { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; }
+.lounge-quick .lounge-report-badge { margin-inline-start: 0; font-size: 12px; }
 .lounge-quick .btn, .lounge-menu .btn, .lounge-screen .btn {
   min-inline-size: 44px; min-block-size: 48px; padding: 6px 10px; white-space: normal; overflow-wrap: anywhere;
 }
@@ -7223,7 +7224,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     if (area.dataset.links === key) return;
     area.dataset.links = key;
     area.innerHTML = links.map(([page, ko, en, icon]) => loungeButton(
-      opIco(icon) + '<span>' + ko + '<small>' + en + '</small></span>' + (page === 'reports' ? loungeReportBadge() : ''),
+      '<span class="lounge-quick-icon">' + opIco(icon) + (page === 'reports' ? loungeReportBadge() : '') + '</span>' +
+      '<span>' + ko + '<small>' + en + '</small></span>',
       'type="button" data-quick-lounge="' + page + '"')).join('');
     const screens = { tonight: loungeTonight, reports: loungeManage, display: () => loungeManage('display') };
     area.querySelectorAll('button').forEach(button => { button.onclick = screens[button.dataset.quickLounge]; });
@@ -8535,7 +8537,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       ['post', '공식 글 / Official post'],
       ['album', '사진 앨범 / Photo album'], ['vote', '투표 / Vote'],
       ['programming', '월드컵 · 챌린지 / Events'], ['rewards', '보상 / Rewards'], ['orders', '굿즈 주문 / Orders'],
-      ['display', '전광판 예약 / Display'], ['stats', '통계 / Stats'], ['analytics', '설문 · 주간 / Reports']];
+      ['display', '전광판 예약 / Display'], ['stats', '통계 / Stats'],
+      ['analytics', state.s.admin ? '설문 · 주간 / Reports' : '설문 결과 / Surveys']];
     tabs.push(['stages', '단계 스위치 / Feature switches']);
     if (state.s.admin) tabs.push(['settings', '포인트 · 라디오 / Settings']);
     const screens = {
