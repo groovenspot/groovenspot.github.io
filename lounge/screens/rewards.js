@@ -5,10 +5,10 @@ const LoungeRewardUI = (() => {
     title: ['보상', 'Rewards'], balance: ['쓸 수 있는 포인트', 'Available points'],
     expiry: ['포인트는 적립 후 12개월 동안 쓸 수 있어요.', 'Points are valid for 12 months after you earn them.'],
     stamps: ['스탬프 10개 보상', '10-stamp rewards'],
-    stampReady: ['받을 수 있는 보상 {n}개', '{n} rewards ready to claim'],
+    stampReady: ['받을 수 있는 보상 {n}개', 'Ready to claim · {n}'],
     stampHelp: ['매장에서 직원에게 이 화면을 보여 주세요.', 'Show this screen to a staff member at the club.'],
     stampEmpty: ['체크인 스탬프 10개를 모으면 보상을 받아요.', 'Collect 10 check-in stamps to earn a reward.'],
-    stampGiven: ['받은 보상 {n}개', '{n} rewards collected'],
+    stampGiven: ['받은 보상 {n}개', 'Collected · {n}'],
     weekly: ['주간 미션', 'Weekly mission'], missionDone: ['{n}P 받았어요', 'You earned {n}P'],
     missionPoints: ['모두 마치면 {n}P', 'Complete all goals to earn {n}P'],
     checkins: ['매장 체크인', 'Venue check-ins'], votes: ['투표', 'Votes'], attends: ['출석', 'Daily check-ins'],
@@ -129,7 +129,7 @@ const LoungeRewardUI = (() => {
       '<small id="booking-length" class="muted">0 / 30</small><label>' + t('time') +
       '<input type="time" name="at" max="23:29" required style="' + inputStyle + '"></label>' +
       '<small class="muted">' + t('timeHelp') + '</small>' +
-      (birthday ? '<label><input type="checkbox" name="birthday"> ' + t('birthdayPay') + '</label>' : '') +
+      (birthday ? '<label class="shell-choice"><input type="checkbox" name="birthday"> ' + t('birthdayPay') + '</label>' : '') +
       '<p class="muted">' + t('bookingHelp') + '</p><p class="muted">' + t('bookingWindow') + '</p>' + message() +
       submit(t(store ? 'storePay' : 'pointsPay')) + '</form>');
     view.append(card);

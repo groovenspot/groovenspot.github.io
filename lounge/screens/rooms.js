@@ -106,7 +106,7 @@
     .rooms-compose{display:flex;align-items:start;gap:8px}
     .rooms-compose textarea{min-width:0;resize:vertical}
     .rooms-options{display:flex;flex-wrap:wrap;gap:0 12px}
-    .rooms-options button{font-size:.8rem;min-height:36px}
+    .rooms-options button{font-size:.8rem}
     .rooms-vote-list button{width:100%;gap:8px;justify-content:space-between;text-align:left}
     .rooms-vote-list button[aria-pressed="true"]{border-color:var(--g)}
     .rooms-page button:disabled{cursor:default}
