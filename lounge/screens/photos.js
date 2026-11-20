@@ -76,19 +76,29 @@
       });
       view.querySelectorAll('[data-photo]').forEach(button => {
         button.onclick = () => {
-          const i = Number(button.dataset.photo);
-          const photo = photos[i];
-          const el = U.sheet('<figure style="margin:12px 0">' + P.zoomImage(photo.src, t('photo', { n: i + 1 }), photo) +
-            '</figure>' + U.button(t('take'), 'data-takedown'));
-          el.querySelector('[data-takedown]').onclick = () => U.reason({
-            title: t('take'), reasons: ['me', 'sexual', 'abuse', 'illegal', 'etc'],
-            submit: why => L.api('takedown', { photo: photo.key, why }),
-            done: () => {
-              const grid = button.parentElement;
-              button.remove();
-              if (grid && !grid.querySelector('[data-photo]')) grid.outerHTML = P.state(t('noPhotos'));
-            }
+          const buttons = [...view.querySelectorAll('[data-photo]')];
+          const start = buttons.indexOf(button);
+          const el = U.sheet('<figure style="margin:12px 0" data-zoom-photos></figure>' + U.button(t('take'), 'data-takedown'));
+          const preview = el.querySelector('[data-zoom-photos]');
+          const slides = buttons.map(item => {
+            const index = Number(item.dataset.photo), photo = photos[index];
+            return P.zoomImage(photo.src, t('photo', { n: index + 1 }), photo);
           });
+          let active = start;
+          if (slides.length > 1) P.carousel(preview, slides, { start, onIndex: index => { active = index; } });
+          else preview.innerHTML = slides[0];
+          el.querySelector('[data-takedown]').onclick = () => {
+            const selected = buttons[active], photo = photos[Number(selected.dataset.photo)];
+            U.reason({
+              title: t('take'), reasons: ['me', 'sexual', 'abuse', 'illegal', 'etc'],
+              submit: why => L.api('takedown', { photo: photo.key, why }),
+              done: () => {
+                const grid = selected.parentElement;
+                selected.remove();
+                if (grid && !grid.querySelector('[data-photo]')) grid.outerHTML = P.state(t('noPhotos'));
+              }
+            });
+          };
         };
       });
     }
