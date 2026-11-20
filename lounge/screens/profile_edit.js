@@ -29,11 +29,11 @@
     const unique = [...new Map(rows.map(row => [row.key, row])).values()].slice(0, 5);
     const source = unique.length ? unique : user.photo ? [{ key: user.photo, main: true }] : [];
     const main = source.find(row => row.main) || source.find(row => row.key === user.photo) || source[0];
-    return (user.locked && main ? [main] : source).map(row => ({
-      key: row.key,
-      src: U.image(row.url?.startsWith('/img/') ? row.key : row.url || row.key),
-      main: row === main
-    })).filter(row => row.src);
+    return (user.locked && main ? [main] : source).map(row => {
+      const url = typeof row.url === 'string' && row.url.startsWith('/img/')
+        ? new URL(row.url, L.img(row.key)).href : row.url || row.key;
+      return { key: row.key, src: U.image(url), main: row === main };
+    }).filter(row => row.src);
   }
 
   function photoError(error) {
