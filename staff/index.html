@@ -5225,7 +5225,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     var g = (sold ? d.sold : d.guests) || {}, w = g[state.week] || { rows: [], total: 0 };
     var isNow = state.week === 'week', ti = isNow && w.start ? Math.round((Date.parse(g.today) - Date.parse(w.start)) / 864e5) : -1;
     // 팀 카드: 영업팀 3개 + 운영팀 (대표 결정 2026-11-21: '전체' 카드 빼고 운영팀 넣기)
-    var GT = SALES.concat(['운영팀']);
+    var GT = sold ? SALES.slice() : SALES.concat(['운영팀']);   // 판매 순위에서는 운영팀 빼기 (대표 결정 2026-11-21)
     var teamSum = {}; GT.forEach(function (t) { teamSum[t] = 0; });
     w.rows.forEach(function (r) { if (teamSum[r.team] != null) teamSum[r.team] += r.total; });
     // 운영팀은 게스트가 0 이어도 개인 순위에 보이게 (대표 결정 2026-11-21): 게스트 입력과 같은 명단(승인 직원 + 팀원 명단)
@@ -7113,6 +7113,31 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     state.kview = 'add'; render(); window.scrollTo(0, 0);
     setTimeout(function () { var i = c ? document.querySelector('[data-kr="0"][data-f="liq"]') : $('kaN'); if (i) i.focus(); }, 50);
   }
+  // ➕ 술 종류 추가·빼기 (대표 요청 2026-11-21): 메뉴판에 없는 술을 목록에 더함 — 대표·김동기·양진호
+  function kLiqSheet() {
+    var k = state.keep; if (!k) return;
+    var ex = k.liqExtra || [];
+    showSheet('<h2>➕ 술 종류 추가</h2><p class="note" style="margin:0 0 10px">메뉴판에 없는 술을 넣으면 맡기기 술 목록에 나와요.</p>' +
+      '<label>술 이름<input id="klN" maxlength="20" autocomplete="off" placeholder="예: 발렌타인 21"></label><p class="msg" id="klMsg" role="alert"></p>' +
+      '<button class="btn btn-hot" type="button" id="klGo" style="width:100%">추가</button>' +
+      (ex.length ? '<p class="lab" style="font-weight:700;font-size:14px;margin:16px 0 6px">직접 추가한 술 · 누르면 목록에서 빠져요</p><div class="kchips">' +
+        ex.map(function (x) { return '<button type="button" data-kld="' + esc(x) + '">' + esc(x) + ' ✕</button>'; }).join('') + '</div>' : ''));
+    function go(op, name, btn) {
+      var m = $('klMsg'); if (!name) { m.textContent = '술 이름을 넣어 주세요.'; return; }
+      btn.disabled = true;
+      call({ a: 'keep_liq', token: state.s.token, op: op, name: name }).then(function (r) {
+        btn.disabled = false;
+        if (!r.ok) { m.textContent = { dup: '이미 있는 술이에요.', name: '이름을 확인해 주세요 (20자까지).', forbidden: '대표·김동기·양진호만 할 수 있어요.', busy: '잠시 후에 다시 해 주세요.', menu: '메뉴판 술은 뺄 수 없어요.', full: '더 넣을 수 없어요.' }[r.error] || '저장하지 못했어요.'; return; }
+        k.liqs = r.liqs; k.liqExtra = r.extra; try { kSave(); } catch (e) {}
+        if (op === 'add' && state.kadd) { var row = state.kadd.rows.filter(function (x) { return !x.liq.trim(); })[0]; if (row) row.liq = r.name; }
+        $('sheet').hidden = true; $('sheet').innerHTML = ''; render();
+      }).catch(function () { btn.disabled = false; m.textContent = '연결이 안 돼요. 인터넷을 확인해 주세요.'; });
+    }
+    $('klGo').addEventListener('click', function () { go('add', $('klN').value.trim(), this); });
+    $('klN').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go('add', this.value.trim(), $('klGo')); } });
+    document.querySelectorAll('[data-kld]').forEach(function (b) { b.addEventListener('click', function () { go('del', b.dataset.kld, b); }); });
+    setTimeout(function () { if ($('klN')) $('klN').focus(); }, 50);
+  }
   function renderKAdd(area) {
     var a = state.kadd, k = state.keep;
     var h = '<button class="btn back" type="button" id="kaBack">← ' + (a.fixed ? '손님' : '킵 장부') + '</button><div class="card"><h1>🍾 맡기기</h1><p class="sub">손님 → 술 · 병 수 → 저장. 보관은 오늘부터 ' + k.days + '일이에요.</p>';
@@ -7135,7 +7160,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         (a.rows.length > 1 ? '<button class="x" type="button" data-kr="' + i + '" data-f="del" aria-label="이 줄 빼기">✕</button>' : '<span></span>') + '</div>';
     }).join('');
     h += '<datalist id="kaLl">' + k.liqs.map(function (x) { return '<option value="' + esc(x) + '">'; }).join('') + '</datalist>';
-    h += '<div class="kchips">' + k.liqs.slice(0, 10).map(function (x) { return '<button type="button" data-kq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '<button type="button" id="kaRow">+ 술 한 줄 더</button></div>';
+    h += '<div class="kchips">' + k.liqs.slice(0, 10).map(function (x) { return '<button type="button" data-kq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '<button type="button" id="kaRow">+ 술 한 줄 더</button>' + (k.liqAdd ? '<button type="button" id="kaLiq">➕ 술 종류 추가</button>' : '') + '</div>';
     h += '<p class="note" style="margin:-6px 0 12px">일부만 남은 병은 \'남은 양\'을 골라요 (한 병씩).</p>';
     if (!a.fixed && !a.id) h += '<label>메모 (선택)<input id="kaM" maxlength="60" value="' + esc(a.memo) + '"></label>';
     // 📷 맡기기 사진 (대표 요청 2026-11-19 새벽): 병·영수증 등 최대 3장 → 승인 화면·기록에 보임
@@ -7187,6 +7212,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       sync(); Promise.all(fs.map(shrink)).then(function (xs) { a.photos = a.photos.concat(xs).slice(0, 3); render(); }).catch(function () { $('kaMsg').textContent = '사진을 못 읽었어요.'; });
     });
     area.querySelectorAll('[data-kax]').forEach(function (b) { b.addEventListener('click', function () { sync(); a.photos.splice(+b.dataset.kax, 1); render(); }); });
+    if ($('kaLiq')) $('kaLiq').addEventListener('click', function () { sync(); kLiqSheet(); });   // ➕ 술 종류 추가 (대표 요청 2026-11-21)
     $('kaRow').addEventListener('click', function () { sync(); if (a.rows.length < 20) a.rows.push({ liq: '', n: 1, amt: '' }); render(); var l = document.querySelectorAll('[data-f="liq"]'); if (l.length) l[l.length - 1].focus(); });
     $('kaGo').addEventListener('click', function () {
       sync();
