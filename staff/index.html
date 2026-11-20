@@ -6,7 +6,7 @@
      새 외부 주소를 쓰게 되면 여기에 더해야 해요(안 그러면 그 기능만 막힘). 스크립트·스타일이 이 파일 안에 있어서 'unsafe-inline' 은 필요. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://drive.google.com https://*.googleusercontent.com https://groove-lounge-api.groovenspotbusan.workers.dev; media-src 'self' data: blob:; connect-src 'self' https://groove-staff-api.groovenspotbusan.workers.dev https://groove-lounge-api.groovenspotbusan.workers.dev; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <!-- 🔄 앱 버전: 깃허브 작업(staff-version)이 이 파일이 바뀔 때마다 자동으로 찍고 staff/version.json 도 같이 바꾼다. 손으로 고치지 않기. -->
-<meta name="gs-ver" content="125c39e07554">
+<meta name="gs-ver" content="58db399ab959">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
@@ -132,6 +132,16 @@ button, select { font: inherit; color: inherit; }
 
 /* 📅 예약 탭과 상태 변경 (대표 결정 2026-11-20) */
 .rsv-filters { display: flex; gap: 8px; margin-bottom: 12px; }
+.rsvdays { display: flex; align-items: center; gap: 6px; overflow-x: auto; padding: 2px 0 8px; margin: 0 0 4px; scrollbar-width: none; }
+.rsvdays .chip { flex: none; white-space: nowrap; }
+.rsvdays .chip.on { border-color: var(--g); color: var(--g); }
+.rsvdays .chip.today { font-weight: 800; }
+.rsvpick { flex: none; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; }
+.rsvpick input { border: 0; background: none; color: inherit; font: inherit; padding: 6px 0; width: 9.5em; }
+.rsvtb { display: inline-flex !important; flex-direction: row; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; margin: 0 0 12px; white-space: nowrap; }
+.rsvtb input[type="checkbox"] { width: 20px !important; height: 20px !important; min-height: 0 !important; margin: 0; padding: 0; flex: none; accent-color: var(--g); }
+.rsvdays .chip { min-height: 0; padding: 7px 12px; }
+.rsvsum { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; margin: 0 0 12px; font-size: 14px; }
 .rsv-filters .btn[aria-pressed="true"] { border-color: var(--g); color: var(--g); }
 .rsv-detail { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 12px 0 16px; }
 .rsv-detail dt { color: var(--muted); }
@@ -1151,6 +1161,9 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .tbt.tbm b { font-size: 13px; line-height: 1.2; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .tbt.tbm span { font-size: 11px; line-height: 1.15; white-space: nowrap; }
 .tbt.tbm em { display: none; }
+.tbmap .tbt.tbm.rv, .tbt.rv { border-style: dashed !important; border-color: #7fb4ff !important; border-width: 2px; }   /* 📅 예약 · 아직 안 옴: 도면(가로·세로)에도 보이게 (대표 요청 2026-11-21) */
+.tbmap .tbt.tbm em.rvb { display: block; position: absolute; top: 3px; right: 3px; z-index: 2; font-size: 9.5px; line-height: 1; font-weight: 900; color: #0b1730; background: #7fb4ff; border-radius: 999px; padding: 2px 5px; }
+.tbmap .tbt.tbm.rd em.rvb { display: none; }   /* 원형 자리는 파란 점선만 (글자가 겹쳐서) */
 .tbmode { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 10px; } .tbmode .tbvw { margin: 0; } .tbmode small { color: var(--muted); font-size: 12px; } .tbmode .link { font-size: 12px; padding: 0; }
 .tbt.tbm small { display: block; font-size: 10.5px; line-height: 1.15; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }   /* 도면에도 담당 이름 늘 (대표 요청 2026-11-18) */
 .tbt.tbm.rd small { font-size: 10px; }
@@ -6328,12 +6341,27 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     var r = state.reservations, all = r ? r.list : [], past = !!state.rsvPast;
     var list = all.filter(function (x) { return past ? x.day < r.today : x.day >= r.today; });
     if (past) list.reverse();
+    // 📅 날짜별 보기 (대표 요청 2026-11-21): 날짜 칩을 누르면 그날 예약만 + 합계 · 테이블만 보기
+    var byDay = {}; list.forEach(function (x) { (byDay[x.day] = byDay[x.day] || []).push(x); });
+    var days = Object.keys(byDay).sort(); if (past) days.reverse();
+    if (state.rsvDay && !byDay[state.rsvDay] && !state.rsvDayPick) state.rsvDay = '';
+    if (state.rsvDay) list = byDay[state.rsvDay] || [];
+    if (state.rsvTb) list = list.filter(function (x) { return x.type === '테이블'; });
+    var dayBar = r ? '<div class="rsvdays" role="group" aria-label="날짜 고르기"><button type="button" class="chip' + (state.rsvDay ? '' : ' on') + '" data-rsv-day="">전체</button>' +
+      days.map(function (d) { var n = byDay[d].filter(function (x) { return x.status !== '취소' && (!state.rsvTb || x.type === '테이블'); }).length;
+        return '<button type="button" class="chip' + (state.rsvDay === d ? ' on' : '') + (d === r.today ? ' today' : '') + '" data-rsv-day="' + d + '">' + esc(d === r.today ? '오늘' : md(d) + '(' + dowOf(d) + ')') + ' <b>' + n + '</b></button>'; }).join('') +
+      '<label class="rsvpick">📅<input type="date" id="rsvDayPick" value="' + esc(state.rsvDay || '') + '" aria-label="날짜로 찾기"></label></div>' +
+      '<label class="rsvtb"><input type="checkbox" id="rsvTbOnly"' + (state.rsvTb ? ' checked' : '') + '> 테이블 예약만</label>' : '';
+    var live = list.filter(function (x) { return x.status !== '취소'; }), cnt = function (st) { return list.filter(function (x) { return x.status === st; }).length; };
+    var daySum = r && state.rsvDay ? '<div class="rsvsum"><b>' + esc(state.rsvDay === r.today ? '오늘' : md(state.rsvDay) + '(' + dowOf(state.rsvDay) + ')') + '</b> 예약 <b>' + live.length + '</b>건' +
+      ' · 테이블 <b>' + live.filter(function (x) { return x.type === '테이블'; }).length + '</b> · 접수 ' + cnt('접수') + ' · 확인 ' + cnt('확인') + ' · 자리 배정 ' + cnt('자리 배정') + (cnt('취소') ? ' · 취소 ' + cnt('취소') : '') + '</div>' : '';
     var nUp = r ? all.filter(function (x) { return x.day >= r.today; }).length : 0, nPast = r ? all.length - nUp : 0;
     var nNew = r ? all.filter(function (x) { return x.day >= r.today && x.status === '접수'; }).length : 0;
     area.innerHTML = '<div class="kh rsvh"><div><h1>' + (state.data.admin ? '예약' : '내 담당 예약') + '</h1><span class="range">' + (r ? '예정 ' + nUp + '건' + (nNew ? ' · 접수 대기 <b class="rsvnew">' + nNew + '</b>건' : '') : '홈페이지 예약 · 담당 MD 배정') + '</span></div>' +
       '<button class="btn rsvref" type="button" id="rsvRefresh" aria-label="새로고침"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 12a9 9 0 1 1-2.64-6.36\"/><path d=\"M21 3v6h-6\"/></svg><span>새로고침</span></button></div>' +
       '<div class="rsv-filters" role="group" aria-label="예약 고르기"><button class="btn" type="button" data-rsv-past="0" aria-pressed="' + !past + '">예정' + (r ? ' <b>' + nUp + '</b>' : '') + '</button><button class="btn" type="button" data-rsv-past="1" aria-pressed="' + past + '">지난 예약' + (r ? ' <b>' + nPast + '</b>' : '') + '</button></div>' +
-      (state.rsvError ? '<p class="empty">' + esc(state.rsvError) + '</p>' : !r ? '<p class="load">예약을 불러오는 중…</p>' : !list.length ? '<p class="empty">표시할 예약이 없어요.</p>' :
+      dayBar + daySum +
+      (state.rsvError ? '<p class="empty">' + esc(state.rsvError) + '</p>' : !r ? '<p class="load">예약을 불러오는 중…</p>' : !list.length ? '<p class="empty">' + (state.rsvDay ? '이 날 예약이 없어요.' : '표시할 예약이 없어요.') + '</p>' :
         '<div class="list">' + list.map(function (x) {
           var st = x.status === '접수' ? 'new' : x.status === '취소' ? 'off' : 'done';
           return '<button class="item rsvc rsv-' + st + '" type="button" data-rsv-id="' + esc(x.id) + '"><span class="rsvc-top"><span class="chip ' + st + '">' + esc(x.status) + '</span><span class="rsvc-day' + (x.day === r.today ? ' today' : '') + '">' + rsvDay(x.day, r.today) + '</span></span>' +
@@ -6343,7 +6371,10 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
             (x.birthday ? '<span class="rsvc-bd"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9 3 12 8 12 8s3-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>생일 혜택 · ' + esc(x.birthday) + '</span>' : '') + '</button>';
         }).join('') + '</div>');
     $('rsvRefresh').addEventListener('click', loadReservations);
-    area.querySelectorAll('[data-rsv-past]').forEach(function (b) { b.addEventListener('click', function () { state.rsvPast = b.dataset.rsvPast === '1'; render(); }); });
+    area.querySelectorAll('[data-rsv-past]').forEach(function (b) { b.addEventListener('click', function () { state.rsvPast = b.dataset.rsvPast === '1'; state.rsvDay = ''; state.rsvDayPick = false; render(); }); });
+    area.querySelectorAll('[data-rsv-day]').forEach(function (b) { b.addEventListener('click', function () { state.rsvDay = b.dataset.rsvDay; state.rsvDayPick = false; render(); }); });
+    if ($('rsvDayPick')) $('rsvDayPick').addEventListener('change', function () { var d = this.value; if (!d) { state.rsvDay = ''; render(); return; } state.rsvPast = !!(r && d < r.today); state.rsvDay = d; state.rsvDayPick = true; render(); });
+    if ($('rsvTbOnly')) $('rsvTbOnly').addEventListener('change', function () { state.rsvTb = this.checked; render(); });
     area.querySelectorAll('[data-rsv-id]').forEach(function (b) { b.addEventListener('click', function () {
       reservationSheet(list.filter(function (x) { return x.id === b.dataset.rsvId; })[0], r);
     }); });
