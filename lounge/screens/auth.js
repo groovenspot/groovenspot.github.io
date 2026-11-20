@@ -22,6 +22,12 @@
     reset: ['비밀번호 바꾸기', 'Reset password'],
     savePw: ['새 비밀번호로 로그인', 'Log in with new password'],
     resetHelp: ['비밀번호를 잊었나요? 매장에서 직원에게 QR을 요청하세요.', 'Forgot your password? Ask a staff member for a QR at the club.'],
+    staffLogin: ['직원 계정으로 로그인', 'Staff login'],
+    staffId: ['이름 (직원 앱 아이디)', 'Name (staff app ID)'],
+    staffHelp: ['직원 앱과 같은 이름·비밀번호로 들어와요.', 'Use the same name and password as the staff app.'],
+    staffProfile: ['라운지에서 쓸 닉네임', 'Your lounge nickname'],
+    staffProfileHint: ['손님에게는 실명 대신 닉네임만 보여요.', 'Guests see only your nickname, not your real name.'],
+    staffStart: ['시작하기', 'Get started'],
     checkin: ['매장 체크인', 'Club check-in'],
     checked: ['체크인했어요', 'Checked in'],
     pending: ['확인 중이에요…', 'Checking…'],
@@ -49,6 +55,9 @@
     'error.bad': ['휴대폰 번호나 비밀번호를 확인해 주세요.', 'Check your phone number or password.'],
     'error.badLeft': ['번호나 비밀번호를 확인해 주세요. 남은 시도: {left}번', 'Check your number or password. Attempts left: {left}.'],
     'error.locked': ['로그인 시도가 너무 많아요. 10분 뒤 다시 시도해 주세요.', 'Too many attempts. Try again in 10 minutes.'],
+    'error.staff_bad': ['이름이나 비밀번호를 확인해 주세요 (직원 앱과 같아요).', 'Check your staff name or password.'],
+    'error.staff_denied': ['아직 승인되지 않은 직원 계정이에요.', 'This staff account is not approved yet.'],
+    'error.ticket': ['시간이 지났어요. 직원 계정으로 다시 로그인해 주세요.', 'This took too long. Log in with your staff account again.'],
     'error.code': ['체크인 QR이 잘못되었거나 시간이 지났어요. 입구에서 새 QR을 찍어 주세요.', 'This check-in QR is invalid or expired. Scan a new code at the entrance.'],
     'error.dup': ['오늘은 이미 체크인했어요.', 'You’ve already checked in today.'],
     'error.auth': ['다시 로그인해 주세요.', 'Please log in again.'],
@@ -122,7 +131,7 @@
         (joining ? consent() : '') +
         '<p class="shell-error" role="alert" hidden></p><button type="submit" class="btn btn-hot">' +
         t(joining ? 'start' : loggingIn ? 'login' : 'savePw') + '</button></form>' +
-        (loggingIn ? '<p class="muted">' + t('resetHelp') + '</p>' : '<a class="shell-link" href="#/login">' + t('login') + '</a>') +
+        (loggingIn ? '<p class="muted">' + t('resetHelp') + '</p><a class="shell-link" href="#/staff-login">' + t('staffLogin') + '</a>' : '<a class="shell-link" href="#/login">' + t('login') + '</a>') +
         '</section>');
     const form = root.querySelector('form');
     if (!form) return;
@@ -186,6 +195,68 @@
   for (const key of ['terms', 'privacy']) {
     L.screen(key, { title: 'auth.' + key + 'Title', render: root => { root.innerHTML = policy(key); } });
   }
+
+  // 직원 계정으로 로그인 (2026-11-20): 직원 앱 이름·비밀번호 → 처음이면 닉네임·동의
+  function wireConsent(form) {
+    const { all } = form.elements;
+    const boxes = [...form.querySelectorAll('.shell-consent-row input')];
+    all.onchange = () => boxes.forEach(box => { box.checked = all.checked; });
+    for (const box of boxes) box.onchange = () => { all.checked = boxes.every(item => item.checked); all.indeterminate = !all.checked && boxes.some(item => item.checked); };
+    for (const button of form.querySelectorAll('[data-policy]')) {
+      button.onclick = () => { const panel = L.sheet(policy(button.dataset.policy) + '<button type="button" class="btn">' + tClose() + '</button>'); panel.querySelector('button').onclick = L.closeSheet; };
+    }
+  }
+  function signedIn(result, params) {
+    L.setToken(result.token);
+    L.me = result.me;
+    if (result.me.lang) L.setLang(result.me.lang);
+    L.go(/^#\/(?!login|staff-login)/.test(params.next || '') ? params.next : 'me');
+  }
+  function staffScreen(root, params) {
+    root.innerHTML = '<section class="shell-auth"><header class="shell-brand">GROOVE</header><h1>' + t('staffLogin') + '</h1>' +
+      '<p class="muted">' + t('staffHelp') + '</p><form class="shell-form">' +
+      '<label class="shell-field">' + t('staffId') + '<input name="id" type="text" autocomplete="username" required maxlength="20"></label>' +
+      input('pw', 'password', 'current-password') +
+      '<p class="shell-error" role="alert" hidden></p><button type="submit" class="btn btn-hot">' + t('login') + '</button></form>' +
+      '<a class="shell-link" href="#/login">' + t('login') + '</a></section>';
+    const form = root.querySelector('form');
+    const error = form.querySelector('[role=alert]');
+    form.onsubmit = async event => {
+      event.preventDefault();
+      const data = new FormData(form), button = form.querySelector('[type=submit]');
+      error.hidden = true; button.disabled = true;
+      const result = await L.api('staff_login', { id: data.get('id').trim(), pw: data.get('pw') });
+      button.disabled = false;
+      if (!root.isConnected) return;
+      if (result.token && result.me) return signedIn(result, params);
+      if (result.need === 'profile' && result.ticket) return profileStep(root, params, result.ticket);
+      error.textContent = errorText(result); error.hidden = false;
+    };
+  }
+  function profileStep(root, params, ticket) {
+    root.innerHTML = '<section class="shell-auth"><header class="shell-brand">GROOVE</header><h1>' + t('staffProfile') + '</h1>' +
+      '<p class="muted">' + t('staffProfileHint') + '</p><form class="shell-form">' +
+      input('nick', 'text', 'nickname', '<small class="muted">' + t('nickHint') + '</small>') + consent() +
+      '<p class="shell-error" role="alert" hidden></p><button type="submit" class="btn btn-hot">' + t('staffStart') + '</button></form></section>';
+    const form = root.querySelector('form');
+    const error = form.querySelector('[role=alert]');
+    wireConsent(form);
+    form.onsubmit = async event => {
+      event.preventDefault();
+      const data = new FormData(form), button = form.querySelector('[type=submit]');
+      const body = { ticket, nick: data.get('nick').trim(), lang: L.lang };
+      for (const field of ['age19', 'terms', 'privacy', 'ads', 'night']) body[field] = data.has(field);
+      if (!(body.age19 && body.terms && body.privacy)) { error.textContent = errorText({ error: 'agree' }); error.hidden = false; return; }
+      error.hidden = true; button.disabled = true;
+      const result = await L.api('staff_join', body);
+      button.disabled = false;
+      if (!root.isConnected) return;
+      if (result.token && result.me) return signedIn(result, params);
+      if (result.error === 'ticket') return staffScreen(root, params);
+      error.textContent = errorText(result); error.hidden = false;
+    };
+  }
+  L.screen('staff-login', { title: 'auth.staffLogin', render: (root, params) => staffScreen(root, params) });
 
   L.screen('checkin', {
     title: 'auth.checkin',
