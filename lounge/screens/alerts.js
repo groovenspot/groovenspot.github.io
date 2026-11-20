@@ -36,6 +36,13 @@
       all: '隐藏所有内容', details: '显示内容'
     }
   };
+  // The staff acknowledgement keeps a stable tag across retries and existing inbox history.
+  const safetyAcknowledged = {
+    ko: { title: '경호팀이 가고 있어요', body: '경호팀이 요청을 확인했어요.' },
+    en: { title: 'Security is on the way', body: 'Security has acknowledged your request.' },
+    ja: { title: '警備スタッフが向かっています', body: '警備スタッフが呼び出しを確認しました。' },
+    zh: { title: '安保人员正在赶来', body: '安保人员已确认你的请求。' }
+  };
   const kinds = ['dj', 'lost', 'keep', 'dm', 'rooms', 'social', 'md', 'rewards'];
   L.i18n(Object.fromEntries(Object.entries(words).map(([lang, copy]) => [lang,
     Object.fromEntries(Object.entries(copy).map(([key, value]) => ['alerts.' + key, value]))
@@ -264,9 +271,11 @@
           const row = document.createElement('li');
           row.dataset.read = String(n.read);
           row.className = 'shell-stack';
-          row.innerHTML = '<span><strong>' + e(n.title) + '</strong><small class="muted">' +
-            e(date.format(n.at)) + '</small></span>' + (n.body ? '<p class="shell-bio"></p>' : '');
-          if (n.body) row.querySelector('p').textContent = n.body;
+          const isSafetyAck = n.kind === 'rooms' && n.url === '#/safety' && /^safety:safe[a-z0-9]{10}$/.test(n.tag);
+          const { title, body } = isSafetyAck ? safetyAcknowledged[L.lang] : n;
+          row.innerHTML = '<span><strong>' + e(title) + '</strong><small class="muted">' +
+            e(date.format(n.at)) + '</small></span>' + (body ? '<p class="shell-bio"></p>' : '');
+          if (body) row.querySelector('p').textContent = body;
           const link = document.createElement('a');
           link.className = 'shell-link';
           link.href = safeTarget(n.url);

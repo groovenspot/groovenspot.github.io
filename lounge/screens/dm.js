@@ -40,29 +40,47 @@
     U.error(result);
   }
 
-  function live(view, refresh) {
-    let ws;
+  function live(view, refresh, clear) {
+    let ws, handshake, revision = 0;
     let refreshing = false, queued = false;
     async function update() {
       if (!view.isConnected) return;
       if (refreshing) { queued = true; return; }
       refreshing = true;
-      try { await refresh(); } finally {
+      const current = revision;
+      try { await refresh(() => view.isConnected && current === revision); } finally {
         refreshing = false;
         if (queued) { queued = false; void update(); }
       }
     }
-    function connect() {
-      if (!view.isConnected || !token() || ws?.readyState <= 1) return;
+    async function connect() {
+      const current = token();
+      if (!view.isConnected || !current || handshake || ws?.readyState <= 1 || typeof WebSocket !== 'function') return;
+      const attempt = L.api('ws_ticket', { channel: 'dm' });
+      handshake = attempt;
+      const result = await attempt;
+      if (handshake !== attempt) return;
+      handshake = null;
+      if (!view.isConnected || token() !== current) return;
       const url = apiURL('ws');
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-      url.search = new URLSearchParams({ ch: 'dm', token: token() });
+      url.searchParams.set('ch', 'dm');
+      if (result.ticket) url.searchParams.set('ticket', result.ticket);
+      else if (result.error === 'ticket_off') url.searchParams.set('token', current);
+      else return;
       try {
-        ws = new WebSocket(url);
-        ws.onmessage = event => {
+        const connection = ws = new WebSocket(url);
+        connection.onmessage = event => {
           let packet;
           try { packet = JSON.parse(event.data); } catch { return; }
           if (packet.type === 'dm' || packet.type === 'ready') void update();
+        };
+        connection.onclose = event => {
+          if (ws !== connection || !view.isConnected || event.code !== 1008) return;
+          // The socket can close before an outstanding HTTP snapshot reaches the browser.
+          revision++;
+          clear();
+          void update();
         };
       } catch { /* HTTP refresh remains available. */ }
     }
@@ -74,10 +92,12 @@
     window.addEventListener('online', onReturn);
     connect();
     return { update, close() {
+      handshake = null;
       clearInterval(interval);
       document.removeEventListener('visibilitychange', onReturn);
       window.removeEventListener('online', onReturn);
-      if (ws) { ws.onmessage = null; ws.close(); }
+      revision++;
+      if (ws) { ws.onmessage = ws.onclose = null; ws.close(); }
     } };
   }
 
@@ -131,9 +151,9 @@
         (row.unread ? t('unread', { n: Number(row.unread) }) : row.state === 'outgoing' ? t('outgoing') :
           U.time(row.at, { month: 'short', day: 'numeric' })) + '</span></a>').join('');
     }
-    const stream = live(view, async () => {
+    const stream = live(view, async isCurrent => {
       const result = await L.api('dm_threads');
-      if (!view.isConnected) return;
+      if (!isCurrent()) return;
       if (result.error) {
         target.innerHTML = result.error === 'closed' ? U.status('soon') : U.status('error');
         return;
@@ -141,7 +161,7 @@
       target.innerHTML = '<section style="' + U.card + '"><h2>' + t('requests') + '</h2>' +
         (entries(result.requests) || U.status('empty')) + '</section><section style="margin-top:16px"><h2>' +
         t('title') + '</h2>' + (entries(result.threads) || status('profileHint')) + '</section>';
-    });
+    }, () => { target.innerHTML = U.status('loading', true); });
     dispose = stream.close;
     view.querySelector('[data-refresh]').onclick = stream.update;
     return stream.update();
@@ -249,17 +269,21 @@
       if (atBottom) messages.scrollTop = messages.scrollHeight;
     }
 
+    function clearThread() {
+      drawing = ''; older = []; before = null;
+      messages.replaceChildren(); form.reset();
+      form.hidden = menu.hidden = olderButton.hidden = true;
+      mutual.textContent = '';
+      peer.textContent = L.t('dm.title');
+    }
+
     function show(result) {
       data = result;
       if (data.error) {
-        if (['closed', 'not_found', 'auth', 'banned', 'suspended'].includes(data.error)) {
-          drawing = ''; older = []; messages.replaceChildren(); form.reset();
-          form.hidden = menu.hidden = olderButton.hidden = true;
-          mutual.textContent = '';
-          peer.textContent = L.t('dm.title');
-        }
-        state.innerHTML = data.error === 'closed' ? U.status('soon') :
-          data.error === 'not_found' ? status('missing') : U.status('error');
+        const code = data.error;
+        if (['closed', 'not_found', 'auth', 'banned', 'suspended'].includes(code)) clearThread();
+        state.innerHTML = code === 'closed' ? U.status('soon') :
+          code === 'not_found' ? status('missing') : U.status('error');
         return;
       }
       peer.innerHTML = '<a style="color:inherit" href="#/u/' + L.esc(encodeURIComponent(data.nick)) + '">' + L.esc(data.nick) + '</a>';
@@ -287,15 +311,19 @@
       drawMessages();
     }
 
-    const stream = live(view, async () => {
+    const stream = live(view, async isCurrent => {
       const current = await L.api('dm_get', { nick });
-      if (!view.isConnected) return;
+      if (!isCurrent()) return;
       show(current);
       const last = current.messages?.filter(item => !item.mine).at(-1);
       if (last && last.seq > lastRead) {
         const result = await L.api('dm_read', { nick, through: last.seq });
-        if (result.ok) lastRead = last.seq;
+        if (result.ok && isCurrent()) lastRead = last.seq;
       }
+    }, () => {
+      data = { error: 'auth' };
+      clearThread();
+      state.innerHTML = U.status('loading', true);
     });
     dispose = stream.close;
     get('refresh').onclick = stream.update;

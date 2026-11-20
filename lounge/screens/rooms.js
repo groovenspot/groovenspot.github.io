@@ -178,7 +178,7 @@
       const result = await L.api('report', { kind: 'room_msg', id: message.id, why: panel.querySelector('select').value });
       if (!panel.isConnected) return;
       submit.disabled = false;
-      if (result.error) { panel.querySelector('[role=status]').textContent = problem(result.error); return; }
+      if (result.error) { panel.querySelector('[role=status]').textContent = problem(result.error === 'target' ? 'not_found' : result.error); return; }
       L.closeSheet();
       L.toast(t('reported'));
     };
@@ -237,7 +237,7 @@
     const translating = new Set();
     let socket, pending, timer, reconnectTimer, refreshTimer, data, pageCursor, wantedCursor, request = 0, stopped = false, syncing = false, refreshAgain = false;
     let sending = false;
-    let nextConnect = 0;
+    let handshake, nextConnect = 0;
     let reconnectDelay = 1000;
 
     function finishPending(value) {
@@ -250,23 +250,42 @@
 
     function disconnect() {
       clearTimeout(reconnectTimer);
+      handshake = null;
       const connection = socket;
       socket = null;
       if (connection) connection.close(1000);
       finishPending(null);
     }
 
-    function connect() {
-      if (stopped || socket || !data?.room.open || Date.now() < nextConnect) return;
+    function retryConnection() {
+      const delay = reconnectDelay;
+      nextConnect = Date.now() + delay;
+      reconnectDelay = Math.min(delay * 2, 30_000);
+      clearTimeout(reconnectTimer);
+      reconnectTimer = setTimeout(refreshIfVisible, delay);
+    }
+
+    async function connect() {
+      if (stopped || socket || handshake || !data?.room.open || Date.now() < nextConnect) return;
       let token;
       try { token = localStorage.getItem('gl_token'); } catch {}
       if (!token || typeof WebSocket !== 'function') return;
+      const channel = 'room:' + id;
+      const attempt = L.api('ws_ticket', { channel });
+      handshake = attempt;
+      const result = await attempt;
+      if (handshake !== attempt) return;
+      handshake = null;
+      if (stopped || !data?.room.open) return;
+      try { if (localStorage.getItem('gl_token') !== token) return; } catch { return; }
       const url = new URL('ws', new URL((window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/').replace(/\/$/, '') + '/', location.href));
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-      url.searchParams.set('ch', 'room:' + id);
-      url.searchParams.set('token', token);
+      url.searchParams.set('ch', channel);
+      if (result.ticket) url.searchParams.set('ticket', result.ticket);
+      else if (result.error === 'ticket_off') url.searchParams.set('token', token);
+      else return retryConnection();
       let connection;
-      try { connection = new WebSocket(url); } catch { return; }
+      try { connection = new WebSocket(url); } catch { return retryConnection(); }
       socket = connection;
       connection.onopen = () => {
         if (socket !== connection) return;
@@ -290,11 +309,7 @@
           form.hidden = true;
         }
         finishPending(null);
-        const delay = reconnectDelay;
-        nextConnect = Date.now() + delay;
-        reconnectDelay = Math.min(delay * 2, 30_000);
-        clearTimeout(reconnectTimer);
-        reconnectTimer = setTimeout(refreshIfVisible, delay);
+        retryConnection();
         refresh();
       };
     }
