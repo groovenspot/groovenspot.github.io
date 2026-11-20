@@ -240,7 +240,7 @@ Lounge.i18n({zh: {
   "vote.pollTitle": "标题",
   "vote.pollKind": "类型",
   "vote.theme": "主题",
-  "vote.dj": "DJ",
+  "vote.dj": "DJ 投票",
   "vote.etc": "其他",
   "vote.choices": "2 至 8 个选项，每行一个",
   "vote.ends": "结束时间（韩国时间）",

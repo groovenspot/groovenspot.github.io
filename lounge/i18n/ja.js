@@ -240,7 +240,7 @@ Lounge.i18n({ja: {
   "vote.pollTitle": "タイトル",
   "vote.pollKind": "種類",
   "vote.theme": "テーマ",
-  "vote.dj": "DJ",
+  "vote.dj": "DJ投票",
   "vote.etc": "その他",
   "vote.choices": "選択肢を2〜8個（1行に1つ）",
   "vote.ends": "終了日時（韓国時間）",
