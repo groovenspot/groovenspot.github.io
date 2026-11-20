@@ -31,7 +31,6 @@
   const status = key => '<p class="muted" role="status">' + t(key) + '</p>';
   const header = 'display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap';
   const layout = 'display:grid;gap:12px';
-  const strip = '<div class="shell-actions">' + U.link('#/dm', t('back')) + '</div>';
   let dispose;
 
   function error(result) {
@@ -83,7 +82,7 @@
   }
 
   async function settings(view, enabled) {
-    view.innerHTML = strip + '<section style="' + U.card + '">' +
+    view.innerHTML = '<div class="shell-actions">' + U.link('#/dm', t('back')) + '</div><section style="' + U.card + '">' +
       '<h1>' + t('settings') + '</h1><div data-prefs></div><h2>' + t('blocks') + '</h2><div data-blocks>' +
       U.status('loading', true) + '</div></section>';
     const prefs = view.querySelector('[data-prefs]'), blocks = view.querySelector('[data-blocks]');

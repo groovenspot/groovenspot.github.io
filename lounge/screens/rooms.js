@@ -3,6 +3,7 @@
   const copy = {
     ko: {
       title: '대화방', intro: '오늘 밤 그루브에서 함께 이야기해요.',
+      name2F: '오늘 밤 2F 힙합', name3F: '오늘 밤 3F EDM', nameEnglish: '영어 대화방',
       hours: '영업 중에 열려요. 대화는 다음 날 낮 12시에 지워져요.',
       open: '열림', closed: '영업 마감', people: '접속 {n}명', back: '대화방 목록으로',
       rules: '광고·홍보와 연락처 요구는 안 돼요. 글로만 이야기해요.',
@@ -30,6 +31,7 @@
     },
     en: {
       title: 'Rooms', intro: 'Chat with others at Groove tonight.',
+      name2F: 'Tonight · 2F Hip-hop', name3F: 'Tonight · 3F EDM', nameEnglish: 'English Lounge',
       hours: 'Rooms open during club hours. Chats disappear at noon the next day.',
       open: 'Open', closed: 'Club closed', people: '{n} online', back: 'Back to rooms',
       rules: 'Text only. Please keep ads and requests for contact details out of the chat.',
@@ -72,7 +74,13 @@
   const esc = L.esc;
   const t = (key, vars) => L.t('rooms.' + key, vars);
   const e = (key, vars) => esc(t(key, vars));
-  const nameOf = room => L.lang === 'ko' ? room.title : room.en || room.title;
+  const builtinNames = { '2F': 'name2F', '3F': 'name3F', english: 'nameEnglish' };
+  const nameOf = room => {
+    if (L.lang === 'ko') return room.title;
+    const key = Object.hasOwn(builtinNames, room.id) && builtinNames[room.id];
+    if (key && ['ja', 'zh'].includes(L.lang) && room.en === copy.en[key]) return t(key);
+    return room.en || room.title;
+  };
   const time = ms => new Intl.DateTimeFormat(L.lang, { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit' }).format(ms);
   const btn = (key, extra = '') => '<button type="button" class="btn" ' + extra + '>' + e(key) + '</button>';
   const back = () => '<a class="shell-link" href="#/rooms">' + e('back') + '</a>';

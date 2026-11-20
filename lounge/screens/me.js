@@ -32,7 +32,6 @@
   )));
   const t = key => L.esc(L.t('me.' + key));
   const a = key => L.esc(L.t('auth.' + key));
-  const date = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul' });
 
   async function renderMe(root) {
     const me = L.me;
@@ -59,7 +58,7 @@
     const stamps = result.stamps ?? me.stamps;
     const n = Math.min(10, Math.max(0, Number(stamps?.n ?? stamps) || 0));
     const balance = new Intl.NumberFormat(L.lang).format(Number(result.points ?? me.points) || 0);
-    const formatDate = L.lang === 'ko' ? date : new Intl.DateTimeFormat('en', { timeZone: 'Asia/Seoul' });
+    const formatDate = new Intl.DateTimeFormat(L.lang, { timeZone: 'Asia/Seoul' });
     const badges = Array.isArray(result.badges) ? result.badges : [];
     const ledger = Array.isArray(result.ledger) ? result.ledger : [];
     panel.innerHTML = '<section class="shell-card shell-points"><h2>' + t('points') + '</h2><p class="shell-score">' +

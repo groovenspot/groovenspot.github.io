@@ -245,7 +245,7 @@
     const prefRetry = root.querySelector('[data-pref-retry]');
     let before, newest = 0, unread = 0;
     let savedPreview = 'sensitive';
-    const date = new Intl.DateTimeFormat(L.lang === 'ko' ? 'ko-KR' : 'en', {
+    const date = new Intl.DateTimeFormat(L.lang, {
       dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Seoul'
     });
 
@@ -393,7 +393,7 @@
   L.screen('lost', { title: 'alerts.lostPage', render(root) {
     const link = document.createElement('a');
     link.className = 'btn';
-    link.href = '/lost/';
+    link.href = ['ja', 'zh'].includes(L.lang) ? '/' + L.lang + '/lost/' : '/lost/';
     link.textContent = t('lostPage');
     root.append(link);
     location.replace(link.href);
