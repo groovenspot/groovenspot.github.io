@@ -10,6 +10,7 @@ const SHELL = [
   '/lounge/screens/compose.js', '/lounge/screens/challenge.js', '/lounge/screens/rewards.js',
   '/lounge/screens/shop.js', '/lounge/screens/table.js', '/lounge/screens/dj.js',
   '/lounge/screens/rank.js', '/lounge/screens/songs.js',
+  '/lounge/screens/share.js',
   '/lounge/i18n/ja.js', '/lounge/i18n/zh.js',
   '/assets/icon.png', '/assets/icon-512.png'
 ];

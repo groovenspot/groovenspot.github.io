@@ -225,6 +225,7 @@ const LoungePostUI = (() => {
     const list = view.querySelector('[data-posts]'), page = view.querySelector('[data-page]');
     const tools = view.parentElement.querySelector('[data-post-tools]');
     const ids = new Set();
+    const shareSettings = L.api('config');
     let tab = 'all', version = 0, config, memberPosts;
 
     function paintTools() {
@@ -289,6 +290,7 @@ const LoungePostUI = (() => {
         (post.challenge ? '<div>' + U.link('#/challenge', t('challenge')) + '</div>' : '') +
         (videoUrl && !images.length ? '<div>' + U.link(videoUrl, t('youtube')) + '</div>' : '') + '</div>';
       const like = card.querySelector('[data-like]');
+      shareSettings.then(result => window.LoungeShare?.actions(like.parentElement, post, result));
       function paintLike() {
         like.setAttribute('aria-pressed', Boolean(post.liked));
         like.textContent = (post.liked ? '♥ ' : '♡ ') + L.t('feed.like') + ' ' + (Number(post.likes) || 0);
@@ -413,7 +415,7 @@ const LoungePostUI = (() => {
       if (more) more.onclick = () => load(next);
     }
     load();
-    if (!id) L.api('config').then(result => {
+    if (!id) shareSettings.then(result => {
       if (!view.isConnected) return;
       config = result;
       paintTools();
