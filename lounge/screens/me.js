@@ -131,8 +131,9 @@
     });
   }
 
-  function exit() {
+  async function exit() {
     L.closeSheet();
+    try { if (L.logoutPush) await L.logoutPush(); } catch (e) {}   // 공용 폰: 이 기기 푸시·알림 증표 끊기 (보안 점검, ①)
     L.setToken('');
     L.me = null;
     L.go('tonight');

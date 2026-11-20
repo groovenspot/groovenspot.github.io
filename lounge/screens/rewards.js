@@ -16,27 +16,51 @@ const LoungeRewardUI = (() => {
     birthday: ['생일 주간', 'Birthday week'], month: ['월', 'Month'], day: ['일', 'Day'], save: ['저장', 'Save'],
     birthdayHelp: ['생일 주간에 체크인하면 보너스 포인트를 받고, 전광판 축하를 한 번 무료로 예약할 수 있어요.', 'Check in during your birthday week for bonus points and book one free birthday message.'],
     birthdayLocked: ['생일은 다음 해에 바꿀 수 있어요.', 'You can change your birthday next year.'],
+    birthdayAfterWeek: ['이번 생일 주가 끝나면 생일을 바꿀 수 있어요.', 'You can change your birthday when this birthday week ends.'],
     invite: ['친구 초대', 'Invite a friend'], inviteButton: ['내 초대 코드 보기', 'Show my invite code'],
     inviteHelp: ['친구가 매장에서 직원 QR로 가입할 때 이 코드를 입력하면 두 분 모두 300P를 받아요.', 'When your friend signs up at the club with a staff QR and enters your code, you both earn 300P.'],
     recap: ['이번 달 나의 그루브', 'My Groove this month'],
+    visits: ['매장 방문', 'Venue visits'], earned: ['이달에 모은 포인트', 'Points earned this month'],
+    badges: ['모은 배지', 'Badges earned'], noBadges: ['아직 없어요', 'No badges yet'],
+    favoriteDj: ['좋아한 DJ', 'Favorite DJ'], noDj: ['아직 없어요', 'No favorite yet'],
     makeCard: ['결산 카드 만들기', 'Make recap card'], download: ['이미지 저장', 'Save image'], share: ['공유', 'Share'],
     screen: ['전광판 메시지', 'Screen message'], preview: ['전광판 미리보기', 'Screen preview'],
     message: ['문구', 'Message'], time: ['오늘 나갈 시각 (한국 시간)', 'Time tonight (Korea time)'],
     timeHelp: ['23:30 전에 나갈 시각을 골라 주세요.', 'Choose a time before 11:30 p.m.'],
     bookingHelp: ['직원이 확인한 뒤 나가요. 예약이 반려되면 사용한 포인트를 돌려드려요.', 'Staff review each booking. If it’s declined, any points used are returned.'],
+    bookingWindow: ['대기 중인 예약은 2건까지 가능해요. 처리되지 않은 예약은 다음 날 낮 12시에 만료돼요.', 'You can have up to two screen bookings pending. Unprocessed bookings expire at noon the next day.'],
     pointsPay: ['500P로 예약', 'Book for 500P'], birthdayPay: ['생일 축하 무료 예약', 'Book free birthday message'],
     storePay: ['매장 결제로 예약', 'Book and pay at the club'], history: ['내 전광판 예약', 'My screen bookings'],
     sending: ['직원에게 보내는 중', 'Sending to staff'], pending: ['직원 확인 대기', 'Waiting for staff'],
-    done: ['송출 완료', 'Shown on screen'], rejected: ['반려', 'Declined'], failed: ['전달 실패', 'Could not send'],
+    done: ['송출 완료', 'Shown on screen'], rejected: ['반려', 'Declined'], failed: ['전달 실패', 'Could not send'], expired: ['만료', 'Expired'],
     stock: ['재고가 바뀌었어요. 상품 목록을 다시 확인해 주세요.', 'Stock changed. Please check the product list again.'],
     'error.time': ['아직 지나지 않은 23:30 전 시각을 골라 주세요.', 'Choose a future time before 11:30 p.m.'],
     'error.full': ['오늘 전광판 예약이 찼어요.', 'Today’s screen bookings are full.'],
+    'error.pending_limit': ['대기 중인 요청이 {limit}건 있어요. 처리된 뒤 다시 신청해 주세요.', 'You have {limit} pending requests. Wait for one to finish before sending another.'],
+    'error.daily_limit': ['오늘 신청할 수 있는 횟수를 다 썼어요. 다음 영업일에 다시 신청해 주세요.', 'You’ve reached today’s request limit. Try again on the next business day.'],
+    'error.request': ['신청 정보가 바뀌었어요. 내용을 확인하고 다시 신청해 주세요.', 'This request no longer matches. Check the details and submit it again.'],
     'error.text': ['문구를 30자 이내로 써 주세요.', 'Enter a message of up to 30 characters.'],
     'error.points': ['포인트가 모자라요.', 'You don’t have enough points.'],
     'error.birthday': ['생일 날짜와 무료 예약 가능 여부를 확인해 주세요.', 'Check the birthday date and free booking availability.'],
     'error.discount': ['할인은 상품 금액의 20%까지 쓸 수 있어요.', 'Use points for up to 20% off the merchandise total.'],
     'error.staff': ['직원에게 전달하지 못했어요. 다시 시도해 주세요.', 'Could not reach the staff. Please try again.'],
     'error.network': ['연결을 확인하고 같은 내용으로 다시 시도해 주세요.', 'Check your connection and retry with the same details.']
+  });
+  L.i18n({
+    ja: {
+      'rewards.bookingWindow': '承認待ちの予約は2件までです。未処理の予約は翌日の正午に期限切れになります。',
+      'rewards.expired': '期限切れ',
+      'rewards.error.pending_limit': '未処理の申請が{limit}件あります。処理されてからもう一度お申し込みください。',
+      'rewards.error.daily_limit': '本日の申請上限に達しました。次の営業日にお試しください。',
+      'rewards.error.request': '申請内容が一致しません。内容を確認してから、もう一度お申し込みください。'
+    },
+    zh: {
+      'rewards.bookingWindow': '最多可有两笔待处理的预约。尚未处理的预约将于次日中午过期。',
+      'rewards.expired': '已过期',
+      'rewards.error.pending_limit': '你有 {limit} 笔待处理的请求，请等待处理后再提交。',
+      'rewards.error.daily_limit': '已达到今天的申请上限，请在下一个营业日重试。',
+      'rewards.error.request': '请求内容不一致，请确认后重新提交。'
+    }
   });
 
   const panel = html => '<section style="' + U.card + '">' + html + '</section>';
@@ -46,11 +70,11 @@ const LoungeRewardUI = (() => {
   const submit = label => '<button type="submit" class="btn btn-hot">' + label + '</button>';
   const message = () => '<p data-feedback role="status" hidden></p>';
   const amount = n => new Intl.NumberFormat(L.lang).format(Number(n) || 0);
-  function feedback(form, error) {
+  function feedback(form, { error, limit }) {
     const out = form.querySelector('[data-feedback]');
     if (error === 'auth') L.needLogin();
     const key = 'rewards.error.' + error;
-    const value = L.t(key);
+    const value = L.t(key, { limit: Number(limit) || 0 });
     out.textContent = error === 'closed' ? L.t('core.soon')
       : error === 'stock' ? L.t('rewards.stock')
       : error === 'birthday_locked' ? L.t('rewards.birthdayLocked')
@@ -79,7 +103,7 @@ const LoungeRewardUI = (() => {
       button.disabled = false;
       if (res.error) {
         if (res.error !== 'network' && res.error !== 'server') request = null;
-        feedback(form, res.error);
+        feedback(form, res);
         return;
       }
       request = null;
@@ -106,7 +130,7 @@ const LoungeRewardUI = (() => {
       '<input type="time" name="at" max="23:29" required style="' + inputStyle + '"></label>' +
       '<small class="muted">' + t('timeHelp') + '</small>' +
       (birthday ? '<label><input type="checkbox" name="birthday"> ' + t('birthdayPay') + '</label>' : '') +
-      '<p class="muted">' + t('bookingHelp') + '</p>' + message() +
+      '<p class="muted">' + t('bookingHelp') + '</p><p class="muted">' + t('bookingWindow') + '</p>' + message() +
       submit(t(store ? 'storePay' : 'pointsPay')) + '</form>');
     view.append(card);
     const form = card.querySelector('form');
@@ -128,55 +152,104 @@ const LoungeRewardUI = (() => {
 
   function birthdayForm(state) {
     return panel('<h2>' + t('birthday') + '</h2><p class="muted">' + t('birthdayHelp') + '</p>' +
-      (state && !state.canChange ? '<p>' + amount(state.month) + ' / ' + amount(state.day) + '</p><small>' + t('birthdayLocked') + '</small>' :
+      (state && !state.canChange ? '<p>' + amount(state.month) + ' / ' + amount(state.day) +
+        '</p><small>' + t(state.changeAfterWeek ? 'birthdayAfterWeek' : 'birthdayLocked') + '</small>' :
         '<form data-birthday style="' + formStyle + '"><div style="display:flex;gap:12px"><label style="flex:1">' + t('month') +
         '<input name="month" type="number" min="1" max="12" required value="' + (state?.month || '') + '" style="' + inputStyle +
         '"></label><label style="flex:1">' + t('day') + '<input name="day" type="number" min="1" max="31" required value="' +
         (state?.day || '') + '" style="' + inputStyle + '"></label></div>' + message() + submit(t('save')) + '</form>'));
   }
 
-  function paintRecap(canvas, data) {
+  async function paintRecap(canvas, data, badgeNames, favorite) {
+    const logo = new Image();
+    logo.src = '/assets/logo-word.png';
+    const hasLogo = await logo.decode().then(() => true, () => false);
     const ctx = canvas.getContext('2d');
-    const gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
-    gradient.addColorStop(0, '#28133c');
-    gradient.addColorStop(0.6, '#120b12');
-    gradient.addColorStop(1, '#31180d');
-    ctx.fillStyle = gradient;
+    const background = ctx.createLinearGradient(0, 0, 1080, 1920);
+    background.addColorStop(0, '#21132c');
+    background.addColorStop(0.56, '#120e17');
+    background.addColorStop(1, '#2d1810');
+    ctx.fillStyle = background;
     ctx.fillRect(0, 0, 1080, 1920);
-    ctx.textAlign = 'left';
-    const label = (value, y, size = 54, color = '#f6efeb') => {
+
+    ctx.textBaseline = 'alphabetic';
+    function label(value, x, y, { size = 46, color = '#fff3ec', width = 888, weight = 700 } = {}) {
       ctx.fillStyle = color;
-      ctx.font = '700 ' + size + 'px system-ui, sans-serif';
-      ctx.fillText(value, 96, y, 888);
-    };
-    label('GROOVE LOUNGE', 200, 50, '#ffab73');
-    label(data.month, 370, 56, '#dabdff');
-    label(L.t('rewards.recap'), 500, 88);
-    label(data.nick, 650, 60);
-    const stats = [['checkins', data.checkins], ['attends', data.attends], ['balance', data.points]];
-    for (const [i, [key, n]] of stats.entries()) {
-      const y = 850 + i * 270;
-      ctx.fillStyle = '#ffffff14';
-      ctx.fillRect(96, y - 100, 888, 222);
-      ctx.save();
-      ctx.translate(40, 0);
-      label(L.t('rewards.' + (key === 'balance' ? 'earned' : key)), y - 8, 43, '#dfc8e9');
-      label(amount(n) + (key === 'balance' ? 'P' : ''), y + 82, 76);
-      ctx.restore();
+      ctx.font = weight + ' ' + size + 'px system-ui, sans-serif';
+      ctx.fillText(value, x, y, width);
+    }
+    function wrap(value, x, y) {
+      ctx.font = '700 48px system-ui, sans-serif';
+      const lines = [''];
+      for (const character of value) {
+        const current = lines.at(-1);
+        if (ctx.measureText(current + character).width <= 808) {
+          lines[lines.length - 1] += character;
+        } else if (lines.length === 1) {
+          lines.push(character.trimStart());
+        } else {
+          lines[1] = current.replace(/.$/u, '') + '…';
+          break;
+        }
+      }
+      lines.forEach((line, i) => label(line, x, y + 60 * i, { size: 48, width: 808 }));
+    }
+    function tile(x, y, width, height) {
+      ctx.fillStyle = '#ffffff0d';
+      ctx.strokeStyle = '#f4bfd337';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, 28);
+      ctx.fill();
+      ctx.stroke();
+    }
+    if (hasLogo) ctx.drawImage(logo, 96, 226, 360, 360 * logo.naturalHeight / logo.naturalWidth);
+    else label('GROOVE & SPOT', 96, 268, { color: '#ffad73' });
+    label(data.month, 96, 390, { color: '#e0bbf8' });
+    label(L.t('rewards.recap'), 96, 520, { size: 96, weight: 900 });
+    label(data.nick, 96, 633, { size: 65, width: 824 });
+
+    for (const [i, [key, value]] of [
+      ['visits', amount(data.checkins)], ['earned', amount(data.points) + 'P']
+    ].entries()) {
+      const x = 96 + i * 456;
+      tile(x, 735, 432, 260);
+      label(L.t('rewards.' + key), x + 40, 827, { size: 39, color: '#ecd8ef', width: 352 });
+      label(value, x + 40, 942, { size: 78, color: '#ffad73', width: 352, weight: 900 });
+    }
+    for (const [i, [key, value]] of [['badges', badgeNames], ['favoriteDj', favorite]].entries()) {
+      const y = 1040 + 270 * i;
+      tile(96, y, 888, 238);
+      label(L.t('rewards.' + key), 136, y + 75, { size: 36, color: '#e0bbf8' });
+      wrap(value, 136, y + 146);
     }
   }
 
-  function recapCard(view, data) {
+  async function recapCard(view, data) {
     const area = view.querySelector('[data-recap]');
+    const badgeNames = data.badges?.map(badge => badge.label).filter(Boolean).join(' · ') || L.t('rewards.noBadges');
+    const favorite = data.favoriteDj || L.t('rewards.noDj');
+    const description = [data.month, data.nick, L.t('rewards.visits') + ' ' + amount(data.checkins),
+      L.t('rewards.earned') + ' ' + amount(data.points) + 'P',
+      L.t('rewards.badges') + ' ' + badgeNames, L.t('rewards.favoriteDj') + ' ' + favorite].join('. ');
     area.innerHTML = '<canvas width="1080" height="1920" role="img" aria-label="' + t('recap') +
-      '" style="display:block;width:min(100%,300px);height:auto;border-radius:14px;margin:12px 0"></canvas>' +
-      '<a data-download class="btn" download="groove-' + L.esc(data.month) + '.png">' + t('download') + '</a>';
+      '" style="width:min(100%,320px);height:auto;border-radius:14px;margin:12px 0" hidden></canvas>';
     const canvas = area.querySelector('canvas');
-    paintRecap(canvas, data);
-    area.querySelector('[data-download]').href = canvas.toDataURL('image/png');
+    canvas.setAttribute('aria-description', description);
+    await paintRecap(canvas, data, badgeNames, favorite);
+    if (!canvas.isConnected) return;
+
+    const download = document.createElement('a');
+    download.className = 'btn';
+    download.download = 'groove-' + data.month + '.png';
+    download.textContent = L.t('rewards.download');
+    download.href = canvas.toDataURL('image/png');
+    canvas.hidden = false;
+    canvas.style.display = 'block';
+    area.append(download);
     if (navigator.canShare && navigator.share) canvas.toBlob(blob => {
-      if (!blob || !area.isConnected) return;
-      const file = new File([blob], 'groove-' + data.month + '.png', { type: 'image/png' });
+      if (!blob || !canvas.isConnected) return;
+      const file = new File([blob], download.download, { type: 'image/png' });
       if (!navigator.canShare({ files: [file] })) return;
       const button = document.createElement('button');
       button.type = 'button';
@@ -188,8 +261,6 @@ const LoungeRewardUI = (() => {
       area.append(button);
     }, 'image/png');
   }
-
-  L.i18n({ ko: { 'rewards.earned': '적립 포인트' }, en: { 'rewards.earned': 'Points earned' } });
 
   async function render(root) {
     const view = U.mount(root, heading(t('title'), '#/me'));
@@ -246,9 +317,14 @@ const LoungeRewardUI = (() => {
       button.disabled = true;
       const data = await L.api('recap');
       if (!view.isConnected) return;
-      button.disabled = false;
-      if (data.error) U.error(data);
-      else recapCard(view, data);
+      try {
+        if (data.error) U.error(data);
+        else await recapCard(view, data);
+      } catch {
+        U.error();
+      } finally {
+        button.disabled = false;
+      }
     };
   }
 
