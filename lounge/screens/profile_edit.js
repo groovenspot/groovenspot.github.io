@@ -36,6 +36,41 @@
     }).filter(row => row.src);
   }
 
+  function photoImage(photo, alt = '', css = '') {
+    const content = new URL(photo.src, location.href);
+    const api = new URL(L.img('image'), location.href);
+    const protectedImage = content.origin === api.origin && content.pathname.startsWith('/profile-img/');
+    return '<img' + (css ? ' class="' + css + '"' : '') + ' alt="' + alt + '" ' +
+      (protectedImage ? 'data-profile-src' : 'src') + '="' + esc(content.href) + '">';
+  }
+
+  const sessionToken = () => {
+    try { return localStorage.getItem('gl_token') || ''; } catch { return ''; }
+  };
+
+  function loadPhotos(root) {
+    for (const image of root.querySelectorAll('[data-profile-src]')) {
+      const url = new URL(image.dataset.profileSrc);
+      image.removeAttribute('data-profile-src');
+      const token = sessionToken();
+      if (!token) { image.src = url.href; continue; }
+      url.searchParams.set('token', token);
+      void (async () => {
+        try {
+          const response = await fetch(url, { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
+          if (!response.ok) return;
+          const blob = await response.blob();
+          if (!image.isConnected || sessionToken() !== token) return;
+          const src = URL.createObjectURL(blob);
+          const release = () => URL.revokeObjectURL(src);
+          image.addEventListener('load', release, { once: true });
+          image.addEventListener('error', release, { once: true });
+          image.src = src;
+        } catch { /* The image can be reloaded by reopening the photo. */ }
+      })();
+    }
+  }
+
   function photoError(error) {
     return error === 'photo_limit' ? L.t('profileEdit.photoLimit') : L.errorText({ error });
   }
@@ -76,8 +111,8 @@
 
     function paint() {
       const photo = list[index];
-      content.innerHTML = '<img src="' + esc(photo.src) + '" alt="' + t('photoNumber', { n: index + 1 }) +
-        '"><div class="shell-actions profile3-photo-navigation">' +
+      content.innerHTML = photoImage(photo, t('photoNumber', { n: index + 1 })) +
+        '<div class="shell-actions profile3-photo-navigation">' +
         U.button(t('prevPhoto'), 'data-prev' + (index === 0 ? ' disabled' : '')) +
         '<span aria-live="polite">' + (index + 1) + ' / ' + list.length + '</span>' +
         U.button(t('nextPhoto'), 'data-next' + (index === list.length - 1 ? ' disabled' : '')) + '</div>' +
@@ -89,6 +124,7 @@
         '<p class="shell-error" role="alert"></p>';
       content.querySelector('[data-prev]').onclick = () => step(-1);
       content.querySelector('[data-next]').onclick = () => step(1);
+      loadPhotos(content);
       const image = content.querySelector('img');
       image.onpointerdown = event => { if (event.pointerType === 'touch') startX = event.clientX; };
       image.onpointercancel = () => { startX = undefined; };
@@ -128,15 +164,16 @@
       const main = rows.find(row => row.main) || rows[0];
       editor.innerHTML = '<h2>' + t('photos') + '</h2><div class="profile3-photo-primary">' +
         (main ? '<button type="button" data-main-photo aria-label="' + t('mainPhoto') +
-          '"><img alt="" src="' + esc(main.src) + '"></button>' :
+          '">' + photoImage(main) + '</button>' :
           '<span class="shell-avatar" aria-hidden="true">' + esc(Array.from(user.nick)[0] || 'G') + '</span>') +
         '</div><div class="profile3-photo-strip">' +
         rows.map((photo, i) => '<button type="button" data-photo-index="' + i + '" aria-label="' +
           t('photoNumber', { n: i + 1 }) + '"' + (photo.main ? ' aria-current="true"' : '') +
-          '><img alt="" src="' + esc(photo.src) + '"></button>').join('') +
+          '>' + photoImage(photo) + '</button>').join('') +
         (rows.length < 5 ? '<label class="btn profile3-photo-add"><span aria-hidden="true">＋</span> ' + t('addPhoto') +
           '<input type="file" accept="image/*" aria-label="' + t('addPhoto') + '" class="sr-only"></label>' : '') +
         '</div><p role="alert" class="shell-error"></p>';
+      loadPhotos(editor);
       const primary = editor.querySelector('[data-main-photo]');
       if (primary) primary.onclick = () => { if (!busy) photoViewer(rows, rows.indexOf(main), change); };
       for (const button of editor.querySelectorAll('[data-photo-index]')) {
@@ -260,6 +297,6 @@
     };
   }
 
-  L.profilePhotos = { rows: photoRows, open: photoViewer };
+  L.profilePhotos = { rows: photoRows, open: photoViewer, image: photoImage, load: loadPhotos };
   L.profileEdit = render;
 })();

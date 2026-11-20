@@ -183,7 +183,7 @@
     const photos = L.profilePhotos.rows(user);
     const mainIndex = Math.max(0, photos.findIndex(photo => photo.main));
     const avatar = photos.length ? '<button class="profile3-avatar-button" type="button" data-profile-avatar aria-label="' +
-      esc(L.t('profileEdit.photos')) + '"><img class="shell-avatar" src="' + esc(photos[mainIndex].src) + '" alt=""></button>' :
+      esc(L.t('profileEdit.photos')) + '">' + L.profilePhotos.image(photos[mainIndex], '', 'shell-avatar') + '</button>' :
       L.profileFollows.avatar(user);
     const badgeKey = typeof user.badge === 'string' ? user.badge : user.badge?.key;
     const badge = badgeKey ? L.profileBadgeLabel(badgeKey,
@@ -225,6 +225,7 @@
     wireMenu(view.querySelector('[data-menu]'), user, true);
     const share = view.querySelector('[data-profile-share]');
     if (share) share.onclick = () => shareUI.open({ profile: { nick: user.nick, private: Boolean(user.private) } });
+    L.profilePhotos.load(view);
     const portrait = view.querySelector('[data-profile-avatar]');
     if (portrait) portrait.onclick = () => L.profilePhotos.open(photos, mainIndex);
     if (!user.locked) return galleries(view, user);
