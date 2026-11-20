@@ -374,7 +374,7 @@ Lounge.i18n({ja: {
   "rooms.loading": "読み込み中…",
   "rooms.name2F": "今夜の2F ヒップホップ",
   "rooms.name3F": "今夜の3F EDM",
-  "rooms.nameEnglish": "英語チャット",
+  "rooms.nameEnglish": "英語オープンチャット",
   "rooms.translateNotice": "連絡先とリンクを伏せてから、外部のクラウドサービスで翻訳します。",
   "rooms.seatPlainError": "山括弧や改行を使わず40文字以内で入力してください。先頭に =、+、-、@ は使えません。",
   "rooms.historyExpired": "送信済みのメッセージは履歴から削除されました。",
