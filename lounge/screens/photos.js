@@ -61,21 +61,44 @@
         (photos.length ? '<div class="post-album-grid" data-post-layout>' +
           photos.map((photo, i) => '<button type="button" class="post-photo-button" data-photo="' + i + '">' +
             P.image(photo.thumb, t('photo', { n: i + 1 }), false, photo) + '</button>').join('') + '</div>' : P.state(t('noPhotos')));
+      if (data.album && window.LoungeShare) L.api('config').then(async settings => {
+        if (!view.isConnected || settings.open?.share !== true) return;
+        const album = { ...data.album, id: data.album.id || id };
+        if (L.me && typeof album.saved !== 'boolean') {
+          const { post } = await L.api('post_get', { id: album.id });
+          if (!view.isConnected) return;
+          album.saved = post?.saved === true;
+        }
+        const actions = document.createElement('div');
+        actions.className = 'post-bar post-actions';
+        view.append(actions);
+        window.LoungeShare.actions(actions, album, settings);
+      });
       view.querySelectorAll('[data-photo]').forEach(button => {
         button.onclick = () => {
-          const i = Number(button.dataset.photo);
-          const photo = photos[i];
-          const el = U.sheet('<figure style="margin:12px 0">' + P.zoomImage(photo.src, t('photo', { n: i + 1 }), photo) +
-            '</figure>' + U.button(t('take'), 'data-takedown'));
-          el.querySelector('[data-takedown]').onclick = () => U.reason({
-            title: t('take'), reasons: ['me', 'sexual', 'abuse', 'illegal', 'etc'],
-            submit: why => L.api('takedown', { photo: photo.key, why }),
-            done: () => {
-              const grid = button.parentElement;
-              button.remove();
-              if (grid && !grid.querySelector('[data-photo]')) grid.outerHTML = P.state(t('noPhotos'));
-            }
+          const buttons = [...view.querySelectorAll('[data-photo]')];
+          const start = buttons.indexOf(button);
+          const el = U.sheet('<figure style="margin:12px 0" data-zoom-photos></figure>' + U.button(t('take'), 'data-takedown'));
+          const preview = el.querySelector('[data-zoom-photos]');
+          const slides = buttons.map(item => {
+            const index = Number(item.dataset.photo), photo = photos[index];
+            return P.zoomImage(photo.src, t('photo', { n: index + 1 }), photo);
           });
+          let active = start;
+          if (slides.length > 1) P.carousel(preview, slides, { start, onIndex: index => { active = index; } });
+          else preview.innerHTML = slides[0];
+          el.querySelector('[data-takedown]').onclick = () => {
+            const selected = buttons[active], photo = photos[Number(selected.dataset.photo)];
+            U.reason({
+              title: t('take'), reasons: ['me', 'sexual', 'abuse', 'illegal', 'etc'],
+              submit: why => L.api('takedown', { photo: photo.key, why }),
+              done: () => {
+                const grid = selected.parentElement;
+                selected.remove();
+                if (grid && !grid.querySelector('[data-photo]')) grid.outerHTML = P.state(t('noPhotos'));
+              }
+            });
+          };
         };
       });
     }

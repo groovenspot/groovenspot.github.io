@@ -45,6 +45,17 @@ const LoungePostUI = (() => {
     .post-screen .post-cover { aspect-ratio:16/9; }
     .post-screen .post-feed-media { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:3px; }
     .post-screen .post-feed-media > :first-child { grid-column:1/-1; }
+    .post-carousel { min-width:0; }
+    .post-carousel-track { display:grid; grid-auto-flow:column; grid-auto-columns:100%; overflow-x:auto;
+      scroll-snap-type:x mandatory; overscroll-behavior-inline:contain; overflow-anchor:none; scrollbar-width:none;
+      touch-action:pan-x pan-y pinch-zoom; }
+    .post-slide { min-width:0; display:grid; place-items:center; scroll-snap-align:start; scroll-snap-stop:always; }
+    .post-slide > :is(a.post-video,button.post-photo-button) { width:100%; min-height:44px; }
+    .post-slide > button.post-photo-button { display:block; border:0; padding:0; background:var(--bg-2); cursor:pointer; }
+    .post-slide-more { background:var(--bg-2); }
+    .post-carousel-progress { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:5px; min-height:24px; padding:4px 8px; }
+    .post-carousel-progress span[aria-hidden] { width:6px; height:6px; border-radius:50%; background:var(--muted); }
+    .post-carousel-progress span[data-current] { background:var(--g); }
     .post-screen .post-video { position:relative; display:block; color:var(--txt); }
     .post-screen .post-video span { position:absolute; inset:auto auto 12px 12px; padding:6px 9px; border-radius:8px;
       background:var(--bg); font-size:13px; font-weight:800; }
@@ -143,6 +154,86 @@ const LoungePostUI = (() => {
       '" style="' + U.media + ';height:auto;aspect-ratio:1;max-height:65vh;object-fit:contain" src="' + L.esc(src) + '">';
   }
 
+  function carousel(container, slides, { start = 0, more, load, onIndex } = {}) {
+    container.classList.add('post-carousel');
+    container.innerHTML = '<div class="post-carousel-track" role="region" tabindex="0" aria-label="' +
+      L.esc(L.t('feed.photos')) + '"></div><div class="post-carousel-progress" aria-hidden="true"></div>';
+    const track = container.firstElementChild, progress = container.lastElementChild;
+    let end, requested = false, finger, index = -1, shownCount = -1;
+    const slide = markup => {
+      const item = document.createElement('div');
+      item.className = 'post-slide';
+      item.innerHTML = markup;
+      return item;
+    };
+    if (more) {
+      end = slide(U.link(more, L.esc(L.t('feed.morePhotos'))));
+      end.classList.add('post-slide-more');
+      track.append(end);
+    }
+    function update() {
+      const count = Math.max(0, track.childElementCount - Number(Boolean(end)));
+      const next = Math.max(0, Math.min(track.childElementCount - 1, Math.round(track.scrollLeft / (track.clientWidth || 1))));
+      if (next === index && count === shownCount) return;
+      if (next !== index) {
+        index = next;
+        if (next < count) onIndex?.(next);
+      }
+      shownCount = count;
+      progress.hidden = count < 2;
+      progress.innerHTML = count > 1
+        ? Array.from({ length: count }, (_, i) => '<span aria-hidden="true"' + (i === index ? ' data-current' : '') + '></span>').join('') +
+          (index < count ? '<small>' + (index + 1) + '/' + count + '</small>' : '') : '';
+    }
+    function fill(items) {
+      track.replaceChildren(...items.map(slide), ...(end ? [end] : []));
+      update();
+    }
+    fill(slides);
+    async function expand() {
+      if (!load || requested) return;
+      requested = true;
+      const items = await load();
+      if (!container.isConnected || !items?.length) return;
+      const position = track.scrollLeft;
+      fill(items);
+      track.scrollLeft = position;
+      update();
+    }
+    track.addEventListener('scroll', () => {
+      update();
+      if (track.scrollLeft > 4) void expand();
+    }, { passive: true });
+    if (load) {
+      track.addEventListener('touchstart', event => {
+        finger = event.touches.length === 1 ? event.touches[0] : null;
+      }, { passive: true });
+      track.addEventListener('touchmove', event => {
+        if (!finger || event.touches.length !== 1) return;
+        const next = event.touches[0], x = finger.clientX - next.clientX;
+        if (x > 12 && x > Math.abs(finger.clientY - next.clientY)) void expand();
+      }, { passive: true });
+    }
+    track.addEventListener('keydown', event => {
+      if (event.altKey || event.metaKey || event.ctrlKey || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+      event.preventDefault();
+      if (event.key === 'ArrowRight') void expand();
+      track.scrollLeft = (index + (event.key === 'ArrowRight' ? 1 : -1)) * track.clientWidth;
+      update();
+    });
+    if (start) {
+      track.scrollLeft = start * track.clientWidth;
+      update();
+    }
+    return {
+      remove(button) {
+        button.closest('.post-slide')?.remove();
+        if (!track.childElementCount) container.remove();
+        else update();
+      }
+    };
+  }
+
   function state(message) {
     return '<p class="post-state" role="status">' + message + '</p>';
   }
@@ -160,7 +251,7 @@ const LoungePostUI = (() => {
       (feed ? '<div class="post-card-body"><span class="post-shimmer post-skeleton-line" aria-hidden="true"></span></div>' : '') + '</div>';
   }
 
-  return { mount, image, photo, zoomImage, state, skeleton };
+  return { mount, image, photo, zoomImage, carousel, state, skeleton };
 })();
 
 (() => {
@@ -168,6 +259,7 @@ const LoungePostUI = (() => {
   const P = LoungePostUI;
   const t = U.words('feed', {
     official: ['공식', 'Official'], photos: ['어젯밤 사진', 'Last night’s photos'],
+    morePhotos: ['사진 더보기', 'More photos'],
     like: ['좋아요', 'Like'], comments: ['댓글', 'Comments'], more: ['더 보기', 'Load more'],
     write: ['댓글 쓰기', 'Write a comment'], send: ['보내기', 'Send'],
     following: ['팔로잉', 'Following'], all: ['전체', 'All'], filters: ['피드 보기', 'Filter feed'],
@@ -225,6 +317,7 @@ const LoungePostUI = (() => {
     const list = view.querySelector('[data-posts]'), page = view.querySelector('[data-page]');
     const tools = view.parentElement.querySelector('[data-post-tools]');
     const ids = new Set();
+    const shareSettings = L.api('config');
     let tab = 'all', version = 0, config, memberPosts;
 
     function paintTools() {
@@ -261,16 +354,20 @@ const LoungePostUI = (() => {
       const date = U.time(post.at, { dateStyle: 'medium', timeStyle: 'short' });
       const album = post.kind === 'album';
       const member = post.kind === 'member';
-      const images = (post.photos || []).map(P.photo).filter(photo => photo.src);
+      const images = (post.photos || []).map(P.photo).filter(photo => photo.src).slice(0, album ? 20 : undefined);
       const videoUrl = /^[A-Za-z0-9_-]{11}$/.test(post.youtube || '') ? 'https://www.youtube.com/watch?v=' + post.youtube : '';
       const author = post.author?.nick || post.author?.name || 'GROOVE';
-      const media = images.map((photo, index) => {
+      const slide = (photo, index) => {
         if (member) return '<button type="button" class="post-photo-button" data-member-photo="' + index + '">' +
           P.image(photo.thumb, t('photo', { n: index + 1 }), false, photo) + '</button>';
         const img = P.image(photo.thumb, '', Boolean(videoUrl), photo);
         return videoUrl && index === 0 ? '<a class="post-video" href="' + videoUrl + '">' + img +
           '<span>' + t('youtube') + '</span></a>' : img;
-      }).join('');
+      };
+      const media = images.map(slide);
+      const albumId = post.albumId ?? post.id;
+      const albumLink = '#/photos/' + encodeURIComponent(albumId);
+      const sliding = album || media.length > 1;
       const video = post.video;
       const credits = video && Number.isSafeInteger(video.session) ? '<div class="post-meta" data-video-session="' + video.session + '">' +
         L.esc(['GROOVE SESSION #' + video.session, video.dj, video.duration].filter(Boolean).join(' · ')) + '</div>' : '';
@@ -281,14 +378,31 @@ const LoungePostUI = (() => {
         (card.dataset.floor ? '<span class="post-floor">' + post.floor + ' ' + (post.floor === '2F' ? 'GROOVE' : 'SPOT') + '</span>' : '') +
         (album || member ? '<span>' + t(album ? 'photos' : 'member') + '</span>' : '') +
         (date ? '<span>' + date + '</span>' : '') + '</div>' + credits + '</div></header>' +
-        (media ? '<div class="post-feed-media" data-post-layout>' + media + '</div>' : '') +
+        (media.length ? (sliding ? '<div data-feed-carousel data-post-layout></div>' :
+          '<div class="post-feed-media" data-post-layout>' + media[0] + '</div>') : '') +
         '<div class="post-card-body"><p class="post-caption">' + L.esc(post.text) + '</p><div class="post-bar post-actions" data-post-layout>' +
         U.button('', 'data-like') + U.button(t('comments') + ' ' + (Number(post.comments) || 0), 'data-comments-button') +
         U.button(U.t('report'), 'data-report') + (member && post.mine ? U.button(t('delete'), 'data-delete') : '') +
-        '</div>' + (album ? '<div>' + U.link('#/photos/' + encodeURIComponent(post.albumId ?? post.id), t('photos')) + '</div>' : '') +
+        '</div>' + (album ? '<div>' + U.link(albumLink, t('morePhotos')) + '</div>' : '') +
         (post.challenge ? '<div>' + U.link('#/challenge', t('challenge')) + '</div>' : '') +
         (videoUrl && !images.length ? '<div>' + U.link(videoUrl, t('youtube')) + '</div>' : '') + '</div>';
+      list.append(card);
+      const track = card.querySelector('[data-feed-carousel]');
+      const carousel = track && P.carousel(track, media, album ? {
+        more: albumLink,
+        load: media.length === 1 ? async () => {
+          const result = await L.api('album_get', { id: albumId });
+          if (result.error) return null;
+          const seen = new Set();
+          return (result.album?.photos || result.photos || []).map(P.photo).filter(photo => {
+            if (!photo.src || seen.has(photo.src)) return false;
+            seen.add(photo.src);
+            return true;
+          }).slice(0, 20).map(slide);
+        } : undefined
+      } : {});
       const like = card.querySelector('[data-like]');
+      shareSettings.then(result => window.LoungeShare?.actions(like.parentElement, post, result));
       function paintLike() {
         like.setAttribute('aria-pressed', Boolean(post.liked));
         like.textContent = (post.liked ? '♥ ' : '♡ ') + L.t('feed.like') + ' ' + (Number(post.likes) || 0);
@@ -340,7 +454,7 @@ const LoungePostUI = (() => {
           if (take) take.onclick = () => U.reason({
             title: t('take'), reasons: ['me'],
             submit: why => L.api('report', { kind: 'photo', id: key, why }),
-            done: () => button.remove()
+            done: () => { if (carousel) carousel.remove(button); else button.remove(); }
           });
         };
       });
@@ -359,7 +473,6 @@ const LoungePostUI = (() => {
           L.closeSheet();
         };
       };
-      list.append(card);
     }
 
     function empty() {
@@ -413,7 +526,7 @@ const LoungePostUI = (() => {
       if (more) more.onclick = () => load(next);
     }
     load();
-    if (!id) L.api('config').then(result => {
+    if (!id) shareSettings.then(result => {
       if (!view.isConnected) return;
       config = result;
       paintTools();
