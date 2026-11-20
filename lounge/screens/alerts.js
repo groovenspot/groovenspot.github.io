@@ -28,12 +28,12 @@
       rooms: 'Chat rooms', social: 'Follows and activity', md: 'Your host', rewards: 'Rewards'
     },
     ja: {
-      preview: 'ロック画面に表示する内容', sensitive: 'メッセージ・通報・安全通知の内容を隠す',
+      preview: 'ロック画面の通知プレビュー', sensitive: 'メッセージ・通報・安全通知の内容を隠す',
       all: 'すべての内容を隠す', details: '内容を表示する'
     },
     zh: {
-      preview: '锁屏显示内容', sensitive: '隐藏私信、举报和安全通知的内容',
-      all: '隐藏所有内容', details: '显示内容'
+      preview: '锁屏通知预览', sensitive: '隐藏私信、举报和安全通知的内容',
+      all: '隐藏所有内容', details: '显示通知详情'
     }
   };
   // The staff acknowledgement keeps a stable tag across retries and existing inbox history.

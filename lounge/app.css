@@ -1,23 +1,27 @@
 /* 그루브 라운지 — ⑧ C-shell 담당. 색은 assets/site.css 토큰과 시안(lounge/design) */
-:root { --bg: #0a0909; --bg-2: #121010; --card: #171414; --line: rgba(255,255,255,.09); --line-2: rgba(255,255,255,.16); --txt: #f6efeb; --muted: #a59a96; --g: #ff7a1a; --g-ink: #120800; --s: #a15bff; --s-deep: #6d2bff; --ok: #3ddc97; --bad: #ff5a5f; --radius: 18px; color-scheme: dark; }
+:root { --bg: #0a0909; --bg-2: #121010; --card: #171414; --line: rgba(255,255,255,.09); --line-2: rgba(255,255,255,.16); --field-border: #796e69; --txt: #f6efeb; --muted: #a59a96; --g: #ff7a1a; --g-ink: #120800; --s: #a15bff; --s-deep: #6d2bff; --ok: #3ddc97; --bad: #ff5a5f; --radius: 18px; color-scheme: dark; }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--txt); font: 16px/1.6 "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
-#view { padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); min-height: 100vh; outline: none; }
-#tabbar { position: fixed; left: 0; right: 0; bottom: 0; height: calc(74px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--bg); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
-#tabbar a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); font-size: 11px; font-weight: 700; text-decoration: none; }
+body { margin: 0; background: var(--bg); color: var(--txt); font: 1rem/1.6 "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
+#view { padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); min-height: 100vh; min-height: 100dvh; outline: none; }
+#tabbar { position: fixed; left: 0; right: 0; bottom: var(--lounge-bottom-inset, 0px); height: calc(74px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--bg); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+#tabbar a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding-inline: 2px; overflow-wrap: anywhere; text-align: center; color: var(--muted); font-size: .6875rem; font-weight: 700; text-decoration: none; }
 #tabbar a[aria-current="page"] { color: var(--txt); font-weight: 900; }
-#sheet { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.66); display: grid; align-items: end; }
-#sheet > .in { background: var(--card); border-radius: 24px 24px 0 0; border-top: 1px solid var(--line-2); padding: 18px 18px calc(22px + env(safe-area-inset-bottom)); max-height: 90vh; overflow: auto; }
-#toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #2a2420; color: var(--txt); padding: 10px 16px; border-radius: 12px; font-size: 14px; z-index: 30; max-width: 90vw; }
+#sheet { position: fixed; inset: 0 0 var(--lounge-bottom-inset, 0px); z-index: 20; background: rgba(0,0,0,.66); display: grid; align-items: end; }
+#sheet > .in { background: var(--card); border-radius: 24px 24px 0 0; border-top: 1px solid var(--line-2); padding: 18px 18px calc(22px + env(safe-area-inset-bottom)); max-height: 90vh; max-height: min(90dvh, var(--lounge-visual-height, 90dvh)); overflow: auto; }
+#toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom) + var(--lounge-bottom-inset, 0px)); transform: translateX(-50%); background: #2a2420; color: var(--txt); padding: 10px 16px; border-radius: 12px; font-size: 14px; z-index: 30; max-width: 90vw; }
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 18px; border-radius: 14px; border: 1px solid var(--line-2); background: var(--card); color: var(--txt); font: inherit; font-weight: 800; cursor: pointer; text-decoration: none; }
 .btn-hot { background: var(--g); border-color: var(--g); color: var(--g-ink); }
-input, textarea, select { width: 100%; font: inherit; font-size: 16px; color: var(--txt); background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 12px 14px; }
+input, textarea, select { width: 100%; font: inherit; font-size: max(16px, 1rem); color: var(--txt); background: var(--card); border: 1px solid var(--field-border); border-radius: 14px; padding: 12px 14px; }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 .muted { color: var(--muted); }
 
 [hidden] { display: none !important; }
 :focus-visible { outline: 2px solid var(--g); outline-offset: 3px; }
 body.sheet-open { overflow: hidden; }
+html[data-lounge-keyboard] #tabbar { visibility: hidden; }
+html[data-lounge-keyboard] #view { padding-bottom: calc(32px + var(--lounge-bottom-inset, 0px)); }
+html[data-lounge-keyboard] #toast { bottom: calc(12px + var(--lounge-bottom-inset, 0px)); }
 #view { max-width: 640px; margin-inline: auto; overflow-wrap: anywhere; }
 #tabbar { z-index: 10; padding-inline: max(0px, calc((100% - 640px) / 2)); }
 #offline { margin: 0; padding: 6px 16px; color: var(--g-ink); background: #ffb27a; text-align: center; font-weight: 700; }

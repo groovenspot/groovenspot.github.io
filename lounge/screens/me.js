@@ -25,7 +25,8 @@
     signout: ['로그아웃', 'Log out'],
     withdraw: ['탈퇴', 'Delete account'],
     withdrawHelp: ['탈퇴하면 계정과 프로필이 삭제돼요. 비밀번호를 입력해 주세요.', 'Your account and profile will be deleted. Enter your password to continue.'],
-    deleted: ['탈퇴했어요.', 'Your account was deleted.']
+    deleted: ['탈퇴했어요.', 'Your account was deleted.'],
+    deletionPending: ['탈퇴했어요. 남은 정보는 순차적으로 삭제하고 있어요.', 'Your account was deleted. We’re finishing the removal of your data.']
   };
   L.i18n(Object.fromEntries(['ko', 'en'].map((lang, i) =>
     [lang, Object.fromEntries(Object.entries(copy).map(([key, pair]) => ['me.' + key, pair[i]]))]
@@ -176,8 +177,8 @@
         const result = await L.api('withdraw', { pw: data.get('pw') });
         if (!result.ok) throw new Error(result.error);
         if (L.me?.id !== me.id || !L.me) return;
-        exit();
-        L.toast(L.t('me.deleted'));
+        await exit();
+        L.toast(L.t(result.pending ? 'me.deletionPending' : 'me.deleted'));
       });
     };
   }
