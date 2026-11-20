@@ -155,6 +155,7 @@ Lounge.i18n({ja: {
   "tonight.soundOn": "音声をオフ",
   "tonight.share": "共有",
   "tonight.shareReady": "今すぐ共有",
+  "tonight.shareUnsupported": "この端末では直接共有できません。動画を保存してInstagramから投稿してください。",
   "tonight.shareSave": "保存",
   "tonight.shareProgress": "準備中 {n}%",
   "tonight.shareError": "ファイルを準備できませんでした。",

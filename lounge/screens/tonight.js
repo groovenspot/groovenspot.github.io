@@ -109,6 +109,7 @@ const LoungeScreenUI = (() => {
     live: ['매장 영상', 'Club live'], liveSlide: ['매장 영상 {n} / {total}', 'Club media {n} of {total}'],
     sound: ['매장 영상 소리', 'Club video sound'], soundOff: ['소리 켜기', 'Turn sound on'], soundOn: ['소리 끄기', 'Turn sound off'],
     share: ['공유', 'Share'], shareReady: ['지금 공유', 'Share now'], shareSave: ['저장', 'Save'],
+    shareUnsupported: ['이 폰은 바로 공유가 안 돼요. 영상 저장 후 인스타에서 올려 주세요.', 'This phone can’t share directly. Save the video and upload it from Instagram.'],
     shareProgress: ['준비 중 {n}%', 'Preparing {n}%'], shareError: ['파일을 준비하지 못했어요.', 'Could not prepare the files.'],
     timetable: ['타임테이블', 'Timetable'],
     poster: ['파티 포스터', 'Party poster'], posterZoom: ['포스터 크게 보기', 'View poster full size'],
@@ -185,9 +186,8 @@ const LoungeScreenUI = (() => {
           name: 'groove_' + (video ? 'video_' : 'photo_') + (file + 1), video,
           load: progress => GrooveMediaShare.fetchBlob(url, progress)
         })),
-        url: item.url,
         labels: { share: L.t('tonight.share'), ready: L.t('tonight.shareReady'), save: L.t('tonight.shareSave'),
-          progress: n => L.t('tonight.shareProgress', { n }), error: () => L.toast(L.t('tonight.shareError')) }
+          progress: n => L.t('tonight.shareProgress', { n }), unsupported: () => L.toast(L.t('tonight.shareUnsupported')), error: () => L.toast(L.t('tonight.shareError')) }
       });
     });
     let index = Math.max(0, items.findIndex(item => item.url === previous?.url));
