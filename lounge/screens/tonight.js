@@ -292,10 +292,11 @@ const LoungeScreenUI = (() => {
     function paintGoing() {
       const el = view.querySelector('[data-going]');
       const summary = data.going || {};
+      const friends = summary.people || summary.friends?.map(nick => ({ nick }));
       el.innerHTML = U.button(t(going() ? 'undo' : 'going'), 'aria-pressed="' + Boolean(going()) + '"', true) +
         ' <strong>' + t('people', { n: Number(summary.n) || 0 }) + '</strong>' +
-        (summary.friends?.length ? '<div>' + t('friends') + ' · ' + summary.friends.map(nick =>
-          U.link('#/u/' + encodeURIComponent(nick), L.esc(nick))).join(' ') + '</div>' : '');
+        (friends?.length ? '<div>' + t('friends') + ' · ' + friends.map(person =>
+          U.link('#/u/' + encodeURIComponent(person.nick), L.whoTag(person))).join(' ') + '</div>' : '');
       el.querySelector('button').onclick = async event => {
         if (L.needLogin() || updating) return;
         const button = event.currentTarget;

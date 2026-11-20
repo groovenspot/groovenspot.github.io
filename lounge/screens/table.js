@@ -170,7 +170,7 @@
     return screen(root, params, 'sales', 'table', 'table_list', (stack, data) => {
       const states = { pending: 'pending', ok: 'tableOk', no: 'tableNo', call: 'tableCall', expired: 'tableExpired' };
       stack.insertAdjacentHTML('beforeend', '<section class="shell-card">' +
-        (data.staffName ? '<p><strong>' + t('md') + '</strong> · ' + L.esc(data.staffName) + '</p>' : '<p>' + t('staff') + '</p>') +
+        (data.staff ? '<p><strong>' + t('md') + '</strong> · ' + L.whoTag(data.staff) + '</p>' : '<p>' + t('staff') + '</p>') +
         '<form class="shell-form">' + floor() + people('people', 'people', 1, 2) +
         '<label class="shell-field">' + t('note') + '<textarea name="note" rows="3" maxlength="500"></textarea></label>' +
         feedback + button('ask') + '</form></section><section class="shell-stack"><h2>' + t('history') + '</h2>' +
@@ -226,7 +226,7 @@
         '</form></section><section class="shell-stack"><h2>' + t('groups') + '</h2>' +
         (data.groups.length ? data.groups.map(group => '<article class="shell-card" data-id="' + L.esc(group.id) +
           '"><div class="shell-row"><strong>' + L.esc(group.floor) + ' · ' + L.esc(group.count) + ' / ' + L.esc(group.need) +
-          '</strong><span>' + t(states[group.status] || 'pending') + '</span></div><p>' + L.esc(group.nick) +
+          '</strong><span>' + t(states[group.status] || 'pending') + '</span></div><p>' + L.whoTag(group) +
           ' · <time class="muted">' + L.esc(group.day) + '</time></p>' + feedback + '<div class="shell-actions">' +
           (group.joined && ['open', 'pending'].includes(group.status) ? '<span class="muted">' + t('joined') + '</span>' : '') +
           (!group.joined && group.status === 'open' ?
