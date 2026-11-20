@@ -1536,6 +1536,10 @@ html .goffer.gofs.whereoff { background: #182d58; z-index: 59; }
 .whereoff.gofs .gof-b button { min-height: 64px; font-size: 19px; }
 .whereoff.gofs .gof-d { color: #e7eeff; }
 .whereoff [data-where-dismiss] { grid-column: 1 / -1; }
+.whereoff .where-own { grid-column: 1 / -1; display: flex; gap: 8px; margin: 0; }
+.whereoff .where-own input { flex: 1 1 auto; width: auto; min-width: 0; min-height: 56px; border-radius: 14px; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.08); color: #fff; padding: 0 14px; font-size: 17px; }
+.whereoff .where-own input::placeholder { color: rgba(255,255,255,.55); }
+.whereoff.gofs .where-own button { flex: 0 0 84px; width: 84px; min-height: 56px; padding: 0; font-size: 17px; }
 .whereoff .msg { text-align: center; color: #fff; margin: 0; }
 .whereoff .msg:empty { display: none; }
 .wherewarn { display: block; font-weight: 700; margin-block: 4px; }
@@ -10566,7 +10570,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     box.querySelectorAll('[data-cpin]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.cpin }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else { b.disabled = false; if (x.error === 'full') chatLoad(); } }).catch(function () { b.disabled = false; }); }); });
   }
   // 📍 손님 위치 확인
-  var WHERE_CHOICES = [['seat', '자리에 있음'], ['moved', '이동함'], ['left', '나가심'], ['unknown', '모름']];
+  var WHERE_CHOICES = [['left', '🚪 나가심'], ['moved', '↔️ 이동함'], ['smoke', '🚬 흡연 중'], ['rest', '🚻 화장실']];   // 카톡 상태 보고 빈도순 (2026-11-21 대표 결정)
   var whereDismissed = new Set(), whereList = [], whereId = '', whereFlight = null, whereQueued = false, whereAudio;
   function whereWarn() { return '<span class="wherewarn">🔕 알림 꺼짐 — 직접 찾아가세요</span>'; }
   function whereResolveButton(id) {
@@ -10609,6 +10613,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     whereId = q.chat;
     box.innerHTML = '<div class="gof-k" id="whereTitle">📍 손님 위치 질문</div><div class="gof-h"><b>' + esc(q.seat) + ' ' + esc(q.guest) + '</b></div>' +
       '<div class="gof-d">' + esc(q.by) + '님이 물어봤어요</div><div class="gof-b">' + whereAnswerButtons(q.chat, true) +
+      '<form class="where-own" data-where-own="' + esc(q.chat) + '"><input name="t" maxlength="40" autocomplete="off" enterkeyhint="send" placeholder="직접 입력 (예: 2층 바)" aria-label="직접 입력"><button type="submit" class="btn">보내기</button></form>' +
       '<button type="button" class="btn" data-where-dismiss>나가기</button></div><p class="msg" role="status"></p>';
     box.hidden = false; box.querySelector('button').focus(); whereRing();
   }
@@ -10645,6 +10650,15 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   document.addEventListener('visibilitychange', function () { if (!document.hidden) whereLoad(); });
   setInterval(whereLoad, 10000);
   new MutationObserver(wherePaint).observe($('gateOffer'), { attributes: true, attributeFilter: ['hidden', 'class'] });
+  document.addEventListener('submit', function (e) {   // ✏️ 위치 질문 직접 입력 → 같은 처리 (answer='text')
+    var f = e.target.closest && e.target.closest('[data-where-own]'); if (!f) return;
+    e.preventDefault();
+    var t = String(f.t.value || '').replace(/\s+/g, ' ').trim();
+    var msg = f.closest('#whereOffer') && f.closest('#whereOffer').querySelector('.msg');
+    if (!t || /[<>"]/.test(t)) { if (msg) msg.textContent = '보낼 내용을 적어 주세요. (<, >, " 는 못 써요)'; f.t.focus(); return; }
+    var go = document.createElement('button'); go.type = 'button'; go.hidden = true; go.dataset.whereAnswer = 'text'; go.dataset.whereId = f.dataset.whereOwn; go.whereText = t.slice(0, 40);
+    f.appendChild(go); go.click(); go.remove();
+  });
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-where-answer], [data-where-resolve], [data-where-dismiss], [data-where-enable], [data-where-guide-close]');
     if (!b || !state.s) return;
@@ -10666,6 +10680,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     var code = b.dataset.whereAnswer, id = b.dataset.whereId || b.dataset.whereResolve;
     var body = { a: code ? 'where_answer' : 'where_resolve', id: id, token: state.s.token };
     if (code) body.answer = code;
+    if (b.whereText) body.text = b.whereText;   // ✏️ 직접 입력
     var box = b.closest('#whereOffer'), buttons = box ? box.querySelectorAll('button') : [b];
     buttons.forEach(function (x) { x.disabled = true; });
     var failed = function () {

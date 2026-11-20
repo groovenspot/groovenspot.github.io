@@ -7,12 +7,12 @@ var API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
 var SHELL = 'gs-shell-v1', WAIT = 3500;
 var PAGE = '/staff/', STATIC = ['/staff/manifest.webmanifest', '/staff/icon-192.png', '/staff/icon-512.png', '/staff/badge-72.png'];
 function noop() {}
+// 안드로이드 알림 버튼은 2개까지 → 가장 많은 답 하나 + '다른 답' (누르면 앱의 전체 화면 카드: 4개 버튼·직접 입력) (2026-11-21)
 var WHERE_ACTIONS = [
-  { action: 'where-seat', title: '자리에 있음' },
-  { action: 'where-moved', title: '이동함' },
-  { action: 'where-left', title: '나가심' },
-  { action: 'where-unknown', title: '모름' }
+  { action: 'where-left', title: '🚪 나가심' },
+  { action: 'where-open', title: '다른 답 · 직접 입력' }
 ];
+var WHERE_ANSWER_ACTIONS = ['where-left', 'where-moved', 'where-smoke', 'where-rest', 'where-seat', 'where-unknown'];
 self.addEventListener('install', function (e) {
   self.skipWaiting();
   // 미리 저장 (실패해도 설치는 그대로 — 알림이 먼저)
@@ -124,7 +124,7 @@ function showPeek(n, previous, secondary) {
   var opt = { body: n.body, tag: tag, renotify: !seen, icon: '/staff/icon-192.png', badge: '/staff/badge-72.png', data: { tab: n.tab || '', ref: n.ref || '' } };
   if (loc) opt.data.at = n.at;
   if (loc && n.kind === 'where') {
-    opt.vibrate = [240, 120, 240]; opt.silent = false;
+    opt.vibrate = [240, 120, 240]; opt.silent = false; opt.requireInteraction = true;   // 답할 때까지 알림이 남게
     if (/Android.*Chrome\//i.test((self.navigator || {}).userAgent || '')) {
       var max = typeof Notification !== 'undefined' ? Notification.maxActions : undefined;
       opt.actions = WHERE_ACTIONS.slice(0, Number.isFinite(max) ? max : 2);
@@ -161,7 +161,7 @@ function openStaff(tab, ref) {
 }
 function whereAction(ref, action) {
   var id = /^where:([-\w]{1,40})$/.exec(ref);
-  if (!id || !WHERE_ACTIONS.some(function (x) { return x.action === action; })) return Promise.resolve(false);
+  if (!id || WHERE_ANSWER_ACTIONS.indexOf(action) < 0) return Promise.resolve(false);
   return token().then(function (t) {
     if (typeof t !== 'string' || !t) return false;
     return fetch(API, { method: 'POST', body: JSON.stringify({ a: 'where_answer', token: t, id: id[1], answer: action.slice(6) }) })
@@ -171,7 +171,7 @@ function whereAction(ref, action) {
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
   var tab = (e.notification.data && e.notification.data.tab) || '', ref = (e.notification.data && e.notification.data.ref) || '';
-  if (tab !== 'where' || !e.action) { e.waitUntil(openStaff(tab, ref)); return; }
+  if (tab !== 'where' || !e.action || e.action === 'where-open') { e.waitUntil(openStaff(tab, ref)); return; }
   e.waitUntil(whereAction(ref, e.action).then(function (ok) {
     if (!ok) return openStaff('where', ref);
     return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
