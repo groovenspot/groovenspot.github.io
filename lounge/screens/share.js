@@ -403,7 +403,7 @@
   function reference(ref) {
     if (!ref || !['post', 'profile'].includes(ref.kind)) return '';
     const isPost = ref.kind === 'post';
-    if (ref.gone || !ref.id) return '<span class="share-ref">' + text('gonePost') + '</span>';
+    if (ref.gone || !ref.id) return '<span class="share-ref">' + text(isPost ? 'gonePost' : 'goneProfile') + '</span>';
     const href = isPost ? postPath(ref.id) : profilePath(ref.author || ref.id);
     const thumb = U.image(ref.thumb);
     return '<a class="share-ref" href="' + href + '">' + (thumb
