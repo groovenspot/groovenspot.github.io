@@ -57,8 +57,10 @@
     button.onclick = async () => {
       const allowed = !L.me || (await L.api('blocks')).error !== 'action';
       if (!button.isConnected) return;
-      const el = U.sheet('<h2>' + t('menu') + '</h2><div class="shell-actions">' + U.button(U.t('report'), 'data-report') +
-        U.button(t('block') + (allowed ? '' : ' · ' + U.t('soon')), 'data-block' + (allowed ? '' : ' disabled')) + '</div>');
+      const actions = U.button(U.t('report'), 'data-report') + ' ' +
+        U.button(t('block') + (allowed ? '' : ' · ' + U.t('soon')), 'data-block' + (allowed ? '' : ' disabled'));
+      const el = U.sheet('<h2>' + t('menu') + '</h2>' +
+        (enhanced ? '<div class="shell-actions">' + actions + '</div>' : actions));
       el.querySelector('[data-report]').onclick = () => {
         if (L.needLogin()) return;
         if (user.id) U.report('user', user.id);
