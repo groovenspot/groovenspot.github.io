@@ -620,6 +620,13 @@ Lounge.i18n({zh: {
   "follows.search": "搜索账号",
   "follows.suggest": "推荐账号",
 
+  "me.dashboard": "我的积分 {points}P · 到店印章 {stamps}/10",
+  "profile3.moreBio": "展开",
+  "profile3.lessBio": "收起",
+  "profile3.firstPhoto": "发布第一张照片",
+  "profile3.newHighlight": "新建精选",
+  "profile3.highlightName": "精选名称",
+  "profile3.pickPosts": "选择要加入精选的帖子。",
   "profile3.attend7": "连续签到 7 天",
   "profile3.first": "首次到店",
   "profile3.highlights": "精选",

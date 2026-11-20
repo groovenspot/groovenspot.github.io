@@ -26,6 +26,7 @@
     withdraw: ['탈퇴', 'Delete account'],
     withdrawHelp: ['탈퇴하면 계정과 프로필이 삭제돼요. 비밀번호를 입력해 주세요.', 'Your account and profile will be deleted. Enter your password to continue.'],
     deleted: ['탈퇴했어요.', 'Your account was deleted.'],
+    dashboard: ['내 포인트 {points}P · 방문 스탬프 {stamps}/10', 'My points {points}P · Visit stamps {stamps}/10'],
     deletionPending: ['탈퇴했어요. 남은 정보는 순차적으로 삭제하고 있어요.', 'Your account was deleted. We’re finishing the removal of your data.']
   };
   L.i18n(Object.fromEntries(['ko', 'en'].map((lang, i) =>
@@ -46,7 +47,6 @@
 
   async function renderMe(root) {
     const me = L.me;
-    const profile2 = L.open('profile2');
     const photo = me.photo
       ? '<img class="shell-avatar" src="' + L.esc(L.img(me.photo)) + '" alt="">'
       : '<span class="shell-avatar" aria-hidden="true">' + L.esc(Array.from(me.nick || '')[0] || 'G') + '</span>';
@@ -55,27 +55,46 @@
       (['2F', '3F'].includes(me.floor) ? ' · ' + me.floor : '') + '</p></div></header>' +
       (me.bio ? '<p class="shell-bio">' + L.esc(me.bio) + '</p>' : '');
     const editLink = '<a class="btn" href="#/me/edit">' + t('edit') + '</a>';
-    root.innerHTML = '<div class="shell-stack">' +
-      (profile2 ? '<div class="shell-stack" data-own-profile>' + LoungeScreenUI.status('loading', true) + '</div>' : legacy) +
-      '<div class="shell-actions" data-me-actions>' + (profile2
-        ? '<button type="button" class="btn" data-profile-menu aria-label="' + t('settings') + '">≡</button>'
-        : editLink + '<a class="btn" href="#/me/settings">' + t('settings') + '</a>' +
-          '<a class="btn" href="#/alerts">' + L.esc(L.t('core.alerts')) + '</a>' +
-          (L.open('rewards') ? '<a class="btn" href="#/rewards">' + t('rewards') + '</a>' :
-            '<p class="muted">' + t('rewards') + ' · ' + L.esc(L.t('core.soon')) + '</p>')) + '</div>' +
-      '<div class="shell-stack" data-points aria-busy="true"><p role="status">' + a('pending') + '</p></div>' +
+    root.innerHTML = '<div class="shell-stack">' + legacy +
+      '<div class="shell-actions" data-me-actions>' + editLink +
+      '<a class="btn" href="#/me/settings">' + t('settings') + '</a>' +
+      '<a class="btn" href="#/alerts">' + L.esc(L.t('core.alerts')) + '</a>' +
+      (L.open('rewards') ? '<a class="btn" href="#/rewards">' + t('rewards') + '</a>' :
+        '<p class="muted">' + t('rewards') + ' · ' + L.esc(L.t('core.soon')) + '</p>') + '</div>' +
+      pointsPlaceholder() +
       (L.canInstall() ? '<button class="btn" data-install>' + L.esc(L.t('core.install')) + '</button>' : '') + '</div>';
-    const menu = root.querySelector('[data-profile-menu]');
-    if (menu) menu.onclick = profileMenu;
     const install = root.querySelector('[data-install]');
     if (install) install.onclick = () => L.showInstall(false);
-    if (profile2) void L.api('user', { nick: me.nick }).then(response => {
-      if (!root.isConnected || L.me !== me) return;
-      const view = root.querySelector('[data-own-profile]');
-      if (response.user) return L.renderProfile3(view, response.user, true);
-      view.innerHTML = legacy;
-      root.querySelector('[data-me-actions]').insertAdjacentHTML('afterbegin', editLink);
-    });
+    return renderPoints(root, me);
+  }
+
+  function pointsPlaceholder() {
+    return '<div class="shell-stack" data-points aria-busy="true"><p role="status">' + a('pending') + '</p></div>';
+  }
+
+  async function renderProfileMe(root) {
+    const me = L.me;
+    const U = LoungeScreenUI;
+    root.innerHTML = '<div class="profile3-surface"><header class="profile3-topbar">' +
+      '<strong>' + L.esc(me.nick) + '</strong><button type="button" class="btn" data-profile-menu aria-haspopup="dialog" aria-label="' +
+      t('settings') + '">≡</button></header><div data-own-profile>' + U.status('loading', true) + '</div></div>';
+    root.querySelector('[data-profile-menu]').onclick = profileMenu;
+    const view = root.querySelector('[data-own-profile]');
+    const [profile, points] = await Promise.all([L.api('user', { nick: me.nick }), L.api('points')]);
+    if (!view.isConnected) return;
+    if (!profile.user) {
+      view.innerHTML = U.status('error');
+      if (!L.me) L.needLogin();
+      return;
+    }
+    const stamps = points.stamps ?? me.stamps;
+    const values = { points: new Intl.NumberFormat(L.lang).format(Number(points.points ?? me.points) || 0),
+      stamps: Math.min(10, Math.max(0, Number(stamps?.n ?? stamps) || 0)) };
+    const dashboard = '<a class="profile3-dashboard" href="#/me/points">' + L.esc(L.t('me.dashboard', values)) + '</a>';
+    return L.renderProfile3(view, profile.user, true, dashboard);
+  }
+
+  async function renderPoints(root, me) {
     const result = await L.api('points');
     if (!root.isConnected) return;
     const panel = root.querySelector('[data-points]');
@@ -213,6 +232,14 @@
     render(root, { id }) {
       if (id === 'edit') return L.open('profile2') ? L.profileEdit(root) : edit(root);
       if (id === 'settings') return settings(root);
+      if (L.open('profile2')) {
+        if (id === 'points') {
+          root.innerHTML = '<div class="shell-stack"><header class="shell-actions"><h1>' + t('points') + '</h1>' +
+            LoungeScreenUI.link('#/me', L.esc(L.t('nav.me'))) + '</header>' + pointsPlaceholder() + '</div>';
+          return renderPoints(root, L.me);
+        }
+        return renderProfileMe(root);
+      }
       return renderMe(root);
     }
   });

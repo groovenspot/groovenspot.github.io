@@ -620,6 +620,13 @@ Lounge.i18n({ja: {
   "follows.search": "アカウントを検索",
   "follows.suggest": "おすすめのアカウント",
 
+  "me.dashboard": "ポイント {points}P · 来店スタンプ {stamps}/10",
+  "profile3.moreBio": "続きを読む",
+  "profile3.lessBio": "折りたたむ",
+  "profile3.firstPhoto": "最初の写真を投稿する",
+  "profile3.newHighlight": "新しいハイライト",
+  "profile3.highlightName": "ハイライト名",
+  "profile3.pickPosts": "追加する投稿を選んでください。",
   "profile3.attend7": "7日連続ログイン",
   "profile3.first": "初来店",
   "profile3.highlights": "ハイライト",

@@ -21,7 +21,13 @@
     visit5: ['5번 방문', '5 visits'],
     visit10: ['10번 방문', '10 visits'],
     attend7: ['7일 연속 출석', '7-day attendance streak'],
-    voter: ['5번 투표', '5 votes']
+    voter: ['5번 투표', '5 votes'],
+    moreBio: ['더 보기', 'Read more'],
+    lessBio: ['접기', 'Show less'],
+    firstPhoto: ['첫 사진 올리기', 'Post your first photo'],
+    newHighlight: ['새 하이라이트', 'New highlight'],
+    highlightName: ['하이라이트 이름', 'Highlight name'],
+    pickPosts: ['담을 게시물을 골라 주세요.', 'Choose posts for this highlight.']
   });
   const esc = L.esc;
   const count = value => Math.max(0, Number(value) || 0);
@@ -85,13 +91,28 @@
     }).join('');
   }
 
+  const icons = {
+    posts: '<path d="M4 4h16v16H4zm0 5h16M4 15h16M9 4v16m6-16v16"/>',
+    tagged: '<rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="10" r="2.4"/><path d="M8 17a4 4 0 0 1 8 0"/>',
+    saved: '<path d="M6 4h12v16l-6-4-6 4z"/>',
+    multiple: '<path d="M8 6h10a2 2 0 0 1 2 2v10M4 9h11v11H4z"/>',
+    video: '<path d="m9 6 9 6-9 6z"/>',
+    pinned: '<path d="m8 6 10 5-3 1-2 4-2-1-3 5m0-14 1 6-2 3 6 3"/>'
+  };
+  const icon = name => '<svg width="23" height="23" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">' + icons[name] + '</svg>';
+
   function postTiles(rows, start = 0) {
     return rows.filter(row => typeof row?.id === 'string').map((row, index) => {
       const image = row.thumb || row.photos?.[0];
       const thumb = U.image(typeof image === 'string' ? image : image?.thumb || image?.src);
+      const video = row.kind === 'video' || row.video || row.youtube;
       return '<a href="' + esc(path('feed', row.id)) + '" aria-label="' + profile('post', { n: start + index + 1 }) +
         '">' + (thumb ? '<img src="' + esc(thumb) + '" alt="" loading="lazy">' : '') +
-        (count(row.count) > 1 ? '<span aria-hidden="true">' + esc(format(row.count)) + '</span>' : '') + '</a>';
+        ((row.pinned || video || count(row.count ?? row.photos?.length) > 1)
+          ? '<span class="profile3-grid-meta" aria-hidden="true">' +
+            (row.pinned ? icon('pinned') : '') +
+            (video ? icon('video') : count(row.count ?? row.photos?.length) > 1 ? icon('multiple') : '') +
+            '</span>' : '') + '</a>';
     }).join('');
   }
 
@@ -106,13 +127,67 @@
       tiles ? '<div class="profile3-grid">' + tiles + '</div>' : U.status('empty');
   }
 
-  function galleries(view, user) {
+  function newHighlight(user) {
+    const panel = U.sheet('<h2>' + profile('newHighlight') + '</h2><form class="shell-form">' +
+      '<label class="shell-field">' + profile('highlightName') + '<input name="title" maxlength="100" required></label>' +
+      '<p>' + profile('pickPosts') + '</p><div class="profile3-highlight-picks" data-picks></div>' +
+      U.button(esc(L.t('follows.more')), 'data-pick-more hidden') +
+      '<p class="shell-error" role="status"></p><button class="btn btn-hot" type="submit" disabled>' +
+      esc(L.t('me.save')) + '</button></form>');
+    const form = panel.querySelector('form');
+    const picks = panel.querySelector('[data-picks]');
+    const more = panel.querySelector('[data-pick-more]');
+    const submit = form.querySelector('[type=submit]');
+    const status = form.querySelector('[role=status]');
+    const seen = new Set();
+    let before = null;
+    async function load() {
+      more.disabled = true;
+      const cursor = before;
+      const result = await L.api('user_posts', { nick: user.nick, ...(cursor != null ? { before: cursor } : {}) });
+      if (!panel.isConnected) return;
+      more.disabled = false;
+      if (result.error) { status.textContent = L.t('screens.error'); return; }
+      for (const post of result.posts || []) {
+        if (!post?.id || seen.has(post.id)) continue;
+        seen.add(post.id);
+        const thumb = U.image(post.thumb);
+        picks.insertAdjacentHTML('beforeend', '<label class="shell-choice"><input type="checkbox" name="posts" value="' +
+          esc(post.id) + '">' + (thumb ? '<img src="' + esc(thumb) + '" alt="">' : '') +
+          profile('post', { n: seen.size }) + '</label>');
+      }
+      before = result.before != null && result.before !== cursor ? result.before : null;
+      more.hidden = before == null;
+      status.textContent = seen.size ? '' : L.t('screens.empty');
+    }
+    more.onclick = load;
+    form.onchange = () => { submit.disabled = !form.querySelector('input[name=posts]:checked'); };
+    form.onsubmit = async event => {
+      event.preventDefault();
+      if (submit.disabled) return;
+      const fields = new FormData(form);
+      const posts = fields.getAll('posts');
+      submit.disabled = true;
+      const result = await L.api('highlight_set', { title: fields.get('title').trim(), posts });
+      if (!panel.isConnected) return;
+      if (result.error) { status.textContent = L.t('screens.failed'); submit.disabled = false; return; }
+      L.closeSheet();
+      await L.route();
+    };
+    void load();
+  }
+
+  function galleries(view, user, own) {
     const highlights = view.querySelector('[data-highlights]');
     const gallery = view.querySelector('[data-gallery]');
     const more = view.querySelector('[data-gallery-more]');
     const status = view.querySelector('[data-gallery-status]');
     const tabs = [...view.querySelectorAll('[data-profile-tab]')];
     const seen = new Set();
+    const observer = typeof IntersectionObserver === 'function' ? new IntersectionObserver(entries => {
+      if (!view.isConnected) { observer.disconnect(); return; }
+      if (entries.some(entry => entry.isIntersecting) && !more.hidden) void load(true);
+    }) : null;
     let version = 0, before = null, mode = 'posts', pending = false;
 
     async function load(append = false) {
@@ -120,6 +195,7 @@
       const revision = ++version;
       const cursor = append ? before : null;
       pending = true;
+      observer?.unobserve(more);
       more.disabled = true;
       status.textContent = L.t('screens.loading');
       if (!append) {
@@ -128,8 +204,9 @@
         gallery.replaceChildren();
         more.hidden = true;
       }
-      const result = await L.api(mode === 'posts' ? 'user_posts' : 'user_tagged',
-        { nick: user.nick, ...(cursor != null ? { before: cursor } : {}) });
+      const action = mode === 'posts' ? 'user_posts' : mode === 'tagged' ? 'user_tagged' : 'saved';
+      const result = await L.api(action, { ...(mode !== 'saved' ? { nick: user.nick } : {}),
+        ...(cursor != null ? { before: cursor } : {}) });
       if (!view.isConnected || version !== revision) return;
       pending = false;
       more.disabled = false;
@@ -142,7 +219,11 @@
       for (const row of entries) seen.add(row.id);
       before = result.before != null && JSON.stringify(result.before) !== JSON.stringify(cursor) ? result.before : null;
       more.hidden = before == null;
+      if (before != null) observer?.observe(more);
       status.textContent = seen.size ? '' : L.t('screens.empty');
+      if (!seen.size && own && mode === 'posts' && L.open('posts')) {
+        status.innerHTML = U.link('#/compose', profile('firstPhoto'));
+      }
     }
 
     function choose(tab) {
@@ -153,6 +234,12 @@
     }
     for (const tab of tabs) tab.onclick = () => choose(tab);
     more.onclick = () => load(true);
+    if (own) {
+      highlights.hidden = false;
+      highlights.innerHTML = '<button class="profile3-highlight" type="button" data-new-highlight>' +
+        '<span class="profile3-highlight-cover" aria-hidden="true">＋</span><span>' + profile('newHighlight') + '</span></button>';
+      highlights.querySelector('[data-new-highlight]').onclick = () => newHighlight(user);
+    }
 
     void L.api('highlights', { nick: user.nick }).then(result => {
       if (!view.isConnected || result.error) return;
@@ -177,7 +264,7 @@
     return load();
   }
 
-  function enhanced(view, user, own) {
+  function enhanced(view, user, own, dashboard = '') {
     const follow2 = L.open('follow2');
     const followState = followingState(user);
     const photos = L.profilePhotos.rows(user);
@@ -196,30 +283,46 @@
       (canShare ? U.button(profile('share'), 'data-profile-share') : '') :
       U.button(follow2 ? esc(actionLabel(user)) : t(followState === 'following' ? 'unfollow' : 'follow'),
         'data-follow aria-pressed="' + (followState === 'following') + '"', followState === 'none') +
-      (L.open('dm') ? U.link(path('dm', user.nick), t('message')) : '') +
-      U.button('⋯', 'data-menu aria-label="' + t('menu') + '"');
+      (L.open('dm') ? U.link(path('dm', user.nick), t('message')) : '');
     const heading = own ? 'h1' : 'h2';
-    view.innerHTML = '<section class="shell-card profile3-card"><div class="profile3-header">' + avatar +
+    const tag = ['staff', 'vip'].includes(user.tag?.kind) && typeof user.tag.label === 'string' ? user.tag : null;
+    const bio = String(user.bio || '');
+    const longBio = [...bio].length > 100 || bio.split('\n').length > 2;
+    view.classList.add('profile3-surface');
+    view.innerHTML = (own ? '' : '<header class="profile3-topbar"><strong>' + esc(user.nick) + '</strong>' +
+      U.button('⋯', 'data-menu aria-haspopup="dialog" aria-label="' + t('menu') + '"') + '</header>') +
+      '<section class="shell-card profile3-card"><div class="profile3-header">' + avatar +
       '<div class="profile3-stats">' + stats(user, follow2 && L.me && !user.locked) + '</div></div>' +
       '<div class="profile3-name"><' + heading + '>' + esc(user.nick) + '</' + heading + '>' +
       (['2F', '3F'].includes(user.floor) ? '<span class="profile3-chip">' + esc(user.floor) + '</span>' : '') +
-      (badge ? '<span class="profile3-chip profile3-badge">' + esc(badge) + '</span>' : '') + '</div>' +
-      (user.bio ? '<p class="shell-bio">' + esc(user.bio) + '</p>' : '') +
+      (badge ? '<span class="profile3-chip profile3-badge">' + esc(badge) + '</span>' : '') +
+      (tag ? '<span class="lounge-who-tag profile3-chip" data-kind="' + tag.kind + '">' +
+        esc(L.tagLabel?.(tag, L.lang) || tag.label) + '</span>' : '') + '</div>' +
+      (bio ? '<p class="shell-bio' + (longBio ? ' profile3-bio-short' : '') + '">' + esc(bio) + '</p>' : '') +
+      (longBio ? '<button type="button" class="shell-link" aria-expanded="false" data-more-bio>' + profile('moreBio') + '</button>' : '') +
       (showInstagram ? '<a class="shell-link" href="https://www.instagram.com/' + encodeURIComponent(user.link) +
         '/" target="_blank" rel="noopener noreferrer">@' + esc(user.link) + '</a>' : '') +
       '<div class="shell-actions profile3-actions">' + actions + '</div>' +
       (mutually ? '<a class="shell-link profile3-mutual" href="' + esc(path('mutuals', user.nick)) + '">' +
         '<span aria-hidden="true">' + (user.mutual.preview || []).slice(0, 3).map(L.profileFollows.avatar).join('') + '</span>' +
         esc(L.t('follows.mutualCount', { n: format(user.mutual.n) })) + '</a>' : '') +
-      (own && follow2 ? '<a class="shell-link" href="#/suggest">' + esc(L.t('follows.suggest')) + '</a>' : '') + '</section>' +
+      (own && follow2 ? '<a class="shell-link" href="#/suggest">' + esc(L.t('follows.suggest')) + '</a>' : '') + '</section>' + dashboard +
       (user.locked ? '<section class="shell-card profile3-lock"><p aria-hidden="true">🔒</p><h2>' + profile('locked') +
         '</h2><p class="muted">' + profile('lockedHelp') + '</p></section>' :
         '<div class="profile3-highlights" aria-label="' + profile('highlights') + '" data-highlights hidden></div>' +
         '<div class="profile3-tabs" role="group" aria-label="' + profile('posts') + '">' +
-        U.button(profile('posts'), 'data-profile-tab="posts" aria-pressed="true"') +
-        U.button(profile('tagged'), 'data-profile-tab="tagged" aria-pressed="false"') +
+        [['posts', profile('posts')], ['tagged', profile('tagged')],
+          ...(own && L.open('share') ? [['saved', esc(L.t('share.saved'))]] : [])].map(([name, label]) =>
+          U.button(icon(name), 'data-profile-tab="' + name + '" aria-label="' + label + '" aria-pressed="' + (name === 'posts') + '"')).join('') +
         '</div><p data-gallery-status class="muted" role="status"></p><div class="profile3-grid" data-gallery></div>' +
         U.button(esc(L.t('follows.more')), 'data-gallery-more hidden'));
+    const button = view.querySelector('[data-more-bio]');
+    if (button) button.onclick = () => {
+      const expanded = button.getAttribute('aria-expanded') !== 'true';
+      view.querySelector('.shell-bio').classList.toggle('profile3-bio-short', !expanded);
+      button.setAttribute('aria-expanded', String(expanded));
+      button.textContent = L.t(expanded ? 'profile3.lessBio' : 'profile3.moreBio');
+    };
     const follow = view.querySelector('[data-follow]');
     if (follow) wireFollow(follow, user);
     wireMenu(view.querySelector('[data-menu]'), user, true);
@@ -228,7 +331,7 @@
     L.profilePhotos.load(view);
     const portrait = view.querySelector('[data-profile-avatar]');
     if (portrait) portrait.onclick = () => L.profilePhotos.open(photos, mainIndex);
-    if (!user.locked) return galleries(view, user);
+    if (!user.locked) return galleries(view, user, own);
   }
 
   L.renderProfile3 = enhanced;
@@ -274,7 +377,8 @@
   }
 
   async function render(root, { id: nick } = {}) {
-    const view = U.mount(root, '<h1>' + t('title') + '</h1>' + U.link('#/feed', L.esc(L.t('nav.feed'))));
+    const profile2 = L.open('profile2');
+    const view = U.mount(root, profile2 ? '' : '<h1>' + t('title') + '</h1>' + U.link('#/feed', L.esc(L.t('nav.feed'))));
     const response = nick ? await L.api('user', { nick }) : {};
     if (!view.isConnected) return;
     const user = response?.user;
@@ -296,7 +400,10 @@
     const photo = U.image(user.photo);
     const own = Boolean(L.me && (user.me?.self === true ||
       L.me.nick?.toLowerCase() === user.nick?.toLowerCase()));
-    if (L.open('profile2')) return enhanced(view, user, own);
+    if (profile2) {
+      if (own) { L.go('me'); return; }
+      return enhanced(view, user, false);
+    }
     const follow2 = L.open('follow2');
     view.innerHTML = '<article style="' + U.card + '">' + (photo ? '<img alt="" src="' + L.esc(photo) +
       '" style="width:76px;height:76px;object-fit:cover;border-radius:50%;border:2px solid var(--g)">' : '') +
