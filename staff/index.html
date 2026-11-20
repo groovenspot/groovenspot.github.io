@@ -132,13 +132,15 @@ button, select { font: inherit; color: inherit; }
 
 /* 📅 예약 탭과 상태 변경 (대표 결정 2026-11-20) */
 .rsv-filters { display: flex; gap: 8px; margin-bottom: 12px; }
-.rsvdays { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 8px; margin: 0 0 4px; scrollbar-width: none; }
+.rsvdays { display: flex; align-items: center; gap: 6px; overflow-x: auto; padding: 2px 0 8px; margin: 0 0 4px; scrollbar-width: none; }
 .rsvdays .chip { flex: none; white-space: nowrap; }
 .rsvdays .chip.on { border-color: var(--g); color: var(--g); }
 .rsvdays .chip.today { font-weight: 800; }
 .rsvpick { flex: none; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; }
 .rsvpick input { border: 0; background: none; color: inherit; font: inherit; padding: 6px 0; width: 9.5em; }
-.rsvtb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; margin: 0 0 10px; }
+.rsvtb { display: inline-flex !important; flex-direction: row; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; margin: 0 0 12px; white-space: nowrap; }
+.rsvtb input[type="checkbox"] { width: 20px !important; height: 20px !important; min-height: 0 !important; margin: 0; padding: 0; flex: none; accent-color: var(--g); }
+.rsvdays .chip { min-height: 0; padding: 7px 12px; }
 .rsvsum { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; margin: 0 0 12px; font-size: 14px; }
 .rsv-filters .btn[aria-pressed="true"] { border-color: var(--g); color: var(--g); }
 .rsv-detail { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 12px 0 16px; }
