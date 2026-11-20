@@ -7127,7 +7127,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       btn.disabled = true;
       call({ a: 'keep_liq', token: state.s.token, op: op, name: name }).then(function (r) {
         btn.disabled = false;
-        if (!r.ok) { m.textContent = { dup: '이미 있는 술이에요.', name: '이름을 확인해 주세요 (20자까지).', forbidden: '대표·김동기·양진호만 할 수 있어요.', busy: '잠시 후에 다시 해 주세요.', menu: '메뉴판 술은 뺄 수 없어요.', full: '더 넣을 수 없어요.' }[r.error] || '저장하지 못했어요.'; return; }
+        if (!r.ok) { m.textContent = { dup: '이미 있는 술이에요.', name: '이름을 확인해 주세요 (20자까지).', forbidden: '권한이 없어요 (빼기는 대표·김동기·양진호만).', busy: '잠시 후에 다시 해 주세요.', menu: '메뉴판 술은 뺄 수 없어요.', full: '더 넣을 수 없어요.' }[r.error] || '저장하지 못했어요.'; return; }
         k.liqs = r.liqs; k.liqExtra = r.extra; try { kSave(); } catch (e) {}
         if (op === 'add' && state.kadd) { var row = state.kadd.rows.filter(function (x) { return !x.liq.trim(); })[0]; if (row) row.liq = r.name; }
         $('sheet').hidden = true; $('sheet').innerHTML = ''; render();
@@ -7151,7 +7151,9 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         : '<p class="note" style="margin:-4px 0 14px">담당: <b>' + esc(k.me || state.s.name) + '</b> (나)</p>';
       h += '<label>연락처 (선택)<input id="kaP" type="tel" inputmode="numeric" maxlength="13" value="' + esc(a.phone) + '" placeholder="비워도 돼요"></label>';
     }
-    h += '<p class="lab" style="font-weight:700;font-size:14px;margin:4px 0 6px">술</p>';
+    // '+ 술 한 줄 더' 를 술 제목 옆으로 (대표 요청 2026-11-21: 잘 보이게)
+    h += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 6px"><p class="lab" style="font-weight:700;font-size:14px;margin:0">술</p>' +
+      '<button type="button" class="btn" id="kaRow" style="padding:8px 14px;font-size:14px">+ 술 한 줄 더</button></div>';
     h += a.rows.map(function (r, i) {
       var part = !!r.amt;
       return '<div class="kirow"><label>술 이름<input data-kr="' + i + '" data-f="liq" maxlength="20" list="kaLl" autocomplete="off" value="' + esc(r.liq) + '"></label>' +
@@ -7160,7 +7162,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         (a.rows.length > 1 ? '<button class="x" type="button" data-kr="' + i + '" data-f="del" aria-label="이 줄 빼기">✕</button>' : '<span></span>') + '</div>';
     }).join('');
     h += '<datalist id="kaLl">' + k.liqs.map(function (x) { return '<option value="' + esc(x) + '">'; }).join('') + '</datalist>';
-    h += '<div class="kchips">' + k.liqs.slice(0, 10).map(function (x) { return '<button type="button" data-kq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '<button type="button" id="kaRow">+ 술 한 줄 더</button>' + (k.liqAdd ? '<button type="button" id="kaLiq">➕ 술 종류 추가</button>' : '') + '</div>';
+    h += '<div class="kchips">' + k.liqs.slice(0, 10).map(function (x) { return '<button type="button" data-kq="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + (k.liqAdd ? '<button type="button" id="kaLiq">➕ 술 종류 추가</button>' : '') + '</div>';
     h += '<p class="note" style="margin:-6px 0 12px">일부만 남은 병은 \'남은 양\'을 골라요 (한 병씩).</p>';
     if (!a.fixed && !a.id) h += '<label>메모 (선택)<input id="kaM" maxlength="60" value="' + esc(a.memo) + '"></label>';
     // 📷 맡기기 사진 (대표 요청 2026-11-19 새벽): 병·영수증 등 최대 3장 → 승인 화면·기록에 보임
