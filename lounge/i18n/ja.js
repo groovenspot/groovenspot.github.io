@@ -139,6 +139,8 @@ Lounge.i18n({ja: {
   "tonight.closed": "営業時間外",
   "tonight.unknown": "営業時間の情報なし",
   "tonight.now": "プレイ中のDJ",
+  "tonight.poster": "パーティーポスター",
+  "tonight.posterZoom": "ポスターを拡大",
   "tonight.next": "次のDJ",
   "tonight.crowd0": "不明",
   "tonight.crowd1": "空いています",
