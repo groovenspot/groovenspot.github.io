@@ -1,9 +1,9 @@
 /* 그루브 라운지 서비스워커 */
-const CACHE = 'groove-lounge-shell-v5';
+const CACHE = 'groove-lounge-shell-v6';
 const API = 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
 const SHELL = [
   '/lounge/', '/lounge/app.css', '/lounge/core.js', '/lounge/manifest.webmanifest',
-  '/assets/media-share.js', '/lounge/screens/auth.js', '/lounge/screens/me.js', '/lounge/screens/tonight.js',
+  '/assets/media-share.js?v=2', '/lounge/screens/auth.js', '/lounge/screens/me.js', '/lounge/screens/tonight.js',
   '/lounge/screens/feed.js', '/lounge/screens/photos.js', '/lounge/screens/user.js',
   '/lounge/screens/profile_edit.js', '/lounge/screens/follows.js',
   '/lounge/screens/play.js', '/lounge/screens/radio.js', '/lounge/screens/vote.js', '/lounge/screens/guess.js',
@@ -199,9 +199,9 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   const { origin, pathname } = new URL(request.url);
   if (request.method !== 'GET' || origin !== self.location.origin) return;
-  const key = request.mode === 'navigate' && ['/lounge/', '/lounge/index.html'].includes(pathname)
-    ? '/lounge/' : pathname;
-  if (!SHELL.includes(key)) return;
+  const resource = request.mode === 'navigate' && ['/lounge/', '/lounge/index.html'].includes(pathname) ? '/lounge/' : pathname;
+  const key = SHELL.find(entry => entry.split('?')[0] === resource);
+  if (!key) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
