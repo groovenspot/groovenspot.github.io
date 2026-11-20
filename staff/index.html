@@ -2020,6 +2020,7 @@ html[data-theme="light"] .conv.inq { background: #eef6ff; }
 .dx2time .dx2add-time { justify-self: start; }
 .dx2range { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .dx2time .note { margin: 0; }
+.dec:has(.dx2deadline) .dgrid .dd { display: none; }
 .dx2n .cmi { flex: none; width: 16px; height: 16px; margin-top: 1px; color: var(--g); }
 #decAddF:has(input[name="dx2k"]:not([value=""]):checked) label:has(#decAddD) { opacity: .45; }
 .dx2card { margin: 0 0 12px; border: 1px solid var(--line-2); border-radius: 16px; background: var(--card); overflow: hidden; }
@@ -3911,8 +3912,11 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   });
   DX.badges.push(function (x) {
     if (!x.rep) return '';
+    var overdue = x.dueAt && x.status !== '완료' && Date.now() >= x.dueAt;
+    var deadline = x.dueAt ? '<span class="dbadge dx2deadline' + (overdue ? ' bad' : '') + '">' +
+      (overdue && x.due >= bizToday() ? '마감 시각 지남 · ' : '마감 ') + esc(dx2Clock(x.dueAt)) + '</span>' : '';
     return '<span class="dbadge rep">🔁 ' + esc(String(x.rep).replace(/^🔁\s*/, '')) + (x.tpl ? ' 틀' : '') + '</span>' +
-      (x.missed ? '<span class="dbadge bad">밀린 회차 ' + esc(x.missed) + '번</span>' : '');
+      deadline + (x.missed ? '<span class="dbadge bad">밀린 회차 ' + esc(x.missed) + '번</span>' : '');
   });
   function dx2Week() {
     var w = state.dxWk = state.dxWk || {}; w.busy = true; w.err = '';
@@ -4110,14 +4114,14 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     h += '<p class="note decnote">' + cmIco('users') + '<span>모두 볼 수 있어요 · 상태·코멘트는 이름이 나온 사람과 팀장 이상만 · 🔒 비공개는 팀장 이상·관련자만</span></p>';
     if (d.admin && cnt.done) h += '<p class="note" style="margin:0 0 10px">✅ 완료된 일은 확인한 뒤 <b>🗑 확인·지우기</b>로 정리해 주세요.</p>';
     h += '<p class="msg" id="decMsg"></p><div class="list declist">' + rows.map(function (x) {
-      var late = x.status !== '완료' && (x.dueAt ? Date.now() >= x.dueAt : x.due && x.due < t);
+      var late = x.status !== '완료' && x.due && x.due < t;
       // 🎨 리디자인 2026-11-20: 마감까지 남은 날 (D-3 · 오늘 · 2일 지남)
       var dd = '', ddc = '';
-      if (x.due && !x.dueAt && x.status !== '완료') { var dn = Math.round((Date.parse(x.due) - Date.parse(t)) / 864e5); dd = dn > 0 ? 'D-' + dn : dn === 0 ? '오늘' : (-dn) + '일 지남'; ddc = dn < 0 ? 'bad' : dn <= 2 ? 'warn' : ''; }
+      if (x.due && x.status !== '완료') { var dn = Math.round((Date.parse(x.due) - Date.parse(t)) / 864e5); dd = dn > 0 ? 'D-' + dn : dn === 0 ? '오늘' : (-dn) + '일 지남'; ddc = dn < 0 ? 'bad' : dn <= 2 ? 'warn' : ''; }
       var c = '<div class="dec' + (x.mine ? ' mine' : '') + (x.status === '완료' ? ' done' : '') + (late ? ' late' : '') + (x.hot && x.status !== '완료' ? ' hot' : '') + '" data-decid="' + esc(x.id) + '"' + (qv && !decQHit(x, qv) ? ' hidden' : '') + '>' +
         (function () { var bx = (late ? '<span class="dbadge bad">마감 지남</span>' : '') + (x.mine ? '<span class="dbadge mine">내 일</span>' : '') + dxH('badges', x, d); return bx ? '<span class="dbadges">' + bx + '</span>' : ''; })() +
         '<span class="what">' + esc(x.what) + '</span>' +
-        '<span class="dgrid"><span><small>담당</small><b>' + esc(x.who || '-') + '</b></span><span><small>마감</small><b>' + esc(x.due ? md(x.due) + (x.dueAt ? ' ' + dx2Clock(x.dueAt) : '') : '-') + (dd ? ' <em class="dd ' + ddc + '">' + dd + '</em>' : '') + '</b></span></span>' +
+        '<span class="dgrid"><span><small>담당</small><b>' + esc(x.who || '-') + '</b></span><span><small>마감</small><b>' + esc(x.due ? md(x.due) : '-') + (dd ? ' <em class="dd ' + ddc + '">' + dd + '</em>' : '') + '</b></span></span>' +
         (!x.can || x.done ? '<span class="row">상태 <span class="st ' + esc(late ? 'late' : x.status) + '">' + esc(late ? '마감 지남 · ' + x.status : x.status) + '</span>' + (x.done ? ' · 완료 ' + esc(x.done.slice(5)) : '') + '</span>' : '') +
         (x.ppl && x.ppl.length ? '<span class="row decppl">' + cmIco('user') + x.ppl.map(function (n) { return esc(n) + nickH(n); }).join(', ') + '</span>' : '') + dxH('card', x, d);
       if (x.can) c += '<div class="decst" role="group" aria-label="상태">' + ['대기', '진행', '완료'].map(function (st) { return '<button type="button" data-decst="' + st + '" aria-pressed="' + (x.status === st) + '">' + (st === '완료' ? cmIco('check') : st === '진행' ? cmIco('play') : '') + st + '</button>'; }).join('') + '</div>';
