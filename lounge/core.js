@@ -1,13 +1,17 @@
 /* 그루브 라운지 core — ⑧ C-shell 담당 (lounge/SPEC.md 6) */
 (function () {
   var API = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
-  var screens = Object.create(null), dict = { ko: {}, en: {} }, cur = null;
+  var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
+  var features = Object.create(null), configPending;
+  var gates = { rooms: 'rooms', dm: 'dm', challenge: 'challenge', compose: 'posts',
+    rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety' };
   function read(key) { try { return localStorage.getItem(key) || ''; } catch (e) { return ''; } }
   function save(key, value) {
     try { if (value) localStorage.setItem(key, value); else localStorage.removeItem(key); } catch (e) {}
   }
-  var lang = read('gl_lang') || ((navigator.language || 'ko').slice(0, 2) === 'ko' ? 'ko' : 'en');
+  function language(value) { return Object.hasOwn(dict, value) ? value : 'en'; }
+  var lang = language(read('gl_lang') || (navigator.language || 'ko').slice(0, 2));
   var paths = [
     '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
     '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
@@ -40,10 +44,11 @@
     } finally { URL.revokeObjectURL(url); }
   }
   var L = window.Lounge = {
-    me: null, lang: lang === 'en' ? 'en' : 'ko',
-    setToken: function (t) { session = t || ''; save('gl_token', session); },
-    setLang: function (value) {
-      L.lang = value === 'en' ? 'en' : 'ko';
+    me: null, lang: lang,
+    setToken: function (t) { session = t || ''; save('gl_token', session); if (!session) paintBadges(); },
+    setLang: function (value, explicit) {
+      if (!explicit && ['ja', 'zh'].includes(read('gl_lang')) && ['ko', 'en'].includes(value)) return;
+      L.lang = language(value);
       save('gl_lang', L.lang);
       paintStatus();
     },
@@ -70,7 +75,8 @@
     },
     esc: function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); },
     i18n: function (d) { Object.keys(d).forEach(function (l) { dict[l] = Object.assign(dict[l] || {}, d[l]); }); },
-    t: function (k, v) { var s = (dict[L.lang] && dict[L.lang][k]) || dict.ko[k] || k; if (v) Object.keys(v).forEach(function (x) { s = s.split('{' + x + '}').join(v[x]); }); return s; },
+    t: function (k, v) { var s = dict[L.lang]?.[k] || dict.en[k] || dict.ko[k] || k; if (v) Object.keys(v).forEach(function (x) { s = s.split('{' + x + '}').join(v[x]); }); return s; },
+    open: function (feature) { return Object.hasOwn(features, feature) && features[feature] === true; },
     screen: function (name, def) { screens[name] = def; },
     go: function (path) { location.hash = '#/' + String(path).replace(/^#?\/?/, ''); },
     toast: function (m) { var t = document.getElementById('toast'); t.textContent = m; t.hidden = false; clearTimeout(L._tt); L._tt = setTimeout(function () { t.hidden = true; }, 2600); },
@@ -157,6 +163,15 @@
       document.title = title === titleKey && !def?.title ? 'GROOVE LOUNGE' : title;
       window.scrollTo(0, 0);
       view.focus({ preventScroll: true });
+      var gate = Object.hasOwn(gates, name) && gates[name];
+      var config = refreshConfig();
+      if (gate || ['play', 'tonight', 'me', 'user'].includes(name)) await config;
+      if (version !== routeVersion) return;
+      refreshBadges(version, config);
+      if (gate && !L.open(gate)) {
+        root.textContent = L.t('core.soon');
+        return;
+      }
       if (def?.auth && !L.me) {
         var login = document.createElement('button');
         login.className = 'btn btn-hot';
@@ -200,6 +215,12 @@
       navigator.serviceWorker?.register('/lounge/sw.js').catch(() => {});
       await L.refreshMe();
       window.addEventListener('hashchange', L.route);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) refreshBadges(routeVersion, refreshConfig());
+      });
+      setInterval(() => {
+        if (!document.hidden && L.me) refreshBadges(routeVersion, refreshConfig());
+      }, 60_000);
       await L.route();
     }
   };
@@ -211,15 +232,66 @@
     var status = document.getElementById('offline');
     status.textContent = L.t('core.offline');
     status.hidden = navigator.onLine;
+    document.querySelectorAll('[data-lounge-inbox]').forEach(link => {
+      link.setAttribute('aria-label', L.t('core.' + link.dataset.loungeInbox));
+    });
+  }
+
+  function refreshConfig() {
+    if (!configPending) configPending = L.api('config').then(result => {
+      features = !result.error && result.open || Object.create(null);
+    }).finally(() => { configPending = null; });
+    return configPending;
+  }
+
+  function paintBadges(counts = {}) {
+    document.querySelectorAll('[data-lounge-inbox]').forEach(link => {
+      var key = link.dataset.loungeInbox;
+      var count = counts[key];
+      var badge = link.querySelector('span');
+      var label = L.t('core.' + key);
+      badge.hidden = !count;
+      badge.textContent = count > 99 ? '99+' : count || '';
+      link.setAttribute('aria-label', count ? L.t('core.unread', { label, count }) : label);
+    });
+  }
+
+  async function refreshBadges(version, config) {
+    var token = session;
+    if (!L.me || !token) { paintBadges(); return; }
+    await config;
+    if (token !== session || version !== routeVersion) return;
+    var [alerts, dm] = await Promise.all([
+      L.api('notices'), L.open('dm') ? L.api('dm_threads') : {}
+    ]);
+    if (token !== session || version !== routeVersion) return;
+    var unread = result => Number.isSafeInteger(result.unread) && result.unread > 0 ? result.unread : 0;
+    paintBadges({ alerts: unread(alerts), dm: unread(dm) });
   }
 
   L.i18n({
     ko: { 'core.nav': '아래 메뉴', 'core.close': '닫기', 'core.soon': '준비 중이에요',
       'core.unavailable': '화면을 열 수 없어요. 다시 시도해 주세요.', 'core.offline': '오프라인이에요',
-      'core.install': '홈 화면에 추가', 'core.installBody': 'Safari에서 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 고르세요.' },
+      'core.install': '홈 화면에 추가', 'core.installBody': 'Safari에서 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 고르세요.',
+      'core.alerts': '알림', 'core.dm': '메시지', 'core.unread': '{label}, 읽지 않은 항목 {count}개' },
     en: { 'core.nav': 'Main navigation', 'core.close': 'Close', 'core.soon': 'Coming soon',
       'core.unavailable': 'Could not open this screen. Please try again.', 'core.offline': 'You’re offline',
-      'core.install': 'Add to Home Screen', 'core.installBody': 'In Safari, tap Share, then choose Add to Home Screen.' }
+      'core.install': 'Add to Home Screen', 'core.installBody': 'In Safari, tap Share, then choose Add to Home Screen.',
+      'core.alerts': 'Notifications', 'core.dm': 'Messages', 'core.unread': '{label}, {count} unread' },
+    ja: {
+      'nav.tonight': '今夜', 'nav.feed': 'フィード', 'nav.play': '楽しむ', 'nav.rooms': 'チャット', 'nav.me': 'マイページ',
+      'core.nav': 'メインメニュー', 'core.need': 'お店で会員登録してください', 'core.needBody': 'スタッフに登録用のQRコードをお尋ねください。会員の方はログインしてください。',
+      'core.login': 'ログイン', 'core.close': '閉じる', 'core.soon': '準備中', 'core.unavailable': '画面を開けませんでした。もう一度お試しください。',
+      'core.offline': 'オフラインです', 'core.install': 'ホーム画面に追加', 'core.installBody': 'Safariで共有ボタンを押し、「ホーム画面に追加」を選択してください。',
+      'core.alerts': '通知', 'core.dm': 'メッセージ', 'core.unread': '{label}、未読{count}件'
+    },
+    zh: {
+      'nav.tonight': '今晚', 'nav.feed': '动态', 'nav.play': '娱乐', 'nav.rooms': '聊天室', 'nav.me': '我的',
+      'core.nav': '主菜单', 'core.need': '请到店注册后使用', 'core.needBody': '请向工作人员索取注册二维码。已有账号？请登录。',
+      'core.login': '登录', 'core.close': '关闭', 'core.soon': '准备中', 'core.unavailable': '无法打开页面，请重试。',
+      'core.offline': '网络已断开', 'core.install': '添加到主屏幕', 'core.installBody': '在 Safari 中轻点分享按钮，再选择“添加到主屏幕”。',
+      'core.alerts': '通知', 'core.dm': '私信', 'core.unread': '{label}，{count} 条未读'
+    }
   });
   L.screen('rooms', { nav: 'rooms', render: function (root) { root.innerHTML = '<h1>' + L.esc(L.t('nav.rooms')) + '</h1><p class="muted">' + (L.lang === 'ko' ? '준비 중이에요' : 'Coming soon') + '</p>'; } });
 })();

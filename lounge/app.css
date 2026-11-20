@@ -62,3 +62,12 @@ a { color: var(--g); }
 .shell-badges span { color: #ffb27a; font-size: 1.4rem; }
 .shell-ledger li { padding: 8px 0; border-bottom: 1px solid var(--line); }
 .shell-ledger small { display: block; }
+
+.lounge-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 640px; margin-inline: auto; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+.lounge-header .shell-brand { color: var(--txt); text-decoration: none; }
+.lounge-inboxes { display: flex; gap: 8px; }
+.lounge-inboxes a { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line-2); border-radius: 12px; color: var(--txt); }
+.lounge-inboxes span { position: absolute; top: -4px; right: -4px; min-width: 19px; padding: 0 3px; border-radius: 10px; background: var(--g); color: var(--g-ink); text-align: center; font-size: 11px; font-weight: 900; }
+.lounge-list { display: grid; gap: 8px; margin: 0; }
+.lounge-list .shell-card { overflow-wrap: anywhere; }
+.lounge-list .shell-row > * { min-width: 0; }
