@@ -10693,6 +10693,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       if (r.error === 'auth') return toLogin(AUTH_OUT);
       if (!r.ok && r.error !== 'notfound') return failed();
       whereDismissed.add(id); wherePaint(); whereChanged();
+      if (code === 'left' && r.ok) { loadTb(true); if (r.out && r.out.req) toast('🚪 ' + r.out.req.replace(/^🪑\s*/, '') + (r.out.ops ? ' · 🧹 아웃 청소 요청' : '')); }   // 나가심 = 아웃 처리 (2026-11-21)
       if (!code && r.ok) b.textContent = '✅ 해결됨';
     }).catch(failed);
   });
