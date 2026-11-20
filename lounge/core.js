@@ -1,0 +1,225 @@
+/* 그루브 라운지 core — ⑧ C-shell 담당 (lounge/SPEC.md 6) */
+(function () {
+  var API = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
+  var screens = Object.create(null), dict = { ko: {}, en: {} }, cur = null;
+  var session = read('gl_token'), sheetFocus, routeVersion = 0;
+  function read(key) { try { return localStorage.getItem(key) || ''; } catch (e) { return ''; } }
+  function save(key, value) {
+    try { if (value) localStorage.setItem(key, value); else localStorage.removeItem(key); } catch (e) {}
+  }
+  var lang = read('gl_lang') || ((navigator.language || 'ko').slice(0, 2) === 'ko' ? 'ko' : 'en');
+  var paths = [
+    '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
+    '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    '<rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/>',
+    '<path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2zM18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/>',
+    '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
+  ];
+
+  async function resize(file) {
+    var url = URL.createObjectURL(file);
+    try {
+      var image = new Image();
+      image.src = url;
+      try { await image.decode(); } catch (e) { throw new Error('photo'); }
+      var canvas = document.createElement('canvas');
+      var scale = Math.min(1, 1440 / Math.max(image.naturalWidth, image.naturalHeight));
+      var type = 'image/webp';
+      while (true) {
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        var ctx = canvas.getContext('2d', { alpha: false });
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        var blob = await new Promise(resolve => canvas.toBlob(resolve, type, 0.82));
+        if (type === 'image/webp' && blob?.type !== type) { type = 'image/jpeg'; continue; }
+        if (!blob || blob.type !== type) throw new Error('photo');
+        if (blob.size <= 1500000) return blob;
+        if (canvas.width === 1 && canvas.height === 1) throw new Error('photo');
+        scale *= 0.75;
+      }
+    } finally { URL.revokeObjectURL(url); }
+  }
+  var L = window.Lounge = {
+    me: null, lang: lang === 'en' ? 'en' : 'ko',
+    setToken: function (t) { session = t || ''; save('gl_token', session); },
+    setLang: function (value) {
+      L.lang = value === 'en' ? 'en' : 'ko';
+      save('gl_lang', L.lang);
+      paintStatus();
+    },
+    api: function (a, body) {
+      var b = Object.assign({}, body, { a: a }); var t = session; if (t && !b.token) b.token = t;
+      return fetch(API, { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify(b) }).then(function (r) { return r.json(); })
+        .then(function (j) { if (j && j.error === 'auth' && t && b.token === t && session === t) { L.setToken(''); L.me = null; } return j && typeof j === 'object' ? j : { error: 'server' }; }).catch(function () { return { error: 'network' }; });
+    },
+    img: function (key) { return key ? API.replace(/\/$/, '') + '/img/' + encodeURIComponent(key).replace(/%2F/g, '/') : ''; },
+    upload: async function (file, kind) {
+      var t = session;
+      if (!t) throw new Error('auth');
+      var blob = await resize(file);
+      if (session !== t) throw new Error('auth');
+      var url = new URL('up', new URL(API.replace(/\/$/, '') + '/', location.href));
+      url.searchParams.set('token', t);
+      var result;
+      try {
+        var response = await fetch(url, { method: 'POST', headers: { 'content-type': blob.type }, body: blob });
+        result = await response.json();
+      } catch (e) { throw new Error('network'); }
+      if (!response.ok || !result?.key) throw new Error(result?.error || 'photo');
+      return result.key;
+    },
+    esc: function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); },
+    i18n: function (d) { Object.keys(d).forEach(function (l) { dict[l] = Object.assign(dict[l] || {}, d[l]); }); },
+    t: function (k, v) { var s = (dict[L.lang] && dict[L.lang][k]) || dict.ko[k] || k; if (v) Object.keys(v).forEach(function (x) { s = s.split('{' + x + '}').join(v[x]); }); return s; },
+    screen: function (name, def) { screens[name] = def; },
+    go: function (path) { location.hash = '#/' + String(path).replace(/^#?\/?/, ''); },
+    toast: function (m) { var t = document.getElementById('toast'); t.textContent = m; t.hidden = false; clearTimeout(L._tt); L._tt = setTimeout(function () { t.hidden = true; }, 2600); },
+    sheet: function (html) {
+      var s = document.getElementById('sheet');
+      if (s.hidden) sheetFocus = document.activeElement;
+      s.innerHTML = '<div class="in" role="dialog" aria-modal="true" tabindex="-1">' + html + '</div>';
+      var panel = s.firstElementChild;
+      var heading = panel.querySelector('h1, h2, h3');
+      if (heading) { heading.id ||= 'sheet-title'; panel.setAttribute('aria-labelledby', heading.id); }
+      s.hidden = false;
+      document.body.classList.add('sheet-open');
+      document.getElementById('app').inert = true;
+      s.onclick = function (e) { if (e.target === s) L.closeSheet(); };
+      panel.focus();
+      return panel;
+    },
+    closeSheet: function () {
+      var s = document.getElementById('sheet');
+      if (s.hidden) return;
+      s.hidden = true;
+      s.replaceChildren();
+      document.body.classList.remove('sheet-open');
+      document.getElementById('app').inert = false;
+      sheetFocus?.focus();
+    },
+    needLogin: function () {
+      if (L.me) return false;
+      var target = location.hash;
+      var panel = L.sheet('<h2>' + L.esc(L.t('core.need')) + '</h2><p class="muted">' + L.esc(L.t('core.needBody')) +
+        '</p><div class="shell-actions"><button class="btn btn-hot" type="button" data-login>' + L.esc(L.t('core.login')) +
+        '</button><button class="btn" type="button" data-close>' + L.esc(L.t('core.close')) + '</button></div>');
+      panel.querySelector('[data-login]').onclick = function () {
+        L.closeSheet();
+        L.go('login?next=' + encodeURIComponent(target));
+      };
+      panel.querySelector('[data-close]').onclick = L.closeSheet;
+      return true;
+    },
+    refreshMe: async function () {
+      var t = session;
+      if (!t) { L.me = null; return null; }
+      var result = await L.api('me');
+      if (t === session && result.me) L.me = result.me;
+      return L.me;
+    },
+    canInstall: function () {
+      return (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
+        !navigator.standalone && !matchMedia('(display-mode: standalone)').matches;
+    },
+    showInstall: function (once) {
+      if (!L.canInstall() || (once && read('gl_install_hint'))) return;
+      save('gl_install_hint', '1');
+      var panel = L.sheet('<h2>' + L.esc(L.t('core.install')) + '</h2><p>' + L.esc(L.t('core.installBody')) +
+        '</p><button class="btn" type="button">' + L.esc(L.t('core.close')) + '</button>');
+      panel.querySelector('button').onclick = L.closeSheet;
+    },
+    route: async function () {
+      var version = ++routeVersion;
+      var h = location.hash.replace(/^#\/?/, '') || 'tonight';
+      var qi = h.indexOf('?');
+      var path = qi < 0 ? h : h.slice(0, qi);
+      var params = Object.create(null);
+      if (qi >= 0) new URLSearchParams(h.slice(qi + 1)).forEach((v, k) => { params[k] = v; });
+      var [name, ...rest] = path.split('/');
+      if (rest.length) {
+        try { params.id = decodeURIComponent(rest.join('/')); } catch (e) { params.id = rest.join('/'); }
+      }
+      if (name === 'u') name = 'user';
+      var def = screens[name];
+      var view = document.getElementById('view');
+      if (cur?.leave) {
+        try { cur.leave(); } catch (e) { console.error(e); }
+      }
+      L.closeSheet();
+      cur = def;
+      var root = document.createElement('div');
+      view.replaceChildren(root);
+      L.paintNav(def?.nav || name);
+      paintStatus();
+      var titleKey = def?.title || 'nav.' + name;
+      var title = L.t(titleKey);
+      document.title = title === titleKey && !def?.title ? 'GROOVE LOUNGE' : title;
+      window.scrollTo(0, 0);
+      view.focus({ preventScroll: true });
+      if (def?.auth && !L.me) {
+        var login = document.createElement('button');
+        login.className = 'btn btn-hot';
+        login.textContent = L.t('core.login');
+        login.onclick = L.needLogin;
+        root.append(login);
+        L.needLogin();
+        return;
+      }
+      if (!def) {
+        root.textContent = L.t('core.soon');
+        return;
+      }
+      try { await def.render(root, params); } catch (e) {
+        if (version === routeVersion) root.textContent = L.t('core.unavailable');
+        console.error(e);
+      }
+    },
+    paintNav: function (on) {
+      var items = [['tonight', 'nav.tonight'], ['feed', 'nav.feed'], ['play', 'nav.play'], ['rooms', 'nav.rooms'], ['me', 'nav.me']];
+      document.getElementById('tabbar').innerHTML = items.map(function (x, i) { return '<a href="#/' + x[0] + '"' + (x[0] === on ? ' aria-current="page"' : '') + '><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[i] + '</svg>' + L.esc(L.t(x[1])) + '</a>'; }).join('');
+    },
+    boot: async function () {
+      paintStatus();
+      window.addEventListener('online', paintStatus);
+      window.addEventListener('offline', paintStatus);
+      document.addEventListener('keydown', function (e) {
+        var sheet = document.getElementById('sheet');
+        if (sheet.hidden) return;
+        if (e.key === 'Escape') { e.preventDefault(); L.closeSheet(); }
+        if (e.key !== 'Tab') return;
+        var controls = [...sheet.querySelectorAll('a[href], button, input, textarea, select, [tabindex="0"]')]
+          .filter(el => !el.disabled && el.getClientRects().length);
+        var first = controls[0], last = controls.at(-1);
+        if (!first || (e.shiftKey && (document.activeElement === first || document.activeElement === sheet.firstElementChild)) ||
+            (!e.shiftKey && document.activeElement === last)) {
+          e.preventDefault();
+          (e.shiftKey ? last : first)?.focus();
+        }
+      });
+      navigator.serviceWorker?.register('/lounge/sw.js').catch(() => {});
+      await L.refreshMe();
+      window.addEventListener('hashchange', L.route);
+      await L.route();
+    }
+  };
+  L.i18n({ ko: { 'nav.tonight': '오늘 밤', 'nav.feed': '피드', 'nav.play': '놀거리', 'nav.rooms': '대화방', 'nav.me': '나', 'core.need': '매장에서 가입하면 쓸 수 있어요', 'core.needBody': '직원에게 가입 QR을 보여 달라고 하세요. 이미 가입했다면 로그인하세요.', 'core.login': '로그인' },
+           en: { 'nav.tonight': 'Tonight', 'nav.feed': 'Feed', 'nav.play': 'Play', 'nav.rooms': 'Rooms', 'nav.me': 'Me', 'core.need': 'Join at the club to use this', 'core.needBody': 'Ask a staff member for the sign-up QR. Already a member? Log in.', 'core.login': 'Log in' } });
+  function paintStatus() {
+    document.documentElement.lang = L.lang;
+    document.getElementById('tabbar').setAttribute('aria-label', L.t('core.nav'));
+    var status = document.getElementById('offline');
+    status.textContent = L.t('core.offline');
+    status.hidden = navigator.onLine;
+  }
+
+  L.i18n({
+    ko: { 'core.nav': '아래 메뉴', 'core.close': '닫기', 'core.soon': '준비 중이에요',
+      'core.unavailable': '화면을 열 수 없어요. 다시 시도해 주세요.', 'core.offline': '오프라인이에요',
+      'core.install': '홈 화면에 추가', 'core.installBody': 'Safari에서 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 고르세요.' },
+    en: { 'core.nav': 'Main navigation', 'core.close': 'Close', 'core.soon': 'Coming soon',
+      'core.unavailable': 'Could not open this screen. Please try again.', 'core.offline': 'You’re offline',
+      'core.install': 'Add to Home Screen', 'core.installBody': 'In Safari, tap Share, then choose Add to Home Screen.' }
+  });
+  L.screen('rooms', { nav: 'rooms', render: function (root) { root.innerHTML = '<h1>' + L.esc(L.t('nav.rooms')) + '</h1><p class="muted">' + (L.lang === 'ko' ? '준비 중이에요' : 'Coming soon') + '</p>'; } });
+})();
