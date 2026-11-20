@@ -7148,6 +7148,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       reset_qr: '재설정 QR을 만들지 못했어요. 다시 시도해 주세요. / Could not create the reset QR. Try again.',
       stage_confirm: '공개할 기능을 확인해 주세요. / Confirm the features going live.',
       stage_snapshot: '서버에서 전체 스위치 값을 읽은 뒤 저장할 수 있어요. / Saving requires the complete switch settings from the server.',
+      stage_save_unavailable: '서버에서 스위치 저장을 아직 지원하지 않아요. / Switch saving is not available on the server yet.',
+      stage_ready: '운영 스위치를 켜려면 준비 점검을 통과해야 해요. / Pass the readiness check before enabling operational switches.',
       recovery_confirm: '선택한 손님의 본인을 확인해 주세요. / Confirm the selected guest’s identity.',
       points: '0~1,000 사이의 정수 포인트를 입력해 주세요. / Enter whole points from 0 to 1,000.',
       blocked: '차단으로 이 작업을 할 수 없어요. / A block prevents this action.',
@@ -7847,7 +7849,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       msg.textContent = type === 'vote' ? '투표를 만들었어요. / Vote created.' : '올렸어요. / Published.';
     });
   }
-  // Guest switches are shared with lounge config and default to off.
+  // English translations and read-only labels for servers without adm_open_get.
   const LOUNGE_FEATURES = [
     ['posts', '사진 글 / Guest posts', '손님이 사진 글을 올리고 봐요. / Guests can share and view photo posts.'],
     ['challenge', '포토 챌린지 / Photo challenge', '손님이 사진 대회에 참가하고 순위를 봐요. / Guests can enter photo contests and see rankings.'],
@@ -7867,7 +7869,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     ['accountRecovery', '계정 복구 / Account recovery', '대상 지정 복구를 사용하기 전에 켜야 해요. / Turn this on before switching to guest-specific recovery.'],
     ['bound_reset', '대상 지정 복구 / Guest-specific recovery', '선택한 손님에게만 쓸 수 있는 복구 QR을 발급해요. / Recovery QR codes work only for the selected guest.'],
     ['reportSecurity', '신고 증거 접근 기록 / Report evidence audit', '증거를 따로 열고 누가 열었는지 기록해요. / Evidence opens on request and each access is logged.'],
-    ['keepScope', '킵 연결 검색 제한 / Restricted Keep linking', '링크 권한 계정은 정확한 닉네임이나 전화번호 뒤 네 자리로만 손님을 찾아요. / Link accounts search by exact nickname or last four digits.']
+    ['keepScope', '킵 연결 검색 제한 / Restricted Keep linking', '링크 권한 계정은 정확한 닉네임이나 전화번호 뒤 네 자리로만 손님을 찾아요. / Link accounts search by exact nickname or last four digits.'],
+    ['staff_withdraw', '탈퇴 정보 동기화 / Withdrawal sync', '회원 탈퇴를 스태프 서버에 전달하고 처리 상태를 확인해요. / Sends withdrawals to the Staff API and tracks completion.']
   ];
   const LOUNGE_SAVED = '저장했어요. / Saved.';
   const LOUNGE_EMPTY = '<p class="note">표시할 항목이 없어요. / No entries.</p>';
@@ -7939,21 +7942,21 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       '<article>' + label + '<strong>' + loungeCount(value) + '</strong></article>').join('') + '</div>';
   }
   async function loungeOpenSnapshot(request) {
-    const { open } = await request('adm_open_config', {});
-    if (!open || typeof open !== 'object' || Array.isArray(open) || !Object.values(open).every(value => typeof value === 'boolean')) {
+    const { ok, open, meta } = await request('adm_open_get', {});
+    if (ok !== true || !open || typeof open !== 'object' || Array.isArray(open) ||
+        !meta || typeof meta !== 'object' || Array.isArray(meta) || !Object.entries(meta).every(([key, item]) =>
+          item && ['public', 'operation'].includes(item.kind) && typeof item.label_ko === 'string' &&
+          typeof item.desc_ko === 'string' && Object.hasOwn(open, key) && typeof open[key] === 'boolean')) {
       throw new Error('stage_snapshot');
     }
-    return open;
+    return { open, meta };
   }
-  function loungeStageOn(open, key) {
-    return (key === 'bound_reset' && !Object.hasOwn(open, key) ? open.accountRecovery : open[key]) === true;
-  }
-  function loungeReadyCheck(panel, request) {
+  function loungeReadyCheck(panel, request, onResult) {
     const labels = {
       staff_queue_unverified: '스태프 서버 대기열을 확인할 수 없어요. / The Staff API queue could not be verified.',
       legacy_queue_pending: '이전 형식으로 쌓인 이벤트의 처리가 남아 있어요. / Legacy events are still queued.',
       staff_recovery_unverified: '스태프 서버의 대상 지정 복구 지원을 확인할 수 없어요. / Staff API recovery support could not be verified.',
-      account_recovery_closed: '계정 복구 스위치를 켜 주세요. / Turn on account recovery.',
+      account_recovery_closed: '계정 복구가 꺼져 있어요. / Account recovery is off.',
       recovery_flow_unconfirmed: '실제 복구 흐름을 시험한 뒤 체크해 주세요. / Test the recovery flow, then tick the box.'
     };
     const form = document.createElement('form');
@@ -7961,16 +7964,27 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     form.innerHTML = '<fieldset><legend>켜기 전 점검 / Readiness check</legend>' +
       '<div class="lounge-options"><label><input type="checkbox" name="recoveryVerified"> 대상 지정 QR로 실제 계정 복구를 시험했어요. / I tested account recovery with a guest-specific QR.</label></div>' +
       loungeButton('준비 상태 점검 / Check readiness', 'type="submit"', true) +
-      '<p class="msg lounge-msg" role="status"></p><div data-ready-results></div></fieldset>';
+      '<p class="msg lounge-msg" role="status"></p><div data-ready-results aria-live="polite"></div></fieldset>';
     panel.append(form);
     const results = form.querySelector('[data-ready-results]');
-    form.elements.recoveryVerified.onchange = () => results.replaceChildren();
-    loungeSubmit(form, data => {
+    let revision = 0;
+    function invalidate() {
+      revision++;
       results.replaceChildren();
-      return request('adm_ready_check', { recoveryVerified: data.has('recoveryVerified') });
-    }, result => {
+      onResult(false);
+    }
+    form.elements.recoveryVerified.onchange = invalidate;
+    loungeSubmit(form, async data => {
+      invalidate();
+      const started = revision;
+      const result = await request('adm_ready_check', { recoveryVerified: data.has('recoveryVerified') });
+      return { started, result };
+    }, ({ started, result }) => {
+      if (started !== revision) return;
+      onResult(result.ok === true);
       const checks = [['signed_events', '이벤트 서명 / Signed events'], ['bound_reset', '대상 지정 복구 / Guest-specific recovery']];
-      results.innerHTML = loungeCards(checks, ([key, label]) => {
+      const summary = result.ok === true ? '전체 점검을 통과했어요. / All checks passed.' : loungeError(new Error('stage_ready'));
+      results.innerHTML = '<p>' + summary + '</p>' + loungeCards(checks, ([key, label]) => {
         const check = result[key] || {};
         const status = check.ok === true ? '준비 완료 / Ready' : '점검 필요 / Needs attention';
         const enabled = check.enabled === true ? '켜짐 / On' : '꺼짐 / Off';
@@ -7981,72 +7995,121 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
             '<li>' + esc(Object.hasOwn(labels, issue) ? labels[issue] : issue) + '</li>').join('') + '</ul>' : '') + '</article>';
       });
     });
+    return invalidate;
   }
-  async function loungeSettings(panel, request, stages) {
-    if (stages) {
-      let unavailable = false;
-      let initial;
-      try { initial = await loungeOpenSnapshot(request); }
-      catch (err) {
-        if (!['action', 'unknown', 'stage_snapshot'].includes(err.message)) throw err;
-        unavailable = true;
-        const [config, review] = await Promise.all([
-          loungeRequest('config'), request('adm_review_config', {}).catch(() => ({}))
-        ]);
-        initial = { ...config.open, ...review.open };
-      }
-      if (!panel.isConnected) return;
-      panel.textContent = '';
-      let savedOpen;
-      const fields = '<div class="lounge-options lounge-stage-list">' + LOUNGE_FEATURES.map(([key, label, description]) =>
-        '<label><input type="checkbox" name="' + key + '"' + (loungeStageOn(initial, key) ? ' checked' : '') + (unavailable ? ' disabled' : '') + '>' +
-        '<span>' + label + '<small>' + description + '</small></span></label>'
-      ).join('') + '</div><fieldset class="lounge-stage-confirm" hidden>' +
-        '<legend>공개하기 전 확인 / Review before going live</legend>' +
-        '<p>저장하면 선택한 설정이 바로 적용돼요. / Saving applies these settings immediately.</p>' +
-        '<ul></ul><div class="lounge-options"><label><input type="checkbox" name="confirmOpen">' +
-        '공개할 기능을 확인했어요. / I’ve checked the features going live.</label></div></fieldset>';
-      const form = loungeAction(panel, '손님에게 열 기능 / Guest features', 'adm_kv_set', fields, async (_, data) => {
-        if (unavailable) throw new Error('stage_snapshot');
-        const changed = LOUNGE_FEATURES.filter(([key]) => data.has(key) !== loungeStageOn(initial, key));
-        if (!changed.length) throw new Error('no_change');
-        if (changed.some(([key]) => data.has(key)) && !data.has('confirmOpen')) {
-          throw new Error('stage_confirm');
-        }
-        let latest;
-        try { latest = await loungeOpenSnapshot(request); }
-        catch (err) {
-          if (['action', 'unknown'].includes(err.message)) throw new Error('stage_snapshot');
-          throw err;
-        }
-        savedOpen = { ...latest, ...Object.fromEntries(changed.map(([key]) => [key, data.has(key)])) };
-        return { k: 'open', v: savedOpen };
-      }, request, { label: '공개 설정 저장 / Save visibility', done: (_, saved) => {
-        initial = savedOpen;
-        for (const [key] of LOUNGE_FEATURES) saved.elements[key].checked = loungeStageOn(initial, key);
-        reviewChanges();
-      } });
-      form.dataset.settings = 'open';
-      if (unavailable) {
-        form.querySelector('[type=submit]').disabled = true;
-        form.querySelector('.lounge-msg').textContent = loungeError(new Error('stage_snapshot'));
-        for (const [key] of LOUNGE_FEATURES) form.elements[key].indeterminate = !Object.hasOwn(initial, key);
-      }
-      const review = form.querySelector('.lounge-stage-confirm');
-      function reviewChanges() {
-        const enabled = LOUNGE_FEATURES.filter(([key]) => !loungeStageOn(initial, key) && form.elements[key].checked);
-        form.elements.confirmOpen.checked = false;
-        review.querySelector('ul').replaceChildren(...enabled.map(([, label]) => {
-          const item = document.createElement('li');
-          item.textContent = label;
-          return item;
-        }));
-        review.hidden = !enabled.length;
-      }
-      form.querySelector('.lounge-stage-list').addEventListener('change', reviewChanges);
-      loungeReadyCheck(panel, request);
-      return;
+  async function loungeStages(panel, request) {
+    if (!state.s || !loungeRoles().manage) throw new Error('forbidden');
+    const owner = !!state.s.admin;
+    const known = new Map(LOUNGE_FEATURES.map(([key, label, description]) => [key, [label, description]]));
+    let unavailable = false;
+    let initial, stages;
+    try {
+      const { open, meta } = await loungeOpenSnapshot(request);
+      initial = open;
+      stages = Object.entries(meta).map(([key, item]) => {
+        const [label, description] = known.get(key) || [];
+        const bilingual = (ko, text) => text ? ko + text.slice(text.indexOf(' / ')) : ko;
+        return { key, kind: item.kind, label: bilingual(item.label_ko, label), description: bilingual(item.desc_ko, description) };
+      });
+    } catch (err) {
+      if (!['action', 'unknown', 'stage_snapshot'].includes(err.message)) throw err;
+      unavailable = true;
+      const [config, review] = await Promise.all([
+        loungeRequest('config'), request('adm_review_config', {}).catch(() => ({}))
+      ]);
+      initial = { ...config.open, ...review.open };
+      const operation = new Set(['ws_ticket', 'signed_events', 'accountRecovery', 'bound_reset', 'reportSecurity', 'keepScope', 'staff_withdraw']);
+      stages = LOUNGE_FEATURES.map(([key, label, description]) => ({
+        key, kind: operation.has(key) ? 'operation' : 'public', label, description
+      }));
     }
+    if (!panel.isConnected) return;
+    panel.textContent = '';
+    let ready = false, savedOpen;
+    const groups = [['public', '공개 기능 / Guest features']];
+    if (owner) groups.push(['operation', '운영 스위치 / Operational switches']);
+    const fields = groups.map(([kind, title]) => {
+      const entries = stages.filter(stage => stage.kind === kind);
+      return '<fieldset data-stage-group="' + kind + '"><legend>' + title + '</legend>' +
+        (kind === 'operation' ? '<p class="note" data-stage-gate></p>' : '') +
+        (entries.length ? '<div class="lounge-options lounge-stage-list">' + entries.map(({ key, label, description }) =>
+          '<label><input type="checkbox" data-stage-switch name="' + esc(key) + '"' + (initial[key] === true ? ' checked' : '') + '>' +
+          '<span>' + esc(label) + '<small>' + esc(description) + '</small></span></label>'
+        ).join('') + '</div>' : LOUNGE_EMPTY) + '</fieldset>';
+    }).join('') + '<fieldset class="lounge-stage-confirm" hidden>' +
+      '<legend>켜기 전 확인 / Review before enabling</legend>' +
+      '<p>저장하면 선택한 설정이 바로 적용돼요. / Saving applies these settings immediately.</p>' +
+      '<ul></ul><div class="lounge-options"><label><input type="checkbox" name="confirmOpen" data-stage-confirm>' +
+      '켤 설정을 확인했어요. / I’ve checked the switches being enabled.</label></div></fieldset>';
+    const form = loungeAction(panel, '단계 스위치 / Feature switches', 'adm_open_set', fields, () => {
+      if (!state.s || !loungeRoles().manage) throw new Error('forbidden');
+      if (unavailable) throw new Error('stage_snapshot');
+      const changes = changed();
+      if (!changes.length) throw new Error('no_change');
+      if (!state.s.admin && changes.some(({ kind }) => kind === 'operation')) throw new Error('forbidden');
+      const enabled = changes.filter(({ input }) => input.checked);
+      if (!ready && enabled.some(({ kind }) => kind === 'operation')) throw new Error('stage_ready');
+      if (enabled.length && !confirmOpen.checked) throw new Error('stage_confirm');
+      return { changes: Object.fromEntries(changes.map(({ key, input }) => [key, input.checked])) };
+    }, async (action, payload) => {
+      let result;
+      try { result = await request(action, payload); }
+      catch (err) {
+        if (['action', 'unknown'].includes(err.message)) throw new Error('stage_save_unavailable');
+        throw err;
+      }
+      if (result.ok !== true) throw new Error('bad');
+      savedOpen = switches.every(({ key }) => typeof result.open?.[key] === 'boolean') ? result.open :
+        (await loungeOpenSnapshot(request).catch(() => null))?.open || { ...initial, ...payload.changes };
+      return result;
+    }, { label: '스위치 저장 / Save switches', done: () => {
+      initial = savedOpen;
+      for (const { key, input } of switches) input.checked = initial[key] === true;
+      clearReadiness?.();
+      reviewChanges();
+    } });
+    form.dataset.settings = 'open';
+    const switches = [...form.querySelectorAll('[data-stage-switch]')].map(input => ({
+      ...stages.find(stage => stage.key === input.name), input
+    }));
+    const review = form.querySelector('.lounge-stage-confirm');
+    const confirmOpen = review.querySelector('[data-stage-confirm]');
+    const submit = form.querySelector('[type=submit]');
+    const gate = form.querySelector('[data-stage-gate]');
+    const changed = () => switches.filter(({ key, input }) => input.checked !== (initial[key] === true));
+    function updateGate() {
+      for (const { key, kind, input } of switches) {
+        input.disabled = unavailable || (kind === 'operation' && !ready && initial[key] !== true && !input.checked);
+      }
+      const changes = changed();
+      submit.disabled = unavailable || !changes.length ||
+        (!ready && changes.some(({ kind, input }) => kind === 'operation' && input.checked));
+      if (gate) gate.textContent = ready ? '전체 점검을 통과했어요. / All checks passed.' : loungeError(new Error('stage_ready'));
+    }
+    function reviewChanges() {
+      const enabled = changed().filter(({ input }) => input.checked);
+      confirmOpen.checked = false;
+      review.querySelector('ul').replaceChildren(...enabled.map(({ label }) => {
+        const item = document.createElement('li');
+        item.textContent = label;
+        return item;
+      }));
+      review.hidden = !enabled.length;
+      updateGate();
+    }
+    const clearReadiness = owner ? loungeReadyCheck(panel, request, ok => {
+      ready = ok;
+      if (!ready) confirmOpen.checked = false;
+      updateGate();
+    }) : null;
+    for (const { key, input } of switches) {
+      input.indeterminate = unavailable && !Object.hasOwn(initial, key);
+      input.addEventListener('change', reviewChanges);
+    }
+    if (unavailable) form.querySelector('.lounge-msg').textContent = loungeError(new Error('stage_snapshot'));
+    updateGate();
+  }
+  async function loungeSettings(panel, request) {
     const config = await loungeRequest('config');
     if (!panel.isConnected) return;
     panel.textContent = '';
@@ -8473,7 +8536,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       ['album', '사진 앨범 / Photo album'], ['vote', '투표 / Vote'],
       ['programming', '월드컵 · 챌린지 / Events'], ['rewards', '보상 / Rewards'], ['orders', '굿즈 주문 / Orders'],
       ['display', '전광판 예약 / Display'], ['stats', '통계 / Stats'], ['analytics', '설문 · 주간 / Reports']];
-    if (state.s.admin) tabs.push(['stages', '단계 스위치 / Guest features'], ['settings', '포인트 · 라디오 / Settings']);
+    tabs.push(['stages', '단계 스위치 / Feature switches']);
+    if (state.s.admin) tabs.push(['settings', '포인트 · 라디오 / Settings']);
     const screens = {
       reports: panel => loungeReports(panel, session), rooms: panel => loungeRooms(panel, request),
       members: panel => loungeMemberSearch(panel, session), resetqr: panel => loungeResetQr(panel, session),
@@ -8483,8 +8547,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       analytics: panel => loungeAnalytics(panel, request),
       orders: panel => loungeFulfillment(panel, session, request, true),
       display: panel => loungeFulfillment(panel, session, request, false),
-      stages: panel => loungeSettings(panel, request, true),
-      settings: panel => loungeSettings(panel, request, false)
+      stages: panel => loungeStages(panel, request),
+      settings: panel => loungeSettings(panel, request)
     };
     const primary = ['reports', 'rooms', 'display'];
     const navButton = ([tab, label]) => loungeButton(label + (tab === 'reports' ? loungeReportBadge() : ''),
