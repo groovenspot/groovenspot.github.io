@@ -1001,6 +1001,14 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .tbt.empty { background: none; border-style: dashed; border-color: var(--line); }
 .tbt .tbplus { color: var(--line-2); font-size: 20px; margin: auto; }
 .tbt.in { border-color: var(--ok); background: rgba(60,207,145,.10); }
+.tbt.rv { border-style: dashed; }   /* 📅 예약 · 아직 안 옴 (2026-11-21) */
+.tbt em.rvb { color: #7fb4ff; }
+.tbarr { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; font-size: 13px; font-weight: 700; }
+.tbarr span { border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+.tbarr .rv { border-style: dashed; color: #7fb4ff; }
+.tbarrbox { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; margin: 0 0 12px; }
+.tbarrbox.rv { border-style: dashed; border-color: #7fb4ff; }
+.tbarrbox p { margin: 0; font-weight: 700; }
 .tbt.wait { border-color: var(--warn); border-style: dashed; }
 .tbt.no { border-color: var(--bad); }
 .tbt.no em { color: #ff8199; }
@@ -7087,7 +7095,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         (bt.length > 1 || !i ? '<p class="lab" style="font-weight:700;font-size:14px;margin:0 0 6px">술</p><div class="tbgr" id="ktL">' + bt.map(function (x) { return '<button type="button" class="chip' + (i && i.id === x.id ? ' on' : '') + '" data-kti="' + esc(x.id) + '">' + esc(x.liq) + ' ' + x.n + '병</button>'; }).join('') + '</div>' : '<p class="note" style="margin:0 0 10px"><b>' + esc(i.liq) + '</b> · 지금 ' + i.n + '병</p>') +
         (i ? '<label>몇 병<span class="knum"><button type="button" id="ktDn" aria-label="한 병 덜"' + (st.n <= 1 ? ' disabled' : '') + '>−</button><input id="ktN" type="number" inputmode="numeric" min="1" max="' + mx + '" value="' + st.n + '"><button type="button" id="ktUp" aria-label="한 병 더"' + (st.n >= mx ? ' disabled' : '') + '>+</button></span></label>' +
           (mx < i.n ? '<p class="note" style="margin:-6px 0 10px">⏳ ' + (i.n - mx) + '병은 이미 빼기 요청 중이에요.</p>' : '') : '') +
-        '<label>몇 번 자리로?' + (direct ? '' : ' <b style="color:var(--hot,#ff7a1a)">(필수)</b>') + '<input id="ktSeat" maxlength="12" autocomplete="off" placeholder="예) 3-11 · L4" value="' + esc(seat) + '"></label>' +
+        '<label>몇 번 자리로?<input id="ktSeat" maxlength="12" autocomplete="off" placeholder="예) 3-11 · L4" value="' + esc(seat) + '"></label>' +
         '<p class="lab" style="font-weight:700;font-size:14px;margin:0 0 6px">어떻게 나가요?</p><div class="tbgr">' + KEEP_HOW.map(function (w) { return '<button type="button" class="chip' + (st.how === w ? ' on' : '') + '" data-kth="' + esc(w) + '" aria-pressed="' + (st.how === w) + '">' + esc(w) + '</button>'; }).join('') + '</div>' +
         '<label>메모 (선택)<input id="ktMemo" maxlength="40" autocomplete="off" placeholder="예) 12시 생일 · 얼음 같이" value="' + esc(memo) + '"></label>' +
         (direct ? '' : '<p class="note" style="margin:0 0 10px">⏳ ' + approversTxt() + ' 승인 후 빠져요. 자리·메모도 승인 화면에 보여요.</p>') +
@@ -7100,7 +7108,6 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       $('ktGo').addEventListener('click', function () {
         var i2 = st.it; if (!i2) return;
         var n = st.n, s2 = $('ktSeat').value.trim().replace(/^([a-z])/i, function (x) { return x.toUpperCase(); }), m2 = $('ktMemo').value.trim();
-        if (!s2 && !direct) { $('ktMsg').textContent = '몇 번 자리로 갈지 자리 번호를 넣어 주세요.'; $('ktSeat').focus(); return; }   // 주류창고 배달 요청은 자리 번호를 넣어야 (대표 요청 2026-11-21)
         if (/[<>"]/.test(s2 + m2)) { $('ktMsg').textContent = '< > " 는 쓸 수 없어요.'; return; }
         var note = [s2 ? s2 + ' 자리' : '', st.how, m2].filter(String).join(' · ');
         var txt = '<b>' + esc(i2.liq) + ' ' + n + '병 꺼냄' + (direct ? '' : ' 요청') + '</b> · ' + i2.n + ' → ' + (i2.n - n) + (note ? ' · ' + esc(note) : '');
@@ -9237,7 +9244,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   }
   setInterval(function () { if (state.s && state.data && state.tab === 'ops' && !document.hidden && Date.now() - (state.opsAt || 0) > pace(4500, state.opsHot)) loadOps(true); }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'ops') loadOps(true); });
-  function opsErr(r) { return { kind: '종류를 골라 주세요.', empty: '무엇을 갖다 드릴지 골라 주세요.', seat: '자리를 확인해 주세요. (예: 4 · L3 · D1 · S5)', text: '< > 는 쓸 수 없어요.', n: '인원은 1~10명이에요.', busy: '잠시 후 다시 해 주세요.', full: '이미 인원이 다 찼어요.', forbidden: '권한이 없어요.', state: '취소된 요청이에요.', notfound: '없는 요청이에요.', soon: '방금 올렸어요. 1분 뒤에 다시 올릴 수 있어요.' }[r.error] || '다시 해 주세요.'; }
+  function opsErr(r) { return { kind: '종류를 골라 주세요.', empty: '자리 번호를 넣어 주세요. (배달은 자리만 있어도 돼요)', seat: '자리를 확인해 주세요. (예: 4 · L3 · D1 · S5)', text: '< > 는 쓸 수 없어요.', n: '인원은 1~10명이에요.', busy: '잠시 후 다시 해 주세요.', full: '이미 인원이 다 찼어요.', forbidden: '권한이 없어요.', state: '취소된 요청이에요.', notfound: '없는 요청이에요.', soon: '방금 올렸어요. 1분 뒤에 다시 올릴 수 있어요.' }[r.error] || '다시 해 주세요.'; }
   function opsCall(body, btn, done) {
     if (btn) btn.disabled = true; body.token = state.s.token;
     return call(body).then(function (r) { if (btn) btn.disabled = false; if (r.error === 'auth') return toLogin(AUTH_OUT); if (r.ok) { state.ops = r; opsBadge(r); flushPush(); } if (done) done(r); }).catch(function () { if (btn) btn.disabled = false; if (done) done({ error: 'net' }); });
@@ -9714,6 +9721,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       if (r.status === '대기') { cls += ' wait'; badge = '<em>' + (r.req && r.req.del ? '비우기 대기' : r.cur ? '변경 대기' : '승인 대기') + '</em>'; }
       if (r.status === '거절') { cls += ' no'; badge = '<em>거절됨</em>'; }
       if (r.mine) cls += ' mine';
+      if (r.cur && !r.arr && !badge) { cls += ' rv'; badge = '<em class="rvb">예약</em>'; }   // 📅 아직 안 온 손님 (대표 요청 2026-11-21)
       if (v.keep) cls += ' keep';   // 🍾 킵 = 파랑
       if (v.sold) cls += ' sold';   // ★ 판매 = 빨강 (별표 대신, 2026-11-18 · 색 2026-11-19)
     }
@@ -11126,6 +11134,9 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend && !tbShowWeekend()) return; z.rows.forEach(function (row) { row.forEach(function (s) { total++; if (ix.at[s] && !ix.at[s][0].ghost) used++; }); }); });
     var h = '<div class="tbh"><div><h1>테이블</h1><p class="sub">' + esc(tbDayLabel(t.day)) + ' · 오늘' + (t.mode ? ' · ' + (t.mode.cur === 'we' ? '주말' : '평일') + ' 배치' : '') + '</p></div><span class="tbocc' + (total && used >= total ? ' full' : '') + '">' + esc(fl) + ' <b>' + used + '</b> / ' + total + ' 찼음</span></div>';   // 당일 것만 (대표 결정 2026-11-18)
     h += '<div class="tbfl">' + (t.floors || []).map(function (f) { return '<button type="button" data-tbf="' + esc(f.id) + '" aria-pressed="' + (f.id === fl) + '">' + esc(f.name) + ' <small>' + esc(f.floor) + '</small></button>'; }).join('') + '</div>';
+    // ✅ 입장 / 📅 예약(아직 안 옴) 세기 (대표 요청 2026-11-21)
+    (function () { var g = (t.rows || []).filter(function (r) { return r.floor === fl && r.cur && !r.cur.blk && (r.cur.g || r.cur.n || r.cur.liq); }), inn = g.filter(function (r) { return r.arr; }).length;
+      if (g.length) h += '<div class="tbarr"><span>✅ 입장 ' + inn + '</span><span class="rv">📅 예약 · 아직 안 옴 ' + (g.length - inn) + '</span></div>'; })();
     // 📅 평일·주말 배치 (대표·김동기·양진호, 2026-11-18): 안 누르면 요일대로 (일~목 평일 · 금·토 주말)
     if (t.mode && t.mode.can) h += '<div class="tbmode"><div class="tbvw" role="group" aria-label="배치"><button type="button" data-tbmode="wd" aria-pressed="' + (t.mode.cur === 'wd') + '">평일</button><button type="button" data-tbmode="we" aria-pressed="' + (t.mode.cur === 'we') + '">주말</button></div>' +
       '<small>' + (t.mode.set ? '오늘 ' + esc(t.mode.by) + '님이 정함 · <button type="button" class="link" data-tbmode="auto">요일대로</button>' : '요일대로 (일~목 평일 · 금·토 주말)') + '</small></div>';
@@ -11306,6 +11317,21 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     }
     // 📍 손님 위치 확인: 담당 MD에게 알림 + 테이블 대화 (대표 요청 2026-11-19)
     var whereOk = r && r.cur && !r.cur.blk && (r.cur.g || r.cur.n) && r.cur.st && r.cur.st !== t.me && t.day === t.today && !(state.data && state.data.guard);
+    // ✅ 입장 체크 (대표 요청 2026-11-21): 예약 손님이 실제로 왔는지 — 누구나 누름 (출근 후)
+    var arrOk = r && r.cur && !r.cur.blk && (r.cur.g || r.cur.n || r.cur.liq) && t.day === t.today && !t.view && !(state.data && state.data.guard);
+    if (arrOk) h += '<div class="tbarrbox' + (r.arr ? '' : ' rv') + '"><p>' + (r.arr ? '✅ 입장 ' + esc(r.arr) + (r.arrBy ? ' <small class="note">· ' + esc(r.arrBy) + '</small>' : '') : '📅 예약 · 아직 안 왔어요') + '</p>' +
+      '<button class="btn' + (r.arr ? '' : ' btn-ok') + '" type="button" id="tbArr">' + (r.arr ? '입장 취소' : '✅ 입장 체크') + '</button></div><p class="msg" id="tbArrM" hidden></p>';
+    var bindArr = function () {
+      if (!$('tbArr')) return;
+      $('tbArr').addEventListener('click', function () {
+        if (inputLocked()) return punchPrompt();
+        var b = this; b.disabled = true;
+        tbCall({ a: 'tb_arr', id: r.id, on: !r.arr }, function (x) {
+          if (!x.ok) { b.disabled = false; var m = $('tbArrM'); m.hidden = false; m.textContent = { forbidden: '권한이 없어요.', empty: '빈 자리예요.', notfound: '이미 바뀐 자리예요. 다시 열어 주세요.', punch: '출근 버튼을 먼저 눌러 주세요.' }[x.error] || tbErr(x); return; }
+          tbCloseSheet(); state.tbMsg = r.arr ? '입장 체크를 취소했어요.' : '✅ 입장 체크했어요.' + (r.cur.st && r.cur.st !== t.me ? ' 담당 ' + r.cur.st + '에게 알렸어요.' : ''); render();
+        });
+      });
+    };
     if (whereOk) h += '<button class="btn btn-where" type="button" id="tbWhere">📍 손님 위치 확인 <small>· 담당 ' + esc(r.cur.st) + '에게 물어보기</small></button><p class="msg" id="tbWMsg" hidden></p>';
     var bindWhere = function () {
       if (!$('tbWhere')) return;
@@ -11327,7 +11353,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       var vice = edit && !blocked && !ap && state.s && state.s.role === '부팀장' && r && r.cur && !r.cur.blk && !(r.req && r.req.del);
       if (edit && !blocked && r) h += '<p class="note">' + (vice ? '다른 담당 손님이에요. 고치기는 안 되고, 부팀장은 <b>자리 비우기</b>만 돼요.' : '다른 담당 손님이에요. 고칠 수 없어요.') + '</p>';
       if (vice) h += '<div class="tbbtns"><button class="btn btn-bad" type="button" id="tbVDel">자리 비우기 (부팀장)</button></div><p class="msg" id="tbVMsg"></p>';
-      h += tbSatLine(r); showSheet(h); bindWhere();
+      h += tbSatLine(r); showSheet(h); bindWhere(); bindArr();
       if (vice) $('tbVDel').addEventListener('click', function () {
         if (!armed(this, '자리 비우기 (부팀장)')) return;
         var b = this; b.disabled = true;
@@ -11348,7 +11374,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       '<p class="msg" id="tbMsg"></p><button class="btn btn-hot" type="button" id="tbSave">' + (ap ? '저장' : r && r.status === '거절' ? '고쳐서 다시 신청' : '승인 요청') + '</button>';
     if (r && ap && r.status === '대기') h += '<div class="tbbtns"><button class="btn btn-ok" type="button" id="tbOk1">요청 승인</button><button class="btn" type="button" id="tbNo1">거절</button></div>';
     if (r && (r.cur || r.status)) h += '<div class="tbbtns">' + (r.mine && r.status && !ap ? '<button class="btn" type="button" id="tbCancel">요청 취소</button>' : '') + ((r.cur || ap) && !(r.req && r.req.del) ? '<button class="btn btn-bad" type="button" id="tbDel">' + (ap || state.s.role === '부팀장' || (r.cur && !r.cur.blk && r.cur.st === t.me) ? '자리 비우기' : '비우기 요청') + '</button>' : '') + '</div>';
-    h += tbSatLine(r); showSheet(h); bindWhere();
+    h += tbSatLine(r); showSheet(h); bindWhere(); bindArr();
     var n = v.n || 0, tg = { sold: !!v.sold, keep: !!v.keep, inn: !!v.inn }, sx = v.sx || '', blk = v.blk || '';
     var s = $('sheet');
     // 담당·자리: 고르기 대신 초성·단어·숫자를 치면 바로 뜨는 버튼 (대표 요청 2026-11-19 새벽)
