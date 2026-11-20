@@ -22,6 +22,26 @@ function loungeTarget(hash) {
     /^#\/[a-z][a-z0-9_-]*(?:[/?][^\u0000-\u001f\u007f]*)?$/.test(hash) ? hash : '#/alerts');
 }
 
+async function loungeWindows() {
+  const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  return windows.filter(client => {
+    const url = new URL(client.url);
+    return url.origin === self.location.origin && ['/lounge/', '/lounge/index.html'].includes(url.pathname);
+  });
+}
+
+async function refreshLoungeBadges(unread) {
+  // 탭은 현재 로그인한 회원의 수를 직접 확인한다. 기기 구독의 회원 정보는 보내지 않는다.
+  for (const client of await loungeWindows()) client.postMessage?.({ type: 'lounge-notices-changed' });
+  if (!Number.isSafeInteger(unread) || unread < 0) return;
+  try {
+    if (unread) await self.navigator?.setAppBadge?.(unread);
+    else await self.navigator?.clearAppBadge?.();
+  } catch {
+    // 앱 아이콘 배지를 지원하지 않아도 알림은 표시한다.
+  }
+}
+
 self.addEventListener('push', event => {
   event.waitUntil((async () => {
     try {
@@ -34,7 +54,11 @@ self.addEventListener('push', event => {
       });
       if (!response.ok) return;
       const result = await response.json();
-      if (!result.ok) return;
+      if (!result.ok) {
+        if (result.error === 'auth') await refreshLoungeBadges(0);
+        return;
+      }
+      const badges = refreshLoungeBadges(result.unread).catch(() => {});
       for (const n of result.notices) {
         // Notification API 는 제목과 내용을 HTML 이 아닌 글자로 표시한다.
         await self.registration.showNotification(n.title, {
@@ -43,6 +67,7 @@ self.addEventListener('push', event => {
           data: { hash: n.url }
         });
       }
+      await badges;
     } catch {
       // 기기에서 내용을 가져오지 못해도 알림은 알림함에 남아 있다.
     }
@@ -53,13 +78,13 @@ self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil((async () => {
     const dest = new URL(loungeTarget(event.notification.data?.hash), self.location.origin);
-    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const client of windows) {
-      const url = new URL(client.url);
-      if (url.origin !== dest.origin || !['/lounge/', '/lounge/index.html'].includes(url.pathname)) continue;
+    for (const client of await loungeWindows()) {
       try {
-        const opened = url.href === dest.href ? client : await client.navigate(dest.href);
-        if (opened) return opened.focus();
+        const opened = client.url === dest.href ? client : await client.navigate(dest.href);
+        if (!opened) continue;
+        await opened.focus();
+        opened.postMessage?.({ type: 'lounge-notices-changed' });
+        return;
       } catch {
         // 이 창이 사라졌으면 다른 라운지 창을 찾는다.
       }

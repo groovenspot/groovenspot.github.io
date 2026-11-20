@@ -1,52 +1,58 @@
 (() => {
-  const L = Lounge, U = LoungeScreenUI;
+  const L = Lounge, U = LoungeScreenUI, P = LoungePostUI;
   const t = U.words('photos', {
     title: ['어젯밤 사진', 'Last night’s photos'], back: ['앨범 목록', 'All albums'],
-    take: ['내려 주세요', 'Take this down'], photo: ['사진 {n} 크게 보기', 'Enlarge photo {n}']
+    take: ['내려 주세요', 'Take this down'], photo: ['사진 {n} 크게 보기', 'Enlarge photo {n}'],
+    empty: ['아직 올라온 앨범이 없어요.', 'No albums have been posted yet.'],
+    noPhotos: ['이 앨범에 볼 수 있는 사진이 없어요.', 'There are no visible photos in this album.'],
+    missing: ['이 앨범을 볼 수 없어요.', 'This album is unavailable.']
   });
 
   function render(root, { id } = {}) {
-    const view = U.mount(root, '<h1>' + t('title') + '</h1>' +
-      (id ? U.link('#/photos', t('back')) : U.link('#/feed', L.esc(L.t('nav.feed')))));
+    const view = P.mount(root, t('title'), id ? U.link('#/photos', t('back')) : U.link('#/feed', L.esc(L.t('nav.feed'))));
+    view.innerHTML = id ? '<div class="post-album-grid" data-post-layout>' +
+      P.skeleton('square') + P.skeleton('square') + '</div>' : P.skeleton('cover');
 
     async function load() {
       const data = await L.api(id ? 'album_get' : 'albums', id ? { id } : {});
       if (!view.isConnected) return;
       if (data?.error) {
-        view.innerHTML = U.status(data.error === 'action' ? 'empty' : 'error');
+        view.innerHTML = P.state(data.error === 'action' ? t('empty') :
+          data.error === 'missing' ? t('missing') : U.t('error'));
         return;
       }
       if (!id) {
-        view.innerHTML = (data?.albums || []).map(album => {
+        const albums = (data?.albums || []).map(album => {
           const src = U.image(album.cover?.url || album.cover || album.photos?.[0]?.url || album.photos?.[0]);
-          return '<article style="' + U.card + '">' + (src ? '<img loading="lazy" alt="" style="' + U.media +
-            '" src="' + L.esc(src) + '">' : '') + '<h2>' + L.esc(album.title ?? album.text) + '</h2><p class="muted">' +
-            L.esc(album.day) + '</p>' + U.link('#/photos/' + encodeURIComponent(album.id), L.esc(album.title ?? album.text) || t('title')) + '</article>';
-        }).join('') || U.status('empty');
+          const title = L.esc(album.title ?? album.text) || t('title');
+          return '<article class="post-card">' + (src ? '<div class="post-album-cover">' + P.image(src, '', true) + '</div>' : '') +
+            '<div class="post-pad"><h2>' + title + '</h2><p class="muted">' + L.esc(album.day) + '</p>' +
+            U.link('#/photos/' + encodeURIComponent(album.id), title) + '</div></article>';
+        }).join('');
+        view.innerHTML = albums ? '<div class="post-album-list">' + albums + '</div>' : P.state(t('empty'));
         return;
       }
       const photos = (data?.photos || data?.album?.photos || []).map(item => ({
         key: item?.key ?? item?.photo ?? item?.id ?? item,
         url: U.image(item?.url || item?.key || item)
       })).filter(photo => photo.url);
-      view.innerHTML = '<h2>' + L.esc(data?.album?.title ?? data?.album?.text ?? data?.title) + '</h2><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">' +
-        (photos.map((photo, i) => U.button('<img loading="lazy" style="' + U.media +
-          ';aspect-ratio:1;object-fit:cover" alt="' + t('photo', { n: i + 1 }) + '" src="' + L.esc(photo.url) + '">',
-          'data-photo="' + i + '" style="padding:4px;width:100%"')).join('') || U.status('empty')) + '</div>';
+      view.innerHTML = '<h2 class="post-section">' + L.esc(data?.album?.title ?? data?.album?.text ?? data?.title) + '</h2>' +
+        (photos.length ? '<div class="post-album-grid" data-post-layout>' +
+          photos.map((photo, i) => '<button type="button" class="post-photo-button" data-photo="' + i + '">' +
+            P.image(photo.url, t('photo', { n: i + 1 })) + '</button>').join('') + '</div>' : P.state(t('noPhotos')));
       view.querySelectorAll('[data-photo]').forEach(button => {
         button.onclick = () => {
           const i = Number(button.dataset.photo);
           const photo = photos[i];
-          const el = U.sheet('<figure style="margin:12px 0"><img style="' + U.media +
-            ';max-height:65vh;object-fit:contain" alt="' + t('photo', { n: i + 1 }) + '" src="' + L.esc(photo.url) +
-            '"></figure>' + U.button(t('take'), 'data-takedown'));
+          const el = U.sheet('<figure style="margin:12px 0">' + P.zoomImage(photo.url, t('photo', { n: i + 1 })) +
+            '</figure>' + U.button(t('take'), 'data-takedown'));
           el.querySelector('[data-takedown]').onclick = () => U.reason({
             title: t('take'), reasons: ['me', 'sexual', 'abuse', 'illegal', 'etc'],
             submit: why => L.api('takedown', { photo: photo.key, why }),
             done: () => {
               const grid = button.parentElement;
               button.remove();
-              if (grid && !grid.querySelector('[data-photo]')) grid.innerHTML = U.status('empty');
+              if (grid && !grid.querySelector('[data-photo]')) grid.outerHTML = P.state(t('noPhotos'));
             }
           });
         };
