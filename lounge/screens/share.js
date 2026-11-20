@@ -466,8 +466,7 @@
     const media = (post.photos || []).map(P.photo).filter(photo => photo.src);
     view.innerHTML = '<article class="post-card share-card"><strong>' + L.esc(authorOf(post)) + '</strong>' +
       media.map(photo => P.image(photo.src, '', false, photo)).join('') +
-      '<p>' + L.esc(post.text) + '</p><div class="post-bar"></div></article>';
-    actions(view.querySelector('.post-bar'), post, settings);
+      '<p>' + L.esc(post.text) + '</p></article>';
   }
 
   window.LoungeShare = { open, actions, reference };

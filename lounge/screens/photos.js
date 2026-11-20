@@ -61,12 +61,18 @@
         (photos.length ? '<div class="post-album-grid" data-post-layout>' +
           photos.map((photo, i) => '<button type="button" class="post-photo-button" data-photo="' + i + '">' +
             P.image(photo.thumb, t('photo', { n: i + 1 }), false, photo) + '</button>').join('') + '</div>' : P.state(t('noPhotos')));
-      if (data.album && window.LoungeShare) L.api('config').then(settings => {
+      if (data.album && window.LoungeShare) L.api('config').then(async settings => {
         if (!view.isConnected || settings.open?.share !== true) return;
+        const album = { ...data.album, id: data.album.id || id };
+        if (L.me && typeof album.saved !== 'boolean') {
+          const { post } = await L.api('post_get', { id: album.id });
+          if (!view.isConnected) return;
+          album.saved = post?.saved === true;
+        }
         const actions = document.createElement('div');
         actions.className = 'post-bar post-actions';
         view.append(actions);
-        window.LoungeShare.actions(actions, { ...data.album, id: data.album.id || id }, settings);
+        window.LoungeShare.actions(actions, album, settings);
       });
       view.querySelectorAll('[data-photo]').forEach(button => {
         button.onclick = () => {
