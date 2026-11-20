@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>GROOVE LOUNGE · 매장 화면</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font: clamp(16px, min(3vw, 4.4vh), 52px)/1.18 system-ui, sans-serif;
+      color: #fff3ed;
+      background: #120f17;
+      --gap: clamp(12px, min(2vw, 2.5vh), 38px);
+      --accent: #ffac77;
+      --muted: #d8c5dc;
+      --line: #ffdfed31;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      height: 100vh;
+      height: 100dvh;
+      margin: 0;
+      padding: var(--gap) clamp(16px, 4vw, 80px);
+      gap: var(--gap);
+      background: radial-gradient(ellipse at 100% 0%, #422146, transparent 58%),
+        radial-gradient(ellipse at 0% 100%, #43241b, transparent 60%), #120f17;
+    }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .logo { display: block; width: clamp(125px, 17vw, 300px); height: auto; }
+    button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: .45em .85em;
+      background: #261d2a;
+      font: 600 .5rem/1.2 system-ui, sans-serif;
+      color: inherit;
+      cursor: pointer;
+    }
+    button:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+    :fullscreen [data-fullscreen] { visibility: hidden; }
+    main, #content { min-height: 0; }
+    #stage { display: grid; min-height: 0; }
+    #content { display: grid; }
+    #content > section, .status {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      padding: clamp(16px, min(3.1vw, 4vh), 60px);
+      gap: var(--gap);
+      min-height: 0;
+      border-radius: clamp(20px, 2.5vw, 52px);
+      border: 1px solid var(--line);
+      background: linear-gradient(155deg, #231a28, #17141d 72%);
+      box-shadow: 0 14px 45px #0004;
+    }
+    .status { grid-template-rows: 1fr; place-content: center; text-align: center; }
+    .status div, .empty { align-self: center; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
+    h2, .status b {
+      display: block;
+      font-size: 1.6rem;
+      font-weight: 850;
+      letter-spacing: -.04em;
+      color: var(--accent);
+    }
+    h2 small, .status small, .empty small { display: block; margin-top: .32em; }
+    small { color: var(--muted); font-size: .5em; font-weight: 650; letter-spacing: .01em; }
+    .status small, .empty small { font-size: .65rem; }
+    .empty { text-align: center; font-weight: 750; }
+    .panel-body { display: grid; min-height: 0; }
+    ol, ul { padding: 0; margin: 0; list-style: none; }
+    .rank {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-flow: column;
+      grid-template-rows: repeat(5, minmax(0, 1fr));
+      column-gap: 1.05rem;
+    }
+    li {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      gap: .45em;
+      border-top: 1px solid var(--line);
+      padding: .2em 0;
+      font-variant-numeric: tabular-nums;
+    }
+    li b, h3, .winner p { min-width: 0; overflow-wrap: anywhere; }
+    li b, h3, .winner p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+    .rank-number { color: var(--accent); min-width: 2ch; font-weight: 850; }
+    li strong { margin-left: auto; color: #e1b8ff; white-space: nowrap; }
+    .poll {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: .3rem;
+      min-height: 0;
+    }
+    .poll h3 { font-size: 1.05rem; }
+    .poll ul { display: grid; grid-auto-rows: minmax(0, 1fr); min-height: 0; }
+    .poll small { text-align: right; }
+    .winner { align-self: center; text-align: center; }
+    .winner h3 { color: var(--muted); font-size: .9rem; margin-bottom: .65rem; }
+    .winner p { color: #fde6ff; font-size: 2rem; font-weight: 900; margin-bottom: .5rem; }
+    footer { min-height: 1em; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .steps { display: flex; gap: .2rem; }
+    .steps span { display: block; width: 1rem; height: .11rem; border-radius: 10px; background: #e4ccec45; }
+    .steps span[aria-current="step"] { background: var(--accent); }
+    .offline { font-size: .49rem; color: var(--muted); text-align: right; }
+    @media (orientation: portrait) {
+      :root { font-size: clamp(16px, min(4.4vw, 4vh), 57px); }
+      .rank { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-flow: row; grid-auto-rows: minmax(0, 1fr); }
+      #content > section { padding: clamp(16px, 4.7vw, 65px); }
+      .logo { width: clamp(125px, 36vw, 340px); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GROOVE LOUNGE</h1>
+    <img class="logo" src="/assets/logo-word.png" width="564" height="79" alt="">
+    <button type="button" data-fullscreen>전체 화면 <span lang="en">· Fullscreen</span></button>
+  </header>
+
+  <main id="stage">
+    <div class="status" data-status role="status"><div><b>불러오는 중</b><small lang="en">Loading</small></div></div>
+    <div id="content" hidden>
+      <section data-slide="rank" aria-labelledby="rank-title">
+        <h2 id="rank-title">주간 TOP 10 <small lang="en">Weekly top 10</small></h2>
+        <div class="panel-body" data-rank></div>
+      </section>
+      <section data-slide="votes" aria-labelledby="votes-title" hidden>
+        <h2 id="votes-title">투표 결과 <small lang="en">Vote results</small></h2>
+        <div class="panel-body" data-votes></div>
+      </section>
+      <section data-slide="challenge" aria-labelledby="challenge-title" hidden>
+        <h2 id="challenge-title">포토 챌린지 1등 <small lang="en">Photo challenge winner</small></h2>
+        <div class="panel-body" data-challenge></div>
+      </section>
+      <section data-slide="song" aria-labelledby="song-title" hidden>
+        <h2 id="song-title">피크타임 곡 투표 <small lang="en">Peak-time song vote</small></h2>
+        <div class="panel-body" data-song></div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="steps" data-steps hidden>
+      <span role="img" aria-label="주간 TOP 10 / Weekly top 10"></span>
+      <span role="img" aria-label="투표 결과 / Vote results"></span>
+      <span role="img" aria-label="포토 챌린지 1등 / Photo challenge winner"></span>
+      <span role="img" aria-label="피크타임 곡 투표 / Peak-time song vote"></span>
+    </div>
+    <p class="offline" role="status" data-offline hidden>최근 결과 · 연결 확인 중 <span lang="en">/ Last results · Reconnecting</span></p>
+  </footer>
+
+  <script>
+    (() => {
+      const SCENE_MS = 30000;
+      const POLL_MS = 7500;
+      const api = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
+      const content = document.getElementById('content');
+      const status = document.querySelector('[data-status]');
+      const offline = document.querySelector('[data-offline]');
+      const steps = document.querySelector('[data-steps]');
+      const slides = Array.from(content.children);
+      const rank = document.querySelector('[data-rank]');
+      const votes = document.querySelector('[data-votes]');
+      const challenge = document.querySelector('[data-challenge]');
+      const song = document.querySelector('[data-song]');
+      const number = new Intl.NumberFormat('ko-KR');
+      let scene = 0, rotation, pollTimer, wakeLock, acquiring = false, fetching = false;
+      let votePages = [], songPages = [];
+      const pageCount = { votes: 0, song: 0 };
+
+      function element(tag, value) {
+        const el = document.createElement(tag);
+        if (value !== undefined) el.textContent = value;
+        return el;
+      }
+      function bilingual(ko, en, tag = 'b') {
+        const english = element('small', en);
+        english.lang = 'en';
+        const copy = element('div');
+        copy.append(element(tag, ko), english);
+        return copy;
+      }
+      function empty(target, ko, en) {
+        const copy = bilingual(ko, en);
+        copy.className = 'empty';
+        target.replaceChildren(copy);
+      }
+      function row(label, value, position) {
+        const item = element('li');
+        if (position !== undefined) {
+          const rank = element('span', String(position));
+          rank.className = 'rank-number';
+          rank.setAttribute('aria-hidden', 'true');
+          item.append(rank);
+        }
+        item.append(element('b', label), element('strong', value));
+        return item;
+      }
+      function pages(polls) {
+        return polls.flatMap(poll => {
+          const choices = [...poll.choices].sort((a, b) => b.votes - a.votes);
+          return Array.from({ length: Math.ceil(choices.length / 5) }, (_, i) => ({
+            title: poll.title, choices: choices.slice(i * 5, (i + 1) * 5)
+          }));
+        });
+      }
+      function paintPoll(target, polls, key, ko, en) {
+        if (!polls.length) return empty(target, ko, en);
+        const index = pageCount[key] % polls.length;
+        const page = polls[index];
+        const article = element('article');
+        article.className = 'poll';
+        const list = element('ul');
+        for (const { label, votes } of page.choices) list.append(row(label, number.format(votes)));
+        article.append(element('h3', page.title), list);
+        if (polls.length > 1) article.append(element('small', (index + 1) + ' / ' + polls.length));
+        target.replaceChildren(article);
+      }
+      function paintCurrentPoll() {
+        if (scene === 1) paintPoll(votes, votePages, 'votes', '아직 투표 결과가 없어요', 'No vote results yet');
+        if (scene === 3) paintPoll(song, songPages, 'song', '아직 곡 투표 결과가 없어요', 'No song vote results yet');
+      }
+      function showScene(next) {
+        scene = next;
+        slides.forEach((slide, i) => { slide.hidden = i !== scene; });
+        Array.from(steps.children).forEach((step, i) => {
+          if (i === scene) step.setAttribute('aria-current', 'step');
+          else step.removeAttribute('aria-current');
+        });
+        paintCurrentPoll();
+        clearInterval(pollTimer);
+        const pollKey = slides[scene].dataset.slide;
+        if (pollKey in pageCount) {
+          let shown = 1;
+          pollTimer = setInterval(() => {
+            pageCount[pollKey]++;
+            paintCurrentPoll();
+            if (++shown === SCENE_MS / POLL_MS) clearInterval(pollTimer);
+          }, POLL_MS);
+        }
+      }
+
+      function paint(data) {
+        if (data.top.length) {
+          const list = element('ol');
+          list.className = 'rank';
+          data.top.slice(0, 10).forEach((item, i) => list.append(row(item.nick, number.format(item.points) + 'P', i + 1)));
+          rank.replaceChildren(list);
+        } else empty(rank, '이번 주 순위가 아직 없어요', 'No rankings this week yet');
+        if (data.challenge) {
+          const winner = element('div');
+          winner.className = 'winner';
+          const likes = bilingual('좋아요 ' + number.format(data.challenge.likes), number.format(data.challenge.likes) + ' likes', 'span');
+          winner.append(element('h3', data.challenge.title), element('p', data.challenge.nick), likes);
+          challenge.replaceChildren(winner);
+        } else empty(challenge, '아직 우승자가 없어요', 'The winner has yet to be announced');
+        votePages = pages(data.votes);
+        songPages = pages(data.songs ?? (data.song ? [data.song] : []));
+        status.hidden = true;
+        offline.hidden = true;
+        steps.hidden = false;
+        content.hidden = false;
+        if (!rotation) {
+          pageCount.votes = pageCount.song = 0;
+          showScene(0);
+          rotation = setInterval(() => {
+            // Move past the last page before the next visit to this scene.
+            const pollKey = slides[scene].dataset.slide;
+            if (pollKey in pageCount) pageCount[pollKey]++;
+            showScene((scene + 1) % slides.length);
+          }, SCENE_MS);
+        } else paintCurrentPoll();
+      }
+
+      function cover(ko, en) {
+        content.hidden = steps.hidden = offline.hidden = true;
+        clearInterval(rotation);
+        clearInterval(pollTimer);
+        rotation = null;
+        status.replaceChildren(bilingual(ko, en));
+        status.hidden = false;
+      }
+      async function refresh() {
+        if (fetching) return;
+        fetching = true;
+        try {
+          const response = await fetch(api, { method: 'POST', headers: { 'content-type': 'text/plain' },
+            body: JSON.stringify({ a: 'board' }), signal: AbortSignal.timeout(12000) });
+          if (!response.ok) throw new Error('board');
+          const data = await response.json();
+          if (data.error === 'closed') cover('준비 중이에요', 'Coming soon');
+          else if (data.error) throw new Error(data.error);
+          else paint(data);
+        } catch {
+          if (content.hidden) cover('화면을 불러오지 못했어요', 'Could not load the display');
+          else offline.hidden = false;
+        } finally {
+          fetching = false;
+        }
+      }
+
+      async function keepAwake() {
+        if (acquiring || (wakeLock && !wakeLock.released) || document.visibilityState !== 'visible' || !navigator.wakeLock) return;
+        acquiring = true;
+        try {
+          const lock = await navigator.wakeLock.request('screen');
+          wakeLock = lock;
+          lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; }, { once: true });
+        } catch { /* Browsers and power settings may restrict screen wake locks. */ }
+        finally { acquiring = false; }
+      }
+
+      const fullscreen = document.querySelector('[data-fullscreen]');
+      fullscreen.hidden = !document.fullscreenEnabled;
+      fullscreen.onclick = () => document.documentElement.requestFullscreen().catch(() => {});
+      document.addEventListener('fullscreenchange', keepAwake);
+      document.addEventListener('visibilitychange', keepAwake);
+      window.addEventListener('online', refresh);
+      refresh();
+      keepAwake();
+      setInterval(() => { refresh(); keepAwake(); }, SCENE_MS);
+    })();
+  </script>
+</body>
+</html>

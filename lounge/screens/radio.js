@@ -4,6 +4,8 @@
     title: ['그루브 라디오', 'Groove Radio'], app: ['유튜브 앱으로 열기', 'Open in the YouTube app'],
     back: ['놀거리', 'Play'], workout: ['운동', 'Workout'], work: ['작업', 'Work'],
     drive: ['드라이브', 'Drive'], late: ['새벽 GROOVE', 'Late-night GROOVE'],
+    sessions: ['GROOVE SESSIONS 전체', 'All GROOVE SESSIONS'],
+    edm: ['3F EDM', '3F EDM'], hiphop: ['2F 힙합', '2F Hip-hop'],
     earned: ['라디오 {n}P 받았어요', 'Radio earned you {n}P']
   });
   const origin = 'https://www.youtube.com';
@@ -30,7 +32,10 @@
       view.innerHTML = U.status(data?.error && data.error !== 'action' ? 'error' : 'empty');
       return;
     }
-    const label = item => ['workout', 'work', 'drive', 'late'].includes(item.key) ? t(item.key) : L.esc(item.label || item.key);
+    const defaultLabels = { sessions: 'GROOVE SESSIONS 전체', edm: '3F EDM', hiphop: '2F HIP-HOP' };
+    const label = item => ['workout', 'work', 'drive', 'late'].includes(item.key) ||
+      (Object.hasOwn(defaultLabels, item.key) && item.label === defaultLabels[item.key])
+      ? t(item.key) : L.esc(item.label || item.key);
     view.innerHTML = '<div data-player style="' + U.card + '"></div><div style="display:grid;gap:8px">' +
       lists.map((item, i) => U.button(label(item), 'data-radio="' + i + '"')).join('') + '</div>';
     const player = view.querySelector('[data-player]');

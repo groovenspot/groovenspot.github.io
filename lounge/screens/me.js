@@ -19,6 +19,9 @@
     save: ['저장', 'Save'],
     saved: ['저장했어요.', 'Saved.'],
     language: ['언어', 'Language'],
+    alerts: ['알림 설정', 'Notification settings'],
+    blocks: ['차단 목록', 'Blocked accounts'],
+    rewards: ['생일·초대 코드', 'Birthday and invite code'],
     signout: ['로그아웃', 'Log out'],
     withdraw: ['탈퇴', 'Delete account'],
     withdrawHelp: ['탈퇴하면 계정과 프로필이 삭제돼요. 비밀번호를 입력해 주세요.', 'Your account and profile will be deleted. Enter your password to continue.'],
@@ -29,7 +32,6 @@
   )));
   const t = key => L.esc(L.t('me.' + key));
   const a = key => L.esc(L.t('auth.' + key));
-  const date = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul' });
 
   async function renderMe(root) {
     const me = L.me;
@@ -41,7 +43,10 @@
       (['2F', '3F'].includes(me.floor) ? ' · ' + me.floor : '') + '</p></div></header>' +
       (me.bio ? '<p class="shell-bio">' + L.esc(me.bio) + '</p>' : '') +
       '<div class="shell-actions"><a class="btn" href="#/me/edit">' + t('edit') +
-      '</a><a class="btn" href="#/me/settings">' + t('settings') + '</a></div>' +
+      '</a><a class="btn" href="#/me/settings">' + t('settings') + '</a>' +
+      '<a class="btn" href="#/alerts">' + L.esc(L.t('core.alerts')) + '</a>' +
+      (L.open('rewards') ? '<a class="btn" href="#/rewards">' + t('rewards') + '</a>' :
+        '<p class="muted">' + t('rewards') + ' · ' + L.esc(L.t('core.soon')) + '</p>') + '</div>' +
       '<div class="shell-stack" data-points aria-busy="true"><p role="status">' + a('pending') + '</p></div>' +
       (L.canInstall() ? '<button class="btn" data-install>' + L.esc(L.t('core.install')) + '</button>' : '') + '</div>';
     const install = root.querySelector('[data-install]');
@@ -53,7 +58,7 @@
     const stamps = result.stamps ?? me.stamps;
     const n = Math.min(10, Math.max(0, Number(stamps?.n ?? stamps) || 0));
     const balance = new Intl.NumberFormat(L.lang).format(Number(result.points ?? me.points) || 0);
-    const formatDate = L.lang === 'ko' ? date : new Intl.DateTimeFormat('en', { timeZone: 'Asia/Seoul' });
+    const formatDate = new Intl.DateTimeFormat(L.lang, { timeZone: 'Asia/Seoul' });
     const badges = Array.isArray(result.badges) ? result.badges : [];
     const ledger = Array.isArray(result.ledger) ? result.ledger : [];
     panel.innerHTML = '<section class="shell-card shell-points"><h2>' + t('points') + '</h2><p class="shell-score">' +
@@ -125,8 +130,9 @@
     });
   }
 
-  function exit() {
+  async function exit() {
     L.closeSheet();
+    try { if (L.logoutPush) await L.logoutPush(); } catch (e) {}   // 공용 폰: 이 기기 푸시·알림 증표 끊기 (보안 점검, ①)
     L.setToken('');
     L.me = null;
     L.go('tonight');
@@ -138,11 +144,13 @@
       (me[name] ? ' checked' : '') + '>' + a(name) + '</label>';
     root.innerHTML = '<div class="shell-stack"><h1>' + t('settings') + '</h1><form class="shell-form">' +
       checkbox('ads') + checkbox('night') + '<label class="shell-field">' + t('language') +
-      '<select name="lang"><option value="ko">한국어</option><option value="en">English</option></select></label>' +
+      '<select name="lang"><option value="ko" lang="ko">한국어</option><option value="en" lang="en">English</option>' +
+      '<option value="ja" lang="ja">日本語</option><option value="zh" lang="zh">中文</option></select></label>' +
       submit('save') + '</form><section class="shell-card"><h2>' + a('reset') + '</h2><p>' + a('resetHelp') + '</p></section>' +
       '<div class="shell-actions"><button class="btn" data-signout>' + t('signout') + '</button>' +
       '<button class="btn shell-danger" data-withdraw>' + t('withdraw') + '</button></div>' +
-      '<a class="shell-link" href="#/terms">' + a('termsTitle') + '</a><a class="shell-link" href="#/privacy">' +
+      '<a class="shell-link" href="#/alerts">' + t('alerts') + '</a><a class="shell-link" href="#/blocks">' + t('blocks') +
+      '</a><a class="shell-link" href="#/terms">' + a('termsTitle') + '</a><a class="shell-link" href="#/privacy">' +
       a('privacyTitle') + '</a></div>';
     const form = root.querySelector('form');
     form.elements.lang.value = L.lang;
@@ -152,7 +160,7 @@
       if (result.error) throw new Error(result.error);
       if (L.me !== me) return;
       L.me = result.me || { ...me, ...body };
-      L.setLang(body.lang);
+      L.setLang(body.lang, true);
       await L.route();
       L.toast(L.t('me.saved'));
     });
