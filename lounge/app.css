@@ -14,3 +14,51 @@ body { margin: 0; background: var(--bg); color: var(--txt); font: 16px/1.6 "Pret
 .btn-hot { background: var(--g); border-color: var(--g); color: var(--g-ink); }
 input, textarea, select { width: 100%; font: inherit; font-size: 16px; color: var(--txt); background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 12px 14px; }
 .muted { color: var(--muted); }
+
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--g); outline-offset: 3px; }
+body.sheet-open { overflow: hidden; }
+#view { max-width: 640px; margin-inline: auto; overflow-wrap: anywhere; }
+#tabbar { z-index: 10; padding-inline: max(0px, calc((100% - 640px) / 2)); }
+#offline { margin: 0; padding: 6px 16px; color: var(--g-ink); background: #ffb27a; text-align: center; font-weight: 700; }
+#sheet > .in { width: min(100%, 640px); margin-inline: auto; }
+#sheet > .in:focus { outline: none; }
+h1, h2, p { margin-block: 0; }
+h1 { font-size: 1.65rem; line-height: 1.25; }
+h2 { font-size: 1.1rem; }
+a { color: var(--g); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); }
+
+.shell-auth, .shell-stack, .shell-form { display: grid; gap: 14px; }
+.shell-brand { font-size: 20px; font-weight: 900; letter-spacing: .035em; }
+.shell-field { display: grid; gap: 5px; font-weight: 700; }
+.shell-field small { font-weight: 500; }
+.shell-field input, .shell-field select { min-height: 48px; }
+.shell-field input[type=file] { padding-inline: 4px; }
+.shell-field input::file-selector-button { min-height: 44px; }
+.shell-consent, .shell-card { margin: 0; min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
+.shell-card > * + * { margin-top: 8px; }
+.shell-consent-row, .shell-actions, .shell-profile, .shell-row { display: flex; align-items: center; gap: 10px; }
+.shell-row, .shell-consent-row { justify-content: space-between; }
+.shell-actions { flex-wrap: wrap; }
+.shell-choice { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
+.shell-choice input { appearance: none; display: grid; place-content: center; width: 22px; height: 22px; margin: 0; padding: 0; border-radius: 5px; border: 1px solid var(--muted); flex: none; }
+.shell-choice input:checked, .shell-choice input:indeterminate { color: var(--g-ink); background: var(--g); border-color: var(--g); }
+.shell-choice input:checked::before { content: '✓'; }
+.shell-choice input:indeterminate::before { content: '−'; }
+.shell-link { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; width: fit-content; border: 0; background: transparent; color: var(--g); font: inherit; text-decoration: underline; cursor: pointer; }
+.shell-error, .shell-danger { color: #ff9295; }
+.shell-actions > .shell-error { flex-basis: 100%; }
+.shell-avatar { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--g); background: #2a1a0e; color: #ffb27a; object-fit: cover; font-weight: 900; }
+.shell-bio { white-space: pre-wrap; }
+.shell-points { background: #2a1a0e; border-color: #a65d28; }
+.shell-score { font-size: 1.55rem; font-weight: 900; }
+.shell-stamps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; justify-items: center; }
+.shell-stamps span { display: grid; place-items: center; width: min(100%, 44px); aspect-ratio: 1; border: 2px dashed var(--line-2); border-radius: 50%; }
+.shell-stamps .filled { color: var(--g-ink); border: 0; background: var(--g); font-weight: 900; }
+.shell-badges, .shell-ledger { padding: 0; list-style: none; }
+.shell-badges { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.shell-badges li { display: grid; justify-items: center; text-align: center; padding: 8px 4px; border: 1px solid var(--line-2); border-radius: 12px; }
+.shell-badges span { color: #ffb27a; font-size: 1.4rem; }
+.shell-ledger li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.shell-ledger small { display: block; }
