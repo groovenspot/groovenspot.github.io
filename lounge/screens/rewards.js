@@ -46,6 +46,22 @@ const LoungeRewardUI = (() => {
     'error.staff': ['직원에게 전달하지 못했어요. 다시 시도해 주세요.', 'Could not reach the staff. Please try again.'],
     'error.network': ['연결을 확인하고 같은 내용으로 다시 시도해 주세요.', 'Check your connection and retry with the same details.']
   });
+  L.i18n({
+    ja: {
+      'rewards.bookingWindow': '承認待ちの予約は2件までです。未処理の予約は翌日の正午に期限切れになります。',
+      'rewards.expired': '期限切れ',
+      'rewards.error.pending_limit': '未処理の申請が{limit}件あります。処理されてからもう一度お申し込みください。',
+      'rewards.error.daily_limit': '本日の申請上限に達しました。次の営業日にお試しください。',
+      'rewards.error.request': '申請内容が一致しません。内容を確認してから、もう一度お申し込みください。'
+    },
+    zh: {
+      'rewards.bookingWindow': '最多可有两笔待处理的预约。尚未处理的预约将于次日中午过期。',
+      'rewards.expired': '已过期',
+      'rewards.error.pending_limit': '你有 {limit} 笔待处理的请求，请等待处理后再提交。',
+      'rewards.error.daily_limit': '已达到今天的申请上限，请在下一个营业日重试。',
+      'rewards.error.request': '请求内容不一致，请确认后重新提交。'
+    }
+  });
 
   const panel = html => '<section style="' + U.card + '">' + html + '</section>';
   const heading = (title, back) => '<h1>' + title + '</h1>' + U.link(back, L.esc(L.t(back === '#/me' ? 'nav.me' : 'nav.play')));

@@ -12,6 +12,16 @@
     orderWindow: ['대기 중인 주문은 3건까지 가능해요. 접수 후 48시간 안에 수령해 주세요.', 'You can have up to three orders pending. Collect your order within 48 hours.'],
     login: ['로그인하면 주문할 수 있어요.', 'Log in to order.']
   });
+  L.i18n({
+    ja: {
+      'shop.expired': '期限切れ',
+      'shop.orderWindow': '受け取り待ちの注文は3件までです。ご注文から48時間以内にお受け取りください。'
+    },
+    zh: {
+      'shop.expired': '已过期',
+      'shop.orderWindow': '最多可有三笔待领取的订单，请在下单后48小时内到店领取。'
+    }
+  });
 
   const money = amount => new Intl.NumberFormat(L.lang, { style: 'currency', currency: 'KRW' }).format(Number(amount) || 0);
   function triplet(key, id) {
