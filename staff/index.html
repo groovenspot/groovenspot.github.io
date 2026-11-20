@@ -9764,7 +9764,7 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       if (top.length) o += '<div class="orgtop"><span class="orglab">대표</span>' + top.map(function (a) { return accCard(a, true); }).join('') + '</div>';
       o += '<div class="orgteams">' + order.map(function (t) {
         var mem = rest.filter(function (a) { return (a.team || '') === t; }); if (!mem.length) return '';
-        var leads = mem.filter(function (a) { return a.role === '팀장'; }).map(function (a) { return esc(a.name); }), op = (state.accTeams || {})[t] != null ? state.accTeams[t] : mem.some(function (a) { return a.name === state.accOpen; });   // 🎨 2026-11-20: 팀은 한 줄로 접고 누르면 펼침
+        var leads = mem.filter(function (a) { return a.role === '팀장'; }).map(function (a) { return esc(a.name); }), op = (state.accTeams || {})[t] != null ? state.accTeams[t] : (!boss && (!d.team || t === d.team)) || mem.some(function (a) { return a.name === state.accOpen; });   // 🎨 2026-11-20: 팀은 한 줄로 접고 누르면 펼침 · 팀장이 보면 자기 팀은 처음부터 펼침 (대표 결정 2026-11-20)
         return '<details class="orgteam" data-oteam="' + esc(t) + '"' + (op ? ' open' : '') + '><summary><h3>' + (t ? teamChip(t) : '<span class="chip">팀 없음</span>') + '<small>' + mem.length + '명</small>' + (leads.length ? '<span class="olead">팀장 ' + leads.join(' · ') + '</span>' : '') + '</h3></summary>' +
           TIERS.concat(['']).map(function (r) {
             var ps = mem.filter(function (a) { return r ? a.role === r : TIERS.indexOf(a.role) < 0; }); if (!ps.length) return '';
