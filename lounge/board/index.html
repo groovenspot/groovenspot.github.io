@@ -100,12 +100,14 @@
         if (!data.votes.length) empty(votes);
         const challenge = document.querySelector('[data-challenge]');
         challenge.replaceChildren();
-        if (data.challenge) challenge.append(element('h3', data.challenge.title), element('p', data.challenge.nick));
-        else empty(challenge);
+        if (data.challenge) {
+          const likes = element('small');
+          likes.append(words('좋아요 ' + number.format(data.challenge.likes), number.format(data.challenge.likes) + ' likes'));
+          challenge.append(element('h3', data.challenge.title), element('p', data.challenge.nick), likes);
+        } else empty(challenge);
         const song = document.querySelector('[data-song]');
-        song.replaceChildren();
-        if (data.song) song.append(poll(data.song));
-        else empty(song);
+        song.replaceChildren(...data.song.map(poll));
+        if (!data.song.length) empty(song);
         status.hidden = true;
         content.hidden = false;
       }
