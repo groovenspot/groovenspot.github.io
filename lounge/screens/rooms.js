@@ -239,6 +239,7 @@
     let sending = false;
     let handshake, nextConnect = 0;
     let reconnectDelay = 1000;
+    let live = false, lastSnapshot = 0, snapshotMessages;
 
     function finishPending(value) {
       if (!pending) return;
@@ -251,6 +252,7 @@
     function disconnect() {
       clearTimeout(reconnectTimer);
       handshake = null;
+      live = false;
       const connection = socket;
       socket = null;
       if (connection) connection.close(1000);
@@ -281,6 +283,7 @@
       const url = new URL('ws', new URL((window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/').replace(/\/$/, '') + '/', location.href));
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       url.searchParams.set('ch', channel);
+      url.searchParams.set('live', '1');
       if (result.ticket) url.searchParams.set('ticket', result.ticket);
       else if (result.error === 'ticket_off') url.searchParams.set('token', token);
       else return retryConnection();
@@ -289,28 +292,36 @@
       socket = connection;
       connection.onopen = () => {
         if (socket !== connection) return;
-        refresh();
+        scheduleRefresh();
       };
       connection.onmessage = event => {
         if (socket !== connection) return;
         let data;
         try { data = JSON.parse(event.data); } catch { return; }
-        if (data.type === 'ready') reconnectDelay = 1000;
-        if (data.type === 'refresh') scheduleRefresh();
+        if (data.type === 'ready') {
+          reconnectDelay = 1000;
+          live = data.live === true;
+        }
+        if (data.type === 'refresh' && !receiveMessage(data.message)) {
+          if (snapshotMessages) snapshotMessages.length = 0;
+          scheduleRefresh();
+        }
         if (data.type === 'sent' && data.nonce === pending?.nonce) finishPending(data);
       };
       connection.onclose = event => {
         if (socket !== connection) return;
         socket = null;
-        if (event.code === 1008 && ['blocked', 'banned', 'suspended', 'kicked', 'auth', 'closed'].includes(event.reason)) {
+        live = false;
+        if (event.code === 1008 && ['blocked', 'banned', 'suspended', 'kicked', 'auth', 'closed', 'room_closed'].includes(event.reason)) {
           request++;
+          snapshotMessages = null;
           chat.replaceChildren();
           data = null;
           form.hidden = true;
         }
         finishPending(null);
         retryConnection();
-        refresh();
+        scheduleRefresh();
       };
     }
 
@@ -357,13 +368,41 @@
       connect();
     }
 
+    function mergeMessages(snapshot, incoming) {
+      const last = snapshot.messages.at(-1)?.seq ?? 0;
+      const added = [...new Map(incoming.filter(message => message.seq > last)
+        .map(message => [message.seq, message])).values()].sort((a, b) => a.seq - b.seq);
+      if (!added.length) return snapshot;
+      const messages = [...snapshot.messages, ...added];
+      if (messages.length <= 40) return { ...snapshot, messages };
+      const page = messages.slice(-40);
+      return { ...snapshot, messages: page, before: page[0].seq };
+    }
+
+    function receiveMessage(message) {
+      if (!Number.isSafeInteger(message?.seq) || !message.id) return false;
+      if (wantedCursor != null) return true;
+      if (snapshotMessages) {
+        snapshotMessages.push(message);
+        if (snapshotMessages.length > 40) snapshotMessages.shift();
+      }
+      if (!data?.room.open || pageCursor != null) return Boolean(snapshotMessages);
+      const next = mergeMessages(data, [message]);
+      if (next !== data) paint(next, undefined);
+      return true;
+    }
+
     async function load(before) {
       const version = ++request;
-      const next = await L.api('room_get', { id, before });
+      const incoming = [];
+      snapshotMessages = incoming;
+      const next = await L.api('room_get', { id, before, live: true });
       if (stopped || version !== request) return;
+      snapshotMessages = null;
       if (!next.error) {
+        lastSnapshot = Date.now();
         if (!retry.hidden) status.textContent = '';
-        paint(next, before);
+        paint(before == null && next.room.open ? mergeMessages(next, incoming) : next, before);
         return;
       }
       if (!['network', 'server'].includes(next.error)) {
@@ -389,13 +428,13 @@
       if (refreshAgain) { refreshAgain = false; scheduleRefresh(); }
     }
 
-    // Coalesce a burst of socket notices into at most one snapshot per interval.
+    // Stagger snapshots when many clients receive the same invalidation.
     function scheduleRefresh() {
       if (stopped || refreshTimer) return;
       refreshTimer = setTimeout(() => {
         refreshTimer = null;
         refresh();
-      }, 400);
+      }, Math.random() * 800);
     }
 
     function showPage(cursor) {
@@ -479,20 +518,20 @@
       }
       if (input.value.trim() === text) input.value = '';
       if (result.error) status.textContent = problem(result.error);
-      await showPage(undefined);
+      if (!live || wantedCursor != null || !receiveMessage(result.message)) await showPage(undefined);
     };
     function refreshIfVisible() {
-      if (document.visibilityState !== 'hidden') refresh();
+      if (document.visibilityState !== 'hidden' && (!live || Date.now() - lastSnapshot >= 30_000)) scheduleRefresh();
     }
 
-    window.addEventListener('online', refresh);
+    window.addEventListener('online', scheduleRefresh);
     document.addEventListener('visibilitychange', refreshIfVisible);
     timer = setInterval(refreshIfVisible, 4500 + Math.random() * 1000);
     active = () => {
       stopped = true;
       clearInterval(timer);
       clearTimeout(refreshTimer);
-      window.removeEventListener('online', refresh);
+      window.removeEventListener('online', scheduleRefresh);
       document.removeEventListener('visibilitychange', refreshIfVisible);
       disconnect();
     };
