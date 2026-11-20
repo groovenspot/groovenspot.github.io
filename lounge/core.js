@@ -168,8 +168,8 @@
       if (gate || ['play', 'tonight', 'me', 'user'].includes(name)) await config;
       if (version !== routeVersion) return;
       refreshBadges(version, config);
-      if (gate && !L.open(gate)) {
-        root.textContent = L.t('core.soon');
+      if (gate && !L.open(gate)) {   // 꺼진 기능: 화면 제목 + 준비 중 (통합 때 Claude)
+        root.innerHTML = (def?.title && title !== titleKey ? '<h1>' + L.esc(title) + '</h1>' : '') + '<p class="muted">' + L.esc(L.t('core.soon')) + '</p>';
         return;
       }
       if (def?.auth && !L.me) {
