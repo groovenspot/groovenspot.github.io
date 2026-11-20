@@ -6,7 +6,7 @@
       readAll: '모두 읽음', more: '이전 알림 더 보기', phone: '이 기기에서 알림 받기',
       enable: '폰 알림 켜기', disable: '폰 알림 끄기', types: '받을 폰 알림',
       hours: '오전 7시부터 낮 12시까지는 폰 알림을 쉬어요. 밤 알림 동의는 나 → 설정에서 바꿀 수 있어요.',
-      install: '아이폰과 아이패드는 Safari에서 공유 → 홈 화면에 추가를 누른 뒤, 홈 화면에서 라운지를 열어 주세요.',
+      install: '아이폰·아이패드(16.4 이상)는 Safari에서 공유 → 홈 화면에 추가를 누르세요. 홈 화면에서 라운지를 열고 폰 알림을 켜 주세요.',
       unsupported: '이 브라우저는 폰 알림을 지원하지 않아요.', denied: '브라우저 설정에서 알림을 허용해 주세요.',
       failed: '알림을 불러오거나 저장하지 못했어요. 다시 시도해 주세요.', retry: '다시 시도',
       lostPage: '분실물 확인', dj: '팔로우한 DJ', lost: '분실물', keep: '킵 만료', dm: '메시지',
@@ -17,7 +17,7 @@
       readAll: 'Mark all as read', more: 'Load older notifications', phone: 'Notifications on this device',
       enable: 'Turn on push', disable: 'Turn off push', types: 'Push categories',
       hours: 'Phone notifications are quiet from 7 am to noon. Change your night preferences under Me → Settings.',
-      install: 'On iPhone or iPad, tap Share → Add to Home Screen in Safari. Then open Lounge from your Home Screen.',
+      install: 'On iPhone or iPad, use version 16.4 or later. In Safari, tap Share → Add to Home Screen. Open Lounge from your Home Screen and turn on push.',
       unsupported: 'This browser does not support push notifications.', denied: 'Allow notifications in your browser settings.',
       failed: 'Could not load or save notifications. Please try again.', retry: 'Try again',
       lostPage: 'Check lost and found', dj: 'DJs you follow', lost: 'Lost and found', keep: 'Keep expiry', dm: 'Messages',
@@ -41,6 +41,33 @@
     }
     return result;
   }
+
+  let badgeVersion = 0;
+  function paintAlertBadge(unread) {
+    if (!Number.isSafeInteger(unread) || unread < 0) return;
+    badgeVersion++;
+    const link = document.querySelector('[data-lounge-inbox="alerts"]');
+    const badge = link?.querySelector('span');
+    if (badge) {
+      const label = L.t('core.alerts');
+      badge.hidden = unread === 0;
+      badge.textContent = unread > 99 ? '99+' : unread || '';
+      link.setAttribute('aria-label', unread ? L.t('core.unread', { label, count: unread }) : label);
+    }
+    try {
+      const badgeUpdate = unread ? navigator.setAppBadge?.(unread) : navigator.clearAppBadge?.();
+      badgeUpdate?.catch(() => {});
+    } catch {}
+  }
+
+  navigator.serviceWorker?.addEventListener('message', async event => {
+    const controller = navigator.serviceWorker.controller;
+    if (!controller || event.source !== controller || event.data?.type !== 'lounge-notices-changed' || !L.me) return;
+    const member = L.me.id;
+    const version = ++badgeVersion;
+    const result = await L.api('notices');
+    if (L.me?.id === member && version === badgeVersion) paintAlertBadge(result.unread);
+  });
 
   function pushSupported() {
     return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
@@ -135,6 +162,8 @@
   }
 
   async function render(root) {
+    const memberId = L.me.id;
+    const stillHere = () => root.isConnected && L.me?.id === memberId;
     root.className = 'shell-stack';
     root.innerHTML = '<h1>' + e(t('title')) + '</h1>' +
       '<section class="shell-card shell-stack" aria-label="' + e(t('title')) + '">' +
@@ -164,6 +193,7 @@
     function updateUnread() {
       status.textContent = inbox.children.length ? t('unread', { n: unread }) : t('empty');
       readAll.hidden = !unread;
+      if (stillHere()) paintAlertBadge(unread);
     }
 
     async function load(cursor) {
@@ -186,8 +216,11 @@
             if (event.ctrlKey || event.metaKey || event.shiftKey || n.read) return;
             event.preventDefault();
             try {
-              await action('notices_read', { id: n.id });
-              if (root.isConnected) L.go(link.hash);
+              const result = await action('notices_read', { id: n.id });
+              if (stillHere()) {
+                paintAlertBadge(result.unread);
+                L.go(link.hash);
+              }
             } catch {
               listError.textContent = t('failed');
               listError.hidden = false;
@@ -204,8 +237,8 @@
             read.onclick = async () => {
               read.disabled = true;
               try {
-                await action('notices_read', { id: n.id });
-                if (!n.read && row.dataset.read !== 'true') unread--;
+                const result = await action('notices_read', { id: n.id });
+                unread = result.unread;
                 n.read = true;
                 row.dataset.read = 'true';
                 read.remove();
@@ -242,7 +275,8 @@
       readAll.disabled = true;
       more.disabled = true;
       try {
-        await action('notices_read', { before: newest });
+        const result = await action('notices_read', { before: newest });
+        if (stillHere()) paintAlertBadge(result.unread);
         inbox.replaceChildren();
         status.textContent = '';
         newest = 0;
