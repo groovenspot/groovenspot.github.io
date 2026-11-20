@@ -22,7 +22,7 @@
         ['challenge', 'challenge'], ['songs', 'songs']].map(([name, gate]) =>
         '<article class="shell-card">' + (!gate || L.open(gate) ? U.link('#/' + name, t(name)) :
           '<h2>' + t(name) + '</h2><p class="muted">' + L.esc(L.t('core.soon')) + '</p>') + '</article>'
-      ).join('') + '</div>';
+      ).join('') + (L.guessTile?.() ?? '') + '</div>';
 
     const heading = view.querySelector('[data-points]');
     const button = view.querySelector('[data-attend]');
