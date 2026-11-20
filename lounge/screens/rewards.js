@@ -282,50 +282,55 @@ const LoungeRewardUI = (() => {
       if (state.error === 'auth') L.needLogin();
       return;
     }
-    const openStamps = state.stamps.filter(stamp => stamp.givenAt === null).length;
-    const claimed = state.stamps.length - openStamps;
-    view.innerHTML = panel('<h2>' + t('balance') + '</h2><strong style="font-size:2rem;color:var(--g)">' +
-      amount(state.points) + 'P</strong><p class="muted">' + t('expiry') + '</p>') +
-      panel('<h2>' + t('stamps') + '</h2><p>' + (openStamps ? t('stampReady', { n: openStamps }) + ' · ' + t('stampHelp') :
-        t('stampEmpty')) + '</p>' + (claimed ? '<p class="muted">' + t('stampGiven', { n: claimed }) + '</p>' : '')) +
-      panel('<h2>' + t('weekly') + '</h2><ul style="padding-inline-start:20px">' +
-        Object.entries(state.mission.progress).filter(([key]) => state.mission[key] > 0).map(([key, n]) => '<li>' +
-          t(key) + ' · ' + amount(Math.min(n, state.mission[key])) + ' / ' + amount(state.mission[key]) + '</li>').join('') +
-        '</ul><strong>' + t(state.mission.paid ? 'missionDone' : 'missionPoints', { n: state.mission.points }) + '</strong>') +
-      panel('<h2>' + t('season', { n: state.season.level }) + '</h2><p>' + amount(state.season.points) + 'P' +
-        (state.season.next === null ? '' : ' · ' + t('next', { n: amount(state.season.next) })) + '</p>') +
-      bookings(state.bookings) + '<div data-booking></div>' + birthdayForm(state.birthday) +
-      panel('<h2>' + t('invite') + '</h2><p class="muted">' + t('inviteHelp') + '</p>' +
-        U.button(t('inviteButton'), 'data-invite') + '<p data-code role="status"></p>') +
-      panel('<h2>' + t('recap') + '</h2>' + U.button(t('makeCard'), 'data-make-card') + '<div data-recap></div>');
+    function paint(state) {
+      const openStamps = state.stamps.filter(stamp => stamp.givenAt === null).length;
+      const claimed = state.stamps.length - openStamps;
+      view.innerHTML = panel('<h2>' + t('balance') + '</h2><strong style="font-size:2rem;color:var(--g)">' +
+        amount(state.points) + 'P</strong><p class="muted">' + t('expiry') + '</p>') +
+        panel('<h2>' + t('stamps') + '</h2><p>' + (openStamps ? t('stampReady', { n: openStamps }) + ' · ' + t('stampHelp') :
+          t('stampEmpty')) + '</p>' + (claimed ? '<p class="muted">' + t('stampGiven', { n: claimed }) + '</p>' : '')) +
+        panel('<h2>' + t('weekly') + '</h2><ul style="padding-inline-start:20px">' +
+          Object.entries(state.mission.progress).filter(([key]) => state.mission[key] > 0).map(([key, n]) => '<li>' +
+            t(key) + ' · ' + amount(Math.min(n, state.mission[key])) + ' / ' + amount(state.mission[key]) + '</li>').join('') +
+          '</ul><strong>' + t(state.mission.paid ? 'missionDone' : 'missionPoints', { n: state.mission.points }) + '</strong>') +
+        panel('<h2>' + t('season', { n: state.season.level }) + '</h2><p>' + amount(state.season.points) + 'P' +
+          (state.season.next === null ? '' : ' · ' + t('next', { n: amount(state.season.next) })) + '</p>') +
+        bookings(state.bookings) + '<div data-booking></div>' + birthdayForm(state.birthday) +
+        panel('<h2>' + t('invite') + '</h2><p class="muted">' + t('inviteHelp') + '</p>' +
+          U.button(t('inviteButton'), 'data-invite') + '<p data-code role="status"></p>') +
+        panel('<h2>' + t('recap') + '</h2>' + U.button(t('makeCard'), 'data-make-card') + '<div data-recap></div>');
 
-    const refresh = () => render(root);
-    bookingForm(view.querySelector('[data-booking]'), { birthday: state.birthday?.free, done: refresh });
-    const birthday = view.querySelector('[data-birthday]');
-    if (birthday) wire(birthday, 'birthday_set', data => ({ month: Number(data.get('month')), day: Number(data.get('day')) }), refresh);
-    view.querySelector('[data-invite]').onclick = async event => {
-      const button = event.currentTarget;
-      button.disabled = true;
-      const result = await L.api('invite_code');
-      if (!view.isConnected) return;
-      button.disabled = false;
-      if (result.error) U.error(result);
-      else view.querySelector('[data-code]').textContent = result.code;
-    };
-    view.querySelector('[data-make-card]').onclick = async event => {
-      const button = event.currentTarget;
-      button.disabled = true;
-      const data = await L.api('recap');
-      if (!view.isConnected) return;
-      try {
-        if (data.error) U.error(data);
-        else await recapCard(view, data);
-      } catch {
-        U.error();
-      } finally {
+      const refresh = () => render(root);
+      bookingForm(view.querySelector('[data-booking]'), { birthday: state.birthday?.free, done: refresh });
+      const birthday = view.querySelector('[data-birthday]');
+      if (birthday) wire(birthday, 'birthday_set',
+        data => ({ month: Number(data.get('month')), day: Number(data.get('day')) }),
+        result => paint({ ...state, birthday: result.birthday }));
+      view.querySelector('[data-invite]').onclick = async event => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        const result = await L.api('invite_code');
+        if (!view.isConnected) return;
         button.disabled = false;
-      }
-    };
+        if (result.error) U.error(result);
+        else view.querySelector('[data-code]').textContent = result.code;
+      };
+      view.querySelector('[data-make-card]').onclick = async event => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        const data = await L.api('recap');
+        if (!view.isConnected) return;
+        try {
+          if (data.error) U.error(data);
+          else await recapCard(view, data);
+        } catch {
+          U.error();
+        } finally {
+          button.disabled = false;
+        }
+      };
+    }
+    paint(state);
   }
 
   L.screen('rewards', { nav: 'play', title: 'rewards.title', render });

@@ -34,6 +34,16 @@
   const t = key => L.esc(L.t('me.' + key));
   const a = key => L.esc(L.t('auth.' + key));
 
+  function profileMenu() {
+    const link = (href, label) => '<a class="btn" href="' + href + '">' + label + '</a>';
+    const panel = LoungeScreenUI.sheet('<h2>' + t('settings') + '</h2><div class="shell-stack">' +
+      link('#/me/settings', t('settings')) + link('#/alerts', L.esc(L.t('core.alerts'))) +
+      (L.open('rewards') ? link('#/rewards', t('rewards')) : '') +
+      (L.open('share') ? link('#/saved', L.esc(L.t('share.saved'))) : '') +
+      '<button type="button" class="btn" data-menu-signout>' + t('signout') + '</button></div>');
+    panel.querySelector('[data-menu-signout]').onclick = exit;
+  }
+
   async function renderMe(root) {
     const me = L.me;
     const profile2 = L.open('profile2');
@@ -47,13 +57,16 @@
     const editLink = '<a class="btn" href="#/me/edit">' + t('edit') + '</a>';
     root.innerHTML = '<div class="shell-stack">' +
       (profile2 ? '<div class="shell-stack" data-own-profile>' + LoungeScreenUI.status('loading', true) + '</div>' : legacy) +
-      '<div class="shell-actions" data-me-actions>' + (profile2 ? '' : editLink) +
-      '<a class="btn" href="#/me/settings">' + t('settings') + '</a>' +
-      '<a class="btn" href="#/alerts">' + L.esc(L.t('core.alerts')) + '</a>' +
-      (L.open('rewards') ? '<a class="btn" href="#/rewards">' + t('rewards') + '</a>' :
-        '<p class="muted">' + t('rewards') + ' · ' + L.esc(L.t('core.soon')) + '</p>') + '</div>' +
+      '<div class="shell-actions" data-me-actions>' + (profile2
+        ? '<button type="button" class="btn" data-profile-menu aria-label="' + t('settings') + '">≡</button>'
+        : editLink + '<a class="btn" href="#/me/settings">' + t('settings') + '</a>' +
+          '<a class="btn" href="#/alerts">' + L.esc(L.t('core.alerts')) + '</a>' +
+          (L.open('rewards') ? '<a class="btn" href="#/rewards">' + t('rewards') + '</a>' :
+            '<p class="muted">' + t('rewards') + ' · ' + L.esc(L.t('core.soon')) + '</p>')) + '</div>' +
       '<div class="shell-stack" data-points aria-busy="true"><p role="status">' + a('pending') + '</p></div>' +
       (L.canInstall() ? '<button class="btn" data-install>' + L.esc(L.t('core.install')) + '</button>' : '') + '</div>';
+    const menu = root.querySelector('[data-profile-menu]');
+    if (menu) menu.onclick = profileMenu;
     const install = root.querySelector('[data-install]');
     if (install) install.onclick = () => L.showInstall(false);
     if (profile2) void L.api('user', { nick: me.nick }).then(response => {
