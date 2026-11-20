@@ -178,7 +178,7 @@
       const result = await L.api('report', { kind: 'room_msg', id: message.id, why: panel.querySelector('select').value });
       if (!panel.isConnected) return;
       submit.disabled = false;
-      if (result.error) { panel.querySelector('[role=status]').textContent = problem(result.error); return; }
+      if (result.error) { panel.querySelector('[role=status]').textContent = problem(result.error === 'target' ? 'not_found' : result.error); return; }
       L.closeSheet();
       L.toast(t('reported'));
     };
