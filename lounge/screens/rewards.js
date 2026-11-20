@@ -28,13 +28,17 @@ const LoungeRewardUI = (() => {
     message: ['문구', 'Message'], time: ['오늘 나갈 시각 (한국 시간)', 'Time tonight (Korea time)'],
     timeHelp: ['23:30 전에 나갈 시각을 골라 주세요.', 'Choose a time before 11:30 p.m.'],
     bookingHelp: ['직원이 확인한 뒤 나가요. 예약이 반려되면 사용한 포인트를 돌려드려요.', 'Staff review each booking. If it’s declined, any points used are returned.'],
+    bookingWindow: ['대기 중인 예약은 2건까지 가능해요. 처리되지 않은 예약은 다음 날 낮 12시에 만료돼요.', 'You can have up to two screen bookings pending. Unprocessed bookings expire at noon the next day.'],
     pointsPay: ['500P로 예약', 'Book for 500P'], birthdayPay: ['생일 축하 무료 예약', 'Book free birthday message'],
     storePay: ['매장 결제로 예약', 'Book and pay at the club'], history: ['내 전광판 예약', 'My screen bookings'],
     sending: ['직원에게 보내는 중', 'Sending to staff'], pending: ['직원 확인 대기', 'Waiting for staff'],
-    done: ['송출 완료', 'Shown on screen'], rejected: ['반려', 'Declined'], failed: ['전달 실패', 'Could not send'],
+    done: ['송출 완료', 'Shown on screen'], rejected: ['반려', 'Declined'], failed: ['전달 실패', 'Could not send'], expired: ['만료', 'Expired'],
     stock: ['재고가 바뀌었어요. 상품 목록을 다시 확인해 주세요.', 'Stock changed. Please check the product list again.'],
     'error.time': ['아직 지나지 않은 23:30 전 시각을 골라 주세요.', 'Choose a future time before 11:30 p.m.'],
     'error.full': ['오늘 전광판 예약이 찼어요.', 'Today’s screen bookings are full.'],
+    'error.pending_limit': ['대기 중인 요청이 {limit}건 있어요. 처리된 뒤 다시 신청해 주세요.', 'You have {limit} pending requests. Wait for one to finish before sending another.'],
+    'error.daily_limit': ['오늘 신청할 수 있는 횟수를 다 썼어요. 다음 영업일에 다시 신청해 주세요.', 'You’ve reached today’s request limit. Try again on the next business day.'],
+    'error.request': ['신청 정보가 바뀌었어요. 내용을 확인하고 다시 신청해 주세요.', 'This request no longer matches. Check the details and submit it again.'],
     'error.text': ['문구를 30자 이내로 써 주세요.', 'Enter a message of up to 30 characters.'],
     'error.points': ['포인트가 모자라요.', 'You don’t have enough points.'],
     'error.birthday': ['생일 날짜와 무료 예약 가능 여부를 확인해 주세요.', 'Check the birthday date and free booking availability.'],
@@ -50,11 +54,11 @@ const LoungeRewardUI = (() => {
   const submit = label => '<button type="submit" class="btn btn-hot">' + label + '</button>';
   const message = () => '<p data-feedback role="status" hidden></p>';
   const amount = n => new Intl.NumberFormat(L.lang).format(Number(n) || 0);
-  function feedback(form, error) {
+  function feedback(form, { error, limit }) {
     const out = form.querySelector('[data-feedback]');
     if (error === 'auth') L.needLogin();
     const key = 'rewards.error.' + error;
-    const value = L.t(key);
+    const value = L.t(key, { limit: Number(limit) || 0 });
     out.textContent = error === 'closed' ? L.t('core.soon')
       : error === 'stock' ? L.t('rewards.stock')
       : error === 'birthday_locked' ? L.t('rewards.birthdayLocked')
@@ -83,7 +87,7 @@ const LoungeRewardUI = (() => {
       button.disabled = false;
       if (res.error) {
         if (res.error !== 'network' && res.error !== 'server') request = null;
-        feedback(form, res.error);
+        feedback(form, res);
         return;
       }
       request = null;
@@ -110,7 +114,7 @@ const LoungeRewardUI = (() => {
       '<input type="time" name="at" max="23:29" required style="' + inputStyle + '"></label>' +
       '<small class="muted">' + t('timeHelp') + '</small>' +
       (birthday ? '<label><input type="checkbox" name="birthday"> ' + t('birthdayPay') + '</label>' : '') +
-      '<p class="muted">' + t('bookingHelp') + '</p>' + message() +
+      '<p class="muted">' + t('bookingHelp') + '</p><p class="muted">' + t('bookingWindow') + '</p>' + message() +
       submit(t(store ? 'storePay' : 'pointsPay')) + '</form>');
     view.append(card);
     const form = card.querySelector('form');

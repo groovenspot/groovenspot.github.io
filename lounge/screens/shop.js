@@ -8,7 +8,8 @@
     discount: ['쓸 포인트', 'Points to use'], discountHelp: ['1P는 1원이에요. 상품 금액의 20%까지 할인받을 수 있어요.', '1P is worth ₩1. Use points for up to 20% off merchandise.'],
     order: ['매장 수령 주문하기', 'Order for pickup'], orders: ['내 굿즈 주문', 'My merch orders'],
     sending: ['직원에게 보내는 중', 'Sending to staff'], pending: ['수령 대기', 'Waiting for pickup'],
-    done: ['수령 완료', 'Picked up'], failed: ['전달 실패', 'Could not send'],
+    done: ['수령 완료', 'Picked up'], failed: ['전달 실패', 'Could not send'], expired: ['만료', 'Expired'],
+    orderWindow: ['대기 중인 주문은 3건까지 가능해요. 접수 후 48시간 안에 수령해 주세요.', 'You can have up to three orders pending. Collect your order within 48 hours.'],
     login: ['로그인하면 주문할 수 있어요.', 'Log in to order.']
   });
 
@@ -57,7 +58,8 @@
     const checkout = goods.some(good => good.stock > 0) ? R.panel('<p>' + t('store') +
       '</p><dl style="display:grid;gap:8px">' + triplet('subtotal', 'total') + triplet('due', 'due') +
       '</dl><label>' + t('discount') + ' <input name="points" type="number" min="0" max="0" value="0" required style="' +
-      R.inputStyle + '"></label><p class="muted">' + t('discountHelp') + '</p>' + R.message() + R.submit(t('order'))) : '';
+      R.inputStyle + '"></label><p class="muted">' + t('discountHelp') + '</p><p class="muted">' + t('orderWindow') +
+      '</p>' + R.message() + R.submit(t('order'))) : '';
     view.innerHTML = L.me ? '<form data-order>' + listing + checkout + '</form>' +
       history(info?.orders || []) + R.bookings(info?.bookings || []) + '<div data-booking></div>'
       : '<p>' + t('store') + '</p>' + listing + '<p>' + t('login') + '</p>' +
