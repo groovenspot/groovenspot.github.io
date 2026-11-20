@@ -56,7 +56,7 @@
   const profilePath = nick => '#/user/' + encodeURIComponent(nick);
   const publicPath = id => '#/p/' + encodeURIComponent(id);
   const url = path => new URL('/lounge/' + path, location.origin).href;
-  const authorOf = post => post.author?.nick || post.author?.name || 'GROOVE';
+  const authorOf = post => post.author?.nick || 'GROOVE';
   const thumbOf = post => P.photo(post.thumb || post.photos?.[0]).thumb;
   const isPrivate = post => post.private === true || post.author?.private === true || post.hidden === true;
   const idOf = value => typeof value === 'string' ? value : value?.id;
@@ -137,7 +137,7 @@
     function paint() {
       results.innerHTML = rows.length ? rows.map((target, i) =>
         '<button type="button" class="share-target" data-target="' + i + '" aria-pressed="' + selected.has(target.nick) + '">' +
-        avatar(target) + '<span class="share-name">' + L.esc(target.nick) + '</span></button>').join('') :
+        avatar(target) + '<span class="share-name">' + L.whoTag(target) + '</span></button>').join('') :
         '<span class="muted">' + text('none') + '</span>';
       results.querySelectorAll('[data-target]').forEach(button => {
         button.onclick = () => {
@@ -409,7 +409,7 @@
     return '<a class="share-ref" href="' + href + '">' + (thumb
       ? '<img alt="" src="' + L.esc(thumb) + '" loading="lazy" referrerpolicy="no-referrer">' : '') +
       '<span><strong>' + text(isPost ? 'post' : 'profile') + '</strong><br>' +
-      L.esc(ref.author) + (ref.text ? '<br>' + L.esc(ref.text) : '') + '</span></a>';
+      L.whoTag({ nick: ref.author, tag: ref.tag }) + (ref.text ? '<br>' + L.esc(ref.text) : '') + '</span></a>';
   }
 
   async function renderSaved(root) {
@@ -436,7 +436,7 @@
         post.saved = true;
         const card = document.createElement('article'), thumb = thumbOf(post);
         card.className = 'post-card share-card';
-        card.innerHTML = '<strong>' + L.esc(authorOf(post)) + '</strong>' +
+        card.innerHTML = '<strong>' + L.whoTag({ ...post.author, nick: authorOf(post) }) + '</strong>' +
           (thumb ? P.image(thumb, '', false) : '') + '<p>' + L.esc(post.text) + '</p><div class="post-bar">' +
           U.link(postPath(post.id), text('post')) + '</div>';
         list.append(card);
@@ -465,7 +465,7 @@
     if (!view.isConnected) return;
     if (!post) { view.innerHTML = P.state(text('gonePost')); return; }
     const media = (post.photos || []).map(P.photo).filter(photo => photo.src);
-    view.innerHTML = '<article class="post-card share-card"><strong>' + L.esc(authorOf(post)) + '</strong>' +
+    view.innerHTML = '<article class="post-card share-card"><strong>' + L.whoTag({ ...post.author, nick: authorOf(post) }) + '</strong>' +
       media.map(photo => P.image(photo.src, '', false, photo)).join('') +
       '<p>' + L.esc(post.text) + '</p></article>';
   }
