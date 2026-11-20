@@ -48,7 +48,8 @@ const LoungePostUI = (() => {
     .post-carousel { min-width:0; }
     .post-carousel-track { display:grid; grid-auto-flow:column; grid-auto-columns:100%; overflow-x:auto;
       scroll-snap-type:x mandatory; overscroll-behavior-inline:contain; overflow-anchor:none; scrollbar-width:none;
-      touch-action:pan-x pan-y pinch-zoom; }
+      -webkit-overflow-scrolling:touch; }
+    .post-carousel-track::-webkit-scrollbar { display:none; }
     .post-slide { min-width:0; display:grid; place-items:center; scroll-snap-align:start; scroll-snap-stop:always; }
     .post-slide > :is(a.post-video,button.post-photo-button) { width:100%; min-height:44px; }
     .post-slide > button.post-photo-button { display:block; border:0; padding:0; background:var(--bg-2); cursor:pointer; }
@@ -185,19 +186,24 @@ const LoungePostUI = (() => {
         ? Array.from({ length: count }, (_, i) => '<span aria-hidden="true"' + (i === index ? ' data-current' : '') + '></span>').join('') +
           (index < count ? '<small>' + (index + 1) + '/' + count + '</small>' : '') : '';
     }
-    function fill(items) {
-      track.replaceChildren(...items.map(slide), ...(end ? [end] : []));
-      update();
-    }
-    fill(slides);
+    track.prepend(...slides.map(slide));
+    update();
     async function expand() {
       if (!load || requested) return;
       requested = true;
       const items = await load();
-      if (!container.isConnected || !items?.length) return;
-      const position = track.scrollLeft;
-      fill(items);
-      track.scrollLeft = position;
+      if (!container.isConnected || !items || !end) return;
+      const cover = track.firstElementChild;
+      if (!items.length) cover.remove();
+      else if (slides[0] !== items[0]) cover.innerHTML = items[0];
+      if (items.length > 1) {
+        // Keep the two existing snap areas in place while WebKit finishes the swipe.
+        const moreSlide = end.cloneNode(true);
+        end.classList.remove('post-slide-more');
+        end.innerHTML = items[1];
+        track.append(...items.slice(2).map(slide), moreSlide);
+        end = moreSlide;
+      }
       update();
     }
     track.addEventListener('scroll', () => {
