@@ -1815,6 +1815,7 @@ html .ycgoby.ok { color: var(--ok); }
 html .ycb { gap: 8px; margin: 10px 0 0; }
 html .ycb .btn { flex: 1 1 40%; min-height: 52px; border-radius: 14px; font-size: 15px; }
 html .ycb .btn-hot { width: auto; }
+html .ycb .btn.ycgo:disabled { flex: 1 1 100%; min-height: 58px; font-size: 16px; font-weight: 800; opacity: 1; color: var(--muted); border-style: dashed; }
 html .ycb .btn.btn-bad.ycgo { flex: 1 1 100%; min-height: 58px; background: var(--bad); border-color: var(--bad); color: #fff; font-size: 18px; font-weight: 900; }
 html .ycl { justify-content: flex-start; gap: 4px 16px; margin: 10px 0 0; }
 html .ycl .link { font-size: 14px; }
@@ -3776,7 +3777,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         '노래: 멜론 링크 또는 사운드클라우드 링크. 다운로드 되는 곡은 <b>⬇️ 다운</b> 버튼으로 조명실에서 받고, 다운로드 없는 곡은 <b>⚠️ 미발매</b>로 표시돼요. 시작 구간은 <b>노래 시작</b> 칸에',
         '영상 칸: <b>아룬·클로버·고트·없음</b>은 그대로, 아래 손님 영상은 <b>내가 많이 쓴 순서</b>로 떠요',
         '<b>📁 세팅곡</b>: 구글 드라이브 세팅곡 폴더에서 초성으로 찾아 고르기 · DJ팀·관리자는 곡 파일을 올릴 수 있어요',
-        '<b>전광 준비</b>(DJ팀·팀장·대표) + <b>술 준비</b>(운영팀)가 되면 요청한 사람에게 알림 → <b>ㄱㄱ 시작</b> → 끝나면 <b>컷</b> · <b>🍾 술 준비</b>를 누르면 <b>DJ팀 전원</b>에게 바로 알림',
+        '<b>전광 준비</b>(DJ팀·팀장·대표) + <b>술 준비</b>(운영팀)가 <b>둘 다</b> 되면 요청한 사람에게 푸시 알림 → 그때부터 <b>ㄱㄱ 시작</b> → 끝나면 <b>컷</b> · <b>🍾 술 준비</b>를 누르면 <b>DJ팀 전원</b>에게 바로 알림',
         '연출탭에서 요청·고치기·준비·ㄱㄱ·컷·취소한 것도 <b>💬 연출 대화</b>에 카톡처럼 올라가요 (예: <code>3-10 바로 / 범용영상 / 홀로따로</code> · <b>✍️연출탭</b>)',
         '<b>ㄱㄱ·컷</b>은 요청한 사람·DJ팀·관리자(' + permH('keep', ['대표'], ['팀장']) + '), <b>순서(▲▼)</b>는 관리자·DJ팀만',
         '요청을 고치면 전광 준비가 다시 풀리고 카드에 <b>✏️ 수정됨</b>이 떠요',
@@ -9727,7 +9728,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   // 영업진이 요청 → DJ팀 전광 준비(ㅈㄱㅈㅂㅇ) · 운영팀 술 준비(ㅅㅈㅂㅇ) → ㄱㄱ(시작) → 컷(끝). ㄱㄱ·컷 = 요청자·DJ팀·관리자, 순서 = 관리자·DJ팀 (대표 결정 2026-11-18).
   function ycErr(r) {
     if (r.error === 'timetaken') return '그 시간은 이미 ' + (r.floor ? r.floor + ' ' : '') + (r.seat || '전광만') + ' 연출이 잡혀 있어요 (' + [r.at, r.who].filter(Boolean).join(' · ') + '). 5분 이상 띄워 주세요.';   // 🕐 같은 층 앞뒤 5분 (2026-11-20)
-    return { seat: '자리를 골라 주세요.', when: '순서를 다시 골라 주세요.', empty: '연출 내용을 하나 이상 넣어 주세요.', text: '<, >, " 는 쓸 수 없어요.', long: '문구는 300자까지예요.', songlink: '노래는 멜론 곡 링크나 사운드클라우드 곡 링크로 넣어 주세요.', drivesong: '📁 세팅곡 폴더에 있는 파일만 쓸 수 있어요.', video: '영상을 다시 올려 주세요.', songsite: '멜론이나 사운드클라우드 링크만 돼요.', unreleased: '사운드클라우드에 다운로드 링크가 없는 곡이에요 · 미발매곡은 안 돼요.', sctrack: '사운드클라우드 곡(트랙) 하나의 링크를 넣어 주세요.', check: '노래 링크를 확인하지 못했어요. 잠시 후 다시 해 주세요.',
+    return { notready: '전광 준비·술 준비가 둘 다 끝나야 ㄱㄱ 할 수 있어요.', seat: '자리를 골라 주세요.', when: '순서를 다시 골라 주세요.', empty: '연출 내용을 하나 이상 넣어 주세요.', text: '<, >, " 는 쓸 수 없어요.', long: '문구는 300자까지예요.', songlink: '노래는 멜론 곡 링크나 사운드클라우드 곡 링크로 넣어 주세요.', drivesong: '📁 세팅곡 폴더에 있는 파일만 쓸 수 있어요.', video: '영상을 다시 올려 주세요.', songsite: '멜론이나 사운드클라우드 링크만 돼요.', unreleased: '사운드클라우드에 다운로드 링크가 없는 곡이에요 · 미발매곡은 안 돼요.', sctrack: '사운드클라우드 곡(트랙) 하나의 링크를 넣어 주세요.', check: '노래 링크를 확인하지 못했어요. 잠시 후 다시 해 주세요.',
       forbidden: '이건 할 수 없어요.', state: '이미 바뀌었어요. 새로고침했어요.', notfound: '이미 지워졌어요.', busy: '잠시 후 다시 해 주세요.', photo: '사진은 3장까지, jpg·png만 돼요.' }[r.error] || '저장이 안 됐어요. 잠시 후 다시 해 주세요.';
   }
   function loadYc(quiet) {
@@ -9966,7 +9967,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   // 요청 뒤에 바뀐 것: 위에 '✏️ 수정됨 · 문구·노래', 바뀐 칸은 노란색, 문구는 바로 전 문구도
   var YC_CHG_L = { seat: '자리', when: '순서', text: '문구', song: '노래', songAt: '노래 시작', video: '영상', holo: '홀로', picket: '피켓', hammer: '망치', vvip: 'VVIP', parade: '퍼레이드', note: '메모', media: '사진·영상' };
   function ycCard(x, i, n) {
-    var y = state.yc, can = y.canEdit, mine = x.mine, boss = y.boss, ready = x.jg && x.sul, cls = 'yc' + (x.status === '진행' ? ' go' : x.status === '끝' ? ' end' : ready ? ' ready' : '');
+    var y = state.yc, can = y.canEdit, mine = x.mine, boss = y.boss, ready = x.jg && (x.sul || (x.v && x.v.lounge)), cls = 'yc' + (x.status === '진행' ? ' go' : x.status === '끝' ? ' end' : ready ? ' ready' : '');
     var cg = x.chg && x.chg.f && x.chg.f.length ? x.chg : null, ch = function (k) { return !!cg && cg.f.indexOf(k) >= 0; }, tag = '<span class="chgt">✏️ 바뀜</span>';
     var pill = x.status === '진행' ? '<span class="ycpill go">진행 중 ' + esc(x.goAt) + '</span>' : x.status === '끝' ? '' : ready ? '<span class="ycpill ok">준비 완료</span>' : '';
     var h = '<div class="' + cls + '" data-ycid="' + esc(x.id) + '"><div class="ych">' + pill + '<b' + (ch('seat') ? ' class="chg"' : '') + '>' + (x.status === '끝' ? '' : '#' + (i + 1) + ' ') + (x.seat ? '' : opIco('tv', 16) + ' ') + esc(opTxt(ycSeatTxt(x))) + '</b>' + (x.status === '진행' ? '' : '<span class="chip' + (ch('when') ? ' chg' : '') + '">' + esc(ycWhen(x)) + '</span>') +
@@ -9990,7 +9991,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       if (y.dj && x.status === '요청') b.push('<button class="btn' + (x.jg ? '' : ' btn-ok') + '" type="button" data-ycr="jg" data-on="' + (x.jg ? 0 : 1) + '">' + (x.jg ? '전광 준비 취소' : opIco('tv') + ' 전광 준비 완료') + '</button>');
       if (y.sul && x.status === '요청') b.push('<button class="btn' + (x.sul ? '' : ' btn-ok') + '" type="button" data-ycr="sul" data-on="' + (x.sul ? 0 : 1) + '">' + (x.sul ? '술 준비 취소' : opIco('check') + ' 술 준비 완료') + '</button>');
       var goOk = mine || y.goAll;   // ㄱㄱ·컷 = 요청자·DJ팀·관리자 (대표 결정 2026-11-18)
-      if (goOk && x.status === '요청') b.push('<button class="btn btn-hot ycgo" type="button" data-ycgo="1">' + opIco('play') + ' ㄱㄱ 시작</button>');
+      if (goOk && x.status === '요청') b.push(ready ? '<button class="btn btn-hot ycgo" type="button" data-ycgo="1">' + opIco('play') + ' ㄱㄱ 시작</button>' : '<button class="btn ycgo" type="button" disabled>' + opIco('clock') + ' ' + (!x.jg && !(x.sul || (x.v && x.v.lounge)) ? '전광·술' : !x.jg ? '전광' : '술') + ' 준비 기다리는 중</button>');   // ㄱㄱ 은 전광·술 준비 둘 다 끝나야 (대표 결정 2026-11-21)
       if (goOk && x.status === '진행') b.push('<button class="btn btn-bad ycgo" type="button" data-yccut="1">' + opIco('scissors') + ' 컷 · 끝내기</button>');
       if (b.length) h += '<div class="ycb">' + b.join('') + '</div>';
       var s = [];
@@ -10027,7 +10028,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     area.querySelectorAll('[data-ycid]').forEach(function (card) {
       var id = card.dataset.ycid, x = y.list.filter(function (q) { return q.id === id; })[0];
       card.querySelectorAll('[data-ycr]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; ycCall({ a: 'yc_ready', id: id, part: b.dataset.ycr, on: b.dataset.on === '1' }, function (r) { if (!r.ok) state.ycErr = ycErr(r); render(); }); }); });
-      var g = card.querySelector('[data-ycgo]'); if (g) g.addEventListener('click', function () { if ((!(x.jg && x.sul) || !x.mine) && !armed(g, 'ㄱㄱ 시작')) return; g.disabled = true; ycCall({ a: 'yc_go', id: id }, function (r) { state.ycMsg = r.ok ? 'ㄱㄱ! DJ에게 알렸어요.' : ''; if (!r.ok) state.ycErr = ycErr(r); render(); }); });
+      var g = card.querySelector('[data-ycgo]'); if (g) g.addEventListener('click', function () { if (!(x.jg && (x.sul || (x.v && x.v.lounge)))) return; if (!x.mine && !armed(g, 'ㄱㄱ 시작')) return; g.disabled = true; ycCall({ a: 'yc_go', id: id }, function (r) { state.ycMsg = r.ok ? 'ㄱㄱ! DJ에게 알렸어요.' : ''; if (!r.ok) state.ycErr = ycErr(r); render(); }); });
       var c = card.querySelector('[data-yccut]'); if (c) c.addEventListener('click', function () { c.disabled = true; ycCall({ a: 'yc_cut', id: id }, function (r) { state.ycMsg = r.ok ? '컷! 끝난 연출로 옮겼어요.' : ''; if (!r.ok) state.ycErr = ycErr(r); render(); }); });
       card.querySelectorAll('[data-ycmv]').forEach(function (b) { b.addEventListener('click', function () {
         var ids = act.map(function (q) { return q.id; }), k = ids.indexOf(id), j = k + +b.dataset.ycmv; if (j < 0 || j >= ids.length) return;
