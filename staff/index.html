@@ -7127,7 +7127,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       btn.disabled = true;
       call({ a: 'keep_liq', token: state.s.token, op: op, name: name }).then(function (r) {
         btn.disabled = false;
-        if (!r.ok) { m.textContent = { dup: '이미 있는 술이에요.', name: '이름을 확인해 주세요 (20자까지).', forbidden: '권한이 없어요 (빼기는 대표·김동기·양진호만).', busy: '잠시 후에 다시 해 주세요.', menu: '메뉴판 술은 뺄 수 없어요.', full: '더 넣을 수 없어요.' }[r.error] || '저장하지 못했어요.'; return; }
+        if (!r.ok) { m.textContent = { dup: '이미 있는 술이에요.', name: '이름을 확인해 주세요 (20자까지).', forbidden: '대표·김동기·양진호만 할 수 있어요.', busy: '잠시 후에 다시 해 주세요.', menu: '메뉴판 술은 뺄 수 없어요.', full: '더 넣을 수 없어요.' }[r.error] || '저장하지 못했어요.'; return; }
         k.liqs = r.liqs; k.liqExtra = r.extra; try { kSave(); } catch (e) {}
         if (op === 'add' && state.kadd) { var row = state.kadd.rows.filter(function (x) { return !x.liq.trim(); })[0]; if (row) row.liq = r.name; }
         $('sheet').hidden = true; $('sheet').innerHTML = ''; render();
