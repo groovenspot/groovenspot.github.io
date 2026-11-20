@@ -12,7 +12,8 @@
       unsupported: '이 브라우저는 폰 알림을 지원하지 않아요.', denied: '브라우저 설정에서 알림을 허용해 주세요.',
       failed: '알림을 불러오거나 저장하지 못했어요. 다시 시도해 주세요.', retry: '다시 시도',
       lostPage: '분실물 확인', dj: '팔로우한 DJ', lost: '분실물', keep: '킵 만료', dm: '메시지',
-      rooms: '오픈 대화방', social: '팔로우와 활동', md: '담당 MD', rewards: '보상'
+      rooms: '오픈 대화방', social: '팔로우와 활동', md: '담당 MD', rewards: '보상',
+      follow: '새 팔로워', follow_request: '팔로우 요청', follow_accept: '팔로우 요청 수락'
     },
     en: {
       title: 'Notifications', empty: 'No notifications yet.', unread: '{n} unread', read: 'Read',
@@ -25,15 +26,18 @@
       unsupported: 'This browser does not support push notifications.', denied: 'Allow notifications in your browser settings.',
       failed: 'Could not load or save notifications. Please try again.', retry: 'Try again',
       lostPage: 'Check lost and found', dj: 'DJs you follow', lost: 'Lost and found', keep: 'Keep expiry', dm: 'Messages',
-      rooms: 'Open Chat', social: 'Follows and activity', md: 'Your host', rewards: 'Rewards'
+      rooms: 'Open Chat', social: 'Follows and activity', md: 'Your host', rewards: 'Rewards',
+      follow: 'New follower', follow_request: 'Follow request', follow_accept: 'Follow request accepted'
     },
     ja: {
       preview: 'ロック画面の通知プレビュー', sensitive: 'メッセージ・通報・安全通知の内容を隠す',
-      all: 'すべての内容を隠す', details: '内容を表示する'
+      all: 'すべての内容を隠す', details: '内容を表示する',
+      follow: '新しいフォロワー', follow_request: 'フォローリクエスト', follow_accept: 'フォローリクエスト承認'
     },
     zh: {
       preview: '锁屏通知预览', sensitive: '隐藏私信、举报和安全通知的内容',
-      all: '隐藏所有内容', details: '显示通知详情'
+      all: '隐藏所有内容', details: '显示通知详情',
+      follow: '新关注者', follow_request: '关注请求', follow_accept: '关注请求已通过'
     }
   };
   // The staff acknowledgement keeps a stable tag across retries and existing inbox history.
@@ -44,6 +48,7 @@
     zh: { title: '安保人员正在赶来', body: '安保人员已确认你的请求。' }
   };
   const kinds = ['dj', 'lost', 'keep', 'dm', 'rooms', 'social', 'md', 'rewards'];
+  const followKinds = ['follow', 'follow_request', 'follow_accept'];
   L.i18n(Object.fromEntries(Object.entries(words).map(([lang, copy]) => [lang,
     Object.fromEntries(Object.entries(copy).map(([key, value]) => ['alerts.' + key, value]))
   ])));
@@ -367,6 +372,18 @@
       prefRetry.hidden = true;
       try {
         const result = await action('alert_prefs');
+        for (const kind of followKinds) {
+          const old = prefs.querySelector(`[name="${kind}"]`);
+          if (!Object.hasOwn(result.prefs, kind)) { old?.closest('label').remove(); continue; }
+          if (old) continue;
+          const label = document.createElement('label');
+          label.className = 'shell-choice';
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.name = kind;
+          label.append(input, t(kind));
+          preview.closest('label').before(label);
+        }
         for (const input of prefs.querySelectorAll('input')) input.checked = result.prefs[input.name];
         preview.value = savedPreview = result.preview || 'sensitive';
         prefs.disabled = false;
@@ -380,7 +397,7 @@
     prefRetry.onclick = loadPrefs;
     prefs.onchange = async event => {
       const input = event.target;
-      if (input !== preview && !kinds.includes(input.name)) return;
+      if (input !== preview && !kinds.includes(input.name) && !followKinds.includes(input.name)) return;
       prefs.disabled = true;
       prefError.hidden = true;
       try {
