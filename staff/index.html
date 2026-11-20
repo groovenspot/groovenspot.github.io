@@ -2024,6 +2024,17 @@ html[data-theme="light"] .conv.inq { background: #eef6ff; }
 .dx2m select { width: auto; min-width: 96px; }
 .dx2m small { flex-basis: 100%; color: var(--muted); font-weight: 600; font-size: 12px; }
 .dx2rep:has(input[name="dx2k"]:not([value=""]):checked) .dx2n { display: flex; align-items: flex-start; gap: 6px; margin: 8px 0 0; color: var(--txt); }
+.dx2time { display: grid; gap: 8px; min-width: 0; margin-top: 10px; }
+.dx2time [hidden], .dx2time[hidden] { display: none !important; }
+.dx2times { display: grid; gap: 7px; }
+.dx2times > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; }
+.dx2time .btn { margin: 0; }
+.dx2time .dx2time-field { display: grid; min-width: 0; margin: 0; gap: 4px; font-size: 14px; }
+.dx2time input[type="time"], .dx2time select { width: 100%; min-width: 0; min-height: 44px; }
+.dx2time .dx2add-time { justify-self: start; }
+.dx2range { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.dx2time .note { margin: 0; }
+.dec:has(.dx2deadline) .dgrid .dd { display: none; }
 .dx2n .cmi { flex: none; width: 16px; height: 16px; margin-top: 1px; color: var(--g); }
 #decAddF:has(input[name="dx2k"]:not([value=""]):checked) label:has(#decAddD) { opacity: .45; }
 .dx2card { margin: 0 0 12px; border: 1px solid var(--line-2); border-radius: 16px; background: var(--card); overflow: hidden; }
@@ -3889,11 +3900,29 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   }
 
   // ② 마감 알림·주간 요약·반복 (작업창 2)
-  // 🔁 반복: 추가 폼 칩(없음·매일·매주 요일·매달 날짜) — 라디오라 그리기만 해도 고르고 보낼 수 있음(칸 보이기는 CSS) · bind 는 고른 것 기억·마감 칸 끄기
+  // 🔁 반복: 매일의 고정 시각 목록 또는 매시간 범위, 매주 요일, 매달 날짜.
   var DX2_WD = ['일', '월', '화', '수', '목', '금', '토'];
-  function dx2Rep() { if (!state.dxRep) { var n = new Date(Date.now() + 9 * 3600e3); state.dxRep = { k: '', w: n.getUTCDay(), m: n.getUTCDate() }; } return state.dxRep; }
+  function dx2Rep() { if (!state.dxRep) { var n = new Date(Date.now() + 9 * 3600e3); state.dxRep = { k: '', w: n.getUTCDay(), m: n.getUTCDate(), mode: 'fixed', times: ['12:00'], start: '21:00', end: '05:00' }; } return state.dxRep; }
   function dx2Wd(s) { return DX2_WD[new Date(s + 'T00:00:00Z').getUTCDay()] || ''; }
   function dx2Chip(nm, v, t, on) { return '<label class="dx2chip"><input type="radio" name="' + nm + '" value="' + v + '"' + (on ? ' checked' : '') + '><span>' + t + '</span></label>'; }
+  function dx2Clock(ms) { return new Date(Number(ms) + 9 * 3600e3).toISOString().slice(11, 16); }
+  function dx2Minute(minute) {
+    return String(Math.floor(minute / 60)).padStart(2, '0') + ':' + String(minute % 60).padStart(2, '0');
+  }
+  function dx2Times(s) {
+    return s.times.map(function (value, i) {
+      return '<div><label class="dx2time-field">시간 ' + (i + 1) +
+        '<input type="time" name="dx2time" value="' + esc(value) + '" required></label>' +
+        '<button type="button" class="btn" data-dx2-remove="' + i + '" aria-label="시간 ' + (i + 1) + ' 삭제"' +
+        (s.times.length === 1 ? ' disabled' : '') + '>삭제</button></div>';
+    }).join('');
+  }
+  function dx2HourOptions(value) {
+    return Array.from({ length: 24 }, function (_, i) {
+      var time = dx2Minute(i * 60);
+      return '<option value="' + time + '"' + (time === value ? ' selected' : '') + '>' + time + '</option>';
+    }).join('');
+  }
   DX.add.push(function (d) {
     var s = dx2Rep(), ms = '';
     for (var i = 1; i <= 31; i++) ms += '<option value="' + i + '"' + (+s.m === i ? ' selected' : '') + '>' + i + '일</option>';
@@ -3901,11 +3930,25 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       '<div class="dx2row" role="radiogroup" aria-label="반복">' + [['', '없음'], ['d', '매일'], ['w', '매주'], ['m', '매달']].map(function (o) { return dx2Chip('dx2k', o[0], o[1], s.k === o[0]); }).join('') + '</div>' +
       '<div class="dx2row dx2w" role="radiogroup" aria-label="요일">' + DX2_WD.map(function (w, i) { return dx2Chip('dx2w', i, w, +s.w === i); }).join('') + '</div>' +
       '<label class="dx2m"><span>매달</span><select id="dx2M" aria-label="매달 며칠">' + ms + '</select><small>없는 날짜(31일 등)는 그 달 말일</small></label>' +
-      '<p class="note dx2n">' + cmIco('bell') + '<span>반복 업무는 그날그날 마감이 자동으로 정해져요 · 낮 12시에 그날 업무가 생겨요</span></p></fieldset>';
+      '<div class="dx2time" data-dx2-schedule hidden><div class="dx2row" role="radiogroup" aria-label="매일 반복 방식">' +
+      dx2Chip('dx2mode', 'fixed', '고정 시간', s.mode === 'fixed') +
+      dx2Chip('dx2mode', 'hourly', '매시간마다', s.mode === 'hourly') + '</div>' +
+      '<div class="dx2time" data-dx2-fixed hidden><div class="dx2times">' + dx2Times(s) + '</div>' +
+      '<button type="button" class="btn dx2add-time" data-dx2-add>시간 추가</button></div>' +
+      '<div class="dx2time" data-dx2-hourly hidden><div class="dx2range">' +
+      '<label class="dx2time-field">시작 시각<select id="dx2Start">' + dx2HourOptions(s.start) + '</select></label>' +
+      '<label class="dx2time-field">끝 시각<select id="dx2End">' + dx2HourOptions(s.end) + '</select></label></div>' +
+      '<p class="note">시작·끝 시각을 포함해 1시간마다 생성해요. 마감은 1시간 뒤예요.</p></div></div>' +
+      '<p class="note dx2n">' + cmIco('bell') + '<span data-dx2-hint></span></p></fieldset>';
   });
   DX.addData.push(function () {
     var q = function (sel) { return document.querySelector('#decAddF ' + sel); }, k = (q('input[name="dx2k"]:checked') || {}).value || '';
-    if (k === 'd') return { rep: { k: 'd' } };
+    if (k === 'd') {
+      if (q('input[name="dx2mode"]:checked').value === 'hourly') {
+        return { rep: { k: 'd', hourly: { start: q('#dx2Start').value, end: q('#dx2End').value } } };
+      }
+      return { rep: { k: 'd', times: Array.from(document.querySelectorAll('#decAddF input[name="dx2time"]'), function (el) { return el.value; }) } };
+    }
     if (k === 'w') return { rep: { k: 'w', v: +((q('input[name="dx2w"]:checked') || {}).value || 0) } };
     if (k === 'm') return { rep: { k: 'm', v: +((q('#dx2M') || {}).value || 1) } };
     return {};
@@ -3923,12 +3966,20 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     }
     var tp = list.filter(function (x) { return x.tpl && x.can; });
     if (tp.length) h += '<details class="dx2card dx2rp" id="dx2Rp"' + (state.dxRpOpen ? ' open' : '') + '><summary><span>🔁 반복 업무 <b>' + tp.length + '</b>개</span></summary><div class="dx2body">' + tp.map(function (x) {
-      return '<div class="dx2ri" data-dx2rep="' + esc(x.id) + '"><b class="w">' + esc(x.what) + '</b><span class="m"><span>' + cmIco('user') + esc(x.who || '-') + '</span><span>🔁 ' + esc(x.rep || '') + '</span>' + (x.next ? '<span>다음 ' + md(x.next) + '(' + dx2Wd(x.next) + ')</span>' : '') + '</span>' +
+      return '<div class="dx2ri" data-dx2rep="' + esc(x.id) + '"><b class="w">' + esc(x.what) + '</b><span class="m"><span>' + cmIco('user') + esc(x.who || '-') + '</span><span>🔁 ' + esc(x.rep || '') + '</span>' + (x.nextAt ? '<span>다음 ' + esc(md(x.nextAt.slice(0, 10)) + ' ' + x.nextAt.slice(11)) + '</span>' :
+        x.next ? '<span>다음 ' + md(x.next) + '(' + dx2Wd(x.next) + ')</span>' : '') + '</span>' +
         '<button class="btn btn-bad" type="button" data-dx2stop="1">그만하기</button></div>';
     }).join('') + '<p class="msg" id="dx2RpM" role="alert"></p></div></details>';
     return h;
   });
-  DX.badges.push(function (x) { return x.rep ? '<span class="dbadge rep">🔁 ' + esc(String(x.rep).replace(/^🔁\s*/, '')) + (x.tpl ? ' 틀' : '') + '</span>' : ''; });
+  DX.badges.push(function (x) {
+    if (!x.rep) return '';
+    var overdue = x.dueAt && x.status !== '완료' && Date.now() >= x.dueAt;
+    var deadline = x.dueAt ? '<span class="dbadge dx2deadline' + (overdue ? ' bad' : '') + '">' +
+      (overdue && x.due >= bizToday() ? '마감 시각 지남 · ' : '마감 ') + esc(dx2Clock(x.dueAt)) + '</span>' : '';
+    return '<span class="dbadge rep">🔁 ' + esc(String(x.rep).replace(/^🔁\s*/, '')) + (x.tpl ? ' 틀' : '') + '</span>' +
+      deadline + (x.missed ? '<span class="dbadge bad">밀린 회차 ' + esc(x.missed) + '번</span>' : '');
+  });
   function dx2Week() {
     var w = state.dxWk = state.dxWk || {}; w.busy = true; w.err = '';
     call({ a: 'dec_week', token: state.s.token }).then(function (r) {
@@ -3942,8 +3993,42 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     var f = $('decAddF'), s = dx2Rep();
     if (f) {
       if (!state.decAddOpen && !state.decAddDraft && s.k) { s.k = ''; var r0 = f.querySelector('input[name="dx2k"][value=""]'); if (r0) r0.checked = true; }   // 추가가 끝나면(폼 닫힘·글 비움) 반복은 '없음'으로
-      var sync = function () { var k = (f.querySelector('input[name="dx2k"]:checked') || {}).value || '', wv = f.querySelector('input[name="dx2w"]:checked'), m = $('dx2M'), dd = $('decAddD'); s.k = k; if (wv) s.w = +wv.value; if (m) s.m = +m.value; if (dd) dd.disabled = !!k; };
-      f.querySelectorAll('input[name="dx2k"], input[name="dx2w"], #dx2M').forEach(function (el) { el.addEventListener('change', sync); });
+      var panel = f.querySelector('[data-dx2-schedule]'), fixed = f.querySelector('[data-dx2-fixed]');
+      var hourly = f.querySelector('[data-dx2-hourly]'), list = f.querySelector('.dx2times');
+      var readTimes = function () { s.times = Array.from(list.querySelectorAll('input'), function (el) { return el.value; }); };
+      var sync = function () {
+        s.k = (f.querySelector('input[name="dx2k"]:checked') || {}).value || '';
+        var wv = f.querySelector('input[name="dx2w"]:checked'), m = $('dx2M'), dd = $('decAddD');
+        if (wv) s.w = +wv.value;
+        if (m) s.m = +m.value;
+        if (dd) dd.disabled = !!s.k;
+        s.mode = f.querySelector('input[name="dx2mode"]:checked').value;
+        s.start = $('dx2Start').value; s.end = $('dx2End').value;
+        panel.hidden = s.k !== 'd';
+        fixed.hidden = panel.hidden || s.mode !== 'fixed';
+        hourly.hidden = panel.hidden || s.mode !== 'hourly';
+        list.querySelectorAll('input').forEach(function (el) { el.disabled = fixed.hidden; });
+        f.querySelector('[data-dx2-hint]').textContent = s.k === 'd'
+          ? '이전 업무가 끝나지 않으면 새로 쌓지 않고 밀린 회차를 표시해요.'
+          : '반복 업무는 그날그날 마감이 자동으로 정해져요 · 낮 12시에 그날 업무가 생겨요';
+      };
+      f.querySelectorAll('input[name="dx2k"], input[name="dx2w"], #dx2M, input[name="dx2mode"], #dx2Start, #dx2End')
+        .forEach(function (el) { el.addEventListener('change', sync); });
+      list.addEventListener('input', readTimes);
+      fixed.addEventListener('click', function (e) {
+        var add = e.target.closest('[data-dx2-add]'), remove = e.target.closest('[data-dx2-remove]');
+        if (!add && !remove) return;
+        readTimes();
+        if (add) {
+          if (s.times.length >= 1440) return;
+          var minute = 12 * 60;
+          while (s.times.indexOf(dx2Minute(minute % 1440)) >= 0) minute++;
+          s.times.push(dx2Minute(minute % 1440));
+        } else s.times.splice(Number(remove.dataset.dx2Remove), 1);
+        list.innerHTML = dx2Times(s);
+        var inputs = list.querySelectorAll('input');
+        if (inputs.length) inputs[add ? inputs.length - 1 : Math.min(Number(remove.dataset.dx2Remove), inputs.length - 1)].focus();
+      });
       sync();
     }
     var wk = $('dx2Wk');
@@ -4167,9 +4252,9 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         call(body, { q: 1 }).then(function (r) {
           btn.disabled = false;
           if (r.error === 'auth') return toLogin(AUTH_OUT);
-          if (r.queued) { state.decAddDraft = ''; state.decAddOpen = false; state.decF = null; state.decQ = ''; state.decTeam = ''; state.decAddFl = null; state.decMd[DEC_NEW] = null; render(); alertMsg('📋 업무 추가 ' + OQ_PEND); return; }
+          if (r.queued) { state.decAddDraft = ''; state.decAddOpen = false; state.dxRep = null; state.decF = null; state.decQ = ''; state.decTeam = ''; state.decAddFl = null; state.decMd[DEC_NEW] = null; render(); alertMsg('📋 업무 추가 ' + OQ_PEND); return; }
           if (!r.ok) { m.className = 'msg'; m.textContent = Object.assign({ forbidden: '추가할 수 없어요.', text: '< > 는 쓸 수 없어요.', due: '마감 날짜를 다시 골라 주세요.', empty: '할 일을 써 주세요.', busy: '잠시 후 다시 해 주세요.', photo: '사진은 jpg·png 3장까지예요.', video: '영상을 다시 올려 주세요.' }, DX.err)[r.error] || '추가가 안 됐어요. 다시 해 주세요.'; return; }
-          state.decAddDraft = ''; state.decAddOpen = false; state.decF = null; state.decQ = ''; state.decTeam = ''; state.decAddFl = null; state.decMd[DEC_NEW] = null;   // 걸러 보기는 처음 기본값으로 (새 일이 보이게)
+          state.decAddDraft = ''; state.decAddOpen = false; state.dxRep = null; state.decF = null; state.decQ = ''; state.decTeam = ''; state.decAddFl = null; state.decMd[DEC_NEW] = null;   // 걸러 보기는 처음 기본값으로 (새 일이 보이게)
           state.data.decisions = r.decisions; saveData(state.data); render();
         }).catch(function () { btn.disabled = false; m.className = 'msg'; m.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
       });
