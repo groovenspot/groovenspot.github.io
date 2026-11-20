@@ -1,5 +1,141 @@
 <!doctype html>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GROOVE 라운지 · 매장 화면</title>
-<!-- ⑤ W-rewards 담당 (SPEC2): 매장 TV 용 주간 TOP 10 · 투표 결과 · 챌린지 1등. 지금은 빈 자리. -->
-<body style="background:#0a0909;color:#fff;font-family:sans-serif"><h1>GROOVE LOUNGE</h1></body>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>GROOVE LOUNGE · 매장 화면</title>
+  <style>
+    :root{color-scheme:dark;font:clamp(16px,1.35vw,26px)/1.4 system-ui,sans-serif;background:#0a0909;color:#f6efeb}
+    *{box-sizing:border-box}
+    body{margin:0;padding:clamp(16px,3vw,64px);min-height:100vh;background:radial-gradient(ellipse at 100% 0%,#2b143a,transparent 62%)}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid #ffffff26;padding-bottom:1em;margin-bottom:1.4em}
+    h1{font-size:clamp(24px,4vw,68px);line-height:1.05;margin:0}
+    h2{font-size:1.2rem;color:#ffb887;margin:0 0 .75em}
+    small{color:#ddcfe2;font-size:.75em;font-weight:500}
+    article h3{font-size:1rem;margin:.55em 0 .3em}
+    p{margin:.35em 0}
+    button{font:inherit;color:inherit;border:1px solid #ffffff50;border-radius:10px;background:#1e1924;padding:.4em .75em;cursor:pointer}
+    #content{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:1em;align-items:start}
+    #content[hidden]{display:none}
+    .stack{display:grid;gap:1em}
+    section{background:#171414;border:1px solid #ffffff26;border-radius:16px;padding:1em;overflow-wrap:anywhere}
+    article + article{border-top:1px solid #ffffff26;margin-top:.55em}
+    ol,ul{padding-inline-start:1.4em;margin:0}
+    li{padding:.3em .15em}
+    li + li{border-top:1px solid #ffffff15}
+    li::marker{color:#ffb887;font-weight:700}
+    li span{display:flex;justify-content:space-between;gap:.5em}
+    strong{color:#d5b2ff;white-space:nowrap}
+    :fullscreen [data-fullscreen]{display:none}
+    @media(max-width:680px){#content{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GROOVE LOUNGE</h1>
+    <button type="button" data-fullscreen>전체 화면 <small lang="en">Fullscreen</small></button>
+  </header>
+  <p data-status role="status">불러오는 중 <small lang="en">Loading</small></p>
+  <main id="content" hidden>
+    <section>
+      <h2>주간 TOP 10 <small lang="en">Weekly top 10</small></h2>
+      <ol data-rank></ol>
+    </section>
+    <div class="stack">
+      <section>
+        <h2>투표 결과 <small lang="en">Vote results</small></h2>
+        <div data-votes></div>
+      </section>
+      <section>
+        <h2>포토 챌린지 1등 <small lang="en">Photo challenge winner</small></h2>
+        <div data-challenge></div>
+      </section>
+      <section>
+        <h2>피크타임 곡 투표 <small lang="en">Peak-time song vote</small></h2>
+        <div data-song></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    (() => {
+      const content = document.getElementById('content');
+      const status = document.querySelector('[data-status]');
+      const api = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
+      const number = new Intl.NumberFormat('ko-KR');
+      const element = (tag, value) => {
+        const el = document.createElement(tag);
+        el.textContent = value;
+        return el;
+      };
+      const words = (ko, en) => {
+        const node = document.createDocumentFragment();
+        const english = element('small', en);
+        english.lang = 'en';
+        node.append(ko + ' ', english);
+        return node;
+      };
+      const empty = target => target.append(words('아직 없어요', 'Nothing to show yet'));
+      const pair = (label, value) => {
+        const row = document.createElement('li');
+        const inner = document.createElement('span');
+        inner.append(element('b', label), element('strong', value));
+        row.append(inner);
+        return row;
+      };
+      function poll(row) {
+        const article = document.createElement('article');
+        const list = document.createElement('ul');
+        for (const { label, votes } of row.choices) list.append(pair(label, number.format(votes)));
+        article.append(element('h3', row.title), list);
+        return article;
+      }
+
+      function paint(data) {
+        const rank = document.querySelector('[data-rank]');
+        rank.replaceChildren(...data.top.map(row => pair(row.nick, number.format(row.points) + 'P')));
+        if (!data.top.length) empty(rank.appendChild(document.createElement('li')));
+        const votes = document.querySelector('[data-votes]');
+        votes.replaceChildren(...data.votes.map(poll));
+        if (!data.votes.length) empty(votes);
+        const challenge = document.querySelector('[data-challenge]');
+        challenge.replaceChildren();
+        if (data.challenge) challenge.append(element('h3', data.challenge.title), element('p', data.challenge.nick));
+        else empty(challenge);
+        const song = document.querySelector('[data-song]');
+        song.replaceChildren();
+        if (data.song) song.append(poll(data.song));
+        else empty(song);
+        status.hidden = true;
+        content.hidden = false;
+      }
+
+      async function refresh() {
+        try {
+          const response = await fetch(api, { method: 'POST', headers: { 'content-type': 'text/plain' },
+            body: JSON.stringify({ a: 'board' }), signal: AbortSignal.timeout(12000) });
+          const data = await response.json();
+          if (data.error !== 'closed') {
+            if (data.error) throw new Error(data.error);
+            paint(data);
+            return;
+          }
+          content.hidden = true;
+          status.replaceChildren(words('준비 중이에요', 'Coming soon'));
+        } catch {
+          content.hidden = true;
+          status.replaceChildren(words('화면을 불러오지 못했어요', 'Could not load the display'));
+        } finally {
+          if (content.hidden) status.hidden = false;
+          setTimeout(refresh, 30000);
+        }
+      }
+
+      const fullscreen = document.querySelector('[data-fullscreen]');
+      fullscreen.hidden = !document.fullscreenEnabled;
+      fullscreen.onclick = () => document.documentElement.requestFullscreen().catch(() => {});
+      refresh();
+    })();
+  </script>
+</body>
+</html>
