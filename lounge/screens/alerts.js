@@ -31,13 +31,11 @@
     },
     ja: {
       preview: 'ロック画面の通知プレビュー', sensitive: 'メッセージ・通報・安全通知の内容を隠す',
-      all: 'すべての内容を隠す', details: '内容を表示する',
-      follow: '新しいフォロワー', follow_request: 'フォローリクエスト', follow_accept: 'フォローリクエスト承認'
+      all: 'すべての内容を隠す', details: '内容を表示する'
     },
     zh: {
       preview: '锁屏通知预览', sensitive: '隐藏私信、举报和安全通知的内容',
-      all: '隐藏所有内容', details: '显示通知详情',
-      follow: '新关注者', follow_request: '关注请求', follow_accept: '关注请求已通过'
+      all: '隐藏所有内容', details: '显示通知详情'
     }
   };
   // The staff acknowledgement keeps a stable tag across retries and existing inbox history.
