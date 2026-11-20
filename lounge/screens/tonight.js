@@ -14,6 +14,9 @@ const LoungeScreenUI = (() => {
     loading: ['불러오는 중', 'Loading'], empty: ['아직 없어요', 'Nothing here yet'],
     error: ['불러오지 못했어요. 다시 시도해 주세요.', 'Could not load. Please try again.'],
     failed: ['처리하지 못했어요. 다시 시도해 주세요.', 'Could not complete. Please try again.'],
+    liveUnavailable: ['실시간 연결이 끊겼어요. 새로 고침해서 최신 내용을 볼 수 있어요.', 'Live updates are unavailable. Refresh to see the latest messages.'],
+    reportUnavailable: ['이 항목은 더 이상 신고할 수 없어요.', 'This item can no longer be reported.'],
+    reportLimit: ['오늘 신고할 수 있는 횟수를 다 썼어요.', 'You’ve reached today’s reporting limit.'],
     dup: ['오늘은 이미 했어요.', 'You already did this today.'],
     saved: ['완료했어요', 'Saved'], close: ['닫기', 'Close'], soon: ['준비 중', 'Coming soon'],
     report: ['신고하기', 'Report'], reason: ['이유를 골라 주세요', 'Choose a reason'],
@@ -71,6 +74,10 @@ const LoungeScreenUI = (() => {
       const result = await submit(form.elements.why.value);
       if (!el.isConnected) return;
       send.disabled = false;
+      if (['target', 'not_found', 'busy'].includes(result?.error)) {
+        L.toast(L.t(result.error === 'busy' ? 'screens.reportLimit' : 'screens.reportUnavailable'));
+        return;
+      }
       if (!result || result.error) return error(result);
       L.closeSheet();
       L.toast(L.t('screens.saved'));
@@ -194,4 +201,39 @@ const LoungeScreenUI = (() => {
   }
 
   L.screen('tonight', { nav: 'tonight', auth: false, title: 'nav.tonight', render, leave() { clearInterval(timer); } });
+})();
+
+// iOS may resize only the visual viewport when browser controls or the keyboard appear.
+(() => {
+  const viewport = window.visualViewport;
+  if (!viewport) return;
+  const root = document.documentElement;
+  const textEntry = 'textarea, input:not([type]), input[type=text], input[type=tel], input[type=password], input[type=number], input[type=search]';
+
+  function updateViewport() {
+    const unzoomed = Math.abs(viewport.scale - 1) < .05;
+    const inset = unzoomed ? Math.max(0, root.clientHeight - viewport.height - viewport.offsetTop) : 0;
+    const focused = document.activeElement;
+    const keyboard = unzoomed && root.clientHeight - viewport.height > 120 && focused?.matches(textEntry);
+    root.style.setProperty('--lounge-bottom-inset', inset + 'px');
+    root.style.setProperty('--lounge-visual-height', (unzoomed ? viewport.height * .9 : root.clientHeight * .9) + 'px');
+    root.toggleAttribute('data-lounge-keyboard', Boolean(keyboard));
+    return keyboard ? focused : null;
+  }
+
+  function revealFocused() {
+    const focused = updateViewport();
+    if (!focused) return;
+    const overlap = focused.getBoundingClientRect().bottom - (viewport.offsetTop + viewport.height - 12);
+    if (overlap <= 0) return;
+    const panel = focused.closest('#sheet > .in');
+    if (panel) panel.scrollTop += overlap;
+    else window.scrollBy(0, overlap);
+  }
+
+  viewport.addEventListener('resize', revealFocused);
+  viewport.addEventListener('scroll', updateViewport);
+  document.addEventListener('focusin', revealFocused);
+  document.addEventListener('focusout', () => requestAnimationFrame(updateViewport));
+  updateViewport();
 })();
