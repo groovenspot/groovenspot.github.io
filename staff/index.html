@@ -1985,12 +1985,15 @@ html[data-theme="light"] .conv.inq { background: #eef6ff; }
 .note.decnote span { word-break: keep-all; }
 .dec.hot:not(.late) { border: 1.5px solid var(--bad); }
 .dec .dbadge.hot { background: var(--bad); color: #fff; }
-.dec .dbadge.priv { background: var(--card-2); color: var(--muted); border: 1px solid var(--line-2); }
+.dec .what .dbadge.priv { display: inline-block; height: auto; margin-inline-start: 6px; padding: 0; font-size: .8em; vertical-align: baseline; }
+.dec .dbadge.priv::before { content: "🔒"; }
 .dec .dtake { width: 100%; min-height: 48px; font-size: 16px; font-weight: 900; }
 .dec .dflag { display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; }
-.dec .dflag button { min-height: 32px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--line); background: none; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; }
-.dec .dflag button[aria-pressed="true"] { color: var(--txt); background: var(--card-2); border-color: var(--line-2); }
-.dec .dflag button[data-decflag="hot"][aria-pressed="true"] { color: #fff; background: var(--bad); border-color: var(--bad); }
+.dec .dflag button { min-height: 40px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--line-2); background: transparent; color: var(--txt); font-size: 12px; font-weight: 700; cursor: pointer; }
+.dec .dflag button[data-decflag="priv"][aria-pressed="true"] { color: #fff; background: #7136c8; border-color: #7136c8; }
+.dec .dflag button[data-decflag="hot"][aria-pressed="true"] { color: #fff; background: #b91c3c; border-color: #b91c3c; }
+.dec .dflag button[aria-disabled="true"] { cursor: wait; }
+.dec .dflag-note { margin: 4px 0 0; text-align: end; color: var(--muted); font-size: 12px; }
 .decadd .dflagadd { gap: 10px 16px; margin: 0 0 12px; }
 .decadd .dflagadd small { color: var(--muted); font-weight: 500; }
 
@@ -3804,9 +3807,18 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   function decFx(d) { return state.decF == null ? (decAllMe(d) ? '' : 'mine') : state.decF; }
   function decHay(x) { return [x.what, x.who, (x.ppl || []).map(function (n) { return n + ' ' + nickOf(n); }).join(' '), (x.cmts || []).map(function (c) { return c.text; }).join(' ')].join(' ').toLowerCase(); }   // 🔍 할 일·담당·관련 사람(닉네임)·코멘트
   function decQHit(x, q) { var h = decHay(x); return String(q || '').toLowerCase().split(/\s+/).filter(Boolean).every(function (w) { return h.indexOf(w) >= 0; }); }
-  DX.badges.push(function (x) { return (x.hot ? '<span class="dbadge hot">🔥 급함</span>' : '') + (x.priv ? '<span class="dbadge priv">🔒 비공개</span>' : ''); });
+  var decFlagPending = new Map();
+  DX.badges.push(function (x) { return x.hot ? '<span class="dbadge hot">🔥 급함</span>' : ''; });
   DX.card.push(function (x) { return x.take ? '<button class="btn btn-hot dtake" type="button" data-dectake="1">🙋 내가 맡을게요</button>' : ''; });   // 한 번 누르면 바로 (대표 선호)
-  DX.cardEnd.push(function (x) { return x.flag ? '<div class="dflag" role="group" aria-label="급함·비공개"><button type="button" data-decflag="hot" aria-pressed="' + !!x.hot + '">🔥 급함</button><button type="button" data-decflag="priv" aria-pressed="' + !!x.priv + '">🔒 비공개</button></div>' : ''; });
+  DX.cardEnd.push(function (x) {
+    if (!x.flag) return '';
+    var disabled = decPendingFlag(x.id) ? ' aria-disabled="true"' : '';
+    var note = 'dec-visibility-' + esc(x.id);
+    return '<div class="dflag" role="group" aria-label="급함·비공개"><button type="button" data-decflag="hot" aria-pressed="' + !!x.hot + '"' + disabled +
+      '>🔥 급함</button><button type="button" data-decflag="priv" aria-pressed="' + !!x.priv + '" aria-describedby="' + note + '"' + disabled + '>' +
+      (x.priv ? '🔒 비공개' : '🔓 공개') + '</button></div><p class="dflag-note" id="' + note + '">' +
+      (x.priv ? '팀장 이상·담당·관련자만 볼 수 있어요' : '직원 모두 볼 수 있어요') + '</p>';
+  });
   DX.add.push(function (d) { if (d.decAdd !== 'all') return ''; var f = state.decAddFl || {};
     return '<div class="echk dflagadd"><label><input type="checkbox" id="decAddHot"' + (f.hot ? ' checked' : '') + '> 🔥 급함</label><label><input type="checkbox" id="decAddPriv"' + (f.priv ? ' checked' : '') + '> 🔒 비공개 <small>(팀장 이상·관련자만 봐요)</small></label></div>'; });
   DX.addData.push(function () { var h = $('decAddHot'), p = $('decAddPriv'), o = {}; if (h && h.checked) o.hot = true; if (p && p.checked) o.priv = true; return o; });
@@ -3814,8 +3826,45 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   DX.bind.push(function (area) {
     ['decAddHot', 'decAddPriv'].forEach(function (k) { var c = $(k); if (c) c.addEventListener('change', function () { state.decAddFl = { hot: !!($('decAddHot') || {}).checked, priv: !!($('decAddPriv') || {}).checked }; }); });
     area.querySelectorAll('[data-dectake]').forEach(function (b) { b.addEventListener('click', function () { decAct1({ a: 'dec_take', id: b.closest('[data-decid]').dataset.decid }, b); }); });
-    area.querySelectorAll('[data-decflag]').forEach(function (b) { b.addEventListener('click', function () { var o = { a: 'dec_flag', id: b.closest('[data-decid]').dataset.decid }; o[b.dataset.decflag] = b.getAttribute('aria-pressed') !== 'true'; decAct1(o, b); }); });
+    area.querySelectorAll('[data-decflag]').forEach(function (b) { b.addEventListener('click', function () { decToggleFlag(b); }); });
   });
+  function decPendingFlag(id) {
+    var pending = decFlagPending.get(id);
+    return pending && state.s && pending.token === state.s.token ? pending : null;
+  }
+  async function decToggleFlag(btn) {
+    var id = btn.closest('[data-decid]').dataset.decid, flag = btn.dataset.decflag;
+    if (!state.s || decPendingFlag(id)) return;
+    var pending = { token: state.s.token, flag: flag, value: btn.getAttribute('aria-pressed') !== 'true' };
+    var selector = '[data-decid="' + CSS.escape(id) + '"] [data-decflag="' + flag + '"]';
+    var redraw = function () {
+      if (state.tab !== 'dec') return;
+      var focused = document.activeElement?.matches(selector);
+      render();
+      if (focused) document.querySelector(selector)?.focus({ preventScroll: true });
+    };
+    decFlagPending.set(id, pending);
+    redraw();
+    var result, message = '';
+    try {
+      var body = { a: 'dec_flag', token: pending.token, id: id };
+      body[flag] = pending.value;
+      result = await call(body);
+    } catch (e) { message = '연결이 안 돼요. 다시 해 주세요.'; }
+    if (decFlagPending.get(id) === pending) decFlagPending.delete(id);
+    if (!state.s || state.s.token !== pending.token || !state.data) return;
+    if (result?.error === 'auth') return toLogin(AUTH_OUT);
+    var confirmed = result?.ok && Array.isArray(result.decisions) && result.decisions.find(function (x) { return x.id === id; });
+    if (confirmed) {
+      state.data.decisions = (state.data.decisions || []).map(function (x) { return x.id === id ? confirmed : x; });
+      saveData(state.data);
+    }
+    redraw();
+    var msg = $('decMsg');
+    if (msg && !confirmed) msg.textContent = message || ({
+      forbidden: '팀장 이상만 바꿀 수 있어요.', notfound: '그 사이 지워졌어요.', busy: '잠시 후 다시 해 주세요.'
+    }[result?.error] || '안 됐어요. 다시 해 주세요.');
+  }
   function decAct1(body, btn) {
     if (btn.disabled) return; btn.disabled = true;
     var msg = function (t) { var m = $('decMsg'); if (m) m.textContent = t; };
@@ -4029,13 +4078,15 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     h += '<p class="note decnote">' + cmIco('users') + '<span>모두 볼 수 있어요 · 상태·코멘트는 이름이 나온 사람과 팀장 이상만 · 🔒 비공개는 팀장 이상·관련자만</span></p>';
     if (d.admin && cnt.done) h += '<p class="note" style="margin:0 0 10px">✅ 완료된 일은 확인한 뒤 <b>🗑 확인·지우기</b>로 정리해 주세요.</p>';
     h += '<p class="msg" id="decMsg"></p><div class="list declist">' + rows.map(function (x) {
+      var pending = decPendingFlag(x.id);
+      if (pending) x = Object.assign({}, x, { [pending.flag]: pending.value });
       var late = x.status !== '완료' && x.due && x.due < t;
       // 🎨 리디자인 2026-11-20: 마감까지 남은 날 (D-3 · 오늘 · 2일 지남)
       var dd = '', ddc = '';
       if (x.due && x.status !== '완료') { var dn = Math.round((Date.parse(x.due) - Date.parse(t)) / 864e5); dd = dn > 0 ? 'D-' + dn : dn === 0 ? '오늘' : (-dn) + '일 지남'; ddc = dn < 0 ? 'bad' : dn <= 2 ? 'warn' : ''; }
       var c = '<div class="dec' + (x.mine ? ' mine' : '') + (x.status === '완료' ? ' done' : '') + (late ? ' late' : '') + (x.hot && x.status !== '완료' ? ' hot' : '') + '" data-decid="' + esc(x.id) + '"' + (qv && !decQHit(x, qv) ? ' hidden' : '') + '>' +
         (function () { var bx = (late ? '<span class="dbadge bad">마감 지남</span>' : '') + (x.mine ? '<span class="dbadge mine">내 일</span>' : '') + dxH('badges', x, d); return bx ? '<span class="dbadges">' + bx + '</span>' : ''; })() +
-        '<span class="what">' + esc(x.what) + '</span>' +
+        '<span class="what">' + esc(x.what) + (x.priv ? '<span class="dbadge priv" role="img" aria-label="비공개" title="비공개"></span>' : '') + '</span>' +
         '<span class="dgrid"><span><small>담당</small><b>' + esc(x.who || '-') + '</b></span><span><small>마감</small><b>' + esc(x.due ? md(x.due) : '-') + (dd ? ' <em class="dd ' + ddc + '">' + dd + '</em>' : '') + '</b></span></span>' +
         (!x.can || x.done ? '<span class="row">상태 <span class="st ' + esc(late ? 'late' : x.status) + '">' + esc(late ? '마감 지남 · ' + x.status : x.status) + '</span>' + (x.done ? ' · 완료 ' + esc(x.done.slice(5)) : '') + '</span>' : '') +
         (x.ppl && x.ppl.length ? '<span class="row decppl">' + cmIco('user') + x.ppl.map(function (n) { return esc(n) + nickH(n); }).join(', ') + '</span>' : '') + dxH('card', x, d);
