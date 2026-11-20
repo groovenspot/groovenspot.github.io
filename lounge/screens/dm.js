@@ -363,5 +363,5 @@
     return params.id ? thread(view, params.id, config.open.translate) : list(view);
   }
 
-  L.screen('dm', { title: 'dm.title', render, leave() { dispose?.(); dispose = undefined; } });
+  L.screen('dm', { title: 'dm.title', selfGate: true, render, leave() { dispose?.(); dispose = undefined; } });
 })();
