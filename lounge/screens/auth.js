@@ -199,10 +199,10 @@
     retry: ['다시 시도', 'Try again'],
     termsTitle: ['이용약관과 커뮤니티 규칙', 'Terms and community rules'],
     termsBody: [
-      '만 19세 이상 손님이 매장에서 가입할 수 있어요. 사진 글·대화방·1:1 메시지에서는 타인의 권리와 개인정보를 지켜 주세요. 문제가 있으면 차단하거나 신고할 수 있어요. 보상과 굿즈의 이용 조건은 전문에서 확인해 주세요.',
-      'Guests aged 19 or older can join at the club. Respect other people’s rights and privacy in photo posts, chat rooms and direct messages. You can block or report problems. Read the full text for the rewards and merchandise terms.',
-      '満19歳以上のお客様が店内で登録できます。写真投稿、チャットルーム、個別メッセージで、他の人の権利とプライバシーを守ってください。問題があればブロックや通報ができます。特典とグッズの条件は全文をご確認ください。',
-      '年满 19 周岁的客人可到店注册。发布照片、使用聊天室或发送私信时，请尊重他人的权利与隐私。遇到问题可以屏蔽或举报。奖励和周边商品的条件请阅读全文。'
+      '만 19세 이상 손님이 매장에서 가입할 수 있어요. 사진 글·오픈 대화방·1:1 메시지에서는 타인의 권리와 개인정보를 지켜 주세요. 문제가 있으면 차단하거나 신고할 수 있어요. 보상과 굿즈의 이용 조건은 전문에서 확인해 주세요.',
+      'Guests aged 19 or older can join at the club. Respect other people’s rights and privacy in photo posts, Open Chat and direct messages. You can block or report problems. Read the full text for the rewards and merchandise terms.',
+      '満19歳以上のお客様が店内で登録できます。写真投稿、オープンチャット、個別メッセージで、他の人の権利とプライバシーを守ってください。問題があればブロックや通報ができます。特典とグッズの条件は全文をご確認ください。',
+      '年满 19 周岁的客人可到店注册。发布照片、使用公开聊天室或发送私信时，请尊重他人的权利与隐私。遇到问题可以屏蔽或举报。奖励和周边商品的条件请阅读全文。'
     ],
     privacyTitle: ['개인정보 수집·이용', 'Use of personal information'],
     policyPending: ['확인이 필요한 항목이 {count}개 남아 있어요.', '{count} items are still under review.'],
@@ -295,10 +295,10 @@
 
   const policyLink = ['전문 보기 (새 탭)', 'Read the full text (new tab)', '全文を読む（新しいタブ）', '阅读全文（新标签页）'];
   const consentDetails = [
-    '동의하기 전에 사진 글·대화방·메시지·보상·굿즈·번역의 이용과 개인정보 안내를 확인해 주세요.',
-    'Before agreeing, review how photo posts, chat rooms, messages, rewards, merchandise and translation work and how we handle your data.',
-    '同意の前に、写真投稿、チャットルーム、メッセージ、特典、グッズ、翻訳の利用と個人情報の案内をご確認ください。',
-    '请先阅读照片帖子、聊天室、私信、奖励、周边及翻译的使用规则和个人信息说明，再选择是否同意。'
+    '동의하기 전에 사진 글·오픈 대화방·메시지·보상·굿즈·번역의 이용과 개인정보 안내를 확인해 주세요.',
+    'Before agreeing, review how photo posts, Open Chat, messages, rewards, merchandise and translation work and how we handle your data.',
+    '同意の前に、写真投稿、オープンチャット、メッセージ、特典、グッズ、翻訳の利用と個人情報の案内をご確認ください。',
+    '请先阅读照片帖子、公开聊天室、私信、奖励、周边及翻译的使用规则和个人信息说明，再选择是否同意。'
   ];
   function policyDates(lang) {
     const announced = t('policyAnnouncement', { date: policyReview.announcementText(lang) });
