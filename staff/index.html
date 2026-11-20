@@ -2411,21 +2411,51 @@ html .chathelp .ch-go { margin-top: 12px; padding: 10px 13px; border: 1px dashed
 html .chathelp .ch-go small { display: block; margin-bottom: 2px; color: var(--muted); font-size: 12.5px; }
 html .chathelp .ch-go .cei { color: var(--muted); }
 /* 그루브 라운지 */
-.lounge-menu, .lounge-options, .lounge-tabs, .lounge-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lounge-menu, .lounge-options, .lounge-tabs, .lounge-counts, .lounge-quick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .lounge-menu { margin: 12px 0; }
-.lounge-menu .btn, .lounge-screen .btn { min-height: 44px; }
-.lounge-menu .btn { justify-content: flex-start; text-align: left; padding: 8px 12px; }
-.lounge-screen h2 { font-size: 24px; }
-.lounge-screen legend { font-weight: 700; padding-inline: 6px; }
-.lounge-screen details summary { cursor: pointer; padding: 10px 0; }
+.lounge-quick { grid-template-columns: repeat(auto-fit, minmax(min(100%, 92px), 1fr)); margin: 0 0 12px; }
+.lounge-quick .btn { background: var(--card-2); }
+.lounge-quick .btn, .lounge-menu .btn, .lounge-screen .btn {
+  min-inline-size: 44px; min-block-size: 48px; padding: 6px 10px; white-space: normal; overflow-wrap: anywhere;
+}
+.lounge-quick .btn, .lounge-menu .btn { text-align: start; }
+.lounge-menu .btn { justify-content: flex-start; }
+:is(.lounge-menu, .lounge-quick, .lounge-screen) .btn svg { flex: none; }
+.lounge-screen, .lounge-screen :is(.lounge-body, form, input, select, textarea) { min-inline-size: 0; }
+.lounge-screen { font-family: var(--body); overflow-wrap: anywhere; }
+.lounge-screen h2 { font-size: 24px; font-weight: 900; }
+.lounge-screen legend { max-inline-size: 100%; font-weight: 800; padding-inline: 6px; }
+.lounge-screen details summary { display: list-item; box-sizing: border-box; align-content: center; min-block-size: 48px; cursor: pointer; padding: 8px 0; }
+.lounge-screen :is(input, select, textarea):not([type=checkbox], [type=radio]) { max-inline-size: 100%; font-size: 16px; }
+.lounge-nav { display: grid; gap: 4px; }
+.lounge-main-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lounge-nav-extra > summary { color: var(--txt); }
+.lounge-timetable-row {
+  display: grid; grid-template-columns: minmax(64px, .6fr) minmax(105px, 1fr) 48px; align-items: end;
+  column-gap: 8px; row-gap: 4px; padding-block: 8px; border-bottom: 1px solid var(--line);
+}
+.lounge-timetable-row label { margin: 0; }
+.lounge-timetable-row :is(input,select) { margin: 0; padding-inline: 8px; }
+.lounge-timetable-row .lounge-dj-name { grid-column: span 2; }
+.lounge-timetable-row .btn { grid-column: 3; grid-row: 2; margin: 0; padding: 0; }
+@media (min-width: 640px) {
+  .lounge-timetable-row { grid-template-columns: 76px 112px minmax(0, 1fr) 48px; }
+  .lounge-timetable-row .lounge-dj-name { grid-column: auto; }
+  .lounge-timetable-row .btn { grid-column: auto; grid-row: auto; }
+}
+.sosi[data-lounge-safety] :is(.sosh b, .sosd, .lounge-safety-note) { min-inline-size: 0; overflow-wrap: anywhere; }
+.sosi[data-lounge-safety] .sosh b { flex: 1; }
+.sosi[data-lounge-safety] .sosh time { flex: none; }
+.lounge-safety-note { max-block-size: 4.5em; overflow: auto; white-space: pre-wrap; }
 .lounge-screen .lounge-context { max-height: 280px; overflow: auto; }
 .lounge-screen .lounge-context li { overflow-wrap: anywhere; white-space: pre-wrap; }
 .lounge-report-badge { display: inline-flex; justify-content: center; min-width: 1.6em; padding: 0 4px; margin-inline-start: 4px; border-radius: 20px; background: var(--warn); color: #160c00; font-weight: 800; }
 .lounge-report-badge[hidden] { display: none; }
+html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 .lounge-screen .lounge-tabs .btn, .lounge-screen .lounge-options .btn, .lounge-screen .lounge-table .btn { margin: 0; }
 .lounge-screen .lounge-tabs [aria-pressed="true"] { background: var(--g); color: #120800; border-color: var(--g); }
 .lounge-screen .lounge-body, .lounge-screen .lounge-signups { margin-top: 16px; }
-.lounge-counts article, .lounge-cards article, .lounge-screen fieldset { border: 1px solid var(--line-2); border-radius: 14px; padding: 12px; min-width: 0; overflow-wrap: anywhere; }
+.lounge-counts article, .lounge-cards article, .lounge-screen fieldset { border: 1px solid var(--line-2); border-radius: var(--rad); padding: 12px; min-width: 0; overflow-wrap: anywhere; background: var(--card-2); }
 .lounge-counts strong { display: block; font-size: 26px; }
 .lounge-cards { display: grid; gap: 10px; margin-top: 12px; }
 .lounge-cards article img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; float: right; margin-left: 8px; }
@@ -2433,7 +2463,7 @@ html .chathelp .ch-go .cei { color: var(--muted); }
 .lounge-cards .lounge-hidden article { border-color: var(--warn); }
 .lounge-screen fieldset { margin: 10px 0; }
 .lounge-screen .lounge-options label { display: flex; align-items: center; min-height: 44px; margin: 0; cursor: pointer; }
-.lounge-screen .lounge-options input, #lvLounge { width: 20px; height: 20px; margin: 0 8px 0 0; flex: none; accent-color: var(--g); }
+.lounge-screen .lounge-options label input, #lvLounge { width: 20px; height: 20px; margin: 0 8px 0 0; flex: none; accent-color: var(--g); }
 .lounge-table { width: 100%; border-collapse: collapse; }
 .lounge-table td, .lounge-table th { padding: 4px 2px; text-align: left; }
 .lounge-table :is(input,select) { min-width: 0; max-width: 100%; padding-inline: 4px; margin: 0; }
@@ -2527,6 +2557,7 @@ html .chathelp .ch-go .cei { color: var(--muted); }
     <button type="button" class="tabmore" id="tabMore" hidden aria-haspopup="dialog"><span class="ti tsvi" aria-hidden="true"><svg class="tsv" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span><span class="tml">더보기</span><span class="dot" id="tabMoreDot" hidden></span></button>
     </div>
     <p class="tabedit" id="tabEditW"><button type="button" class="tabeditb" id="tabEdit"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>탭 순서</button></p>
+    <nav id="loungeQuick" class="lounge-quick" aria-label="라운지 빠른 메뉴 / Lounge shortcuts" hidden></nav>
     <p class="sync" id="sync" aria-live="polite"></p>
     <div id="listArea"></div>
   </section>
@@ -3339,6 +3370,7 @@ html .chathelp .ch-go .cei { color: var(--muted); }
     try { paintChatFab(); } catch (e) {}
     try { paintOnPill(d); } catch (e) {}
     var L = paintTabs(d), edu = L.edu, notes = L.notes;
+    loungeQuick();
     var area = $('listArea');
     document.body.classList.toggle('dmfix', dmFixOn()); dmFitSoon();
     if (state.tab === 'dec') return renderDec(area, d);
@@ -6802,9 +6834,9 @@ html .chathelp .ch-go .cei { color: var(--muted); }
   }
   function loungeRoles() {
     const s = state.s, admin = s.admin, ops = s.team === '운영팀', guard = s.team === '경호팀' || state.data?.guard;
+    const md = ['클로버', '아룬', '고트'].includes(s.team);
     return { dj: admin || s.team === 'DJ팀', crowd: admin || ops, line: admin || guard,
-      checkin: admin || ops || guard, manage: admin || ops,
-      sales: admin || ops || ['영업팀', '클로버', '아룬', '고트'].includes(s.team) };
+      checkin: admin || ops || guard, manage: admin || ops, sales: admin || ops || md, md };
   }
   function loungeButton(label, attrs = '', hot = false) {
     return '<button class="btn' + (hot ? ' btn-hot' : '') + '" ' + attrs + '>' + label + '</button>';
@@ -6820,6 +6852,23 @@ html .chathelp .ch-go .cei { color: var(--muted); }
     return '<div class="lounge-menu">' + links.map(([page, label, icon]) =>
       loungeButton(opIco(icon) + ' ' + label + (page === 'manage' ? loungeReportBadge() : ''),
         'type="button" data-lounge="' + page + '"')).join('') + '</div>';
+  }
+  function loungeQuick() {
+    const area = $('loungeQuick');
+    if (!state.s || state.pop || state.tab === 'dm') { area.hidden = true; return; }
+    const roles = loungeRoles(), links = [];
+    if (roles.dj || roles.crowd || roles.line) links.push(['tonight', '오늘 밤 / Tonight', 'clock']);
+    if (roles.manage) links.push(['reports', '라운지 검수 / Review', 'note'], ['display', '전광판 / Display', 'tv']);
+    area.hidden = !links.length;
+    const key = links.map(([page]) => page).join();
+    if (area.dataset.links === key) return;
+    area.dataset.links = key;
+    area.innerHTML = links.map(([page, label, icon]) => loungeButton(
+      opIco(icon) + '<span>' + label + (page === 'reports' ? loungeReportBadge() : '') + '</span>',
+      'type="button" data-quick-lounge="' + page + '"')).join('');
+    const screens = { tonight: loungeTonight, reports: loungeManage, display: () => loungeManage('display') };
+    area.querySelectorAll('button').forEach(button => { button.onclick = screens[button.dataset.quickLounge]; });
+    if (roles.manage) { loungePaintReportBadges(); loungeRefreshReportBadges(); }
   }
   function loungeSheet(title, content) {
     showSheet('<section class="lounge-screen"><h2>' + title + '</h2>' + content +
@@ -6972,8 +7021,7 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       return;
     }
     if (!root.isConnected || state.s?.token !== session) return;
-    const timetable = roles.dj ? '<fieldset><legend>DJ 타임테이블 / DJ schedule</legend><table class="lounge-table">' +
-      '<thead><tr><th>층 / Floor</th><th>시각 / Time</th><th>DJ</th><th></th></tr></thead><tbody></tbody></table>' +
+    const timetable = roles.dj ? '<fieldset><legend>DJ 타임테이블 / DJ schedule</legend><div data-dj-rows></div>' +
       loungeButton(opIco('plus') + ' 한 줄 추가 / Add row', 'type="button" data-add-dj') + '</fieldset>' : '';
     const crowd = roles.crowd ? LOUNGE_FLOORS.map(floor => '<fieldset><legend>' + floor +
       ' 붐빔 / Crowd</legend>' + loungeOptions('crowd' + floor, current.floors?.[floor]?.crowd ?? 0,
@@ -6984,17 +7032,19 @@ html .chathelp .ch-go .cei { color: var(--muted); }
     panel.innerHTML = '<form>' + timetable + crowd + line + loungeButton('저장 / Save', 'type="submit"', true) + '</form>';
     const form = panel.querySelector('form');
     function addRow(row = {}) {
-      const tr = form.querySelector('tbody').insertRow();
-      tr.innerHTML = '<td><select aria-label="층 / Floor" name="floor">' + loungeFloor(row.floor) + '</select></td>' +
-        '<td><input type="time" aria-label="시각 / Time" name="at" value="' + esc(row.at) + '" required></td>' +
-        '<td><input aria-label="DJ" name="dj" maxlength="40" value="' + esc(row.dj) + '" required></td>' +
-        '<td>' + loungeButton(opIco('trash'), 'type="button" aria-label="줄 빼기 / Remove row"') + '</td>';
-      tr.querySelector('button').onclick = () => tr.remove();
-      return tr;
+      const entry = document.createElement('div');
+      entry.className = 'lounge-timetable-row';
+      entry.innerHTML = '<label>층 / Floor<select name="floor">' + loungeFloor(row.floor) + '</select></label>' +
+        '<label>시각 / Time<input type="time" name="at" value="' + esc(row.at) + '" required></label>' +
+        '<label class="lounge-dj-name">DJ<input name="dj" maxlength="40" value="' + esc(row.dj) + '" required></label>' +
+        loungeButton(opIco('trash'), 'type="button" aria-label="줄 빼기 / Remove row"');
+      form.querySelector('[data-dj-rows]').append(entry);
+      entry.querySelector('button').onclick = () => entry.remove();
+      return entry;
     }
     if (roles.dj) {
       (current.timetable || []).forEach(addRow);
-      form.querySelector('[data-add-dj]').onclick = () => addRow().querySelector('input').focus();
+      form.querySelector('[data-add-dj]').onclick = () => addRow().querySelector('[name=at]').focus();
     }
     loungeSubmit(form, data => {
       const body = {};
@@ -7315,18 +7365,31 @@ html .chathelp .ch-go .cei { color: var(--muted); }
   const loungeText = data => name => String(data.get(name) ?? '').trim();
   function loungeAction(panel, title, action, fields, payload, request, options = {}) {
     const form = document.createElement('form');
-    form.innerHTML = '<fieldset><legend>' + title + '</legend>' + fields +
-      loungeButton(options.label || '저장 / Save', 'type="submit"', true) +
+    const controls = options.choices ?
+      '<div class="lounge-options">' + options.choices.map(([value, label], i) =>
+        loungeButton(label, 'type="submit" name="status" value="' + value + '"', i === 0)).join('') + '</div>' :
+      loungeButton(options.label || '저장 / Save', 'type="submit"', true);
+    form.innerHTML = '<fieldset><legend>' + title + '</legend>' + fields + controls +
       '<p class="msg lounge-msg" role="status"></p></fieldset>';
     form.dataset.action = action;
     panel.append(form);
-    const button = form.querySelector('button');
-    if (options.confirm) button.onclick = ev => {
-      const label = options.label || '저장 / Save';
-      if (!armed(button, label)) { ev.preventDefault(); return; }
-      button.classList.remove('arm');
-      button.textContent = label;
-    };
+    if (options.confirm) {
+      const buttons = [...form.querySelectorAll('button[type=submit]')];
+      const labels = buttons.map(button => button.textContent);
+      buttons.forEach((button, i) => {
+        button.onclick = ev => {
+          buttons.forEach((other, j) => {
+            if (other !== button && other.classList.contains('arm')) {
+              other.classList.remove('arm');
+              other.textContent = labels[j];
+            }
+          });
+          if (!armed(button, labels[i])) { ev.preventDefault(); return; }
+          button.classList.remove('arm');
+          button.textContent = labels[i];
+        };
+      });
+    }
     loungeSubmit(form, async data => request(action, await payload(loungeText(data), data)), (result, msg) => {
       msg.textContent = LOUNGE_SAVED;
       return options.done?.(result, form);
@@ -7709,10 +7772,9 @@ html .chathelp .ch-go .cei { color: var(--muted); }
           loungeAction(slot, '매장에서 수령 / Store pickup', 'adm_order_done', '', () => ({ id: row.id }), request,
             { label: '수령 확인 / Mark collected', confirm: true, done });
         } else {
-          loungeAction(slot, '전광판 예약 / Display reservation', 'lounge_yc_ok',
-            loungeSelect('처리 결과 / Result', 'status', [['done', '송출 완료 / Displayed'], ['rejected', '반려 / Reject']]),
+          loungeAction(slot, '전광판 예약 / Display reservation', 'lounge_yc_ok', '',
             value => ({ id: row.id, status: value('status') }), (a, b) => loungeStaff(session, a, b),
-            { label: '처리 / Update', confirm: true, done });
+            { choices: [['done', '송출 완료 / Displayed'], ['rejected', '반려 / Reject']], confirm: true, done });
         }
       }
     });
@@ -7723,40 +7785,50 @@ html .chathelp .ch-go .cei { color: var(--muted); }
     const request = (a, b) => loungeStaff(session, a, b);
     const root = loungeSheet('내 라운지 손님 / My Lounge guests', '<div class="lounge-body"></div>');
     const panel = root.querySelector('.lounge-body');
-    loungeAction(panel, '내 손님에게 안내 / Notify my guests', 'lounge_md_notice',
-      '<p class="note">광고에 동의한 내 손님에게 주 1회 보낼 수 있어요. / One update a week for your opted-in guests.</p>' +
-      loungeArea('안내 글 / Update', 'text', 'required maxlength="500"'), value => ({ text: value('text') }), request,
-      { label: '보내기 / Send', confirm: true });
+    if (loungeRoles().md) {
+      loungeAction(panel, '내 손님에게 안내 / Notify my guests', 'lounge_md_notice',
+        '<p class="note">광고에 동의한 내 손님에게 주 1회 보낼 수 있어요. / One update a week for your opted-in guests.</p>' +
+        loungeArea('안내 글 / Update', 'text', 'required maxlength="300"'), value => ({ text: value('text') }), async (a, b) => {
+          try { return await request(a, b); }
+          catch (err) { if (err.message === 'busy') throw new Error('weekly'); throw err; }
+        }, { label: '보내기 / Send', confirm: true });
+    }
     const lists = document.createElement('div');
     const load = document.createElement('button');
     load.className = 'btn';
     load.type = 'button';
     load.textContent = '손님 요청 새로 보기 / Refresh guest requests';
     panel.append(load, lists);
-    async function refresh() {
-      if (lists.querySelector('form[inert]')) return;
+    async function refresh(afterReply = false) {
+      if (lists.querySelector('form[inert]') && !afterReply) return;
       load.disabled = true;
       lists.textContent = '불러오는 중… / Loading…';
       try {
-        const data = await request('lounge_md_list');
+        const data = await request('lounge_sales_list');
         if (!lists.isConnected) return;
+        const rows = data.list.map(({ data, ...row }) => ({ ...data, ...row }));
+        const going = rows.filter(row => row.kind === 'md_going' && row.day === data.today);
         lists.innerHTML = '<h3>내 손님 갈래요 / My guests going tonight</h3>' +
-          loungeCards(data.going || [], row => '<article><strong>' + esc(row.nick) + '</strong> · ' + esc(row.day) + '</article>') +
+          loungeCards(going, row => '<article><strong>' + esc(row.nick) + '</strong> · ' + esc(row.day) + '</article>') +
           '<h3>테이블 문의 / Table inquiries</h3><div data-md-tables></div>' +
           '<h3>조각 확정 / Shared tables</h3><div data-md-splits></div>';
         await Promise.all([
-          loungeList(lists.querySelector('[data-md-tables]'), '', () => ({ tables: data.tables }), {
+          loungeList(lists.querySelector('[data-md-tables]'), '', () => ({ tables: rows.filter(row => row.kind === 'table') }), {
             key: 'tables', render: row => '<strong>' + esc(row.nick) + '</strong><p>' +
               esc([row.day, row.floor, row.people, row.note, row.status].filter(Boolean).join(' · ')) + '</p>',
-            fields: (slot, row, done) => {
-              if (row.status && row.status !== 'pending') return;
+            fields: (slot, row) => {
+              const choices = [['ok', '가능 / Available'], ['no', '어려움 / Unavailable'], ['call', '연락 요청 / Please call']];
+              const approved = row.reply?.status === 'ok';
+              if (!['pending', 'call'].includes(row.status) && !approved) return;
               loungeAction(slot, '답하기 / Reply', 'lounge_table_reply',
-                loungeSelect('답 / Reply', 'status', [['ok', '가능 / Available'], ['no', '어려움 / Unavailable'], ['call', '연락 요청 / Please call']]) +
+                loungeSelect('답 / Reply', 'status', approved ? [choices[1]] : choices) +
                 loungeArea('메모 / Note', 'note', 'maxlength="300"'),
-                value => ({ id: row.id, status: value('status'), note: value('note') }), request, { done });
+                value => ({ id: row.id, status: value('status'), note: value('note') }), request, {
+                  done: () => { toast(LOUNGE_SAVED); return refresh(true); }
+                });
             }
           }),
-          loungeList(lists.querySelector('[data-md-splits]'), '', () => ({ splits: data.splits }), {
+          loungeList(lists.querySelector('[data-md-splits]'), '', () => ({ splits: rows.filter(row => row.kind === 'split') }), {
             key: 'splits', render: row => '<strong>' + esc(row.floor) + ' · ' + esc(row.day) + '</strong><p>' +
               esc((row.members || []).map(member => member.nick).join(', ')) + '</p>',
             fields: (slot, row, done) => {
@@ -7772,10 +7844,10 @@ html .chathelp .ch-go .cei { color: var(--muted); }
         if (lists.isConnected) lists.textContent = loungeError(err);
       } finally { load.disabled = false; }
     }
-    load.onclick = refresh;
+    load.onclick = () => refresh();
     refresh();
   }
-  function loungeManage() {
+  function loungeManage(initial = 'reports') {
     if (!state.s || !loungeRoles().manage) return;
     const session = state.s.token;
     const request = (a, b) => loungeRequest(a, b, session);
@@ -7794,10 +7866,13 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       stages: panel => loungeSettings(panel, request, true),
       settings: panel => loungeSettings(panel, request, false)
     };
-    const root = loungeSheet('손님 라운지 관리 / Manage Lounge', '<nav class="lounge-tabs" aria-label="관리 메뉴 / Management">' +
-      tabs.map(([tab, label]) => loungeButton(label + (tab === 'reports' ? loungeReportBadge() : ''),
-        'type="button" data-admin-tab="' + tab + '"')).join('') +
-      '</nav><div class="lounge-body"></div>');
+    const primary = ['reports', 'rooms', 'display'];
+    const navButton = ([tab, label]) => loungeButton(label + (tab === 'reports' ? loungeReportBadge() : ''),
+      'type="button" data-admin-tab="' + tab + '"');
+    const root = loungeSheet('손님 라운지 관리 / Manage Lounge', '<nav class="lounge-nav" aria-label="관리 메뉴 / Management">' +
+      '<div class="lounge-tabs lounge-main-tabs">' + primary.map(id => navButton(tabs.find(([tab]) => tab === id))).join('') + '</div>' +
+      '<details class="lounge-nav-extra"><summary>관리 메뉴 더 보기 / More tools</summary><div class="lounge-tabs">' +
+      tabs.filter(([tab]) => !primary.includes(tab)).map(navButton).join('') + '</div></details></nav><div class="lounge-body"></div>');
     const msg = root.querySelector('.lounge-msg');
     const buttons = root.querySelectorAll('[data-admin-tab]');
     async function show(tab) {
@@ -7820,9 +7895,16 @@ html .chathelp .ch-go .cei { color: var(--muted); }
         msg.textContent = loungeError(err);
       }
     }
-    buttons.forEach(b => { b.onclick = () => show(b.dataset.adminTab); });
+    buttons.forEach(b => { b.onclick = () => {
+      if (b.closest('.lounge-nav-extra')) {
+        const pane = b.closest('.lounge-nav-extra');
+        pane.open = false;
+        pane.querySelector('summary').focus();
+      }
+      show(b.dataset.adminTab);
+    }; });
     loungePaintReportBadges();
-    show('reports');
+    show(typeof initial === 'string' && initial === 'display' ? 'display' : 'reports');
   }
   function bindLoungeMenu(area) {
     const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), tonight: loungeTonight, manage: loungeManage, sales: loungeSales };
@@ -7881,11 +7963,16 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       var who = x.go.map(function (k) { return esc(k.who); }).join(', '), what = esc(x.where + ' · ' + x.kind) + (x.memo ? ' · ' + esc(x.memo) : '');
       var line = x.mine ? (x.status === '호출' ? '🚨 경호 호출 중 · 출동 기다리는 중' : '🏃 <span class="ok">' + who + '</span> 출동 중') : (x.status === '호출' ? '🚨 경호 호출 · ' + esc(x.by) : '🏃 <span class="ok">' + who + '</span> 출동 · 부른 사람 ' + esc(x.by));
       var lounge = x.lounge || x.source === 'lounge' || /라운지/.test(x.kind || '');
+      if (lounge) what = esc(x.where + ' · ' + x.kind);
       var btns = '';
       if (crew && !x.me) btns += '<button class="btn btn-sos" type="button" data-sosgo="' + esc(x.id) + '">🏃 ' + (lounge && x.status === '호출' ? '확인 · 출동 / Acknowledge' : x.status === '호출' ? '출동' : '나도 출동') + '</button>';
       if (x.mine || crew) btns += '<button class="btn btn-ok" type="button" data-sosdone="' + esc(x.id) + '">✅ 해결</button>';
       if (x.mine && x.status === '호출') btns += '<button class="btn" type="button" data-soscx="' + esc(x.id) + '" style="flex:none">취소</button>';
-      return '<div class="sosi"><div class="sosh"><b>' + (lounge ? '라운지 / Lounge · ' : '') + what + '</b><time data-sosms="' + (x.ms || 0) + '">' + sosAge(x) + '</time></div><div class="sosd">' + line + '</div>' + (btns ? '<div class="sosb">' + btns + '</div>' : '') + '</div>';
+      return '<div class="sosi"' + (lounge ? ' data-lounge-safety' : '') + '><div class="sosh"><b>' +
+        (lounge ? '라운지 / Lounge · ' : '') + what + '</b><time data-sosms="' + (x.ms || 0) + '">' + sosAge(x) +
+        '</time></div><div class="sosd">' + line + '</div>' +
+        (lounge && x.memo ? '<div class="sosd lounge-safety-note">' + esc(x.memo) + '</div>' : '') +
+        (btns ? '<div class="sosb">' + btns + '</div>' : '') + '</div>';
     }).join('');
     bar.hidden = false; try { bar.style.top = document.querySelector('.top').offsetHeight + 'px'; } catch (e) {}
     bar.querySelectorAll('[data-sosgo]').forEach(function (b) { b.addEventListener('click', function () { sosAct({ a: 'sos_go', id: b.dataset.sosgo }, b); }); });
