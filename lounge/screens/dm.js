@@ -41,7 +41,7 @@
   }
 
   function live(view, refresh, clear) {
-    let ws, revision = 0;
+    let ws, handshake, revision = 0;
     let refreshing = false, queued = false;
     async function update() {
       if (!view.isConnected) return;
@@ -53,11 +53,21 @@
         if (queued) { queued = false; void update(); }
       }
     }
-    function connect() {
-      if (!view.isConnected || !token() || ws?.readyState <= 1) return;
+    async function connect() {
+      const current = token();
+      if (!view.isConnected || !current || handshake || ws?.readyState <= 1 || typeof WebSocket !== 'function') return;
+      const attempt = L.api('ws_ticket', { channel: 'dm' });
+      handshake = attempt;
+      const result = await attempt;
+      if (handshake !== attempt) return;
+      handshake = null;
+      if (!view.isConnected || token() !== current) return;
       const url = apiURL('ws');
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-      url.search = new URLSearchParams({ ch: 'dm', token: token() });
+      url.searchParams.set('ch', 'dm');
+      if (result.ticket) url.searchParams.set('ticket', result.ticket);
+      else if (result.error === 'ticket_off') url.searchParams.set('token', current);
+      else return;
       try {
         const connection = ws = new WebSocket(url);
         connection.onmessage = event => {
@@ -82,6 +92,7 @@
     window.addEventListener('online', onReturn);
     connect();
     return { update, close() {
+      handshake = null;
       clearInterval(interval);
       document.removeEventListener('visibilitychange', onReturn);
       window.removeEventListener('online', onReturn);

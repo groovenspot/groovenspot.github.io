@@ -1,10 +1,55 @@
 (function (L) {
+  const policyLocales = ['ko', 'en', 'ja', 'zh'];
+  // 대표 확인 후 null을 { ko, en, ja, zh }의 확정 문구로 바꿉니다.
+  // 키와 교체 범위는 서버 저장소 lounge/docs/policy-decisions.md 참고.
+  const decisions = Object.freeze({
+    effectiveDate: null,
+    contentPermission: null,
+    merchandiseTerms: null,
+    noticeAndAppeal: null,
+    loginFailureCleanup: null,
+    consentAndLogs: null,
+    pointsAndRecaps: null,
+    photoDeletion: null,
+    staffSafetyRecords: null,
+    directMessageRetention: null,
+    reportEvidence: null,
+    birthdayAndInvite: null,
+    venueAndOrderRecords: null,
+    staffSalesRecords: null,
+    translationLogs: null,
+    cloudflareProcessing: null,
+    pushProviders: null,
+    staffProcessors: null,
+    externalContent: null,
+    privacyContact: null,
+    rightsProcedure: null,
+    deletionCompletion: null
+  });
+
+  function decisionText(key, lang) {
+    const value = decisions[key];
+    return value && policyLocales.every(locale => typeof value[locale] === 'string' && value[locale].trim())
+      ? value[lang] || '' : '';
+  }
+
+  const policyReview = Object.freeze({
+    decisionText,
+    pending: Object.keys(decisions).filter(key => !decisionText(key, 'ko')).length
+  });
+  window.LoungePolicy = policyReview;
+  // policy.html loads this file on its own, without the Lounge application.
+  if (!L) return;
+
   const copy = {
     join: ['그루브 멤버 가입', 'Join Groove Lounge'],
     invite: ['{name}님이 초대했어요', '{name} invited you'],
     scan: ['매장 직원에게 새 QR을 받아 찍어 주세요.', 'Ask a staff member for a new QR at the club.'],
     nick: ['닉네임', 'Nickname'],
-    nickHint: ['다른 손님에게 보이는 이름 · 2~12자', 'Visible to other guests · 2–12 characters'],
+    nickHint: [
+      '다른 손님에게 보이는 이름이에요. 한글(가~힣), 영문, 숫자, 점(.), 밑줄(_)로 2~12자를 써 주세요.',
+      'Other guests can see this name. Use 2–12 Hangul syllables, English letters, digits, periods (.) or underscores (_).'
+    ],
     phone: ['휴대폰 번호', 'Phone number'],
     phoneHint: ['로그인에 써요. 다른 손님에게는 보이지 않아요.', 'Used to log in. Other guests cannot see it.'],
     pw: ['비밀번호', 'Password'],
@@ -43,6 +88,8 @@
       '年满 19 周岁的客人可到店注册。发布照片、使用聊天室或发送私信时，请尊重他人的权利与隐私。遇到问题可以屏蔽或举报。奖励和周边商品的条件请阅读全文。'
     ],
     privacyTitle: ['개인정보 수집·이용', 'Use of personal information'],
+    policyPending: ['확인이 필요한 항목이 {count}개 남아 있어요.', '{count} items are still under review.'],
+    policyEffective: ['시행일 · {date}', 'Effective date · {date}'],
     privacyBody: [
       '가입·계정 관리에는 닉네임, 번호 확인값과 뒤 네 자리, 비밀번호 확인값을 써요. 글·대화·메시지·보상·굿즈 정보는 해당 기능을 쓸 때 처리합니다. 선택한 층은 매장 층 정보이며 GPS 위치는 수집하지 않아요. 번역을 누르면 선택한 글과 대상 언어를 Cloudflare Workers AI에 보내요. 보관기간과 탈퇴 안내는 전문을 확인해 주세요.',
       'We use your nickname, a phone verifier and its last four digits, and a password verifier to manage your account. We handle posts, chats, messages, rewards and merchandise data when you use those features. The selected floor is inside the club. These features do not collect GPS location. When you request a translation, we send the selected text and language to Cloudflare Workers AI. Read the full notice for retention and deletion details.',
@@ -50,7 +97,14 @@
       '账号管理会使用昵称、号码验证值及末四位和密码验证值。在使用帖子、聊天、私信、奖励或周边功能时，我们会处理对应信息。所选楼层指店内楼层，这些功能不收集 GPS 位置。请求翻译时，所选文字和目标语言会发送给 Cloudflare Workers AI。保存期限和注销详情请阅读全文。'
     ],
     'error.qr': ['가입·비밀번호 변경 QR이 잘못되었거나 시간이 지났어요. 매장에서 새 QR을 받아 주세요.', 'This QR is invalid or expired. Ask staff for a new QR.'],
-    'error.nick': ['닉네임은 한글, 영문, 숫자, 점, 밑줄로 2~12자를 써 주세요. 사용할 수 없는 단어는 피해주세요.', 'Use 2–12 Korean letters, English letters, digits, periods or underscores. Some words are blocked.'],
+    'error.nick': [
+      '한글(가~힣), 영문, 숫자, 점(.), 밑줄(_)로 2~12자를 써 주세요. 일부 단어는 쓸 수 없어요.',
+      'Use 2–12 Hangul syllables, English letters, digits, periods (.) or underscores (_). Some words are unavailable.'
+    ],
+    'error.nickAllowed': [
+      '허용 문자({chars})로 {min}~{max}자를 써 주세요. 일부 단어는 쓸 수 없어요.',
+      'Use {min}–{max} characters from the allowed set ({chars}). Some words are unavailable.'
+    ],
     'error.nick_taken': ['이미 쓰는 닉네임이에요.', 'That nickname is taken.'],
     'error.phone': ['휴대폰 번호를 확인해 주세요.', 'Check your phone number.'],
     'error.phone_taken': ['이미 가입한 번호예요. 로그인해 주세요.', 'This number is registered. Please log in.'],
@@ -78,9 +132,27 @@
     [lang, Object.fromEntries(Object.entries(copy).map(([key, pair]) => ['auth.' + key, pair[i]]))]
   )));
   const t = (key, vars) => L.esc(L.t('auth.' + key, vars));
+  const nickCharacters = {
+    hangul: ['한글(가~힣)', 'Hangul syllables', 'ハングルの音節（가〜힣）', '韩文音节（가～힣）'],
+    latin_ascii: ['영문', 'English letters', '半角英字', '半角英文字母'],
+    digits_ascii: ['숫자', 'digits', '半角数字', '半角数字'],
+    dot: ['점(.)', 'periods (.)', 'ピリオド（.）', '点（.）'],
+    underscore: ['밑줄(_)', 'underscores (_)', 'アンダースコア（_）', '下划线（_）']
+  };
+  const localeIndex = () => Math.max(0, policyLocales.indexOf(L.lang));
+
   const errorText = (result) => {
     if (result.error === 'bad' && Number.isInteger(result.left)) {
       return L.t('auth.error.badLeft', { left: result.left });
+    }
+    if (result.error === 'nick') {
+      const { allowed, min, max } = result.nickRules || {};
+      if (Number.isSafeInteger(min) && min > 0 && Number.isSafeInteger(max) && max >= min &&
+          Array.isArray(allowed) && allowed.length > 0 && allowed.length <= Object.keys(nickCharacters).length &&
+          allowed.every(key => typeof key === 'string' && Object.hasOwn(nickCharacters, key))) {
+        const chars = [...new Set(allowed)].map(key => nickCharacters[key][localeIndex()]).join(', ');
+        return L.t('auth.error.nickAllowed', { chars, min, max });
+      }
     }
     const key = 'auth.error.' + result.error;
     return Object.hasOwn(copy, 'error.' + result.error) ? L.t(key) : L.t('auth.error.generic');
@@ -103,7 +175,6 @@
     } catch (e) { return ''; }
   }
 
-  const policyLocales = ['ko', 'en', 'ja', 'zh'];
   const policyLink = ['전문 보기 (새 탭)', 'Read the full text (new tab)', '全文を読む（新しいタブ）', '阅读全文（新标签页）'];
   const consentDetails = [
     '동의하기 전에 사진 글·대화방·메시지·보상·굿즈·번역의 이용과 개인정보 안내를 확인해 주세요.',
@@ -111,20 +182,21 @@
     '同意の前に、写真投稿、チャットルーム、メッセージ、特典、グッズ、翻訳の利用と個人情報の案内をご確認ください。',
     '请先阅读照片帖子、聊天室、私信、奖励、周边及翻译的使用规则和个人信息说明，再选择是否同意。'
   ];
-  const policyLocale = () => Math.max(0, policyLocales.indexOf(L.lang));
-
   function policy(key) {
-    const locale = policyLocale();
-    const path = '/lounge/policy.html#' + policyLocales[locale] + '-' + key;
+    const locale = localeIndex();
+    const lang = policyLocales[locale];
+    const path = '/lounge/policy.html#' + lang + '-' + key;
+    const status = policyReview.pending ? t('policyPending', { count: policyReview.pending }) :
+      t('policyEffective', { date: decisionText('effectiveDate', lang) });
     return '<h2>' + t(key + 'Title') + '</h2><p>' + L.esc(copy[key + 'Body'][locale]) +
-      '</p><a class="shell-link" href="' + path + '" target="_blank" rel="noopener noreferrer">' +
+      '</p><p class="muted">' + status + '</p><a class="shell-link" href="' + path + '" target="_blank" rel="noopener noreferrer">' +
       L.esc(policyLink[locale]) + '</a>';
   }
 
   function consent() {
     const fields = ['age19', 'terms', 'privacy', 'ads', 'night'];
     return '<fieldset class="shell-consent"><legend class="sr-only">' + t('agree') + '</legend>' +
-      '<p class="muted">' + L.esc(consentDetails[policyLocale()]) + '</p>' +
+      '<p class="muted">' + L.esc(consentDetails[localeIndex()]) + '</p>' +
       '<label class="shell-choice"><input type="checkbox" name="all">' + t('all') + '</label>' +
       fields.map(name => '<div class="shell-consent-row"><label class="shell-choice"><input type="checkbox" name="' +
         name + '">' + t(name) + '</label>' +
