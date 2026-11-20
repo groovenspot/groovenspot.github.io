@@ -1395,6 +1395,8 @@ body.popmode .chath .chpop { display: none; }
 .bdi button.del { border-color: var(--bad); color: var(--bad); } .bdi button.del.arm { background: var(--bad); color: #fff; }
 .bdr { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 13px; }
 .bdr:first-of-type { border-top: 0; }
+.bdr[data-lounge-reaction] { grid-template-columns: minmax(0, 1fr); }
+.bdr[data-lounge-reaction] span { text-align: left; }
 .bdr b { font-size: 13px; } .bdr span { text-align: right; font-weight: 800; } .bdr small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
 .bdg { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 0 2px; font-size: 13px; }
 .bdm { margin: 8px 0 0; font-size: 13px; }
@@ -6764,6 +6766,9 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       weekly: '이번 주 안내를 이미 보냈어요. / This week’s update was already sent.',
       items: '서로 다른 영상 ID가 있는 쇼츠 16개를 적어 주세요. / Enter 16 Shorts with distinct video IDs.',
       week: '월요일 날짜를 골라 주세요. / Choose a Monday.',
+      mission: '월요일·미션 횟수·100~200포인트를 확인해 주세요. / Check the Monday, goals and 100–200 point reward.',
+      goods: '상품 코드·가격·재고를 확인해 주세요. / Check the SKU, price and stock.',
+      alcohol: '술과 술 교환권은 등록할 수 없어요. / Alcohol and alcohol vouchers are excluded.',
       merch: '술과 술 교환권은 등록할 수 없어요. / Alcohol and vouchers for alcohol are excluded.',
       key: '서버에서 이 설정을 아직 받지 않아요. / This setting is not yet supported.',
       missing: '대상을 찾을 수 없어요. / This item could not be found.',
@@ -6774,6 +6779,10 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       op: '서버 업데이트 후 쓸 수 있어요. / Available after the server update.',
       unknown: '서버 업데이트 후 쓸 수 있어요. / Available after the server update.',
       action: '서버 업데이트 후 쓸 수 있어요. / Available after the server update.',
+      room: '2F, 3F, english 또는 파티 방 ID를 확인해 주세요. / Check the built-in or party room ID.',
+      songs: '서로 다른 후보 곡 3개를 적어 주세요. / Enter three distinct songs.',
+      at: '오늘 영업 중 아직 지나지 않은 시각을 골라 주세요. / Choose an upcoming time this club day.',
+      vote_locked: '이미 투표가 시작돼 후보를 바꿀 수 없어요. / Voting has started and the songs are locked.',
       period: '챌린지 시작일과 끝나는 날을 확인해 주세요. / Check the challenge dates.',
       img: '사진을 읽을 수 없어요. / Couldn’t read this photo.',
       size: '사진 용량이 너무 커요. / The photo is too large.',
@@ -7313,7 +7322,10 @@ html .chathelp .ch-go .cei { color: var(--muted); }
     panel.append(form);
     const button = form.querySelector('button');
     if (options.confirm) button.onclick = ev => {
-      if (!armed(button, options.label || '저장 / Save')) ev.preventDefault();
+      const label = options.label || '저장 / Save';
+      if (!armed(button, label)) { ev.preventDefault(); return; }
+      button.classList.remove('arm');
+      button.textContent = label;
     };
     loungeSubmit(form, async data => request(action, await payload(loungeText(data), data)), (result, msg) => {
       msg.textContent = LOUNGE_SAVED;
@@ -7360,6 +7372,7 @@ html .chathelp .ch-go .cei { color: var(--muted); }
     panel.textContent = '';
     if (stages) {
       const initial = config.open || {};
+      let savedOpen;
       const fields = '<div class="lounge-options">' + LOUNGE_FEATURES.map(([key, label]) =>
         '<label><input type="checkbox" name="' + key + '"' + (initial[key] === true ? ' checked' : '') + '> ' + label + '</label>'
       ).join('') + '</div>';
@@ -7367,9 +7380,10 @@ html .chathelp .ch-go .cei { color: var(--muted); }
         const changed = LOUNGE_FEATURES.filter(([key]) => data.has(key) !== (initial[key] === true));
         if (!changed.length) throw new Error('no_change');
         const latest = (await loungeRequest('config')).open || {};
-        return { k: 'open', v: { ...latest, ...Object.fromEntries(changed.map(([key]) => [key, data.has(key)])) } };
+        savedOpen = { ...latest, ...Object.fromEntries(changed.map(([key]) => [key, data.has(key)])) };
+        return { k: 'open', v: savedOpen };
       }, request, { label: '공개 설정 저장 / Save visibility', confirm: true, done: (_, saved) => {
-        for (const [key] of LOUNGE_FEATURES) initial[key] = saved.elements[key].checked;
+        for (const [key] of LOUNGE_FEATURES) saved.elements[key].checked = initial[key] = savedOpen[key] === true;
       } });
       form.dataset.settings = 'open';
       return;
@@ -7394,26 +7408,73 @@ html .chathelp .ch-go .cei { color: var(--muted); }
   }
   function loungeRooms(panel, request) {
     panel.textContent = '';
-    const room = loungeInput('방 ID / Room ID', 'id', 'required maxlength="60" list="lounge-room-ids"');
-    panel.insertAdjacentHTML('beforeend', '<datalist id="lounge-room-ids"><option value="2F"><option value="3F"><option value="english"></datalist>');
+    const room = loungeInput('방 ID / Room ID', 'id', 'required maxlength="40" list="lounge-room-ids"');
+    panel.insertAdjacentHTML('beforeend', '<datalist id="lounge-room-ids"><option value="2F"><option value="3F"><option value="english"></datalist>' +
+      loungeButton('대화방 목록 보기 / Browse rooms', 'type="button" data-room-list') + '<div data-room-results></div>');
+    const list = panel.querySelector('datalist'), load = panel.querySelector('[data-room-list]');
+    function addRoom(id, name) {
+      if (id && !Array.from(list.options).some(option => option.value === id)) list.append(new Option(name || id, id));
+    }
+    load.onclick = async () => {
+      const results = panel.querySelector('[data-room-results]');
+      load.disabled = true;
+      try {
+        const { rooms } = await request('adm_room_list', {});
+        if (!results.isConnected) return;
+        rooms.forEach(item => addRoom(item.id, item.title));
+        results.innerHTML = loungeCards(rooms, (item, i) => '<article><strong>' + esc(item.title || item.id) + '</strong><p>' +
+          esc(item.id) + ' · ' + (item.open ? '열림 / Open' : '닫힘 / Closed') + '</p>' +
+          (item.pin?.text ? '<p>' + esc(item.pin.text) + '</p>' : '') +
+          loungeButton('이 방 선택 / Select room', 'type="button" data-room-pick="' + i + '"') + '</article>');
+        results.querySelectorAll('[data-room-pick]').forEach(button => {
+          button.onclick = () => {
+            if (panel.querySelector('form[inert]')) return;
+            const item = rooms[Number(button.dataset.roomPick)];
+            panel.querySelectorAll('input[name=id]').forEach(input => { input.value = item.id; });
+            const form = panel.querySelector('[data-action=adm_room_set]');
+            form.elements.mode.value = item.mode || 'auto';
+            form.elements.title.value = '';
+            form.elements.en.value = '';
+            form.elements.floor.value = '';
+            panel.querySelector('[data-action=adm_room_pin]').elements.text.value = item.pin?.text || '';
+            panel.querySelector('[data-action=adm_room_kick]').elements.mid.value = '';
+          };
+        });
+      } catch (error) {
+        if (results.isConnected) results.textContent = loungeError(error);
+      } finally { load.disabled = false; }
+    };
     const text = loungeArea('공지 (비우면 해제) / Pin (empty to clear)', 'text', 'maxlength="500"');
     loungeAction(panel, '파티 방 만들기 · 열기 · 닫기 / Create, open or close a room', 'adm_room_set',
-      room + loungeInput('방 이름 (파티 방을 만들 때) / Name (for a new party room)', 'title', 'maxlength="80"') +
-      loungeSelect('상태 / Status', 'mode', [['open', '지금 열기 / Open now'], ['closed', '지금 닫기 / Close now'], ['auto', '영업에 맞춤 / Club hours']]),
-      value => ({ id: value('id'), ...(value('title') && { title: value('title') }),
-        open: { open: true, closed: false, auto: null }[value('mode')] }), request);
+      loungeInput('방 ID (새 파티 방은 비워도 돼요) / Room ID (optional for a new party room)', 'id',
+        'maxlength="40" list="lounge-room-ids"') +
+      loungeInput('방 이름 (새 파티 방에 필요) / Name (required for a new party room)', 'title', 'maxlength="80"') +
+      loungeInput('영어 이름 (선택) / English name (optional)', 'en', 'maxlength="80"') +
+      loungeSelect('층 / Floor', 'floor', [['', '그대로 / Keep current'], ['2F', '2F'], ['3F', '3F']]) +
+      loungeSelect('상태 / Status', 'mode', [['open', '오늘 열기 / Open today'], ['closed', '오늘 닫기 / Close today'], ['auto', '영업에 맞춤 / Club hours']]),
+      value => {
+        const id = value('id'), title = value('title'), en = value('en'), floor = value('floor');
+        if (id && !/^(?:2F|3F|english|party-[a-z0-9_-]{1,34})$/.test(id)) throw new Error('room');
+        if (!id && !title) throw new Error('text');
+        return { ...(id && { id }), ...(title && { title }), ...(en && { en }), ...(floor && { floor }), mode: value('mode') };
+      }, request, { done: (result, form) => {
+        if (!result.id) return;
+        form.elements.id.value = result.id;
+        addRoom(result.id, form.elements.title.value);
+        form.querySelector('.lounge-msg').textContent = LOUNGE_SAVED + ' 방 ID / Room ID · ' + result.id;
+      } });
     loungeAction(panel, '공지 고정 / Pin announcement', 'adm_room_pin', room + text,
       value => ({ id: value('id'), text: value('text') }), request);
     loungeAction(panel, '오늘 방에서 내보내기 / Remove from room for today', 'adm_room_kick',
-      room + loungeInput('닉네임 / Nickname', 'nick', 'maxlength="12" required'),
-      value => ({ id: value('id'), nick: value('nick') }), request, { label: '내보내기 / Remove', confirm: true });
+      room + loungeInput('회원 ID (회원 탭에서 찾기) / Member ID (see Members)', 'mid', 'maxlength="60" required'),
+      value => ({ id: value('id'), mid: value('mid') }), request, { label: '내보내기 / Remove', confirm: true });
     loungeAction(panel, '피크타임 곡 투표 / Peak-time song vote', 'adm_songvote_set',
       room + loungeInput('틀 시각 / Play time (KST)', 'at', 'type="time" required') +
-      [1, 2, 3].map(i => loungeInput('후보 곡 / Song ' + i, 'song' + i, 'required maxlength="120"')).join(''),
+      [1, 2, 3].map(i => loungeInput('후보 곡 / Song ' + i, 'song' + i, 'required maxlength="100"')).join(''),
       value => {
-        const choices = [1, 2, 3].map(i => value('song' + i));
-        if (choices.includes('') || new Set(choices).size !== 3) throw new Error('bad');
-        return { id: value('id'), at: value('at'), choices };
+        const songs = [1, 2, 3].map(i => value('song' + i));
+        if (songs.includes('') || new Set(songs.map(song => song.toLowerCase())).size !== 3) throw new Error('songs');
+        return { id: value('id'), at: value('at'), songs };
       }, request);
   }
   function loungeProgramming(panel, request) {
@@ -7459,29 +7520,88 @@ html .chathelp .ch-go .cei { color: var(--muted); }
         'type="number" min="1" step="1"'),
       value => ({ mid: value('mid'), ...(value('cycle') && { cycle: +value('cycle') }) }), request,
       { label: '지급 / Give reward', confirm: true });
+    const ready = document.createElement('div');
+    const lookup = document.createElement('button');
+    lookup.type = 'button';
+    lookup.className = 'btn';
+    lookup.textContent = '지급할 보상 보기 / View unclaimed rewards';
+    panel.append(lookup, ready);
+    lookup.onclick = async () => {
+      if (ready.querySelector('form[inert]')) return;
+      lookup.disabled = true;
+      try {
+        await loungeList(ready, 'adm_reward_list', request, {
+          key: 'rewards',
+          identify: row => row.mid,
+          render: row => '<strong>' + esc(row.nick) + '</strong> · ' + loungeCount(row.cycle) + '회 / Cycle',
+          fields: (slot, row, done) => loungeAction(slot, '스탬프 보상 / Stamp reward', 'adm_reward_give', '',
+            () => ({ mid: row.mid, cycle: row.cycle }), request, { label: '지급 / Give reward', confirm: true, done })
+        });
+      } catch (error) {
+        if (ready.isConnected) ready.textContent = loungeError(error);
+      } finally { lookup.disabled = false; }
+    };
     if (!state.s.admin) return;
     loungeAction(panel, '주간 미션 / Weekly mission', 'adm_mission_set',
-      loungeInput('미션 이름 / Mission name', 'title', 'required maxlength="120"') +
-      loungeInput('주의 시작일 / Week starts', 'week', 'type="date" required', loungeWeek()) +
-      loungeInput('필요한 체크인 / Check-ins needed', 'checkin', 'type="number" min="0" max="7" required', 2) +
-      loungeInput('필요한 투표 / Votes needed', 'vote', 'type="number" min="0" max="7" required', 1) +
-      loungeInput('완료 포인트 / Completion points', 'points', 'type="number" min="1" required', 100),
-      value => ({ title: value('title'), week: value('week'), checkin: +value('checkin'), vote: +value('vote'), points: +value('points') }),
-      request);
-    loungeAction(panel, '굿즈 등록 · 수정 / Add or edit merchandise', 'adm_goods_set',
-      loungeInput('상품 코드 / SKU', 'sku', 'required maxlength="40"') +
+      loungeInput('주의 시작일 (월요일) / Week starts (Monday)', 'week', 'type="date" required', loungeWeek()) +
+      loungeInput('필요한 체크인 / Check-ins needed', 'checkins', 'type="number" min="0" max="7" required', 2) +
+      loungeInput('필요한 투표 / Votes needed', 'votes', 'type="number" min="0" max="7" required', 1) +
+      loungeInput('필요한 출석 / Daily visits needed', 'attends', 'type="number" min="0" max="7" required', 0) +
+      loungeInput('완료 포인트 / Completion points', 'points', 'type="number" min="100" max="200" required', 100),
+      value => {
+        const week = value('week'), checkins = +value('checkins'), votes = +value('votes'), attends = +value('attends');
+        if (week < loungeWeek() || new Date(week + 'T00:00:00Z').getUTCDay() !== 1 || checkins + votes + attends === 0) {
+          throw new Error('mission');
+        }
+        return { week, checkins, votes, attends, points: +value('points') };
+      }, request);
+    const form = loungeAction(panel, '굿즈 등록 · 수정 / Add or edit merchandise', 'adm_goods_set',
+      loungeInput('상품 코드 / SKU', 'sku', 'required maxlength="40" pattern="[A-Za-z0-9_\\-]{1,40}"') +
       loungeInput('이름 / Name', 'name', 'required maxlength="80"') +
       '<label>상품 사진 / Product photo<input name="photo" type="file" accept="image/*"></label>' +
-      loungeInput('매장 결제 금액 (원) / In-store price (KRW)', 'price', 'required type="number" min="0" step="1"') +
-      loungeInput('재고 / Stock', 'stock', 'required type="number" min="0" step="1"') +
-      '<div class="lounge-options"><label><input type="checkbox" name="merch" required> 술 · 술 교환권을 제외한 상품 / Non-alcoholic merchandise</label></div>',
+      loungeInput('매장 결제 금액 (원) / In-store price (KRW)', 'price', 'required type="number" min="1" max="10000000" step="1"') +
+      loungeInput('재고 / Stock', 'stock', 'required type="number" min="0" max="100000" step="1"') +
+      '<div class="lounge-options"><label><input type="checkbox" name="active" checked> 판매 가능 / Available for sale</label>' +
+      '<label><input type="checkbox" name="merch" required> 술 · 술 교환권을 제외한 상품 / Non-alcoholic merchandise</label></div>',
       async (value, data) => {
         const name = value('name');
         if (!name || /(?:^술$|술\s*(?:교환권|쿠폰)|주류|소주|맥주|막걸리|와인|위스키|샴페인|보드카|데킬라|럼주|\b(?:alcohol|beer|wine|whisk(?:y|ey)|vodka|tequila|rum|champagne|liquor|cocktail)\b)/i.test(name)) throw new Error('merch');
-        const photo = data.get('photo');
-        return { sku: value('sku'), name, price: +value('price'), stock: +value('stock'),
-          ...(photo?.size && { photo: await loungeUpload(photo, session) }) };
+        const sku = value('sku'), file = data.get('photo');
+        const photo = file?.size ? await loungeUpload(file, session) :
+          (await request('adm_goods', {})).goods?.find(item => item.sku === sku)?.photo || '';
+        return { sku, name, price: +value('price'), stock: +value('stock'), active: data.has('active'), photo };
       }, request);
+    const browse = document.createElement('button');
+    browse.type = 'button';
+    browse.className = 'btn';
+    browse.textContent = '등록한 굿즈 보기 / Browse merchandise';
+    form.before(browse);
+    const list = document.createElement('div');
+    form.before(list);
+    browse.onclick = async () => {
+      browse.disabled = true;
+      try {
+        const result = await request('adm_goods', {});
+        if (!list.isConnected) return;
+        const items = result.goods || [];
+        list.innerHTML = loungeCards(items, (item, i) => '<article><strong>' + esc(item.name) +
+          '</strong><p>' + esc(item.sku) + ' · ' + loungeCount(item.stock) + ' 재고 / In stock</p>' +
+          loungeButton('수정 / Edit', 'type="button" data-edit-goods="' + i + '"') + '</article>');
+        list.querySelectorAll('[data-edit-goods]').forEach(button => {
+          button.onclick = () => {
+            if (form.inert) return;
+            const item = items[Number(button.dataset.editGoods)];
+            for (const key of ['sku', 'name', 'price', 'stock']) form.elements[key].value = item[key];
+            form.elements.active.checked = Boolean(item.active);
+            form.elements.photo.value = '';
+            form.elements.merch.checked = false;
+            form.elements.name.focus();
+          };
+        });
+      } catch (error) {
+        if (list.isConnected) list.textContent = loungeError(error);
+      } finally { browse.disabled = false; }
+    };
   }
   function loungeWeek() {
     const date = new Date(loungeBusinessDay() + 'T00:00:00Z');
@@ -7519,12 +7639,12 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       } });
     panel.insertAdjacentHTML('beforeend', '<div data-weekly-result></div>');
   }
-  async function loungeList(panel, action, request, { key, fields, render, body = {} }) {
+  async function loungeList(panel, action, request, { key, fields, render, identify = row => row.id, body = {} }) {
     const result = await request(action, body);
     if (!panel.isConnected) return;
     const rows = Array.isArray(result[key]) ? result[key] : [];
     panel.innerHTML = loungeCards(rows, (row, i) => '<article data-lounge-row="' + i + '">' + render(row) +
-      (fields && row.id ? '<div data-row-action></div>' : '') + '</article>');
+      (fields && identify(row) ? '<div data-row-action></div>' : '') + '</article>');
     panel.querySelectorAll('[data-row-action]').forEach(slot => {
       const row = rows[Number(slot.parentElement.dataset.loungeRow)];
       fields(slot, row, () => {
@@ -7542,7 +7662,7 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       more.onclick = async () => {
         more.disabled = true;
         try {
-          await loungeList(panel, action, request, { key, fields, render, body: { ...body, before: result.before } });
+          await loungeList(panel, action, request, { key, fields, render, identify, body: { ...body, before: result.before } });
         } catch (err) {
           if (more.isConnected) panel.closest('.lounge-screen').querySelector(':scope > .lounge-msg').textContent = loungeError(err);
         } finally { more.disabled = false; }
@@ -7579,7 +7699,7 @@ html .chathelp .ch-go .cei { color: var(--muted); }
   }
   async function loungeFulfillment(panel, session, request, orders) {
     return loungeList(panel, orders ? 'adm_orders' : 'adm_yc_list', request, {
-      key: orders ? 'orders' : 'reservations',
+      key: orders ? 'orders' : 'bookings',
       render: row => '<strong>' + esc(row.nick || row.id) + '</strong><p>' +
         esc(orders ? (row.items || []).map(item => (item.name || item.sku) + ' × ' + item.n).join('\n') : row.text) +
         '</p><p class="note">' + esc([row.day, row.at, row.status].filter(Boolean).join(' · ')) + '</p>',
