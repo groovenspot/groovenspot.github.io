@@ -10,7 +10,7 @@
       older: '이전 대화', latest: '최근 대화', report: '신고', reportTitle: '이 글을 신고할까요?',
       abuse: '욕설·괴롭힘', ad: '광고', sexual: '성적인 내용', illegal: '불법 내용', etc: '기타',
       reported: '신고를 받았어요.', block: '차단', blockTitle: '{nick} 님을 차단할까요?',
-      blocked: '서로의 글이 보이지 않아요.', translate: '번역', translating: '번역 중…',
+      blocked: '서로의 글이 보이지 않아요.', translateNotice: '연락처와 링크를 가린 뒤 외부 클라우드에서 번역해요.', translate: '번역', translating: '번역 중…',
       vote: '피크타임 곡 투표', voteAt: '한국 시간 {at} 마감', votes: '{n}표',
       voted: '내가 고른 곡', leading: '공동 선두', winner: '1위', voteClosed: '투표가 끝났어요.',
       safety: '안심 호출', safetyInfo: '오늘 매장에서 체크인했다면 경호팀을 부를 수 있어요.',
@@ -19,6 +19,7 @@
       staff: '호출을 확인할 수 없어요. 가까운 직원에게 바로 알려 주세요.',
       checkin: '오늘 매장에서 체크인한 손님만 부를 수 있어요.',
       floorError: '2층이나 3층을 골라 주세요.', seatError: '자리 설명은 40자까지 써 주세요.',
+      seatPlainError: '자리 설명은 꺾쇠나 줄바꿈 없이 40자까지 써 주세요. 첫 글자는 =, +, -, @로 시작할 수 없어요.',
       safetyBusy: '한 시간에 두 번까지 부를 수 있어요. 가까운 직원에게 바로 알려 주세요.',
       busy: '잠깐 쉬었다가 다시 해 주세요.', translateBusy: '오늘 쓸 수 있는 번역을 다 썼어요.',
       dup: '이미 했어요.', kicked: '오늘은 이 방에 들어갈 수 없어요.',
@@ -36,7 +37,7 @@
       older: 'Older messages', latest: 'Latest messages', report: 'Report', reportTitle: 'Report this message?',
       abuse: 'Harassment or abuse', ad: 'Advertising', sexual: 'Sexual content', illegal: 'Illegal content', etc: 'Other',
       reported: 'Report received.', block: 'Block', blockTitle: 'Block {nick}?',
-      blocked: 'Your messages are hidden from each other.', translate: 'Translate', translating: 'Translating…',
+      blocked: 'Your messages are hidden from each other.', translateNotice: 'An external cloud service translates the text after contact details and links are masked.', translate: 'Translate', translating: 'Translating…',
       vote: 'Peak-time song vote', voteAt: 'Closes at {at} Korean time', votes: '{n} votes',
       voted: 'Your pick', leading: 'Tied for first', winner: 'First place', voteClosed: 'Voting has ended.',
       safety: 'Call security', safetyInfo: 'You can call security if you checked in at the club today.',
@@ -45,6 +46,7 @@
       staff: 'We couldn’t confirm your request. Please tell a nearby staff member now.',
       checkin: 'Check in at the club today to call security.',
       floorError: 'Choose 2F or 3F.', seatError: 'Use up to 40 characters for the seat.',
+      seatPlainError: 'Use up to 40 characters without angle brackets or line breaks. Start with a character other than =, +, -, or @.',
       safetyBusy: 'You can call twice per hour. Please tell a nearby staff member now.',
       busy: 'Wait a moment and try again.', translateBusy: 'You’ve used today’s translations.',
       dup: 'Already done.', kicked: 'You can’t enter this room today.',
@@ -53,8 +55,16 @@
       text: 'Write a message of up to 500 characters.', retry: 'Reload',
       network: 'Connection lost. Reconnecting…', loading: 'Loading…'
     },
-    ja: { historyExpired: '送信済みのメッセージは履歴から削除されました。' },
-    zh: { historyExpired: '消息已发送，现已从聊天记录中清除。' }
+    ja: {
+      historyExpired: '送信済みのメッセージは履歴から削除されました。',
+      translateNotice: '連絡先とリンクを伏せてから、外部のクラウドサービスで翻訳します。',
+      seatPlainError: '山括弧や改行を使わず40文字以内で入力してください。先頭に =、+、-、@ は使えません。'
+    },
+    zh: {
+      historyExpired: '消息已发送，现已从聊天记录中清除。',
+      translateNotice: '联系信息和链接会先被遮盖，再由外部云服务翻译。',
+      seatPlainError: '请输入不超过 40 个字符，避免使用尖括号或换行符，且开头不能是 =、+、- 或 @。'
+    }
   };
   L.i18n(Object.fromEntries(Object.entries(copy).map(([lang, words]) =>
     [lang, Object.fromEntries(Object.entries(words).map(([key, value]) => ['rooms.' + key, value]))])));
@@ -99,7 +109,7 @@
     if (error === 'busy') return t(type === 'safety' ? 'safetyBusy' : type === 'translate' ? 'translateBusy' : 'busy');
     const key = { kicked: 'kicked', room_closed: 'roomClosed', closed: 'roomClosed', dup: 'dup', not_found: 'missing',
       text: 'text', vote_closed: 'voteClosed', staff: 'staff', checkin: 'checkin', floor: 'floorError',
-      seat: 'seatError', history_expired: 'historyExpired', network: 'network' }[error];
+      seat: 'seatPlainError', history_expired: 'historyExpired', network: 'network' }[error];
     return key ? t(key) : L.t('core.unavailable');
   }
 
@@ -201,6 +211,7 @@
       '<div data-vote></div><div class="shell-actions">' + btn('older', 'data-older hidden') + btn('latest', 'data-latest hidden') +
       btn('retry', 'data-retry hidden') + '</div><ol class="rooms-chat" aria-label="' + e('title') + '"></ol>' +
       '<p class="muted" data-empty hidden>' + e('empty') + '</p>' +
+      (flags.translate ? '<p class="muted" data-translation-notice aria-live="polite" hidden></p>' : '') +
       '<form class="rooms-compose" hidden><label for="room-message" class="sr-only">' + e('message') +
       '</label><textarea rows="1" id="room-message" placeholder="' + e('message') +
       '" maxlength="1000" required></textarea><button class="btn btn-hot">' + e('send') + '</button></form><p role="status" class="shell-error"></p>' +
@@ -261,9 +272,15 @@
         if (data.type === 'refresh') scheduleRefresh();
         if (data.type === 'sent' && data.nonce === pending?.nonce) finishPending(data);
       };
-      connection.onclose = () => {
+      connection.onclose = event => {
         if (socket !== connection) return;
         socket = null;
+        if (event.code === 1008 && ['blocked', 'banned', 'suspended', 'kicked', 'auth', 'closed'].includes(event.reason)) {
+          request++;
+          chat.replaceChildren();
+          data = null;
+          form.hidden = true;
+        }
         finishPending(null);
         const delay = reconnectDelay;
         nextConnect = Date.now() + delay;
@@ -376,6 +393,11 @@
       if (button.hasAttribute('data-translate') && !translating.has(message.id)) {
         const alreadyTranslated = translations.get(message.id);
         if (alreadyTranslated) return;
+        const notice = query('[data-translation-notice]');
+        if (notice?.hidden) {
+          notice.hidden = false;
+          notice.textContent = t('translateNotice');
+        }
         translating.add(message.id);
         button.disabled = true;
         button.textContent = t('translating');
@@ -476,8 +498,13 @@
     form.onsubmit = async event => {
       event.preventDefault();
       if (button.disabled) return;
-      button.disabled = true;
       const { floor, seat } = Object.fromEntries(new FormData(form));
+      if (seat.length > 40 || /[<>\x00-\x1f\x7f-\x9f]/.test(seat) || /^[=+@-]/.test(seat.trim())) {
+        status.textContent = t(seat.length > 40 ? 'seatError' : 'seatPlainError');
+        form.elements.seat.focus();
+        return;
+      }
+      button.disabled = true;
       const response = await L.api('safety_call', { floor, seat });
       if (!root.isConnected) return;
       if (response.error) button.disabled = false;
