@@ -102,13 +102,16 @@ const LoungeScreenUI = (() => {
     live: ['매장 영상', 'Club live'], timetable: ['타임테이블', 'Timetable'],
     going: ['갈래요', 'I’m going'], undo: ['갈래요 취소', 'Cancel going'],
     people: ['{n}명 갈래요', '{n} going'], friends: ['같이 가는 친구', 'Friends going'],
-    stale: ['마지막으로 받은 정보예요', 'Showing the last update']
+    stale: ['마지막으로 받은 정보예요', 'Showing the last update'],
+    safety: ['안심 버튼', 'Call club security'], djs: ['DJ 목록', 'DJs']
   });
   let timer;
   let lastGoing;
 
   function render(root) {
-    const view = U.mount(root, '<h1>' + L.esc(L.t('nav.tonight')) + '</h1>');
+    const actions = '<div class="shell-actions">' + U.link('#/djs', t('djs')) +
+      (L.open('safety') ? U.link('#/safety', t('safety')) : '') + '</div>';
+    const view = U.mount(root, '<h1>' + L.esc(L.t('nav.tonight')) + '</h1>' + actions);
     let data;
     let pending = false;
     let updating = false;
