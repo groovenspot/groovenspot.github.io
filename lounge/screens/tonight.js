@@ -183,13 +183,13 @@ const LoungeScreenUI = (() => {
         (['10', '30'].includes(data.line) ? t('mins', { n: data.line }) : data.line === 'none' ? t('none') : t('crowd0')) +
         '</b></p><div data-going style="' + U.card + '"></div><h2>' + t('live') + '</h2>' +
         ((data.lives || []).map(live => {
-          const video = U.url(live.vid), photo = U.url(live.img);
-          if (!video && !photo) return '';
-          return '<figure style="' + U.card + '">' + (video
-            ? '<video style="' + U.media + '" controls playsinline preload="none" src="' + L.esc(video) + '"' +
-              (photo ? ' poster="' + L.esc(photo) + '"' : '') + '></video>'
-            : '<img alt="" loading="lazy" style="' + U.media + '" src="' + L.esc(photo) + '">') +
-            '<figcaption>' + L.esc(live.floor) + ' · ' + (typeof live.at === 'number'
+          const videos = (Array.isArray(live.vids) ? live.vids : [live.vid]).map(U.url).filter(Boolean);
+          const photos = (Array.isArray(live.imgs) ? live.imgs : [live.img]).map(U.url).filter(Boolean);
+          if (!videos.length && !photos.length) return '';
+          return '<figure style="' + U.card + '">' +
+            videos.map(video => '<video style="' + U.media + '" controls playsinline preload="none" src="' + L.esc(video) + '"></video>').join('') +
+            photos.map(photo => '<img alt="" loading="lazy" style="' + U.media + '" src="' + L.esc(photo) + '">').join('') +
+            '<figcaption>' + (live.floor ? L.esc(live.floor) + ' · ' : '') + (typeof live.at === 'number'
               ? U.time(live.at, { timeStyle: 'short' }) : L.esc(live.at)) + '</figcaption></figure>';
         }).join('') || U.status('empty')) + '<h2>' + t('timetable') + '</h2>' +
         ((data.timetable || []).length ? '<ul style="' + U.card + ';padding-left:36px">' + data.timetable.map(slot =>

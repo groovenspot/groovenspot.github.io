@@ -2581,7 +2581,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 .lounge-screen .lounge-stage-confirm { border-color: var(--warn); }
 .lounge-screen .lounge-stage-confirm .lounge-options { grid-template-columns: 1fr; }
 @media (max-width: 639px) { .lounge-screen .lounge-stage-list { grid-template-columns: 1fr; } }
-.lounge-screen .lounge-options label input, #lvLounge { width: 20px; height: 20px; margin: 0 8px 0 0; flex: none; accent-color: var(--g); }
+.lounge-screen .lounge-options label input { width: 20px; height: 20px; margin: 0 8px 0 0; flex: none; accent-color: var(--g); }
 .lounge-table { width: 100%; border-collapse: collapse; }
 .lounge-table td, .lounge-table th { padding: 4px 2px; text-align: left; }
 .lounge-table :is(input,select) { min-width: 0; max-width: 100%; padding-inline: 4px; margin: 0; }
@@ -2595,7 +2595,6 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 .sheet-in.lounge-entrance { display: grid; align-content: center; width: 100%; height: 100dvh; max-width: none; max-height: none; border: 0; border-radius: 0; margin: 0; padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom)); }
 .lounge-entrance > * { width: min(100%, 540px); margin-inline: auto; }
 .lounge-entrance .lounge-qr canvas { width: min(100%, 540px, 58dvh); }
-.lv-lounge { display: flex; align-items: center; min-height: 44px; }
 </style>
 </head>
 <body>
@@ -8793,8 +8792,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     if (state.lvForm) h += '<div class="lvf"><div class="lvkind" role="group" aria-label="올릴 종류">' + [['live', opIco('video') + ' 실시간'], ['tt', opIco('clock') + ' 타임테이블']].map(function (k) { return '<button type="button" data-lvk="' + k[0] + '" aria-pressed="' + ((k[0] === 'tt') === tt) + '">' + k[1] + '</button>'; }).join('') + '</div>' +
       (tt ? '<p class="lvtth">' + opIco('info', 16) + ' 오늘 타임테이블 사진을 올리면 홈페이지에 자동으로 반영돼요</p>' : '') +
       '<textarea id="lvT" rows="2" maxlength="300" placeholder="' + (tt ? '메모 (선택) · 예) 11/22 토 타임테이블' : '지금 상황 · 예) 3층 피크 · 2층 입구 줄') + '">' + esc(state.lvText || '') + '</textarea>' +
-      (tt ? '' : '<label class="lv-lounge"><input id="lvLounge" type="checkbox"' + (lvMd().lounge ? ' checked' : '') +
-        '> 손님 라운지에도 보이기 / Also show in Guest Lounge</label>') +
+      (tt ? '' : '<p class="note">오늘 올린 사진·영상은 손님 라운지 매장 영상에 자동으로 보여요.</p><label>층 (선택) <select id="lvFloor"><option value="">선택</option>' +
+        ['2F', '3F'].map(function (f) { return '<option' + (lvMd().floor === f ? ' selected' : '') + '>' + f + '</option>'; }).join('') + '</select></label>') +
       '<div class="ephotos" id="lvPh" hidden></div><p class="msg" id="lvMsg"></p>' +
       '<div class="lvfb"><label class="btn">' + opIco('camera') + (tt ? ' 사진' : ' 사진·영상') + '<input type="file" id="lvFile" accept="' + (tt ? 'image/*' : 'image/*,video/*') + '" multiple hidden></label><button class="btn btn-hot" type="button" id="lvSave">올리기</button><button class="link" type="button" id="lvX">취소</button></div></div>';
     if (L.list.length) h += '<h2 class="sec tbz">올라온 것 <span class="osn">' + L.list.length + '</span></h2>';
@@ -8802,7 +8801,9 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       var nw = !m.mine && m.at > seen;
       return '<div class="lvc' + (m.kind === 'tt' ? ' tt' : '') + (nw ? ' new' : '') + '" data-lvid="' + esc(m.id) + '"><div class="lvh"><b>' + esc(m.who) + nickH(m.who) + '</b>' + (m.org ? '<span class="org">' + esc(m.org) + '</span>' : '') +
         (m.kind === 'tt' ? '<span class="lvtt">' + opIco('clock', 13) + ' 타임테이블</span>' : '') + (nw ? '<span class="lvnew">새 글</span>' : '') + '<time>' + (m.day !== L.today ? esc(tbDayLabel(m.day)) + ' ' : '') + esc(m.hm) + '</time>' + (m.mine || admin ? '<button class="link" type="button" data-lvdel="1">지우기</button>' : '') + '</div>' +
-        (m.text ? '<p class="lvt">' + esc(m.text) + '</p>' : '') + chatMedia(m) + '</div>';
+        (m.text ? '<p class="lvt">' + esc(m.text) + '</p>' : '') + chatMedia(m) +
+        (m.canLounge ? '<button class="link" type="button" data-lv-lounge="' + (m.lounge ? 'hide' : 'show') + '">' +
+          (m.lounge ? '라운지에서 내리기' : '라운지에 다시 올리기') + '</button>' : '') + '</div>';
     }).join('') + '</div>' : '<p class="empty">아직 올라온 영상이 없어요. 첫 영상을 올려 보세요.</p>';
     area.innerHTML = h;
     if (L.list.length) lvSeen(L.list[0].at); renderTabsOnly();
@@ -8815,22 +8816,28 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       if (!armed(b, '지우기')) return; var id = b.closest('[data-lvid]').dataset.lvid; b.disabled = true;
       call({ a: 'lv_del', token: state.s.token, id: id }).then(function (r) { if (r.ok) { state.lv = r; state.lvMsg = '지웠어요.'; } else { b.disabled = false; state.lvMsg = lvErr(r); } render(); }).catch(function () { b.disabled = false; });
     }); });
+    area.querySelectorAll('[data-lv-lounge]').forEach(function (b) { b.addEventListener('click', function () {
+      var show = b.dataset.lvLounge === 'show', id = b.closest('[data-lvid]').dataset.lvid;
+      b.disabled = true;
+      call({ a: 'lv_lounge', token: state.s.token, id: id, show: show }).then(function (r) {
+        if (r.error === 'auth') return toLogin(AUTH_OUT);
+        if (r.ok) { state.lv = r; state.lvMsg = show ? '라운지에 다시 올렸어요.' : '라운지에서 내렸어요.'; }
+        else { state.lvMsg = '라운지 공개 상태를 바꾸지 못했어요.'; }
+        if (state.tab === 'live') render();
+      }).catch(function () { b.disabled = false; });
+    }); });
     if ($('lvNew')) $('lvNew').addEventListener('click', function () { state.lvForm = true; render(); var t = $('lvT'); if (t) t.focus(); });
     if (!state.lvForm) return;
     lvPaint();
     area.querySelectorAll('[data-lvk]').forEach(function (b) { b.addEventListener('click', function () { if (state.lvKind === b.dataset.lvk) return; state.lvKind = b.dataset.lvk; state.lvText = $('lvT').value; render(); }); });
     $('lvT').addEventListener('input', function () { state.lvText = this.value; });
-    if ($('lvLounge')) $('lvLounge').onchange = function () { lvMd().lounge = this.checked; };
+    if ($('lvFloor')) $('lvFloor').onchange = function () { lvMd().floor = this.value; };
     $('lvFile').addEventListener('change', function () { var fs = Array.prototype.slice.call(this.files || []); this.value = ''; if (fs.length) lvPick(fs); });
     $('lvX').addEventListener('click', function () { var md = lvMd(); md.vids.forEach(function (v) { v.gone = true; }); state.lvMd = null; state.lvText = ''; state.lvForm = false; state.lvKind = ''; render(); });
     $('lvSave').addEventListener('click', function () {
       var b = this, md = lvMd(), t = $('lvT').value.trim(), m = $('lvMsg');
       if (state.lvKind === 'tt' && !md.photos.length) { m.textContent = '타임테이블은 사진을 1장 이상 넣어 주세요.'; return; }   // 🕘 사진 없으면 못 올림
       if (!t && !md.photos.length && !md.vids.length) { m.textContent = '글이나 사진·영상을 넣어 주세요.'; return; }
-      if (state.lvKind !== 'tt' && md.lounge && !md.photos.length && !md.vids.length) {
-        m.textContent = '라운지에 보이려면 사진이나 영상을 넣어 주세요. / Add a photo or video to share in Lounge.';
-        return;
-      }
       if (md.vids.some(function (v) { return v.err; })) { m.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
       if (md.vids.some(function (v) { return !v.done; })) {   // 영상이 다 올라가면 바로 올림
         b.disabled = true; b.textContent = '영상 올리는 중…';
@@ -8842,7 +8849,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         return;
       }
       var body = { a: 'lv_add', token: state.s.token, text: t, kind: state.lvKind === 'tt' ? 'tt' : 'live' };
-      if (body.kind === 'live' && md.lounge) body.lounge = true;
+      if (body.kind === 'live' && md.floor) body.floor = md.floor;
       if (md.photos.length) body.photos = md.photos.map(function (p) { return { type: p.type, data: p.data }; });
       if (md.vids.length) body.videos = md.vids.map(function (v) { return v.vid; });
       b.disabled = true; m.textContent = '';
