@@ -177,7 +177,8 @@
       send.disabled = true;
       notice.textContent = U.t('loading');
       const body = { ...ref, to: [...selected.keys()] };
-      if (message.value.trim()) body.text = message.value.trim();
+      const line = message.value.replace(/[\r\n\v\f\u0085\u2028\u2029]+/gu, ' ').trim();
+      if (line) body.text = line;
       const result = await L.api('share_dm', body);
       if (!panel.isConnected) return;
       busy = false;
@@ -299,7 +300,7 @@
     if (!enabled(await config()) || version !== opening || hash !== location.hash) return;
     const record = id ? (typeof post === 'string' ? { id } : post) : null;
     const panel = L.sheet('<h2>' + text('title') + '</h2>' + (L.me
-      ? '<form><label>' + text('search') + '<input name="q" type="search" maxlength="100" autocomplete="off"></label>' +
+      ? '<form><label>' + text('search') + '<input name="q" type="search" maxlength="64" autocomplete="off"></label>' +
         '<div class="share-targets" data-share-targets role="group" aria-label="' + text('recent') + '"></div>' +
         '<div class="share-selection" data-share-picks></div><label>' + text('message') +
         '<input name="message" maxlength="500"></label><button class="btn btn-hot" type="submit" disabled>' + text('send') +
