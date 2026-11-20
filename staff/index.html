@@ -1532,6 +1532,13 @@ html .goffer.gofs { background: #a3112d; } html .goffer.gofs.subo { background: 
 .goffer.gofs .btn-hot { min-height: 76px; border-radius: 22px; background: #fff; border-color: #fff; color: #a3112d; font-size: 23px; }
 .goffer.gofs.subo .btn-hot { color: #a84300; }
 .goffer.gofs .btn:not(.btn-hot) { min-height: 60px; border-radius: 18px; background: rgba(0,0,0,.25); border: 1.5px solid rgba(255,255,255,.45); color: #fff; font-size: 18px; }
+.goffer.gofs .btn[data-gexit] { min-height: 52px; border-color: #fff; background: transparent; }
+.goffer.gofs .gof-seq { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.goffer.gofs .gof-seq .btn-hot { grid-column: 1 / -1; }
+.goffer.gofs .gof-seq .btn:not(.btn-hot) { padding-inline: 8px; }
+.goffer.gof-compact .gof-b { grid-template-columns: 1fr; }
+.goffer.gof-compact .gof-r { white-space: nowrap; }
+.goffer.gof-compact .gof-r small { margin-inline-start: 4px; }
 @media (min-width: 900px) { .goffer.gofs { left: 0; right: 0; width: auto; } .goffer.gofs > * { width: 100%; max-width: 440px; margin-left: auto; margin-right: auto; } .goffer.gofs .gof-h { margin-top: auto; } }
 @media (prefers-reduced-motion: no-preference) { .goffer.gofs .gof-r { animation: gofpulse 1s ease-in-out infinite; } }
 @keyframes gofpulse { 50% { border-color: rgba(255,255,255,.55); } }
@@ -4673,27 +4680,90 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     box.className = 'goffer subo gone' + (on ? ' stack' : ''); box.hidden = false;
     box.innerHTML = '<div class="gof-h"><b>🍋 ' + esc(g.by) + ' 님이 받음</b></div>' + gatePlaceH(g.where) + '<div class="gof-d">섭레콜' + (g.what ? ' · ' + esc(g.what) : '') + ' · 이 호출은 끝났어요</div>';
   }
-  // 내 차례 카드 (MD·운영팀): 화면 아래에 떠 있고, 시간이 지나면 사라진다
+  var gateOfferToken = '', gateOfferEntries = new Map();
+  function gateOfferKey(c) { return c.id + '/' + c.turn; }
+  function gateOfferEntry(c) { return gateOfferEntries.get(gateOfferKey(c)); }
+  function gateOfferStop(c) {
+    try { if (navigator.vibrate) navigator.vibrate(0); } catch (e) {}
+    if (navigator.serviceWorker) navigator.serviceWorker.getRegistration().then(function (reg) {
+      return reg?.getNotifications();
+    }).then(function (notices) {
+      (notices || []).forEach(function (notice) { if (notice.data?.ref === 'gate:' + c.id) notice.close(); });
+    }).catch(function () {});
+  }
+  function gateOfferAction(c, take) {
+    if (!state.s || gateLeft(c) <= 0) return;
+    var token = state.s.token, id = gateOfferKey(c), entry = gateOfferEntry(c);
+    if (entry?.busy || entry?.passed) return;
+    if (!entry) { entry = { until: c.dl + 5000 }; gateOfferEntries.set(id, entry); }
+    var broadcast = c.kind === 'guide' || c.kind === SUB.KIND;
+    if (!take) {
+      entry.collapsed = true;
+      gateOfferStop(c);
+      if (broadcast) { paintGateOffer(); return; }
+    }
+    entry.busy = true;
+    paintGateOffer();
+    gateSend({ a: take ? SUB.TAKE : 'gate_pass', id: c.id }, null, function (r) {
+      if (state.s?.token !== token || gateOfferEntry(c) !== entry) return;
+      entry.busy = false;
+      if (r.ok) {
+        entry.passed = true;
+        if (take) {
+          state.gdone = { at: Date.now(), what: gateWhat(c), where: c.where };
+          setTimeout(paintGateOffer, 8100);
+        }
+      } else {
+        alertMsg(gateErr(r));
+        loadGate(true);
+      }
+      paintGateOffer();
+    });
+  }
+  // 동시 호출에서 나가도 받을 수 있는 동안 아래 카드에 남는다.
   function paintGateOffer() {
     var box = $('gateOffer'); if (!box) return;
+    var token = state.s?.token || '';
+    if (gateOfferToken !== token) {
+      gateOfferToken = token;
+      gateOfferEntries.clear();
+      state.gofferId = ''; state.gdone = null;
+    }
+    var now = Date.now();
+    gateOfferEntries.forEach(function (entry, id) { if (entry.until <= now && !entry.busy) gateOfferEntries.delete(id); });
     var d = state.data || {}, src = state.gate && (state.gateAt || 0) >= (state.listAt || 0) ? state.gate.offers : d.gateOffers;
-    var offers = (state.s && !d.guard ? src || [] : []).filter(function (c) { return c.dl && gateLeft(c) > 0; });
+    var offers = (state.s && !d.guard ? src || [] : []).filter(function (c) { return c.dl && gateLeft(c) > 0 && !gateOfferEntry(c)?.passed; });
     if (state.gdone && Date.now() - state.gdone.at < 8000) {
       box.className = 'goffer done'; box.hidden = false;
+      box.setAttribute('role', 'status'); box.setAttribute('aria-live', 'polite');
       box.innerHTML = '<div class="gof-h"><b>✅ 받았어요' + (state.gdone.where ? '' : ' — 입구로 가 주세요') + '</b></div>' + gatePlaceH(state.gdone.where) + '<div class="gof-d">' + esc(state.gdone.what || '') + '</div>';
       return;
     }
     if (!offers.length) { box.hidden = true; box.innerHTML = ''; state.gofferId = ''; return; }
-    var c = offers[0];
-    if (state.gofferId !== c.id + '/' + c.turn) { state.gofferId = c.id + '/' + c.turn; try { if (navigator.vibrate) navigator.vibrate([250, 120, 250]); } catch (e) {} }
-    box.className = 'goffer gofs'; box.hidden = false;   // 🎨 리디자인 2026-11-20: 내 차례 호출은 화면 가득
-    box.innerHTML = '<div class="gof-k">입구 호출</div><div class="gof-h"><span class="gof-r"><span class="gof-t" data-gdl="' + (c.dl || 0) + '">' + gateLeft(c) + '</span><small>초 남음</small></span><b>' + (c.kind === SUB.KIND ? '섭레콜' : c.kind === 'md' ? '담당 없는 손님' : c.kind === 'pick' ? '나를 찾는 손님' : '안내 요청') + '</b></div>' +
-      gatePlaceH(c.where) + '<div class="gof-d">' + esc(gateWhat(c) || (c.where ? '' : '입구로 와 주세요')) + (c.kind === SUB.KIND ? ' · 영업진 모두에게 갔어요 · 먼저 받은 사람이 담당' : c.kind === 'guide' ? ' · 운영팀 동시 호출 · 먼저 받은 사람이 담당' : c.kind === 'md' ? ' · 내 차례' : '') + '</div>' +
-      '<div class="gof-b"><button type="button" class="btn btn-hot" data-gok="' + esc(c.id) + '">받을게요 · 지금 갈게요</button>' + (c.kind === SUB.KIND || c.kind === 'guide' ? '' : '<button type="button" class="btn" data-gpass="' + esc(c.id) + '">못 받아요 · 넘기기</button>') + '</div>';
+    var c = offers.find(function (o) { return !gateOfferEntry(o)?.collapsed; }) || offers[0];
+    var entry = gateOfferEntry(c), compact = !!entry?.collapsed, busy = entry?.busy ? ' disabled' : '';
+    var sequential = c.kind !== SUB.KIND && c.kind !== 'guide';
+    var title = c.kind === SUB.KIND ? '섭레콜' : c.kind === 'md' ? '담당 없는 손님' : c.kind === 'pick' ? '나를 찾는 손님' : '안내 요청';
+    if (!compact && state.gofferId !== gateOfferKey(c)) { state.gofferId = gateOfferKey(c); try { if (navigator.vibrate) navigator.vibrate([250, 120, 250]); } catch (e) {} }
+    box.className = 'goffer ' + (compact ? 'gof-compact' : 'gofs'); box.hidden = false;
+    box.setAttribute('role', compact ? 'region' : 'alertdialog');
+    box.setAttribute('aria-label', title);
+    box.setAttribute('aria-live', compact ? 'off' : 'assertive');
+    box.innerHTML = (compact ? '' : '<div class="gof-k">입구 호출</div>') +
+      '<div class="gof-h"><span class="gof-r"><span class="gof-t" data-gdl="' + c.dl + '">' + gateLeft(c) + '</span><small>초 남음</small></span><b>' + title + '</b></div>' +
+      gatePlaceH(c.where) + '<div class="gof-d">' + esc(gateWhat(c) || (c.where ? '' : '입구로 와 주세요')) + (compact ? '' : c.kind === SUB.KIND ? ' · 영업진 모두에게 갔어요 · 먼저 받은 사람이 담당' : c.kind === 'guide' ? ' · 운영팀 동시 호출 · 먼저 받은 사람이 담당' : c.kind === 'md' ? ' · 내 차례' : '') + '</div>' +
+      '<div class="gof-b' + (sequential && !compact ? ' gof-seq' : '') + '"><button type="button" class="btn btn-hot" data-gok="' + esc(c.id) + '"' + busy + '>' +
+      (compact && sequential && busy ? '넘기는 중…' : '받을게요 · 지금 갈게요') + '</button>' +
+      (sequential && !busy ? '<button type="button" class="btn" data-gpass="' + esc(c.id) + '">못 받아요 · 넘기기</button>' : '') +
+      (compact ? '' : '<button type="button" class="btn" data-gexit' + busy + '>나가기</button>') + '</div>';
     if (c.kind === SUB.KIND) { box.classList.add('subo'); (state.subOffered = state.subOffered || {})[c.id] = state.subOffered[c.id] || 1; }   // 🍋 섭레콜: 넘기기 없음
-    var ok = box.querySelector('[data-gok]'), ps = box.querySelector('[data-gpass]');
-    ok.addEventListener('click', function () { gateSend({ a: c.kind === SUB.KIND ? SUB.TAKE : 'gate_ok', id: c.id }, ok, function (r) { if (r.ok) { state.gdone = { at: Date.now(), what: gateWhat(c), where: c.where }; paintGateOffer(); setTimeout(paintGateOffer, 8100); } else { alertMsg(gateErr(r)); loadGate(true); } }); });
-    if (ps) ps.addEventListener('click', function () { gateSend({ a: 'gate_pass', id: c.id }, ps); });
+    box.querySelector('[data-gok]').addEventListener('click', function () { gateOfferAction(c, true); });
+    box.querySelectorAll('[data-gpass], [data-gexit]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        gateOfferAction(c, false);
+        box.querySelector('[data-gok]:not([disabled])')?.focus({ preventScroll: true });
+      });
+    });
   }
   // 1초마다 남은 초 · 시간이 다 되면 새로 받기
   setInterval(function () {
