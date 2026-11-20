@@ -5224,9 +5224,11 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     var sold = state.gKind === 'sold' && !!d.sold, unit = '팀';
     var g = (sold ? d.sold : d.guests) || {}, w = g[state.week] || { rows: [], total: 0 };
     var isNow = state.week === 'week', ti = isNow && w.start ? Math.round((Date.parse(g.today) - Date.parse(w.start)) / 864e5) : -1;
-    var teamSum = {}; SALES.forEach(function (t) { teamSum[t] = 0; });
+    // 팀 카드: 영업팀 3개 + 운영팀 (대표 결정 2026-11-21: '전체' 카드 빼고 운영팀 넣기)
+    var GT = SALES.concat(['운영팀']);
+    var teamSum = {}; GT.forEach(function (t) { teamSum[t] = 0; });
     w.rows.forEach(function (r) { if (teamSum[r.team] != null) teamSum[r.team] += r.total; });
-    var best = Math.max.apply(null, SALES.map(function (t) { return teamSum[t]; }));
+    var best = Math.max.apply(null, GT.map(function (t) { return teamSum[t]; }));
     var me = w.rows.filter(function (r) { return r.mine; })[0];
     var top = w.rows.filter(function (r) { return r.rank <= 3; });
     var canIn = !!(d.admin || d.gall || (d.approver && d.team));
@@ -5241,10 +5243,10 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     // 팀 카드를 누르면 그 팀 안 순위 (대표 요청 2026-11-18): 대표·승인하는 사람은 모든 팀, 직원은 자기 팀
     var tOk = function (t) { return !!(d.admin || d.guestAll || d.team === t); };
     if (state.gTeam && !tOk(state.gTeam)) state.gTeam = '';
-    var tToday = {}, allToday = 0; SALES.forEach(function (t) { tToday[t] = 0; });
-    if (sold && ti >= 0) w.rows.forEach(function (r) { var n = r.days[ti] || 0; allToday += n; if (tToday[r.team] != null) tToday[r.team] += n; });
+    var tToday = {}; GT.forEach(function (t) { tToday[t] = 0; });
+    if (sold && ti >= 0) w.rows.forEach(function (r) { var n = r.days[ti] || 0; if (tToday[r.team] != null) tToday[r.team] += n; });
     var todayS = function (n) { return sold && ti >= 0 ? '<i class="tday">오늘 ' + n + '</i>' : ''; };
-    h += '<p class="sumcap">영업팀 팀별 ' + (sold ? '판매 테이블' : '게스트') + (SALES.some(tOk) ? ' <span class="note" style="margin:0">· 팀을 누르면 팀 안 순위</span>' : '') + '</p><div class="sum"><div><small>전체</small><b>' + w.total + '</b>' + todayS(allToday) + '</div>' + SALES.map(function (t) {
+    h += '<p class="sumcap">팀별 ' + (sold ? '판매 테이블' : '게스트') + (GT.some(tOk) ? ' <span class="note" style="margin:0">· 팀을 누르면 팀 안 순위</span>' : '') + '</p><div class="sum">' + GT.map(function (t) {
       var cls = (best > 0 && teamSum[t] === best ? 'win' : '') + (state.gTeam === t ? ' on' : '');
       return tOk(t) ? '<button type="button" class="tsum ' + cls + '" data-gteam="' + esc(t) + '" aria-pressed="' + (state.gTeam === t) + '"><small>' + esc(t) + (best > 0 && teamSum[t] === best ? ' 👑' : '') + '</small><b>' + teamSum[t] + '</b>' + todayS(tToday[t]) + '</button>'
         : '<div' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '><small>' + esc(t) + '</small><b>' + teamSum[t] + '</b>' + todayS(tToday[t]) + '</div>';
