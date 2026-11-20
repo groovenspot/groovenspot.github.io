@@ -37,13 +37,17 @@
     retry: ['다시 시도', 'Try again'],
     termsTitle: ['이용약관과 커뮤니티 규칙', 'Terms and community rules'],
     termsBody: [
-      '그루브 라운지는 만 19세 이상 손님이 매장에서 가입할 수 있어요. 다른 사람의 사진은 허락을 받고 올려 주세요. 광고, 괴롭힘, 성적인 내용, 불법 게시물은 금지예요. 규칙을 어긴 글은 가려지거나 삭제될 수 있고 계정 이용이 제한될 수 있어요.',
-      'Guests aged 19 or older can join Groove Lounge at the club. Get permission before sharing someone’s photo. Ads, harassment, sexual content and illegal posts are prohibited. Posts that break the rules may be hidden or removed and accounts may be restricted.'
+      '만 19세 이상 손님이 매장에서 가입할 수 있어요. 사진 글·대화방·1:1 메시지에서는 타인의 권리와 개인정보를 지켜 주세요. 문제가 있으면 차단하거나 신고할 수 있어요. 보상과 굿즈의 이용 조건은 전문에서 확인해 주세요.',
+      'Guests aged 19 or older can join at the club. Respect other people’s rights and privacy in photo posts, chat rooms and direct messages. You can block or report problems. Read the full text for the rewards and merchandise terms.',
+      '満19歳以上のお客様が店内で登録できます。写真投稿、チャットルーム、個別メッセージで、他の人の権利とプライバシーを守ってください。問題があればブロックや通報ができます。特典とグッズの条件は全文をご確認ください。',
+      '年满 19 周岁的客人可到店注册。发布照片、使用聊天室或发送私信时，请尊重他人的权利与隐私。遇到问题可以屏蔽或举报。奖励和周边商品的条件请阅读全文。'
     ],
     privacyTitle: ['개인정보 수집·이용', 'Use of personal information'],
     privacyBody: [
-      '닉네임, 휴대폰 번호, 비밀번호는 가입과 계정 관리에 써요. 번호와 비밀번호는 원문으로 저장하지 않아요. 프로필을 고치면 사진, 소개, 층을 저장해요. 탈퇴하면 계정, 글, 사진이 삭제되며 신고·제재 기록에는 회원 ID만 최대 6개월 남아요.',
-      'We use your nickname, phone number and password to operate your account. Your full number and password are stored as hashes. If you edit your profile, we store your photo, bio and floor preference. When you delete your account, your account, posts and photos are deleted. Moderation records retain only your member ID for up to six months.'
+      '가입·계정 관리에는 닉네임, 번호 확인값과 뒤 네 자리, 비밀번호 확인값을 써요. 글·대화·메시지·보상·굿즈 정보는 해당 기능을 쓸 때 처리합니다. 선택한 층은 매장 층 정보이며 GPS 위치는 수집하지 않아요. 번역을 누르면 선택한 글과 대상 언어를 Cloudflare Workers AI에 보내요. 보관기간과 탈퇴 안내는 전문을 확인해 주세요.',
+      'We use your nickname, a phone verifier and its last four digits, and a password verifier to manage your account. We handle posts, chats, messages, rewards and merchandise data when you use those features. The selected floor is inside the club. These features do not collect GPS location. When you request a translation, we send the selected text and language to Cloudflare Workers AI. Read the full notice for retention and deletion details.',
+      'アカウント管理にはニックネーム、電話番号の照合値と下4桁、パスワードの検証値を使います。投稿、チャット、メッセージ、特典、グッズの情報は各機能の利用時に処理します。選択するフロアは店内の階を示し、GPS位置情報は収集しません。翻訳を依頼すると、選んだ文章と対象言語を Cloudflare Workers AI に送ります。保存期間と退会の詳細は全文をご確認ください。',
+      '账号管理会使用昵称、号码验证值及末四位和密码验证值。在使用帖子、聊天、私信、奖励或周边功能时，我们会处理对应信息。所选楼层指店内楼层，这些功能不收集 GPS 位置。请求翻译时，所选文字和目标语言会发送给 Cloudflare Workers AI。保存期限和注销详情请阅读全文。'
     ],
     'error.qr': ['가입·비밀번호 변경 QR이 잘못되었거나 시간이 지났어요. 매장에서 새 QR을 받아 주세요.', 'This QR is invalid or expired. Ask staff for a new QR.'],
     'error.nick': ['닉네임은 한글, 영문, 숫자, 점, 밑줄로 2~12자를 써 주세요. 사용할 수 없는 단어는 피해주세요.', 'Use 2–12 Korean letters, English letters, digits, periods or underscores. Some words are blocked.'],
@@ -99,13 +103,28 @@
     } catch (e) { return ''; }
   }
 
+  const policyLocales = ['ko', 'en', 'ja', 'zh'];
+  const policyLink = ['전문 보기 (새 탭)', 'Read the full text (new tab)', '全文を読む（新しいタブ）', '阅读全文（新标签页）'];
+  const consentDetails = [
+    '동의하기 전에 사진 글·대화방·메시지·보상·굿즈·번역의 이용과 개인정보 안내를 확인해 주세요.',
+    'Before agreeing, review how photo posts, chat rooms, messages, rewards, merchandise and translation work and how we handle your data.',
+    '同意の前に、写真投稿、チャットルーム、メッセージ、特典、グッズ、翻訳の利用と個人情報の案内をご確認ください。',
+    '请先阅读照片帖子、聊天室、私信、奖励、周边及翻译的使用规则和个人信息说明，再选择是否同意。'
+  ];
+  const policyLocale = () => Math.max(0, policyLocales.indexOf(L.lang));
+
   function policy(key) {
-    return '<h2>' + t(key + 'Title') + '</h2><p>' + t(key + 'Body') + '</p>';
+    const locale = policyLocale();
+    const path = '/lounge/policy.html#' + policyLocales[locale] + '-' + key;
+    return '<h2>' + t(key + 'Title') + '</h2><p>' + L.esc(copy[key + 'Body'][locale]) +
+      '</p><a class="shell-link" href="' + path + '" target="_blank" rel="noopener noreferrer">' +
+      L.esc(policyLink[locale]) + '</a>';
   }
 
   function consent() {
     const fields = ['age19', 'terms', 'privacy', 'ads', 'night'];
     return '<fieldset class="shell-consent"><legend class="sr-only">' + t('agree') + '</legend>' +
+      '<p class="muted">' + L.esc(consentDetails[policyLocale()]) + '</p>' +
       '<label class="shell-choice"><input type="checkbox" name="all">' + t('all') + '</label>' +
       fields.map(name => '<div class="shell-consent-row"><label class="shell-choice"><input type="checkbox" name="' +
         name + '">' + t(name) + '</label>' +
