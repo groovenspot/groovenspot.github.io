@@ -129,7 +129,7 @@ const LoungeRewardUI = (() => {
       '<small id="booking-length" class="muted">0 / 30</small><label>' + t('time') +
       '<input type="time" name="at" max="23:29" required style="' + inputStyle + '"></label>' +
       '<small class="muted">' + t('timeHelp') + '</small>' +
-      (birthday ? '<label><input type="checkbox" name="birthday"> ' + t('birthdayPay') + '</label>' : '') +
+      (birthday ? '<label class="shell-choice"><input type="checkbox" name="birthday"> ' + t('birthdayPay') + '</label>' : '') +
       '<p class="muted">' + t('bookingHelp') + '</p><p class="muted">' + t('bookingWindow') + '</p>' + message() +
       submit(t(store ? 'storePay' : 'pointsPay')) + '</form>');
     view.append(card);
