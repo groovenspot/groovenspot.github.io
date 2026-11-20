@@ -16,9 +16,13 @@ const LoungeRewardUI = (() => {
     birthday: ['생일 주간', 'Birthday week'], month: ['월', 'Month'], day: ['일', 'Day'], save: ['저장', 'Save'],
     birthdayHelp: ['생일 주간에 체크인하면 보너스 포인트를 받고, 전광판 축하를 한 번 무료로 예약할 수 있어요.', 'Check in during your birthday week for bonus points and book one free birthday message.'],
     birthdayLocked: ['생일은 다음 해에 바꿀 수 있어요.', 'You can change your birthday next year.'],
+    birthdayAfterWeek: ['이번 생일 주가 끝나면 생일을 바꿀 수 있어요.', 'You can change your birthday when this birthday week ends.'],
     invite: ['친구 초대', 'Invite a friend'], inviteButton: ['내 초대 코드 보기', 'Show my invite code'],
     inviteHelp: ['친구가 매장에서 직원 QR로 가입할 때 이 코드를 입력하면 두 분 모두 300P를 받아요.', 'When your friend signs up at the club with a staff QR and enters your code, you both earn 300P.'],
     recap: ['이번 달 나의 그루브', 'My Groove this month'],
+    visits: ['매장 방문', 'Venue visits'], earned: ['이달에 모은 포인트', 'Points earned this month'],
+    badges: ['모은 배지', 'Badges earned'], noBadges: ['아직 없어요', 'No badges yet'],
+    favoriteDj: ['좋아한 DJ', 'Favorite DJ'], noDj: ['아직 없어요', 'No favorite yet'],
     makeCard: ['결산 카드 만들기', 'Make recap card'], download: ['이미지 저장', 'Save image'], share: ['공유', 'Share'],
     screen: ['전광판 메시지', 'Screen message'], preview: ['전광판 미리보기', 'Screen preview'],
     message: ['문구', 'Message'], time: ['오늘 나갈 시각 (한국 시간)', 'Time tonight (Korea time)'],
@@ -128,55 +132,104 @@ const LoungeRewardUI = (() => {
 
   function birthdayForm(state) {
     return panel('<h2>' + t('birthday') + '</h2><p class="muted">' + t('birthdayHelp') + '</p>' +
-      (state && !state.canChange ? '<p>' + amount(state.month) + ' / ' + amount(state.day) + '</p><small>' + t('birthdayLocked') + '</small>' :
+      (state && !state.canChange ? '<p>' + amount(state.month) + ' / ' + amount(state.day) +
+        '</p><small>' + t(state.changeAfterWeek ? 'birthdayAfterWeek' : 'birthdayLocked') + '</small>' :
         '<form data-birthday style="' + formStyle + '"><div style="display:flex;gap:12px"><label style="flex:1">' + t('month') +
         '<input name="month" type="number" min="1" max="12" required value="' + (state?.month || '') + '" style="' + inputStyle +
         '"></label><label style="flex:1">' + t('day') + '<input name="day" type="number" min="1" max="31" required value="' +
         (state?.day || '') + '" style="' + inputStyle + '"></label></div>' + message() + submit(t('save')) + '</form>'));
   }
 
-  function paintRecap(canvas, data) {
+  async function paintRecap(canvas, data, badgeNames, favorite) {
+    const logo = new Image();
+    logo.src = '/assets/logo-word.png';
+    const hasLogo = await logo.decode().then(() => true, () => false);
     const ctx = canvas.getContext('2d');
-    const gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
-    gradient.addColorStop(0, '#28133c');
-    gradient.addColorStop(0.6, '#120b12');
-    gradient.addColorStop(1, '#31180d');
-    ctx.fillStyle = gradient;
+    const background = ctx.createLinearGradient(0, 0, 1080, 1920);
+    background.addColorStop(0, '#21132c');
+    background.addColorStop(0.56, '#120e17');
+    background.addColorStop(1, '#2d1810');
+    ctx.fillStyle = background;
     ctx.fillRect(0, 0, 1080, 1920);
-    ctx.textAlign = 'left';
-    const label = (value, y, size = 54, color = '#f6efeb') => {
+
+    ctx.textBaseline = 'alphabetic';
+    function label(value, x, y, { size = 46, color = '#fff3ec', width = 888, weight = 700 } = {}) {
       ctx.fillStyle = color;
-      ctx.font = '700 ' + size + 'px system-ui, sans-serif';
-      ctx.fillText(value, 96, y, 888);
-    };
-    label('GROOVE LOUNGE', 200, 50, '#ffab73');
-    label(data.month, 370, 56, '#dabdff');
-    label(L.t('rewards.recap'), 500, 88);
-    label(data.nick, 650, 60);
-    const stats = [['checkins', data.checkins], ['attends', data.attends], ['balance', data.points]];
-    for (const [i, [key, n]] of stats.entries()) {
-      const y = 850 + i * 270;
-      ctx.fillStyle = '#ffffff14';
-      ctx.fillRect(96, y - 100, 888, 222);
-      ctx.save();
-      ctx.translate(40, 0);
-      label(L.t('rewards.' + (key === 'balance' ? 'earned' : key)), y - 8, 43, '#dfc8e9');
-      label(amount(n) + (key === 'balance' ? 'P' : ''), y + 82, 76);
-      ctx.restore();
+      ctx.font = weight + ' ' + size + 'px system-ui, sans-serif';
+      ctx.fillText(value, x, y, width);
+    }
+    function wrap(value, x, y) {
+      ctx.font = '700 48px system-ui, sans-serif';
+      const lines = [''];
+      for (const character of value) {
+        const current = lines.at(-1);
+        if (ctx.measureText(current + character).width <= 808) {
+          lines[lines.length - 1] += character;
+        } else if (lines.length === 1) {
+          lines.push(character.trimStart());
+        } else {
+          lines[1] = current.replace(/.$/u, '') + '…';
+          break;
+        }
+      }
+      lines.forEach((line, i) => label(line, x, y + 60 * i, { size: 48, width: 808 }));
+    }
+    function tile(x, y, width, height) {
+      ctx.fillStyle = '#ffffff0d';
+      ctx.strokeStyle = '#f4bfd337';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, 28);
+      ctx.fill();
+      ctx.stroke();
+    }
+    if (hasLogo) ctx.drawImage(logo, 96, 226, 360, 360 * logo.naturalHeight / logo.naturalWidth);
+    else label('GROOVE & SPOT', 96, 268, { color: '#ffad73' });
+    label(data.month, 96, 390, { color: '#e0bbf8' });
+    label(L.t('rewards.recap'), 96, 520, { size: 96, weight: 900 });
+    label(data.nick, 96, 633, { size: 65, width: 824 });
+
+    for (const [i, [key, value]] of [
+      ['visits', amount(data.checkins)], ['earned', amount(data.points) + 'P']
+    ].entries()) {
+      const x = 96 + i * 456;
+      tile(x, 735, 432, 260);
+      label(L.t('rewards.' + key), x + 40, 827, { size: 39, color: '#ecd8ef', width: 352 });
+      label(value, x + 40, 942, { size: 78, color: '#ffad73', width: 352, weight: 900 });
+    }
+    for (const [i, [key, value]] of [['badges', badgeNames], ['favoriteDj', favorite]].entries()) {
+      const y = 1040 + 270 * i;
+      tile(96, y, 888, 238);
+      label(L.t('rewards.' + key), 136, y + 75, { size: 36, color: '#e0bbf8' });
+      wrap(value, 136, y + 146);
     }
   }
 
-  function recapCard(view, data) {
+  async function recapCard(view, data) {
     const area = view.querySelector('[data-recap]');
+    const badgeNames = data.badges?.map(badge => badge.label).filter(Boolean).join(' · ') || L.t('rewards.noBadges');
+    const favorite = data.favoriteDj || L.t('rewards.noDj');
+    const description = [data.month, data.nick, L.t('rewards.visits') + ' ' + amount(data.checkins),
+      L.t('rewards.earned') + ' ' + amount(data.points) + 'P',
+      L.t('rewards.badges') + ' ' + badgeNames, L.t('rewards.favoriteDj') + ' ' + favorite].join('. ');
     area.innerHTML = '<canvas width="1080" height="1920" role="img" aria-label="' + t('recap') +
-      '" style="display:block;width:min(100%,300px);height:auto;border-radius:14px;margin:12px 0"></canvas>' +
-      '<a data-download class="btn" download="groove-' + L.esc(data.month) + '.png">' + t('download') + '</a>';
+      '" style="width:min(100%,320px);height:auto;border-radius:14px;margin:12px 0" hidden></canvas>';
     const canvas = area.querySelector('canvas');
-    paintRecap(canvas, data);
-    area.querySelector('[data-download]').href = canvas.toDataURL('image/png');
+    canvas.setAttribute('aria-description', description);
+    await paintRecap(canvas, data, badgeNames, favorite);
+    if (!canvas.isConnected) return;
+
+    const download = document.createElement('a');
+    download.className = 'btn';
+    download.download = 'groove-' + data.month + '.png';
+    download.textContent = L.t('rewards.download');
+    download.href = canvas.toDataURL('image/png');
+    canvas.hidden = false;
+    canvas.style.display = 'block';
+    area.append(download);
     if (navigator.canShare && navigator.share) canvas.toBlob(blob => {
-      if (!blob || !area.isConnected) return;
-      const file = new File([blob], 'groove-' + data.month + '.png', { type: 'image/png' });
+      if (!blob || !canvas.isConnected) return;
+      const file = new File([blob], download.download, { type: 'image/png' });
       if (!navigator.canShare({ files: [file] })) return;
       const button = document.createElement('button');
       button.type = 'button';
@@ -188,8 +241,6 @@ const LoungeRewardUI = (() => {
       area.append(button);
     }, 'image/png');
   }
-
-  L.i18n({ ko: { 'rewards.earned': '적립 포인트' }, en: { 'rewards.earned': 'Points earned' } });
 
   async function render(root) {
     const view = U.mount(root, heading(t('title'), '#/me'));
@@ -246,9 +297,14 @@ const LoungeRewardUI = (() => {
       button.disabled = true;
       const data = await L.api('recap');
       if (!view.isConnected) return;
-      button.disabled = false;
-      if (data.error) U.error(data);
-      else recapCard(view, data);
+      try {
+        if (data.error) U.error(data);
+        else await recapCard(view, data);
+      } catch {
+        U.error();
+      } finally {
+        button.disabled = false;
+      }
     };
   }
 
