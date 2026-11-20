@@ -173,11 +173,16 @@
   function enhanced(view, user, own) {
     const follow2 = L.open('follow2');
     const followState = followingState(user);
-    const avatar = L.profileFollows.avatar(user);
+    const photos = L.profilePhotos.rows(user);
+    const mainIndex = Math.max(0, photos.findIndex(photo => photo.main));
+    const avatar = photos.length ? '<button class="profile3-avatar-button" type="button" data-profile-avatar aria-label="' +
+      esc(L.t('profileEdit.photos')) + '"><img class="shell-avatar" src="' + esc(photos[mainIndex].src) + '" alt=""></button>' :
+      L.profileFollows.avatar(user);
     const badge = typeof user.badge === 'string'
       ? (user.badges || []).find(item => item.key === user.badge)?.label || user.badge : user.badge?.label;
     const showInstagram = typeof user.link === 'string' && /^[A-Za-z0-9._]{1,30}$/.test(user.link);
-    const canShare = own && L.open('share') && typeof window.LoungeShare?.open === 'function';
+    const shareUI = typeof LoungeShare === 'undefined' ? null : LoungeShare;
+    const canShare = own && L.open('share') && typeof shareUI?.open === 'function';
     const mutually = follow2 && L.me && !own && !user.locked && count(user.mutual?.n) > 0;
     const actions = own ? U.link('#/me/edit', esc(L.t('me.edit'))) +
       (canShare ? U.button(profile('share'), 'data-profile-share') : '') :
@@ -211,7 +216,9 @@
     if (follow) wireFollow(follow, user);
     wireMenu(view.querySelector('[data-menu]'), user);
     const share = view.querySelector('[data-profile-share]');
-    if (share) share.onclick = () => window.LoungeShare?.open({ profile: user.nick });
+    if (share) share.onclick = () => shareUI.open({ profile: { nick: user.nick, private: Boolean(user.private) } });
+    const portrait = view.querySelector('[data-profile-avatar]');
+    if (portrait) portrait.onclick = () => L.profilePhotos.open(photos, mainIndex);
     if (!user.locked) return galleries(view, user);
   }
 
@@ -278,8 +285,9 @@
       return;
     }
     const photo = U.image(user.photo);
-    const own = () => L.me?.nick?.toLowerCase() === user.nick?.toLowerCase();
-    if (L.open('profile2')) return enhanced(view, user, own());
+    const own = Boolean(L.me && (user.me?.self === true ||
+      L.me.nick?.toLowerCase() === user.nick?.toLowerCase()));
+    if (L.open('profile2')) return enhanced(view, user, own);
     const follow2 = L.open('follow2');
     view.innerHTML = '<article style="' + U.card + '">' + (photo ? '<img alt="" src="' + L.esc(photo) +
       '" style="width:76px;height:76px;object-fit:cover;border-radius:50%;border:2px solid var(--g)">' : '') +
@@ -287,7 +295,7 @@
       '<p class="muted">' + L.esc([user.floor, user.joinedMonth].filter(Boolean).join(' · ')) + '</p>' +
       '<p>' + (user.badges || []).filter(badge => badge.got !== false && badge.got !== null && badge.got !== 0).map(badge =>
         L.esc(badge.label || badge)).join(' · ') + '</p>' + (follow2 ? '<div data-counts></div>' : '<p data-counts></p>') +
-      (own() ? '' : '<div style="display:flex;flex-wrap:wrap;gap:8px">' + U.button('', 'data-follow', true) +
+      (own ? '' : '<div style="display:flex;flex-wrap:wrap;gap:8px">' + U.button('', 'data-follow', true) +
         (L.open('dm') ? U.link('#/dm/' + encodeURIComponent(user.nick), t('message')) : '') +
         U.button(t('menu'), 'data-menu') + '</div>') + '</article>';
 
@@ -296,7 +304,10 @@
     function paint() {
       if (follow2) {
         view.querySelector('[data-counts]').innerHTML = '<span class="profile3-stats">' + stats(user, L.me && !user.locked) + '</span>';
-        if (follow) follow.textContent = actionLabel(user);
+        if (follow) {
+          follow.textContent = actionLabel(user);
+          follow.setAttribute('aria-pressed', String(followingState(user) === 'following'));
+        }
         return;
       }
       view.querySelector('[data-counts]').innerHTML = '<b>' + t('followers') + ' ' + (Number(user.followers) || 0) +

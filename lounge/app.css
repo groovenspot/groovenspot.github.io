@@ -116,3 +116,18 @@ a { color: var(--g); }
 .profile3-requests summary { display: flex; align-items: center; min-height: 44px; font-weight: 800; cursor: pointer; }
 .profile3-requests summary::before { content: '▸'; margin-inline-end: 8px; }
 .profile3-requests[open] summary::before { content: '▾'; }
+.profile3-avatar-button, .profile3-photo-primary button, .profile3-photo-strip button { display: grid; place-items: center; border: 0; padding: 0; margin: 0; background: transparent; border-radius: 50%; cursor: pointer; }
+.profile3-avatar-button .shell-avatar { width: clamp(56px, 17vw, 78px); aspect-ratio: 1; height: auto; }
+.profile3-photo-editor { display: grid; gap: 12px; margin-block: 12px; }
+.profile3-photo-editor > * + * { margin-top: 0; }
+.profile3-photo-primary { display: flex; justify-content: center; }
+.profile3-photo-primary button, .profile3-photo-primary > .shell-avatar { width: 124px; height: 124px; }
+.profile3-photo-primary img, .profile3-photo-strip img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.profile3-photo-strip { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.profile3-photo-strip button { width: 48px; height: 48px; border: 2px solid var(--line-2); }
+.profile3-photo-strip button[aria-current=true] { border-color: var(--g); }
+.profile3-photo-add { position: relative; cursor: pointer; gap: 4px; }
+.profile3-photo-add:focus-within { outline: 2px solid var(--g); outline-offset: 3px; }
+.profile3-photo-viewer { display: grid; gap: 10px; margin-block-start: 10px; }
+.profile3-photo-viewer > img { display: block; width: 100%; max-height: 52dvh; object-fit: contain; border-radius: 12px; background: var(--bg); touch-action: pan-y; }
+.profile3-photo-navigation { justify-content: space-between; }

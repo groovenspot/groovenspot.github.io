@@ -54,8 +54,9 @@
   }
 
   async function requests(root, embedded = false) {
-    if (!L.me) return;
-    if (!await enabled() || !root.isConnected || !L.me) {
+    const member = L.me;
+    if (!member) return;
+    if (!await enabled() || !root.isConnected || L.me !== member) {
       if (!embedded && root.isConnected) root.innerHTML = '<h1>' + t('requests') + '</h1>' + notice(U.t('soon'));
       return;
     }
@@ -66,7 +67,7 @@
     }
     root.innerHTML = U.status('loading', true);
     const result = await L.api('follow_requests');
-    if (!root.isConnected || !L.me) return;
+    if (!root.isConnected || L.me !== member) return;
     if (result.error) {
       if (!embedded) root.innerHTML = U.status('error');
       else root.remove();
