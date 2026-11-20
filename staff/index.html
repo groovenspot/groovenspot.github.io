@@ -3587,16 +3587,27 @@ html .chathelp .ch-go .cei { color: var(--muted); }
 
   // 📋 업무사항 (2026-11-18, 예전 결정사항): 담당자·팀장 이상이 상태(대기·진행·완료)·코멘트, 완료된 일은 대표가 확인 뒤 지움
   var DEC_ORD = { '진행': 0, '대기': 1, '완료': 2 };
+  // ── 📋 업무사항 넓히기 (대표 결정 2026-11-20: 전체 공개 + 기능 10개) — 작업창마다 아래 자기 칸에 DX.xxx.push(함수)만 더한다 ──
+  // add(d) 추가 폼 칸 HTML · addData() 추가 요청에 붙일 값 · top(d, list) 추가 폼 아래 HTML · badges(x, d) 카드 배지 · card(x, d) 카드 몸통(관련 사람 줄 아래) · cardEnd(x, d) 코멘트 칸 아래 · bind(area, d, send) 그린 뒤 이벤트 · err 에러 글자
+  var DX = { add: [], addData: [], top: [], badges: [], card: [], cardEnd: [], bind: [], err: {} };
+  function dxH(k) { var a = [].slice.call(arguments, 1); return DX[k].map(function (f) { try { return f.apply(null, a) || ''; } catch (e) { return ''; } }).join(''); }
+  // ① 공개·비공개·검색·팀·급함·맡기 (작업창 1)
+
+  // ② 마감 알림·주간 요약·반복 (작업창 2)
+
+  // ③ 체크리스트·완료 사진·👍 (작업창 3)
+
   function renderDec(area, d) {
     var list = d.decisions || [], t = bizToday(), f = state.decF || '';
     var h = '<div class="gh"><h1>업무사항</h1></div>';
     if (d.decAdd) h += '<details class="decadd"' + (state.decAddOpen ? ' open' : '') + '><summary>' + cmIco('plus') + '업무 추가</summary><form id="decAddF" novalidate>' +
       '<label>할 일<textarea id="decAddW" maxlength="300" rows="2" placeholder="예: 우지랑 12월 파티 조명 견적 받기">' + esc(state.decAddDraft || '') + '</textarea></label>' +
       (d.decAdd === 'all' ? '<label>담당 (이름·닉네임·초성)<input id="decAddP" maxlength="60" autocomplete="off" placeholder="예: 김동기, 우지 · ㄱㄷ 만 써도 돼요"></label><div class="decsug" id="decAddS" hidden></div>' : '') +
-      '<label>마감 (선택)<input id="decAddD" type="date"></label>' +
+      '<label>마감 (선택)<input id="decAddD" type="date"></label>' + dxH('add', d) +
       '<label class="decaddpic">' + cmIco('cam') + '사진·영상 붙이기 <small>(사진 3장·영상 2개)</small><input type="file" id="decAddFile" accept="image/*,video/*" multiple hidden></label><div class="chatph decph decaddph" id="decAddPh" hidden></div>' +
       '<p class="note" style="margin:0 0 8px">' + (d.decAdd === 'all' ? '할 일·담당에 이름이나 닉네임을 쓰면 그 사람에게 알림이 가요.' : '<b>내 일</b>로 추가돼요. 다른 사람을 태그해서 추가하는 건 ' + permH('decAdd', ['팀장'], ['대표님']) + '만 해요.') + '</p>' +
       '<button class="btn btn-ok" type="submit" style="width:100%">추가하기</button><p class="msg" id="decAddM" role="alert"></p></form></details>';
+    h += dxH('top', d, list);
     if (!list.length) {
       area.innerHTML = h + '<p class="empty">아직 업무가 없어요. 회의록이 올라오면 여기에 담당·마감이 나와요.</p>';
       bindDecAdd(); return;
@@ -3613,14 +3624,15 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       var dd = '', ddc = '';
       if (x.due && x.status !== '완료') { var dn = Math.round((Date.parse(x.due) - Date.parse(t)) / 864e5); dd = dn > 0 ? 'D-' + dn : dn === 0 ? '오늘' : (-dn) + '일 지남'; ddc = dn < 0 ? 'bad' : dn <= 2 ? 'warn' : ''; }
       var c = '<div class="dec' + (x.mine ? ' mine' : '') + (x.status === '완료' ? ' done' : '') + (late ? ' late' : '') + '" data-decid="' + esc(x.id) + '">' +
-        (late || x.mine ? '<span class="dbadges">' + (late ? '<span class="dbadge bad">마감 지남</span>' : '') + (x.mine ? '<span class="dbadge mine">내 일</span>' : '') + '</span>' : '') +
+        (function () { var bx = (late ? '<span class="dbadge bad">마감 지남</span>' : '') + (x.mine ? '<span class="dbadge mine">내 일</span>' : '') + dxH('badges', x, d); return bx ? '<span class="dbadges">' + bx + '</span>' : ''; })() +
         '<span class="what">' + esc(x.what) + '</span>' +
         '<span class="dgrid"><span><small>담당</small><b>' + esc(x.who || '-') + '</b></span><span><small>마감</small><b>' + esc(x.due ? md(x.due) : '-') + (dd ? ' <em class="dd ' + ddc + '">' + dd + '</em>' : '') + '</b></span></span>' +
         (!x.can || x.done ? '<span class="row">상태 <span class="st ' + esc(late ? 'late' : x.status) + '">' + esc(late ? '마감 지남 · ' + x.status : x.status) + '</span>' + (x.done ? ' · 완료 ' + esc(x.done.slice(5)) : '') + '</span>' : '') +
-        (x.ppl && x.ppl.length ? '<span class="row decppl">' + cmIco('user') + x.ppl.map(function (n) { return esc(n) + nickH(n); }).join(', ') + '</span>' : '');
+        (x.ppl && x.ppl.length ? '<span class="row decppl">' + cmIco('user') + x.ppl.map(function (n) { return esc(n) + nickH(n); }).join(', ') + '</span>' : '') + dxH('card', x, d);
       if (x.can) c += '<div class="decst" role="group" aria-label="상태">' + ['대기', '진행', '완료'].map(function (st) { return '<button type="button" data-decst="' + st + '" aria-pressed="' + (x.status === st) + '">' + (st === '완료' ? cmIco('check') : st === '진행' ? cmIco('play') : '') + st + '</button>'; }).join('') + '</div>';
       if (x.cmts.length) c += '<div class="ycc">' + x.cmts.map(function (m) { return '<p' + (/^(상태 → |✏️ 고침)/.test(m.text) ? ' class="sys"' : '') + '><b>' + esc(m.who) + nickH(m.who) + '</b> ' + esc(m.text) + ' <small>' + esc(m.at) + '</small></p>' + chatMedia(m); }).join('') + '</div>';
       if (x.can) c += '<form class="yccf" data-deccf="1"><label class="chatpic" aria-label="사진·영상 올리기" title="사진·영상">' + cmIco('cam') + '<input type="file" data-decfile="1" accept="image/*,video/*" multiple hidden></label><input data-deccmt="1" maxlength="200" placeholder="코멘트 (예: 내일까지 견적 받을게요)" autocomplete="off" value="' + esc((state.decTxt || {})[x.id] || '') + '"><button class="btn" type="submit">보내기</button></form><div class="chatph decph" data-decph="1" hidden></div>';
+      c += dxH('cardEnd', x, d);
       if (d.admin) c += '<button class="btn" type="button" data-decedit="1" style="width:100%;margin-top:8px">' + cmIco('pen') + '내용 고치기</button>';   // 대표만 (2026-11-18)
       if (d.admin && x.status === '완료') c += '<button class="btn btn-bad" type="button" data-decdel="1" style="width:100%;margin-top:8px">' + cmIco('trash') + '확인·지우기</button>';
       return c + '</div>';
@@ -3664,11 +3676,12 @@ html .chathelp .ch-go .cei { color: var(--muted); }
         var body = { a: 'dec_add', token: state.s.token, what: w, who: $('decAddP') ? $('decAddP').value.replace(/[,，·\s]+$/, '').trim() : '', due: $('decAddD').value };
         if (md.photos.length) body.photos = md.photos.map(function (p) { return { type: p.type, data: p.data }; });
         if (md.vids.length) body.videos = md.vids.map(function (x) { return x.vid; });
+        DX.addData.forEach(function (f) { try { Object.assign(body, f() || {}); } catch (e) {} });
         call(body, { q: 1 }).then(function (r) {
           btn.disabled = false;
           if (r.error === 'auth') return toLogin(AUTH_OUT);
           if (r.queued) { state.decAddDraft = ''; state.decAddOpen = false; state.decF = ''; state.decMd[DEC_NEW] = null; render(); alertMsg('📋 업무 추가 ' + OQ_PEND); return; }
-          if (!r.ok) { m.className = 'msg'; m.textContent = { forbidden: '추가할 수 없어요.', text: '< > 는 쓸 수 없어요.', due: '마감 날짜를 다시 골라 주세요.', empty: '할 일을 써 주세요.', busy: '잠시 후 다시 해 주세요.', photo: '사진은 jpg·png 3장까지예요.', video: '영상을 다시 올려 주세요.' }[r.error] || '추가가 안 됐어요. 다시 해 주세요.'; return; }
+          if (!r.ok) { m.className = 'msg'; m.textContent = Object.assign({ forbidden: '추가할 수 없어요.', text: '< > 는 쓸 수 없어요.', due: '마감 날짜를 다시 골라 주세요.', empty: '할 일을 써 주세요.', busy: '잠시 후 다시 해 주세요.', photo: '사진은 jpg·png 3장까지예요.', video: '영상을 다시 올려 주세요.' }, DX.err)[r.error] || '추가가 안 됐어요. 다시 해 주세요.'; return; }
           state.decAddDraft = ''; state.decAddOpen = false; state.decF = ''; state.decMd[DEC_NEW] = null;
           state.data.decisions = r.decisions; saveData(state.data); render();
         }).catch(function () { btn.disabled = false; m.className = 'msg'; m.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
@@ -3679,11 +3692,12 @@ html .chathelp .ch-go .cei { color: var(--muted); }
       call(Object.assign({ a: body.del ? 'dec_del' : 'dec_set', token: state.s.token, id: id }, body.del ? {} : body), oq ? { q: 1 } : null).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
         if (r.queued) { if (okFn) okFn(); render(); var qm = $('decMsg'); if (qm) qm.textContent = '📋 코멘트 ' + OQ_PEND; return; }
-        if (!r.ok) { if (btn) btn.disabled = false; var m = $('decMsg'); if (m) m.textContent = { forbidden: '내 이름·닉네임이 나온 일만 바꿀 수 있어요.', state: '완료된 일만 지울 수 있어요.', notfound: '그 사이 지워졌어요.', busy: '잠시 후 다시 해 주세요.', text: '<, > 는 못 써요.', photo: '사진은 jpg·png 3장까지예요.', video: '영상을 다시 올려 주세요.' }[r.error] || '안 됐어요. 다시 해 주세요.'; return; }
+        if (!r.ok) { if (btn) btn.disabled = false; var m = $('decMsg'); if (m) m.textContent = Object.assign({ forbidden: '내 이름·닉네임이 나온 일만 바꿀 수 있어요.', state: '완료된 일만 지울 수 있어요.', notfound: '그 사이 지워졌어요.', busy: '잠시 후 다시 해 주세요.', text: '<, > 는 못 써요.', photo: '사진은 jpg·png 3장까지예요.', video: '영상을 다시 올려 주세요.' }, DX.err)[r.error] || '안 됐어요. 다시 해 주세요.'; return; }
         if (okFn) okFn();
         state.data.decisions = r.decisions; render();
       }).catch(function () { if (btn) btn.disabled = false; var m = $('decMsg'); if (m) m.textContent = '연결이 안 돼요. 다시 해 주세요.'; });
     }
+    DX.bind.forEach(function (f) { try { f(area, d, send); } catch (e) {} });   // 📋 넓히기 이벤트
     area.querySelectorAll('[data-decid]').forEach(function (card) {
       var id = card.dataset.decid;
       card.querySelectorAll('[data-decst]').forEach(function (b) { b.addEventListener('click', function () { if (b.getAttribute('aria-pressed') === 'true') return; send(id, { status: b.dataset.decst }, b); }); });
