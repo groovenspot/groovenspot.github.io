@@ -215,7 +215,7 @@ const LoungePostUI = (() => {
 
     function paintTools() {
       if (!config || id) return;
-      const canPost = config.open?.posts || memberPosts;
+      const canPost = memberPosts ?? config.open?.posts;
       tools.innerHTML = '<div class="post-bar" data-post-layout>' +
         (canPost ? U.link('#/compose', t('compose')) : '<span class="muted">' + t('compose') + ' · ' + U.t('soon') + '</span>') +
         (config.open?.challenge ? U.link('#/challenge', t('challenge')) : '') + '</div>' +
