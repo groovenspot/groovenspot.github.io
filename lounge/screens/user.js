@@ -311,9 +311,10 @@
       U.button('⋯', 'data-menu aria-haspopup="dialog" aria-label="' + t('menu') + '"') + '</header>') +
       '<section class="shell-card profile3-card"><div class="profile3-header">' + avatar +
       '<div class="profile3-stats">' + stats(user, follow2 && L.me && !user.locked) + '</div></div>' +
-      '<div class="profile3-name"><' + heading + ' data-user-name>' + L.whoTag(user) + '</' + heading + '>' +
+      '<div class="profile3-name"><' + heading + ' data-user-name>' + esc(user.nick) + (tag ? ' <span class="lounge-who-tag profile3-chip" data-kind="' + tag.kind + '">' + esc(L.tagLabel(tag, L.lang)) + '</span>' : '') + '</' + heading + '>' +
       (['2F', '3F'].includes(user.floor) ? '<span class="profile3-chip">' + esc(user.floor) + '</span>' : '') +
-      (!tag && badge ? '<span class="profile3-chip profile3-badge">' + esc(badge) + '</span>' : '') + '</div>' +
+      (!tag && badge ? '<span class="profile3-chip profile3-badge">' + esc(badge) + '</span>' : '') +
+      '</div>' +
       (bio ? '<p class="shell-bio' + (longBio ? ' profile3-bio-short' : '') + '">' + esc(bio) + '</p>' : '') +
       (longBio ? '<button type="button" class="shell-link" aria-expanded="false" data-more-bio>' + profile('moreBio') + '</button>' : '') +
       (showInstagram ? '<a class="shell-link" href="https://www.instagram.com/' + encodeURIComponent(user.link) +
