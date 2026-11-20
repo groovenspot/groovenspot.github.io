@@ -1162,7 +1162,8 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .tbt.tbm span { font-size: 11px; line-height: 1.15; white-space: nowrap; }
 .tbt.tbm em { display: none; }
 .tbmap .tbt.tbm.rv, .tbt.rv { border-style: dashed !important; border-color: #7fb4ff !important; border-width: 2px; }   /* 📅 예약 · 아직 안 옴: 도면(가로·세로)에도 보이게 (대표 요청 2026-11-21) */
-.tbmap .tbt.tbm em.rvb { display: block; position: absolute; top: -7px; right: -6px; z-index: 2; font-size: 9.5px; line-height: 1; font-weight: 900; color: #0b1730; background: #7fb4ff; border-radius: 999px; padding: 2px 5px; }
+.tbmap .tbt.tbm em.rvb { display: block; position: absolute; top: 3px; right: 3px; z-index: 2; font-size: 9.5px; line-height: 1; font-weight: 900; color: #0b1730; background: #7fb4ff; border-radius: 999px; padding: 2px 5px; }
+.tbmap .tbt.tbm.rd em.rvb { display: none; }   /* 원형 자리는 파란 점선만 (글자가 겹쳐서) */
 .tbmode { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 10px; } .tbmode .tbvw { margin: 0; } .tbmode small { color: var(--muted); font-size: 12px; } .tbmode .link { font-size: 12px; padding: 0; }
 .tbt.tbm small { display: block; font-size: 10.5px; line-height: 1.15; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }   /* 도면에도 담당 이름 늘 (대표 요청 2026-11-18) */
 .tbt.tbm.rd small { font-size: 10px; }
