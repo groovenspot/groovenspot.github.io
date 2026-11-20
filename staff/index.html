@@ -2571,6 +2571,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 .lounge-counts article, .lounge-cards article, .lounge-screen fieldset { border: 1px solid var(--line-2); border-radius: var(--rad); padding: 12px; min-width: 0; overflow-wrap: anywhere; background: var(--card-2); }
 .lounge-counts strong { display: block; font-size: 26px; }
 .lounge-cards { display: grid; gap: 10px; margin-top: 12px; }
+.lounge-member-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.lounge-member-vip { background: #ffd66b; color: #2d1b00; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 800; }
 .lounge-cards article img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; float: right; margin-left: 8px; }
 .lounge-cards article p { white-space: pre-wrap; }
 .lounge-cards .lounge-hidden article { border-color: var(--warn); }
@@ -7534,6 +7536,48 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     if (!Number.isFinite(timestamp)) return '—';
     return new Date(timestamp).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' });
   }
+  function loungeMemberVipLabel(vip) {
+    const language = (navigator.language || 'ko').slice(0, 2);
+    const labels = {
+      ko: ['VIP 달기', 'VIP 떼기'], en: ['Add VIP', 'Remove VIP'],
+      ja: ['VIPを付ける', 'VIPを外す'], zh: ['添加 VIP', '移除 VIP']
+    };
+    return (labels[language] || labels.en)[Number(vip)];
+  }
+  function loungeMemberActions(article, member, session) {
+    const form = article.querySelector('[data-member-actions]');
+    if (!form) return;
+    const vip = form.querySelector('[name="vip"]');
+    const chip = article.querySelector('[data-member-vip]');
+    const status = article.querySelector('[data-member-status]');
+    const paintVip = () => {
+      const hasVip = member.tag?.kind === 'vip';
+      chip.hidden = !hasVip;
+      if (vip) vip.textContent = loungeMemberVipLabel(hasVip);
+    };
+    paintVip();
+    form.querySelectorAll('[name="act"]').forEach(button => {
+      button.onclick = event => { if (!armed(button, LOUNGE_MOD[button.value])) event.preventDefault(); };
+    });
+    loungeSubmit(form, async data => {
+      if (data.has('vip')) {
+        return loungeRequest('adm_vip_set', { mid: member.id, vip: member.tag?.kind !== 'vip' }, session);
+      }
+      const act = data.get('act');
+      if (!act) throw new Error('act');
+      await loungeRequest('adm_mod', { target: { kind: 'user', id: member.id }, act }, session);
+      return { act };
+    }, (result, msg) => {
+      if (typeof result.vip === 'boolean') {
+        member.tag = result.vip ? { kind: 'vip', label: 'VIP' } : null;
+        paintVip();
+      } else {
+        if (result.act === 'suspend7') status.textContent = '정지 / Suspended';
+        if (result.act === 'ban') status.textContent = '영구 정지 / Banned';
+      }
+      msg.textContent = LOUNGE_SAVED;
+    });
+  }
   function loungeMemberSearch(panel, session, select, nicknameOnly = false) {
     panel.innerHTML = '<form><label>' + (nicknameOnly ? '닉네임 / Nickname' : '닉네임 또는 전화번호 뒤 4자리 / Nickname or last 4 digits') +
       '<input name="q" maxlength="100" required autocomplete="off"></label>' +
@@ -7548,13 +7592,19 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     },
       ({ members }) => {
         list.innerHTML = members.length ? members.map((m, i) => '<article><strong>' + esc(m.nick) + '</strong>' +
+          (select ? '' : ' <span data-member-vip class="lounge-member-vip" hidden>VIP</span>') +
           '<div>…' + esc(m.phone4) + ' · 가입 / Joined ' + esc(loungeDate(m.joined)) + '</div>' +
           (select ? loungeButton('이 회원 선택 / Select member', 'type="button" data-member="' + i + '"') :
             '<div>담당 / Staff ' + esc(m.staff_name || '—') + ' · ' + loungeCount(m.points) + 'P · ' +
-            esc(({ ok: '이용 중 / Active', suspended: '정지 / Suspended', banned: '영구 정지 / Banned' })[m.status] || '—') +
-            '</div><small>회원 ID / Member ID · ' + esc(m.id) + '</small>') +
+            '<span data-member-status>' + esc(({ ok: '이용 중 / Active', suspended: '정지 / Suspended', banned: '영구 정지 / Banned' })[m.status] || '—') + '</span>' +
+            '</div><small>회원 ID / Member ID · ' + esc(m.id) + '</small>' +
+            '<form data-member-actions class="lounge-member-actions">' +
+            ['warn', 'suspend7', 'ban'].map(act => loungeButton(LOUNGE_MOD[act], 'type="submit" name="act" value="' + act + '"')).join('') +
+            (state.s?.admin && m.tag?.kind !== 'staff' ? loungeButton(loungeMemberVipLabel(m.tag?.kind === 'vip'),
+              'type="submit" name="vip" value="1"') : '') + '</form>') +
           '</article>').join('') : '<p class="note">찾은 회원이 없어요. / No members found.</p>';
         list.querySelectorAll('[data-member]').forEach(b => { b.onclick = () => select(members[+b.dataset.member]); });
+        if (!select) list.querySelectorAll('article').forEach((article, i) => loungeMemberActions(article, members[i], session));
       });
   }
   const loungePendingLinks = new Map();

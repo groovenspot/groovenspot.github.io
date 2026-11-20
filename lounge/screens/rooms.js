@@ -158,7 +158,7 @@
         '<span class="rooms-icon" data-floor="' + esc(room.floor) + '" aria-hidden="true">' +
         esc(room.floor || (room.id === 'english' ? 'EN' : '♪')) + '</span><span class="rooms-label"><strong>' +
         esc(nameOf(room)) + '</strong>' + (room.latest ? '<small class="muted rooms-preview">' +
-        esc(room.latest.nick + ' · ' + room.latest.text) + '</small>' : '') + '</span><small class="rooms-meta muted">' +
+        L.whoTag(room.latest) + ' · ' + esc(room.latest.text) + '</small>' : '') + '</span><small class="rooms-meta muted">' +
         (room.kicked ? e('kicked') : e(room.open ? 'open' : 'closed') + (room.online ? '<span>' + e('people', { n: room.online }) + '</span>' : '')) +
         '</small></a></li>').join('') + '</ul><p class="shell-card muted">' + e('hours') + '</p>');
     section.querySelector('[role=status]').remove();
@@ -338,7 +338,7 @@
 
     function messagesMarkup(messages) {
       return messages.map(message => '<li data-message="' + esc(message.id) + '" data-mine="' + !!message.mine +
-        '"><small class="muted"><strong>' + esc(message.nick) + '</strong> · ' + esc(time(message.at)) + '</small>' +
+        '"><small class="muted"><strong>' + L.whoTag(message) + '</strong> · ' + esc(time(message.at)) + '</small>' +
         '<p class="rooms-bubble">' + esc(message.text) + '</p><div class="rooms-options">' +
         (message.mine ? '' : '<button class="shell-link" type="button" data-report>' + e('report') +
           '</button><button class="shell-link" type="button" data-block>' + e('block') + '</button>') +

@@ -6,7 +6,8 @@
     menu: ['신고·차단 메뉴', 'Report and block menu'], block: ['차단', 'Block'],
     unblock: ['차단 해제', 'Unblock'], blocked: ['차단했어요', 'Account blocked'],
     blocks: ['차단 목록', 'Blocked accounts'], message: ['메시지', 'Message'],
-    missing: ['프로필을 찾을 수 없어요', 'Profile not found']
+    missing: ['프로필을 찾을 수 없어요', 'Profile not found'],
+    vipAdd: ['VIP 달기', 'Add VIP'], vipRemove: ['VIP 떼기', 'Remove VIP']
   });
 
   async function changeBlock(button, action, nick) {
@@ -20,6 +21,19 @@
       return false;
     }
     return true;
+  }
+
+  async function showFollows(nick, field) {
+    const panel = U.sheet('<h2>' + t(field) + '</h2><div data-follows>' + U.status('loading') + '</div>');
+    const content = panel.querySelector('[data-follows]');
+    const data = await L.api(field, { nick });
+    if (!content.isConnected) return;
+    if (data.error) { content.innerHTML = U.status('error'); return; }
+    const people = data.people || data[field]?.map(nick => ({ nick })) || [];
+    content.innerHTML = people.length ? '<ul class="lounge-list shell-ledger">' + people.map(person =>
+      '<li class="shell-card"><a href="#/u/' + L.esc(encodeURIComponent(person.nick)) + '">' +
+      L.whoTag(person) + '</a></li>').join('') + '</ul>' : U.status('empty');
+    content.querySelectorAll('a').forEach(link => { link.onclick = () => L.closeSheet(); });
   }
 
   async function blocks(root) {
@@ -37,10 +51,11 @@
     }
     const list = document.createElement('ul');
     list.className = 'lounge-list shell-ledger';
-    for (const { nick } of rows) {
+    for (const person of rows) {
+      const { nick } = person;
       const row = document.createElement('li');
       row.className = 'shell-row shell-card';
-      row.innerHTML = '<strong>' + L.esc(nick) + '</strong>' + U.button(t('unblock'), 'data-unblock');
+      row.innerHTML = '<strong>' + L.whoTag(person) + '</strong>' + U.button(t('unblock'), 'data-unblock');
       row.querySelector('button').onclick = async event => {
         if (await changeBlock(event.currentTarget, 'unblock', nick)) await L.route();
       };
@@ -73,19 +88,24 @@
     const own = () => L.me?.nick?.toLowerCase() === user.nick?.toLowerCase();
     view.innerHTML = '<article style="' + U.card + '">' + (photo ? '<img alt="" src="' + L.esc(photo) +
       '" style="width:76px;height:76px;object-fit:cover;border-radius:50%;border:2px solid var(--g)">' : '') +
-      '<h2>' + L.esc(user.nick) + '</h2><p style="white-space:pre-wrap">' + L.esc(user.bio) + '</p>' +
+      '<h2 data-user-name>' + L.whoTag(user) + '</h2><p style="white-space:pre-wrap">' + L.esc(user.bio) + '</p>' +
       '<p class="muted">' + L.esc([user.floor, user.joinedMonth].filter(Boolean).join(' · ')) + '</p>' +
       '<p>' + (user.badges || []).filter(badge => badge.got !== false && badge.got !== null && badge.got !== 0).map(badge =>
         L.esc(badge.label || badge)).join(' · ') + '</p><p data-counts></p>' +
       (own() ? '' : '<div style="display:flex;flex-wrap:wrap;gap:8px">' + U.button('', 'data-follow', true) +
         (L.open('dm') ? U.link('#/dm/' + encodeURIComponent(user.nick), t('message')) : '') +
-        U.button(t('menu'), 'data-menu') + '</div>') + '</article>';
+        U.button('⋯', 'data-menu aria-haspopup="dialog" aria-label="' + t('menu') + '"') + '</div>') + '</article>';
 
     const follow = view.querySelector('[data-follow]');
     let following = Boolean(user.me?.following);
     function paint() {
-      view.querySelector('[data-counts]').innerHTML = '<b>' + t('followers') + ' ' + (Number(user.followers) || 0) +
-        '</b> · ' + t('following') + ' ' + (Number(user.following) || 0);
+      const counts = view.querySelector('[data-counts]');
+      const fields = ['followers', 'following'];
+      counts.innerHTML = fields.map(field => U.button(t(field) + ' ' + (Number(user[field]) || 0),
+        'data-follow-list="' + field + '"')).join(' ');
+      counts.querySelectorAll('[data-follow-list]').forEach(button => {
+        button.onclick = () => { if (!L.needLogin()) void showFollows(user.nick, button.dataset.followList); };
+      });
       if (follow) {
         follow.textContent = L.t('user.' + (following ? 'unfollow' : 'follow'));
         follow.setAttribute('aria-pressed', following);
@@ -106,11 +126,29 @@
       paint();
     };
     view.querySelector('[data-menu]').onclick = async () => {
-      const blockAvailable = !L.me || (await L.api('blocks')).error !== 'action';
+      const [blocks, admin] = await Promise.all([
+        L.me ? L.api('blocks') : {},
+        user.tag?.kind !== 'staff' ? L.staffAdmin() : ''
+      ]);
+      const blockAvailable = blocks.error !== 'action';
       if (!view.isConnected) return;
       const el = U.sheet('<h2>' + t('menu') + '</h2>' + U.button(U.t('report'), 'data-report') +
         ' ' + U.button(t('block') + (blockAvailable ? '' : ' · ' + U.t('soon')),
-          'data-block' + (blockAvailable ? '' : ' disabled')));
+          'data-block' + (blockAvailable ? '' : ' disabled')) +
+        (admin ? ' ' + U.button(t(user.tag?.kind === 'vip' ? 'vipRemove' : 'vipAdd'), 'data-vip') : ''));
+      const vipButton = el.querySelector('[data-vip]');
+      if (vipButton) vipButton.onclick = async () => {
+        vipButton.disabled = true;
+        const currentAdmin = await L.staffAdmin();
+        const result = currentAdmin ? await L.api('adm_vip_set', { admin: currentAdmin, mid: user.id, vip: user.tag?.kind !== 'vip' })
+          : { error: 'forbidden' };
+        if (!vipButton.isConnected) return;
+        vipButton.disabled = false;
+        if (result.error) return U.error(result);
+        user.tag = result.vip ? { kind: 'vip', label: 'VIP' } : null;
+        view.querySelector('[data-user-name]').innerHTML = L.whoTag(user);
+        L.closeSheet();
+      };
       el.querySelector('[data-report]').onclick = () => {
         if (L.needLogin()) return;
         // Moderation actions identify an account by its stable member ID.

@@ -18,7 +18,7 @@
     const rows = result.rank;
     view.innerHTML = (result.week ? '<p class="muted">' + L.esc(result.week) + '</p>' : '') +
       (Array.isArray(rows) && rows.length ? '<ol class="lounge-list">' + rows.slice(0, 10).map(row =>
-        '<li class="shell-card"><div class="shell-row"><strong>' + L.esc(row.nick) +
+        '<li class="shell-card"><div class="shell-row"><strong>' + L.whoTag(row) +
         '</strong><span>' + L.esc(Number(row.points) || 0) + 'P</span></div></li>').join('') + '</ol>' : U.status('empty'));
   }
 

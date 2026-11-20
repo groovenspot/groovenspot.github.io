@@ -188,7 +188,7 @@ const LoungePostUI = (() => {
       const data = await L.api('post_get', { id: post.id });
       if (!el.isConnected || !view.isConnected) return;
       body.innerHTML = (data.comments?.map(comment => '<article style="' + U.card + '"><strong>' +
-        L.esc(comment.author?.nick || comment.nick) + '</strong><p style="white-space:pre-wrap">' + L.esc(comment.text) +
+        L.whoTag(comment.author || { nick: comment.nick }) + '</strong><p style="white-space:pre-wrap">' + L.esc(comment.text) +
         '</p>' + U.button(U.t('report'), 'data-report') + '</article>').join('') ||
         U.status(data.error && data.error !== 'action' ? 'error' : 'empty')) +
         '<form><label>' + t('write') + '<textarea name="text" maxlength="200" required></textarea></label>' +
@@ -263,7 +263,7 @@ const LoungePostUI = (() => {
       const member = post.kind === 'member';
       const images = (post.photos || []).map(P.photo).filter(photo => photo.src);
       const videoUrl = /^[A-Za-z0-9_-]{11}$/.test(post.youtube || '') ? 'https://www.youtube.com/watch?v=' + post.youtube : '';
-      const author = post.author?.nick || post.author?.name || 'GROOVE';
+      const author = post.author?.nick || 'GROOVE';
       const media = images.map((photo, index) => {
         if (member) return '<button type="button" class="post-photo-button" data-member-photo="' + index + '">' +
           P.image(photo.thumb, t('photo', { n: index + 1 }), false, photo) + '</button>';
@@ -276,7 +276,7 @@ const LoungePostUI = (() => {
         L.esc(['GROOVE SESSION #' + video.session, video.dj, video.duration].filter(Boolean).join(' · ')) + '</div>' : '';
       card.innerHTML = '<header class="post-card-header"><span class="post-avatar" aria-hidden="true">' +
         L.esc(Array.from(author)[0]?.toUpperCase()) + '</span><div><div class="post-author"><strong>' +
-        L.esc(author) + '</strong>' + (post.kind === 'official' ? '<span class="post-badge">' + t('official') + '</span>' : '') +
+        L.whoTag({ ...post.author, nick: author }) + '</strong>' + (post.kind === 'official' ? '<span class="post-badge">' + t('official') + '</span>' : '') +
         '</div><div class="post-meta">' +
         (card.dataset.floor ? '<span class="post-floor">' + post.floor + ' ' + (post.floor === '2F' ? 'GROOVE' : 'SPOT') + '</span>' : '') +
         (album || member ? '<span>' + t(album ? 'photos' : 'member') + '</span>' : '') +

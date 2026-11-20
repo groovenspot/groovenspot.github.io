@@ -201,6 +201,8 @@ Lounge.i18n({zh: {
   "user.blocked": "已屏蔽",
   "user.blocks": "屏蔽名单",
   "user.message": "发私信",
+  "user.vipAdd": "添加 VIP",
+  "user.vipRemove": "移除 VIP",
   "user.missing": "未找到该个人资料",
 
   "play.points": "我的积分",

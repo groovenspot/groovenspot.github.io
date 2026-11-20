@@ -160,9 +160,9 @@
 
   const copy = {
     join: ['그루브 멤버 가입', 'Join Groove Lounge'],
-    invite: ['{name}님이 초대했어요', '{name} invited you'],
     scan: ['매장 직원에게 새 QR을 받아 찍어 주세요.', 'Ask a staff member for a new QR at the club.'],
     nick: ['닉네임', 'Nickname'],
+    invite: ['{name}님이 초대했어요', '{name} invited you'],
     nickHint: [
       '다른 손님에게 보이는 이름이에요. 한글(가~힣), 영문, 숫자, 점(.), 밑줄(_)로 2~12자를 써 주세요.',
       'Other guests can see this name. Use 2–12 Hangul syllables, English letters, digits, periods (.) or underscores (_).'
@@ -283,16 +283,6 @@
       '<input name="' + name + '" type="' + type + '" autocomplete="' + autocomplete + '" required' + min + '></label>';
   }
 
-  function inviter(q) {
-    try {
-      const [kind, payload] = q.split('.');
-      if (kind !== 'j1' || !payload) return '';
-      const bytes = Uint8Array.from(atob(payload.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
-      const { n } = JSON.parse(new TextDecoder().decode(bytes));
-      return typeof n === 'string' ? n : '';
-    } catch (e) { return ''; }
-  }
-
   const policyLink = ['전문 보기 (새 탭)', 'Read the full text (new tab)', '全文を読む（新しいタブ）', '阅读全文（新标签页）'];
   const consentDetails = [
     '동의하기 전에 사진 글·대화방·메시지·보상·굿즈·번역의 이용과 개인정보 안내를 확인해 주세요.',
@@ -334,10 +324,9 @@
     const loggingIn = action === 'login';
     const title = joining ? 'join' : loggingIn ? 'login' : 'reset';
     const qr = params.q || params.r || '';
-    const name = joining ? inviter(qr) : '';
     const hint = key => '<small class="muted">' + t(key) + '</small>';
     root.innerHTML = '<section class="shell-auth"><header class="shell-brand">GROOVE</header><h1>' + t(title) + '</h1>' +
-      (name ? '<p class="muted">' + t('invite', { name }) + '</p>' : '') +
+      (joining && qr ? '<p class="muted" data-inviter hidden></p>' : '') +
       (!loggingIn && !qr ? '<p role="alert">' + t('scan') + '</p></section>' :
         '<form class="shell-form">' +
         (joining ? input('nick', 'text', 'nickname', hint('nickHint')) : '') +
@@ -351,6 +340,12 @@
     const form = root.querySelector('form');
     if (!form) return;
     if (joining) {
+      const byline = root.querySelector('[data-inviter]');
+      L.api('join_inviter', { q: qr }).then(({ inviter }) => {
+        if (!byline?.isConnected || !inviter) return;
+        byline.innerHTML = t('invite').replace('{name}', () => L.whoTag(inviter));
+        byline.hidden = false;
+      });
       const { all } = form.elements;
       const boxes = [...form.querySelectorAll('.shell-consent-row input')];
       all.onchange = () => boxes.forEach(box => { box.checked = all.checked; });
