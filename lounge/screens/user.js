@@ -6,7 +6,8 @@
     menu: ['신고·차단 메뉴', 'Report and block menu'], block: ['차단', 'Block'],
     unblock: ['차단 해제', 'Unblock'], blocked: ['차단했어요', 'Account blocked'],
     blocks: ['차단 목록', 'Blocked accounts'], message: ['메시지', 'Message'],
-    missing: ['프로필을 찾을 수 없어요', 'Profile not found']
+    missing: ['프로필을 찾을 수 없어요', 'Profile not found'],
+    vipAdd: ['VIP 달기', 'Add VIP'], vipRemove: ['VIP 떼기', 'Remove VIP']
   });
 
   const profile = U.words('profile3', {
@@ -61,12 +62,29 @@
   function wireMenu(button, user, enhanced = false) {
     if (!button) return;
     button.onclick = async () => {
-      const allowed = !L.me || (await L.api('blocks')).error !== 'action';
+      const [blocks, admin] = await Promise.all([
+        L.me ? L.api('blocks') : {},
+        user.tag?.kind !== 'staff' ? L.staffAdmin() : ''
+      ]);
+      const allowed = blocks.error !== 'action';
       if (!button.isConnected) return;
       const actions = U.button(U.t('report'), 'data-report') + ' ' +
-        U.button(t('block') + (allowed ? '' : ' · ' + U.t('soon')), 'data-block' + (allowed ? '' : ' disabled'));
+        U.button(t('block') + (allowed ? '' : ' · ' + U.t('soon')), 'data-block' + (allowed ? '' : ' disabled')) +
+        (admin ? ' ' + U.button(t(user.tag?.kind === 'vip' ? 'vipRemove' : 'vipAdd'), 'data-vip') : '');
       const el = U.sheet('<h2>' + t('menu') + '</h2>' +
         (enhanced ? '<div class="shell-actions">' + actions + '</div>' : actions));
+      const vipButton = el.querySelector('[data-vip]');
+      if (vipButton) vipButton.onclick = async () => {
+        vipButton.disabled = true;
+        const currentAdmin = await L.staffAdmin();
+        const result = currentAdmin ? await L.api('adm_vip_set', { admin: currentAdmin, mid: user.id, vip: user.tag?.kind !== 'vip' })
+          : { error: 'forbidden' };
+        if (!vipButton.isConnected) return;
+        vipButton.disabled = false;
+        if (result.error) return U.error(result);
+        L.closeSheet();
+        await L.route();
+      };
       el.querySelector('[data-report]').onclick = () => {
         if (L.needLogin()) return;
         if (user.id) U.report('user', user.id);
@@ -293,11 +311,9 @@
       U.button('⋯', 'data-menu aria-haspopup="dialog" aria-label="' + t('menu') + '"') + '</header>') +
       '<section class="shell-card profile3-card"><div class="profile3-header">' + avatar +
       '<div class="profile3-stats">' + stats(user, follow2 && L.me && !user.locked) + '</div></div>' +
-      '<div class="profile3-name"><' + heading + '>' + esc(user.nick) + '</' + heading + '>' +
+      '<div class="profile3-name"><' + heading + ' data-user-name>' + L.whoTag(user) + '</' + heading + '>' +
       (['2F', '3F'].includes(user.floor) ? '<span class="profile3-chip">' + esc(user.floor) + '</span>' : '') +
-      (badge ? '<span class="profile3-chip profile3-badge">' + esc(badge) + '</span>' : '') +
-      (tag ? '<span class="lounge-who-tag profile3-chip" data-kind="' + tag.kind + '">' +
-        esc(L.tagLabel?.(tag, L.lang) || tag.label) + '</span>' : '') + '</div>' +
+      (!tag && badge ? '<span class="profile3-chip profile3-badge">' + esc(badge) + '</span>' : '') + '</div>' +
       (bio ? '<p class="shell-bio' + (longBio ? ' profile3-bio-short' : '') + '">' + esc(bio) + '</p>' : '') +
       (longBio ? '<button type="button" class="shell-link" aria-expanded="false" data-more-bio>' + profile('moreBio') + '</button>' : '') +
       (showInstagram ? '<a class="shell-link" href="https://www.instagram.com/' + encodeURIComponent(user.link) +
@@ -364,10 +380,11 @@
     }
     const list = document.createElement('ul');
     list.className = 'lounge-list shell-ledger';
-    for (const { nick } of rows) {
+    for (const person of rows) {
+      const { nick } = person;
       const row = document.createElement('li');
       row.className = 'shell-row shell-card';
-      row.innerHTML = '<strong>' + L.esc(nick) + '</strong>' + U.button(t('unblock'), 'data-unblock');
+      row.innerHTML = '<strong>' + L.whoTag(person) + '</strong>' + U.button(t('unblock'), 'data-unblock');
       row.querySelector('button').onclick = async event => {
         if (await changeBlock(event.currentTarget, 'unblock', nick)) await L.route();
       };
@@ -407,26 +424,27 @@
     const follow2 = L.open('follow2');
     view.innerHTML = '<article style="' + U.card + '">' + (photo ? '<img alt="" src="' + L.esc(photo) +
       '" style="width:76px;height:76px;object-fit:cover;border-radius:50%;border:2px solid var(--g)">' : '') +
-      '<h2>' + L.esc(user.nick) + '</h2><p style="white-space:pre-wrap">' + L.esc(user.bio) + '</p>' +
+      '<h2 data-user-name>' + L.whoTag(user) + '</h2><p style="white-space:pre-wrap">' + L.esc(user.bio) + '</p>' +
       '<p class="muted">' + L.esc([user.floor, user.joinedMonth].filter(Boolean).join(' · ')) + '</p>' +
       '<p>' + (user.badges || []).filter(badge => badge.got !== false && badge.got !== null && badge.got !== 0).map(badge =>
         L.esc(badge.label || badge)).join(' · ') + '</p>' + (follow2 ? '<div data-counts></div>' : '<p data-counts></p>') +
       (own ? '' : '<div style="display:flex;flex-wrap:wrap;gap:8px">' + U.button('', 'data-follow', true) +
         (L.open('dm') ? U.link('#/dm/' + encodeURIComponent(user.nick), t('message')) : '') +
-        U.button(t('menu'), 'data-menu') + '</div>') + '</article>';
+        U.button('⋯', 'data-menu aria-haspopup="dialog" aria-label="' + t('menu') + '"') + '</div>') + '</article>';
 
     const follow = view.querySelector('[data-follow]');
     let following = Boolean(user.me?.following);
     function paint() {
+      const counts = view.querySelector('[data-counts]');
       if (follow2) {
-        view.querySelector('[data-counts]').innerHTML = '<span class="profile3-stats">' + stats(user, L.me && !user.locked) + '</span>';
+        counts.innerHTML = '<span class="profile3-stats">' + stats(user, L.me && !user.locked) + '</span>';
         if (follow) {
           follow.textContent = actionLabel(user);
           follow.setAttribute('aria-pressed', String(followingState(user) === 'following'));
         }
         return;
       }
-      view.querySelector('[data-counts]').innerHTML = '<b>' + t('followers') + ' ' + (Number(user.followers) || 0) +
+      counts.innerHTML = '<b>' + t('followers') + ' ' + (Number(user.followers) || 0) +
         '</b> · ' + t('following') + ' ' + (Number(user.following) || 0);
       if (follow) {
         follow.textContent = L.t('user.' + (following ? 'unfollow' : 'follow'));

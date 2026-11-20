@@ -76,6 +76,13 @@ a { color: var(--g); }
 .lounge-list .shell-card { overflow-wrap: anywhere; }
 .lounge-list .shell-row > * { min-width: 0; }
 
+.lounge-who-tag {
+  display:inline-flex; align-items:center; vertical-align:middle; white-space:nowrap;
+  padding:2px 6px; border-radius:6px; background:var(--txt); color:var(--g-ink);
+  font-size:11px; font-weight:800; line-height:1.25;
+}
+.lounge-who-tag[data-kind="vip"] { background:#ffd66b; color:#2d1b00; }
+
 .profile3-card { display: grid; gap: 12px; }
 .profile3-card > * + * { margin-top: 0; }
 .profile3-header { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; }

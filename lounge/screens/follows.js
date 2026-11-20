@@ -21,7 +21,7 @@
   const esc = L.esc;
   const profilePath = nick => '#/u/' + encodeURIComponent(nick);
   const person = row => '<a class="profile3-person" href="' + esc(profilePath(row.nick)) + '">' +
-    avatar(row) + '<span><strong>' + esc(row.nick) + '</strong>' +
+    avatar(row) + '<span><strong>' + L.whoTag(row) + '</strong>' +
     (row.bio ? '<small class="muted shell-bio">' + esc(row.bio) + '</small>' : '') + '</span></a>';
 
   function avatar({ nick, photo }) {

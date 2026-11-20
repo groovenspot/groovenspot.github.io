@@ -131,8 +131,8 @@
       const response = await L.api('blocks');
       if (!blocks.isConnected) return;
       if (response.error) { blocks.innerHTML = U.status('error'); return; }
-      blocks.innerHTML = response.blocks.map(({ nick }, i) =>
-        '<div class="shell-row"><span>' + L.esc(nick) + '</span>' + U.button(t('unblock'), 'data-unblock="' + i + '"') + '</div>'
+      blocks.innerHTML = response.blocks.map((person, i) =>
+        '<div class="shell-row"><span>' + L.whoTag(person) + '</span>' + U.button(t('unblock'), 'data-unblock="' + i + '"') + '</div>'
       ).join('') || U.status('empty');
       for (const button of blocks.querySelectorAll('[data-unblock]')) button.onclick = async () => {
         button.disabled = true;
@@ -153,7 +153,7 @@
     const target = view.querySelector('[data-list]');
     function entries(rows) {
       return rows.map(row => '<a class="shell-row" style="' + U.card + ';color:inherit;text-decoration:none" href="' +
-        L.esc(dmPath(row.nick)) + '"><strong>' + L.esc(row.nick) + '</strong><span class="muted">' +
+        L.esc(dmPath(row.nick)) + '"><strong>' + L.whoTag(row) + '</strong><span class="muted">' +
         (row.unread ? t('unread', { n: Number(row.unread) }) : row.state === 'outgoing' ? t('outgoing') :
           U.time(row.at, { month: 'short', day: 'numeric' })) + '</span></a>').join('');
     }
@@ -294,7 +294,7 @@
           code === 'not_found' ? status('missing') : U.status('error');
         return;
       }
-      peer.innerHTML = '<a style="color:inherit" href="#/u/' + L.esc(encodeURIComponent(data.nick)) + '">' + L.esc(data.nick) + '</a>';
+      peer.innerHTML = '<a style="color:inherit" href="#/u/' + L.esc(encodeURIComponent(data.nick)) + '">' + L.whoTag(data) + '</a>';
       mutual.textContent = data.mutual ? L.t('dm.mutual') : '';
       menu.hidden = false;
       form.hidden = !data.canSend;

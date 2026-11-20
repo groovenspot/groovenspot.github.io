@@ -51,7 +51,7 @@
       ? '<img class="shell-avatar" src="' + L.esc(L.img(me.photo)) + '" alt="">'
       : '<span class="shell-avatar" aria-hidden="true">' + L.esc(Array.from(me.nick || '')[0] || 'G') + '</span>';
     const legacy = '<header class="shell-profile">' + photo +
-      '<div><h1>' + L.esc(me.nick) + '</h1><p class="muted">' + t('member') +
+      '<div><h1>' + L.whoTag(me) + '</h1><p class="muted">' + t('member') +
       (['2F', '3F'].includes(me.floor) ? ' · ' + me.floor : '') + '</p></div></header>' +
       (me.bio ? '<p class="shell-bio">' + L.esc(me.bio) + '</p>' : '');
     const editLink = '<a class="btn" href="#/me/edit">' + t('edit') + '</a>';

@@ -207,7 +207,19 @@ const LoungeRewardUI = (() => {
     else label('GROOVE & SPOT', 96, 268, { color: '#ffad73' });
     label(data.month, 96, 390, { color: '#e0bbf8' });
     label(L.t('rewards.recap'), 96, 520, { size: 96, weight: 900 });
-    label(data.nick, 96, 633, { size: 65, width: 824 });
+    const tag = L.tagLabel(data.tag);
+    ctx.font = '800 30px system-ui, sans-serif';
+    const chipWidth = tag ? Math.ceil(ctx.measureText(tag).width) + 36 : 0;
+    const nameWidth = 888 - chipWidth - (tag ? 24 : 0);
+    label(data.nick, 96, 633, { size: 65, width: nameWidth });
+    if (tag) {
+      const x = 96 + Math.min(nameWidth, ctx.measureText(data.nick).width) + 24;
+      ctx.fillStyle = data.tag.kind === 'vip' ? '#ffd66b' : '#fff3ed';
+      ctx.beginPath();
+      ctx.roundRect(x, 579, chipWidth, 56, 12);
+      ctx.fill();
+      label(tag, x + 18, 617, { size: 30, weight: 800, color: '#2d1b00', width: chipWidth - 36 });
+    }
 
     for (const [i, [key, value]] of [
       ['visits', amount(data.checkins)], ['earned', amount(data.points) + 'P']
@@ -229,7 +241,7 @@ const LoungeRewardUI = (() => {
     const area = view.querySelector('[data-recap]');
     const badgeNames = data.badges?.map(badge => badge.label).filter(Boolean).join(' · ') || L.t('rewards.noBadges');
     const favorite = data.favoriteDj || L.t('rewards.noDj');
-    const description = [data.month, data.nick, L.t('rewards.visits') + ' ' + amount(data.checkins),
+    const description = [data.month, [data.nick, L.tagLabel(data.tag)].filter(Boolean).join(' '), L.t('rewards.visits') + ' ' + amount(data.checkins),
       L.t('rewards.earned') + ' ' + amount(data.points) + 'P',
       L.t('rewards.badges') + ' ' + badgeNames, L.t('rewards.favoriteDj') + ' ' + favorite].join('. ');
     area.innerHTML = '<canvas width="1080" height="1920" role="img" aria-label="' + t('recap') +

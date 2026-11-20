@@ -201,6 +201,8 @@ Lounge.i18n({ja: {
   "user.blocked": "ブロックしました",
   "user.blocks": "ブロックリスト",
   "user.message": "メッセージ",
+  "user.vipAdd": "VIPを付ける",
+  "user.vipRemove": "VIPを外す",
   "user.missing": "プロフィールが見つかりません",
 
   "play.points": "マイポイント",

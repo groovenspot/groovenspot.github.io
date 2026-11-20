@@ -126,6 +126,7 @@
       background:#30302d;color:var(--txt);font-weight:700;overflow:hidden}
     .rooms-avatar img{width:100%;height:100%;object-fit:cover}
     .rooms-author,.rooms-line,.rooms-chat [data-translation]{grid-column:2;min-width:0}
+    .rooms-chat [data-mine="true"] .rooms-own-author{grid-column:1;justify-self:end}
     .rooms-author{font-size:.83rem;font-weight:700;margin-bottom:2px;overflow-wrap:anywhere}
     .rooms-line{display:flex;align-items:flex-end;gap:6px}
     .rooms-chat [data-mine="true"] .rooms-line{grid-column:1;flex-direction:row-reverse}
@@ -196,7 +197,7 @@
         '<span class="rooms-icon" data-floor="' + esc(room.floor) + '" aria-hidden="true">' +
         esc(room.floor || (room.id === 'english' ? 'EN' : '♪')) + '</span><span class="rooms-label"><strong>' +
         esc(nameOf(room)) + '</strong>' + (room.latest ? '<small class="muted rooms-preview">' +
-        esc(room.latest.nick + ' · ' + room.latest.text) + '</small>' : '') + '</span><small class="rooms-meta muted">' +
+        L.whoTag(room.latest) + ' · ' + esc(room.latest.text) + '</small>' : '') + '</span><small class="rooms-meta muted">' +
         (room.kicked ? e('kicked') : e(room.open ? 'open' : 'closed') + (room.online ? '<span>' + e('people', { n: room.online }) + '</span>' : '')) +
         '</small></a></li>').join('') + '</ul><p class="shell-card muted">' + e('hours') + '</p>');
     section.querySelector('[role=status]').remove();
@@ -443,12 +444,13 @@
         const photo = typeof message.photo === 'string' && /^p\/[\w:-]+\/[\w-]+\.(jpe?g|webp)$/.test(message.photo)
           ? '<img src="' + esc(L.img(message.photo)) + '" alt="" loading="lazy">' : '';
         const author = groupStart && !message.mine ? '<span class="rooms-avatar" aria-hidden="true">' +
-          (photo || esc([...message.nick][0] || 'G')) + '</span><span class="rooms-author">' + esc(message.nick) + '</span>' : '';
+          (photo || esc([...message.nick][0] || 'G')) + '</span><span class="rooms-author">' + L.whoTag(message) + '</span>' : groupStart && message.tag
+            ? '<span class="rooms-author rooms-own-author">' + L.whoTag(message) + '</span>' : '';
         const quote = byId.get(replyTargets.get(message.id));
         result += '<li data-message="' + esc(message.id) + '" data-mine="' + !!message.mine +
           '" data-group-start="' + groupStart + '">' + author +
           '<div class="rooms-line"><button type="button" class="rooms-bubble" data-message-menu>' +
-          (quote ? '<span class="rooms-quote">' + esc(quote.nick + ' · ' + quote.text) + '</span>' : '') +
+          (quote ? '<span class="rooms-quote">' + L.whoTag(quote) + ' · ' + esc(quote.text) + '</span>' : '') +
           '<span>' + esc(message.text) + '</span><span class="sr-only"> · ' + e('messageMenu') + '</span></button>' +
           (showTime ? '<small class="muted rooms-time">' + esc(time.format(message.at)) + '</small>' : '') + '</div>' +
           '<small class="muted" data-translation>' + esc(translations.get(message.id) || '') + '</small></li>';
