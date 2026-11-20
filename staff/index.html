@@ -872,6 +872,18 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .sheet-in .full { width: 100%; max-height: 80vh; object-fit: contain; }
 .sheet-in h2 { margin: 0 0 10px; font-size: 18px; }
 .sheet-in .btn { width: 100%; margin-top: 14px; }
+.where-stats select { width: 100%; min-height: 44px; margin: 6px 0 10px; }
+.where-stats p { margin: 6px 0; }
+.where-stats-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+.where-stats-table th, .where-stats-table td { padding: 6px 2px; text-align: center; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.where-stats-table th:first-child { width: 24%; text-align: start; }
+.where-stats-table small { display: block; color: var(--muted); }
+.where-stats-name { min-height: 44px; max-width: 100%; padding: 0 2px; text-align: start; border: 0; background: none; color: var(--txt); font: inherit; text-decoration: underline; overflow-wrap: anywhere; cursor: pointer; }
+.where-stats-ranking { padding-inline-start: 28px; }
+.where-stats-questions { padding: 0; list-style: none; }
+.where-stats-questions li { padding: 9px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.where-stats-questions li small { display: block; color: var(--muted); }
+#meWhereStats { width: 100%; margin: 8px 0; }
 .steps { margin: 0; padding-left: 20px; line-height: 1.9; }
 /* 📲 알림 받는 법 (신규 교육) */
 .pgw { background: var(--card); border: 1px solid var(--line-2); border-radius: 14px; padding: 14px; margin: 0 0 16px; }
@@ -4695,6 +4707,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   }
   function renderMe(area, d) {
     var sales = SALES.indexOf(d.team) >= 0, pick = !!(d.admin || d.gall), h = meHead(d), m = state.me;
+    if (state.s.admin && d.admin) h += '<button type="button" class="btn" id="meWhereStats">📍 위치 질문 응답 기록</button>';
     if (!sales && !pick) { area.innerHTML = h; bindMe(area); if (!m) loadMe(); return; }   // 영업팀이 아니면 출근·퇴근·내 정보만
     if (!m) { area.innerHTML = h + '<p class="load">불러오는 중…</p>'; bindMe(area); loadMe(); return; }
     if (m.error) { area.innerHTML = h + '<p class="empty">현황을 불러오지 못했어요. 다시 열어 주세요.</p>'; bindMe(area); return; }
@@ -4844,11 +4857,71 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     $('cuCall').addEventListener('click', function () { send({ contact: true }, this, '📞 연락 기록했어요 · 14일 알림이 다시 시작돼요'); });
     $('cuHide').addEventListener('click', function () { if (!armed(this, '🙈 숨기기')) return; send({ hide: true }, this); });
   }
+  function openWhereStats() {
+    if (!state.s?.admin || !state.data?.admin) return;
+    var token = state.s.token, revision = 0;
+    showSheet('<section class="where-stats"><h2 id="whereStatsTitle">위치 질문 응답 기록</h2><label for="whereStatsPeriod">기간</label>' +
+      '<select id="whereStatsPeriod"><option value="today">오늘 영업일</option><option value="week">이번 주</option>' +
+      '<option value="lastWeek">지난 주</option></select><div id="whereStatsBody"></div></section>');
+    var sheet = $('sheet'), dialog = sheet.querySelector('.sheet-in'), output = $('whereStatsBody'), period = $('whereStatsPeriod');
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('aria-labelledby', 'whereStatsTitle');
+    function summary(r) {
+      var table = r.list.length ? '<table class="where-stats-table" aria-label="MD별 위치 질문"><thead><tr><th scope="col">MD</th>' +
+        '<th scope="col">받음</th><th scope="col">답변</th><th scope="col">평균(분)</th><th scope="col" aria-sort="descending">무응답</th>' +
+        '<th scope="col">알림 끔</th></tr></thead><tbody>' + r.list.map(function (row) {
+          return '<tr><th scope="row"><button class="where-stats-name" type="button" data-where-md="' + esc(row.name) + '">' + esc(row.name) +
+            '</button></th><td>' + row.received + '</td><td>' + row.answered + '</td><td>' + (row.avgMinutes ?? '—') +
+            '</td><td>' + row.unanswered + '</td><td>' + row.pushOff + (row.pushUnknown ? '<small>미기록 ' + row.pushUnknown + '</small>' : '') + '</td></tr>';
+        }).join('') + '</tbody></table>' : '<p class="empty">이 기간에 받은 질문이 없어요.</p>';
+      return table + '<h3>주간 응답 순위</h3><p class="note">' + esc(r.weekStart) + ' 시작 · 평균 응답이 빠른 순</p>' +
+        (r.ranking.length ? '<ol class="where-stats-ranking">' + r.ranking.map(function (row) {
+          return '<li><b>' + esc(row.name) + '</b> · ' + row.avgMinutes + '분</li>';
+        }).join('') + '</ol>' : '<p class="empty">응답 시간을 확인할 수 있는 기록이 없어요.</p>');
+    }
+    function detail(r, md) {
+      var labels = { answered: '답변 완료', expired: '자동 정리', exit: '퇴장', resolved: '해결됨', hidden: '닫힘', open: '답변 대기' };
+      return '<button type="button" class="where-stats-name" data-where-back>← MD 목록</button><h3>' + esc(md) + ' 질문 목록</h3>' +
+        (r.questions.length ? '<ul class="where-stats-questions">' + r.questions.map(function (q) {
+          return '<li><b>' + esc([q.seat, q.guest].filter(Boolean).join(' ') || '위치 질문') + '</b> · ' + esc(labels[q.status] || '닫힘') +
+            '<small>' + esc(q.at) + ' · ' + esc(q.by) + ' 질문' + (q.closedAt ? ' · 종료 ' + esc(q.closedAt) : '') + '</small>' +
+            (q.answer ? '<div>' + esc(q.answer) + (q.seconds != null ? ' · ' + Math.round(q.seconds / 6) / 10 + '분' : '') + '</div>' : '') +
+            (q.pushOff === false ? '' : '<small>' + (q.pushOff === true ? '알림 꺼짐' : '알림 상태 미기록') + '</small>') + '</li>';
+        }).join('') + '</ul>' : '<p class="empty">이 기간에 받은 질문이 없어요.</p>');
+    }
+    async function load(md) {
+      var version = ++revision;
+      output.innerHTML = '<p role="status">불러오는 중…</p>';
+      var args = { a: 'where_stats_get', token: token, period: period.value };
+      if (md) args.md = md;
+      var r;
+      try { r = await call(args); } catch (e) {}
+      if (!output.isConnected || sheet.hidden || version !== revision || state.s?.token !== token) return;
+      if (r?.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r?.ok) {
+        output.innerHTML = '<p role="status">' + (r?.error === 'forbidden' ? '대표만 볼 수 있어요.' : '위치 기록을 불러오지 못했어요.') + '</p>';
+        if (r?.error !== 'forbidden') {
+          output.insertAdjacentHTML('beforeend', '<button type="button" class="btn">다시 시도</button>');
+          output.querySelector('button').onclick = function () { load(md); };
+        }
+        return;
+      }
+      output.innerHTML = '<p class="note">' + esc(r.start) + ' ~ ' + esc(r.end) + ' 영업일</p>' + (md ? detail(r, md) : summary(r));
+      output.querySelectorAll('[data-where-md]').forEach(function (button) { button.onclick = function () { load(button.dataset.whereMd); }; });
+      var back = output.querySelector('[data-where-back]');
+      if (back) { back.onclick = function () { load(); }; back.focus({ preventScroll: true }); }
+    }
+    period.onchange = function () { load(); };
+    period.focus();
+    load();
+  }
   function bindMe(area) {
     bindLoungeMenu(area);
     bindPunch(area); if ($('meEdit')) $('meEdit').addEventListener('click', openMe);
     if ($('meBrief')) $('meBrief').addEventListener('click', openBrief);
     if ($('meRoar')) $('meRoar').addEventListener('click', roarSheet);   // 🦁 사자후 (대표만)
+    if ($('meWhereStats')) $('meWhereStats').addEventListener('click', openWhereStats);
     bindTheme(area);   // 🎨 화면 배경
     var sel = $('meWho'); if (sel) sel.addEventListener('change', function () { state.meWho = this.value; state.me = null; state.meFly = 0; render(); });
   }
