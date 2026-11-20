@@ -5,6 +5,7 @@ const SHELL = [
   '/lounge/', '/lounge/app.css', '/lounge/core.js', '/lounge/manifest.webmanifest',
   '/lounge/screens/auth.js', '/lounge/screens/me.js', '/lounge/screens/tonight.js',
   '/lounge/screens/feed.js', '/lounge/screens/photos.js', '/lounge/screens/user.js',
+  '/lounge/screens/profile_edit.js', '/lounge/screens/follows.js',
   '/lounge/screens/play.js', '/lounge/screens/radio.js', '/lounge/screens/vote.js', '/lounge/screens/guess.js',
   '/lounge/screens/alerts.js', '/lounge/screens/rooms.js', '/lounge/screens/dm.js',
   '/lounge/screens/compose.js', '/lounge/screens/challenge.js', '/lounge/screens/rewards.js',
