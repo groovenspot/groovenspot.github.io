@@ -131,6 +131,10 @@ function showPeek(n, previous, secondary) {
     }
   }
   if (sos) { opt.requireInteraction = true; opt.vibrate = [300, 100, 300, 100, 600]; opt.silent = false; }
+  if (n.kind === 'yc-ready' && /^ycready:[-\w]{1,40}$/.test(n.ref || '')) {   // 🎆 B안 (2026-11-21): 누를 때까지 남고, 진동 3번, ▶ ㄱㄱ 시작 · 연출 탭 열기
+    opt.tag = 'gs-' + n.ref; opt.requireInteraction = true; opt.vibrate = [300, 120, 300, 120, 300]; opt.silent = false;
+    opt.actions = [{ action: 'yc-go', title: '▶ ㄱㄱ 시작' }, { action: 'yc-open', title: '연출 탭 열기' }];
+  }
   if (n.kind === 'roar') { opt.requireInteraction = true; opt.vibrate = [500, 120, 500, 120, 900]; opt.silent = false; }
   return Promise.all([message, self.registration.showNotification(n.title, opt)]);
 }
@@ -171,6 +175,13 @@ function whereAction(ref, action) {
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
   var tab = (e.notification.data && e.notification.data.tab) || '', ref = (e.notification.data && e.notification.data.ref) || '';
+  if (e.action === 'yc-go' && /^ycready:[-\w]{1,40}$/.test(ref)) {   // 🎆 알림에서 바로 ㄱㄱ — 안 되면 앱의 연출 탭
+    e.waitUntil(token().then(function (t) {
+      if (typeof t !== 'string' || !t) return false;
+      return fetch(API, { method: 'POST', body: JSON.stringify({ a: 'yc_go', token: t, id: ref.slice(8) }) }).then(function (r) { return r.json(); }).then(function (r) { return !!(r.ok || r.error === 'state'); });
+    }).catch(function () { return false; }).then(function (ok) { if (!ok) return openStaff('yc', ref); }));
+    return;
+  }
   if (tab !== 'where' || !e.action || e.action === 'where-open') { e.waitUntil(openStaff(tab, ref)); return; }
   e.waitUntil(whereAction(ref, e.action).then(function (ok) {
     if (!ok) return openStaff('where', ref);

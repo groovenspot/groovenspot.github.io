@@ -1536,6 +1536,19 @@ html .goffer.gofs.whereoff { background: #182d58; z-index: 59; }
 .whereoff.gofs .gof-b button { min-height: 64px; font-size: 19px; }
 .whereoff.gofs .gof-d { color: #e7eeff; }
 .whereoff [data-where-dismiss] { grid-column: 1 / -1; }
+/* 🎆 연출 준비 완료 B안 (2026-11-21): 등록자 화면에 보라색 전체 화면 → ▶ ㄱㄱ 시작 · 테마와 상관없이 같은 색 */
+html .goffer.gofs.ycready { background: #3b1680; color: #fff; z-index: 58; }
+html .goffer.gofs.ycready.ok { background: #0f6b3e; }
+.ycready .ycr-check { width: 76px; height: 76px; border-radius: 50%; background: rgba(255,255,255,.14); display: grid; place-items: center; font-size: 40px; margin: 0 auto 6px; }
+.ycready .ycr-go-t { font-size: 30px; font-weight: 900; text-align: center; margin: 0; }
+.ycready .ycr-where { font-size: 22px; font-weight: 800; text-align: center; color: #e9ddff; margin: 4px 0 0; }
+.ycready .ycr-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; }
+.ycready .ycr-chip { background: #1f7a4a; color: #e8fff2; border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 800; }
+.ycready .ycr-what { text-align: center; color: #e9ddff; margin: 12px 8px 0; font-size: 15px; white-space: pre-line; }
+.ycready .ycr-b { display: grid; gap: 10px; margin-top: auto; }
+.ycready .ycr-b .btn { min-height: 56px; font-size: 18px; }
+.ycready .ycr-b [data-ycr-go] { min-height: 76px; font-size: 24px; font-weight: 900; background: #ff7a1a; border-color: #ff7a1a; color: #1a0b00; }
+.ycready .msg { text-align: center; color: #fff; margin: 0; } .ycready .msg:empty { display: none; }
 .whereoff .where-own { grid-column: 1 / -1; display: flex; gap: 8px; margin: 0; }
 .whereoff .where-own input { flex: 1 1 auto; width: auto; min-width: 0; min-height: 56px; border-radius: 14px; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.08); color: #fff; padding: 0 14px; font-size: 17px; }
 .whereoff .where-own input::placeholder { color: rgba(255,255,255,.55); }
@@ -2746,6 +2759,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 <div class="sheet" id="sheet" hidden></div>
 <div class="goffer" id="gateOffer" hidden role="alertdialog" aria-live="assertive"></div>
 <div class="goffer gofs whereoff" id="whereOffer" hidden role="alertdialog" aria-modal="true" aria-labelledby="whereTitle"></div>
+<div class="goffer gofs ycready" id="ycReadyOffer" hidden role="alertdialog" aria-modal="true" aria-labelledby="ycrTitle"></div>
 <div class="where-enable" id="wherePushGuide" hidden role="status"></div>
 <div class="goffer subo" id="subOffer" hidden role="alertdialog" aria-live="assertive"></div>
 <button type="button" class="chatfab" id="chatFab" hidden aria-label="대화">💬<span class="n" id="chatN" hidden></span></button>
@@ -9018,6 +9032,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       whereLoad(); return;
     }
     if (data.whereDone || data.peek?.kind === 'where-answer') { whereChanged(); return; }
+    if (data.peek?.kind === 'yc-ready') { whereLoad(); }   // 🎆 B안: 준비 완료 푸시 → 열려 있는 화면에도 바로 카드
     if (state.pop) return;   // 따로 띄운 대화창은 그대로
     var t = e.data && e.data.tab, ct = /^chat:(table|yc|guest|ops|gate|live)$/.test(t || '') ? t.slice(5) : ''; if (ct) t = ct;
     if (ct && state.data) setTimeout(function () { chatOpen(ct); }, 300);
@@ -10605,9 +10620,43 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       o.connect(gain); gain.connect(whereAudio.destination); o.start(t); o.stop(t + .17);
     });
   }
+  // ── 🎆 연출 준비 완료 B안 (대표 결정 2026-11-21): 내 연출의 전광·술이 다 준비되면 전체 화면 → ▶ ㄱㄱ 시작 ──
+  var ycrList = [], ycrDismissed = new Set(), ycrId = '', ycrBusy = '';
+  function ycrPaint() {
+    var box = $('ycReadyOffer'); if (!box || ycrBusy) return;
+    var q = ycrList.find(function (x) { return !ycrDismissed.has(x.id); });
+    if (!q) { box.hidden = true; box.innerHTML = ''; ycrId = ''; return; }
+    if ($('gateOffer').matches('.gofs:not([hidden])') || !$('whereOffer').hidden) { box.hidden = true; return; }
+    if (ycrId === q.id && !box.hidden) return;
+    ycrId = q.id; box.classList.remove('ok');
+    var chips = (q.jg ? '<span class="ycr-chip">📺 전광 ' + esc(q.jg) + (q.jgAt ? ' ' + esc(q.jgAt) : '') + '</span>' : '') + (q.sul ? '<span class="ycr-chip">🍾 술 ' + esc(q.sul) + (q.sulAt ? ' ' + esc(q.sulAt) : '') + '</span>' : '');
+    var what = [q.what, q.text ? '📺 ' + q.text : ''].filter(Boolean).join('\n');
+    box.innerHTML = '<div class="gof-k" id="ycrTitle">🎆 연출 준비 완료</div><div class="gof-h" style="flex-direction:column;align-items:stretch;gap:0"><div class="ycr-check" aria-hidden="true">✓</div><p class="ycr-go-t">ㄱㄱ 하세요</p><p class="ycr-where">' + esc(q.where) + '</p>' +
+      '<div class="ycr-chips">' + chips + '</div>' + (what ? '<p class="ycr-what">' + esc(what) + '</p>' : '') + '</div>' +
+      '<div class="ycr-b"><button type="button" class="btn" data-ycr-go="' + esc(q.id) + '">▶ ㄱㄱ 시작</button><button type="button" class="btn" data-ycr-later="' + esc(q.id) + '">조금 있다가 · 연출 탭 열기</button><button type="button" class="btn" data-ycr-dismiss="' + esc(q.id) + '">나가기</button></div><p class="msg" role="status"></p>';
+    box.hidden = false; box.querySelector('[data-ycr-go]').focus();
+    try { if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 300]); } catch (e) {}
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-ycr-go], [data-ycr-later], [data-ycr-dismiss]'); if (!b || !state.s) return;
+    var box = $('ycReadyOffer');
+    if (b.dataset.ycrDismiss) { ycrDismissed.add(b.dataset.ycrDismiss); ycrPaint(); return; }
+    if (b.dataset.ycrLater) { ycrDismissed.add(b.dataset.ycrLater); ycrPaint(); goTab('yc'); return; }
+    var id = b.dataset.ycrGo, token = state.s.token; ycrBusy = id;
+    box.querySelectorAll('button').forEach(function (x) { x.disabled = true; });
+    var fail = function (t) { ycrBusy = ''; box.querySelectorAll('button').forEach(function (x) { x.disabled = false; }); box.querySelector('.msg').textContent = t || '시작하지 못했어요. 다시 눌러 주세요.'; };
+    call({ a: 'yc_go', token: token, id: id }).then(function (r) {
+      if (state.s?.token !== token) return;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (!r.ok && r.error !== 'state') return fail(r.error === 'forbidden' ? '시작할 권한이 없어요.' : '');
+      ycrList = ycrList.filter(function (x) { return x.id !== id; }); ycrDismissed.add(id);
+      box.classList.add('ok'); box.innerHTML = '<div class="gof-h" style="flex-direction:column;margin:auto"><div class="ycr-check" aria-hidden="true">✓</div><p class="ycr-go-t" id="ycrTitle">' + (r.error === 'state' ? '이미 시작됐어요' : 'ㄱㄱ! DJ에게 알렸어요') + '</p></div>';
+      setTimeout(function () { ycrBusy = ''; box.classList.remove('ok'); ycrId = ''; ycrPaint(); if (state.tab === 'yc') loadYc(true); }, 2500);
+    }).catch(function () { fail('연결이 안 돼요. 다시 눌러 주세요.'); });
+  });
   function wherePaint() {
     var box = $('whereOffer'), q = whereList.find(function (x) { return !whereDismissed.has(x.chat); });
-    if (!q) { box.hidden = true; box.innerHTML = ''; whereId = ''; return; }
+    if (!q) { box.hidden = true; box.innerHTML = ''; whereId = ''; ycrPaint(); return; }
     if ($('gateOffer').matches('.gofs:not([hidden])')) { box.hidden = true; return; }
     if (whereId === q.chat && !box.hidden) return;
     whereId = q.chat;
@@ -10623,7 +10672,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     var token = state.s.token, req = call({ a: 'where_get', token: token });
     whereFlight = req;
     req.then(function (r) {
-      if (r.ok && state.s?.token === token) { whereList = r.list || []; wherePaint(); }
+      if (r.ok && state.s?.token === token) { whereList = r.list || []; wherePaint(); ycrList = Array.isArray(r.yc) ? r.yc : []; ycrPaint(); }
     }).catch(function () {}).finally(function () {
       if (whereFlight !== req) return;
       whereFlight = null;
