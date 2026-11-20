@@ -264,19 +264,6 @@
     return true;
   }
 
-  async function showFollows(nick, field) {
-    const panel = U.sheet('<h2>' + t(field) + '</h2><div data-follows>' + U.status('loading') + '</div>');
-    const content = panel.querySelector('[data-follows]');
-    const data = await L.api(field, { nick });
-    if (!content.isConnected) return;
-    if (data.error) { content.innerHTML = U.status('error'); return; }
-    const people = data.people || data[field]?.map(nick => ({ nick })) || [];
-    content.innerHTML = people.length ? '<ul class="lounge-list shell-ledger">' + people.map(person =>
-      '<li class="shell-card"><a href="#/u/' + L.esc(encodeURIComponent(person.nick)) + '">' +
-      L.whoTag(person) + '</a></li>').join('') + '</ul>' : U.status('empty');
-    content.querySelectorAll('a').forEach(link => { link.onclick = () => L.closeSheet(); });
-  }
-
   async function blocks(root) {
     const view = U.mount(root, '<h1>' + t('blocks') + '</h1>');
     const data = await L.api('blocks');
@@ -352,12 +339,8 @@
         }
         return;
       }
-      const fields = ['followers', 'following'];
-      counts.innerHTML = fields.map(field => U.button(t(field) + ' ' + (Number(user[field]) || 0),
-        'data-follow-list="' + field + '"')).join(' ');
-      counts.querySelectorAll('[data-follow-list]').forEach(button => {
-        button.onclick = () => { if (!L.needLogin()) void showFollows(user.nick, button.dataset.followList); };
-      });
+      counts.innerHTML = '<b>' + t('followers') + ' ' + (Number(user.followers) || 0) +
+        '</b> · ' + t('following') + ' ' + (Number(user.following) || 0);
       if (follow) {
         follow.textContent = L.t('user.' + (following ? 'unfollow' : 'follow'));
         follow.setAttribute('aria-pressed', following);
