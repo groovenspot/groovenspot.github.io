@@ -16,6 +16,7 @@
     tableOk: ['문의 확인 완료', 'Inquiry accepted'],
     tableNo: ['이번에는 이용하기 어려워요', 'Unavailable this time'],
     tableCall: ['담당 직원에게 확인해 주세요', 'Please follow up with staff'],
+    tableExpired: ['문의 기한 만료', 'Inquiry expired', '問い合わせ期限切れ', '咨询已过期'],
     create: ['모집 만들기', 'Start a group'],
     total: ['나를 포함한 전체 인원', 'Total guests, including you'],
     groups: ['모집 목록', 'Groups'],
@@ -47,10 +48,24 @@
     errFull: ['이미 모집이 끝났어요.', 'This group is no longer open.'],
     errDup: ['이미 접수했어요.', 'This has already been submitted.'],
     errBusy: ['처리 중이에요. 잠시 뒤 다시 시도해 주세요.', 'Please wait a moment and try again.'],
+    errTableDay: ['오늘 새 문의는 3건까지 보낼 수 있어요.', 'You can send up to 3 new inquiries per club day.',
+      '新しい問い合わせは1営業日につき3件まで送れます。', '每个营业日最多可发送 3 条新咨询。'],
+    errTablePending: ['대기 중인 문의가 2건 있어요. 답변을 받은 뒤 다시 문의해 주세요.', 'You have 2 pending inquiries. Wait for a reply before sending another.',
+      '返信待ちの問い合わせが2件あります。回答を待ってから送ってください。', '您有 2 条待处理的咨询。收到回复后再发送新咨询。'],
+    errTableExpired: ['이 문의는 기한이 지났어요. 새 문의를 작성해 주세요.', 'This inquiry has expired. Enter a new inquiry.',
+      'この問い合わせは期限切れです。新しい問い合わせを入力してください。', '这条咨询已过期。请填写新的咨询。'],
+    errRequest: ['문의 정보를 확인한 뒤 다시 보내 주세요.', 'Check your inquiry details and try again.',
+      '問い合わせ内容を確認して、もう一度送ってください。', '请检查咨询内容后重试。'],
+    errSplitActive: ['이미 진행 중인 조각이 있어요.', 'You already have a group in progress.',
+      'すでに進行中の相席グループがあります。', '您已有一个进行中的拼桌小组。'],
+    errSplitCreate: ['오늘 모집은 2회까지 만들 수 있어요.', 'You can start up to 2 groups per club day.',
+      '相席募集は1営業日につき2回まで作れます。', '每个营业日最多可发起 2 次拼桌。'],
+    errSplitJoin: ['오늘 참여는 2회까지 할 수 있어요.', 'You can join up to 2 groups per club day.',
+      '相席への参加は1営業日につき2回までです。', '每个营业日最多可加入 2 次拼桌。'],
     errBanned: ['지금은 이 기능을 이용할 수 없어요.', 'You can’t use this feature right now.']
   };
-  L.i18n(Object.fromEntries(['ko', 'en'].map((lang, i) =>
-    [lang, Object.fromEntries(Object.entries(copy).map(([key, pair]) => ['sales.' + key, pair[i]]))]
+  L.i18n(Object.fromEntries(['ko', 'en', 'ja', 'zh'].map((lang, i) =>
+    [lang, Object.fromEntries(Object.entries(copy).filter(([, pair]) => pair[i]).map(([key, pair]) => ['sales.' + key, pair[i]]))]
   )));
   const words = key => L.t('sales.' + key);
   const t = key => L.esc(words(key));
@@ -62,7 +77,9 @@
     '<input type="number" required name="' + field + '" min="' + min + '" max="20" value="' + value + '"></label>';
   const errors = {
     staff: 'errStaff', floor: 'errFloor', people: 'errPeople', note: 'errNote', full: 'errFull',
-    dup: 'errDup', busy: 'errBusy', not_found: 'missing', banned: 'errBanned', suspended: 'errBanned'
+    dup: 'errDup', busy: 'errBusy', not_found: 'missing', banned: 'errBanned', suspended: 'errBanned',
+    table_day_limit: 'errTableDay', table_pending_limit: 'errTablePending', request: 'errRequest',
+    split_active: 'errSplitActive', split_create_limit: 'errSplitCreate', split_join_limit: 'errSplitJoin'
   };
 
   function errorText(code) {
@@ -151,7 +168,7 @@
 
   function table(root, params) {
     return screen(root, params, 'sales', 'table', 'table_list', (stack, data) => {
-      const states = { pending: 'pending', ok: 'tableOk', no: 'tableNo', call: 'tableCall' };
+      const states = { pending: 'pending', ok: 'tableOk', no: 'tableNo', call: 'tableCall', expired: 'tableExpired' };
       stack.insertAdjacentHTML('beforeend', '<section class="shell-card">' +
         (data.staffName ? '<p><strong>' + t('md') + '</strong> · ' + L.esc(data.staffName) + '</p>' : '<p>' + t('staff') + '</p>') +
         '<form class="shell-form">' + floor() + people('people', 'people', 1, 2) +
@@ -161,9 +178,23 @@
           '"><div class="shell-row"><strong>' + L.esc(item.floor) + ' · ' + L.esc(item.people) +
           '</strong><span>' + t(states[item.status] || 'pending') + '</span></div><time class="muted">' +
           L.esc(item.day) + '</time></article>').join('') : '<p class="muted">' + t('noInquiries') + '</p>') + '</section>');
-      submit(stack.querySelector('form'), 'table_ask', data => ({
-        floor: data.get('floor'), people: Number(data.get('people')), note: data.get('note')
-      }), result => {
+      const form = stack.querySelector('form');
+      let previousInput;
+      let request;
+      submit(form, 'table_ask', data => {
+        const input = { floor: data.get('floor'), people: Number(data.get('people')), note: data.get('note').trim() };
+        const key = JSON.stringify(input);
+        if (key !== previousInput) request = crypto.randomUUID();
+        previousInput = key;
+        return { ...input, request };
+      }, result => {
+        if (result.inquiry.status === 'expired') {
+          previousInput = undefined;
+          const message = form.querySelector('[role=alert]');
+          message.textContent = words('errTableExpired');
+          message.hidden = false;
+          return;
+        }
         L.toast(words('sent'));
         if (params.id === result.inquiry.id) return table(root, params);
         L.go('table/' + encodeURIComponent(result.inquiry.id));
@@ -197,8 +228,9 @@
           '"><div class="shell-row"><strong>' + L.esc(group.floor) + ' · ' + L.esc(group.count) + ' / ' + L.esc(group.need) +
           '</strong><span>' + t(states[group.status] || 'pending') + '</span></div><p>' + L.esc(group.nick) +
           ' · <time class="muted">' + L.esc(group.day) + '</time></p>' + feedback + '<div class="shell-actions">' +
-          (group.joined ? '<span class="muted">' + t('joined') + '</span>' :
-            '<button type="button" class="btn btn-hot" data-join>' + t('join') + '</button>') +
+          (group.joined && ['open', 'pending'].includes(group.status) ? '<span class="muted">' + t('joined') + '</span>' : '') +
+          (!group.joined && group.status === 'open' ?
+            '<button type="button" class="btn btn-hot" data-join>' + t('join') + '</button>' : '') +
           '<button type="button" class="btn" data-report>' + t('report') + '</button></div></article>').join('') :
           '<p class="muted">' + t('noGroups') + '</p>') + '</section>');
       submit(stack.querySelector('form'), 'split_create', value => ({

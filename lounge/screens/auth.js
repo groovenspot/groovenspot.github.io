@@ -118,7 +118,7 @@
     const joining = action === 'join';
     const loggingIn = action === 'login';
     const title = joining ? 'join' : loggingIn ? 'login' : 'reset';
-    const qr = params.q || '';
+    const qr = params.q || params.r || '';
     const name = joining ? inviter(qr) : '';
     const hint = key => '<small class="muted">' + t(key) + '</small>';
     root.innerHTML = '<section class="shell-auth"><header class="shell-brand">GROOVE</header><h1>' + t(title) + '</h1>' +
@@ -158,7 +158,7 @@
       const button = form.querySelector('[type=submit]');
       const error = form.querySelector('[role=alert]');
       const body = { phone: data.get('phone').trim(), pw: data.get('pw') };
-      if (!loggingIn) body.q = qr;
+      if (!loggingIn) { if (params.r) body.r = params.r; else body.q = qr; }   // 재설정 QR(r) 우선
       if (joining) {
         body.nick = data.get('nick').trim();
         body.lang = L.lang;
