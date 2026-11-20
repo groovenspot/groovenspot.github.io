@@ -2521,12 +2521,17 @@ html .chathelp .ch-go .cei { color: var(--muted); }
 .lounge-menu, .lounge-options, .lounge-tabs, .lounge-counts, .lounge-quick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .lounge-menu { margin: 12px 0; }
 .lounge-quick { grid-template-columns: repeat(auto-fit, minmax(min(100%, 92px), 1fr)); margin: 0 0 12px; }
-.lounge-quick .btn { background: var(--card-2); }
+.lounge-quick .btn {
+  position: relative; display: grid; justify-items: center; align-content: center; gap: 4px;
+  background: var(--card-2);
+}
+.lounge-quick .btn small { display: block; color: var(--muted); font-size: 12px; }
+.lounge-quick .lounge-report-badge { position: absolute; inset-block-start: 6px; inset-inline-end: 6px; font-size: 12px; }
 .lounge-quick .btn, .lounge-menu .btn, .lounge-screen .btn {
   min-inline-size: 44px; min-block-size: 48px; padding: 6px 10px; white-space: normal; overflow-wrap: anywhere;
 }
-.lounge-quick .btn, .lounge-menu .btn { text-align: start; }
-.lounge-menu .btn { justify-content: flex-start; }
+.lounge-quick .btn { text-align: center; }
+.lounge-menu .btn { justify-content: flex-start; text-align: start; }
 :is(.lounge-menu, .lounge-quick, .lounge-screen) .btn svg { flex: none; }
 .lounge-screen, .lounge-screen :is(.lounge-body, form, input, select, textarea) { min-inline-size: 0; }
 .lounge-screen { font-family: var(--body); overflow-wrap: anywhere; }
@@ -7198,14 +7203,14 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     const area = $('loungeQuick');
     if (!state.s || state.pop || state.tab === 'dm') { area.hidden = true; return; }
     const roles = loungeRoles(), links = [];
-    if (roles.dj || roles.crowd || roles.line) links.push(['tonight', '오늘 밤 / Tonight', 'clock']);
-    if (roles.manage) links.push(['reports', '라운지 검수 / Review', 'note'], ['display', '전광판 / Display', 'tv']);
+    if (roles.dj || roles.crowd || roles.line) links.push(['tonight', '오늘 밤', 'Tonight', 'clock']);
+    if (roles.manage) links.push(['reports', '라운지 검수', 'Review', 'note'], ['display', '전광판', 'Display', 'tv']);
     area.hidden = !links.length;
     const key = links.map(([page]) => page).join();
     if (area.dataset.links === key) return;
     area.dataset.links = key;
-    area.innerHTML = links.map(([page, label, icon]) => loungeButton(
-      opIco(icon) + '<span>' + label + (page === 'reports' ? loungeReportBadge() : '') + '</span>',
+    area.innerHTML = links.map(([page, ko, en, icon]) => loungeButton(
+      opIco(icon) + '<span>' + ko + '<small>' + en + '</small></span>' + (page === 'reports' ? loungeReportBadge() : ''),
       'type="button" data-quick-lounge="' + page + '"')).join('');
     const screens = { tonight: loungeTonight, reports: loungeManage, display: () => loungeManage('display') };
     area.querySelectorAll('button').forEach(button => { button.onclick = screens[button.dataset.quickLounge]; });
