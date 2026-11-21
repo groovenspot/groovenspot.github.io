@@ -1,1 +1,58 @@
-/* 그루브 라운지 5차 — 오늘 밤 탭 개편: tonight-cards (주인 작업창만 고침 · 서버 저장소 lounge/SPEC5.md 3장) */
+/* SPEC5 t5. Scoped to card mounts so tonightClassic is unaffected. */
+.tcard5[hidden],.tcard5 [hidden]{display:none!important}
+.tcard5{min-width:0;overflow-wrap:anywhere}
+.tcard5 a{color:inherit;text-decoration:none}
+.tcard5 button,.tcard5 a{touch-action:manipulation}
+.tcard5 button{font:inherit;color:inherit;cursor:pointer}
+.tcard5 button:disabled{opacity:.55;cursor:wait}
+.tcard5 :is(a,button,input):focus-visible,.tcard5-media :is(button,video):focus-visible{outline:2px solid var(--g);outline-offset:3px}
+.tcard5-card{background:var(--card,#181414);border:1px solid var(--line,#352b27);border-radius:18px;padding:16px;margin:16px 0}
+.tcard5 h2{font-size:18px;line-height:1.4;margin:0 0 12px}
+.tcard5-going{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tcard5-go{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 14px;border:1px solid var(--g);border-radius:24px;background:transparent}
+.tcard5-go[aria-pressed=true]{background:var(--g);color:#0a0909}
+.tcard5-faces{display:inline-flex;padding-left:5px}
+.tcard5-faces .ui-avatar{margin-left:-5px;border:2px solid var(--card,#181414);flex-shrink:0}
+.tcard5-friends{flex:1;min-width:110px;font-size:12px;line-height:1.6;color:var(--muted)}
+.tcard5-quick,.tcard5-table{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;margin:16px 0}
+.tcard5-quick>a,.tcard5-table>a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:108px;padding:12px 4px;border:1px solid var(--line,#352b27);border-radius:16px;background:var(--card,#181414);text-align:center}
+.tcard5-quick strong{font-size:14px}
+.tcard5-quick small{font-size:11px;color:var(--g);min-height:16px}
+.tcard5-table>a{align-items:flex-start;text-align:left;padding:14px;min-height:120px}
+.tcard5-table strong{font-size:15px}.tcard5-table small{font-size:12px;color:var(--muted)}
+.tcard5-live{position:relative;display:block;width:100%;padding:0;border:0;background:#080808;aspect-ratio:16/10;border-radius:12px;overflow:hidden}
+.tcard5-live>img,.tcard5-live>video{display:block;width:100%;height:100%;object-fit:cover}
+.tcard5-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#0009;color:white}
+.tcard5-live-caption{position:absolute;bottom:0;left:0;right:0;padding:24px 12px 12px;text-align:left;color:white;background:linear-gradient(transparent,#000b);font-size:13px}
+.tcard5-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scroll-snap-type:x proximity}
+.tcard5-strip>a{flex:0 0 88px;height:88px;scroll-snap-align:start;border-radius:12px;overflow:hidden}
+.tcard5-strip img{width:88px;height:88px;object-fit:cover}
+.tcard5-strip .tcard5-feed{display:flex;flex-direction:column;justify-content:center;align-items:center;background:var(--card);font-size:12px}
+.tcard5-party-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.tcard5-party-head>div{flex:1;min-width:0}
+.tcard5-party-head h2{margin:4px 0 0}
+.tcard5-party-head small{color:var(--g)}
+.tcard5-party-head button{flex-shrink:0;min-width:44px;min-height:44px;padding:0;border:0;background:transparent}
+.tcard5-party-head [data-poster]{width:68px;height:90px;overflow:hidden;border-radius:8px}
+.tcard5-party-head img{display:block;width:100%;height:100%;object-fit:cover}
+.tcard5-poster-full{display:block;width:100%;height:auto;max-height:75dvh;object-fit:contain}
+.tcard5-notify label{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:60px;border-bottom:1px solid var(--line)}
+.tcard5-notify input{width:44px;height:44px;flex-shrink:0;accent-color:var(--g)}
+.tcard5-recap header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.tcard5-recap header h2{margin:0}
+.tcard5-recap header>div{display:flex;flex-wrap:wrap;gap:8px}
+.tcard5-recap header a{display:inline-flex;align-items:center;min-height:44px;font-size:12px;color:var(--g)}
+.tcard5-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.tcard5-photos a{display:block;aspect-ratio:3/4;overflow:hidden;border-radius:8px;min-height:44px}
+.tcard5-photos img{display:block;width:100%;height:100%;object-fit:cover}
+.tcard5-survey{display:flex;align-items:center;justify-content:space-between;min-height:48px;margin-top:8px;font-size:14px}
+.tcard5-safety{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(var(--tab-h,56px) + 12px + env(safe-area-inset-bottom,0px));z-index:30;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:10px 16px;border-radius:28px;background:#fff;color:#171313!important;box-shadow:0 4px 20px #0006;font-size:14px;font-weight:700}
+#sheet>.tcard5-media{width:100%;max-width:none;height:100dvh;max-height:100dvh;border-radius:0;background:#080808;display:flex;flex-direction:column;justify-content:center;padding:52px 12px max(16px,env(safe-area-inset-bottom))}
+.tcard5-media h2{text-align:center;font-size:16px}
+.tcard5-media [data-media]{min-height:0;flex:1;display:grid;place-items:center}
+.tcard5-media :is(img,video){display:block;width:100%;height:100%;max-height:calc(100dvh - 180px);object-fit:contain}
+.tcard5-media nav{display:flex;align-items:center;justify-content:space-between}
+.tcard5-media nav button{width:48px;height:48px;border:0;border-radius:50%;background:#252020;color:white}
+@media(prefers-reduced-motion:reduce){.tcard5 *,.tcard5-media *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+.tcard5-recap header a{min-width:44px;justify-content:center}
