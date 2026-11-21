@@ -2842,7 +2842,10 @@
         "SPOT DJ"
       ]
     },
-    "flyer": "/assets/flyers/2026-11-21-school-uniform-party-mwnlitnn.jpg"
+    "flyer": "/assets/flyers/2026-11-21-school-uniform-party-mwnlitnn.jpg",
+    "more": [
+      "/assets/timetables/2026-11-21.webp"
+    ]
   },
   {
     "date": "2026-11-28",
