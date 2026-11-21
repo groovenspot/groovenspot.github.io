@@ -34,7 +34,7 @@
       'shorts.fireCount': '🔥 {n}件', 'shorts.fire': '🔥を送る', 'shorts.play': '再生：{song}',
       'shorts.feed': 'GROOVE ショート — 上下にスワイプ', 'shorts.empty': 'まだショートがありません。もうすぐ公開！',
       'shorts.error': 'ショートを読み込めませんでした。', 'shorts.retry': '再試行', 'shorts.soon': '準備中です',
-      'shorts.floor2F': '2F ヒップホップ', 'shorts.floor3F': '3F EDM'
+      'shorts.floor2F': '2階 ヒップホップ', 'shorts.floor3F': '3階 EDM'
     },
     zh: {
       'shorts.title': 'GROOVE 短视频', 'shorts.back': '娱乐',
@@ -45,7 +45,7 @@
       'shorts.fireCount': '{n} 个🔥', 'shorts.fire': '送出🔥', 'shorts.play': '播放：{song}',
       'shorts.feed': 'GROOVE 短视频 — 上下滑动', 'shorts.empty': '还没有短视频，马上就来！',
       'shorts.error': '无法加载短视频。', 'shorts.retry': '重试', 'shorts.soon': '即将开放',
-      'shorts.floor2F': '2F 嘻哈', 'shorts.floor3F': '3F EDM'
+      'shorts.floor2F': '2楼 嘻哈', 'shorts.floor3F': '3楼 EDM'
     }
   });
 
