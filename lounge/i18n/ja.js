@@ -433,7 +433,7 @@ Lounge.i18n({ja: {
   "rooms.notifyOnDone": "通知をオンにしました。@で呼ばれるとお知らせします。",
   "rooms.notifyOffDone": "このルームの通知をオフにしました。",
   "rooms.ocPin": "お知らせ",
-  "rooms.ocMessage": "メッセージ · @ニックネームで呼ぶ",
+  "rooms.ocMessage": "メッセージ · @名前で呼ぶ",
   "rooms.ocMention": "@で呼ぶ",
   "rooms.ocMentionHint": "入力欄に@ニックネームを入れます",
   "rooms.ocMenuTitle": "{nick}さんのメッセージ",

@@ -139,7 +139,10 @@
   // ── 오픈채팅 탭 (스위치 openchat). 꺼져 있으면 아래 도우미는 하나도 쓰이지 않는다. ──
   const ocAbout = { plaza: 'ocAboutPlaza', music: 'ocAboutMusic', global: 'ocAboutGlobal', tonight: 'ocAboutTonight' };
   const nickChars = '가-힣A-Za-z0-9._';
-  const mentionPattern = new RegExp('(^|[^' + nickChars + '@])@([' + nickChars + ']{2,12})(?![가-힣A-Za-z0-9_])', 'g');
+  // 서버(@호출 알림)와 같은 기준: 글자·숫자 바로 뒤의 @는 호출이 아니다. 아주 오래된 브라우저는 \p 를 몰라 좁은 기준으로 대신한다.
+  let mentionPattern;
+  try { mentionPattern = new RegExp('(^|[^\\p{L}\\p{N}._%+@-])@([' + nickChars + ']{2,12})(?![A-Za-z0-9_])', 'gu'); }
+  catch { mentionPattern = new RegExp('(^|[^' + nickChars + '%+@-])@([' + nickChars + ']{2,12})(?![A-Za-z0-9_])', 'g'); }
   const chevron = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
   const bell = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 6-2 7-3 8h18c-1-1-3-2-3-8M10 20a2 2 0 0 0 4 0"/><path class="oc-bell-off" d="M4 3l16 18"/></svg>';
   let ocBan = null, ocBanFor = null, ocReadPending = null, listStop = null;
@@ -562,10 +565,13 @@
       let html = '', last = 0, called = false;
       for (const match of String(text).matchAll(mentionPattern)) {
         const start = match.index + match[1].length;
-        const name = match[2].toLowerCase();
-        const mine = Boolean(self) && (name === self || name.replace(/\.+$/, '') === self);
-        html += esc(text.slice(last, start)) + '<span class="oc-at"' + (mine ? ' data-me="true"' : '') + '>@' + esc(match[2]) + '</span>';
-        last = start + 1 + match[2].length;
+        const token = match[2];
+        // 서버와 같은 기준: 내 닉네임 뒤에 한글이 붙어도 나를 부른 것(@지훈님), 영문·숫자·밑줄이나 '.글자'가 이어지면 다른 이름(@지훈2).
+        const mine = Boolean(self) && token.toLowerCase().startsWith(self) &&
+          !/^(?:[A-Za-z0-9_]|\.[A-Za-z0-9가-힣])/.test(text.slice(start + 1 + self.length, start + 3 + self.length));
+        const length = mine ? self.length : token.length;
+        html += esc(text.slice(last, start)) + '<span class="oc-at"' + (mine ? ' data-me="true"' : '') + '>@' + esc(token.slice(0, length)) + '</span>';
+        last = start + 1 + length;
         called ||= mine;
       }
       return { html: html + esc(String(text).slice(last)), called };

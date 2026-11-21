@@ -266,14 +266,14 @@ a { color: var(--g); }
 .oc-menu-row small { font-size: .76rem; font-weight: 500; text-align: end; }
 .oc-menu-row.oc-bad > span { color: #ff8a8e; }
 .oc-room .rooms-header { gap: 6px; }
-.oc-room [data-room-state] { display: flex; align-items: center; gap: 6px; font-size: .8rem; }
-.oc-room [data-room-state][data-open="true"]::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.oc-room [data-room-state] { font-size: .8rem; line-height: 1.4; }
+.oc-room [data-room-state][data-open="true"]::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-inline-end: 6px; border-radius: 50%; background: var(--ok); vertical-align: .08em; }
 .oc-bell { flex: none; gap: 5px; min-height: 44px; font-size: .78rem; white-space: nowrap; }
 .oc-bell[aria-pressed="true"] { border-color: rgba(255,122,26,.6); color: #ffb27a; }
 .oc-bell[aria-pressed="true"] .oc-bell-off { display: none; }
 .oc-bell[aria-pressed="false"] { color: var(--muted); }
 .oc-room .rooms-pin { margin: 8px 12px 0; padding: 8px 12px; border: 1px solid rgba(255,122,26,.35); border-radius: 14px; background: #1d1611; font-size: .86rem; line-height: 1.5; }
-.oc-at { color: #ffb27a; font-weight: 800; }
+.oc-at { color: #ffb27a; font-weight: 800; white-space: nowrap; }
 .oc-at[data-me="true"] { padding: 0 4px; border-radius: 6px; background: var(--g); color: var(--g-ink); }
 .rooms-chat [data-mine="true"] .oc-at { color: inherit; text-decoration: underline; }
 .rooms-chat [data-oc-called="true"] .rooms-bubble { border-color: var(--g); background: #2a1a0e; box-shadow: 0 0 0 1px var(--g); }
