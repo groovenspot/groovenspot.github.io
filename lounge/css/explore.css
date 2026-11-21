@@ -1,0 +1,50 @@
+/* 그루브 라운지 4차 — explore 화면 모양 (주인 작업창만 고침 · lounge/SPEC4.md 3장)
+   탐색(#/explore) · 태그(#/tag/…) · 이어 보기. 접두어 ex- */
+.ex { font-size: .9375rem; line-height: 1.45; }
+/* 위 막대: ← · 검색칸 · 취소 */
+.ex[data-explore] > .ui-bar { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 2px; padding-right: 10px; }
+.ex[data-explore] > .ui-bar > .ui-bar-title { text-align: left; }
+.ex[data-explore] > .ui-bar > .ui-bar-side.is-right { min-width: 0; }
+.ex-search { display: flex; align-items: center; min-height: 44px; padding-left: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); overflow: hidden; }
+.ex-search:focus-within { border-color: var(--line-2); }
+.ex-field { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; color: var(--muted); }
+.ex-field input { flex: 1; min-width: 0; height: 44px; padding: 0; border: 0; border-radius: 0; background: none; color: var(--txt); outline: none; -webkit-appearance: none; appearance: none; }
+.ex-field input::-webkit-search-cancel-button { display: none; }
+.ex-clear { display: grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
+.ex-cancel { min-width: 44px; min-height: 44px; margin-left: 4px; padding: 0 4px; border: 0; background: none; color: var(--txt); font: inherit; font-size: .9375rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
+
+/* 3칸 격자 — 화면 끝까지, 세로 3:4 */
+.ex-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; margin-inline: -16px; }
+.ex-cell { position: relative; display: block; aspect-ratio: 3 / 4; overflow: hidden; background: var(--bg-2); -webkit-tap-highlight-color: transparent; }
+.ex-cell img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ex-cell:active { opacity: .8; }
+.ex-cell:focus-visible { outline-offset: -3px; }
+.ex-mark { position: absolute; top: 7px; right: 7px; color: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,.65)); pointer-events: none; }
+.ex-skeleton > i { aspect-ratio: 3 / 4; background: color-mix(in srgb, var(--card) 85%, var(--muted)); animation: ex-loading 1.25s ease-in-out infinite alternate; }
+@keyframes ex-loading { to { background: color-mix(in srgb, var(--card) 72%, var(--muted)); } }
+.ex-sentinel { height: 1px; }
+.ex-page:empty { display: none; }
+.ex-note { padding: 18px 2px; color: var(--muted); font-size: .875rem; }
+.ex-empty { display: grid; justify-items: center; gap: 10px; padding: 64px 16px; color: var(--muted); text-align: center; }
+.ex-retry { min-height: 44px; }
+.ex-count { padding: 10px 0; color: var(--muted); font-size: .875rem; }
+.ex-count:empty { min-height: 41px; }
+
+/* 검색: 최근 검색 · 계정 · 태그 */
+.ex-find { padding-top: 6px; }
+.ex-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; margin-top: 4px; }
+.ex-head h2 { font-size: .9375rem; font-weight: 800; }
+.ex-link { min-height: 44px; padding: 0 2px; border: 0; background: none; color: var(--g); font: inherit; font-size: .875rem; font-weight: 700; cursor: pointer; }
+.ex-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.ex-row { display: flex; align-items: center; gap: 12px; flex: 1; width: 100%; min-width: 0; min-height: 60px; padding: 6px 0; border: 0; background: none; color: var(--txt); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
+.ex-row-text { display: grid; flex: 1; min-width: 0; line-height: 1.3; }
+.ex-row-text strong { overflow: hidden; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.ex-row-text small { overflow: hidden; color: var(--muted); font-size: .8125rem; text-overflow: ellipsis; white-space: nowrap; }
+.ex-hash { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border: 1px solid var(--line-2); border-radius: 50%; color: var(--txt); font-size: 1.25rem; font-weight: 700; }
+.ex-recent { display: flex; align-items: center; gap: 4px; }
+.ex-x { display: grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
+
+/* 이어 보기 */
+.ex-trail > [data-posts] { margin-top: 2px; }
+
+@media (prefers-reduced-motion: reduce) { .ex-skeleton > i { animation: none; } }

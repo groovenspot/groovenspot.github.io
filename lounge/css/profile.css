@@ -1,0 +1,216 @@
+/* 그루브 라운지 4차 — profile 화면 모양 (주인 작업창만 고침 · lounge/SPEC4.md 3장)
+   프로필(user.js·me.js) · 팔로워/팔로잉 목록(follows.js) · 프로필 편집(profile_edit.js). 배치는 인스타그램 방식, 색·아이콘은 그루브.
+   눌리는 곳은 44px 이상: 버튼은 44px 높이의 투명한 틀(.pf-btn) 안에 34px 알약(.pf-btn-in)을 그린다. */
+/* 버튼 색은 프로필 밖(알림·좋아요 목록의 L.followButton / L.userRow)에서도 쓰이므로 맨 위에 둔다 */
+:root { --pf-fill: #262322; --pf-fill-2: #322e2c; }
+.pf { min-width: 0; font-size: .875rem; line-height: 1.4; }
+@keyframes pf-spin { to { transform: rotate(360deg); } }
+
+/* ── 위 막대 ── */
+.pf-bar-own { grid-template-columns: minmax(0, 1fr) auto; }
+.pf-bar-own > .ui-bar-title { padding-inline-start: 10px; text-align: left; }
+.pf-bar-own > .ui-bar-title h1 { font-size: 1.25rem; }
+.pf-bar-lock { color: var(--muted); }
+.pf-bar-lock > .ui-icon { display: inline-block; vertical-align: -2px; }
+.pf-sub { margin-top: 14px; }
+
+/* ── 머리: 사진 + 숫자 3칸 · 칩 · 소개 · 링크 · 함께 팔로우 · 버튼 ── */
+.pf-head { display: grid; gap: 8px; padding-top: 12px; }
+.pf-top { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 18px; }
+.pf-avatar { position: relative; display: grid; place-items: center; flex: none; width: 86px; height: 86px; margin: 2px; padding: 0; border: 0; border-radius: 50%; background: #2a2523; color: var(--txt); font: inherit; }
+button.pf-avatar { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+/* 사진은 틀(86px 정사각형)에 맞춰 놓는다 — 세로 사진이 틀을 밀어내 타원이 되지 않게 (B1 과 같은 원인) */
+.pf-avatar > img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.pf-avatar-letter { font-size: 2rem; font-weight: 800; }
+/* 스토리가 있을 때만 테두리 (P5) — 사진 크기는 그대로 두고 바깥에 그린다 */
+.pf-avatar[data-story] { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--g); }
+.pf-avatar[data-story="seen"] { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--line-2); }
+.pf .pf-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; text-align: center; }
+.pf .pf-stats > * { display: grid; align-content: center; justify-items: center; min-width: 0; min-height: 48px; padding: 0; border: 0; border-radius: 8px; background: none; color: var(--txt); font: inherit; text-decoration: none; }
+.pf .pf-stats > a, .pf .pf-stats > button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pf .pf-stats strong { font-size: 1.0625rem; font-weight: 800; line-height: 1.25; }
+.pf .pf-stats > * > span { color: var(--txt); font-size: .8125rem; }
+.pf .pf-id { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.pf-chip { display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 9px; background: #342016; color: #ffb27a; font-size: .75rem; font-weight: 750; line-height: 1.4; }
+.pf .pf-chip.profile3-badge { background: #2a183d; color: #dec2ff; }
+.pf-bio { position: relative; }
+.pf-bio > p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pf-bio.is-short > p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+/* 소개 끝의 회색 '더 보기' (P8) — 글자는 작게, 눌리는 틀은 44px */
+.pf-more { position: absolute; right: -10px; bottom: -13px; display: flex; align-items: flex-end; justify-content: flex-end; min-width: 44px; min-height: 44px; padding: 0 10px 13px 0; border: 0; background: none; color: var(--muted); font: inherit; cursor: pointer; }
+.pf-more > span { padding-inline-start: 30px; background: linear-gradient(90deg, transparent, var(--bg) 24px); }
+.pf-link { display: inline-flex; align-items: center; gap: 4px; width: fit-content; max-width: 100%; min-height: 44px; margin-block: -12px; color: #9ecbff; font-weight: 600; text-decoration: none; }
+.pf-mutual { display: flex; align-items: center; gap: 8px; min-height: 44px; margin-block: -9px; color: var(--muted); font-size: .8125rem; text-decoration: none; }
+/* 공통 아바타(ui.css)는 세로 사진에서 타원이 되므로 프로필 화면 안에서는 틀에 맞춰 놓는다 */
+.pf .ui-avatar > img, .pf-row .ui-avatar > img { position: absolute; inset: 0; }
+.pf-mutual-faces { display: flex; flex: none; }
+.pf-mutual-faces > .ui-avatar { box-shadow: 0 0 0 2px var(--bg); }
+.pf-mutual-faces > .ui-avatar + .ui-avatar { margin-inline-start: -8px; }
+/* 내 포인트·스탬프 띠: 버튼 줄 위 한 줄 (의도된 차이) */
+.pf-dash { position: relative; isolation: isolate; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; margin: -6px 0; padding: 0 12px; border-radius: 0; background: none; color: var(--txt); font-size: .8125rem; font-weight: 650; text-decoration: none; }
+.pf-dash::before { content: ''; position: absolute; inset: 6px 0; z-index: -1; border-radius: 8px; background: #1f1a17; box-shadow: inset 0 0 0 1px rgba(255, 122, 26, .22); }
+.pf-dash > .ui-icon { color: var(--muted); }
+
+/* ── 버튼: 높이 34 · 모서리 8 · 채운 회색(팔로우는 주황) (P13) ── */
+.pf-actions { display: flex; gap: 6px; margin-block: -3px -5px; }
+.pf-btn { display: inline-flex; flex: 1 1 0; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 5px 0; border: 0; background: none; color: var(--txt); font: inherit; font-size: .875rem; font-weight: 700; line-height: 1.2; text-align: center; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pf-btn-in { display: flex; align-items: center; justify-content: center; gap: 3px; width: 100%; min-height: 34px; padding: 2px 10px; border-radius: 8px; background: var(--pf-fill); }
+#sheet .pf-btn:not(.is-hot) > .pf-btn-in { background: #2f2b29; }
+.pf-btn.is-hot > .pf-btn-in { background: var(--g); color: var(--g-ink); }
+.pf-btn:active > .pf-btn-in { background: var(--pf-fill-2); }
+.pf-btn.is-hot:active > .pf-btn-in { background: #e86a10; }
+.pf-btn:disabled { opacity: .55; cursor: default; }
+.pf-btn:focus-visible { outline: none; }
+.pf-btn:focus-visible > .pf-btn-in { outline: 2px solid var(--g); outline-offset: 2px; }
+.pf-btn-icon { flex: 0 0 44px; }
+.pf-btn-icon > .pf-btn-in { padding: 0; }
+.pf-btn-small { flex: none; }
+.pf-btn-small > .pf-btn-in { min-height: 32px; padding: 2px 14px; font-size: .8125rem; white-space: nowrap; }
+.pf-text-link { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 8px; border: 0; background: none; color: var(--g); font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+
+/* ── 잠긴 프로필 · 빈 화면 ── */
+.pf-lock { display: flex; align-items: center; gap: 14px; margin: 14px -16px 0; padding: 22px 16px; border-top: 1px solid var(--line); }
+.pf-lock h2 { font-size: .9375rem; font-weight: 800; }
+.pf-lock p { margin-top: 2px; font-size: .8125rem; }
+.pf-empty-icon { display: grid; place-items: center; flex: none; width: 62px; height: 62px; border: 2px solid var(--txt); border-radius: 50%; }
+.pf-empty { display: grid; justify-items: center; gap: 10px; padding: 48px 16px; text-align: center; }
+.pf-empty > p { margin: 0; font-size: 1.0625rem; font-weight: 800; }
+
+/* ── 하이라이트: 64px 동그라미 · 얇은 회색 테두리 · 한 줄 이름 (P20) ── */
+.pf-highlights { display: flex; gap: 12px; margin: 10px -16px 0; padding: 4px 16px 10px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.pf-highlights::-webkit-scrollbar { display: none; }
+.pf-highlight { display: grid; flex: 0 0 72px; justify-items: center; align-content: start; gap: 4px; width: 72px; min-height: 44px; padding: 0; border: 0; background: none; color: var(--txt); font: inherit; font-size: .75rem; line-height: 1.3; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.pf-highlight > [data-highlight-title] { max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-highlight-cover { position: relative; display: grid; place-items: center; width: 64px; height: 64px; border: 1px solid var(--line-2); border-radius: 50%; color: var(--muted); transition: transform .12s ease; }
+.pf-highlight-cover > img, .pf-highlight-cover > span { position: absolute; top: 3px; left: 3px; display: grid; place-items: center; width: calc(100% - 6px); height: calc(100% - 6px); border-radius: 50%; background: var(--card); object-fit: cover; }
+.pf-highlight-cover.is-new { color: var(--txt); }
+.pf-highlight.is-held > .pf-highlight-cover { transform: scale(.93); }
+
+/* ── 탭(아이콘·얇은 선) + 3칸 격자(3:4 · 화면 끝까지) (P23~P26) ── */
+.pf-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 6px -16px 0; border-top: 1px solid var(--line); }
+.pf-tabs > button { display: grid; place-items: center; min-height: 44px; padding: 0; border: 0; border-bottom: 1px solid transparent; background: none; color: var(--muted); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pf-tabs > [aria-pressed=true] { border-bottom-color: var(--txt); color: var(--txt); }
+.pf-tabs > button:focus-visible { outline-offset: -3px; }
+.pf-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; margin: 2px -16px 0; }
+#sheet .pf-grid { margin-inline: 0; }
+.pf-grid > a { position: relative; display: block; min-width: 44px; aspect-ratio: 3 / 4; overflow: hidden; background: var(--card); }
+.pf-grid > a:focus-visible { outline-offset: -3px; }
+.pf-grid img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pf-grid-meta { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; color: #fff; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .6)); }
+.pf-more-row { display: grid; place-items: center; height: 56px; }
+.pf-more-row > i { width: 22px; height: 22px; border: 2.5px solid var(--line-2); border-top-color: var(--txt); border-radius: 50%; animation: pf-spin .8s linear infinite; }
+
+/* ── 글 넘겨 보기 ── */
+.pf-posts { margin-inline: -16px; }
+.pf-posts > [data-loading] { padding: 16px; }
+.pf-posts-from { scroll-margin-top: 52px; }
+
+/* ── 사람 목록: 탭 2개 · 바로 검색 · 한 줄 + 버튼 (P33~P39) ── */
+.pf-list { padding-top: 2px; }
+.pf-ltabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-inline: -16px; border-bottom: 1px solid var(--line); }
+.pf-ltabs > button { min-height: 44px; padding: 0 6px; border: 0; border-bottom: 1px solid transparent; margin-bottom: -1px; background: none; color: var(--muted); font: inherit; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pf-ltabs > [aria-selected=true] { border-bottom-color: var(--txt); color: var(--txt); }
+.pf-ltabs > button:focus-visible { outline-offset: -3px; }
+.pf-search { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: 10px 0 4px; padding: 0 12px; border-radius: 10px; background: var(--pf-fill); color: var(--muted); }
+.pf-search > input { flex: 1; min-width: 0; min-height: 42px; padding: 0; border: 0; border-radius: 0; outline: 0; background: none; }
+.pf-search > input::-webkit-search-cancel-button { filter: grayscale(1) brightness(1.6); }
+.pf-search:focus-within { box-shadow: 0 0 0 2px var(--line-2); }
+.pf-rows { display: grid; }
+.pf-row { display: flex; align-items: center; gap: 8px; min-height: 60px; }
+.pf-row > .pf-person { display: flex; flex: 1 1 0; align-items: center; gap: 12px; min-width: 0; min-height: 56px; color: var(--txt); text-decoration: none; }
+.pf-person-text { display: grid; min-width: 0; }
+.pf-person-text > strong { overflow: hidden; font-size: .875rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.pf-person-text > small { display: block; overflow: hidden; color: var(--muted); font-size: .8125rem; text-overflow: ellipsis; white-space: nowrap; }
+.pf-x { display: grid; place-items: center; flex: none; width: 44px; height: 44px; margin-inline-end: -12px; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
+.pf-list-status { padding: 28px 0; color: var(--muted); text-align: center; }
+.pf-list-title { margin: 14px 0 4px; font-size: .9375rem; font-weight: 800; }
+.pf-requests { margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+.pf-requests > summary { display: flex; align-items: center; min-height: 48px; font-size: .9375rem; font-weight: 800; cursor: pointer; list-style: none; }
+.pf-requests > summary::-webkit-details-marker { display: none; }
+.pf-requests > summary::before { content: '▸'; margin-inline-end: 8px; color: var(--muted); }
+.pf-requests[open] > summary::before { content: '▾'; }
+.pf-copy { margin-top: 12px; }
+
+/* ── 프로필 편집: 가운데 사진 + 줄 목록 (P40·P41·B1) ── */
+.pf-edit { padding-top: 6px; }
+.pf-photo-editor { display: grid; justify-items: center; gap: 2px; padding: 14px 0 6px; }
+/* B1: 세로 사진도 찌그러지지 않게 — 틀은 정사각형으로 고정하고 사진은 그 안을 꽉 채운다 */
+.pf-photo-primary { display: flex; justify-content: center; }
+.pf-photo-primary > button, .pf-photo-primary > .shell-avatar { position: relative; display: block; flex: none; width: 104px; height: 104px; padding: 0; border: 0; border-radius: 50%; overflow: hidden; background: #2a2523; cursor: pointer; }
+.pf-photo-primary > .shell-avatar { display: grid; place-items: center; font-size: 2.2rem; cursor: default; }
+.pf-photo-primary img, .pf-photo-strip img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.pf-photo-strip { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; }
+.pf-photo-strip > button { position: relative; flex: none; width: 48px; height: 48px; padding: 0; border: 2px solid transparent; border-radius: 50%; overflow: hidden; background: #2a2523; cursor: pointer; }
+.pf-photo-strip > button[aria-current=true] { border-color: var(--g); }
+.pf-photo-add { position: relative; display: grid; place-items: center; flex: none; width: 48px; height: 48px; border: 1px dashed var(--line-2); border-radius: 50%; color: var(--txt); cursor: pointer; }
+.pf-photo-add:focus-within { outline: 2px solid var(--g); outline-offset: 3px; }
+.pf-form { display: grid; margin-top: 8px; border-top: 1px solid var(--line); }
+.pf-field { padding: 2px 0; border-bottom: 1px solid var(--line); }
+.pf-field-row { display: grid; grid-template-columns: minmax(84px, 26%) minmax(0, 1fr); align-items: center; gap: 10px; min-height: 48px; cursor: text; }
+.pf-field-label { color: var(--muted); font-size: .875rem; }
+.pf-field-row > input, .pf-field-row > textarea, .pf-field-row > select { min-height: 44px; padding: 10px 0; border: 0; border-radius: 0; outline: 0; background: none; }
+.pf-field-row > textarea { resize: none; line-height: 1.4; }
+.pf-field-row > select { cursor: pointer; }
+.pf-field:focus-within { border-bottom-color: var(--txt); }
+.pf-field-help { display: block; padding: 0 0 8px calc(max(84px, 26%) + 10px); color: var(--muted); font-size: .75rem; line-height: 1.35; }
+.pf-field-help > [data-bio-count] { display: block; text-align: right; }
+.pf-field-help .is-over { color: #ff9295; font-weight: 700; }
+.pf-switch-row { grid-template-columns: minmax(0, 1fr) auto; cursor: pointer; }
+.pf-switch-row > .pf-field-label { color: var(--txt); }
+.pf-switch-row + .pf-field-help { padding-inline-start: 0; }
+.pf-field-row > input.pf-switch { appearance: none; -webkit-appearance: none; position: relative; width: 51px; min-height: 0; height: 31px; padding: 0; border-radius: 16px; background: var(--pf-fill-2); cursor: pointer; transition: background .15s ease; }
+.pf-field-row > input.pf-switch::before { content: ''; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; transition: transform .15s ease; }
+.pf-field-row > input.pf-switch:checked { background: var(--g); }
+.pf-field-row > input.pf-switch:checked::before { transform: translateX(20px); }
+.pf-field-row > input.pf-switch:focus-visible { outline: 2px solid var(--g); outline-offset: 3px; }
+.pf-save { width: 100%; margin-top: 18px; min-height: 48px; border-radius: 10px; }
+.pf-form > .shell-error { margin-top: 12px; }
+
+/* ── 프로필 사진 크게 보기: 전체 화면 · 좌우 넘김 (P6) ── */
+#sheet > .in.pf-viewer::before { content: none; }
+#sheet > .in.pf-viewer { position: fixed; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr); width: 100%; max-width: none; max-height: none; height: 100%; padding: 0; border: 0; border-radius: 0; background: #000; overflow: hidden; }
+.pf-viewer-close { position: absolute; top: calc(6px + env(safe-area-inset-top)); right: 6px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .45); color: #fff; cursor: pointer; }
+.pf-viewer-body { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; height: 100%; }
+.pf-viewer-count { padding: calc(18px + env(safe-area-inset-top)) 0 8px; color: #fff; font-size: .875rem; font-weight: 700; text-align: center; }
+.pf-viewer-stage { position: relative; display: grid; place-items: center; min-height: 0; }
+.pf-viewer-stage > img { display: block; width: 100%; height: 100%; min-height: 0; object-fit: contain; touch-action: pan-y; }
+.pf-viewer-arrow { position: absolute; top: 50%; display: grid; place-items: center; width: 44px; height: 44px; margin-top: -22px; padding: 0; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .45); color: #fff; cursor: pointer; }
+.pf-viewer-arrow[data-prev] { left: 6px; }
+.pf-viewer-arrow[data-next] { right: 6px; }
+.pf-viewer-arrow:disabled { visibility: hidden; }
+.pf-viewer-actions { display: grid; gap: 8px; justify-items: center; padding: 12px 16px 0; color: #fff; text-align: center; }
+.pf-viewer-actions > .shell-actions { justify-content: center; }
+.pf-viewer-body > .shell-error { min-height: 1.4em; padding: 4px 16px calc(14px + env(safe-area-inset-bottom)); text-align: center; }
+
+/* ── 하이라이트 만들기: 썸네일 여러 장 고르기 (P22) ── */
+.pf-picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; }
+.pf-pick { position: relative; display: block; aspect-ratio: 3 / 4; overflow: hidden; background: var(--bg); cursor: pointer; }
+.pf-pick > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pf-pick > input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; opacity: 0; cursor: pointer; }
+.pf-pick > i { position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 24px; height: 24px; border: 1.5px solid #fff; border-radius: 50%; background: rgba(0, 0, 0, .35); color: transparent; }
+.pf-pick > input:checked ~ i { border-color: var(--g); background: var(--g); color: var(--g-ink); }
+.pf-pick > input:checked ~ img, .pf-pick:has(> input:checked) > img { opacity: .72; }
+.pf-pick:has(> input:focus-visible) { outline: 2px solid var(--g); outline-offset: -2px; }
+
+/* ── 저장 모음 줄 ── */
+.pf-cols { display: flex; gap: 12px; margin: 0 -16px; padding: 12px 16px 12px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.pf-cols::-webkit-scrollbar { display: none; }
+.pf-col { display: grid; flex: 0 0 84px; justify-items: start; gap: 2px; width: 84px; color: var(--txt); font-size: .75rem; line-height: 1.3; text-decoration: none; }
+.pf-col-cover { position: relative; display: grid; place-items: center; width: 84px; height: 84px; margin-bottom: 3px; border-radius: 12px; overflow: hidden; background: var(--pf-fill); color: var(--muted); }
+.pf-col-cover > img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+.pf-col > [data-col-title] { max-width: 84px; overflow: hidden; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.pf-col > small { color: var(--muted); }
+
+/* ── QR 카드 ── */
+.pf-qr { display: grid; justify-items: center; gap: 12px; text-align: center; }
+.pf-qr-card { display: grid; justify-items: center; gap: 4px; width: min(100%, 280px); padding: 18px 18px 14px; border-radius: 18px; background: #fff; color: #120800; }
+.pf-qr-card > canvas { display: block; width: 100%; height: auto; aspect-ratio: 1; image-rendering: pixelated; }
+.pf-qr-card > strong { font-size: 1.0625rem; overflow-wrap: anywhere; }
+.pf-qr-card > small { color: #c2540a; font-weight: 800; letter-spacing: .08em; }
+.pf-qr-actions { display: flex; gap: 6px; width: 100%; }
+.ui-menu > a.ui-menu-item { text-decoration: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-more-row > i { animation-duration: 2.4s; }
+  .pf-highlight-cover, .pf-field-row > input.pf-switch, .pf-field-row > input.pf-switch::before { transition: none; }
+}

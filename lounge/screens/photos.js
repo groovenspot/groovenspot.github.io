@@ -9,7 +9,8 @@
   });
 
   function render(root, { id } = {}) {
-    const view = P.mount(root, t('title'), id ? U.link('#/photos', t('back')) : U.link('#/feed', L.esc(L.t('nav.feed'))));
+    // 4차: 위 막대 1줄(뒤로 + 제목) — 앨범 안에서는 앨범 목록으로, 목록에서는 피드로 돌아간다
+    const view = P.page(root, { title: L.t('photos.title'), back: id ? 'photos' : 'feed' });
     view.innerHTML = id ? '<div class="post-album-grid" data-post-layout>' +
       P.skeleton('square') + P.skeleton('square') + '</div>' : P.skeleton('cover');
 
@@ -104,5 +105,5 @@
     }
     load();
   }
-  L.screen('photos', { nav: 'feed', auth: false, title: 'photos.title', render });
+  L.screen('photos', { nav: 'feed', auth: false, title: 'photos.title', bar: 'own', render });
 })();
