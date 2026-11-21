@@ -430,12 +430,15 @@ const LoungePostUI = (() => {
     document.querySelectorAll('.feed4-bar [data-share-save]').forEach(button => {
       if (button.dataset.shareSave !== String(post.id)) return;
       button.setAttribute('aria-pressed', 'true');
-      if (!button.querySelector('svg')) button.textContent = L.t('feed4.unsave');
+      if (button.querySelector('svg')) {   // share.js 가 그린 책갈피 아이콘: 채운 모양으로
+        button.innerHTML = L.icon('bookmark', { fill: true }) + '<span class="sr-only">' + w('unsave') + '</span>';
+        button.setAttribute('aria-label', L.t('feed4.unsave'));
+      } else button.textContent = L.t('feed4.unsave');
     });
   }
   function openCollections(post) {
     if (L.needLogin()) return;
-    const panel = L.sheet(sheetHead(w('collections')) + '<div class="feed4-llist" data-collections>' + spinner() + '</div>' +
+    const panel = L.sheet(sheetHead(w('collections')) + '<div class="feed4-llist" data-collections data-no-drag>' + spinner() + '</div>' +
       '<form class="feed4-colnew" data-collection-new><input name="title" maxlength="20" required autocomplete="off" placeholder="' + w('newCollection') +
       '" aria-label="' + w('newCollection') + '"><button type="submit" class="feed4-send">' + w('create') + '</button></form>');
     panel.classList.add('feed4-sheet', 'feed4-colsheet');
@@ -944,7 +947,7 @@ const LoungePostUI = (() => {
 
   // ── 댓글 (시트·상세 화면 공용) ──
   function commentsUI(host, post, { sheet = false, initial, focus } = {}) {
-    host.innerHTML = '<div class="feed4-clist" data-comments>' + spinner() + '</div>' +
+    host.innerHTML = '<div class="feed4-clist" data-comments' + (sheet ? ' data-no-drag' : '') + '>' + spinner() + '</div>' +
       '<div class="feed4-replying" data-replying hidden><span></span>' + iconButton('close', 'data-reply-cancel', L.esc(L.t('ui.cancel')), 18) + '</div>' +
       '<form class="feed4-cform' + (sheet ? '' : ' is-page') + '">' + (L.me ? L.avatar(L.me, 32) : '') +
       '<textarea name="text" rows="1" maxlength="200" required placeholder="' + w('addComment') + '" aria-label="' + t('write') + '"></textarea>' +
@@ -979,17 +982,18 @@ const LoungePostUI = (() => {
         rows.filter(child => child.parent && String(child.parent) === idOf(comment)).map(child => row(child, true)).join('')).join('')
         : '<div class="feed4-cempty"><strong>' + w('noComments') + '</strong><span>' + w('firstComment') + '</span></div>';
     }
-    async function load() {
+    // fresh: 시트를 열 때는 서버가 센 댓글 수로 카드를 맞춘다 (방금 내가 쓴 직후에는 이미 더해 뒀으므로 건너뜀)
+    async function load(fresh = true) {
       const data = await L.api('post_get', { id: post.id });
       if (!host.isConnected) return false;
       if (!Array.isArray(data.comments)) {
         list.innerHTML = '<div class="feed4-cempty" role="status"><span>' + L.esc(L.t('ui.error')) + '</span><button type="button" class="btn" data-c-retry>' +
           L.esc(L.t('ui.retry')) + '</button></div>';
-        list.querySelector('[data-c-retry]').onclick = () => { list.innerHTML = spinner(); void load(); };
+        list.querySelector('[data-c-retry]').onclick = () => { list.innerHTML = spinner(); void load(fresh); };
         return false;
       }
       rows = data.comments;
-      if (typeof data.post?.comments === 'number') setComments(post, data.post.comments);   // 그사이 남이 쓴 댓글까지 맞춘다
+      if (fresh && typeof data.post?.comments === 'number') setComments(post, data.post.comments);   // 그사이 남이 쓴 댓글까지 맞춘다
       draw();
       return true;
     }
@@ -1107,7 +1111,7 @@ const LoungePostUI = (() => {
       setReply(null);
       setComments(post, (Number(post.comments) || 0) + 1);
       if (result.comment && 'parent' in result.comment) canReply = true;
-      if (await load() && !parent) {
+      if (await load(false) && !parent) {
         if (sheet) list.scrollTop = list.scrollHeight;
         else list.lastElementChild?.scrollIntoView({ block: 'nearest' });
       }
@@ -1132,7 +1136,7 @@ const LoungePostUI = (() => {
   // 좋아요한 사람 시트: L.openLikes(postId) — 서버가 아직 모르면(action) 조용히 닫는다
   L.openLikes = function (id) {
     if (L.needLogin()) return null;   // 좋아요한 사람 목록은 회원만 (서버 약속)
-    const panel = L.sheet(sheetHead(w('likesTitle')) + '<div class="feed4-llist" data-like-list>' + spinner() + '</div><div data-like-more></div>');
+    const panel = L.sheet(sheetHead(w('likesTitle')) + '<div class="feed4-llist" data-like-list data-no-drag>' + spinner() + '</div><div data-like-more></div>');
     panel.classList.add('feed4-sheet', 'feed4-lsheet');
     panel.querySelector('[data-sheet-close]').onclick = () => L.closeSheet();
     const list = panel.querySelector('[data-like-list]'), more = panel.querySelector('[data-like-more]');
@@ -1181,7 +1185,7 @@ const LoungePostUI = (() => {
     '<div class="feed4-skel-line" aria-hidden="true"></div></div>';
   const notice = (message, retry) => '<div class="feed4-state" role="status"><p>' + message + '</p>' +
     (retry ? '<button type="button" class="btn" data-retry>' + L.esc(L.t('ui.retry')) + '</button>' : '') + '</div>';
-  let active = null, again = null, listState = null;
+  let active = null, again = null, listState = null, trayHeight = 111.6;   // trayHeight: 스토리 줄 높이(css/story.css 기준, 그린 뒤 다시 잰다)
   // 글쓰기 화면이 글을 고치면(lounge:post-edit) 맡아 둔 목록·그려 둔 카드의 그 글도 바꿔 둔다 → 뒤로 돌아오면 고친 글이 보인다
   window.addEventListener('lounge:post-edit', event => {
     const detail = event.detail || {}, id = detail.id ?? detail.post?.id;
@@ -1240,14 +1244,14 @@ const LoungePostUI = (() => {
     listState = state;
     const ids = new Set();
     const settings = L.api('config');
-    let dead = false, version = 0, loading = false, config, memberPosts, stopMore, timer;
+    let dead = false, version = 0, loading = false, config, memberPosts, stopMore, timer, known;
 
     root.innerHTML = '<section class="feed4" data-feed>' + L.bar({
       left: '<a class="feed4-logo" href="#/tonight">GROOVE LOUNGE</a>',
       titleHtml: '<h1 class="sr-only">' + L.esc(L.t('nav.feed')) + '</h1>',
       right: '<span class="feed4-slot" data-compose-slot></span><a class="ui-bar-btn" href="#/explore" aria-label="' + w('search') + '">' +
         L.icon('search') + '</a>' + L.inboxIcons()
-    }) + '<div data-feed-body><div class="feed4-story" data-story-tray></div><div class="feed4-tabs" data-post-tools></div>' +
+    }) + '<div data-feed-body><div class="feed4-storywrap" data-story-wrap><div class="feed4-story" data-story-tray></div></div><div class="feed4-tabs" data-post-tools></div>' +
       '<button type="button" class="feed4-new" data-new hidden>' + L.icon('back', { size: 16 }) + '<span>' + w('newPosts') + '</span></button>' +
       '<div data-posts></div><div data-page aria-live="polite"></div><div class="feed4-sentinel" data-sentinel aria-hidden="true"></div></div></section>';
     const body = root.querySelector('[data-feed-body]'), tools = root.querySelector('[data-post-tools]');
@@ -1255,6 +1259,20 @@ const LoungePostUI = (() => {
     const sentinel = root.querySelector('[data-sentinel]'), pill = root.querySelector('[data-new]');
     list.classList.add('feed4-cards', 'feed4-bleed');
     L.paintInbox();
+    // 스토리 줄(작업창 D): 켜져 있고 로그인했으면 자리를 먼저 잡아 둔다 — 늦게 뜨면서 글을 아래로 밀지 않게
+    const tray = root.querySelector('[data-story-tray]'), trayWrap = root.querySelector('[data-story-wrap]');
+    let trayStarted = false;
+    function startTray() {
+      if (trayStarted || !L.storyTray || !L.me) return;
+      trayStarted = true;
+      trayWrap.style.minHeight = trayHeight + 'px';
+      Promise.resolve().then(() => L.storyTray(tray)).catch(error => console.error(error)).then(() => {
+        if (dead) return;
+        const height = tray.hidden ? 0 : tray.getBoundingClientRect().height;
+        if (height) trayHeight = height;
+        trayWrap.style.minHeight = '';
+      });
+    }
     const cardOptions = { settings, onGone(id) {
       state.posts = state.posts.filter(post => post.id !== id);
       if (!list.childElementCount && !loading) page.innerHTML = empty();
@@ -1326,6 +1344,7 @@ const LoungePostUI = (() => {
       loading = true;
       if (!keep) page.innerHTML = ids.size ? spinner() : skeleton();
       const response = await L.api('feed', { ...(before != null && { before }), ...(tab !== 'all' && { tab }) });
+      await known;   // 스토리 줄 자리를 잡을지 안 뒤에 글을 그린다 (글이 먼저 뜨고 나중에 밀려 내려가지 않게)
       if (dead || request !== version) return;
       loading = false;
       if (typeof response.memberPosts === 'boolean' && memberPosts !== response.memberPosts) {
@@ -1362,6 +1381,7 @@ const LoungePostUI = (() => {
     again = () => { void refresh(); };   // 아래 '피드' 탭을 다시 누르면(틀이 맨 위로 올린 뒤) 새로고침
 
     // 뒤로 돌아왔으면 보던 글·탭·자리 그대로
+    if (L.open('stories')) startTray();
     paintTools();
     if (saved && saved.posts.length) {
       append(saved.posts);
@@ -1370,15 +1390,12 @@ const LoungePostUI = (() => {
       window.scrollTo(0, saved.scroll || 0);
     } else void load(true);
 
-    settings.then(result => {
+    known = settings.then(result => {
       if (dead) return;
       config = result;
       paintTools();
       if (page.querySelector('[data-empty]')) page.innerHTML = empty();   // 설정을 받은 뒤에야 '추천 계정 보기'를 보일지 안다
-      const tray = root.querySelector('[data-story-tray]');
-      if (L.storyTray && result?.open?.stories === true) {
-        try { L.storyTray(tray); } catch (error) { console.error(error); }
-      }
+      if (result?.open?.stories === true) startTray();
     });
     const stopPull = L.pull(body, refresh);
     pill.onclick = () => {
