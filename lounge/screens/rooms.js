@@ -41,7 +41,7 @@
       ocClosed: '닫혀 있어요', ocOpensNote: '열리면 알림으로 알려 드려요.', ocTranslateTag: '번역 가능',
       ocAgoNow: '방금', ocAgoMin: '{n}분 전', ocAgoHour: '{n}시간 전', ocAgoDay: '{n}일 전', ocUnread: '안 읽은 글 {n}개',
       consentTitle: '처음 들어올 때 한 번만', consent1: '연락처·광고·다른 업소 홍보는 가려져요.',
-      consent2: '신고된 글은 운영자가 확인하고, 대화 기록은 90일 보관 뒤 지워요.',
+      consent2: '신고된 글은 운영자가 확인하고, 이 방의 대화는 90일 보관한 뒤 지워요.', consentPolicy: '개인정보처리방침 보기 (새 탭)',
       consent3: '규칙을 어기면 채팅이 24시간 → 7일 → 영구 정지돼요.', consentAgree: '동의하고 입장',
       consentNeed: '이용 규칙에 동의하면 들어갈 수 있어요.', consentView: '이용 규칙 보기',
       notifyOn: '알림 켬', notifyOff: '알림 끔',
@@ -92,7 +92,7 @@
       ocClosed: 'Closed', ocOpensNote: 'We’ll notify you when it opens.', ocTranslateTag: 'Translation',
       ocAgoNow: 'Just now', ocAgoMin: '{n} min ago', ocAgoHour: '{n} hr ago', ocAgoDay: '{n} d ago', ocUnread: '{n} unread',
       consentTitle: 'Just once, before you join', consent1: 'Contact details, ads, and promotion of other venues are hidden.',
-      consent2: 'Staff review reported messages. Chat history is kept for 90 days, then deleted.',
+      consent2: 'Staff review reported messages, and chats in these rooms are kept for 90 days, then deleted.', consentPolicy: 'View the privacy notice (new tab)',
       consent3: 'Breaking the rules suspends your chat for 24 hours, then 7 days, then permanently.', consentAgree: 'Agree and join',
       consentNeed: 'Agree to the room rules to join.', consentView: 'View room rules',
       notifyOn: 'Alerts on', notifyOff: 'Alerts off',
@@ -164,7 +164,10 @@
   const stamp = value => Number.isFinite(value) && value > 0 ? value : 0;
 
   function consentRules() {
-    return '<ul class="oc-rules">' + ['consent1', 'consent2', 'consent3'].map(key => '<li>' + e(key) + '</li>').join('') + '</ul>';
+    // 대화 90일 보관은 개인정보처리방침의 보관기간 항목에 적혀 있다.
+    const lang = ['ko', 'en', 'ja', 'zh'].includes(L.lang) ? L.lang : 'en';
+    return '<ul class="oc-rules">' + ['consent1', 'consent2', 'consent3'].map(key => '<li>' + e(key) + '</li>').join('') + '</ul>' +
+      '<a class="shell-link oc-policy" href="/lounge/policy.html#' + lang + '-retention" target="_blank" rel="noopener noreferrer">' + e('consentPolicy') + '</a>';
   }
 
   // 입장 동의 창. 동의하면 done() — 닫으면 아무 일도 없다.

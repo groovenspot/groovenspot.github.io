@@ -258,7 +258,9 @@ a { color: var(--g); }
 .oc-preview b { color: #ffb27a; font-weight: 800; }
 .oc-ban { margin: 0; padding: 10px 12px; border: 1px solid rgba(255,90,95,.45); border-radius: 14px; background: #241416; color: #ffb3b5; font-size: .88rem; font-weight: 700; }
 .oc-rules { display: grid; gap: 4px; margin: 10px 0 0; padding-inline-start: 1.2em; color: #ddd3ce; font-size: .9rem; line-height: 1.55; }
-.oc-sheet-actions, .oc-menu { display: grid; gap: 8px; margin-top: 14px; }
+.oc-policy { margin-top: 2px; font-size: .88rem; }
+.oc-sheet-actions { display: grid; gap: 8px; margin-top: 4px; }
+.oc-menu { display: grid; gap: 8px; margin-top: 14px; }
 .oc-note { margin-top: 10px; text-align: center; font-size: .82rem; }
 .oc-menu-row { justify-content: space-between; gap: 10px; width: 100%; padding: 0 14px; text-align: start; }
 .oc-menu-row small { font-size: .76rem; font-weight: 500; text-align: end; }
