@@ -97,7 +97,7 @@
     let list = rows, index = start, confirm = false, busy = false, startX;
     // 전체 화면으로 크게 보기 · 좌우로 밀거나 화살표로 넘김 (P6)
     const panel = L.sheet('<h2 class="sr-only">' + t('photos') + '</h2><button type="button" class="pf-viewer-close" data-c-close aria-label="' +
-      w('close') + '">' + L.icon('close') + '</button><div data-viewer class="pf-viewer-body"></div>');
+      w('close') + '">' + L.icon('close') + '</button><div data-viewer class="pf-viewer-body"></div>', { bare: true });
     panel.classList.add('pf-viewer');
     panel.querySelector('[data-c-close]').onclick = () => L.closeSheet();
     const content = panel.querySelector('[data-viewer]');

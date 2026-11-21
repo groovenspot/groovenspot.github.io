@@ -1,7 +1,9 @@
 /* 그루브 라운지 4차 — profile 화면 모양 (주인 작업창만 고침 · lounge/SPEC4.md 3장)
    프로필(user.js·me.js) · 팔로워/팔로잉 목록(follows.js) · 프로필 편집(profile_edit.js). 배치는 인스타그램 방식, 색·아이콘은 그루브.
    눌리는 곳은 44px 이상: 버튼은 44px 높이의 투명한 틀(.pf-btn) 안에 34px 알약(.pf-btn-in)을 그린다. */
-.pf { --pf-fill: #262322; --pf-fill-2: #322e2c; min-width: 0; font-size: .875rem; line-height: 1.4; }
+/* 버튼 색은 프로필 밖(알림·좋아요 목록의 L.followButton / L.userRow)에서도 쓰이므로 맨 위에 둔다 */
+:root { --pf-fill: #262322; --pf-fill-2: #322e2c; }
+.pf { min-width: 0; font-size: .875rem; line-height: 1.4; }
 @keyframes pf-spin { to { transform: rotate(360deg); } }
 
 /* ── 위 막대 ── */
@@ -40,12 +42,12 @@ button.pf-avatar { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .pf-link { display: inline-flex; align-items: center; gap: 4px; width: fit-content; max-width: 100%; min-height: 44px; margin-block: -12px; color: #9ecbff; font-weight: 600; text-decoration: none; }
 .pf-mutual { display: flex; align-items: center; gap: 8px; min-height: 44px; margin-block: -9px; color: var(--muted); font-size: .8125rem; text-decoration: none; }
 /* 공통 아바타(ui.css)는 세로 사진에서 타원이 되므로 프로필 화면 안에서는 틀에 맞춰 놓는다 */
-.pf .ui-avatar > img, #sheet .pf-row .ui-avatar > img { position: absolute; inset: 0; }
+.pf .ui-avatar > img, .pf-row .ui-avatar > img { position: absolute; inset: 0; }
 .pf-mutual-faces { display: flex; flex: none; }
 .pf-mutual-faces > .ui-avatar { box-shadow: 0 0 0 2px var(--bg); }
 .pf-mutual-faces > .ui-avatar + .ui-avatar { margin-inline-start: -8px; }
 /* 내 포인트·스탬프 띠: 버튼 줄 위 한 줄 (의도된 차이) */
-.pf-dash { position: relative; isolation: isolate; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; margin-block: -6px; padding: 0 12px; color: var(--txt); font-size: .8125rem; font-weight: 650; text-decoration: none; }
+.pf-dash { position: relative; isolation: isolate; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; margin: -6px 0; padding: 0 12px; border-radius: 0; background: none; color: var(--txt); font-size: .8125rem; font-weight: 650; text-decoration: none; }
 .pf-dash::before { content: ''; position: absolute; inset: 6px 0; z-index: -1; border-radius: 8px; background: #1f1a17; box-shadow: inset 0 0 0 1px rgba(255, 122, 26, .22); }
 .pf-dash > .ui-icon { color: var(--muted); }
 
@@ -165,6 +167,7 @@ button.pf-avatar { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .pf-form > .shell-error { margin-top: 12px; }
 
 /* ── 프로필 사진 크게 보기: 전체 화면 · 좌우 넘김 (P6) ── */
+#sheet > .in.pf-viewer::before { content: none; }
 #sheet > .in.pf-viewer { position: fixed; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr); width: 100%; max-width: none; max-height: none; height: 100%; padding: 0; border: 0; border-radius: 0; background: #000; overflow: hidden; }
 .pf-viewer-close { position: absolute; top: calc(6px + env(safe-area-inset-top)); right: 6px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .45); color: #fff; cursor: pointer; }
 .pf-viewer-body { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; height: 100%; }

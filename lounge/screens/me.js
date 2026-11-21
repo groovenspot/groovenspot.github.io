@@ -217,7 +217,7 @@
       submit('save') + '</form><section class="shell-card"><h2>' + a('reset') + '</h2><p>' + a('resetHelp') + '</p></section>' +
       '<div class="shell-actions"><button class="btn" data-signout>' + t('signout') + '</button>' +
       '<button class="btn shell-danger" data-withdraw>' + t('withdraw') + '</button></div>' +
-      '<a class="shell-link" href="#/alerts">' + t('alerts') + '</a><a class="shell-link" href="#/blocks">' + t('blocks') +
+      '<a class="shell-link" href="#/alerts/settings">' + t('alerts') + '</a><a class="shell-link" href="#/blocks">' + t('blocks') +
       '</a><a class="shell-link" href="#/terms">' + a('termsTitle') + '</a><a class="shell-link" href="#/privacy">' +
       a('privacyTitle') + '</a></div>';
     const form = root.querySelector('form');
@@ -254,6 +254,7 @@
     nav: 'me',
     auth: true,
     bar: 'own',
+    keepScroll: true,
     leave() { L.profileLeave?.(); },
     render(root, { id }) {
       if (id === 'edit') return L.open('profile2') ? L.profileEdit(root) : edit(root);

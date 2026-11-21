@@ -122,20 +122,10 @@
   let liveGrid = null;                // 지금(또는 방금 떠난) 프로필 격자 상태 — 글 넘겨 보기에서 글이 지워지면 여기서도 뺀다
   function leave() { try { cleanup?.(); } catch (e) { console.error(e); } cleanup = null; }
   L.profileLeave = leave;
-  // 이 주소를 '뒤로/앞으로'로 다시 연 것인가: 처음 그릴 때 history.state 에 표시를 남겨 둔다.
-  // (같은 주소를 링크로 새로 연 것과 구분 — 그때는 맡겨 둔 격자를 쓰지 않고 새로 불러온다)
-  function revisit() {
-    try {
-      if (history.state?.pf4 === true) return true;
-      history.replaceState({ ...(history.state || {}), pf4: true }, '');
-    } catch (e) { /* 기록을 못 쓰는 환경 */ }
-    return false;
-  }
-  // 맡겨 둔 상태 되찾기: 뒤로 돌아온 경우에만 돌려주고, 아니면 버린다
-  L.profileKept = name => {
-    const kept = L.unstash ? L.unstash(name) : null;
-    return revisit() ? kept : null;
-  };
+  // 맡겨 둔 상태 되찾기: 진짜 '뒤로 가기'로 돌아온 경우에만 돌려준다 (판정은 틀 ui.js 의 L.unstash 가 방문 기록 순번으로 한다)
+  L.profileKept = name => (L.unstash ? L.unstash(name) : null);
+  // 창(시트): 오른쪽 위 ✕ + 아래로 끌어 닫기 (틀 공통 모양)
+  const sheet = html => L.sheet(html, { close: true });
 
   function actionLabel(user) {
     const state = followingState(user);
@@ -163,7 +153,7 @@
       await navigator.clipboard.writeText(href);
       L.toast(L.t('user4.copied'));
     } catch (_) {
-      const panel = L.sheet('<h2>' + w('copy') + '</h2><input class="pf-copy" readonly aria-label="' + w('copy') + '">');
+      const panel = sheet('<h2>' + w('copy') + '</h2><input class="pf-copy" readonly aria-label="' + w('copy') + '">');
       const field = panel.querySelector('input');
       field.value = href;
       field.select();
@@ -186,7 +176,7 @@
   async function qrCard(user) {
     const href = profileUrl(user.nick);
     const shareUI = typeof LoungeShare === 'undefined' ? null : LoungeShare;
-    const panel = L.sheet('<h2 class="sr-only">' + w('qr') + '</h2><div class="pf-qr"><div class="pf-qr-card" data-qr-card>' +
+    const panel = sheet('<h2 class="sr-only">' + w('qr') + '</h2><div class="pf-qr"><div class="pf-qr-card" data-qr-card>' +
       '<canvas data-profile-qr role="img" aria-label="' + w('qr') + '" width="8" height="8"></canvas><strong>@' + esc(user.nick) +
       '</strong><small>GROOVE LOUNGE</small></div><p class="muted">' + w('qrHelp') + '</p><div class="pf-qr-actions">' +
       (navigator.share || (L.open('share') && shareUI?.open) ? '<button type="button" class="pf-btn is-hot" data-qr-share><span class="pf-btn-in">' + w('shareIt') + '</span></button>' : '') +
@@ -337,7 +327,7 @@
       const opened = items.length ? L.storyViewer({ items, title }) : null;
       if (opened !== null && opened !== false) return;     // 빈 틀(null)이면 아래 예전 방식으로
     }
-    const panel = U.sheet('<h2></h2><div data-highlight></div>');
+    const panel = sheet('<h2></h2><div data-highlight></div>');
     panel.querySelector('h2').textContent = title;
     const tiles = postTiles(posts);
     panel.querySelector('[data-highlight]').innerHTML = response.error ? U.status('error') :
@@ -346,7 +336,7 @@
 
   // 하이라이트 만들기·고치기: 썸네일을 여러 장 고른다 (P22). existing = { id, title, posts:[id…] } 이면 고치기.
   function editHighlight(user, existing = null) {
-    const panel = U.sheet('<h2>' + (existing ? w('editHighlight') : profile('newHighlight')) + '</h2><form class="shell-form pf-highlight-form">' +
+    const panel = sheet('<h2>' + (existing ? w('editHighlight') : profile('newHighlight')) + '</h2><form class="shell-form pf-highlight-form">' +
       '<label class="shell-field">' + profile('highlightName') + '<input name="title" maxlength="100" required></label>' +
       '<p class="muted">' + profile('pickPosts') + ' <span data-picked></span></p><div class="pf-picks" data-picks></div>' +
       '<div class="pf-more-row" data-pick-more hidden><i></i></div>' +
@@ -726,6 +716,7 @@
       target.classList.add('pf-posts-from');
       const jump = () => { if (target.isConnected && !moved) target.scrollIntoView({ block: 'start' }); };
       jump();
+      if (L.restoreScroll && L.restoreScroll()) moved = true;     // 이 목록으로 '뒤로' 돌아온 것이면 보던 자리로
       setTimeout(jump, 250);       // 위쪽 사진이 뒤늦게 자리를 잡아도 누른 글이 맨 위에 오게
       addEventListener('touchstart', () => { moved = true; }, { once: true, passive: true });
       addEventListener('wheel', () => { moved = true; }, { once: true, passive: true });
@@ -744,9 +735,9 @@
   }
 
   // 저장됨 (#/saved · #/saved/<모음id>, F34): 3칸 격자 + 저장 모음(collections). 누르면 그 글(#/feed/<id>)로, 뒤로 오면 그대로.
-  //  화면 등록은 share.js(틀 A)가 하고 있어, 여기서는 L.profileSaved / L.profileSavedScreen 으로 내보낸다.
+  //  share.js 는 'saved' 화면이 이미 있으면 자기 것을 등록하지 않는다 → 이 파일 끝에서 등록한다.
   function collectionName(existing, done) {
-    const panel = U.sheet('<h2>' + (existing ? w('colRename') : w('newCol')) + '</h2><form class="shell-form">' +
+    const panel = sheet('<h2>' + (existing ? w('colRename') : w('newCol')) + '</h2><form class="shell-form">' +
       '<label class="shell-field">' + w('colName') + '<input name="title" maxlength="20" required autocomplete="off"></label>' +
       '<p class="shell-error" role="status"></p><button class="btn btn-hot" type="submit">' + esc(L.t('me.save')) + '</button></form>');
     const form = panel.querySelector('form'), status = form.querySelector('[role=status]'), submit = form.querySelector('[type=submit]');
@@ -771,7 +762,7 @@
 
   // 모음에 담을 글 고르기: 저장한 글 전체를 썸네일로 보여 주고, 이미 담긴 것은 표시해 둔다. 바뀐 것만 서버에 보낸다.
   async function collectionPosts(id, done) {
-    const panel = U.sheet('<h2>' + w('colPosts') + '</h2><form class="shell-form pf-highlight-form"><p class="muted">' + w('colPick') +
+    const panel = sheet('<h2>' + w('colPosts') + '</h2><form class="shell-form pf-highlight-form"><p class="muted">' + w('colPick') +
       ' <span data-picked></span></p><div class="pf-picks" data-picks></div><div class="pf-more-row" data-pick-more><i></i></div>' +
       '<p class="shell-error" role="status"></p><button class="btn btn-hot" type="submit" disabled>' + esc(L.t('me.save')) + '</button></form>');
     const form = panel.querySelector('form'), picks = panel.querySelector('[data-picks]'), more = panel.querySelector('[data-pick-more]');
@@ -847,7 +838,7 @@
     root.innerHTML = L.bar({ back: id ? 'saved' : 'me', title: L.t('share.saved'),
       right: id ? barButton('data-saved-menu hidden', 'more', w('more')) : barButton('data-saved-new hidden', 'plus', w('newCol')) }) +
       '<div class="pf pf-saved" data-saved>' + (id ? '' : '<div class="pf-cols" data-collections hidden></div>') +
-      '<div class="pf-grid" data-gallery></div><div data-gallery-status role="status" hidden></div>' +
+      '<div class="pf-grid" data-gallery data-saved-posts></div><div data-gallery-status role="status" hidden></div>' +
       '<div class="pf-more-row" data-gallery-more><i></i></div></div>';
     const view = root.querySelector('[data-saved]');
     const gallery = view.querySelector('[data-gallery]'), status = view.querySelector('[data-gallery-status]');
@@ -860,7 +851,7 @@
     let pending = false;
     const paint = (error = '') => {
       status.hidden = !(error || (state.loaded && !state.rows.length));
-      status.innerHTML = error ? '<p class="muted">' + esc(error) + '</p>' : status.hidden ? '' : emptyState('bookmark', w(id ? 'colEmpty' : 'noSaved'),
+      status.innerHTML = error ? '<p class="muted">' + esc(error) + '</p>' : status.hidden ? '' : emptyState('bookmark', id ? w('colEmpty') : esc(L.t('share.empty')),
         id ? '<button type="button" class="pf-text-link" data-saved-add>' + w('colAdd') + '</button>' : '');
       const add = status.querySelector('[data-saved-add]');
       if (add) add.onclick = () => collectionPosts(id, reload);
@@ -939,7 +930,7 @@
     } else await load();
   }
   L.profileSaved = saved;
-  L.profileSavedScreen = { nav: 'me', auth: true, title: 'share.saved', bar: 'own', render: saved, leave };
+  L.profileSavedScreen = { nav: 'me', auth: true, title: 'share.saved', bar: 'own', keepScroll: true, render: saved, leave };
 
   async function changeBlock(button, action, nick) {
     if (L.needLogin() || button.disabled) return false;
@@ -1078,6 +1069,7 @@
     if (follow2) wireFollow(follow, user);
     wireMenu(view.querySelector('[data-menu]'), user);
   }
-  L.screen('user', { nav: 'feed', auth: false, title: 'user.title', bar: 'own', render, leave });
-  L.screen('blocks', { nav: 'me', auth: true, title: 'user.blocks', bar: 'own', render: blocks });
+  L.screen('user', { nav: 'feed', auth: false, title: 'user.title', bar: 'own', keepScroll: true, render, leave });
+  L.screen('blocks', { nav: 'me', auth: true, title: 'user.blocks', bar: 'own', keepScroll: true, render: blocks });
+  L.screen('saved', L.profileSavedScreen);
 })();

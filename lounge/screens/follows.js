@@ -337,7 +337,7 @@
   let active;
   for (const [name, title] of [['followers', 'user.followers'], ['following', 'user.following'],
     ['mutuals', 'follows.mutuals'], ['suggest', 'follows.suggest']]) {
-    L.screen(name, { title, auth: true, nav: 'me', bar: 'own', render: listScreen(name, title),
+    L.screen(name, { title, auth: true, nav: 'me', bar: 'own', keepScroll: true, render: listScreen(name, title),
       leave() { active?.(); active = null; } });
   }
   L.screen('requests', { title: 'follows.requests', auth: true, nav: 'me', bar: 'own', render(root) { return requests(root); } });
