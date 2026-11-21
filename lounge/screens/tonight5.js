@@ -117,6 +117,11 @@
     const minutes = Math.max(0, Math.ceil((opensAt - now()) / 60000));
     el.textContent = L.t('t5.countdown', { h: Math.floor(minutes / 60), m: minutes % 60 });
   }
+  // '2026-11-21' → '11월 21일 (토)' (타임테이블 화면과 같은 모양)
+  function dayText(day) {
+    const U = typeof LoungeScreenUI !== 'undefined' ? LoungeScreenUI : null;
+    return L.esc(/^\d{4}-\d{2}-\d{2}$/.test(day) && U?.time ? U.time(day + 'T12:00:00+09:00', { month: 'long', day: 'numeric', weekday: 'short' }) : day);
+  }
   function hero(state) {
     const data = state.data, party = data.party;
     // 파티·포스터가 없는 날에도 그린다 — '갈래요' 버튼과 오픈까지 남은 시간이 여기 있다
@@ -124,7 +129,7 @@
     const src = typeof LoungeScreenUI !== 'undefined' ? LoungeScreenUI.url(poster) : '';
     const el = document.createElement('section'); el.className = 't5-hero' + (src ? ' t5-hero-image' : ''); el.dataset.t5Hero = '';
     el.innerHTML = (src ? '<img alt="" src="' + L.esc(src) + '">' : '') +
-      '<div class="t5-hero-copy"><p>' + t('tonight') + ' · ' + L.esc(party?.day || data.day || '') + '</p><h1>' +
+      '<div class="t5-hero-copy"><p>' + t('tonight') + ' · ' + dayText(party?.day || data.day || '') + '</p><h1>' +
       L.esc(party?.title || data.poster?.title || L.t('t5.tonight')) + '</h1><p data-t5-countdown></p><div data-t5-going></div></div>';
     state.view.append(el);
     if (src) el.querySelector('img').onerror = () => { el.classList.remove('t5-hero-image'); el.querySelector('img')?.remove(); };
