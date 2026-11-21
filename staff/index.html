@@ -1161,7 +1161,8 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .tbt.tbm b { font-size: 13px; line-height: 1.2; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .tbt.tbm span { font-size: 11px; line-height: 1.15; white-space: nowrap; }
 .tbt.tbm em { display: none; }
-.tbmap .tbt.tbm.rv, .tbt.rv { border-style: dashed !important; border-color: #7fb4ff !important; border-width: 2px; }   /* 📅 예약 · 아직 안 옴: 도면(가로·세로)에도 보이게 (대표 요청 2026-11-21) */
+.tbmap .tbt.tbm.rv, .tbt.rv { border-style: dashed !important; border-width: 2px; }
+.tbt.rv:not(.sold):not(.keep):not(.in) { border-color: #7fb4ff !important; }   /* 판매(빨강)·킵(파랑)·게스트(초록) 색은 그대로, 점선으로만 */   /* 📅 예약 · 아직 안 옴: 도면(가로·세로)에도 보이게 (대표 요청 2026-11-21) */
 .tbmap .tbt.tbm em.rvb { display: block; position: absolute; top: 3px; right: 3px; z-index: 2; font-size: 9.5px; line-height: 1; font-weight: 900; color: #0b1730; background: #7fb4ff; border-radius: 999px; padding: 2px 5px; }
 .tbmap .tbt.tbm.rd em.rvb { display: none; }   /* 원형 자리는 파란 점선만 (글자가 겹쳐서) */
 .tbmode { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 10px; } .tbmode .tbvw { margin: 0; } .tbmode small { color: var(--muted); font-size: 12px; } .tbmode .link { font-size: 12px; padding: 0; }
@@ -6313,6 +6314,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   // 📅 예약 연결 (대표 결정 2026-11-20). 연락처가 들어간 목록은 앱 메모리에만 둔다.
   function loadReservations() {
     if (!state.s || state.rsvLoading) return;
+    if (state.tbFut) loadTbFut(state.rsvDay);   // 📅 예약 탭 도면도 같이 새로 (홈페이지 예약 자리 배정이 바로 보이게)
     var token = state.s.token, req = call({ a: 'rsv_list', token: token });
     state.rsvLoading = req;
     req.then(function (r) {
@@ -6337,47 +6339,103 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     var w = '일월화수목금토'.charAt(new Date(+m[1], +m[2] - 1, +m[3]).getDay());
     return (+m[2]) + '/' + (+m[3]) + ' (' + w + ')';
   }
+  // 📅 예약 탭 (대표 요청 2026-11-21): 2층·3층 + 날짜(내일부터) → 그날 세로 도면 → 빈 자리 눌러 테이블 예약 · 홈페이지 예약은 그날 것만 아래에
+  function loadTbFut(day) {
+    if (!state.s) return;
+    if (state.tbFutLoading && state.tbFutLoadingDay === (day || '')) return;
+    state.tbFutLoadingDay = day || '';
+    var token = state.s.token, req = call({ a: 'tb_fut_get', token: token, day: day || '' });
+    state.tbFutLoading = req;
+    req.then(function (x) {
+      if (!state.s || state.s.token !== token) return;
+      if (x.error === 'auth') return toLogin(AUTH_OUT);
+      if (x.ok) { state.tbFut = x; state.rsvDay = x.day; state.tbFutErr = ''; } else state.tbFutErr = x.error === 'forbidden' ? '' : '도면을 불러오지 못했어요.';
+    }).catch(function () { state.tbFutErr = '연결이 안 돼요. 인터넷을 확인해 주세요.'; }).then(function () {
+      if (state.tbFutLoading === req) state.tbFutLoading = null;
+      if (state.tab === 'rsv') renderSoon();
+    });
+  }
+  function withTb(t, fn) { var s0 = state.tb, v0 = state.tbForceV; state.tb = t; state.tbForceV = true; try { return fn(); } finally { state.tb = s0; state.tbForceV = v0; } }
   function renderReservations(area) {
-    var r = state.reservations, all = r ? r.list : [], past = !!state.rsvPast;
-    var list = all.filter(function (x) { return past ? x.day < r.today : x.day >= r.today; });
-    if (past) list.reverse();
-    // 📅 날짜별 보기 (대표 요청 2026-11-21): 날짜 칩을 누르면 그날 예약만 + 합계 · 테이블만 보기
-    var byDay = {}; list.forEach(function (x) { (byDay[x.day] = byDay[x.day] || []).push(x); });
-    var days = Object.keys(byDay).sort(); if (past) days.reverse();
-    if (state.rsvDay && !byDay[state.rsvDay] && !state.rsvDayPick) state.rsvDay = '';
-    if (state.rsvDay) list = byDay[state.rsvDay] || [];
-    if (state.rsvTb) list = list.filter(function (x) { return x.type === '테이블'; });
-    var dayBar = r ? '<div class="rsvdays" role="group" aria-label="날짜 고르기"><button type="button" class="chip' + (state.rsvDay ? '' : ' on') + '" data-rsv-day="">전체</button>' +
-      days.map(function (d) { var n = byDay[d].filter(function (x) { return x.status !== '취소' && (!state.rsvTb || x.type === '테이블'); }).length;
-        return '<button type="button" class="chip' + (state.rsvDay === d ? ' on' : '') + (d === r.today ? ' today' : '') + '" data-rsv-day="' + d + '">' + esc(d === r.today ? '오늘' : md(d) + '(' + dowOf(d) + ')') + ' <b>' + n + '</b></button>'; }).join('') +
-      '<label class="rsvpick">📅<input type="date" id="rsvDayPick" value="' + esc(state.rsvDay || '') + '" aria-label="날짜로 찾기"></label></div>' +
-      '<label class="rsvtb"><input type="checkbox" id="rsvTbOnly"' + (state.rsvTb ? ' checked' : '') + '> 테이블 예약만</label>' : '';
-    var live = list.filter(function (x) { return x.status !== '취소'; }), cnt = function (st) { return list.filter(function (x) { return x.status === st; }).length; };
-    var daySum = r && state.rsvDay ? '<div class="rsvsum"><b>' + esc(state.rsvDay === r.today ? '오늘' : md(state.rsvDay) + '(' + dowOf(state.rsvDay) + ')') + '</b> 예약 <b>' + live.length + '</b>건' +
-      ' · 테이블 <b>' + live.filter(function (x) { return x.type === '테이블'; }).length + '</b> · 접수 ' + cnt('접수') + ' · 확인 ' + cnt('확인') + ' · 자리 배정 ' + cnt('자리 배정') + (cnt('취소') ? ' · 취소 ' + cnt('취소') : '') + '</div>' : '';
-    var nUp = r ? all.filter(function (x) { return x.day >= r.today; }).length : 0, nPast = r ? all.length - nUp : 0;
-    var nNew = r ? all.filter(function (x) { return x.day >= r.today && x.status === '접수'; }).length : 0;
-    area.innerHTML = '<div class="kh rsvh"><div><h1>' + (state.data.admin ? '예약' : '내 담당 예약') + '</h1><span class="range">' + (r ? '예정 ' + nUp + '건' + (nNew ? ' · 접수 대기 <b class="rsvnew">' + nNew + '</b>건' : '') : '홈페이지 예약 · 담당 MD 배정') + '</span></div>' +
-      '<button class="btn rsvref" type="button" id="rsvRefresh" aria-label="새로고침"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 12a9 9 0 1 1-2.64-6.36\"/><path d=\"M21 3v6h-6\"/></svg><span>새로고침</span></button></div>' +
-      '<div class="rsv-filters" role="group" aria-label="예약 고르기"><button class="btn" type="button" data-rsv-past="0" aria-pressed="' + !past + '">예정' + (r ? ' <b>' + nUp + '</b>' : '') + '</button><button class="btn" type="button" data-rsv-past="1" aria-pressed="' + past + '">지난 예약' + (r ? ' <b>' + nPast + '</b>' : '') + '</button></div>' +
-      dayBar + daySum +
-      (state.rsvError ? '<p class="empty">' + esc(state.rsvError) + '</p>' : !r ? '<p class="load">예약을 불러오는 중…</p>' : !list.length ? '<p class="empty">' + (state.rsvDay ? '이 날 예약이 없어요.' : '표시할 예약이 없어요.') + '</p>' :
-        '<div class="list">' + list.map(function (x) {
+    var r = state.reservations, F = state.tbFut, fl = state.rsvFloor || tbFloorPref();
+    state.rsvFloor = fl;
+    if ((!F || (state.rsvDay && F.day !== state.rsvDay)) && !state.tbFutLoading && !state.tbFutErr) loadTbFut(state.rsvDay);
+    var day = F ? F.day : state.rsvDay || '';
+    var list = r ? r.list.filter(function (x) { return x.day === day; }) : [];
+    var h = '<div class="kh rsvh"><div><h1>예약</h1><span class="range">' + (F ? esc(md(day) + '(' + dowOf(day) + ')') + ' · ' + (fl === 'SPOT' ? '3층' : '2층') + ' 도면' : '날짜를 고르면 그날 도면이 나와요') + '</span></div>' +
+      '<button class="btn rsvref" type="button" id="rsvRefresh" aria-label="새로고침"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>새로고침</button></div>';
+    h += '<div class="rsv-filters" role="group" aria-label="층 고르기"><button class="btn" type="button" data-rsvfl="GROOVE" aria-pressed="' + (fl === 'GROOVE') + '">2층 GROOVE</button><button class="btn" type="button" data-rsvfl="SPOT" aria-pressed="' + (fl === 'SPOT') + '">3층 SPOT</button></div>';
+    if (F) {
+      var ds = []; for (var i = 1; i <= 14; i++) ds.push(addDays(F.today, i));
+      if (ds.indexOf(day) < 0) ds.push(day);
+      var webN = {}; (r ? r.list : []).forEach(function (x) { if (x.status !== '취소' && x.day > F.today) { webN[x.day] = (webN[x.day] || 0) + 1; if (ds.indexOf(x.day) < 0 && x.day <= (F.max || x.day)) ds.push(x.day); } });   // 홈페이지 예약이 있는 날도 칩으로
+      ds.sort();
+      h += '<div class="rsvdays" role="group" aria-label="날짜 고르기">' + ds.map(function (d) { var n = ((F.counts || {})[d] || 0) + (webN[d] || 0);
+        return '<button type="button" class="chip' + (d === day ? ' on' : '') + '" data-rsv-day="' + d + '">' + esc(md(d) + '(' + dowOf(d) + ')') + (n ? ' <b>' + n + '</b>' : '') + '</button>'; }).join('') +
+        '<label class="rsvpick">📅<input type="date" id="rsvDayPick" min="' + esc(addDays(F.today, 1)) + '" max="' + esc(F.max || '') + '" value="' + esc(day) + '" aria-label="날짜로 찾기"></label></div>';
+      var ix = withTb(F, function () { return tbIndex(fl); }), tot = F.rows.filter(function (x) { return x.floor === fl && x.cur && !x.cur.blk; }).length;
+      h += '<p class="note" style="margin:0 0 8px">빈 자리를 누르면 이 날 예약을 잡아요. ' + (F.approver ? '담당을 골라 넣을 수 있어요.' : '담당은 나로 들어가요.') + ' · 이 층 예약 <b>' + tot + '</b>팀</p>';
+      h += withTb(F, function () { return tbMapHtml(fl, ix); });
+    } else h += state.tbFutErr ? '<p class="empty">' + esc(state.tbFutErr) + '</p>' : '<p class="load">도면을 불러오는 중…</p>';
+    if (r && list.length) {
+      h += '<h2 class="sec tbz">홈페이지 예약 <span class="row">' + list.length + '건</span></h2><div class="list">' + list.map(function (x) {
           var st = x.status === '접수' ? 'new' : x.status === '취소' ? 'off' : 'done';
           return '<button class="item rsvc rsv-' + st + '" type="button" data-rsv-id="' + esc(x.id) + '"><span class="rsvc-top"><span class="chip ' + st + '">' + esc(x.status) + '</span><span class="rsvc-day' + (x.day === r.today ? ' today' : '') + '">' + rsvDay(x.day, r.today) + '</span></span>' +
             '<span class="rsvc-name">' + esc(x.name) + '<b>' + esc(x.party) + '명</b></span>' +
             '<span class="rsvc-meta">' + esc(reservationPlace(x)) + ' · ' + esc(x.type) + '</span>' +
             '<span class="rsvc-meta">' + esc(x.code) + ' · ' + (x.staff ? '담당 <b>' + esc(x.staff) + '</b>' : '<span class="rsvc-nostaff">담당 미지정</span>') + '</span>' +
             (x.birthday ? '<span class="rsvc-bd"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9 3 12 8 12 8s3-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>생일 혜택 · ' + esc(x.birthday) + '</span>' : '') + '</button>';
-        }).join('') + '</div>');
-    $('rsvRefresh').addEventListener('click', loadReservations);
-    area.querySelectorAll('[data-rsv-past]').forEach(function (b) { b.addEventListener('click', function () { state.rsvPast = b.dataset.rsvPast === '1'; state.rsvDay = ''; state.rsvDayPick = false; render(); }); });
-    area.querySelectorAll('[data-rsv-day]').forEach(function (b) { b.addEventListener('click', function () { state.rsvDay = b.dataset.rsvDay; state.rsvDayPick = false; render(); }); });
-    if ($('rsvDayPick')) $('rsvDayPick').addEventListener('change', function () { var d = this.value; if (!d) { state.rsvDay = ''; render(); return; } state.rsvPast = !!(r && d < r.today); state.rsvDay = d; state.rsvDayPick = true; render(); });
-    if ($('rsvTbOnly')) $('rsvTbOnly').addEventListener('change', function () { state.rsvTb = this.checked; render(); });
+        }).join('') + '</div>';
+    }
+    area.innerHTML = h;
+    $('rsvRefresh').addEventListener('click', function () { loadReservations(); loadTbFut(day); });
+    area.querySelectorAll('[data-rsvfl]').forEach(function (b) { b.addEventListener('click', function () { state.rsvFloor = b.dataset.rsvfl; try { localStorage.setItem('gs_tb_floor', state.rsvFloor); } catch (e) {} render(); }); });
+    area.querySelectorAll('[data-rsv-day]').forEach(function (b) { b.addEventListener('click', function () { state.rsvDay = b.dataset.rsvDay; loadTbFut(state.rsvDay); render(); }); });
+    if ($('rsvDayPick')) $('rsvDayPick').addEventListener('change', function () { if (!this.value) return; state.rsvDay = this.value; loadTbFut(state.rsvDay); render(); });
+    if (F) area.querySelectorAll('.tbmap [data-seat]').forEach(function (b) { b.addEventListener('click', function () {
+      var at = withTb(F, function () { return tbIndex(fl); }).at[b.dataset.seat], row = at && at[0] && !at[0].ghost ? at[0] : null;
+      futSheet(F, fl, b.dataset.seat, row);
+    }); });
     area.querySelectorAll('[data-rsv-id]').forEach(function (b) { b.addEventListener('click', function () {
       reservationSheet(list.filter(function (x) { return x.id === b.dataset.rsvId; })[0], r);
     }); });
+  }
+  // 미래 날짜 자리: 넣기·고치기·지우기 (영업팀은 내 손님만, 승인하는 사람은 모두)
+  function futSheet(F, fl, seat, row) {
+    var v = row && row.cur ? row.cur : { seat: seat, g: '', sx: '', n: 2, st: F.me, memo: '', sold: false };
+    var when = md(F.day) + '(' + dowOf(F.day) + ')', where = (fl === 'SPOT' ? '3층 ' : '2층 ') + seat;
+    if (row && row.cur && row.cur.blk) { showSheet('<h2>' + esc(where) + ' · ' + esc(when) + '</h2><p class="sub">' + esc(row.cur.blk) + ' — 홈페이지 예약으로 잡힌 자리예요. 아래 홈페이지 예약에서 확인해 주세요.</p>'); return; }
+    var can = !row || F.approver || row.mine;
+    var stf = F.approver ? (F.staffs || []) : [F.me];
+    if (v.st && stf.indexOf(v.st) < 0) stf = [v.st].concat(stf);
+    var h = '<h2>📅 ' + esc(where) + ' · ' + esc(when) + '</h2>' + (row ? '<p class="sub">' + esc(tbLine(v)) + (row.by ? ' · ' + esc(row.by) + ' 넣음' : '') + '</p>' : '<p class="sub">이 날 이 자리를 예약해요. 그날 영업이 시작되면 테이블 탭에 \'📅 예약\'으로 보여요.</p>');
+    if (!can) { showSheet(h + '<p class="note">다른 담당 손님이에요. 고칠 수 없어요.</p>'); return; }
+    h += '<label>손님 이름<input id="ftG" maxlength="20" autocomplete="off" value="' + esc(v.g || '') + '" placeholder="예) 민성"></label>' +
+      '<div class="tbgr" style="margin:0 0 10px">' + ['남', '여', '혼'].map(function (x) { return '<button type="button" class="chip' + (v.sx === x ? ' on' : '') + '" data-ftsx="' + x + '">' + x + '</button>'; }).join('') +
+      '<label style="display:inline-flex;align-items:center;gap:6px;margin:0 0 0 8px">인원<input id="ftN" type="number" inputmode="numeric" min="0" max="50" value="' + esc(String(v.n || '')) + '" style="width:4.5em"></label></div>' +
+      '<label>담당<select id="ftSt">' + stf.map(function (x) { return '<option' + (x === v.st ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></label>' +
+      '<label>메모 (선택)<input id="ftM" maxlength="40" autocomplete="off" value="' + esc(v.memo || '') + '" placeholder="예) 생일 · 12시 도착"></label>' +
+      '<label style="display:flex;align-items:center;gap:8px;margin:0 0 12px"><input type="checkbox" id="ftSold"' + (v.sold ? ' checked' : '') + ' style="width:20px;height:20px;min-height:0;flex:none"> ★ 판매 테이블</label>' +
+      '<p class="msg" id="ftMsg" role="alert"></p><button class="btn btn-hot" type="button" id="ftGo" style="width:100%">' + (row ? '고치기' : '예약 잡기') + '</button>' +
+      (row ? '<button class="btn btn-bad" type="button" id="ftDel" style="width:100%;margin-top:8px">예약 지우기</button>' : '');
+    showSheet(h);
+    var sx = v.sx || '';
+    document.querySelectorAll('[data-ftsx]').forEach(function (b) { b.addEventListener('click', function () { sx = sx === b.dataset.ftsx ? '' : b.dataset.ftsx; document.querySelectorAll('[data-ftsx]').forEach(function (x) { x.classList.toggle('on', x.dataset.ftsx === sx); }); }); });
+    function err(x) { return { taken: '이미 잡힌 자리예요' + (x.who ? ' (' + x.who + ')' : '') + '.', day: '내일부터 ' + 60 + '일 안의 날짜만 돼요.', forbidden: '고칠 수 없는 자리예요.', empty: '손님 이름이나 인원을 넣어 주세요.', text: '< > " 는 쓸 수 없어요.', busy: '잠시 후 다시 해 주세요.', seat: '자리를 다시 골라 주세요.', staff: '담당을 골라 주세요.' }[x.error] || '저장하지 못했어요.'; }
+    function done(x, btn) { if (!x.ok) { btn.disabled = false; $('ftMsg').textContent = err(x); if (x.error === 'taken' || x.error === 'notfound') loadTbFut(F.day); return; } state.tbFut = x; tbCloseSheet(); render(); }
+    $('ftGo').addEventListener('click', function () {
+      var btn = this, g = $('ftG').value.trim(), n = Math.max(0, Math.floor(+$('ftN').value || 0));
+      if (!g && !n) { $('ftMsg').textContent = '손님 이름이나 인원을 넣어 주세요.'; return; }
+      btn.disabled = true;
+      var body = { a: 'tb_fut_set', token: state.s.token, day: F.day, floor: fl, v: { seat: seat, g: g, sx: sx, n: n, st: $('ftSt').value, memo: $('ftM').value.trim(), sold: $('ftSold').checked } };
+      if (row) body.id = row.id;
+      call(body).then(function (x) { done(x, btn); }).catch(function () { btn.disabled = false; $('ftMsg').textContent = '연결이 안 돼요.'; });
+    });
+    if ($('ftDel')) $('ftDel').addEventListener('click', function () {
+      if (!armed(this, '한 번 더 누르면 지워요')) return;
+      var btn = this; btn.disabled = true;
+      call({ a: 'tb_fut_del', token: state.s.token, id: row.id }).then(function (x) { done(x, btn); }).catch(function () { btn.disabled = false; $('ftMsg').textContent = '연결이 안 돼요.'; });
+    });
   }
   function reservationError(code) {
     return { staff: '승인된 영업팀 담당 MD를 지정해 주세요.', seat: '층과 자리를 다시 골라 주세요.', taken: '이미 배정된 자리예요. 목록을 새로 불러와 주세요.',
@@ -11184,7 +11242,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     var wk = {}, show = tbShowWeekend();
     tbSeatsOf(fl).forEach(function (z) { if (z.weekend) z.rows.forEach(function (r) { r.forEach(function (x) { wk[x] = 1; }); }); });
     // ↕ 세로: 도면을 시계 방향으로 90° 돌려서 폰 폭에 맞춤 (왼쪽 → 위, 위쪽 → 오른쪽)
-    var vert = tbView() === 'vmap', W = vert ? m.h : m.w, H = vert ? m.w : m.h;
+    var vert = state.tbForceV || tbView() === 'vmap', W = vert ? m.h : m.w, H = vert ? m.w : m.h;   // 예약 탭은 늘 세로
     function pct(x, w) { return (x / w * 100).toFixed(3) + '%'; }
     function rot(x, y, w, h) { return vert ? [m.h - y - h, x, h, w] : [x, y, w, h]; }
     function box(x, y, w, h) { var r = rot(x, y, w, h); return 'left:' + pct(r[0], W) + ';top:' + pct(r[1], H) + ';width:' + pct(r[2], W) + ';height:' + pct(r[3], H); }
