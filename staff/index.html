@@ -2694,6 +2694,41 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 .sheet-in.lounge-entrance { display: grid; align-content: center; width: 100%; height: 100dvh; max-width: none; max-height: none; border: 0; border-radius: 0; margin: 0; padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom)); }
 .lounge-entrance > * { width: min(100%, 540px); margin-inline: auto; }
 .lounge-entrance .lounge-qr canvas { width: min(100%, 540px, 58dvh); }
+/* 그루브 라운지 · 오픈채팅 운영 (신고 검수 · 방 관리 · 지표) */
+.lounge-cards > h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 16px; }
+.lounge-cards > h3 + .note { margin: 0; }
+.lounge-cards .lounge-urgent article { border-color: var(--bad); box-shadow: inset 0 0 0 1px var(--bad); }
+.lounge-report-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
+.lounge-chip { display: inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(255,176,32,.16); color: var(--warn); font-size: 12px; font-weight: 800; }
+.lounge-chip-urgent { background: rgba(255,59,92,.2); color: #ff9aab; }
+.lounge-chip-plain { background: none; border: 1px solid var(--line-2); color: var(--muted); }
+html:where([data-theme="light"]) .lounge-chip { color: #8a5600; }
+html:where([data-theme="light"]) .lounge-chip-urgent { color: #b3122f; }
+html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
+.lounge-quote { margin: 8px 0 0; padding: 8px 10px; border-inline-start: 3px solid var(--bad); border-radius: 8px; background: var(--card); white-space: pre-wrap; }
+.lounge-screen .lounge-report-meta { margin: 6px 0 0; }
+.lounge-screen [data-chat-report] input[name=note] { margin-top: 10px; }
+.lounge-cards :is([data-chat-report], [data-chat-banned]) .lounge-msg:empty { display: none; }
+.lounge-ban-now { margin: 8px 0; color: var(--warn); font-weight: 800; }
+.lounge-screen .lounge-ban-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 8px; }
+.lounge-screen .lounge-ban-steps .btn { flex-direction: column; gap: 2px; padding: 6px 4px; font-size: 13px; word-break: keep-all; overflow-wrap: normal; }
+.lounge-ban-steps .btn::after { content: attr(data-step); color: var(--muted); font-size: 11px; font-weight: 700; }
+.lounge-ban-steps .btn[data-next] { border-color: currentColor; box-shadow: inset 0 0 0 1px currentColor; }
+.lounge-ban-steps .btn[data-next]:not(.btn-bad) { color: var(--g); }
+.lounge-ban-steps .btn[data-next]::after, .lounge-ban-steps .btn.arm::after { color: inherit; }
+.lounge-perm-confirm { margin-top: 8px; padding: 10px; border: 1px solid var(--bad); border-radius: 12px; }
+.lounge-cards article .lounge-perm-confirm p { margin: 0 0 8px; }
+.lounge-screen [data-room-results] article p { margin: 4px 0 0; }
+.lounge-screen [data-room-results] .lounge-room-when { color: var(--g); font-weight: 800; }
+.lounge-screen [data-room-results] [data-room-kind=venue] .lounge-room-when { color: var(--muted); font-weight: 400; }
+.lounge-cards :is([data-chat-report], [data-chat-banned], [data-room-results] article) .lounge-options { margin-top: 8px; }
+.lounge-oc-stats { margin: 10px 0; padding: 0 12px; border: 1px solid var(--line-2); border-radius: var(--rad); background: var(--card-2); }
+.lounge-oc-stats > div { padding-bottom: 12px; overflow-x: auto; }
+.lounge-oc-table { font-variant-numeric: tabular-nums; }
+.lounge-oc-table :is(th, td) { padding: 6px 2px; border-top: 1px solid var(--line); font-size: 13px; text-align: right; overflow-wrap: normal; word-break: keep-all; }
+.lounge-oc-table th:first-child { text-align: left; white-space: nowrap; }
+.lounge-oc-table thead th { border-top: 0; color: var(--muted); font-size: 12px; vertical-align: bottom; }
+.lounge-oc-table th small { display: block; font-weight: 400; }
 </style>
 </head>
 <body>
@@ -7720,7 +7755,9 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       op: '서버 업데이트 후 쓸 수 있어요. / Available after the server update.',
       unknown: '서버 업데이트 후 쓸 수 있어요. / Available after the server update.',
       action: '서버 업데이트 후 쓸 수 있어요. / Available after the server update.',
-      room: '2F, 3F, english 또는 파티 방 ID를 확인해 주세요. / Check the built-in or party room ID.',
+      act: '서버 업데이트 후 쓸 수 있어요. / Available after the server update.',
+      openAt: '여는 시각은 ‘오늘 밤’ 방에서만 바꿀 수 있어요. 시각을 확인해 주세요. / Only the Tonight room has an opening time. Check the time.',
+      room: '방 목록에 있는 방 ID나 파티 방 ID를 확인해 주세요. / Check the built-in or party room ID.',
       songs: '서로 다른 후보 곡 3개를 적어 주세요. / Enter three distinct songs.',
       at: '오늘 영업 중 아직 지나지 않은 시각을 골라 주세요. / Choose an upcoming time this club day.',
       vote_locked: '이미 투표가 시작돼 후보를 바꿀 수 없어요. / Voting has started and the songs are locked.',
@@ -8105,7 +8142,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     };
     paintVip();
     form.querySelectorAll('[name="act"]').forEach(button => {
-      button.onclick = event => { if (!armed(button, LOUNGE_MOD[button.value])) event.preventDefault(); };
+      const label = button.textContent;
+      button.onclick = event => { if (!armed(button, label)) event.preventDefault(); };
     });
     loungeSubmit(form, async data => {
       if (data.has('vip')) {
@@ -8122,6 +8160,11 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       } else {
         if (result.act === 'suspend7') status.textContent = '정지 / Suspended';
         if (result.act === 'ban') status.textContent = '영구 정지 / Banned';
+        if (result.act === 'chatlift') {   // 채팅 정지를 풀었으면 그 줄과 버튼을 치운다
+          member.chatBan = null;
+          article.querySelector('[data-member-chatban]')?.remove();
+          form.querySelector('[value="chatlift"]')?.remove();
+        }
       }
       msg.textContent = LOUNGE_SAVED;
     });
@@ -8146,8 +8189,10 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
             '<div>담당 / Staff ' + esc(m.staff_name || '—') + ' · ' + loungeCount(m.points) + 'P · ' +
             '<span data-member-status>' + esc(({ ok: '이용 중 / Active', suspended: '정지 / Suspended', banned: '영구 정지 / Banned' })[m.status] || '—') + '</span>' +
             '</div><small>회원 ID / Member ID · ' + esc(m.id) + '</small>' +
+            (loungeChatBan(m) ? '<div class="lounge-ban-now" data-member-chatban>채팅 ' + esc(loungeChatBanText(loungeChatBan(m))) + '</div>' : '') +
             '<form data-member-actions class="lounge-member-actions">' +
             ['warn', 'suspend7', 'ban'].map(act => loungeButton(LOUNGE_MOD[act], 'type="submit" name="act" value="' + act + '"')).join('') +
+            (loungeChatBan(m) ? loungeButton('채팅 정지 풀기 / Lift chat suspension', 'type="submit" name="act" value="chatlift"') : '') +
             (state.s?.admin && m.tag?.kind !== 'staff' ? loungeButton(loungeMemberVipLabel(m.tag?.kind === 'vip'),
               'type="submit" name="vip" value="1"') : '') + '</form>') +
           '</article>').join('') : '<p class="note">찾은 회원이 없어요. / No members found.</p>';
@@ -8244,7 +8289,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     if (!refresh && cache.reports && Date.now() - cache.at < 30000) return cache.reports;
     cache.pending = loungeRequest('adm_reports', {}, session).then(({ reports }) => {
       cache.reports = reports;
-      cache.count = reports.filter(report => report.status === 'open').length;
+      cache.count = loungeReportCount(reports);
       cache.at = Date.now();
       if (loungeReportCache === cache) loungePaintReportBadges();
       return reports;
@@ -8294,15 +8339,93 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
       // Older servers return no private preview. The report text remains visible.
     }
   }
+  // 오픈채팅 운영 (계약: 서버 저장소 lounge/docs/openchat-contract.md §4·§5).
+  // 새 서버는 대화방 글 신고 줄에 strikes·chatBan 을 더해 준다. 이 값이 없는 옛 서버 줄은 지금 모양 그대로 그린다.
+  const LOUNGE_ROOM_NAMES = { plaza: '그루브 광장', music: '음악 톡', global: 'Global Lounge', tonight: '오늘 밤' };
+  const LOUNGE_CHAT_BANS = [
+    ['chat24', '24시간 정지', '1차 / 24h'], ['chat7d', '7일 정지', '2차 / 7 days'], ['chatperm', '영구 정지', '3차 / Permanent']
+  ];
+  function loungeChatReport(report) {
+    return report.kind === 'room_msg' && (Number.isSafeInteger(report.strikes) || Object.hasOwn(report, 'chatBan'));
+  }
+  function loungeReportCount(reports) {   // 같은 오픈채팅 글을 여러 명이 신고해도 카드 하나 = 1건
+    const chats = new Set();
+    return reports.filter(report => {
+      if (report.status !== 'open') return false;
+      if (!loungeChatReport(report)) return true;
+      if (chats.has(report.target_id)) return false;
+      chats.add(report.target_id);
+      return true;
+    }).length;
+  }
+  function loungeRoomName(id, title) {
+    if (title && title !== id) return title;
+    return Object.hasOwn(LOUNGE_ROOM_NAMES, id) ? LOUNGE_ROOM_NAMES[id] : title || id || '';
+  }
+  function loungeKst(timestamp) {   // 한국 시각으로 날짜·시각
+    const date = new Date(timestamp + 9 * 3600000), two = n => String(n).padStart(2, '0');
+    const month = date.getUTCMonth() + 1, day = date.getUTCDate();
+    return { month, day, key: date.getUTCFullYear() + '-' + month + '-' + day, time: two(date.getUTCHours()) + ':' + two(date.getUTCMinutes()) };
+  }
+  function loungeWhen(timestamp) {   // 오늘이면 시각만, 아니면 날짜까지
+    if (!Number.isFinite(timestamp)) return '';
+    const at = loungeKst(timestamp);
+    return at.key === loungeKst(Date.now()).key ? at.time : at.month + '월 ' + at.day + '일 ' + at.time;
+  }
+  function loungeChatBan(report) {   // 지금 걸려 있는 채팅 정지 ({ until, step }, until 0 = 영구) 또는 null
+    const ban = report.chatBan;
+    return ban && typeof ban === 'object' && (ban.until === 0 || ban.until > Date.now()) ? ban : null;
+  }
+  function loungeChatBanText(ban, done = false) {
+    if (!ban.until) return done ? '채팅을 영구 정지했어요. / Chat suspended permanently.' : '영구 정지 중 / Chat suspended permanently';
+    const at = loungeKst(ban.until), ko = at.month + '월 ' + at.day + '일 ' + at.time, en = at.month + '/' + at.day + ' ' + at.time;
+    return done ? ko + '까지 채팅을 정지했어요. / Chat suspended until ' + en + '.' : ko + '까지 정지 중 / Chat suspended until ' + en;
+  }
   async function loungeReports(panel, session) {
     const reports = await loungeReadReports(session, true);
     if (!panel.isConnected) return;
-    const open = reports.filter(report => !report.status || report.status === 'open').sort((a, b) => Number(b.hidden) - Number(a.hidden));
+    // 긴급(폭력 위협·불법 촬영물·마약) → 오픈채팅 글 → 나머지 순서. 옛 서버 응답은 순서가 그대로다.
+    const rank = report => report.urgent === true ? 0 : loungeChatReport(report) ? 1 : 2;
+    const open = reports.filter(report => !report.status || report.status === 'open')
+      .sort((a, b) => rank(a) - rank(b) || Number(b.hidden) - Number(a.hidden));
+    const cards = [], chats = new Map();
+    for (const report of open) {
+      const chat = loungeChatReport(report), same = chat && chats.get(report.target_id);
+      if (same) { same.rows.push(report); continue; }   // 같은 글을 여러 명이 신고 → 카드 하나
+      const card = { report, rows: [report], chat, urgent: report.urgent === true };
+      if (chat) chats.set(report.target_id, card);
+      cards.push(card);
+    }
+    // 처리는 끝났지만 글쓴이가 아직 채팅 정지 중인 글 → '정지 풀기'를 할 수 있게 아래에 따로 보여 준다.
+    const author = report => {   // 같은 손님이 여러 번 나오지 않게: 닉네임(없으면 정지 끝나는 시각)으로 묶는다
+      const ban = loungeChatBan(report);
+      return report.preview?.nick || (ban?.until ? 'until:' + ban.until : report.target_id);
+    };
+    const banned = [], bannedSeen = new Set(cards.filter(card => card.chat).map(card => author(card.report)));
+    for (const report of reports) {
+      if (!loungeChatReport(report) || !report.status || report.status === 'open' || !loungeChatBan(report)) continue;
+      if (chats.has(report.target_id) || bannedSeen.has(author(report))) continue;
+      bannedSeen.add(author(report));
+      banned.push(report);
+    }
     const kinds = { post: '게시물 / Post', comment: '댓글 / Comment', user: '회원 / Member', photo: '사진 / Photo',
       room_msg: '대화방 글 / Room message', dm: '메시지 / Direct message',
       split: '조각 모집 / Shared table', goods: '굿즈 / Merchandise' };
     const reasons = { me: '내 사진 / My photo', ad: '광고 / Advertising', sexual: '성적 콘텐츠 / Sexual content',
-      abuse: '괴롭힘 / Abuse', illegal: '불법 / Illegal', etc: '기타 / Other' };
+      abuse: '괴롭힘 / Abuse', illegal: '불법 / Illegal', etc: '기타 / Other',
+      threat: '폭력 위협 / Violent threat', filming: '불법 촬영물 / Illegal filming', drugs: '마약 / Drugs' };
+    const reason = why => esc(Object.hasOwn(reasons, why) ? reasons[why] : why);
+    const sections = [
+      ['urgent', '긴급 신고 / Urgent reports', '폭력 위협·불법 촬영물·마약 신고예요. 대표에게 바로 알림이 갔어요. / Threat, illegal filming and drug reports alert the owner right away.'],
+      ['chat', '오픈채팅 신고 / Open chat reports'], ['other', '다른 신고 / Other reports'],
+      ['banned', '채팅 정지 중 / Chat suspended', '처리가 끝난 신고예요. 정지를 일찍 풀 때만 눌러 주세요. / Already handled. Lift a suspension early here.']
+    ];
+    const urgentChip = rows => '<span class="lounge-chip lounge-chip-urgent">즉시 알림 / Urgent · ' +
+      [...new Set(rows.filter(row => row.urgent === true).map(row => row.why))].map(reason).join(', ') + '</span>';
+    const cardClass = card => {
+      const names = [card.report.hidden && 'lounge-hidden', card.urgent && 'lounge-urgent'].filter(Boolean).join(' ');
+      return names ? ' class="' + names + '"' : '';
+    };
     function evidence(report, preview = {}, note) {
       preview ||= {};
       const postPhotos = preview.photoKeys || preview.photos;
@@ -8322,6 +8445,19 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         '<p>' + esc(preview.text || preview.title || preview.bio || report.target_id) + '</p>' + context +
         (note ? '<p class="note">' + esc(note) + '</p>' : '');
     }
+    // 오픈채팅 글: 방 이름 · 글쓴이 / 글 내용
+    function chatTitle(report) {
+      const preview = report.preview || {};
+      const room = typeof report.room === 'string' ? report.room : typeof preview.room === 'string' ? preview.room : preview.roomId;
+      return [loungeRoomName(room, report.roomTitle || preview.room?.title), preview.nick || preview.author?.nick].filter(Boolean).join(' · ') ||
+        '오픈채팅 글 / Open chat message';
+    }
+    function quote(report, preview, note) {
+      preview ||= {};
+      return (preview.text ? '<blockquote class="lounge-quote">' + esc(preview.text) + '</blockquote>'
+        : '<p class="note">글 내용을 볼 수 없어요. / The message is no longer available.</p>') +
+        (note ? '<p class="note lounge-report-meta">' + esc(note) + '</p>' : '');
+    }
     function loadImages(scope) {
       scope.querySelectorAll('img').forEach(img => {
         const hide = () => { img.hidden = true; };
@@ -8330,22 +8466,122 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         else if (img.complete && !img.naturalWidth) hide();
       });
     }
-    panel.innerHTML = open.length ? '<div class="lounge-cards">' + open.map((report, i) => {
+    const noteField = '<label>처리 메모 (선택) / Note (optional)<input name="note" maxlength="200"></label>';
+    const act = (value, label, attrs = '') => loungeButton(label, 'type="submit" name="act" value="' + value + '"' + attrs);
+    function legacyCard(card, i) {
+      const { report } = card;
       const acts = report.kind === 'user' ? [] : [report.hidden ? 'show' : 'hide', 'delete'];
       if (report.kind !== 'photo') acts.push('warn', 'suspend7', 'ban');
       const protectedEvidence = report.id && !Object.hasOwn(report, 'preview');
-      return '<form data-report="' + i + '"' + (report.hidden ? ' class="lounge-hidden"' : '') + '><article>' +
+      return '<form data-report="' + i + '"' + cardClass(card) + '><article>' +
         '<strong>' + esc(kinds[report.kind] || report.kind) + (report.hidden ? ' · 가려짐 / Hidden' : '') + '</strong>' +
+        (card.urgent ? ' ' + urgentChip(card.rows) : '') +
         (protectedEvidence ? loungeButton('신고 증거 보기 / View report evidence', 'type="button" data-load-evidence') +
           '<div data-report-evidence></div>' : evidence(report, report.preview)) +
         '<p class="note">' + esc(reasons[report.why] || report.why) + (!protectedEvidence && report.note ? ' · ' + esc(report.note) : '') + '</p>' +
-        '<label>처리 메모 (선택) / Note (optional)<input name="note" maxlength="200"></label>' +
-        '<div class="lounge-options">' + acts.map(act => loungeButton(LOUNGE_MOD[act],
-          'type="submit" name="act" value="' + act + '"', act === 'delete')).join('') + '</div><p class="msg lounge-msg" role="status"></p></article></form>';
-    }).join('') + '</div>' : '<p class="note">처리할 신고가 없어요. / No pending reports.</p>';
+        noteField + '<div class="lounge-options">' + acts.map(value => loungeButton(LOUNGE_MOD[value],
+          'type="submit" name="act" value="' + value + '"', value === 'delete')).join('') + '</div><p class="msg lounge-msg" role="status"></p></article></form>';
+    }
+    function chatCard(card, i) {
+      const { report, rows } = card;
+      const protectedEvidence = report.id && !Object.hasOwn(report, 'preview');
+      const ban = loungeChatBan(report);
+      const strikes = Number.isSafeInteger(report.strikes) && report.strikes > 0 ? report.strikes : 0;
+      const next = LOUNGE_CHAT_BANS[Math.min(strikes, 2)][0];   // 다음 단계를 강조만 해요. 무엇을 누를지는 운영자가 골라요.
+      const n = rows.length, hidden = report.hidden;
+      const state = n + '명 신고' + (hidden ? (n >= 3 ? ' · 자동 가림' : ' · 가려짐') : '') + ' / ' + n + (n === 1 ? ' report' : ' reports') +
+        (hidden ? (n >= 3 ? ' · auto-hidden' : ' · hidden') : '');
+      const notes = [...new Set(rows.map(row => row.note).filter(Boolean))];
+      const at = Number.isFinite(report.preview?.at) ? report.preview.at : report.at;
+      return '<form data-report="' + i + '" data-chat-report' + cardClass(card) + '><article>' +
+        '<div class="lounge-report-head"><strong>' + esc(chatTitle(report)) + '</strong><span class="lounge-chips">' +
+        (card.urgent ? urgentChip(rows) + ' ' : '') + '<span class="lounge-chip">' + state + '</span></span></div>' +
+        (protectedEvidence ? loungeButton('신고 증거 보기 / View report evidence', 'type="button" data-load-evidence') +
+          '<div data-report-evidence></div>' : quote(report, report.preview)) +
+        '<p class="note lounge-report-meta">사유 / Reason: ' + [...new Set(rows.map(row => row.why))].map(reason).join(', ') +
+        notes.map(text => ' · ' + esc(text)).join('') + '</p>' +
+        '<p class="note lounge-report-meta">' + (Number.isFinite(at) ? esc(loungeWhen(at)) + ' · ' : '') +
+        '이번이 ' + (strikes + 1) + '번째 제재 / Strike ' + (strikes + 1) + '</p>' +
+        (ban ? '<p class="lounge-ban-now">' + esc(loungeChatBanText(ban)) + '</p><div class="lounge-options">' +
+          act('chatlift', '정지 풀기 / Lift suspension') + '</div>' : '') +
+        '<input name="note" maxlength="200" placeholder="처리 메모 (선택) / Note (optional)" aria-label="처리 메모 (선택) / Note (optional)">' +
+        '<div class="lounge-options">' + act('hide', hidden ? '가림 유지 / Keep hidden' : '가리기 / Hide') +
+        act('show', hidden ? '가림 풀기 / Show again' : '그대로 두기 / Leave as is') + '</div>' +
+        '<div class="lounge-options lounge-ban-steps">' + LOUNGE_CHAT_BANS.map(([value, label, step]) =>
+          '<button class="btn' + (value === 'chatperm' ? ' btn-bad' : '') + '" ' +
+          (value === 'chatperm' ? 'type="button" data-perm' : 'type="submit" name="act" value="' + value + '"') +
+          ' data-step="' + (value === next ? '추천 · ' : '') + step + '"' + (value === next ? ' data-next' : '') + '>' + label + '</button>').join('') + '</div>' +
+        '<div class="lounge-perm-confirm" data-perm-confirm hidden><p>영구 정지하면 이 손님은 대화방에 다시 글을 쓸 수 없어요. 정말 할까요? / ' +
+        'A permanent suspension stops this guest from posting in rooms for good. Continue?</p><div class="lounge-options">' +
+        '<button class="btn btn-bad" type="submit" name="act" value="chatperm" data-now>영구 정지 확정 / Confirm permanent</button>' +
+        loungeButton('취소 / Cancel', 'type="button" data-perm-cancel') + '</div></div>' +
+        '<details class="lounge-more-acts"><summary>다른 처리 / More actions</summary><div class="lounge-options">' +
+        act('delete', '글 내리기 / Remove message') + act('warn', '경고 / Warn') +
+        act('suspend7', '계정 7일 정지 / Suspend account 7 days') + act('ban', '계정 영구 정지 / Ban account') + '</div></details>' +
+        '<p class="msg lounge-msg" role="status"></p></article></form>';
+    }
+    function bannedCard(report, i) {
+      const ban = loungeChatBan(report), step = LOUNGE_CHAT_BANS[ban.step - 1];
+      return '<form data-chat-banned="' + i + '"><article>' +
+        '<div class="lounge-report-head"><strong>' + esc(chatTitle(report)) + '</strong>' +
+        '<span class="lounge-chip lounge-chip-plain">처리됨 / Handled</span></div>' +
+        (report.preview?.text ? quote(report, report.preview) : '') +
+        '<p class="lounge-ban-now">' + (step ? esc(step[2].split(' / ')[0] + ' · ') : '') + esc(loungeChatBanText(ban)) + '</p>' +
+        '<div class="lounge-options">' + act('chatlift', '정지 풀기 / Lift suspension') + '</div>' +
+        '<p class="msg lounge-msg" role="status"></p></article></form>';
+    }
+    const heading = (key, n) => {
+      const [, title, hint] = sections.find(([name]) => name === key);
+      return '<h3 data-report-section="' + key + '">' + title + ' <span class="lounge-chip' +
+        (key === 'urgent' ? ' lounge-chip-urgent' : key === 'banned' ? ' lounge-chip-plain' : '') + '">' +
+        (key === 'banned' ? n + '명 / ' + n : '대기 ' + n + '건 / ' + n + ' pending') + '</span></h3>' +
+        (hint ? '<p class="note">' + hint + '</p>' : '');
+    };
+    const sectionOf = card => card.urgent ? 'urgent' : card.chat ? 'chat' : 'other';
+    const titled = cards.some(card => card.urgent || card.chat);   // 옛 서버 응답에는 구역 제목이 없다 (지금 모양 그대로)
+    let last = '';
+    const list = cards.map((card, i) => {
+      const key = sectionOf(card), head = titled && key !== last ? heading(key, cards.filter(other => sectionOf(other) === key).length) : '';
+      last = key;
+      return head + (card.chat ? chatCard(card, i) : legacyCard(card, i));
+    }).join('');
+    panel.innerHTML = (cards.length ? '<div class="lounge-cards">' + list + '</div>'
+      : '<p class="note">처리할 신고가 없어요. / No pending reports.</p>') +
+      (banned.length ? '<div class="lounge-cards">' + heading('banned', banned.length) + banned.map(bannedCard).join('') + '</div>' : '');
     loadImages(panel);
-    panel.querySelectorAll('form').forEach(form => {
-      const report = open[+form.dataset.report];
+    function moderate(form, report) {
+      // Confirm moderation with the app’s existing two-tap control.
+      form.querySelectorAll('[name="act"]:not([data-now])').forEach(b => {
+        const label = b.textContent;
+        b.onclick = ev => { if (!armed(b, label)) ev.preventDefault(); };
+      });
+      // 영구 정지는 두 번 누른 뒤 한 번 더 확인한다.
+      const perm = form.querySelector('[data-perm]'), confirm = form.querySelector('[data-perm-confirm]');
+      if (perm) {
+        const label = perm.textContent;
+        perm.onclick = () => { if (armed(perm, label)) confirm.hidden = false; };
+        confirm.querySelector('[data-perm-cancel]').onclick = () => { confirm.hidden = true; };
+      }
+      loungeSubmit(form, async data => {
+        const act = data.get('act');
+        const result = await loungeRequest('adm_mod', {
+          target: { kind: report.kind, id: report.target_id }, act, note: (data.get('note') || '').trim()
+        }, session);
+        return { act, result };
+      }, async ({ act, result }) => {
+        if (loungeReportCache?.session === session) loungeReportCache = null;
+        form.remove();
+        const ban = result.chatBan && typeof result.chatBan === 'object' ? result.chatBan : null;
+        toast(act === 'chatlift' ? '채팅 정지를 풀었어요. / Chat suspension lifted.'
+          : !/^chat/.test(act) ? '신고를 처리했어요. / Report updated.'
+          : ban ? loungeChatBanText(ban, true) : '채팅을 정지했어요. / Chat suspended.');
+        await loungeReports(panel, session).catch(err => {
+          if (panel.isConnected) panel.closest('.lounge-screen').querySelector('.lounge-msg').textContent = loungeError(err);
+        });
+      });
+    }
+    panel.querySelectorAll('form[data-report]').forEach(form => {
+      const card = cards[+form.dataset.report], { report } = card;
       const load = form.querySelector('[data-load-evidence]');
       if (load) load.onclick = async () => {
         load.disabled = true;
@@ -8354,28 +8590,16 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         try {
           const result = await loungeRequest('adm_report_evidence', { id: report.id }, session);
           if (!output.isConnected) return;
-          output.innerHTML = evidence(report, result.evidence, result.note);
+          output.innerHTML = (card.chat ? quote : evidence)(report, result.evidence, result.note);
           loadImages(output);
           load.hidden = true;
         } catch (err) {
           if (output.isConnected) output.textContent = loungeError(err);
         } finally { load.disabled = false; }
       };
-      // Confirm moderation with the app’s existing two-tap control.
-      form.querySelectorAll('[name="act"]').forEach(b => {
-        b.onclick = ev => { if (!armed(b, LOUNGE_MOD[b.value])) ev.preventDefault(); };
-      });
-      loungeSubmit(form, data => loungeRequest('adm_mod', {
-        target: { kind: report.kind, id: report.target_id }, act: data.get('act'), note: data.get('note').trim()
-      }, session), async () => {
-        if (loungeReportCache?.session === session) loungeReportCache = null;
-        form.remove();
-        toast('신고를 처리했어요. / Report updated.');
-        await loungeReports(panel, session).catch(err => {
-          if (panel.isConnected) panel.closest('.lounge-screen').querySelector('.lounge-msg').textContent = loungeError(err);
-        });
-      });
+      moderate(form, report);
     });
+    panel.querySelectorAll('form[data-chat-banned]').forEach(form => moderate(form, banned[+form.dataset.chatBanned]));
   }
   async function loungeStats(panel, session) {
     const stats = await loungeRequest('adm_stats', {}, session);
@@ -8752,61 +8976,148 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
     panel.textContent = '';
     const room = loungeInput('방 ID / Room ID', 'id', 'required maxlength="40" list="lounge-room-ids"');
     panel.insertAdjacentHTML('beforeend', '<datalist id="lounge-room-ids"><option value="2F"><option value="3F"><option value="english"></datalist>' +
-      loungeButton('대화방 목록 보기 / Browse rooms', 'type="button" data-room-list') + '<div data-room-results></div>');
+      loungeButton('대화방 목록 보기 / Browse rooms', 'type="button" data-room-list') + '<div data-room-results></div>' +
+      '<details class="lounge-oc-stats" data-oc-stats hidden><summary>오픈채팅 지표 · 최근 14일 / Open chat stats · last 14 days</summary>' +
+      '<div data-oc-stats-body></div></details>');
     const list = panel.querySelector('datalist'), load = panel.querySelector('[data-room-list]');
+    const known = new Map();   // 방 ID → 서버가 준 방 정보 (kind·openAt 은 오픈채팅 서버부터 온다)
     function addRoom(id, name) {
       if (id && !Array.from(list.options).some(option => option.value === id)) list.append(new Option(name || id, id));
     }
-    load.onclick = async () => {
-      const results = panel.querySelector('[data-room-results]');
-      load.disabled = true;
+    const openTime = item => /^\d\d:\d\d$/.test(item.openAt) ? item.openAt : Number.isFinite(item.opensAt) ? loungeKst(item.opensAt).time : '';
+    function schedule(item) {   // 상시 / 매일 18:00 열림 · 다음 날 12:00 닫힘
+      if (item.kind === 'always') return '상시 / Always open';
+      if (item.kind === 'venue') return '영업 시간에 열림 / Open during club hours';
+      if (item.kind !== 'timed') return '';
+      const opens = openTime(item), closes = Number.isFinite(item.closesAt) ? loungeKst(item.closesAt).time : '';
+      if (!opens) return '정해진 시간에 열림 / Opens on a schedule';
+      const nextDay = closes && closes <= opens;
+      return '매일 ' + opens + ' 열림' + (closes ? ' · ' + (nextDay ? '다음 날 ' : '') + closes + ' 닫힘' : '') +
+        ' / Opens daily ' + opens + (closes ? ' · closes ' + closes + (nextDay ? ' next day' : '') : '');
+    }
+    // 여는 시각 칸은 시간제 방(오늘 밤)을 골랐을 때만 보인다. 옛 서버(kind 없음)에서는 늘 숨김.
+    function syncOpenAt(reset) {
+      const form = panel.querySelector('[data-action=adm_room_set]');
+      if (!form) return;
+      const input = form.elements.openAt, id = form.elements.id.value.trim(), item = known.get(id);
+      const timed = item?.kind === 'timed';
+      form.querySelector('[data-room-open-at]').hidden = !timed;
+      input.disabled = !timed;
+      if (!timed) { input.value = ''; delete input.dataset.room; return; }
+      if (reset || input.dataset.room !== id) { input.value = openTime(item); input.dataset.room = id; }
+    }
+    function pick(item, action) {
+      if (panel.querySelector('form[inert]')) return;
+      panel.querySelectorAll('input[name=id]').forEach(input => { input.value = item.id; });
+      const form = panel.querySelector('[data-action=adm_room_set]');
+      form.elements.mode.value = item.mode || 'auto';
+      form.elements.title.value = '';
+      form.elements.en.value = '';
+      form.elements.floor.value = '';
+      panel.querySelector('[data-action=adm_room_pin]').elements.text.value = item.pin?.text || '';
+      panel.querySelector('[data-action=adm_room_kick]').elements.mid.value = '';
+      syncOpenAt(true);
+      const target = panel.querySelector('[data-action=' + action + ']');
+      target.scrollIntoView({ block: 'start' });
+      if (action === 'adm_room_pin') target.elements.text.focus({ preventScroll: true });
+    }
+    let loading, again = false;
+    function loadRooms(quiet) {
+      if (loading) { again = true; return loading; }   // 받는 중에 또 바뀌었으면 끝난 뒤 한 번 더 받는다
+      loading = (async () => {
+        const results = panel.querySelector('[data-room-results]');
+        load.disabled = true;
+        try {
+          const { rooms } = await request('adm_room_list', {});
+          if (!results.isConnected) return;
+          known.clear();
+          rooms.forEach(item => { known.set(item.id, item); addRoom(item.id, item.title); });
+          const openchat = rooms.some(item => item.kind === 'always' || item.kind === 'timed');
+          results.innerHTML = loungeCards(rooms, (item, i) => {
+            const when = schedule(item);
+            const today = item.mode === 'open' ? ' · 오늘 열어 둠 / Opened for today' : item.mode === 'closed' ? ' · 오늘 닫아 둠 / Closed for today' : '';
+            return '<article' + (when ? ' data-room-kind="' + esc(item.kind) + '"' : '') + '><strong>' + esc(item.title || item.id) + '</strong><p>' +
+              esc(item.id) + ' · ' + (item.open ? '열림 / Open' : '닫힘 / Closed') + today + '</p>' +
+              (when ? '<p class="lounge-room-when">' + when + '</p>' : '') +
+              (item.pin?.text ? '<p>' + (item.kind ? '고정 공지 / Pinned · ' : '') + esc(item.pin.text) + '</p>' : '') + '<div class="lounge-options">' +
+              loungeButton('방 열기 · 닫기 / Open or close', 'type="button" data-room-pick="' + i + '"') +
+              loungeButton('고정 공지 쓰기 / Write pin', 'type="button" data-room-pin="' + i + '"') + '</div></article>';
+          });
+          results.querySelectorAll('[data-room-pick]').forEach(button => {
+            button.onclick = () => pick(rooms[Number(button.dataset.roomPick)], 'adm_room_set');
+          });
+          results.querySelectorAll('[data-room-pin]').forEach(button => {
+            button.onclick = () => pick(rooms[Number(button.dataset.roomPin)], 'adm_room_pin');
+          });
+          panel.querySelector('[data-oc-stats]').hidden = !openchat;
+          panel.querySelector('[data-room-pin-note]').hidden = !openchat;
+          syncOpenAt();
+        } catch (error) {
+          if (results.isConnected && !quiet) results.textContent = loungeError(error);
+        } finally {
+          load.disabled = false;
+          loading = null;
+          if (again) { again = false; loadRooms(true); }
+        }
+      })();
+      return loading;
+    }
+    load.onclick = () => loadRooms();
+    // 오픈채팅 지표 (계약 §7): 펼칠 때 받아 온다. 옛 서버면 '서버 준비 중' 한 줄.
+    const statsBox = panel.querySelector('[data-oc-stats]'), statsBody = statsBox.querySelector('[data-oc-stats-body]');
+    let statsBusy = false;
+    statsBox.addEventListener('toggle', async () => {
+      if (!statsBox.open || statsBusy) return;
+      statsBusy = true;
+      statsBody.innerHTML = '<p class="note">불러오는 중… / Loading…</p>';
       try {
-        const { rooms } = await request('adm_room_list', {});
-        if (!results.isConnected) return;
-        rooms.forEach(item => addRoom(item.id, item.title));
-        results.innerHTML = loungeCards(rooms, (item, i) => '<article><strong>' + esc(item.title || item.id) + '</strong><p>' +
-          esc(item.id) + ' · ' + (item.open ? '열림 / Open' : '닫힘 / Closed') + '</p>' +
-          (item.pin?.text ? '<p>' + esc(item.pin.text) + '</p>' : '') +
-          loungeButton('이 방 선택 / Select room', 'type="button" data-room-pick="' + i + '"') + '</article>');
-        results.querySelectorAll('[data-room-pick]').forEach(button => {
-          button.onclick = () => {
-            if (panel.querySelector('form[inert]')) return;
-            const item = rooms[Number(button.dataset.roomPick)];
-            panel.querySelectorAll('input[name=id]').forEach(input => { input.value = item.id; });
-            const form = panel.querySelector('[data-action=adm_room_set]');
-            form.elements.mode.value = item.mode || 'auto';
-            form.elements.title.value = '';
-            form.elements.en.value = '';
-            form.elements.floor.value = '';
-            panel.querySelector('[data-action=adm_room_pin]').elements.text.value = item.pin?.text || '';
-            panel.querySelector('[data-action=adm_room_kick]').elements.mid.value = '';
-          };
-        });
+        const { days } = await request('adm_oc_stats', { days: 14 });
+        if (!statsBody.isConnected) return;
+        const rows = (Array.isArray(days) ? days : []).slice(0, 14);
+        const week = ['일', '월', '화', '수', '목', '금', '토'];
+        const date = day => /^\d{4}-\d\d-\d\d$/.test(day) ? +day.slice(5, 7) + '/' + +day.slice(8) + ' ' + week[new Date(day + 'T00:00:00Z').getUTCDay()] : day;
+        statsBody.innerHTML = rows.length ? '<table class="lounge-table lounge-oc-table"><thead><tr>' + [
+          ['날짜', 'Date'], ['탭 방문', 'Visits'], ['글 쓴 사람', 'Writers'], ['글 수', 'Messages'],
+          ['오늘 밤 글 쓴 사람', 'Tonight'], ['신고', 'Reports']
+        ].map(([ko, en]) => '<th scope="col">' + ko + '<small>' + en + '</small></th>').join('') + '</tr></thead><tbody>' +
+          rows.map(row => '<tr><th scope="row">' + esc(date(row.day)) + '</th>' +
+            [row.visitors, row.writers, row.messages, row.tonightWriters, row.reports].map(value =>
+              '<td>' + loungeCount(value) + '</td>').join('') + '</tr>').join('') + '</tbody></table>' +
+          '<p class="note">영업일(낮 12시~다음 날 낮 12시) 기준이에요. / Counted per club day (noon to noon).</p>' : LOUNGE_EMPTY;
       } catch (error) {
-        if (results.isConnected) results.textContent = loungeError(error);
-      } finally { load.disabled = false; }
-    };
+        if (statsBody.isConnected) statsBody.innerHTML = '<p class="note">' + (['action', 'unknown', 'op'].includes(error.message)
+          ? '서버 준비 중이에요. 서버 업데이트 뒤에 볼 수 있어요. / Coming after the server update.' : esc(loungeError(error))) + '</p>';
+      } finally { statsBusy = false; }
+    });
     const text = loungeArea('공지 (비우면 해제) / Pin (empty to clear)', 'text', 'maxlength="500"');
-    loungeAction(panel, '파티 방 만들기 · 열기 · 닫기 / Create, open or close a room', 'adm_room_set',
+    const setForm = loungeAction(panel, '파티 방 만들기 · 열기 · 닫기 / Create, open or close a room', 'adm_room_set',
       loungeInput('방 ID (새 파티 방은 비워도 돼요) / Room ID (optional for a new party room)', 'id',
         'maxlength="40" list="lounge-room-ids"') +
       loungeInput('방 이름 (새 파티 방에 필요) / Name (required for a new party room)', 'title', 'maxlength="80"') +
       loungeInput('영어 이름 (선택) / English name (optional)', 'en', 'maxlength="80"') +
       loungeSelect('층 / Floor', 'floor', [['', '그대로 / Keep current'], ['2F', '2F'], ['3F', '3F']]) +
-      loungeSelect('상태 / Status', 'mode', [['open', '오늘 열기 / Open today'], ['closed', '오늘 닫기 / Close today'], ['auto', '영업에 맞춤 / Club hours']]),
+      loungeSelect('상태 / Status', 'mode', [['open', '오늘 열기 / Open today'], ['closed', '오늘 닫기 / Close today'], ['auto', '자동 / Automatic']]) +
+      '<label data-room-open-at hidden>매일 여는 시각 (한국 시각) / Daily opening time (KST)<input name="openAt" type="time" disabled></label>',
       value => {
-        const id = value('id'), title = value('title'), en = value('en'), floor = value('floor');
-        if (id && !/^(?:2F|3F|english|party-[a-z0-9_-]{1,34})$/.test(id)) throw new Error('room');
+        const id = value('id'), title = value('title'), en = value('en'), floor = value('floor'), openAt = value('openAt');
+        if (id && !known.has(id) && !/^(?:2F|3F|english|plaza|music|global|tonight|party-[a-z0-9_-]{1,34})$/.test(id)) throw new Error('room');
         if (!id && !title) throw new Error('text');
-        return { ...(id && { id }), ...(title && { title }), ...(en && { en }), ...(floor && { floor }), mode: value('mode') };
+        if (openAt && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(openAt)) throw new Error('bad');
+        const item = known.get(id);
+        return { ...(id && { id }), ...(title && { title }), ...(en && { en }), ...(floor && { floor }), mode: value('mode'),
+          ...(openAt && item?.kind === 'timed' && openAt !== item.openAt && { openAt }) };
       }, request, { done: (result, form) => {
+        loadRooms(true);
         if (!result.id) return;
         form.elements.id.value = result.id;
         addRoom(result.id, form.elements.title.value);
         form.querySelector('.lounge-msg').textContent = LOUNGE_SAVED + ' 방 ID / Room ID · ' + result.id;
       } });
-    loungeAction(panel, '공지 고정 / Pin announcement', 'adm_room_pin', room + text,
-      value => ({ id: value('id'), text: value('text') }), request);
+    setForm.elements.id.addEventListener('input', () => syncOpenAt());
+    loungeAction(panel, '공지 고정 / Pin announcement', 'adm_room_pin', room + text +
+      '<p class="note" data-room-pin-note hidden>상시 방 공지는 지울 때까지, ‘오늘 밤’ 방 공지는 그날만 보여요. / ' +
+      'Pins stay until cleared in always-open rooms and for the day in Tonight.</p>',
+      value => ({ id: value('id'), text: value('text') }), request, { done: () => { loadRooms(true); } });
     loungeAction(panel, '오늘 방에서 내보내기 / Remove from room for today', 'adm_room_kick',
       room + loungeInput('회원 ID (회원 탭에서 찾기) / Member ID (see Members)', 'mid', 'maxlength="60" required'),
       value => ({ id: value('id'), mid: value('mid') }), request, { label: '내보내기 / Remove', confirm: true });
@@ -8818,6 +9129,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         if (songs.includes('') || new Set(songs.map(song => song.toLowerCase())).size !== 3) throw new Error('songs');
         return { id: value('id'), at: value('at'), songs };
       }, request);
+    loadRooms();   // 방 목록(상시·시간제 표시)은 열자마자 보여 준다
   }
   function loungeProgramming(panel, request) {
     panel.textContent = '';
