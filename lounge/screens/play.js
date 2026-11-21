@@ -46,7 +46,7 @@
     lastTie: ['지난주 무승부', 'Last week: tie'], won: ['내가 보탠 팀이 이겼어요', 'Your team won'],
     contrib: ['이번 주 내가 보탠 {n}점', 'You added {n} this week'],
     meRow: ['나 {n}위 · {p}P', 'Me · #{n} · {p}P'], meNone: ['이번 주는 아직 순위가 없어요', 'No ranking for you yet this week'],
-    me: ['나', 'Me']
+    me: ['나', 'Me'], ptsLabel: ['포인트', 'Points'], todayLabel: ['오늘 판', 'Today']
   });
   L.i18n({
     ja: {
@@ -72,7 +72,7 @@
       'play.pickTeam': 'チームを選ぶと、あそぶたびに自分のフロアに1点', 'play.battleRule': 'あそび1つ＝フロアに1点・月曜に集計',
       'play.battleBar': '2F {a}点、3F {b}点', 'play.lastWin': '先週は{f}の勝ち', 'play.lastTie': '先週は引き分け',
       'play.won': 'あなたのチームが勝ちました', 'play.contrib': '今週あなたが入れた{n}点',
-      'play.meRow': 'わたし {n}位・{p}P', 'play.meNone': '今週はまだランキングがありません', 'play.me': 'わたし'
+      'play.meRow': 'わたし {n}位・{p}P', 'play.meNone': '今週はまだランキングがありません', 'play.me': 'わたし', 'play.ptsLabel': 'ポイント', 'play.todayLabel': '今日'
     },
     zh: {
       'play.pill': '我的积分 {n}P·查看奖励、周边和 DJ', 'play.pillGuest': '查看奖励、周边和 DJ', 'play.more': '奖励·周边',
@@ -97,7 +97,7 @@
       'play.pickTeam': '选择队伍后，每玩一项就为你的楼层加 1 分', 'play.battleRule': '每玩一项 = 楼层 1 分·周一结算',
       'play.battleBar': '2F {a} 分，3F {b} 分', 'play.lastWin': '上周 {f} 获胜', 'play.lastTie': '上周平局',
       'play.won': '你所在的队赢了', 'play.contrib': '本周你贡献了 {n} 分',
-      'play.meRow': '我 第 {n} 名·{p}P', 'play.meNone': '本周还没有排名', 'play.me': '我'
+      'play.meRow': '我 第 {n} 名·{p}P', 'play.meNone': '本周还没有排名', 'play.me': '我', 'play.ptsLabel': '积分', 'play.todayLabel': '今日'
     }
   });
   const raw = (key, vars) => L.t('play.' + key, vars);
@@ -114,106 +114,157 @@
     ['challenge', '#/challenge', 'challenge', 'subChallenge', '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>', 'amber']
   ];
   const ITEM = { attend: 'iAttend', guess: 'iGuess', cup: 'iCup', vote: 'iVote', radio: 'iRadio' };
+  const ICON = Object.fromEntries(TILES.map(tile => [tile[0], tile[4]]));
+  ICON.attend = '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"/>';
+  // 인스타식 놀거리 (2026-11-21): 프로필 머리(아바타+숫자 3개) · 오늘 판 = 하이라이트 동그라미 · 지금 = 게시물 카드 · 놀이 = 3칸 격자
   const STYLE = `
-.pl{display:grid;gap:16px;max-width:640px;margin:auto;overflow-wrap:anywhere;min-width:0}
+.pl{--ring:linear-gradient(45deg,var(--g),var(--s));display:grid;gap:18px;max-width:640px;margin:auto;overflow-wrap:anywhere;min-width:0}
 .pl>*{min-width:0}
-.pl>.ui-pull{margin-bottom:-16px}
+.pl>.ui-pull{margin-bottom:-18px}
 .pl-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.pl-pill{display:inline-flex;align-items:center;gap:6px;min-height:44px;max-width:60%;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--card);color:var(--g);font:inherit;font-weight:900;cursor:pointer}
+.pl-head h1{margin:0}
+.pl-pill{display:inline-flex;align-items:center;gap:6px;min-height:44px;max-width:60%;padding:0 14px;border-radius:12px;border:0;background:var(--fill);color:var(--txt);font:inherit;font-size:.9375rem;font-weight:800;cursor:pointer}
 .pl-pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pl-card{position:relative;display:grid;gap:12px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);min-width:0}
+.pl-pill svg:first-child{color:var(--g)}
+.pl-card{position:relative;display:grid;gap:12px;min-width:0}
 .pl-card h2,.pl-now h2{margin:0}
+.pl-card>h2,.pl-sec h2,.pl-row>h2{font-size:1rem}
 .pl-row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;min-width:0}
 .pl-row>*{min-width:0}
 .pl-k{display:block;font-size:.8125rem;color:var(--muted)}
-.pl-big{display:block;font-size:1.375rem;font-weight:900;line-height:1.25}
+.pl-big{display:block;font-size:1.25rem;font-weight:900;line-height:1.25}
 .pl-gold{color:var(--g)}
-.pl-right{text-align:right}
-.pl-bar{height:8px;border-radius:999px;background:var(--line-2);overflow:hidden}
-.pl-bar>i{display:block;height:100%;border-radius:inherit;background:var(--g);transition:width .4s ease}
-.pl-chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
-.pl-chip{display:grid;justify-items:center;align-content:start;gap:4px;padding:10px 2px;border-radius:12px;background:var(--bg-2);text-align:center;font-size:.75rem;font-weight:800;line-height:1.3;min-width:0}
-.pl-chip b{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--line-2);color:var(--muted)}
-.pl-chip[data-done]{background:color-mix(in srgb,var(--g) 14%,var(--bg-2))}
-.pl-chip[data-done] b{background:var(--g);color:var(--g-ink)}
-.pl-chip small{color:var(--muted);font-weight:500}
-.pl-note{font-size:.8125rem;color:var(--muted)}
-.pl-stamp{position:absolute;top:12px;right:12px;padding:4px 10px;border:2px solid var(--g);border-radius:10px;color:var(--g);font-weight:900;letter-spacing:.06em;transform:rotate(-8deg);background:var(--card)}
-.pl-now{--tone:var(--s);display:grid;gap:12px;padding:18px;border-radius:var(--radius);background:color-mix(in srgb,var(--tone) 16%,var(--card));border:1px solid color-mix(in srgb,var(--tone) 45%,transparent);min-width:0}
+/* 프로필 머리 */
+.pl-prof{display:flex;align-items:center;gap:20px}
+.pl-ava{position:relative;flex:none;width:84px;height:84px;border-radius:50%;padding:3px;background:var(--ring)}
+.pl-ava[data-off]{background:var(--line-2)}
+.pl-ava>.ui-avatar{width:100%;height:100%;border:3px solid var(--bg);box-sizing:border-box}
+.pl-stats{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0;padding:0;list-style:none;text-align:center;min-width:0}
+.pl-stats b{display:block;font-size:1.25rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
+.pl-stats span{display:block;font-size:.8125rem;color:var(--txt)}
+.pl-bio{display:grid;gap:2px;font-size:.875rem;line-height:1.45}
+.pl-bio .pl-k{font-size:.875rem}
+.pl-bar{height:4px;border-radius:999px;background:var(--fill);overflow:hidden}
+.pl-bar>i{display:block;height:100%;border-radius:inherit;background:var(--ring);transition:width .4s ease}
+/* 오늘 판 = 하이라이트 */
+.pl-chips{display:flex;gap:12px;margin:0;padding:2px 0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.pl-chips::-webkit-scrollbar{display:none}
+.pl-chip{display:grid;justify-items:center;gap:5px;flex:1 0 64px;max-width:76px;text-align:center;font-size:.75rem;line-height:1.25;min-width:0}
+.pl-chip>b{position:relative;display:grid;place-items:center;width:62px;height:62px;border-radius:50%;padding:2px;box-sizing:border-box;background:var(--line-2)}
+.pl-chip>b>i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;border:3px solid var(--bg);box-sizing:border-box;background:var(--fill);color:var(--muted);font-style:normal}
+.pl-chip[data-done]>b{background:var(--ring)}
+.pl-chip[data-done]>b>i{color:var(--txt)}
+.pl-chip[data-done]>b::after{content:'✓';position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;border:2px solid var(--bg);background:var(--g);color:var(--g-ink);font-size:11px;font-weight:900}
+.pl-chip>span{font-weight:600;color:var(--txt)}
+.pl-chip small{color:var(--muted);font-weight:600}
+.pl-note{margin:0;font-size:.8125rem;color:var(--muted)}
+.pl-stamp{position:absolute;top:0;right:0;padding:3px 10px;border-radius:999px;background:var(--ring);color:#fff;font-size:.75rem;font-weight:900;letter-spacing:.04em}
+/* 지금 = 게시물 카드 */
+.pl-now{--tone:var(--s);display:grid;gap:12px;padding:0 0 16px;border-bottom:1px solid var(--line);min-width:0}
 .pl-now[data-kind=nextday]{--tone:var(--g)}
 .pl-now[data-kind=live]{--tone:var(--bad)}
-.pl-eyebrow{display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:800;letter-spacing:.06em;color:color-mix(in srgb,var(--tone,var(--s)) 55%,var(--txt))}
+.pl-eyebrow{display:flex;align-items:center;gap:10px;font-size:.8125rem;font-weight:700;color:var(--txt);min-height:36px}
+.pl-now>.pl-eyebrow::before,.pl-now>.pl-row>.pl-eyebrow:first-child::before{content:'G';display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:50%;background:var(--bg);color:var(--txt);font-weight:900;font-size:.875rem;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--tone)}
 .pl-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
 .pl-now[data-kind=live] .pl-dot{background:var(--bad)}
-.pl-sub{color:color-mix(in srgb,var(--txt) 78%,transparent);font-size:.875rem}
-.pl-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pl-now .pl-big{font-size:1.375rem;letter-spacing:-.01em}
+.pl-sub{margin:0;color:var(--muted);font-size:.875rem}
+.pl-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .pl-actions .btn,.pl-cta{width:100%;gap:8px;padding-inline:10px;text-align:center}
-.pl-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.pl-photos img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:var(--line)}
-.pl-list{display:grid;gap:6px;margin:0;padding:0;list-style:none;font-size:.875rem}
+.pl-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;margin-inline:-16px}
+.pl-photos img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:var(--fill)}
+.pl-list{display:grid;gap:8px;margin:0;padding:0;list-style:none;font-size:.875rem}
 .pl-list li{display:flex;gap:10px;min-width:0}
 .pl-list li>span:first-child{flex:none;color:var(--muted);font-variant-numeric:tabular-nums}
-.pl-f[data-floor="2F"]{color:var(--g)}
-.pl-f[data-floor="3F"]{color:var(--s)}
+.pl-f[data-floor="2F"]{color:var(--g);font-weight:800}
+.pl-f[data-floor="3F"]{color:var(--s);font-weight:800}
 .pl-floors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.pl-floor{display:grid;gap:2px;padding:12px;border-radius:12px;background:color-mix(in srgb,var(--bg) 45%,transparent);min-width:0}
+.pl-floor{display:grid;gap:2px;padding:12px;border-radius:12px;background:var(--fill);min-width:0}
 .pl-floor strong{font-size:1.125rem}
-.pl-sec{display:grid;gap:10px;padding-top:12px;border-top:1px solid var(--line-2)}
+.pl-sec{display:grid;gap:10px;padding-top:12px}
 .pl-sec .pl-row{align-items:center}
-.pl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.pl-tile{display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-height:132px;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--txt);text-decoration:none;min-width:0}
-.pl-tile[aria-disabled]{opacity:.6}
-.pl-tile strong{display:block;font-size:.9375rem}
-.pl-tile small{display:block;color:var(--muted);font-size:.75rem;line-height:1.4}
-.pl-ico{--tone:var(--g);display:grid;place-items:center;width:38px;height:38px;border-radius:11px;color:var(--tone);background:color-mix(in srgb,var(--tone) 18%,var(--card))}
-.pl-ico[data-tone=s]{--tone:var(--s)}
-.pl-ico[data-tone=pink]{--tone:#ff6f9f}
-.pl-ico[data-tone=ok]{--tone:var(--ok)}
-.pl-ico[data-tone=blue]{--tone:#6f9dff}
-.pl-ico[data-tone=amber]{--tone:#ffb347}
-.pl-badge{align-self:flex-start;min-height:1.5em;padding:2px 8px;border-radius:999px;font-size:.75rem;font-weight:800;background:color-mix(in srgb,var(--g) 18%,var(--card));color:var(--g)}
-.pl-badge:empty{visibility:hidden}
-.pl-badge[data-done]{background:color-mix(in srgb,var(--ok) 16%,var(--card));color:var(--ok)}
-.pl-badge[data-soon]{background:var(--line);color:var(--muted)}
-.pl-score{display:flex;justify-content:space-between;gap:8px;font-weight:900;font-variant-numeric:tabular-nums}
+/* 놀이 = 프로필 격자 */
+.pl-shelf{gap:0}
+.pl-tabs{display:flex;justify-content:center;border-top:1px solid var(--line)}
+.pl-tabs h2{display:flex;align-items:center;gap:6px;margin:0;padding:12px 4px 10px;border-top:1.5px solid var(--txt);margin-top:-1px;font-size:.8125rem;font-weight:800;letter-spacing:.04em}
+.pl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;margin-inline:-16px}
+.pl-tile{--tone:var(--g);position:relative;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;aspect-ratio:1;min-height:44px;padding:10px;overflow:hidden;color:#fff;text-decoration:none;min-width:0;
+  background:radial-gradient(120% 90% at 20% 0%,color-mix(in srgb,var(--tone) 85%,#fff 0%) 0%,transparent 70%),linear-gradient(160deg,color-mix(in srgb,var(--tone) 70%,#000),#0b0b0b)}
+.pl-tile[data-tone=s]{--tone:var(--s)}
+.pl-tile[data-tone=pink]{--tone:#ff4d8d}
+.pl-tile[data-tone=ok]{--tone:#1fbf75}
+.pl-tile[data-tone=blue]{--tone:#3f7dff}
+.pl-tile[data-tone=amber]{--tone:#f2a516}
+.pl-tile[aria-disabled]{filter:grayscale(.8);opacity:.6}
+.pl-tile strong{display:block;font-size:.875rem;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.45)}
+.pl-tile small{display:block;font-size:.6875rem;line-height:1.3;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-ico{position:absolute;top:10px;left:10px;display:grid;place-items:center;color:#fff;opacity:.95}
+.pl-ico svg{width:26px;height:26px}
+.pl-badge{position:absolute;top:8px;right:8px;padding:2px 7px;border-radius:999px;font-size:.6875rem;font-weight:800;background:rgba(0,0,0,.45);color:#fff}
+.pl-badge:empty{display:none}
+.pl-badge[data-done]{background:#fff;color:#0f0f0f}
+.pl-badge[data-soon]{background:rgba(0,0,0,.55)}
+/* 층 대항전 · 주간 순위 */
+.pl-split{display:grid;gap:12px;padding:16px;border-radius:var(--radius);background:var(--card);border:1px solid var(--line)}
+.pl-score{display:flex;justify-content:space-between;gap:8px;font-weight:900;font-size:1.125rem;font-variant-numeric:tabular-nums}
 .pl-score span:first-child{color:var(--g)}
 .pl-score span:last-child{color:var(--s);text-align:right}
-.pl-vs{display:flex;gap:3px;height:14px;border-radius:999px;overflow:hidden;background:var(--line)}
+.pl-vs{display:flex;gap:3px;height:8px;border-radius:999px;overflow:hidden;background:var(--fill)}
 .pl-vs i{display:block;height:100%}
 .pl-vs i:first-child{background:var(--g)}
 .pl-vs i:last-child{flex:1;background:var(--s)}
-.pl-rank{display:grid;gap:4px;margin:0;padding:0;list-style:none}
-.pl-rank li{display:flex;align-items:center;gap:12px;min-height:40px;min-width:0}
-.pl-rank li>b{width:28px;flex:none;font-variant-numeric:tabular-nums}
+.pl-rank{display:grid;gap:2px;margin:0;padding:0;list-style:none}
+.pl-rank li{display:flex;align-items:center;gap:12px;min-height:48px;min-width:0}
+.pl-rank li>b{width:24px;flex:none;font-variant-numeric:tabular-nums;text-align:center}
 .pl-rank li>span{flex:1;min-width:0}
 .pl-rank li>em{font-style:normal;font-weight:800;color:var(--muted)}
-.pl-rank .pl-me{padding:10px 12px;border-radius:12px;background:var(--bg-2)}
+.pl-rank .pl-me{padding:0 12px;border-radius:12px;background:var(--fill)}
 .pl-rank .pl-me em{color:var(--g)}
 .pl-menu{display:grid;gap:8px;margin-top:12px}
 .pl-menu .btn{width:100%}
-.pl-sk{display:block;height:1em;border-radius:8px;background:linear-gradient(90deg,var(--line),var(--line-2),var(--line));background-size:200% 100%;animation:pl-sk 1.2s linear infinite}
+.pl-sk{display:block;height:1em;border-radius:8px;background:linear-gradient(90deg,var(--fill),var(--fill-2),var(--fill));background-size:200% 100%;animation:pl-sk 1.2s linear infinite}
 @keyframes pl-sk{to{background-position:-200% 0}}
 @media (prefers-reduced-motion: reduce){.pl-sk{animation:none}.pl-bar>i{transition:none}}
 `;
 
+  // 예전 놀거리(play1 꺼짐)도 인스타식: 프로필 머리(내 사진 + 포인트 + 출석) · 놀이 3칸 격자 (2026-11-21)
+  const LEGACY = [
+    ['radio', 'radio', 'radioText', TILES[4][4], 'blue'], ['vote', 'vote', 'voteText', TILES[3][4], 'ok'],
+    ['cup', 'cup', 'cupText', TILES[1][4], 's'], ['guess', 'sGuess', 'subGuess', TILES[0][4], 'g', 'guess'],
+    ['djs', 'djs', '', '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>', 'pink'],
+    ['rewards', 'rewards', '', '<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13M12 8S10.5 3.5 8 4.5 9 8 12 8zm0 0s1.5-4.5 4-3.5S15 8 12 8z"/>', 'amber', 'rewards'],
+    ['rank', 'rank', '', '<path d="M5 21V12M12 21V5M19 21v-6"/>', 's', 'rewards'],
+    ['shop', 'shop', '', '<path d="M5 8h14l-1 13H6zM9 8V6a3 3 0 0 1 6 0v2"/>', 'pink', 'shop'],
+    ['challenge', 'challenge', 'subChallenge', TILES[5][4], 'amber', 'challenge'],
+    ['songs', 'songs', '', '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>', 'blue', 'songs'],
+    ['shorts', 'sShorts', 'subShorts', TILES[2][4], 'pink'],
+    ['photos', 'album', '', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>', 'ok']
+  ];
   function legacyRender(root) {
-    const view = U.mount(root, '<h1>' + L.esc(L.t('nav.play')) + '</h1>');
-    view.innerHTML = '<section style="' + U.card + ';border-top:3px solid var(--g)"><h2 data-points>' + t('points') +
-      '</h2>' + U.button(t('attend'), 'data-attend', true) + '</section>' +
-      [['radio', 'g'], ['vote', 's'], ['cup', 'g']].map(([name, color]) =>
-        '<article style="' + U.card + ';border-left:4px solid var(--' + color + ')">' +
-        U.link('#/' + name, t(name)) + '<p class="muted">' + t(name + 'Text') + '</p></article>'
-      ).join('') + '<div class="lounge-list">' +
-      [['djs'], ['rewards', 'rewards'], ['rank', 'rewards'], ['shop', 'shop'],
-        ['challenge', 'challenge'], ['songs', 'songs']].map(([name, gate]) =>
-        '<article class="shell-card">' + (!gate || L.open(gate) ? U.link('#/' + name, t(name)) :
-          '<h2>' + t(name) + '</h2><p class="muted">' + L.esc(L.t('core.soon')) + '</p>') + '</article>'
-      ).join('') + (L.guessTile?.() ?? '') + '</div>';
+    injectStyle();
+    const view = document.createElement('section');
+    view.className = 'pl';
+    const me = L.me || {};
+    const grid = LEGACY.map(([key, name, sub, icon, tone, gate]) => {
+      const open = !gate || L.open(gate);
+      const inner = '<span class="pl-ico">' + svg(icon) + '</span><strong>' + t(name) + '</strong>' +
+        (sub ? '<small>' + t(sub) + '</small>' : '') + (open ? '' : '<span class="pl-badge" data-soon>' + L.esc(L.t('core.soon')) + '</span>');
+      return open ? '<a class="pl-tile" data-tone="' + tone + '" data-pl-tile="' + key + '" href="#/' + key + '">' + inner + '</a>'
+        : '<div class="pl-tile" data-tone="' + tone + '" data-pl-tile="' + key + '" aria-disabled="true">' + inner + '</div>';
+    }).join('');
+    view.innerHTML = '<div class="pl-head"><h1>' + L.esc(L.t('nav.play')) + '</h1></div>' +
+      '<section class="pl-card"><div class="pl-prof"><span class="pl-ava"' + (L.me ? '' : ' data-off') + '>' + L.avatar({ nick: me.nick, photo: me.photo }, 78) +
+      '</span><ul class="pl-stats" style="grid-template-columns:minmax(0,1fr) minmax(0,2fr)"><li><b data-points>' + (L.me ? L.esc(num(me.points).toLocaleString(L.lang)) : '—') +
+      '</b><span>' + t('ptsLabel') + '</span></li><li style="display:grid;align-items:center;padding-left:8px">' + U.button(t('attend'), 'data-attend', true) +
+      '</li></ul></div></section>' +
+      '<section class="pl-card pl-shelf"><div class="pl-tabs"><h2>' + svg('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>') +
+      t('shelf') + '</h2></div><div class="pl-grid">' + grid + '</div></section>';
+    root.replaceChildren(view);
 
     const heading = view.querySelector('[data-points]');
     const button = view.querySelector('[data-attend]');
     function showPoints(points) {
-      heading.textContent = L.t('play.points') + ' · ' + (Number(points) || 0) + 'P';
+      heading.textContent = num(points).toLocaleString(L.lang);
     }
     if (L.me) {
       L.api('points').then(data => {
@@ -294,10 +345,10 @@
     const byKey = new Map((Array.isArray(shelf) ? shelf : []).map(item => [item?.key, item]));
     return TILES.map(([key, href, name, sub, icon, tone]) => {
       const item = byKey.get(key), open = tileOpen(key, item);
-      const inner = '<span class="pl-ico" data-tone="' + tone + '">' + svg(icon) + '</span><span><strong>' + t(name) +
-        '</strong><small>' + t(sub) + '</small></span>' + tileBadge(item, open);
-      return open ? '<a class="pl-tile" data-pl-tile="' + key + '" href="' + href + '">' + inner + '</a>'
-        : '<div class="pl-tile" data-pl-tile="' + key + '" aria-disabled="true">' + inner + '</div>';
+      const inner = '<span class="pl-ico">' + svg(icon) + '</span><strong>' + t(name) +
+        '</strong><small>' + t(sub) + '</small>' + tileBadge(item, open);
+      return open ? '<a class="pl-tile" data-tone="' + tone + '" data-pl-tile="' + key + '" href="' + href + '">' + inner + '</a>'
+        : '<div class="pl-tile" data-tone="' + tone + '" data-pl-tile="' + key + '" aria-disabled="true">' + inner + '</div>';
     }).join('');
   }
 
@@ -330,10 +381,19 @@
     ).join('') + '</div>', { close: true });
   }
 
-  function paintToday(box, today) {
+  // 프로필 머리: 내 사진(링) + 포인트 · 연속 출석 · 오늘 n/5
+  function profHead(points, streak, progress, ring) {
+    const me = L.me || {};
+    return '<div class="pl-prof"><span class="pl-ava"' + (ring ? '' : ' data-off') + '>' + L.avatar({ nick: me.nick, photo: me.photo }, 78) + '</span>' +
+      '<ul class="pl-stats"><li><b data-pl-stat-points>' + (points == null ? '—' : L.esc(num(points).toLocaleString(L.lang))) + '</b><span>' + t('ptsLabel') +
+      '</span></li><li><b class="pl-gold" data-pl-streak>' + (streak == null ? '—' : t('days', { n: num(streak) })) + '</b><span>' + t('streak') +
+      '</span></li><li><b data-pl-progress>' + (progress || '—') + '</b><span>' + t('todayLabel') + '</span></li></ul></div>';
+  }
+
+  function paintToday(box, today, points) {
     box.removeAttribute('aria-busy');
     if (!today) {
-      box.innerHTML = '<h2>' + t('today') + '</h2><p class="muted">' + t('guest') + '</p>' +
+      box.innerHTML = profHead(null, null, '', false) + '<div class="pl-bio"><span class="pl-k">' + t('today') + '</span><span>' + t('guest') + '</span></div>' +
         U.button(L.esc(L.t('core.login')), 'data-pl-login', true);
       box.querySelector('[data-pl-login]').onclick = () => L.needLogin();
       return;
@@ -344,18 +404,16 @@
     const percent = Math.round(Math.min(1, done / total) * 100);
     const bonus = pts(today.allclear?.pts);
     const cleared = Boolean(today.allclear?.done);
-    box.innerHTML = (cleared ? '<span class="pl-stamp" data-pl-stamp>' + t('stamp') + (bonus ? ' +' + bonus + 'P' : '') + '</span>' : '') +
-      '<div class="pl-row"><div><span class="pl-k">' + t('todayAuto') + '</span><h2 class="pl-big" data-pl-progress>' +
-      t('progress', { n: done, total }) + '</h2></div><div class="pl-right"' + (cleared ? ' style="visibility:hidden"' : '') +
-      '><span class="pl-k">' + t('streak') + '</span><span class="pl-big pl-gold" data-pl-streak>' + t('days', { n: num(today.streak) }) +
-      '</span></div></div><div class="pl-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + total + '" aria-valuenow="' + done +
+    box.innerHTML = profHead(points, today.streak, done + '/' + total, done > 0) +
+      '<div class="pl-bio"><span class="pl-k">' + t('todayAuto') + '</span><span>' + t('progress', { n: done, total }) +
+      (cleared ? '' : bonus ? ' · ' + t('allNote', { n: bonus }) : '') + '</span></div>' +
+      (cleared ? '<span class="pl-stamp" data-pl-stamp>' + t('stamp') + (bonus ? ' +' + bonus + 'P' : '') + '</span>' : '') +
+      '<div class="pl-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + total + '" aria-valuenow="' + done +
       '" aria-label="' + t('today') + '"><i style="width:' + percent + '%"></i></div><ul class="pl-chips">' +
       items.map(item => '<li class="pl-chip" data-pl-chip="' + L.esc(item?.key) + '"' + (item?.done ? ' data-done' : '') +
-        '><b aria-hidden="true">' + (item?.done ? '✓' : '·') + '</b><span>' + (ITEM[item?.key] ? t(ITEM[item.key]) : L.esc(item?.key)) +
+        '><b aria-hidden="true"><i>' + svg(ICON[item?.key] || '<circle cx="12" cy="12" r="3"/>') + '</i></b><span>' + (ITEM[item?.key] ? t(ITEM[item.key]) : L.esc(item?.key)) +
         '<span class="sr-only"> ' + t(item?.done ? 'stateDone' : 'stateLeft') + '</span></span><small>' +
-        (pts(item?.pts) ? L.esc(item.pts) + 'P' : '') + '</small></li>').join('') + '</ul>' +
-      (cleared ? (today.streak ? '<p class="pl-note">' + t('streak') + ' ' + t('days', { n: num(today.streak) }) + '</p>' : '')
-        : bonus ? '<p class="pl-note">' + t('allNote', { n: bonus }) + '</p>' : '');
+        (pts(item?.pts) ? '+' + L.esc(item.pts) + 'P' : '') + '</small></li>').join('') + '</ul>';
     const toasts = [];
     if (today.attended) toasts.push(raw('toastAttend', { n: num(today.attended.gained) }));
     if (pts(today.allclear?.gained)) toasts.push(raw('toastAll', { n: today.allclear.gained }));
@@ -486,7 +544,7 @@
   function paintRank(box, rank) {
     if (!rank || !Array.isArray(rank.top)) { box.hidden = true; return; }
     box.hidden = false;
-    const colors = ['var(--g)', '#d6d2e0', '#d99a6c'];
+    const colors = ['var(--g)', 'var(--s)', 'var(--muted)'];
     box.innerHTML = '<div class="pl-row" style="align-items:center"><h2>' + t('rank') + '</h2><a class="shell-link" href="#/rank">' +
       t('seeAll') + '</a></div><ol class="pl-rank" data-pl-rank>' + rank.top.slice(0, 3).map((row, i) =>
         '<li><b style="color:' + colors[i] + '">' + num(row?.place || i + 1) + '</b><span>' + L.whoTag(row) + '</span><em>' +
@@ -504,10 +562,11 @@
       svg('<circle cx="12" cy="12" r="9"/><path d="M9.5 8.5h3.2a2.2 2.2 0 0 1 0 4.4H9.5V8M9.5 12.9V16"/>') + '<span></span>' +
       svg('<path d="M9 6l6 6-6 6"/>') + '</button></div>' +
       '<section class="pl-card" data-pl-today aria-busy="true" aria-label="' + t('today') + '">' + skeleton([40, 60, 100]) + '</section>' +
+      '<section class="pl-card pl-shelf" data-pl-shelf><div class="pl-tabs"><h2>' + svg('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>') +
+      t('shelf') + '</h2></div><div class="pl-grid">' + tiles(null) + '</div></section>' +
       '<section class="pl-now" data-pl-now aria-busy="true">' + skeleton([30, 80, 50]) + '</section>' +
-      '<section class="pl-card" style="background:none;border:0;padding:0" data-pl-shelf><h2>' + t('shelf') + '</h2><div class="pl-grid">' + tiles(null) + '</div></section>' +
-      '<section class="pl-card" data-pl-battle hidden></section>' +
-      '<section class="pl-card" data-pl-ranking hidden></section>';
+      '<section class="pl-card pl-split" data-pl-battle hidden></section>' +
+      '<section class="pl-card pl-split" data-pl-ranking hidden></section>';
     root.replaceChildren(view);
     const pill = view.querySelector('[data-pl-points]');
     paintPill(pill, L.me?.points);
@@ -533,7 +592,7 @@
       }
       if (data.points != null && L.me) L.me.points = data.points;
       paintPill(pill, data.points);
-      paintToday(view.querySelector('[data-pl-today]'), data.today);
+      paintToday(view.querySelector('[data-pl-today]'), data.today, data.points);
       paintNow(view.querySelector('[data-pl-now]'), data.now, fill);
       view.querySelector('[data-pl-shelf] .pl-grid').innerHTML = tiles(data.shelf);
       paintBattle(view.querySelector('[data-pl-battle]'), data.battle, fill);
