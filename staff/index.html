@@ -3535,10 +3535,10 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     if (state.tab === 'lost' && !d.lost) state.tab = 'guest';
     if (state.tab === 'work' && !workOn) state.tab = 'guest';
     if (state.tab === 'all' && !d.admin) state.tab = 'guest';
-    if (state.tab === 'ops' && d.guard) state.tab = 'gate';
+    if (state.tab === 'ops' && d.guard && !d.guardLead) state.tab = 'gate';   // 🛎 경호팀장은 운영 탭 (2026-11-21 22:27)
     var gateOn = !!(d.guard || d.gate || d.memberGate);   // 🚪 입구: 경호팀 · 대표
     if (state.tab === 'gate' && !gateOn) state.tab = 'guest';
-    if (d.guard && ['gate', 'me'].concat(canAcc ? ['acc'] : [], d.yc ? ['yc'] : [], d.table ? ['table'] : [], hasBoard ? ['board'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·📋 경호팀 게시판·내 프로필만
+    if (d.guard && ['gate', 'me', 'edu', 'dec'].concat(d.guardLead ? ['guest', 'ops', 'dm'] : [], canAcc ? ['acc'] : [], d.yc ? ['yc'] : [], d.table ? ['table'] : [], hasBoard ? ['board'] : []).indexOf(state.tab) < 0) state.tab = 'gate';   // 경호팀: 입구(+ 팀장은 테이블·연출 보기)·📋 경호팀 게시판·내 프로필만
     state.tabPick = state.tab !== want ? want : ''; tabSave();
     tabArrange(d.tabOrder || []);   // ↕ 내 탭 순서
     document.querySelectorAll('#tabs button').forEach(function (b) {
@@ -3556,7 +3556,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       if (b.dataset.tab === 'all') b.hidden = !d.admin;   // 📡 전체: 대표만
       if (b.dataset.tab === 'ops') b.hidden = false;   // 🛎 운영 요청: 누구나 (운영팀은 받기)
       if (b.dataset.tab === 'gate') b.hidden = !gateOn;
-      if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table) || (b.dataset.tab === 'board' && hasBoard) || (b.dataset.tab === 'acc' && canAcc));
+      if (d.guard) b.hidden = !(b.dataset.tab === 'gate' || b.dataset.tab === 'edu' || b.dataset.tab === 'dec' || (d.guardLead && (b.dataset.tab === 'guest' || b.dataset.tab === 'ops' || b.dataset.tab === 'dm')) || (b.dataset.tab === 'yc' && d.yc) || (b.dataset.tab === 'table' && d.table) || (b.dataset.tab === 'board' && hasBoard) || (b.dataset.tab === 'acc' && canAcc));
       b.setAttribute('aria-selected', b.dataset.tab === state.tab ? 'true' : 'false');
       b.innerHTML = tabLabelH(b.dataset.tab, l[0]) + (l[1] ? '<span class="n">' + (l[1] > 99 ? '99+' : l[1]) + '</span>' : '');
     });
