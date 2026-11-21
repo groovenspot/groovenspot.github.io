@@ -119,7 +119,7 @@
   }
   function hero(state) {
     const data = state.data, party = data.party;
-    if (!party && !data.poster) return;
+    // 파티·포스터가 없는 날에도 그린다 — '갈래요' 버튼과 오픈까지 남은 시간이 여기 있다
     const poster = typeof party?.poster === 'string' ? party.poster : party?.poster?.url || data.poster?.url;
     const src = typeof LoungeScreenUI !== 'undefined' ? LoungeScreenUI.url(poster) : '';
     const el = document.createElement('section'); el.className = 't5-hero' + (src ? ' t5-hero-image' : ''); el.dataset.t5Hero = '';
@@ -158,6 +158,8 @@
         const tray = document.createElement('div'); tray.dataset.storyTray = ''; state.view.append(tray); L.storyTray(tray);
       }
       floors(state);
+      // 오늘 파티가 없으면 파티 카드가 숨어 '갈래요'가 사라진다 → 따로 한 줄
+      if (!data.party) part(state, 'going', false);
       ['quick', 'lives', 'strip', 'party', 'lineup', 'safety'].forEach(name => part(state, name, name !== 'safety'));
     } else if (phase === 'pre') {
       hero(state);

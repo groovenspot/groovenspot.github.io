@@ -57,6 +57,7 @@
 
   P.going = (el, data, ctx = {}) => {
     if (!mount(el, 'tcard5-going')) return;
+    el.dataset.going = '';   // 예전 화면과 같은 표시(시험·다른 화면이 [data-going] 으로 찾는다)
     const g = data.going || {}, people = Array.isArray(g.people) ? g.people : [];
     const key = String(data.day || '') + ':' + String(L.me?.id || '');
     const busy = requests.has(key);
