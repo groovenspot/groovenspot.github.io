@@ -365,11 +365,13 @@ const LoungeScreenUI = (() => {
     timer = setInterval(refresh, 60_000);
   }
 
-  L.screen('tonight', { nav: 'tonight', auth: false, title: 'nav.tonight', render, leave() {
+  // 5차(SPEC5): 예전 오늘 밤 화면. 새 화면(tonight5.js)이 스위치가 꺼져 있을 때 이걸 그대로 부른다.
+  L.tonightClassic = { nav: 'tonight', auth: false, title: 'nav.tonight', render, leave() {
     clearInterval(timer);
     livePlayer?.dispose();
     livePlayer = null;
-  } });
+  } };
+  L.screen('tonight', L.tonightClassic);
 })();
 
 // iOS may resize only the visual viewport when browser controls or the keyboard appear.
