@@ -32,7 +32,7 @@
   const style = document.createElement('style');
   style.textContent = `
     .share-sheet { overflow-wrap:anywhere; }
-    .share-sheet > h2 { margin:0 0 10px; font-size:1rem; text-align:center; }
+    .share-sheet > h2 { margin:0 0 10px; padding-left:42px; font-size:1rem; line-height:24px; text-align:center; }
     .share-sheet form { display:grid; gap:10px; min-width:0; }
     .share-search { position:relative; display:block; }
     .share-search > svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
