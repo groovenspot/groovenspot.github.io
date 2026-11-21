@@ -453,6 +453,8 @@ details.all { margin-top: 14px; }
 .stp .ctl button.q { min-width: 48px; border-color: transparent; background: none; font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; }
 .stp .ctl button.q.op { color: #c9a3ff; font-size: 19px; }
 .stp .ctl button.out { font-size: 14px; border-color: var(--ok); color: var(--ok); }
+.stp .ctl button.kout { border-color: var(--g); color: var(--g); font-weight: 800; }   /* 🍾 먹던 병 빼기(자리로) */
+.stp .ctl button.kdone { border-color: var(--line-2); color: var(--muted); font-size: 13px; }   /* 다 마심(빈 병 정리)은 눈에 덜 띄게 */
 .ktoast { display: flex; align-items: center; gap: 10px; margin: 10px 0 0; border-radius: 12px; padding: 8px 8px 8px 12px; background: rgba(60,207,145,.1); border: 1px solid rgba(60,207,145,.45); font-size: 14px; }
 .ktoast span { flex: 1; min-width: 0; }
 .ktoast b { color: var(--ok); }
@@ -7161,7 +7163,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     var c = JSON.parse(JSON.stringify(kc.cust)), it = body.item ? c.items.filter(function (x) { return x.id === body.item; })[0] : null, kind = '', text = '';
     if (body.a === 'keep_set') {
       if (!it) return null;
-      if (body.op === 'take') { var n = body.n || 1; if (n > it.n) return null; kind = it.kind === '병' ? '꺼내기' : '다 마심'; text = it.kind === '병' ? it.liq + ' ' + n + '병 꺼냄 (' + it.n + ' → ' + (it.n - n) + ')' : it.liq + ' 다 마심'; if (direct) it.n -= n; }
+      if (body.op === 'take') { var n = body.n || 1; if (n > it.n) return null; kind = it.kind === '병' || body.out ? '꺼내기' : '다 마심'; text = it.kind === '병' ? it.liq + ' ' + n + '병 꺼냄 (' + it.n + ' → ' + (it.n - n) + ')' : body.out ? it.liq + ' 먹던 병 ' + (it.amt || '') + ' 꺼냄' : it.liq + ' 다 마심'; if (direct) it.n -= n; }
       else if (body.op === 'n') { kind = '병 수 고침'; text = it.liq + ' ' + it.n + ' → ' + body.n + '병'; if (direct) it.n = body.n; }
       else if (body.op === 'amt') { kind = '남은 양 고침'; text = it.liq + ' ' + it.amt + ' → ' + body.amt; if (direct) it.amt = body.amt; }
       else return null;
@@ -7254,7 +7256,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         ip.map(function (r) { return '<small class="kpend">⏳ 승인 대기 · ' + esc(r.text) + '</small>'; }).join('') + '</div><div class="ctl">';
       if (!edit) h += '<span class="q' + (i.kind === '병' ? '' : ' op') + '" style="font-size:22px;font-weight:900;padding:0 6px">' + (i.kind === '병' ? i.n + '<small style="font-size:13px;color:var(--muted)">병</small>' : esc(i.amt)) + '</span>';
       else if (i.kind === '병') h += '<button type="button" data-kt="' + esc(i.id) + '" aria-label="' + esc(i.liq) + ' 1병 꺼내기">−</button><button type="button" class="q" data-kn="' + esc(i.id) + '" aria-label="병 수 고치기">' + i.n + '</button><button type="button" data-kp="' + esc(i.id) + '" aria-label="' + esc(i.liq) + ' 1병 더 맡기기">+</button>';
-      else h += '<button type="button" class="q op" data-ka="' + esc(i.id) + '" aria-label="남은 양 고치기">' + esc(i.amt) + '</button><button type="button" class="out" data-kt="' + esc(i.id) + '">다 마심</button>';
+      else h += '<button type="button" class="q op" data-ka="' + esc(i.id) + '" aria-label="남은 양 고치기">' + esc(i.amt) + '</button><button type="button" class="out kout" data-kto="' + esc(i.id) + '" aria-label="' + esc(i.liq) + ' 먹던 병 자리로 빼기">빼기</button><button type="button" class="out kdone" data-kt="' + esc(i.id) + '" aria-label="' + esc(i.liq) + ' 다 마심 (빈 병)">다 마심</button>';   // 🍾 먹던 병도 '빼기'(자리로) — '다 마심'은 빈 병 정리 (직원 제보 2026-11-22)
       h += '</div></div>';
     });
     var u = state.kundo;
@@ -7288,10 +7290,12 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       b.addEventListener('click', function () {
         var it = item(b.dataset.kt); if (!it) return;
         if (it.kind === '병') return kTakeSheet(c, it, direct);   // 🍾 빼기: 병 수 한 번에 + 자리·퍼레/킵만·메모 (대표 요청 2026-11-19 새벽)
+        if (!armed(b, '다 마심')) return;   // 빈 병 정리 — 자리로 나가는 건 '빼기' (두 번 눌러 확인)
         var txt = it.kind === '병' ? '<b>' + esc(it.liq) + ' 1병 꺼냄' + (direct ? '' : ' 요청') + '</b> · ' + it.n + ' → ' + (it.n - 1) : '<b>' + esc(it.liq) + ' 다 마심' + (direct ? '' : ' 요청') + '</b>';
         kCall({ a: 'keep_set', item: it.id, op: 'take', n: 1 }, txt, b, null, true);
       });
     });
+    area.querySelectorAll('[data-kto]').forEach(function (b) { b.addEventListener('click', function () { var it = item(b.dataset.kto); if (it) kTakeSheet(c, it, direct); }); });
     if ($('kOut')) $('kOut').addEventListener('click', function () { kTakeSheet(c, null, direct); });
     kBindReqs(area);
     area.querySelectorAll('[data-kp]').forEach(function (b) {
@@ -7415,21 +7419,22 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   // 🍾 빼기 (대표 요청 2026-11-19 새벽): 병 수 한 번에 · 몇 번 자리 · 🎆 퍼레 같이 / 🍾 킵만 바로 · 메모 → 승인 화면에도 보임
   var KEEP_HOW = ['🎆 퍼레 같이', '🍾 킵만 바로'];
   function kTakeSheet(c, it, direct) {
-    var bt = c.items.filter(function (i) { return i.kind === '병' && i.n > 0; }); if (!bt.length) return;
+    var bt = c.items.filter(function (i) { return i.n > 0 && (i.kind === '병' || (it && i.id === it.id)); }); if (!bt.length) return;   // 먹던 병은 그 줄의 '빼기'로 열었을 때만
+    var opn = function (i) { return !!i && i.kind !== '병'; };
     var st = { it: it || (bt.length === 1 ? bt[0] : null), n: 1, how: '' };
-    function left(i) { if (direct) return i.n; return i.n - kPend(c.id).filter(function (r) { return r.item === i.id && r.kind === '꺼내기'; }).reduce(function (t, r) { return t + (r.n || 0); }, 0); }
+    function left(i) { if (direct) return i.n; return i.n - kPend(c.id).filter(function (r) { return r.item === i.id && (r.kind === '꺼내기' || r.kind === '다 마심'); }).reduce(function (t, r) { return t + (r.n || 0); }, 0); }
     function draw() {
       var seat = $('ktSeat') ? $('ktSeat').value : '', memo = $('ktMemo') ? $('ktMemo').value : '', i = st.it, mx = i ? Math.max(0, left(i)) : 0;
       if (st.n > mx) st.n = Math.max(1, mx);
       showSheet('<h2>🍾 빼기 · ' + esc(c.name) + '</h2>' +
-        (bt.length > 1 || !i ? '<p class="lab" style="font-weight:700;font-size:14px;margin:0 0 6px">술</p><div class="tbgr" id="ktL">' + bt.map(function (x) { return '<button type="button" class="chip' + (i && i.id === x.id ? ' on' : '') + '" data-kti="' + esc(x.id) + '">' + esc(x.liq) + ' ' + x.n + '병</button>'; }).join('') + '</div>' : '<p class="note" style="margin:0 0 10px"><b>' + esc(i.liq) + '</b> · 지금 ' + i.n + '병</p>') +
-        (i ? '<label>몇 병<span class="knum"><button type="button" id="ktDn" aria-label="한 병 덜"' + (st.n <= 1 ? ' disabled' : '') + '>−</button><input id="ktN" type="number" inputmode="numeric" min="1" max="' + mx + '" value="' + st.n + '"><button type="button" id="ktUp" aria-label="한 병 더"' + (st.n >= mx ? ' disabled' : '') + '>+</button></span></label>' +
+        (bt.length > 1 || !i ? '<p class="lab" style="font-weight:700;font-size:14px;margin:0 0 6px">술</p><div class="tbgr" id="ktL">' + bt.map(function (x) { return '<button type="button" class="chip' + (i && i.id === x.id ? ' on' : '') + '" data-kti="' + esc(x.id) + '">' + esc(x.liq) + ' ' + (opn(x) ? '먹던 병 ' + esc(x.amt) : x.n + '병') + '</button>'; }).join('') + '</div>' : '<p class="note" style="margin:0 0 10px"><b>' + esc(i.liq) + '</b> · ' + (opn(i) ? '먹던 병 (남은 양 ' + esc(i.amt) + ')' : '지금 ' + i.n + '병') + '</p>') +
+        (opn(i) ? (mx < 1 ? '<p class="note" style="margin:0 0 10px">⏳ 이미 빼기·다 마심 요청 중이에요.</p>' : '') : i ? '<label>몇 병<span class="knum"><button type="button" id="ktDn" aria-label="한 병 덜"' + (st.n <= 1 ? ' disabled' : '') + '>−</button><input id="ktN" type="number" inputmode="numeric" min="1" max="' + mx + '" value="' + st.n + '"><button type="button" id="ktUp" aria-label="한 병 더"' + (st.n >= mx ? ' disabled' : '') + '>+</button></span></label>' +
           (mx < i.n ? '<p class="note" style="margin:-6px 0 10px">⏳ ' + (i.n - mx) + '병은 이미 빼기 요청 중이에요.</p>' : '') : '') +
         '<label>몇 번 자리로?<input id="ktSeat" maxlength="12" autocomplete="off" placeholder="예) 3-11 · L4" value="' + esc(seat) + '"></label>' +
         '<p class="lab" style="font-weight:700;font-size:14px;margin:0 0 6px">어떻게 나가요?</p><div class="tbgr">' + KEEP_HOW.map(function (w) { return '<button type="button" class="chip' + (st.how === w ? ' on' : '') + '" data-kth="' + esc(w) + '" aria-pressed="' + (st.how === w) + '">' + esc(w) + '</button>'; }).join('') + '</div>' +
         '<label>메모 (선택)<input id="ktMemo" maxlength="40" autocomplete="off" placeholder="예) 12시 생일 · 얼음 같이" value="' + esc(memo) + '"></label>' +
         (direct ? '' : '<p class="note" style="margin:0 0 10px">⏳ ' + approversTxt() + ' 승인 후 빠져요. 자리·메모도 승인 화면에 보여요.</p>') +
-        '<button class="btn btn-hot" type="button" id="ktGo"' + (i && mx > 0 ? '' : ' disabled') + '>' + (i ? esc(i.liq) + ' ' + st.n + '병 빼기' : '술을 골라 주세요') + (direct ? '' : ' 요청') + '</button><p class="msg" id="ktMsg" role="alert"></p>');
+        '<button class="btn btn-hot" type="button" id="ktGo"' + (i && mx > 0 ? '' : ' disabled') + '>' + (i ? esc(i.liq) + ' ' + (opn(i) ? '먹던 병' : st.n + '병') + ' 빼기' : '술을 골라 주세요') + (direct ? '' : ' 요청') + '</button><p class="msg" id="ktMsg" role="alert"></p>');
       document.querySelectorAll('[data-kti]').forEach(function (b) { b.addEventListener('click', function () { st.it = bt.filter(function (x) { return x.id === b.dataset.kti; })[0]; st.n = 1; draw(); }); });
       document.querySelectorAll('[data-kth]').forEach(function (b) { b.addEventListener('click', function () { st.how = st.how === b.dataset.kth ? '' : b.dataset.kth; draw(); }); });
       if ($('ktDn')) $('ktDn').addEventListener('click', function () { st.n = Math.max(1, st.n - 1); draw(); });
@@ -7440,6 +7445,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         var n = st.n, s2 = $('ktSeat').value.trim().replace(/^([a-z])/i, function (x) { return x.toUpperCase(); }), m2 = $('ktMemo').value.trim();
         if (/[<>"]/.test(s2 + m2)) { $('ktMsg').textContent = '< > " 는 쓸 수 없어요.'; return; }
         var note = [s2 ? s2 + ' 자리' : '', st.how, m2].filter(String).join(' · ');
+        if (opn(i2)) { kCall({ a: 'keep_set', item: i2.id, op: 'take', n: 1, out: true, seat: s2, how: st.how, tmemo: m2 }, '<b>' + esc(i2.liq) + ' 먹던 병 ' + esc(i2.amt) + ' 꺼냄' + (direct ? '' : ' 요청') + '</b>' + (note ? ' · ' + esc(note) : ''), this, $('ktMsg'), true); return; }
         var txt = '<b>' + esc(i2.liq) + ' ' + n + '병 꺼냄' + (direct ? '' : ' 요청') + '</b> · ' + i2.n + ' → ' + (i2.n - n) + (note ? ' · ' + esc(note) : '');
         kCall({ a: 'keep_set', item: i2.id, op: 'take', n: n, seat: s2, how: st.how, tmemo: m2 }, txt, this, $('ktMsg'), true);
       });
