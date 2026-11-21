@@ -61,7 +61,20 @@
     del: ['삭제', 'Delete'],
     picked: ['{n}개 선택', '{n} selected'],
     private: ['비공개 계정', 'Private account'],
-    tagRequests: ['태그 요청', 'Tag requests']
+    tagRequests: ['태그 요청', 'Tag requests'],
+    newCol: ['새 모음', 'New collection'],
+    colName: ['모음 이름', 'Collection name'],
+    colPosts: ['게시물 추가·빼기', 'Add or remove posts'],
+    colAdd: ['게시물 추가', 'Add posts'],
+    colRename: ['이름 바꾸기', 'Rename'],
+    colDelete: ['모음 삭제', 'Delete collection'],
+    colDeleteAsk: ['이 모음을 삭제할까요?', 'Delete this collection?'],
+    colDeleteBody: ['저장한 게시물은 ‘저장됨’에 그대로 남아요.', 'The posts stay in Saved.'],
+    colTitle: ['이름을 1~20자로 써 주세요.', 'Use 1–20 characters for the name.'],
+    colLimit: ['모음은 20개까지 만들 수 있어요.', 'You can make up to 20 collections.'],
+    colEmpty: ['이 모음에 담은 게시물이 없어요', 'Nothing in this collection yet'],
+    colPick: ['이 모음에 담을 게시물을 골라 주세요.', 'Choose saved posts for this collection.'],
+    colCount: ['{n}개', '{n}']
   });
   L.i18n({
     ja: { 'user4.more': 'その他', 'user4.newPost': '新規投稿', 'user4.menu': 'メニュー', 'user4.edit': 'プロフィールを編集',
@@ -71,7 +84,12 @@
       'user4.shareIt': 'シェア', 'user4.lockedHelp': 'フォローすると写真を見られます。', 'user4.missing': 'ユーザーが見つかりません',
       'user4.noPosts': '投稿はまだありません', 'user4.noTagged': 'タグ付けされた写真はまだありません', 'user4.noSaved': '保存した投稿はありません',
       'user4.viewer': '投稿', 'user4.create': '新規', 'user4.editHighlight': 'ハイライトを編集', 'user4.deleteHighlight': 'ハイライトを削除',
-      'user4.deleteAsk': 'このハイライトを削除しますか？', 'user4.del': '削除', 'user4.picked': '{n}件選択', 'user4.private': '非公開アカウント', 'user4.tagRequests': 'タグのリクエスト' },
+      'user4.deleteAsk': 'このハイライトを削除しますか？', 'user4.del': '削除', 'user4.picked': '{n}件選択', 'user4.private': '非公開アカウント', 'user4.tagRequests': 'タグのリクエスト',
+      'user4.newCol': '新しいコレクション', 'user4.colName': 'コレクション名', 'user4.colPosts': '投稿を追加・削除', 'user4.colAdd': '投稿を追加',
+      'user4.colRename': '名前を変更', 'user4.colDelete': 'コレクションを削除', 'user4.colDeleteAsk': 'このコレクションを削除しますか？',
+      'user4.colDeleteBody': '投稿は「保存済み」に残ります。', 'user4.colTitle': '名前は1〜20文字で入力してください。',
+      'user4.colLimit': 'コレクションは20個まで作成できます。', 'user4.colEmpty': 'このコレクションにはまだ投稿がありません',
+      'user4.colPick': 'このコレクションに入れる投稿を選んでください。', 'user4.colCount': '{n}件' },
     zh: { 'user4.more': '更多选项', 'user4.newPost': '发帖', 'user4.menu': '菜单', 'user4.edit': '编辑主页',
       'user4.photo': '头像', 'user4.by1': '{a} 已关注', 'user4.by2': '{a}、{b} 已关注',
       'user4.byN': '{a} 和另外 {n} 人已关注', 'user4.copy': '复制链接', 'user4.copied': '已复制链接',
@@ -79,7 +97,12 @@
       'user4.shareIt': '分享', 'user4.lockedHelp': '关注后即可查看照片。', 'user4.missing': '找不到用户',
       'user4.noPosts': '还没有帖子', 'user4.noTagged': '还没有被标记的照片', 'user4.noSaved': '还没有收藏',
       'user4.viewer': '帖子', 'user4.create': '新建', 'user4.editHighlight': '编辑精选', 'user4.deleteHighlight': '删除精选',
-      'user4.deleteAsk': '要删除这个精选吗？', 'user4.del': '删除', 'user4.picked': '已选 {n} 项', 'user4.private': '私密账号', 'user4.tagRequests': '标记请求' }
+      'user4.deleteAsk': '要删除这个精选吗？', 'user4.del': '删除', 'user4.picked': '已选 {n} 项', 'user4.private': '私密账号', 'user4.tagRequests': '标记请求',
+      'user4.newCol': '新建收藏夹', 'user4.colName': '收藏夹名称', 'user4.colPosts': '添加或移除帖子', 'user4.colAdd': '添加帖子',
+      'user4.colRename': '重命名', 'user4.colDelete': '删除收藏夹', 'user4.colDeleteAsk': '要删除这个收藏夹吗？',
+      'user4.colDeleteBody': '帖子仍会保留在“已收藏”中。', 'user4.colTitle': '名称请使用 1–20 个字。',
+      'user4.colLimit': '最多可创建 20 个收藏夹。', 'user4.colEmpty': '这个收藏夹里还没有帖子',
+      'user4.colPick': '选择要放入这个收藏夹的帖子。', 'user4.colCount': '{n} 个' }
   });
   const esc = L.esc;
   const count = value => Math.max(0, Number(value) || 0);
@@ -675,7 +698,7 @@
       const box = document.createElement('div');
       box.className = 'pf-posts-page';
       list.append(box);
-      L.feedCards(box, posts, { onGone: gone });
+      L.feedCards(box, posts, { onGone: gone, bleed: false });      // 이 목록은 이미 화면 끝까지 닿아 있다 (.pf-posts)
       return box;
     };
     async function load() {
@@ -720,11 +743,110 @@
     cleanup = () => stopMore();
   }
 
-  // 저장됨 (#/saved · #/saved/<모음id>, F34): 3칸 격자. 누르면 그 글(#/feed/<id>)로, 뒤로 오면 그대로.
+  // 저장됨 (#/saved · #/saved/<모음id>, F34): 3칸 격자 + 저장 모음(collections). 누르면 그 글(#/feed/<id>)로, 뒤로 오면 그대로.
   //  화면 등록은 share.js(틀 A)가 하고 있어, 여기서는 L.profileSaved / L.profileSavedScreen 으로 내보낸다.
+  function collectionName(existing, done) {
+    const panel = U.sheet('<h2>' + (existing ? w('colRename') : w('newCol')) + '</h2><form class="shell-form">' +
+      '<label class="shell-field">' + w('colName') + '<input name="title" maxlength="20" required autocomplete="off"></label>' +
+      '<p class="shell-error" role="status"></p><button class="btn btn-hot" type="submit">' + esc(L.t('me.save')) + '</button></form>');
+    const form = panel.querySelector('form'), status = form.querySelector('[role=status]'), submit = form.querySelector('[type=submit]');
+    form.elements.title.value = existing?.title || '';
+    form.onsubmit = async event => {
+      event.preventDefault();
+      if (submit.disabled) return;
+      submit.disabled = true;
+      const title = form.elements.title.value.trim();
+      const result = await L.api('collection_set', { ...(existing ? { id: existing.id } : {}), title });
+      if (!panel.isConnected) return;
+      submit.disabled = false;
+      if (result.error) {
+        status.textContent = L.t(result.error === 'title' ? 'user4.colTitle' : result.error === 'collection_limit' ? 'user4.colLimit' : 'screens.failed');
+        return;
+      }
+      L.closeSheet();
+      done({ id: result.id || existing?.id, title });
+    };
+    form.elements.title.focus();
+  }
+
+  // 모음에 담을 글 고르기: 저장한 글 전체를 썸네일로 보여 주고, 이미 담긴 것은 표시해 둔다. 바뀐 것만 서버에 보낸다.
+  async function collectionPosts(id, done) {
+    const panel = U.sheet('<h2>' + w('colPosts') + '</h2><form class="shell-form pf-highlight-form"><p class="muted">' + w('colPick') +
+      ' <span data-picked></span></p><div class="pf-picks" data-picks></div><div class="pf-more-row" data-pick-more><i></i></div>' +
+      '<p class="shell-error" role="status"></p><button class="btn btn-hot" type="submit" disabled>' + esc(L.t('me.save')) + '</button></form>');
+    const form = panel.querySelector('form'), picks = panel.querySelector('[data-picks]'), more = panel.querySelector('[data-pick-more]');
+    const status = form.querySelector('[role=status]'), submit = form.querySelector('[type=submit]'), picked = panel.querySelector('[data-picked]');
+    const inside = new Set();
+    for (let cursor = null, page = 0; page < 20; page++) {      // 지금 이 모음에 든 글
+      const result = await L.api('saved', { collection: id, ...(cursor != null ? { before: cursor } : {}) });
+      if (!panel.isConnected) return;
+      if (result.error) break;
+      for (const post of result.posts || []) if (post?.id) inside.add(post.id);
+      if (result.before == null || JSON.stringify(result.before) === JSON.stringify(cursor)) break;
+      cursor = result.before;
+    }
+    const chosen = new Set(inside), seen = new Set();
+    let before = null, loading = false, ended = false;
+    const sync = () => {
+      picked.textContent = chosen.size ? L.t('user4.picked', { n: chosen.size }) : '';
+      submit.disabled = chosen.size === inside.size && [...chosen].every(post => inside.has(post));
+    };
+    async function load() {
+      if (loading || ended) return;
+      loading = true;
+      const cursor = before;
+      const result = await L.api('saved', cursor != null ? { before: cursor } : {});
+      loading = false;
+      if (!panel.isConnected) return;
+      if (result.error) { status.textContent = L.t('screens.error'); ended = true; more.hidden = true; return; }
+      for (const post of result.posts || []) {
+        if (!post?.id || seen.has(post.id)) continue;
+        seen.add(post.id);
+        const image = post.thumb || post.photos?.[0];
+        const thumb = U.image(typeof image === 'string' ? image : image?.thumb || image?.src);
+        picks.insertAdjacentHTML('beforeend', '<label class="pf-pick"><input type="checkbox" name="posts" value="' + esc(post.id) + '"' +
+          (chosen.has(post.id) ? ' checked' : '') + ' aria-label="' + profile('post', { n: seen.size }) + '">' +
+          (thumb ? '<img src="' + esc(thumb) + '" alt="" loading="lazy">' : '') + '<i aria-hidden="true">' + L.icon('check', { size: 16 }) + '</i></label>');
+      }
+      before = result.before != null && JSON.stringify(result.before) !== JSON.stringify(cursor) ? result.before : null;
+      ended = before == null;
+      more.hidden = ended;
+      if (!seen.size) status.textContent = L.t('user4.noSaved');
+      if (!ended && picks.getBoundingClientRect().bottom < innerHeight) void load();
+    }
+    const stop = L.more(more, load);
+    form.onchange = event => {
+      const box = event.target.closest('input[name=posts]');
+      if (box) { if (box.checked) chosen.add(box.value); else chosen.delete(box.value); }
+      sync();
+    };
+    form.onsubmit = async event => {
+      event.preventDefault();
+      if (submit.disabled) return;
+      submit.disabled = true;
+      const jobs = [...[...chosen].filter(post => !inside.has(post)).map(post => ['save', post]),
+        ...[...inside].filter(post => !chosen.has(post)).map(post => ['unsave', post])];
+      let failed = false;
+      for (const [action, post] of jobs) {
+        const result = await L.api(action, { post, collection: id });
+        if (result.error) failed = true;
+      }
+      if (!panel.isConnected) return;
+      stop();
+      L.closeSheet();
+      if (failed) L.toast(L.t('screens.failed'));
+      done();
+    };
+    sync();
+    void load();
+  }
+
   async function saved(root, { id } = {}) {
     leave();
-    root.innerHTML = L.bar({ back: 'me', title: L.t('share.saved') }) + '<div class="pf pf-saved" data-saved>' +
+    const barButton = (attr, icon, label) => '<button class="ui-bar-btn" type="button" ' + attr + ' aria-haspopup="dialog" aria-label="' + label + '">' + L.icon(icon) + '</button>';
+    root.innerHTML = L.bar({ back: id ? 'saved' : 'me', title: L.t('share.saved'),
+      right: id ? barButton('data-saved-menu hidden', 'more', w('more')) : barButton('data-saved-new hidden', 'plus', w('newCol')) }) +
+      '<div class="pf pf-saved" data-saved>' + (id ? '' : '<div class="pf-cols" data-collections hidden></div>') +
       '<div class="pf-grid" data-gallery></div><div data-gallery-status role="status" hidden></div>' +
       '<div class="pf-more-row" data-gallery-more><i></i></div></div>';
     const view = root.querySelector('[data-saved]');
@@ -733,13 +855,55 @@
     if (!L.open('share')) { view.innerHTML = U.status('soon'); return; }
     const key = 'saved:' + (id || '');
     const kept = L.profileKept(key);
-    const state = kept?.loaded ? kept : { rows: [], before: null, loaded: false };
+    const state = kept?.loaded ? kept : { rows: [], before: null, loaded: false, cols: null };
+    const reload = () => { if (L.unstash) L.unstash(key); return L.route(); };
     let pending = false;
     const paint = (error = '') => {
       status.hidden = !(error || (state.loaded && !state.rows.length));
-      status.innerHTML = error ? '<p class="muted">' + esc(error) + '</p>' : status.hidden ? '' : emptyState('bookmark', w('noSaved'));
+      status.innerHTML = error ? '<p class="muted">' + esc(error) + '</p>' : status.hidden ? '' : emptyState('bookmark', w(id ? 'colEmpty' : 'noSaved'),
+        id ? '<button type="button" class="pf-text-link" data-saved-add>' + w('colAdd') + '</button>' : '');
+      const add = status.querySelector('[data-saved-add]');
+      if (add) add.onclick = () => collectionPosts(id, reload);
       more.hidden = state.before == null && state.loaded;
     };
+    // 모음: 전체 화면에서는 위에 모음 줄 + ＋(새 모음), 모음 화면에서는 제목 + ⋯(추가·이름·삭제). 서버가 모르면 그냥 없다.
+    function paintCollections(list) {
+      state.cols = list;
+      if (id) {
+        const mine = list.find(item => item.id === id);
+        const menu = root.querySelector('[data-saved-menu]');
+        if (!mine) return;
+        root.querySelector('.ui-bar-title h1').textContent = mine.title;
+        menu.hidden = false;
+        menu.onclick = () => L.menu([
+          { label: L.t('user4.colPosts'), icon: 'plusBox', on: () => collectionPosts(id, reload) },
+          { label: L.t('user4.colRename'), icon: 'edit', on: () => collectionName(mine, reload) },
+          { label: L.t('user4.colDelete'), icon: 'trash', danger: true, async on() {
+            if (!await L.confirm(L.t('user4.colDeleteAsk'), { ok: L.t('user4.del'), danger: true, body: L.t('user4.colDeleteBody') })) return;
+            const result = await L.api('collection_del', { id });
+            if (result.error) return U.error(result);
+            if (L.unstash) L.unstash('saved:');
+            L.back('saved');
+          } }
+        ], { title: mine.title });
+        return;
+      }
+      const create = root.querySelector('[data-saved-new]');
+      create.hidden = false;
+      create.onclick = () => collectionName(null, made => L.go('saved/' + encodeURIComponent(made.id)));
+      const row = view.querySelector('[data-collections]');
+      row.hidden = !list.length;
+      row.innerHTML = list.map(item => {
+        const cover = U.image(item.cover);
+        return '<a class="pf-col" href="#/saved/' + encodeURIComponent(item.id) + '"><span class="pf-col-cover">' +
+          (cover ? '<img src="' + esc(cover) + '" alt="" loading="lazy">' : L.icon('bookmark', { size: 22 })) + '</span><span data-col-title>' +
+          esc(item.title) + '</span><small>' + w('colCount', { n: short(item.count) }) + '</small></a>';
+      }).join('');
+    }
+    if (state.cols) paintCollections(state.cols);
+    else void L.api('collections').then(result => {
+      if (view.isConnected && Array.isArray(result.list)) paintCollections(result.list.filter(item => item?.id));
+    });
     async function load(append = false) {
       if (pending || (append && state.before == null)) return;
       pending = true;
