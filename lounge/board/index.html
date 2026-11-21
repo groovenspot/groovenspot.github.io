@@ -35,7 +35,36 @@
       background: radial-gradient(ellipse at 100% 0%, #422146, transparent 58%),
         radial-gradient(ellipse at 0% 100%, #43241b, transparent 60%), #120f17;
     }
+    body[data-battle-on] { grid-template-rows: auto auto minmax(0, 1fr) auto; }
     header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    /* 층 대항전 (놀거리 개편 1차): 2F 주황 · 3F 보라 */
+    .battle {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: .3rem 1rem;
+      padding: .35rem clamp(14px, 2vw, 40px);
+      border-radius: clamp(16px, 2vw, 40px);
+      border: 1px solid var(--line);
+      background: linear-gradient(90deg, #ff7a1a24, #17141d 38%, #17141d 62%, #a15bff2e);
+    }
+    .battle-title b { display: block; font-size: .8rem; font-weight: 850; letter-spacing: -.03em; color: var(--accent); }
+    .battle-score { display: flex; align-items: center; gap: .5rem; min-width: 0; font-variant-numeric: tabular-nums; }
+    .battle-side { display: flex; align-items: baseline; gap: .3rem; white-space: nowrap; font-weight: 850; font-size: .8rem; }
+    .battle-side strong { font-size: 1.25rem; font-weight: 900; }
+    .battle-side small { font-size: .45rem; }
+    .battle-side[data-floor="2F"] { color: #ffac77; }
+    .battle-side[data-floor="3F"] { color: #d2b0ff; }
+    .battle-bar { display: flex; flex: 1; min-width: 3rem; height: .55rem; border-radius: 999px; overflow: hidden; background: #ffffff14; }
+    .battle-bar span { flex: 1 1 0; transition: flex-grow .8s ease; }
+    .battle-bar [data-bar="2F"] { background: #ff7a1a; }
+    .battle-bar [data-bar="3F"] { background: #a15bff; }
+    .battle-last { justify-self: end; text-align: right; white-space: nowrap; font-size: .62rem; font-weight: 850; }
+    .battle-last b { color: #fff3ed; }
+    .battle-last[data-winner="2F"] b { color: #ffac77; }
+    .battle-last[data-winner="3F"] b { color: #d2b0ff; }
+    .battle-last small { display: block; font-size: .7em; }
+    @media (prefers-reduced-motion: reduce) { .battle-bar span { transition: none; } }
     .logo { display: block; width: clamp(125px, 17vw, 300px); height: auto; }
     button {
       border: 1px solid var(--line);
@@ -121,6 +150,8 @@
       .rank { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-flow: row; grid-auto-rows: minmax(0, 1fr); }
       #content > section { padding: clamp(16px, 4.7vw, 65px); }
       .logo { width: clamp(125px, 36vw, 340px); }
+      .battle { grid-template-columns: minmax(0, 1fr) auto; }
+      .battle-score { grid-column: 1 / -1; grid-row: 2; }
     }
   </style>
 </head>
@@ -130,6 +161,16 @@
     <img class="logo" src="/assets/logo-word.png" width="564" height="79" alt="">
     <button type="button" data-fullscreen>전체 화면 <span lang="en">· Fullscreen</span></button>
   </header>
+
+  <aside class="battle" data-battle aria-labelledby="battle-title" hidden>
+    <div class="battle-title"><b id="battle-title">층 대항전</b><small lang="en">Floor battle · this week</small></div>
+    <div class="battle-score">
+      <span class="battle-side" data-floor="2F">2F <small lang="en">HIP-HOP</small> <strong data-score="2F">0</strong></span>
+      <span class="battle-bar" aria-hidden="true"><span data-bar="2F"></span><span data-bar="3F"></span></span>
+      <span class="battle-side" data-floor="3F"><strong data-score="3F">0</strong> <small lang="en">EDM</small> 3F</span>
+    </div>
+    <p class="battle-last" data-battle-last hidden></p>
+  </aside>
 
   <main id="stage">
     <div class="status" data-status role="status"><div><b>불러오는 중</b><small lang="en">Loading</small></div></div>
@@ -178,6 +219,7 @@
       const votes = document.querySelector('[data-votes]');
       const challenge = document.querySelector('[data-challenge]');
       const song = document.querySelector('[data-song]');
+      const battle = document.querySelector('[data-battle]');
       const number = new Intl.NumberFormat('ko-KR');
       let scene = 0, rotation, pollTimer, wakeLock, acquiring = false, fetching = false;
       let votePages = [], songPages = [];
@@ -257,7 +299,40 @@
         }
       }
 
+      // 층 대항전: 이번 주 2F 대 3F 막대 + 지난주 승리 층
+      function paintBattle(info) {
+        const now = info && typeof info === 'object' ? info.now : null;
+        if (!now || typeof now !== 'object') {
+          battle.hidden = true;
+          document.body.removeAttribute('data-battle-on');
+          return;
+        }
+        const score = floor => Math.max(0, Number(now[floor]) || 0);
+        for (const floor of ['2F', '3F']) {
+          battle.querySelector('[data-score="' + floor + '"]').textContent = number.format(score(floor));
+          // 둘 다 0점이면 반반
+          battle.querySelector('[data-bar="' + floor + '"]').style.flexGrow = String(score('2F') + score('3F') ? score(floor) : 1);
+        }
+        battle.setAttribute('aria-description', '2F ' + score('2F') + ' : 3F ' + score('3F'));
+        const last = battle.querySelector('[data-battle-last]');
+        const result = info.last;
+        const played = result && (Number(result.score?.['2F']) || 0) + (Number(result.score?.['3F']) || 0) > 0;
+        const names = { '2F': ['2F 힙합', '2F Hip-hop'], '3F': ['3F EDM', '3F EDM'] };
+        if (played && (result.winner in names || result.winner === 'tie')) {
+          const [ko, en] = result.winner === 'tie' ? ['무승부', 'Tie'] : names[result.winner];
+          const label = element('b', ko);
+          const english = element('small', (result.winner === 'tie' ? 'Last week · ' : 'Last week’s winner · ') + en);
+          english.lang = 'en';
+          last.replaceChildren(result.winner === 'tie' ? '지난주 ' : '지난주 승리 ', label, english);
+          last.dataset.winner = result.winner;
+          last.hidden = false;
+        } else last.hidden = true;
+        battle.hidden = false;
+        document.body.setAttribute('data-battle-on', '');
+      }
+
       function paint(data) {
+        paintBattle(data.battle);
         if (data.top.length) {
           const list = element('ol');
           list.className = 'rank';
@@ -293,6 +368,7 @@
 
       function cover(ko, en) {
         content.hidden = steps.hidden = offline.hidden = true;
+        paintBattle(null);
         clearInterval(rotation);
         clearInterval(pollTimer);
         rotation = null;

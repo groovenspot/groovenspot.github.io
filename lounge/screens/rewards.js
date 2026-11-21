@@ -31,6 +31,10 @@ const LoungeRewardUI = (() => {
     bookingWindow: ['대기 중인 예약은 2건까지 가능해요. 처리되지 않은 예약은 다음 날 낮 12시에 만료돼요.', 'You can have up to two screen bookings pending. Unprocessed bookings expire at noon the next day.'],
     pointsPay: ['500P로 예약', 'Book for 500P'], birthdayPay: ['생일 축하 무료 예약', 'Book free birthday message'],
     storePay: ['매장 결제로 예약', 'Book and pay at the club'], history: ['내 전광판 예약', 'My screen bookings'],
+    voucher: ['무료 전광판 1회 쓰기', 'Use my free screen message'],
+    voucherHelp: ['주간 1등 보상 · 남은 무료 {n}회', 'Weekly #1 reward · {n} free left'],
+    voucherPay: ['무료 1회로 예약', 'Book with my free message'],
+    'error.voucher': ['쓸 수 있는 무료 전광판이 없어요.', 'You have no free screen message left.'],
     sending: ['직원에게 보내는 중', 'Sending to staff'], pending: ['직원 확인 대기', 'Waiting for staff'],
     done: ['송출 완료', 'Shown on screen'], rejected: ['반려', 'Declined'], failed: ['전달 실패', 'Could not send'], expired: ['만료', 'Expired'],
     stock: ['재고가 바뀌었어요. 상품 목록을 다시 확인해 주세요.', 'Stock changed. Please check the product list again.'],
@@ -52,14 +56,22 @@ const LoungeRewardUI = (() => {
       'rewards.expired': '期限切れ',
       'rewards.error.pending_limit': '未処理の申請が{limit}件あります。処理されてからもう一度お申し込みください。',
       'rewards.error.daily_limit': '本日の申請上限に達しました。次の営業日にお試しください。',
-      'rewards.error.request': '申請内容が一致しません。内容を確認してから、もう一度お申し込みください。'
+      'rewards.error.request': '申請内容が一致しません。内容を確認してから、もう一度お申し込みください。',
+      'rewards.voucher': '無料の電光掲示板を1回使う',
+      'rewards.voucherHelp': '週間1位の特典 · 無料あと{n}回',
+      'rewards.voucherPay': '無料1回で予約',
+      'rewards.error.voucher': '使える無料の電光掲示板がありません。'
     },
     zh: {
       'rewards.bookingWindow': '最多可有两笔待处理的预约。尚未处理的预约将于次日中午过期。',
       'rewards.expired': '已过期',
       'rewards.error.pending_limit': '你有 {limit} 笔待处理的请求，请等待处理后再提交。',
       'rewards.error.daily_limit': '已达到今天的申请上限，请在下一个营业日重试。',
-      'rewards.error.request': '请求内容不一致，请确认后重新提交。'
+      'rewards.error.request': '请求内容不一致，请确认后重新提交。',
+      'rewards.voucher': '使用一次免费大屏留言',
+      'rewards.voucherHelp': '每周第一奖励 · 还剩 {n} 次免费',
+      'rewards.voucherPay': '用免费次数预约',
+      'rewards.error.voucher': '没有可用的免费大屏留言。'
     }
   });
 
@@ -118,7 +130,8 @@ const LoungeRewardUI = (() => {
         ' <strong>(' + t(row.status) + ')</strong></li>').join('') + '</ul>');
   }
 
-  function bookingForm(view, { birthday = false, store = false, done }) {
+  function bookingForm(view, { birthday = false, store = false, vouchers = 0, done }) {
+    const free = !store && Number.isSafeInteger(vouchers) && vouchers > 0;
     const card = document.createElement('div');
     card.innerHTML = panel('<h2>' + t('screen') + '</h2>' +
       '<div style="overflow:hidden;border:2px solid #a15bff;border-radius:14px;background:#09050e;text-align:center">' +
@@ -130,6 +143,8 @@ const LoungeRewardUI = (() => {
       '<input type="time" name="at" max="23:29" required style="' + inputStyle + '"></label>' +
       '<small class="muted">' + t('timeHelp') + '</small>' +
       (birthday ? '<label class="shell-choice"><input type="checkbox" name="birthday"> ' + t('birthdayPay') + '</label>' : '') +
+      (free ? '<label class="shell-choice"><input type="checkbox" name="voucher"> ' + t('voucher') + '</label>' +
+        '<small class="muted">' + t('voucherHelp', { n: amount(vouchers) }) + '</small>' : '') +
       '<p class="muted">' + t('bookingHelp') + '</p><p class="muted">' + t('bookingWindow') + '</p>' + message() +
       submit(t(store ? 'storePay' : 'pointsPay')) + '</form>');
     view.append(card);
@@ -143,11 +158,19 @@ const LoungeRewardUI = (() => {
       preview.textContent = text.value.trim() || '—';
       length.textContent = Math.min(chars.length, 30) + ' / 30';
     };
-    if (birthday) form.elements.birthday.onchange = () => {
-      form.querySelector('[type=submit]').textContent = L.t('rewards.' + (form.elements.birthday.checked ? 'birthdayPay' : 'pointsPay'));
+    // 생일 무료·주간 1등 무료는 하나만 고름
+    const label = () => {
+      form.querySelector('[type=submit]').textContent = L.t('rewards.' + (form.elements.birthday?.checked ? 'birthdayPay'
+        : form.elements.voucher?.checked ? 'voucherPay' : 'pointsPay'));
     };
+    for (const [name, other] of [['birthday', 'voucher'], ['voucher', 'birthday']]) {
+      if (form.elements[name]) form.elements[name].onchange = () => {
+        if (form.elements[name].checked && form.elements[other]) form.elements[other].checked = false;
+        label();
+      };
+    }
     wire(form, 'yc_reserve', data => ({ text: data.get('text'), at: data.get('at'),
-      pay: store ? 'store' : data.has('birthday') ? 'birthday' : 'points' }), done, true);
+      pay: store ? 'store' : data.has('birthday') ? 'birthday' : data.has('voucher') ? 'voucher' : 'points' }), done, true);
   }
 
   function birthdayForm(state) {
@@ -313,7 +336,7 @@ const LoungeRewardUI = (() => {
         panel('<h2>' + t('recap') + '</h2>' + U.button(t('makeCard'), 'data-make-card') + '<div data-recap></div>');
 
       const refresh = () => render(root);
-      bookingForm(view.querySelector('[data-booking]'), { birthday: state.birthday?.free, done: refresh });
+      bookingForm(view.querySelector('[data-booking]'), { birthday: state.birthday?.free, vouchers: state.vouchers, done: refresh });
       const birthday = view.querySelector('[data-birthday]');
       if (birthday) wire(birthday, 'birthday_set',
         data => ({ month: Number(data.get('month')), day: Number(data.get('day')) }),

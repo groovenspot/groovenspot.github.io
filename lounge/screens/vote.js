@@ -22,7 +22,35 @@
     played: ['오늘은 이미 월드컵을 했어요', 'You already played today'],
     survey: ['어젯밤은 어땠어요?', 'How was last night?'], music: ['음악', 'Music'],
     mood: ['분위기', 'Atmosphere'], crowd: ['붐빔', 'Crowd'], send: ['설문 보내기', 'Send feedback'],
-    earned: ['{n}P 받았어요', 'You earned {n}P']
+    earned: ['{n}P 받았어요', 'You earned {n}P'],
+    // 놀거리 1차 (play1): 월드컵 무제한·주제전
+    cupGo: ['시작', 'Start'], cupAgain: ['다시 하기', 'Play again'], cupOther: ['다른 월드컵', 'Other cups'],
+    cupSame: ['나와 같은 우승을 고른 손님 {pct}%', '{pct}% of guests picked the same winner'],
+    cupVoters: ['{n}명 참여', '{n} players'], cupMine: ['내 우승 · {name}', 'My winner · {name}'],
+    cupTheme: ['이번 주 주제전', 'Theme of the week'], theme2f: ['2F 힙합전', '2F Hip-hop Cup'],
+    theme3f: ['3F EDM전', '3F EDM Cup'], themenew: ['이번 주 신곡전', 'New This Week Cup'],
+    cupFirst: ['오늘 첫 판을 끝내면 포인트를 받아요', 'Finish your first cup today to earn points'],
+    cupFree: ['오늘 포인트는 받았어요 · 계속 즐겨요', 'Today’s points are in · keep playing'],
+    cupSaving: ['결과 저장 중', 'Saving your result'], cupRetry: ['다시 저장', 'Save again'],
+    cupPoints: ['+{n}P', '+{n}P']
+  });
+  L.i18n({
+    ja: {
+      'vote.cupGo': 'スタート', 'vote.cupAgain': 'もう一度', 'vote.cupOther': 'ほかの対決',
+      'vote.cupSame': '同じ優勝を選んだお客さん {pct}%', 'vote.cupVoters': '{n}人が参加',
+      'vote.cupMine': '自分の優勝 · {name}', 'vote.cupTheme': '今週のテーマ戦', 'vote.theme2f': '2F ヒップホップ戦',
+      'vote.theme3f': '3F EDM戦', 'vote.themenew': '今週の新曲戦',
+      'vote.cupFirst': '今日最初の対決を終えるとポイントがもらえます', 'vote.cupFree': '今日のポイントは獲得済み · 何度でも遊べます',
+      'vote.cupSaving': '結果を保存中', 'vote.cupRetry': 'もう一度保存', 'vote.cupPoints': '+{n}P'
+    },
+    zh: {
+      'vote.cupGo': '开始', 'vote.cupAgain': '再玩一次', 'vote.cupOther': '其他对决',
+      'vote.cupSame': '{pct}% 的客人选了同一个冠军', 'vote.cupVoters': '{n} 人参与',
+      'vote.cupMine': '我的冠军 · {name}', 'vote.cupTheme': '本周主题赛', 'vote.theme2f': '2F 嘻哈赛',
+      'vote.theme3f': '3F EDM 赛', 'vote.themenew': '本周新曲赛',
+      'vote.cupFirst': '完成今天第一场对决即可获得积分', 'vote.cupFree': '今天的积分已领取 · 可以继续玩',
+      'vote.cupSaving': '正在保存结果', 'vote.cupRetry': '重新保存', 'vote.cupPoints': '+{n}P'
+    }
   });
   const pointsToast = gained => L.toast(Number(gained) > 0 ? L.t('vote.earned', { n: Number(gained) }) : L.t('screens.saved'));
   const HOUR = 3_600_000;
@@ -206,13 +234,17 @@
     draw(data);
   }
 
-  function bracket(view, cup) {
+  const clipName = (cup, index) => {
+    const item = cup.items[index];
+    return item ? L.esc([item.dj, item.title].filter(Boolean).join(' · ')) : '';
+  };
+
+  // done(winner, path): play1 — 결승이 끝나면 바로 저장 화면으로 (없으면 예전처럼 '결과 저장' 버튼)
+  function bracket(view, cup, done) {
     let round = cup.items.map((_, index) => index), next = [], path = [], i = 0;
-    const name = index => {
-      const item = cup.items[index];
-      return L.esc([item.dj, item.title].filter(Boolean).join(' · '));
-    };
+    const name = index => clipName(cup, index);
     function paint() {
+      if (round.length === 1 && done) return done(round[0], path.slice());
       if (round.length === 1) {
         view.innerHTML = '<article style="' + U.card + '"><h2>' + t('winner') + '</h2><p>' + name(round[0]) +
           '</p>' + U.button(t('save'), 'data-save', true) + '<p data-result role="status"></p></article>';
@@ -261,10 +293,89 @@
     paint();
   }
 
-  async function cups(root) {
+  // ── 놀거리 1차 (play1): 무제한 · 주제전 · 같은 우승 % ──
+  const THEME_COLOR = { '2f': 'var(--g)', '3f': 'var(--s)', new: 'var(--ok)' };
+  const cupTitle = cup => cup.theme ? t('theme' + cup.theme) : L.esc(cup.title);
+  const themeBadge = cup => cup.theme ? '<span data-cup-theme style="display:inline-block;padding:2px 10px;' +
+    'border-radius:999px;font-size:.75rem;font-weight:800;border:1px solid ' + THEME_COLOR[cup.theme] + ';color:' +
+    THEME_COLOR[cup.theme] + '">' + t('cupTheme') + '</span>' : '';
+
+  function cupList(view, data, start) {
+    const entries = (data?.cups || []).filter(cup => Array.isArray(cup.items) && cup.items.length === 16)
+      .sort((a, b) => Number(Boolean(b.theme)) - Number(Boolean(a.theme)));
+    const hint = L.me && entries.length ? '<p class="muted" data-cup-hint>' + t(data.played ? 'cupFree' : 'cupFirst') + '</p>' : '';
+    view.innerHTML = hint + (entries.map((cup, i) => {
+      const color = THEME_COLOR[cup.theme];
+      const mine = Number.isInteger(cup.myWinner) && cup.items[cup.myWinner];
+      const meta = [t('cupVoters', { n: Number(cup.voters) || 0 })]
+        .concat(mine ? [t('cupMine', { name: [mine.dj, mine.title].filter(Boolean).join(' · ') })] : []);
+      return '<article data-cup-card style="' + U.card + (color ? ';border-left:4px solid ' + color : '') + '">' +
+        themeBadge(cup) + '<h2 style="margin:6px 0">' + cupTitle(cup) + '</h2>' +
+        '<p class="muted" style="margin:0 0 12px">' + meta.join(' · ') + '</p>' +
+        U.button(t('cupGo'), 'data-cup="' + i + '" style="width:100%"', true) + '</article>';
+    }).join('') || U.status(data?.error && data.error !== 'action' ? 'error' : 'empty'));
+    view.querySelectorAll('[data-cup]').forEach(button => {
+      button.onclick = () => { if (!L.needLogin()) start(entries[Number(button.dataset.cup)]); };
+    });
+  }
+
+  function cupResult(view, cup, winner, path, again, other) {
+    const color = THEME_COLOR[cup.theme] || 'var(--g)';
+    view.innerHTML = '<article data-cup-result style="' + U.card + ';border-color:' + color + '">' + themeBadge(cup) +
+      '<p class="muted" style="margin:6px 0 0">' + cupTitle(cup) + ' · ' + t('winner') + '</p>' +
+      '<h2 tabindex="-1" data-cup-winner style="margin:6px 0 12px">' + clipName(cup, winner) + '</h2>' +
+      '<div data-cup-outcome><p class="muted" role="status">' + t('cupSaving') + '</p></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px">' +
+      U.button(t('cupAgain'), 'data-cup-again style="min-width:0;padding:0 8px"', true) +
+      U.button(t('cupOther'), 'data-cup-other style="min-width:0;padding:0 8px"') + '</div></article>';
+    const outcome = view.querySelector('[data-cup-outcome]');
+    view.querySelector('[data-cup-again]').onclick = again;
+    view.querySelector('[data-cup-other]').onclick = other;
+    view.querySelector('[data-cup-winner]').focus({ preventScroll: true });
+    async function save() {
+      outcome.innerHTML = '<p class="muted" role="status">' + t('cupSaving') + '</p>';
+      const response = await L.api('cup_play', { id: cup.id, winner, path });
+      if (!outcome.isConnected) return;
+      if (!response || response.error) {
+        if (response?.error === 'auth') L.needLogin();
+        const retry = !['closed', 'missing', 'auth', 'dup'].includes(response?.error);
+        outcome.innerHTML = '<p role="alert">' + U.t(response?.error === 'dup' ? 'dup' : 'failed') + '</p>' +
+          (retry ? U.button(t('cupRetry'), 'data-cup-retry style="width:100%"') : '');
+        const button = outcome.querySelector('[data-cup-retry]');
+        if (button) button.onclick = save;
+        return;
+      }
+      const same = response.same;
+      const pct = Math.max(0, Math.min(100, Math.round(Number(same?.pct) || 0)));
+      const gained = Number(response.gained) || 0;
+      outcome.innerHTML = (same ? '<p role="status" data-cup-same style="margin:0 0 8px;font-weight:800">' +
+        t('cupSame', { pct }) + '</p><div aria-hidden="true" style="height:8px;border-radius:999px;background:var(--line-2);' +
+        'overflow:hidden"><div style="height:100%;width:' + pct + '%;background:' + color + '"></div></div>'
+        : '<p role="status">' + U.t('saved') + '</p>') +
+        (gained > 0 ? '<p data-cup-points style="margin:10px 0 0;font-weight:800;color:var(--g)">' +
+          t('cupPoints', { n: gained }) + '</p>' : '');
+    }
+    save();
+  }
+
+  async function cups(root, params) {
     const view = U.mount(root, '<h1>' + t('cup') + '</h1>' + U.link('#/play', t('back')));
     const data = await L.api('cups');
     if (!view.isConnected) return;
+    if (L.open('play1') || data?.play1 === true) {
+      let list = data;
+      const start = cup => bracket(view, cup, (winner, path) => cupResult(view, cup, winner, path,
+        () => start(cup), showList));
+      async function showList() {
+        view.innerHTML = U.status('loading', true);
+        list = await L.api('cups');
+        if (view.isConnected) cupList(view, list, start);
+      }
+      const direct = params?.id && (list?.cups || []).find(cup => cup.id === params.id && cup.items?.length === 16);
+      if (direct && L.me) start(direct);
+      else cupList(view, list, start);
+      return;
+    }
     const entries = (data?.cups || []).filter(cup => Array.isArray(cup.items) && cup.items.length === 16);
     view.innerHTML = entries.map((cup, i) => '<article style="' + U.card + '"><h2>' + L.esc(cup.title) + '</h2>' +
       (data.played ? '<p>' + t('played') + '</p>' : U.button(t('start'), 'data-cup="' + i + '"', true)) +

@@ -39,7 +39,14 @@
     place: ['내 순위 {n}위', 'My place: {n}', '自分の順位：{n}位', '我的名次：第 {n} 名'],
     correctCount: ['정답 {n}개', '{n} correct', '{n}問正解', '答对 {n} 题'],
     won: ['정답', 'Correct', '正解', '答对'],
-    lost: ['오답', 'Incorrect', '不正解', '答错']
+    lost: ['오답', 'Incorrect', '不正解', '答错'],
+    // 놀거리 1차 (play1): 연속 정답 · 친구에게 보내기
+    streak: ['연속 정답 {n}일 · 최고 {m}일', 'Streak {n} days · Best {m}', '連続正解 {n}日 · 最高 {m}日', '连续答对 {n} 天 · 最高 {m} 天'],
+    share: ['친구에게 보내기', 'Send to a friend', '友だちに送る', '发给朋友'],
+    shareText: ['누구일까? 그루브 라운지 DJ 맞히기', 'Who is it? Groove Lounge · Guess the DJ',
+      '誰でしょう？グルーヴ・ラウンジ DJ当てクイズ', '猜猜是谁？GROOVE 酒廊 · 猜猜 DJ'],
+    copied: ['링크를 복사했어요', 'Link copied', 'リンクをコピーしました', '链接已复制'],
+    shareFailed: ['공유하지 못했어요', 'Could not share', '共有できませんでした', '无法分享']
   };
 
   function label(key, vars) {
@@ -67,6 +74,38 @@
     if (clue.kind === 'date') return date(clue.value);
     if (clue.kind === 'genre') return t(clue.value);
     return L.esc(clue.value);
+  }
+
+  // 공유 문구: 지금까지 연 힌트만 (정답·영상은 절대 넣지 않음)
+  function clueText(clue) {
+    if (clue.value == null) return label('unknown');
+    if (clue.kind === 'genre') return copy[clue.value] ? label(clue.value) : String(clue.value);
+    if (clue.kind === 'date') {
+      const time = /^\d{4}-\d{2}-\d{2}$/.test(clue.value) ? new Date(clue.value + 'T00:00:00Z') : null;
+      return time && Number.isFinite(time.getTime())
+        ? new Intl.DateTimeFormat(L.lang, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(time) : label('unknown');
+    }
+    return String(clue.value);
+  }
+
+  async function share(round) {
+    const text = (round.clues || []).map(clue => label(clue.kind) + ': ' + clueText(clue))
+      .concat(label('shareText')).join('\n');
+    const url = location.origin + '/lounge/#/guess';
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: label('title'), text, url });
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text + '\n' + url);
+      L.toast(label('copied'));
+    } catch {
+      L.toast(label('shareFailed'));
+    }
   }
 
   function stats(data) {
@@ -129,8 +168,11 @@
           (i === (solved ? round.result.selected : selection)) + '"' + (solved ? ' disabled' : '') +
           ' style="min-width:0;padding:.5rem;overflow-wrap:anywhere' + mark + '"');
       }).join('');
+      const fresh = L.open('play1') || data.play1 === true;
+      const streak = fresh ? '<p data-guess-streak style="margin:4px 0;font-weight:800;color:var(--g)">' +
+        t('streak', { n: Number(data.streak) || 0, m: Number(data.best) || 0 }) + '</p>' : '';
       view.innerHTML = '<section style="' + card + ';border-color:var(--s);background:#15111d">' +
-        '<p class="muted"><time datetime="' + L.esc(data.day) + '">' + date(data.day) + '</time></p>' +
+        '<p class="muted"><time datetime="' + L.esc(data.day) + '">' + date(data.day) + '</time></p>' + streak +
         '<h2>' + t('question') + '</h2>' + paragraph('single') +
         (!solved && data.reward > 0 ? '<p class="muted">' + t('prize', { n: data.reward }) + '</p>' : '') +
         '<div data-clues style="margin:10px 0"><h3>' + t('clues') + '</h3><dl>' +
@@ -140,7 +182,10 @@
         '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">' + choices + '</div>' +
         (!solved ? '<div style="margin-top:12px">' + U.button(t('submit'), 'data-submit' +
           (selection === null ? ' disabled' : ''), true) + '<p data-feedback role="status"></p></div>' : '') +
+        (fresh ? U.button(t('share'), 'data-share style="width:100%;margin-top:8px"') : '') +
         '</section>' + (solved ? resultOf(round.result) : '') + stats(data);
+      const shareButton = view.querySelector('[data-share]');
+      if (shareButton) shareButton.onclick = () => { if (!busy) void share(round); };
       if (solved) return;
       for (const button of view.querySelectorAll('[data-pick]')) button.onclick = () => {
         if (busy) return;

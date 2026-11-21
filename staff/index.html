@@ -6,7 +6,7 @@
      새 외부 주소를 쓰게 되면 여기에 더해야 해요(안 그러면 그 기능만 막힘). 스크립트·스타일이 이 파일 안에 있어서 'unsafe-inline' 은 필요. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://drive.google.com https://*.googleusercontent.com https://groove-lounge-api.groovenspotbusan.workers.dev; media-src 'self' data: blob:; connect-src 'self' https://groove-staff-api.groovenspotbusan.workers.dev https://groove-lounge-api.groovenspotbusan.workers.dev; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <!-- 🔄 앱 버전: 깃허브 작업(staff-version)이 이 파일이 바뀔 때마다 자동으로 찍고 staff/version.json 도 같이 바꾼다. 손으로 고치지 않기. -->
-<meta name="gs-ver" content="fd32845db8bd">
+<meta name="gs-ver" content="565277acc63c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
@@ -2687,6 +2687,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 .lounge-table input[type="time"] { width: 100%; }
 .lounge-screen input[type="file"] { max-width: 100%; }
 .lounge-table .btn { padding-inline: 6px; }
+.lounge-battle { display: flex; align-items: center; gap: 8px; font-weight: 800; font-variant-numeric: tabular-nums; margin: 4px 0 12px; }
+.lounge-battle-bar { flex: 1; min-width: 40px; height: 14px; border-radius: 999px; }
 .lounge-qr { background: #fff; color: #0a0909; border-radius: 24px; padding: 12px; text-align: center; }
 .lounge-qr canvas { display: block; width: min(100%, 350px); margin: auto; image-rendering: pixelated; }
 .lounge-clock { font-weight: 800; font-variant-numeric: tabular-nums; margin: 0 0 8px; }
@@ -8688,6 +8690,7 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
     ['songs', '곡 목록 / Track list', '손님이 어젯밤에 나온 곡을 찾아봐요. / Guests can see which songs played last night.'],
     ['safety', '안심 호출 / Safety calls', '체크인한 손님이 경호팀에 도움을 요청해요. / Checked-in guests can call security for help.'],
     ['guess', 'DJ 맞히기 / Guess the DJ', '손님이 DJ를 맞히고 포인트를 받아요. / Guests earn points for guessing the DJ.'],
+    ['play1', '놀거리 개편 1차 / Play tab revamp (phase 1)', '새 놀거리 탭(오늘 판·지금 카드·GROOVE 숏츠·월드컵 무제한·층 대항전·자동 투표)을 손님에게 열어요. 꺼져 있어도 직원 계정은 미리 볼 수 있어요. / Opens the new Play tab (daily set, live cards, GROOVE Shorts, unlimited World Cup, floor battle, auto vote) to guests. Staff accounts can preview it while off.'],
     ['ws_ticket', '실시간 접속 티켓 / Live connection tickets', '대화방과 메시지에 채널별 단기 접속 티켓을 써요. / Chat rooms and messages use short-lived channel tickets.'],
     ['signed_events', '이벤트 서명 / Signed events', '스태프 서버가 보내는 이벤트에 재처리 방지용 ID를 요구해요. / Staff events require an ID to prevent duplicate processing.'],
     ['accountRecovery', '계정 복구 / Account recovery', '대상 지정 복구를 사용하기 전에 켜야 해요. / Turn this on before switching to guest-specific recovery.'],
@@ -8971,6 +8974,100 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
       note.textContent = 'DJ 맞히기 포인트 / Guess the DJ points · ' + loungeError(err);
       panel.append(note);
     }
+  }
+  // 놀거리 개편 1차 (2026-11-21): 층 대항전 · 놀거리 통계 · 자동 투표 · 놀거리 포인트
+  const LOUNGE_PLAY_POINTS = {
+    allclear: '오늘 판 올클리어 / Daily set all-clear', shorts: 'GROOVE 숏츠 / GROOVE Shorts', today: '오늘 판 / Daily set',
+    attend: '출석 / Daily visit', guess: 'DJ 맞히기 / Guess the DJ', cup: '월드컵 / World Cup', vote: '투표 / Vote',
+    radio: '라디오 / Radio', survey: '설문 / Survey', streak7: '7일 연속 출석 / 7-day streak'
+  };
+  const LOUNGE_FLOOR_NAMES = { '2F': '2F 힙합 / Hip-hop', '3F': '3F EDM', tie: '무승부 / Tie' };
+  function loungeBattleBar(score) {
+    const a = Number(score?.['2F']) || 0, b = Number(score?.['3F']) || 0, share = a + b ? Math.round(a / (a + b) * 100) : 50;
+    return '<div class="lounge-battle" role="img" aria-label="2F ' + a + ' : 3F ' + b + '">' +
+      '<span style="color:#ff9a4d">2F ' + loungeCount(a) + '</span>' +
+      '<span class="lounge-battle-bar" style="background:linear-gradient(90deg,#ff7a1a ' + share + '%,#a15bff ' + share + '%)"></span>' +
+      '<span style="color:#c39bff">' + loungeCount(b) + ' 3F</span></div>';
+  }
+  function loungePercent(value) {
+    if (!Number.isFinite(value)) return '—';
+    return esc(Math.round(value <= 1 ? value * 100 : value)) + '%';
+  }
+  function loungeMinutes(ms) {
+    if (!Number.isFinite(ms)) return '—';
+    const sec = Math.round(ms / 1000);
+    return esc(Math.floor(sec / 60)) + ':' + String(sec % 60).padStart(2, '0');
+  }
+  async function loungePlay(panel, request) {
+    const owner = !!state.s?.admin;
+    const loads = await Promise.allSettled([
+      request('adm_battle', {}), request('adm_play_stats', {}),
+      owner ? request('adm_play_auto_set', {}) : null, owner ? request('adm_play_set', {}) : null
+    ]);
+    if (!panel.isConnected) return;
+    panel.textContent = '';
+    const [battle, stats, auto, points] = loads;
+    const unavailable = (title, result) => {
+      const note = document.createElement('p');
+      note.className = 'note';
+      note.textContent = title + ' · ' + loungeError(result.reason instanceof Error ? result.reason : new Error('bad'));
+      panel.append(note);
+    };
+    const block = (title, html) => panel.insertAdjacentHTML('beforeend', '<h3>' + title + '</h3>' + html);
+
+    if (battle.status === 'fulfilled') {
+      const { now, results = [], vouchers = [] } = battle.value;
+      block('층 대항전 이번 주 / Floor battle this week', '<p class="note">' + esc(now?.week || '') + ' ~</p>' + loungeBattleBar(now?.score));
+      block('지난 결과 / Past results', results.length ? '<table class="lounge-table"><thead><tr><th>주 / Week</th><th>2F</th><th>3F</th>' +
+        '<th>승리 / Winner</th><th>승리 회원 / Members</th></tr></thead><tbody>' + results.map(row => '<tr><td>' + esc(row.week) +
+          '</td><td>' + loungeCount(row.score?.['2F']) + '</td><td>' + loungeCount(row.score?.['3F']) + '</td><td>' +
+          esc(LOUNGE_FLOOR_NAMES[row.winner] || row.winner) + '</td><td>' + loungeCount(row.winners) + '</td></tr>').join('') +
+        '</tbody></table>' : LOUNGE_EMPTY);
+      block('주간 1등 무료 전광판 / Weekly #1 free screen message', vouchers.length ? '<table class="lounge-table"><thead><tr>' +
+        '<th>닉네임 / Nickname</th><th>주 / Week</th><th>사용 / Used</th></tr></thead><tbody>' + vouchers.map(row =>
+          '<tr><td>' + esc(row.nick || row.mid) + '</td><td>' + esc(row.week) + '</td><td>' +
+          (row.used ? '사용함 / Used' : '남음 / Unused') + '</td></tr>').join('') + '</tbody></table>' : LOUNGE_EMPTY);
+    } else unavailable('층 대항전 / Floor battle', battle);
+
+    if (stats.status === 'fulfilled') {
+      const { days = [], weekdayActive } = stats.value;
+      block('놀거리 통계 / Play stats', days.length ? '<table class="lounge-table"><thead><tr><th>날짜 / Date</th><th>방문 / Visitors</th>' +
+        '<th>평균 체류 / Avg time</th><th>올클 / All-clear</th><th>올클율 / Rate</th><th>완료율 / Done</th></tr></thead><tbody>' +
+        days.map(row => '<tr><td>' + esc(row.day) + '</td><td>' + loungeCount(row.visitors) + '</td><td>' + loungeMinutes(row.avgMs) +
+          '</td><td>' + loungeCount(row.allclear) + '</td><td>' + loungePercent(row.allclearRate) + '</td><td>' +
+          loungePercent(row.doneRate) + '</td></tr>').join('') + '</tbody></table>' : LOUNGE_EMPTY);
+      if (Number.isFinite(weekdayActive)) block('평일 활동 / Weekday activity',
+        loungeMetrics([['이번 주 월~목 놀거리 회원 / Members playing Mon–Thu this week', weekdayActive]]));
+    } else unavailable('놀거리 통계 / Play stats', stats);
+
+    if (!owner) return;
+    if (auto.status === 'fulfilled') {
+      loungeAction(panel, '자동 투표 / Auto vote',
+        'adm_play_auto_set', '<p class="note">매일 15:30 타임테이블이 올라오면, 열린 투표가 없을 때 “오늘 제일 기대되는 DJ는?” 투표를 자동으로 열어요 (다음 날 06:00 마감). / ' +
+        'After the 15:30 timetable post, opens “Which DJ are you most excited for tonight?” when no other vote is open (closes 06:00).</p>' +
+        '<div class="lounge-options"><label><input type="checkbox" name="autoVote"' + (auto.value.autoVote !== false ? ' checked' : '') +
+        '> 자동 투표 켜기 / Turn on auto vote</label></div>',
+        (_, data) => ({ autoVote: data.has('autoVote') }), request,
+        { done: (result, form) => { form.elements.autoVote.checked = result.autoVote !== false; } });
+    } else unavailable('자동 투표 / Auto vote', auto);
+    if (points.status === 'fulfilled') {
+      const entries = Object.entries(points.value.points || {}).filter(([, pts]) => Number.isSafeInteger(pts));
+      if (entries.length) loungeAction(panel, '놀거리 포인트 / Play points', 'adm_play_set',
+        '<p class="note">포인트는 하루 첫 판에만 줘요. / Points are given for the first play each day.</p>' +
+        entries.map(([key, pts]) => loungeInput(esc(LOUNGE_PLAY_POINTS[key] || key), esc(key),
+          'type="number" min="0" max="1000" step="1" required', pts)).join(''),
+        value => {
+          const next = {};
+          for (const [key] of entries) {
+            const n = Number(value(key));
+            if (!value(key) || !Number.isSafeInteger(n) || n < 0 || n > 1000) throw new Error('points');
+            next[key] = n;
+          }
+          return { points: next };
+        }, request, { done: (result, form) => {
+          for (const [key, pts] of Object.entries(result.points || {})) if (form.elements[key]) form.elements[key].value = pts;
+        } });
+    } else unavailable('놀거리 포인트 / Play points', points);
   }
   function loungeRooms(panel, request) {
     panel.textContent = '';
@@ -9457,7 +9554,7 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
       ['programming', '월드컵 · 챌린지 / Events'], ['rewards', '보상 / Rewards'], ['orders', '굿즈 주문 / Orders'],
       ['display', '전광판 예약 / Display'], ['stats', '통계 / Stats'],
       ['analytics', state.s.admin ? '설문 · 주간 / Reports' : '설문 결과 / Surveys']];
-    tabs.push(['stages', '단계 스위치 / Feature switches']);
+    tabs.push(['play', '놀거리 / Play'], ['stages', '단계 스위치 / Feature switches']);
     if (state.s.admin) tabs.push(['settings', '포인트 · 라디오 / Settings']);
     const screens = {
       reports: panel => loungeReports(panel, session), rooms: panel => loungeRooms(panel, request),
@@ -9469,6 +9566,7 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
       orders: panel => loungeFulfillment(panel, session, request, true),
       display: panel => loungeFulfillment(panel, session, request, false),
       stages: panel => loungeStages(panel, request),
+      play: panel => loungePlay(panel, request),
       settings: panel => loungeSettings(panel, request)
     };
     const primary = ['reports', 'rooms', 'display'];

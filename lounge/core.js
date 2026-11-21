@@ -8,7 +8,7 @@
   var ocNav = read('gl_oc') === '1', navOn;
   var shown = '', scrolls = Object.create(null), scrollPending = null;   // 보던 자리 기억 (keepScroll 화면)
   var gates = { rooms: 'rooms', dm: 'dm', challenge: 'challenge', compose: 'posts',
-    rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety' };
+    rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety', shorts: 'play1' };
   var STAFF_API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
   var staffTeamLabels = {
     'GROOVE 영업팀': { ko: '영업팀', en: 'Sales', ja: '営業チーム', zh: '销售团队' },
@@ -136,6 +136,8 @@
       return label ? nick + ' <span class="lounge-who-tag" data-kind="' + person.tag.kind + '">' + L.esc(label) + '</span>' : nick;
     },
     img: function (key) { return key ? API.replace(/\/$/, '') + '/img/' + encodeURIComponent(key).replace(/%2F/g, '/') : ''; },
+    // 라운지 서버 주소로 만든 전체 주소: L.apiUrl('p/<글id>') → 'https://…workers.dev/p/<글id>' (밖으로 보내는 공유 링크 — 서버가 미리보기(og)를 주고 앱으로 넘긴다)
+    apiUrl: function (path) { return new URL(String(path || '').replace(/^\/+/, ''), new URL(API.replace(/\/$/, '') + '/', location.href)).href; },
     upload: async function (file, kind) {
       var t = session;
       if (!t) throw new Error('auth');

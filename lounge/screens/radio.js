@@ -40,9 +40,26 @@
       lists.map((item, i) => U.button(label(item), 'data-radio="' + i + '"')).join('') + '</div>';
     const player = view.querySelector('[data-player]');
     const buttons = [...view.querySelectorAll('[data-radio]')];
-    let playingSince = null, elapsed = 0, timer, handshake, frame;
+    let playingSince = null, elapsed = 0, timer, handshake, frame, pinger, lastPing = -Infinity;
+
+    // 같이 듣는 중 (놀거리 개편 1차): 재생 중이고 화면이 보이는 동안 1분마다 알림
+    function ping() {
+      if (document.hidden || !L.me || !L.open('play1') || !view.isConnected) return;
+      if (performance.now() - lastPing < 55_000) return;
+      lastPing = performance.now();
+      L.api('play_ping', { what: 'radio' });
+    }
+    function startPing() {
+      ping();
+      if (!pinger) pinger = setInterval(ping, 60_000);
+    }
+    function stopPing() {
+      clearInterval(pinger);
+      pinger = undefined;
+    }
 
     function stopClock() {
+      stopPing();
       clearTimeout(timer);
       if (playingSince != null) elapsed += performance.now() - playingSince;
       playingSince = null;
@@ -70,7 +87,10 @@
       const state = message.event === 'onStateChange' ? message.info : message.info?.playerState;
       if (typeof state !== 'number') return;
       clearInterval(handshake);
-      if (state === 1) startClock();
+      if (state === 1) {
+        startClock();
+        startPing();
+      }
       else stopClock();
     }
     window.addEventListener('message', receive);
