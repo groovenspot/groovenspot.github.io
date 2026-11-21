@@ -104,6 +104,54 @@
       'user4.colLimit': '最多可创建 20 个收藏夹。', 'user4.colEmpty': '这个收藏夹里还没有帖子',
       'user4.colPick': '选择要放入这个收藏夹的帖子。', 'user4.colCount': '{n} 个' }
   });
+  // 6차(SPEC6 3장) 직원 프로필: 소개 아래 한 줄 + 버튼 하나. 서버가 user.staff 를 줄 때만 그린다(예전 서버에는 없다).
+  const s6 = U.words('user6', {
+    ops: ['GROOVE 운영팀', 'GROOVE Operations'],
+    sales: ['GROOVE 영업팀 {team} · 테이블 담당', 'GROOVE Host Team {team} · Tables'],
+    dj: ['GROOVE DJ팀', 'GROOVE DJ Team'],
+    guard: ['GROOVE 경호팀 · 안전 담당', 'GROOVE Security · Safety'],
+    admin: ['GROOVE 운영진', 'GROOVE Management'],
+    groove: ['GROOVE 직원', 'GROOVE Staff'],
+    lead: ['팀장', 'Lead'], sub: ['부팀장', 'Sub-lead'],
+    table: ['테이블 문의', 'Table inquiry'],
+    djPage: ['DJ 프로필', 'DJ profile']
+  });
+  L.i18n({
+    ja: { 'user6.ops': 'GROOVE 運営チーム', 'user6.sales': 'GROOVE 営業チーム {team} · テーブル担当', 'user6.dj': 'GROOVE DJチーム',
+      'user6.guard': 'GROOVE 警備チーム · 安全担当', 'user6.admin': 'GROOVE 運営陣', 'user6.groove': 'GROOVE スタッフ',
+      'user6.lead': 'リーダー', 'user6.sub': 'サブリーダー',
+      'user6.table': 'テーブル相談', 'user6.djPage': 'DJプロフィール' },
+    zh: { 'user6.ops': 'GROOVE 运营团队', 'user6.sales': 'GROOVE 销售团队 {team} · 负责订台', 'user6.dj': 'GROOVE DJ 团队',
+      'user6.guard': 'GROOVE 安保团队 · 负责安全', 'user6.admin': 'GROOVE 管理团队', 'user6.groove': 'GROOVE 工作人员',
+      'user6.lead': '队长', 'user6.sub': '副队长',
+      'user6.table': '咨询订台', 'user6.djPage': 'DJ 主页' }
+  });
+  // 영업 3팀 이름 [ko, en, ja, zh] — 팀 이름은 고유 이름이라 중국어도 칩(MD Clover)처럼 영문 그대로 쓴다.
+  const salesNames = { clover: ['클로버', 'Clover', 'クローバー', 'Clover'], arun: ['아룬', 'Arun', 'アルン', 'Arun'], goat: ['고트', 'Goat', 'ゴート', 'Goat'] };
+  const salesTeams = Object.keys(salesNames);
+  const salesName = team => salesNames[team][Math.max(0, ['ko', 'en', 'ja', 'zh'].indexOf(L.lang))];
+  // 서버가 준 staff 칸을 아는 값만 남겨 읽는다 → { kind: 'ops'|'sales'|'dj'|'guard'|'admin'|'groove', team, role, dj, mine } 또는 null
+  function staffOf(user) {
+    const staff = user?.staff;
+    if (!staff || typeof staff !== 'object') return null;
+    const team = typeof staff.team === 'string' ? staff.team : '';
+    const kind = staff.admin === true ? 'admin' : salesTeams.includes(team) ? 'sales' : ['ops', 'dj', 'guard'].includes(team) ? team : 'groove';
+    return { kind, team, role: kind !== 'admin' && ['lead', 'sub'].includes(staff.role) ? staff.role : '',
+      dj: kind === 'dj' && typeof staff.dj === 'string' && /^[\w.-]{1,80}$/.test(staff.dj) ? staff.dj : '', mine: staff.mine === true };
+  }
+  // 소개 아래 한 줄: 'GROOVE 영업팀 클로버 · 테이블 담당 · 팀장'
+  const staffLine = staff => s6(staff.kind, staff.kind === 'sales' ? { team: salesName(staff.team) } : undefined) +
+    (staff.role ? ' · ' + s6(staff.role) : '');
+  // 버튼(팔로우·메시지 줄에 하나 더): 영업 3팀 = 테이블 문의(내 담당이면 테이블 문의 화면, 아니면 그 직원과의 1:1 메시지), DJ = DJ 프로필(있을 때만).
+  function staffAction(staff, user, canMessage) {
+    const button = (kind, href, label) => '<a class="pf-btn pf-btn-staff" data-staff-action="' + kind + '" href="' + esc(href) +
+      '"><span class="pf-btn-in">' + label + '</span></a>';
+    if (staff.kind === 'sales') {
+      if (staff.mine && L.open('sales') && L.hasScreen('table')) return button('table', '#/table', s6('table'));
+      return canMessage ? button('dm', path('dm', user.nick), s6('table')) : '';
+    }
+    return staff.kind === 'dj' && staff.dj && L.hasScreen('dj') ? button('dj', path('dj', staff.dj), s6('djPage')) : '';
+  }
   const esc = L.esc;
   const count = value => Math.max(0, Number(value) || 0);
   const format = value => new Intl.NumberFormat(L.lang).format(count(value));
@@ -574,15 +622,17 @@
           : w('byN', { a: faces[0].nick, n: format(count(mutual.n) - 1) });
     // 메시지 버튼: 서버가 canMessage 를 주면 그대로, 없으면 지금 규칙(dm 켜짐). 잠긴 프로필에는 없다 (B10).
     const canMessage = !user.locked && (typeof user.canMessage === 'boolean' ? user.canMessage : L.open('dm'));
+    const staff = staffOf(user);
     const people = follow2 && L.me ? '<a class="pf-btn pf-btn-icon" href="#/suggest" aria-label="' + esc(L.t('follows.suggest')) + '"><span class="pf-btn-in">' +
       L.icon('userPlus', { size: 18 }) + '</span></a>' : '';
     const actions = own ? '<a class="pf-btn" href="#/me/edit"><span class="pf-btn-in">' + w('edit') + '</span></a>' +
       (canShare ? '<button type="button" class="pf-btn" data-profile-share><span class="pf-btn-in">' + profile('share') + '</span></button>' : '') + people :
       L.followButton({ nick: user.nick, state: followingState(user), followsMe: user.me?.followsMe === true },
         { caret: true, attrs: 'data-follow' }) +
-      (canMessage ? '<a class="pf-btn" href="' + esc(path('dm', user.nick)) + '"><span class="pf-btn-in">' + t('message') + '</span></a>' : '') + people;
+      (canMessage ? '<a class="pf-btn" href="' + esc(path('dm', user.nick)) + '"><span class="pf-btn-in">' + t('message') + '</span></a>' : '') +
+      (staff ? staffAction(staff, user, canMessage) : '') + people;
     const tag = ['staff', 'vip'].includes(user.tag?.kind) && typeof user.tag.label === 'string' ? user.tag : null;
-    const chips = (tag ? '<span class="lounge-who-tag" data-kind="' + tag.kind + '">' + esc(L.tagLabel(tag, L.lang)) + '</span>' : '') +
+    const chips = (tag ? L.tagChip(tag, L.lang) : '') +
       (['2F', '3F'].includes(user.floor) ? '<span class="pf-chip">' + esc(user.floor) + '</span>' : '') +
       (!tag && badge ? '<span class="pf-chip profile3-badge">' + esc(badge) + '</span>' : '');
     const bio = String(user.bio || '');
@@ -592,6 +642,7 @@
       (chips ? '<div class="pf-id profile3-name" data-user-name>' + chips + '</div>' : '') +
       (bio ? '<div class="pf-bio is-short" data-bio><p class="shell-bio">' + (L.linkify ? L.linkify(bio) : esc(bio)) + '</p>' +
         '<button type="button" class="pf-more" aria-expanded="false" data-more-bio hidden><span>' + profile('moreBio') + '</span></button></div>' : '') +
+      (staff ? '<p class="pf-staff" data-staff-line data-team="' + (staff.kind === 'sales' ? staff.team : staff.kind) + '">' + staffLine(staff) + '</p>' : '') +
       (showInstagram ? '<a class="pf-link" href="https://www.instagram.com/' + encodeURIComponent(user.link) +
         '/" target="_blank" rel="noopener noreferrer">' + L.icon('link', { size: 16 }) + '<span>' + esc(user.link) + '</span></a>' : '') +
       (mutual ? '<a class="pf-mutual" href="' + esc(path('mutuals', user.nick)) + '">' +

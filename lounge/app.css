@@ -158,6 +158,20 @@ a { color: var(--g); }
   font-size:11px; font-weight:800; line-height:1.25;
 }
 .lounge-who-tag[data-kind="vip"] { background:#ffd66b; color:#2d1b00; }
+/* 6차(SPEC6 3장) 직원 팀별 표식: 아이콘 + 글자 + 직책. 높이·글자 크기·줄 높이는 위 칩과 같다(줄이 밀리지 않게) — 모양만 알약.
+   색은 대표에게 보여 준 시안 그대로. 층 색(2F 주황·3F 보라)·VIP 금색과 겹치지 않는다. 색만으로 구분하지 않게 팀마다 아이콘이 다르다. */
+.lounge-who-tag[data-team] { gap:3px; padding-inline:5px 7px; border-radius:999px; background:#f6efeb; color:#161210; letter-spacing:.01em; }
+.lounge-who-tag > svg { display:block; flex:none; width:11px; height:11px; }
+.lounge-who-tag > i { margin-inline-start:1px; font-style:normal; font-weight:900; opacity:.72; }
+.lounge-who-tag[data-team="clover"] { background:#123524; color:#6ff0b6; box-shadow:inset 0 0 0 1px #2f8a5f; }
+.lounge-who-tag[data-team="arun"] { background:#102a3f; color:#7cc8ff; box-shadow:inset 0 0 0 1px #2f79b0; }
+.lounge-who-tag[data-team="goat"] { background:#2c3312; color:#d5f56f; box-shadow:inset 0 0 0 1px #7f9a2a; }
+.lounge-who-tag[data-team="dj"] { background:#3a1226; color:#ff86bd; box-shadow:inset 0 0 0 1px #b03a72; }
+.lounge-who-tag[data-team="guard"] { background:#3a1512; color:#ff9186; box-shadow:inset 0 0 0 1px #b0473d; }
+/* 닉네임 + 직원 칩 묶음(L.whoTag): 자리가 좁으면 닉네임이 먼저 줄어들고(…) 칩은 한 줄로 남는다. 줄 중간에 놓여도 닉네임 글줄에 맞춰 선다. */
+.lounge-who { display:inline-flex; align-items:center; gap:.3em; min-width:0; max-width:100%; vertical-align:bottom; }
+.lounge-who-nick { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lounge-who > .lounge-who-tag { flex:none; }
 
 .profile3-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; text-align: center; }
 .profile3-stats > :is(a, span) { display: grid; align-content: center; min-width: 0; min-height: 48px; padding: 2px; border-radius: 10px; }

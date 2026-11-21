@@ -224,6 +224,7 @@
       'Use {min}–{max} characters from the allowed set ({chars}). Some words are unavailable.'
     ],
     'error.nick_taken': ['이미 쓰는 닉네임이에요.', 'That nickname is taken.'],
+    'error.nick_staff': ['직원으로 보일 수 있는 닉네임은 쓸 수 없어요.', 'Nicknames that look like GROOVE staff can’t be used.'],
     'error.phone': ['휴대폰 번호를 확인해 주세요.', 'Check your phone number.'],
     'error.phone_taken': ['이미 가입한 번호예요. 로그인해 주세요.', 'This number is registered. Please log in.'],
     'error.pw': ['비밀번호를 확인해 주세요. 새 비밀번호는 8자 이상이어야 해요.', 'Check your password. New passwords need at least 8 characters.'],

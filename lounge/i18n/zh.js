@@ -65,6 +65,7 @@ Lounge.i18n({zh: {
   "auth.error.nick": "请用韩文音节（가～힣）、半角英文字母、数字、点（.）或下划线（_）输入 2～12 个字符。部分词语不能使用。",
   "auth.error.nickAllowed": "请用允许的字符（{chars}）输入 {min}～{max} 个字符。部分词语不能使用。",
   "auth.error.nick_taken": "该昵称已被使用。",
+  "auth.error.nick_staff": "不能使用看起来像工作人员的昵称。",
   "auth.error.phone": "请检查手机号。",
   "auth.error.phone_taken": "该手机号已注册，请直接登录。",
   "auth.error.pw": "请检查密码。新密码至少需要 8 个字符。",

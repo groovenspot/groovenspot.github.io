@@ -65,6 +65,7 @@ Lounge.i18n({ja: {
   "auth.error.nick": "ハングルの音節（가〜힣）、半角英字・数字、ピリオド（.）、アンダースコア（_）で2〜12文字を入力してください。一部の言葉は使えません。",
   "auth.error.nickAllowed": "使用できる文字（{chars}）で{min}〜{max}文字を入力してください。一部の言葉は使えません。",
   "auth.error.nick_taken": "そのニックネームはすでに使われています。",
+  "auth.error.nick_staff": "スタッフに見えるニックネームは使えません。",
   "auth.error.phone": "携帯電話番号を確認してください。",
   "auth.error.phone_taken": "この番号は登録済みです。ログインしてください。",
   "auth.error.pw": "パスワードを確認してください。新しいパスワードは8文字以上です。",
