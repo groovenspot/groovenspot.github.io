@@ -1,7 +1,10 @@
 /* 그루브 라운지 공통 부품 모양 (4차 · ui.js 와 한 쌍) — 주인: 틀 작업창(A) */
 .ui-icon { display: block; flex: none; }
 .ui-avatar { --s: 40px; position: relative; display: inline-grid; place-items: center; flex: none; width: var(--s); height: var(--s); border-radius: 50%; background: #2a2523; color: var(--txt); text-decoration: none; }
-.ui-avatar > img, .ui-avatar > .ui-avatar-letter { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: grid; place-items: center; font-weight: 800; font-size: calc(var(--s) * .42); }
+.ui-avatar > .ui-avatar-letter { width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: calc(var(--s) * .42); }
+/* 사진은 칸에 딱 맞춰 자른다 — 세로로 긴 사진이 타원으로 찌그러지지 않게 (통합 때 고침) */
+.ui-avatar > img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.ui-avatar[data-story] > img { inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); }
 .ui-avatar[data-story] { padding: 3px; background: var(--bg); box-shadow: 0 0 0 2px var(--g); }
 .ui-avatar[data-story="seen"] { box-shadow: 0 0 0 1.5px var(--line-2); }
 .ui-mention, .ui-hashtag { color: #9ecbff; text-decoration: none; font-weight: 600; }
