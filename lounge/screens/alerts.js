@@ -50,7 +50,49 @@
   L.i18n(Object.fromEntries(Object.entries(words).map(([lang, copy]) => [lang,
     Object.fromEntries(Object.entries(copy).map(([key, value]) => ['alerts.' + key, value]))
   ])));
+  // 4차(인스타그램 방식 알림 줄) 문구 — 새 키라서 네 언어를 여기 같이 둔다 (SPEC4 1장)
+  L.i18n({
+    ko: { 'alerts4.settings': '알림 설정', 'alerts4.today': '오늘', 'alerts4.week': '이번 주', 'alerts4.earlier': '이전',
+      'alerts4.others': '{nick}님 외 {n}명', 'alerts4.others1': '{nick}님 외 1명', 'alerts4.one': '{nick}님',
+      'alerts4.like': '이 회원님의 게시물을 좋아해요.', 'alerts4.comment': '이 댓글을 남겼어요.', 'alerts4.reply': '이 답글을 남겼어요.',
+      'alerts4.mention': '이 회원님을 언급했어요.', 'alerts4.tag': '이 사진에 회원님을 태그했어요.', 'alerts4.tag_approved': '이 사진 태그를 승인했어요.',
+      'alerts4.follow': '이 회원님을 팔로우하기 시작했어요.', 'alerts4.follow_request': '이 팔로우를 요청했어요.',
+      'alerts4.follow_accept': '이 팔로우 요청을 수락했어요.', 'alerts4.story_like': '이 회원님의 스토리를 좋아해요.',
+      'alerts4.share': '이 메시지로 공유했어요.', 'alerts4.kind.share': '전달', 'alerts4.kind.other': '알림', 'alerts4.unreadDot': '안 읽음' },
+    en: { 'alerts4.settings': 'Notification settings', 'alerts4.today': 'Today', 'alerts4.week': 'This week', 'alerts4.earlier': 'Earlier',
+      'alerts4.others': '{nick} and {n} others', 'alerts4.others1': '{nick} and 1 other', 'alerts4.one': '{nick}',
+      'alerts4.like': ' liked your post.', 'alerts4.comment': ' commented on your post.', 'alerts4.reply': ' replied to your comment.',
+      'alerts4.mention': ' mentioned you.', 'alerts4.tag': ' tagged you in a photo.', 'alerts4.tag_approved': ' approved your photo tag.',
+      'alerts4.follow': ' started following you.', 'alerts4.follow_request': ' requested to follow you.',
+      'alerts4.follow_accept': ' accepted your follow request.', 'alerts4.story_like': ' liked your story.',
+      'alerts4.share': ' shared something with you.', 'alerts4.kind.share': 'Share', 'alerts4.kind.other': 'Notification', 'alerts4.unreadDot': 'Unread' },
+    ja: { 'alerts4.settings': '通知設定', 'alerts4.today': '今日', 'alerts4.week': '今週', 'alerts4.earlier': '以前',
+      'alerts4.others': '{nick}さん、他{n}人', 'alerts4.others1': '{nick}さん、他1人', 'alerts4.one': '{nick}さん',
+      'alerts4.like': 'があなたの投稿に「いいね」しました。', 'alerts4.comment': 'がコメントしました。', 'alerts4.reply': 'が返信しました。',
+      'alerts4.mention': 'があなたをメンションしました。', 'alerts4.tag': 'が写真にあなたをタグ付けしました。', 'alerts4.tag_approved': 'が写真のタグを承認しました。',
+      'alerts4.follow': 'があなたをフォローしました。', 'alerts4.follow_request': 'からフォローリクエストが届きました。',
+      'alerts4.follow_accept': 'がフォローリクエストを承認しました。', 'alerts4.story_like': 'があなたのストーリーに「いいね」しました。',
+      'alerts4.share': 'がメッセージで共有しました。', 'alerts4.kind.share': '共有', 'alerts4.kind.other': 'お知らせ', 'alerts4.unreadDot': '未読' },
+    zh: { 'alerts4.settings': '通知设置', 'alerts4.today': '今天', 'alerts4.week': '本周', 'alerts4.earlier': '更早',
+      'alerts4.others': '{nick}等{n}人', 'alerts4.others1': '{nick}等2人', 'alerts4.one': '{nick}',
+      'alerts4.like': '赞了你的帖子。', 'alerts4.comment': '评论了你的帖子。', 'alerts4.reply': '回复了你的评论。',
+      'alerts4.mention': '提到了你。', 'alerts4.tag': '在照片中标记了你。', 'alerts4.tag_approved': '通过了你的照片标记。',
+      'alerts4.follow': '关注了你。', 'alerts4.follow_request': '请求关注你。',
+      'alerts4.follow_accept': '通过了你的关注请求。', 'alerts4.story_like': '赞了你的快拍。',
+      'alerts4.share': '通过私信分享给你。', 'alerts4.kind.share': '分享', 'alerts4.kind.other': '通知', 'alerts4.unreadDot': '未读' }
+  });
   const t = (key, vars) => L.t('alerts.' + key, vars);
+  const t4 = (key, vars) => L.t('alerts4.' + key, vars);
+  const TYPES = ['like', 'comment', 'reply', 'mention', 'tag', 'tag_approved', 'follow', 'follow_request', 'follow_accept', 'story_like', 'share'];
+  const KIND_ICON = { dj: 'play', lost: 'search', keep: 'pin', dm: 'chat', rooms: 'chat', social: 'heart', md: 'user', rewards: 'check',
+    follow: 'userPlus', follow_request: 'userPlus', follow_accept: 'check', share: 'send' };
+  // 알림 종류 이름 (화면 읽기용 머리말). 낱말 표에 없는 종류가 키 그대로('alerts.share') 보이던 버그(B3)를 막는다.
+  function kindLabel(kind) {
+    const known = L.t('alerts.' + kind);
+    if (known !== 'alerts.' + kind) return known;
+    const extra = t4('kind.' + kind);
+    return extra !== 'alerts4.kind.' + kind ? extra : t4('kind.other');
+  }
   const e = L.esc;
   const safeTarget = url => /^#\/[a-z][a-z0-9_-]*(?:[/?][^\u0000-\u001f\u007f]*)?$/.test(url) ? url : '#/alerts';
 
@@ -67,14 +109,7 @@
   function paintAlertBadge(unread) {
     if (!Number.isSafeInteger(unread) || unread < 0) return;
     badgeVersion++;
-    const link = document.querySelector('[data-lounge-inbox="alerts"]');
-    const badge = link?.querySelector('span');
-    if (badge) {
-      const label = L.t('core.alerts');
-      badge.hidden = unread === 0;
-      badge.textContent = unread > 99 ? '99+' : unread || '';
-      link.setAttribute('aria-label', unread ? L.t('core.unread', { label, count: unread }) : label);
-    }
+    L.setInbox('alerts', unread);   // 공통 헤더·화면 자체 막대의 알림 아이콘 배지를 모두 맞춤
     try {
       const badgeUpdate = unread ? navigator.setAppBadge?.(unread) : navigator.clearAppBadge?.();
       badgeUpdate?.catch(() => {});
@@ -225,15 +260,10 @@
     };
   }
 
-  async function render(root) {
-    const memberId = L.me.id;
-    const stillHere = () => root.isConnected && L.me?.id === memberId;
-    root.className = 'shell-stack';
-    root.innerHTML = '<h1>' + e(t('title')) + '</h1>' +
-      '<section class="shell-card shell-stack" aria-label="' + e(t('title')) + '">' +
-      '<div class="shell-actions"><p role="status" data-unread></p><button type="button" class="btn" data-read-all hidden>' +
-      e(t('readAll')) + '</button></div><ul class="shell-ledger" data-notices></ul>' +
-      '<p role="alert" class="shell-error" data-list-error hidden></p><button type="button" class="btn" data-more hidden></button></section>' +
+  // ── 알림 설정 (#/alerts/settings) — 위 막대 ⚙ 로 들어온다: 이 기기 푸시 켜기·받을 종류·잠금 화면 내용 ──
+  async function renderSettings(root) {
+    root.className = 'al4 al4-settings shell-stack';
+    root.innerHTML = L.bar({ title: t4('settings'), back: 'alerts' }) +
       '<section class="shell-card" data-phone><h2>' + e(t('phone')) + '</h2>' +
       '<button type="button" class="btn btn-hot" data-push hidden></button><p class="muted" role="status" data-push-hint></p>' +
       '<p class="muted">' + e(t('hours')) + '</p><fieldset class="shell-consent" data-prefs disabled><legend>' + e(t('types')) + '</legend>' +
@@ -243,126 +273,11 @@
       '</select></label>' +
       '</fieldset><p role="alert" class="shell-error" data-pref-error hidden></p><button type="button" class="btn" data-pref-retry hidden>' +
       e(t('retry')) + '</button></section>';
-
-    void L.profileFollows.requests(root, true);
-
-    const inbox = root.querySelector('[data-notices]');
-    const status = root.querySelector('[data-unread]');
-    const readAll = root.querySelector('[data-read-all]');
-    const listError = root.querySelector('[data-list-error]');
-    const more = root.querySelector('[data-more]');
     const prefs = root.querySelector('[data-prefs]');
     const preview = prefs.querySelector('[name=preview]');
     const prefError = root.querySelector('[data-pref-error]');
     const prefRetry = root.querySelector('[data-pref-retry]');
-    let before, newest = 0, unread = 0;
     let savedPreview = 'sensitive';
-    const date = new Intl.DateTimeFormat(L.lang, {
-      dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Seoul'
-    });
-
-    function updateUnread() {
-      status.textContent = inbox.children.length ? t('unread', { n: unread }) : t('empty');
-      readAll.hidden = !unread;
-      if (stillHere()) paintAlertBadge(unread);
-    }
-
-    async function load(cursor) {
-      more.disabled = true;
-      listError.hidden = true;
-      try {
-        const result = await action('notices', cursor ? { before: cursor } : {});
-        for (const n of result.notices) {
-          const row = document.createElement('li');
-          row.dataset.read = String(n.read);
-          row.className = 'shell-stack';
-          const isSafetyAck = n.kind === 'rooms' && n.url === '#/safety' && /^safety:safe[a-z0-9]{10}$/.test(n.tag);
-          const { title, body } = isSafetyAck ? safetyAcknowledged[L.lang] : n;
-          row.innerHTML = '<span><strong>' + e(title) + '</strong><small class="muted">' +
-            e(date.format(n.at)) + '</small></span>' + (body ? '<p class="shell-bio"></p>' : '');
-          if (body) row.querySelector('p').textContent = body;
-          const link = document.createElement('a');
-          link.className = 'shell-link';
-          link.href = safeTarget(n.url);
-          link.textContent = t(n.kind);
-          link.onclick = async event => {
-            if (event.ctrlKey || event.metaKey || event.shiftKey || n.read) return;
-            event.preventDefault();
-            try {
-              const result = await action('notices_read', { id: n.id });
-              if (stillHere()) {
-                paintAlertBadge(result.unread);
-                L.go(link.hash);
-              }
-            } catch {
-              listError.textContent = t('failed');
-              listError.hidden = false;
-            }
-          };
-          const actions = document.createElement('div');
-          actions.className = 'shell-actions';
-          actions.append(link);
-          if (!n.read) {
-            const read = document.createElement('button');
-            read.type = 'button';
-            read.className = 'btn';
-            read.textContent = t('read');
-            read.onclick = async () => {
-              read.disabled = true;
-              try {
-                const result = await action('notices_read', { id: n.id });
-                unread = result.unread;
-                n.read = true;
-                row.dataset.read = 'true';
-                read.remove();
-                updateUnread();
-              } catch {
-                read.disabled = false;
-                listError.textContent = t('failed');
-                listError.hidden = false;
-              }
-            };
-            actions.append(read);
-          }
-          row.append(actions);
-          inbox.append(row);
-          newest = Math.max(newest, n.id);
-        }
-        unread = result.unread;
-        before = result.before;
-        updateUnread();
-        more.textContent = t('more');
-        more.hidden = !before;
-      } catch {
-        listError.textContent = t('failed');
-        listError.hidden = false;
-        more.textContent = t('retry');
-        more.hidden = false;
-      } finally {
-        more.disabled = false;
-      }
-    }
-
-    more.onclick = () => load(before);
-    readAll.onclick = async () => {
-      readAll.disabled = true;
-      more.disabled = true;
-      try {
-        const result = await action('notices_read', { before: newest });
-        if (stillHere()) paintAlertBadge(result.unread);
-        inbox.replaceChildren();
-        status.textContent = '';
-        newest = 0;
-        before = undefined;
-        await load();
-      } catch {
-        listError.textContent = t('failed');
-        listError.hidden = false;
-      } finally {
-        readAll.disabled = false;
-        more.disabled = false;
-      }
-    };
 
     async function loadPrefs() {
       prefs.disabled = true;
@@ -412,10 +327,186 @@
         prefs.disabled = false;
       }
     };
-    await Promise.all([load(), loadPrefs(), pushSettings(root.querySelector('[data-phone]'))]);
+    await Promise.all([loadPrefs(), pushSettings(root.querySelector('[data-phone]'))]);
   }
 
-  L.screen('alerts', { nav: 'me', auth: true, title: 'alerts.title', render });
+  // ── 알림 한 줄 (F55) ── 아바타(보낸 사람) 또는 종류 아이콘 + 한 문장(굵은 닉네임 + 내용 + 회색 지난 시간) + 오른쪽 글 사진 / 팔로우 버튼
+  function sentence(n) {
+    const isSafetyAck = n.kind === 'rooms' && n.url === '#/safety' && /^safety:safe[a-z0-9]{10}$/.test(n.tag);
+    const { title, body } = isSafetyAck ? safetyAcknowledged[L.lang] || safetyAcknowledged.en : n;
+    const from = n.from && typeof n.from.nick === 'string' && n.from.nick ? n.from : null;
+    const type = TYPES.includes(n.type) ? n.type : '';
+    const others = Number.isSafeInteger(n.others) && n.others > 0 ? n.others : 0;
+    if (from && type) {
+      // 닉네임만 굵게: '{nick}님 외 3명' 에서 닉네임 자리만 <strong>
+      const key = others === 1 ? 'others1' : others ? 'others' : 'one';
+      const who = t4(key, { nick: '\u0001', n: L.count(others) });
+      return e(who).replace('\u0001', '<strong>' + e(from.nick) + '</strong>') + e(t4(type));
+    }
+    if (from && body && body.startsWith(from.nick)) return '<strong>' + e(from.nick) + '</strong><span>' + e(body.slice(from.nick.length)) + '</span>';
+    return '<strong>' + e(title) + '</strong>' + (body ? ' <span>' + e(body) + '</span>' : '');
+  }
+
+  function rowOf(n) {
+    const row = document.createElement('li');
+    row.className = 'al4-item';
+    row.dataset.read = String(Boolean(n.read));
+    row.dataset.id = n.id;
+    const from = n.from && typeof n.from.nick === 'string' && n.from.nick ? n.from : null;
+    const thumb = typeof n.thumb === 'string' && n.thumb ? L.photoSrc(n.thumb) : '';
+    const lead = from ? L.avatar(from, 44)
+      : '<span class="al4-kind" aria-hidden="true">' + L.icon(KIND_ICON[n.kind] || 'bell', { size: 22 }) + '</span>';
+    // 태그 알림은 태그 승인 화면(#/tags)으로 (스토리·글쓰기 작업창이 만든 화면)
+    const target = n.type === 'tag' && L.hasScreen('tags') ? '#/tags' : safeTarget(n.url);
+    row.innerHTML = '<a class="al4-row" href="' + e(target) + '">' + lead +
+      '<span class="al4-text"><span class="sr-only">' + e(kindLabel(n.kind)) + ': </span>' + sentence(n) +
+      ' <time class="al4-time" datetime="' + e(new Date(n.at).toISOString()) + '">' + e(L.ago(n.at)) + '</time></span>' +
+      (thumb ? '<img class="al4-thumb" src="' + e(thumb) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') +
+      '<i class="al4-dot" role="img" aria-label="' + e(t4('unreadDot')) + '"></i></a>';
+    // 새 팔로워 알림: 맞팔로우 버튼 (프로필 작업창의 L.followButton 이 있으면)
+    if (from && (n.type || n.kind) === 'follow' && typeof L.followButton === 'function') {
+      const made = L.followButton(from);
+      const side = document.createElement('span');
+      side.className = 'al4-side';
+      if (typeof made === 'string') side.innerHTML = made; else if (made instanceof Node) side.append(made);
+      if (side.firstChild) row.append(side);
+    }
+    return row;
+  }
+
+  function groupOf(at, now) {
+    const start = new Date(now); start.setHours(0, 0, 0, 0);
+    return at >= start.getTime() ? 'today' : at >= start.getTime() - 6 * 86400e3 ? 'week' : 'earlier';
+  }
+
+  async function render(root, params) {
+    if (params?.id === 'settings') return renderSettings(root);
+    const memberId = L.me.id;
+    const stillHere = () => root.isConnected && L.me?.id === memberId;
+    root.className = 'al4';
+    root.innerHTML = '<div class="al4-page">' +
+      L.bar({ title: t('title'), back: 'tonight', right: '<a class="ui-bar-btn" href="#/alerts/settings" data-al-settings aria-label="' + e(t4('settings')) + '">' + L.icon('settings') + '</a>' }) +
+      '<div class="al4-requests" data-al-requests></div>' +
+      '<div class="al4-status" data-al-status hidden><p role="status" data-unread></p><button type="button" class="al4-readall" data-read-all hidden>' + e(t('readAll')) + '</button></div>' +
+      '<div data-notices aria-label="' + e(t('title')) + '"></div>' +
+      '<p class="al4-empty muted" data-al-empty hidden>' + e(t('empty')) + '</p>' +
+      '<p role="alert" class="shell-error" data-list-error hidden></p><button type="button" class="btn" data-more hidden></button>' +
+      '<div data-al-end aria-hidden="true"></div></div>';
+
+    // 팔로우 요청: 맨 위 한 줄(누르면 펼쳐서 수락·거절). 요청이 없으면 줄을 감춘다.
+    const requests = root.querySelector('[data-al-requests]');
+    if (L.profileFollows?.requests) {
+      void Promise.resolve(L.profileFollows.requests(requests, true)).then(() => {
+        if (requests.isConnected && !requests.querySelector('button, a')) requests.hidden = true;
+      }, () => { requests.hidden = true; });
+    }
+
+    const inbox = root.querySelector('[data-notices]');
+    const bar = root.querySelector('[data-al-status]');
+    const status = root.querySelector('[data-unread]');
+    const readAll = root.querySelector('[data-read-all]');
+    const empty = root.querySelector('[data-al-empty]');
+    const listError = root.querySelector('[data-list-error]');
+    const more = root.querySelector('[data-more]');
+    let before, newest = 0, unread = 0, loading = false, failed = false;
+
+    function updateUnread() {
+      const any = inbox.querySelector('li');
+      status.textContent = unread ? t('unread', { n: unread }) : '';
+      readAll.hidden = !unread;
+      bar.hidden = !unread;
+      empty.hidden = Boolean(any) || failed;
+      if (stillHere()) paintAlertBadge(unread);
+    }
+
+    function listFor(group) {
+      let section = inbox.querySelector('[data-group="' + group + '"]');
+      if (!section) {
+        section = document.createElement('section');
+        section.dataset.group = group;
+        section.innerHTML = '<h2 class="al4-head">' + e(t4(group)) + '</h2><ul class="al4-list"></ul>';
+        const order = ['today', 'week', 'earlier'];
+        const next = order.slice(order.indexOf(group) + 1).map(name => inbox.querySelector('[data-group="' + name + '"]')).find(Boolean);
+        inbox.insertBefore(section, next || null);
+      }
+      return section.querySelector('ul');
+    }
+
+    // 줄 전체를 누르면 읽음 처리 + 이동 (따로 '읽음' 버튼 없음)
+    inbox.addEventListener('click', async event => {
+      const link = event.target.closest('a.al4-row');
+      if (!link || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      const row = link.closest('li');
+      event.preventDefault();
+      const target = link.getAttribute('href');
+      if (row.dataset.read !== 'true') {
+        row.dataset.read = 'true';
+        try {
+          const result = await action('notices_read', { id: Number(row.dataset.id) });
+          unread = result.unread;
+          if (stillHere()) updateUnread();
+        } catch { /* 읽음 처리가 안 돼도 이동은 한다 */ }
+      }
+      if (!stillHere()) return;
+      if (target !== '#/alerts') L.go(target);
+    });
+
+    async function load(cursor) {
+      if (loading) return;
+      loading = true;
+      more.hidden = true;
+      listError.hidden = true;
+      try {
+        const result = await action('notices', cursor ? { before: cursor } : {});
+        if (!stillHere()) return;
+        failed = false;
+        const now = Date.now();
+        for (const n of result.notices) {
+          listFor(groupOf(n.at, now)).append(rowOf(n));
+          newest = Math.max(newest, n.id);
+        }
+        unread = result.unread;
+        before = result.before;
+        updateUnread();
+      } catch {
+        if (!stillHere()) return;
+        failed = true;
+        empty.hidden = true;
+        listError.textContent = t('failed');
+        listError.hidden = false;
+        more.textContent = t('retry');
+        more.hidden = false;
+      } finally {
+        loading = false;
+      }
+    }
+
+    more.onclick = () => load(before);
+    readAll.onclick = async () => {
+      readAll.disabled = true;
+      try {
+        const result = await action('notices_read', { before: newest });
+        if (!stillHere()) return;
+        unread = result.unread;
+        inbox.querySelectorAll('li[data-read="false"]').forEach(row => { row.dataset.read = 'true'; });
+        updateUnread();
+      } catch {
+        listError.textContent = t('failed');
+        listError.hidden = false;
+      } finally {
+        readAll.disabled = false;
+      }
+    };
+
+    await load();
+    // 끝에 닿으면 이전 알림을 이어서 불러온다 (실패했을 땐 '다시 시도' 버튼)
+    stopMore?.();
+    stopMore = L.more(root.querySelector('[data-al-end]'), async () => { if (before && !failed && stillHere()) await load(before); });
+  }
+  let stopMore;
+
+  L.screen('alerts', { nav: 'me', auth: true, title: 'alerts.title', bar: 'own', keepScroll: true, render,
+    leave() { stopMore?.(); stopMore = null; } });
   L.screen('lost', { title: 'alerts.lostPage', render(root) {
     const link = document.createElement('a');
     link.className = 'btn';
