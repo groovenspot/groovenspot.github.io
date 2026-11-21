@@ -82,6 +82,7 @@
     .share-ref span { min-width:0; }
     .share-ref img { flex:none; width:44px; height:44px; object-fit:cover; border-radius:7px; }
     .share-thumb { width:100%; height:100%; object-fit:cover; }
+    .btn[data-share-post], .btn[data-share-save] { min-width:48px; padding:0 12px; }
     .share-card { display:grid; gap:8px; min-width:0; padding:12px; overflow-wrap:anywhere; }
     .share-card p { white-space:pre-wrap; }
   `;
@@ -108,7 +109,11 @@
     if (button.classList.contains('share-act')) {   // 공유 시트 아이콘 줄: 책갈피가 채워짐
       button.innerHTML = '<i>' + L.icon('bookmark', { fill: saved }) + '</i><span>' + text('save') + '</span>';
       button.setAttribute('aria-label', t(saved ? 'unsave' : 'save'));
-    } else button.textContent = t(saved ? 'unsave' : 'save');
+    } else {   // 카드·목록에 넣는 버튼: 책갈피 아이콘(저장됨이면 채움) + 화면 읽기용 글자
+      const label = t(saved ? 'unsave' : 'save');
+      button.innerHTML = L.icon('bookmark', { fill: saved }) + '<span class="sr-only">' + L.esc(label) + '</span>';
+      button.setAttribute('aria-label', label);
+    }
   }
 
   function saveButton(post, done, icon) {
@@ -146,7 +151,8 @@
     share.type = 'button';
     share.className = 'btn';
     share.dataset.sharePost = '';
-    share.textContent = t('title');
+    share.innerHTML = L.icon('send') + '<span class="sr-only">' + text('title') + '</span>';   // 종이비행기 아이콘 + 화면 읽기용 글자
+    share.setAttribute('aria-label', t('title'));
     share.onclick = () => {
       post.saved = save.getAttribute('aria-pressed') === 'true';
       void open({ post }, done);
