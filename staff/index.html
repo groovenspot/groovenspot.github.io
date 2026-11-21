@@ -2492,6 +2492,16 @@ html .byebtn[hidden] { display: none; }
 html .byebtn .cei { width: 16px; height: 16px; }
 html .bell { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border-radius: 12px; color: var(--muted); }
 html .bell[hidden] { display: none; }
+/* 🪑 테이블 대기 배지 · 🔕 알림 꺼짐 안내 (직원 건의 2026-11-22): 어느 탭에서든 맨 위 줄 아래 */
+.top { flex-wrap: wrap; }
+.topnote { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: -2px; }
+.topnote[hidden], .topnote [hidden] { display: none; }
+.tnwait { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 14px; border-radius: 18px; border: 1px solid rgba(255,176,32,.6); background: rgba(255,176,32,.14); color: var(--warn); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.tnwait b { min-width: 22px; padding: 1px 7px; border-radius: 11px; background: var(--warn); color: #1a1200; font-size: 13px; text-align: center; }
+.tnpush { flex: 1 1 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px 8px 12px; border-radius: 12px; border: 1px solid rgba(255,90,90,.55); background: rgba(255,90,90,.12); font-size: 13.5px; font-weight: 700; line-height: 1.35; }
+.tnpush > span { flex: 1 1 auto; min-width: 0; }
+.tnpush small { display: block; color: var(--muted); font-weight: 600; }
+.tnpush .btn { flex: none; width: auto; min-height: 36px; padding: 6px 14px; white-space: nowrap; }
 html .bell .cei { width: 22px; height: 22px; }
 html .bell .cei-belloff { color: var(--bad); }
 html .bell .cei-bellon { color: var(--ok); }
@@ -2803,6 +2813,10 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
 <header class="top">
   <div class="brandw"><div class="brand">GROOVE <b>STAFF</b></div><button type="button" class="byebtn" id="byeBtn" hidden><svg class="cei cei-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span>영업종료</span></button><span class="onpill" id="onPill" hidden></span></div>
   <div class="who" id="who" hidden><button class="mebtn" id="meBtn" type="button" aria-label="내 프로필"><strong id="whoName"></strong> <span id="whoTeam"></span></button><button class="bell" id="bell" type="button" hidden aria-label="알림 켜기·끄기"><svg class="cei cei-belloff" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/></svg></button><button class="logoutb" id="logout" type="button" aria-label="로그아웃"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg><span>로그아웃</span></button></div>
+  <div class="topnote" id="topNote" hidden>
+    <button type="button" class="tnwait" id="tnWait" hidden aria-label="테이블 대기 명단 보기">🪑 테이블 대기 <b id="tnWaitN">0</b></button>
+    <div class="tnpush" id="tnPush" hidden role="status"><span id="tnPushT"></span><button type="button" class="btn btn-hot" id="tnPushB">켜기</button></div>
+  </div>
 </header>
 <div class="sosbar" id="sosBar" hidden role="alert" aria-live="assertive"></div>
 <div class="byeov" id="byeOv" hidden role="alert" aria-live="assertive"><div><b id="byeT">수고하셨습니다</b><span id="byeE">🙏</span><small id="byeBy"></small></div></div>
@@ -3233,6 +3247,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
 
   function toLogin(msg) {
     saveData(null); stopPoll(); swToken('');
+    try { $('topNote').hidden = true; } catch (e) {}
     whereReset();
     loungeAdmin = null;
     loungeReportCache = null;
@@ -3506,6 +3521,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   document.querySelectorAll('#tabs button').forEach(function (b) { b.addEventListener('click', function () { goTab(b.dataset.tab); }); });
 
   function paintTabs(d) {
+    try { paintTbWait(); if (state.bellSt) paintPushNote(state.bellSt); } catch (e) {}
     var edu = d.notes.filter(function (n) { return n.kind === '교육'; }), notes = d.notes.filter(function (n) { return n.kind !== '교육' && n.kind !== '규칙'; });
     var pending = (d.accounts || []).filter(function (a) { return a.status === '대기'; }).length;
     var bu = d.board && d.board.unread || 0, du = d.dm && d.dm.unread || 0;
@@ -7584,7 +7600,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     if (Notification.permission === 'denied') return Promise.resolve('denied');
     return swReg().then(function (reg) { return reg ? reg.pushManager.getSubscription().then(function (s) { return s ? 'on' : 'off'; }) : 'no'; }).catch(function () { return 'no'; });
   }
-  function paintBell() { bellState().then(function (st) { var b = $('bell'); b.hidden = false; b.innerHTML = ceSvg(st === 'on' ? 'bellon' : 'belloff'); b.title = st === 'on' ? '알림 켜짐' : '알림 꺼짐'; b.dataset.st = st; }); }
+  function paintBell() { bellState().then(function (st) { var b = $('bell'); b.hidden = false; b.innerHTML = ceSvg(st === 'on' ? 'bellon' : 'belloff'); b.title = st === 'on' ? '알림 켜짐' : '알림 꺼짐'; b.dataset.st = st; state.bellSt = st; paintPushNote(st); }); }
   // 🌙 영업 종료: 화면 가득 '수고하셨습니다' 3초 깜빡 (한 번 본 건 다시 안 띄움)
   function byeShow(b, hi) {   // hi: 🌅 영업 시작 '오늘도 화이팅'
     if (!b || !b.at) return;
@@ -7747,6 +7763,41 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     });
   }
   $('bell').addEventListener('click', bellClick);
+  // 🔕 알림 꺼짐 안내 (직원 건의 2026-11-22 "앱을 안 들어가면 순번 알람이 안 뜬다"): 이 폰이 알림을 못 받는 상태면 어느 탭에서든 맨 위에 안내 + 켜기
+  function paintPushNote(st) {
+    var box = $('tnPush'); if (!box) return;
+    var on = !state.s || !state.data || st === 'on';
+    box.hidden = on;
+    if (!on) {
+      var gate = !state.data.guard, miss = gate ? '순번·호출 알림을 못 받아요' : '경호 호출 알림을 못 받아요';
+      $('tnPushT').innerHTML = st === 'ios' ? '🔕 <b>알림이 꺼져 있어요</b><small>아이폰은 <b>홈 화면에 추가</b>한 앱에서 허용해야 ' + (gate ? '순번·호출이' : '호출이') + ' 와요</small>'
+        : st === 'denied' ? '🔕 <b>알림이 막혀 있어요</b><small>' + miss + ' · 휴대폰 설정에서 허용해 주세요</small>'
+        : st === 'no' ? '🔕 <b>이 브라우저는 알림을 못 받아요</b><small>크롬(안드로이드)·홈 화면 앱(아이폰)으로 열어 주세요</small>'
+        : '🔕 <b>알림이 꺼져 있어요</b><small>앱을 닫으면 ' + miss + '</small>';
+      $('tnPushB').textContent = st === 'off' ? '켜기' : '켜는 법';
+    }
+    topNotePaint();
+  }
+  function topNotePaint() { var t = $('topNote'); if (t) t.hidden = $('tnWait').hidden && $('tnPush').hidden; }
+  $('tnPushB').addEventListener('click', function () { updateBell(true); });
+  // 🪑 테이블 대기 배지 (직원 건의 2026-11-22): 대기 명단이 있으면 어느 탭에서든 '🪑 테이블 대기 N' → 누르면 테이블 탭 대기 명단. 0이면 숨김. 테이블을 보는 사람만(경호팀 빼고)
+  function tbWaitOk() { var d = state.data; return !!(state.s && d && d.table && !d.guard); }
+  function paintTbWait() {
+    var b = $('tnWait'); if (!b) return;
+    var n = tbWaitOk() ? +state.data.tableWait || 0 : 0;
+    b.hidden = !(n > 0); $('tnWaitN').textContent = n > 99 ? '99+' : n;
+    topNotePaint();
+  }
+  function loadTbWait() {
+    if (!tbWaitOk() || state.twFly) return; state.twFly = 1; state.twAt = Date.now();
+    call({ a: 'tb_wait', token: state.s.token }).then(function (r) { state.twFly = 0; if (r && r.ok && state.data) { state.data.tableWait = +r.n || 0; paintTbWait(); } }).catch(function () { state.twFly = 0; });
+  }
+  setInterval(function () { if (!document.hidden && tbWaitOk() && Date.now() - (state.twAt || 0) > pace(9500, state.tbHot)) loadTbWait(); }, 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { loadTbWait(); if (state.s && state.data) paintBell(); } });
+  $('tnWait').addEventListener('click', function () {
+    state.tbToWait = 1; goTab('table');
+    var n = 0, t = setInterval(function () { var h = document.querySelector('.tbwait'); if (h && state.tab === 'table') { clearInterval(t); state.tbToWait = 0; (h.previousElementSibling || h).scrollIntoView({ behavior: 'smooth', block: 'start' }); } else if (++n > 40) clearInterval(t); }, 150);
+  });
   // 🔔 알림 종류별 끄기 (대표 2026-11-19 밤): 목록 응답 pushTypes:[{id,label,desc,warn}] · pref.pushOff:[id] → me_pref k:'pushOff'.
   // 맨 위 '전체 받기'(빈 목록) / '전체 끄기'(모든 종류). warn 종류(🚨 경호 호출)를 끌 때는 한 번 더 확인. 옛 서버(pushTypes 없음)면 '서버 업데이트 후'.
   function pushPrefSheet() {
@@ -10486,7 +10537,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     return call(body).then(function (r) {
       state.tbFly = 0;
       if (r.error === 'auth') { toLogin(AUTH_OUT); return r; }
-      if (r.ok && r.rows) { state.tb = r; state.tbAt = Date.now(); if (state.data && r.approver) state.data.tablePending = r.pending; if (body.a !== 'tb_get') flushPush(); }
+      if (r.ok && r.rows) { state.tb = r; state.tbAt = Date.now(); state.twAt = 0; if (state.data && r.approver) state.data.tablePending = r.pending; if (body.a !== 'tb_get') flushPush(); }
       else if (r.error === 'notfound' || r.error === 'state') loadTb(true);
       if (after) after(r);
       return r;
