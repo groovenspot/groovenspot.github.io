@@ -36,7 +36,7 @@
     .share-sheet form { display:grid; gap:10px; min-width:0; }
     .share-search { position:relative; display:block; }
     .share-search > svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
-    .share-search input { width:100%; min-height:44px; padding:8px 12px 8px 40px; border:0; border-radius:12px; background:#241f1d; }
+    .share-search input { width:100%; min-height:44px; padding:8px 12px 8px 40px; border:0; border-radius:12px; background:var(--fill); }
     .share-sheet .btn, .share-ref { min-height:44px; }
     /* 받을 사람: 4칸 격자 — 아바타 + 닉네임 한 줄(길면 말줄임) */
     .share-targets { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px 2px; padding:4px 0; }
@@ -55,7 +55,7 @@
     .share-selection::-webkit-scrollbar { display:none; }
     .share-selection .btn { flex:none; min-height:32px; padding:0 10px; border-radius:16px; font-size:.75rem; font-weight:700; white-space:nowrap; }
     .share-send { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
-    .share-send input { min-height:44px; padding:8px 12px; border:0; border-radius:12px; background:#241f1d; }
+    .share-send input { min-height:44px; padding:8px 12px; border:0; border-radius:12px; background:var(--fill); }
     .share-send .btn { padding:0 16px; }
     .share-sheet [role=status]:empty { display:none; }
     .share-sheet [role=status] { font-size:.8125rem; color:var(--muted); }
@@ -65,8 +65,8 @@
     .share-actions::-webkit-scrollbar { display:none; }
     .share-act { flex:0 0 72px; display:grid; justify-items:center; align-content:start; gap:6px; min-height:76px; padding:2px; border:0; background:none;
       color:var(--txt); font:inherit; font-size:.6875rem; line-height:1.25; text-align:center; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-    .share-act > i { display:grid; place-items:center; width:48px; height:48px; border-radius:50%; background:#241f1d; font-style:normal; }
-    .share-act:active > i { background:#322b28; }
+    .share-act > i { display:grid; place-items:center; width:48px; height:48px; border-radius:50%; background:var(--fill); font-style:normal; }
+    .share-act:active > i { background:var(--fill-2); }
     .share-act:disabled { opacity:.5; }
     .share-act[aria-pressed="true"] > i { color:var(--g); }
     /* 프로필 공유: QR 카드가 먼저, 그 아래 '메시지로 보내기' (P42) */
@@ -77,7 +77,7 @@
     .share-qr-card small { color:#c2540a; font-size:.6875rem; font-weight:800; letter-spacing:.08em; }
     .share-sheet.is-profile .share-actions { justify-content:center; margin-top:8px; border-top:0; padding-top:4px; }
     .share-sub { margin:14px -18px 10px; padding:14px 18px 0; border-top:1px solid var(--line); font-size:.875rem; font-weight:800; }
-    .share-saved-link { display:inline-flex; align-items:center; min-height:44px; color:#9ecbff; font-size:.8125rem; font-weight:700; text-decoration:none; }
+    .share-saved-link { display:inline-flex; align-items:center; min-height:44px; color:var(--mention); font-size:.8125rem; font-weight:700; text-decoration:none; }
     .share-output { display:grid; gap:8px; min-width:0; justify-items:center; }
     .share-output:empty { display:none; }
     .share-output { margin-top:10px; }

@@ -171,7 +171,7 @@
       const fresh = L.open('play1') || data.play1 === true;
       const streak = fresh ? '<p data-guess-streak style="margin:4px 0;font-weight:800;color:var(--g)">' +
         t('streak', { n: Number(data.streak) || 0, m: Number(data.best) || 0 }) + '</p>' : '';
-      view.innerHTML = '<section style="' + card + ';border-color:var(--s);background:#15111d">' +
+      view.innerHTML = '<section style="' + card + ';border-color:var(--s);background:var(--tint-s)">' +
         '<p class="muted"><time datetime="' + L.esc(data.day) + '">' + date(data.day) + '</time></p>' + streak +
         '<h2>' + t('question') + '</h2>' + paragraph('single') +
         (!solved && data.reward > 0 ? '<p class="muted">' + t('prize', { n: data.reward }) + '</p>' : '') +

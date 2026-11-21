@@ -19,6 +19,9 @@
     save: ['저장', 'Save'],
     saved: ['저장했어요.', 'Saved.'],
     language: ['언어', 'Language'],
+    theme: ['화면 모드', 'Display'],
+    themeDark: ['블랙 (기본)', 'Black (default)'],
+    themeLight: ['화이트', 'White'],
     alerts: ['알림 설정', 'Notification settings'],
     blocks: ['차단 목록', 'Blocked accounts'],
     rewards: ['생일·초대 코드', 'Birthday and invite code'],
@@ -210,7 +213,12 @@
     const me = L.me;
     const checkbox = name => '<label class="shell-choice"><input name="' + name + '" type="checkbox"' +
       (me[name] ? ' checked' : '') + '>' + a(name) + '</label>';
-    root.innerHTML = L.bar({ back: 'me', title: L.t('me.settings') }) + '<div class="shell-stack pf-sub"><form class="shell-form">' +
+    const mode = L.theme();
+    const themeRow = v => '<label class="shell-choice"><input type="radio" name="gl-theme" value="' + v + '"' + (mode === v ? ' checked' : '') +
+      '>' + t(v === 'dark' ? 'themeDark' : 'themeLight') + '</label>';
+    root.innerHTML = L.bar({ back: 'me', title: L.t('me.settings') }) + '<div class="shell-stack pf-sub">' +
+      '<fieldset class="shell-consent" data-theme-pick><legend class="shell-field">' + t('theme') + '</legend>' +
+      themeRow('dark') + themeRow('light') + '</fieldset><form class="shell-form">' +
       checkbox('ads') + checkbox('night') + '<label class="shell-field">' + t('language') +
       '<select name="lang"><option value="ko" lang="ko">한국어</option><option value="en" lang="en">English</option>' +
       '<option value="ja" lang="ja">日本語</option><option value="zh" lang="zh">中文</option></select></label>' +
@@ -220,6 +228,7 @@
       '<a class="shell-link" href="#/alerts/settings">' + t('alerts') + '</a><a class="shell-link" href="#/blocks">' + t('blocks') +
       '</a><a class="shell-link" href="#/terms">' + a('termsTitle') + '</a><a class="shell-link" href="#/privacy">' +
       a('privacyTitle') + '</a></div>';
+    root.querySelectorAll('[name="gl-theme"]').forEach(input => { input.onchange = () => { if (input.checked) L.setTheme(input.value); }; });
     const form = root.querySelector('form');
     form.elements.lang.value = L.lang;
     formResult(form, async data => {

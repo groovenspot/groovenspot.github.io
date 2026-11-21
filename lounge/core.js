@@ -129,6 +129,15 @@
       save('gl_lang', L.lang);
       paintStatus();
     },
+    // 화면 모드: 'dark'(인스타식 블랙, 기본) | 'light'(화이트). 이 기기에만 저장 — index.html 머리 스크립트가 첫 화면 전에 먼저 붙임
+    theme: function () { return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'; },
+    setTheme: function (value) {
+      var v = value === 'light' ? 'light' : 'dark';
+      save('gl_theme', v === 'light' ? 'light' : '');
+      document.documentElement.dataset.theme = v;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.content = v === 'light' ? '#ffffff' : '#000000';
+    },
     api: function (a, body) {
       var b = Object.assign({}, body, { a: a }); var t = session; if (t && !b.token && !b.admin) b.token = t;
       return fetch(API, { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify(b) }).then(function (r) { return r.json(); })
