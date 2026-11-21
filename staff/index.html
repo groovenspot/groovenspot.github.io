@@ -7775,6 +7775,7 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
       text: '내용을 입력해 주세요. / Enter some text.',
       timetable: '층·시각·DJ를 확인해 주세요. / Check the floor, time and DJ.',
       bad: '입력한 값을 확인해 주세요. / Check the values you entered.',
+      badwords: '한 줄에 한 낱말 · 두 글자 이상 60자까지 · 500개까지 적어 주세요. / One word per line, 2–60 characters, up to 500 words.',
       no_change: '바꾼 내용이 없어요. / No changes to save.',
       banned: '이미 영구 정지된 회원이에요. / This member is already banned.',
     };
@@ -8957,6 +8958,20 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
       loungeArea('한 줄에 하나 · 키 | 이름 | 재생목록 ID / One per line · Key | Name | Playlist ID', 'radio', 'rows="5"', radio),
       value => ({ k: 'radio', v: value('radio') ? loungeRows(value('radio'), 3).map(([key, label, playlist]) =>
         ({ key, label, playlist })) : [] }), request);
+    // 가릴 낱말(금칙어·다른 업소 이름): 대화방·오픈채팅·글·댓글에서 •••로 가림 (오픈채팅 1단계, 2026-11-21). 옛 서버에는 이 칸이 없다.
+    try {
+      const { words } = await request('adm_badwords', {});
+      if (!panel.isConnected) return;
+      loungeAction(panel, '가릴 낱말 · 다른 업소 이름 / Hidden words', 'adm_kv_set',
+        loungeArea('한 줄에 하나 · 두 글자 이상 · 대화방과 글에서 •••로 가려요. 너무 짧거나 흔한 말은 평범한 글까지 가릴 수 있어요. / One per line · masked as ••• in chats and posts',
+          'badwords', 'rows="6"', (words || []).join('\n')),
+        value => {
+          const list = [...new Set(value('badwords').split('\n').map(word => word.trim()).filter(Boolean))];
+          if (list.length > 500 || list.some(word => [...word].length < 2 || word.length > 60)) throw new Error('badwords');
+          return { k: 'badwords', v: list };
+        }, request);
+    } catch (err) { /* 옛 서버(adm_badwords 없음): 칸을 그리지 않는다 */ }
+    if (!panel.isConnected) return;
     try {
       const { points: current } = await request('adm_guess_set', {});
       if (!panel.isConnected) return;
