@@ -1002,6 +1002,10 @@ const LoungePostUI = (() => {
     const targets = new Set((listState?.posts || []).filter(post => post.id === id));
     for (const entry of live.get(id) || []) targets.add(entry.post);
     for (const post of targets) Object.assign(post, patch);
+    for (const entry of live.get(id) || []) {   // 지금 화면에 그려져 있는 카드는 글만 바로 바꾼다
+      const text = entry.card.isConnected && entry.card.querySelector('[data-cap] > p');
+      if (text && typeof entry.post.text === 'string') text.innerHTML = L.linkify(entry.post.text);
+    }
   });
 
   function renderDetail(root, id) {
@@ -1023,7 +1027,11 @@ const LoungePostUI = (() => {
       page.innerHTML = '';
       L.feedCards(list, [response.post], { detail: true, onGone: () => { if (!dead) L.back('feed'); } });
       host.hidden = false;
-      host.style.setProperty('--feed4-tabbar', (document.getElementById('tabbar')?.offsetHeight || 0) + 'px');
+      // 댓글 입력칸을 아래 메뉴 바로 위에 붙인다 (아래 메뉴 높이는 틀이 정하므로 재서 쓴다)
+      const tabbar = document.getElementById('tabbar')?.offsetHeight || 0;
+      const spare = parseFloat(getComputedStyle(document.getElementById('view')).paddingBottom) - tabbar;
+      host.style.setProperty('--feed4-tabbar', tabbar + 'px');
+      if (spare > 0) host.style.marginBottom = -spare + 'px';
       commentsUI(host, response.post, { initial: Array.isArray(response.comments) ? response.comments : undefined });
     }
     void load();
