@@ -7,6 +7,7 @@
     now: ['지금','Now','ただいま','正在播放'], alert: ['알림','Alerts','通知','提醒'],
     follow: ['팔로우','Follow','フォロー','关注'], unfollow: ['팔로우 취소','Unfollow','フォロー解除','取消关注'],
     more: ['남은 {n}팀 더 보기','See {n} more sets','残り{n}組を見る','查看其余{n}组'],
+    all: ['전체 타임테이블 보기','View full timetable','全タイムテーブルを見る','查看完整时间表'],
     empty: ['아직 타임테이블이 없어요','No timetable yet','タイムテーブルはまだありません','暂无时间表'],
     noParties: ['아직 예정된 파티가 없어요','No parties scheduled yet','予定はまだありません','暂无派对安排'],
     soon: ['준비 중이에요','Coming soon','準備中です','即将推出'],
@@ -58,7 +59,7 @@
           (row.key?'<a class="lineup5-dj" href="#/dj/'+encodeURIComponent(row.key)+'">'+body+'</a>':'<div class="lineup5-dj">'+body+'</div>')+
           (ctx.follow && row.key?'<button type="button" class="lineup5-follow" data-follow="'+L.esc(row.key)+'" aria-pressed="'+mine+'" aria-label="'+t(mine?'unfollow':'follow')+' · '+L.esc(row.dj)+'">'+t(mine?'unfollow':'follow')+'</button>':'')+'</li>';
       }).join('')+'</ol>':'<p role="status" class="muted">'+t('empty')+'</p>')+'</div>'+
-      (ctx.compact && (remaining>0||start>0)?'<a class="lineup5-more" href="#/lineup">'+t('more',{n:remaining})+'</a>':'')+'</section>';
+      (ctx.compact && (remaining>0||start>0)?'<a class="lineup5-more" href="#/lineup">'+(remaining>0?t('more',{n:remaining}):t('all'))+'</a>':'')+'</section>';
     function select(f,focus) { state.floor=f; lineup(el,data,ctx); if(focus)el.querySelector('[data-floor-tab="'+f+'"]').focus(); }
     el.querySelectorAll('[data-floor-tab]').forEach(tab=>{
       tab.onclick=()=>select(tab.dataset.floorTab,true);
@@ -95,7 +96,7 @@
     const list=Array.isArray(result.list)?result.list:[];
     el.hidden=!ctx.vertical && (Boolean(result.error)||!list.length);
     el.innerHTML=result.error?'<p role="status">'+t(['action','closed'].includes(result.error)?'soon':'error')+'</p>':
-      (ctx.vertical?'':'<h2><a href="#/parties">'+t('parties')+'</a></h2>')+(list.length?partyMarkup(list,ctx.vertical):'<p role="status" class="muted">'+t('noParties')+'</p>');
+      (ctx.vertical?'':'<h2 class="lineup5-parties-title"><a href="#/parties">'+t('parties')+'</a></h2>')+(list.length?partyMarkup(list,ctx.vertical):'<p role="status" class="muted">'+t('noParties')+'</p>');
     el.querySelectorAll('[data-poster]').forEach(button=>{button.onclick=()=>{
       const party=list[Number(button.dataset.poster)], src=U.url(party.poster);
       if(src)L.sheet('<h2>'+L.esc(party.title)+'</h2><img class="lineup5-zoom" src="'+L.esc(src)+'" alt="'+L.esc(party.title)+'">',{close:true});
