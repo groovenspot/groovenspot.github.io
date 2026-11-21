@@ -6564,16 +6564,16 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     };
     var h = '<div class="kh rsvh"><div><h1>예약</h1><span class="range">' + (F ? esc(md(day) + '(' + dowOf(day) + ')') + ' · ' + (fl === 'SPOT' ? '3층' : '2층') + ' 도면' : '날짜를 고르면 그날 도면이 나와요') + '</span></div>' +
       '<button class="btn rsvref" type="button" id="rsvRefresh" aria-label="새로고침"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>새로고침</button></div>';
-    if (todayList.length) h += '<h2 class="sec tbz" id="rsvTodayHead">오늘 홈페이지 예약 <span class="row">' + todayList.length + '건</span></h2><div class="list" id="rsvTodayList">' + todayList.map(rsvCard).join('') + '</div><p class="note" style="margin:8px 0 14px">오늘 자리 도면은 테이블 탭에서 봐요.</p>';
+    if (todayList.length) h += '<h2 class="sec tbz" id="rsvTodayHead">오늘 홈페이지 예약 <span class="row">' + todayList.length + '건</span></h2><div class="list" id="rsvTodayList">' + todayList.map(rsvCard).join('') + '</div><p class="note" style="margin:8px 0 14px">오늘 도면은 아래 날짜에서 오늘을 누르면 나와요.</p>';
     h += '<div class="rsv-filters" role="group" aria-label="층 고르기"><button class="btn" type="button" data-rsvfl="GROOVE" aria-pressed="' + (fl === 'GROOVE') + '">2층 GROOVE</button><button class="btn" type="button" data-rsvfl="SPOT" aria-pressed="' + (fl === 'SPOT') + '">3층 SPOT</button></div>';
     if (F) {
-      var ds = []; for (var i = 1; i <= 14; i++) ds.push(addDays(F.today, i));
+      var ds = []; for (var i = 0; i <= 14; i++) ds.push(addDays(F.today, i));   // 📅 오늘(당일)부터 (대표 요청 2026-11-21 21:34)
       if (ds.indexOf(day) < 0) ds.push(day);
-      var webN = {}; (r ? r.list : []).forEach(function (x) { if (x.status !== '취소' && x.day > F.today) { webN[x.day] = (webN[x.day] || 0) + 1; if (ds.indexOf(x.day) < 0 && x.day <= (F.max || x.day)) ds.push(x.day); } });   // 홈페이지 예약이 있는 날도 칩으로
+      var webN = {}; (r ? r.list : []).forEach(function (x) { if (x.status !== '취소' && x.day >= F.today) { webN[x.day] = (webN[x.day] || 0) + 1; if (ds.indexOf(x.day) < 0 && x.day <= (F.max || x.day)) ds.push(x.day); } });   // 홈페이지 예약이 있는 날도 칩으로
       ds.sort();
       h += '<div class="rsvdays" role="group" aria-label="날짜 고르기">' + ds.map(function (d) { var n = ((F.counts || {})[d] || 0) + (webN[d] || 0);
         return '<button type="button" class="chip' + (d === day ? ' on' : '') + '" data-rsv-day="' + d + '">' + esc(md(d) + '(' + dowOf(d) + ')') + (n ? ' <b>' + n + '</b>' : '') + '</button>'; }).join('') +
-        '<label class="rsvpick">📅<input type="date" id="rsvDayPick" min="' + esc(addDays(F.today, 1)) + '" max="' + esc(F.max || '') + '" value="' + esc(day) + '" aria-label="날짜로 찾기"></label></div>';
+        '<label class="rsvpick">📅<input type="date" id="rsvDayPick" min="' + esc(F.today) + '" max="' + esc(F.max || '') + '" value="' + esc(day) + '" aria-label="날짜로 찾기"></label></div>';
       var ix = withTb(F, function () { return tbIndex(fl); }), tot = F.rows.filter(function (x) { return x.floor === fl && x.cur && !x.cur.blk; }).length;
       h += '<p class="note" style="margin:0 0 8px">빈 자리를 누르면 이 날 예약을 잡아요. ' + (F.approver ? '담당을 골라 넣을 수 있어요.' : '담당은 나로 들어가요.') + ' · 이 층 예약 <b>' + tot + '</b>팀</p>';
       h += withTb(F, function () { return tbMapHtml(fl, ix); });
@@ -10527,7 +10527,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       if (r.status === '대기') { cls += ' wait'; badge = '<em>' + (r.req && r.req.del ? '비우기 대기' : r.cur ? '변경 대기' : '승인 대기') + '</em>'; }
       if (r.status === '거절') { cls += ' no'; badge = '<em>거절됨</em>'; }
       if (r.mine) cls += ' mine';
-      if (r.cur && !r.arr && !badge) { cls += ' rv'; badge = '<em class="rvb">예약</em>'; }   // 📅 아직 안 온 손님 (대표 요청 2026-11-21)
+      if (r.cur && r.rv && !r.arr && !badge) { cls += ' rv'; badge = '<em class="rvb">예약</em>'; }   // 📅 예약 탭에서 잡은 자리 중 아직 안 온 손님만 (그 밖은 입장 체크 없이도 입장, 대표 요청 2026-11-21 21:34)
       if (v.keep) cls += ' keep';   // 🍾 킵 = 파랑
       if (v.sold) cls += ' sold';   // ★ 판매 = 빨강 (별표 대신, 2026-11-18 · 색 2026-11-19)
     }
@@ -11975,8 +11975,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     var h = '<div class="tbh"><div><h1>테이블</h1><p class="sub">' + esc(tbDayLabel(t.day)) + ' · 오늘' + (t.mode ? ' · ' + (t.mode.cur === 'we' ? '주말' : '평일') + ' 배치' : '') + '</p></div><span class="tbocc' + (total && used >= total ? ' full' : '') + '">' + esc(fl) + ' <b>' + used + '</b> / ' + total + ' 찼음</span></div>';   // 당일 것만 (대표 결정 2026-11-18)
     h += '<div class="tbfl">' + (t.floors || []).map(function (f) { return '<button type="button" data-tbf="' + esc(f.id) + '" aria-pressed="' + (f.id === fl) + '">' + esc(f.name) + ' <small>' + esc(f.floor) + '</small></button>'; }).join('') + '</div>';
     // ✅ 입장 / 📅 예약(아직 안 옴) 세기 (대표 요청 2026-11-21)
-    (function () { var g = (t.rows || []).filter(function (r) { return r.floor === fl && r.cur && !r.cur.blk && (r.cur.g || r.cur.n || r.cur.liq); }), inn = g.filter(function (r) { return r.arr; }).length;
-      if (g.length) h += '<div class="tbarr"><span>✅ 입장 ' + inn + '</span><span class="rv">📅 예약 · 아직 안 옴 ' + (g.length - inn) + '</span></div>'; })();
+    (function () { var g = (t.rows || []).filter(function (r) { return r.floor === fl && r.cur && !r.cur.blk && (r.cur.g || r.cur.n || r.cur.liq); }), inn = g.filter(function (r) { return r.arr || !r.rv; }).length;
+      if (g.length) h += '<div class="tbarr"><span>✅ 입장 ' + inn + '</span>' + (g.length - inn ? '<span class="rv">📅 예약 · 아직 안 옴 ' + (g.length - inn) + '</span>' : '') + '</div>'; })();
     // 📅 평일·주말 배치 (대표·김동기·양진호, 2026-11-18): 안 누르면 요일대로 (일~목 평일 · 금·토 주말)
     if (t.mode && t.mode.can) h += '<div class="tbmode"><div class="tbvw" role="group" aria-label="배치"><button type="button" data-tbmode="wd" aria-pressed="' + (t.mode.cur === 'wd') + '">평일</button><button type="button" data-tbmode="we" aria-pressed="' + (t.mode.cur === 'we') + '">주말</button></div>' +
       '<small>' + (t.mode.set ? '오늘 ' + esc(t.mode.by) + '님이 정함 · <button type="button" class="link" data-tbmode="auto">요일대로</button>' : '요일대로 (일~목 평일 · 금·토 주말)') + '</small></div>';
@@ -12158,7 +12158,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     // 📍 손님 위치 확인: 담당 MD에게 알림 + 테이블 대화 (대표 요청 2026-11-19)
     var whereOk = r && r.cur && !r.cur.blk && (r.cur.g || r.cur.n) && r.cur.st && r.cur.st !== t.me && t.day === t.today && !(state.data && state.data.guard);
     // ✅ 입장 체크 (대표 요청 2026-11-21): 예약 손님이 실제로 왔는지 — 누구나 누름 (출근 후)
-    var arrOk = r && r.cur && !r.cur.blk && (r.cur.g || r.cur.n || r.cur.liq) && t.day === t.today && !t.view && !(state.data && state.data.guard);
+    var arrOk = r && r.cur && !r.cur.blk && (r.rv || r.arr) && (r.cur.g || r.cur.n || r.cur.liq) && t.day === t.today && !t.view && !(state.data && state.data.guard);
     if (arrOk) h += '<div class="tbarrbox' + (r.arr ? '' : ' rv') + '"><p>' + (r.arr ? '✅ 입장 ' + esc(r.arr) + (r.arrBy ? ' <small class="note">· ' + esc(r.arrBy) + '</small>' : '') : '📅 예약 · 아직 안 왔어요') + '</p>' +
       '<button class="btn' + (r.arr ? '' : ' btn-ok') + '" type="button" id="tbArr">' + (r.arr ? '입장 취소' : '✅ 입장 체크') + '</button></div><p class="msg" id="tbArrM" hidden></p>';
     var bindArr = function () {
