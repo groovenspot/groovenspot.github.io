@@ -6492,8 +6492,19 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     if ((!F || (state.rsvDay && F.day !== state.rsvDay)) && !state.tbFutLoading && !state.tbFutErr) loadTbFut(state.rsvDay);
     var day = F ? F.day : state.rsvDay || '';
     var list = r ? r.list.filter(function (x) { return x.day === day; }) : [];
+    // 🛎 오늘 홈페이지 예약 (2026-11-21 최종점검): 날짜 칩은 내일부터라 오늘(영업일) 예약 카드가 어디에도 안 보이던 것 → 맨 위에 따로. 도면은 테이블 탭.
+    var todayList = r ? r.list.filter(function (x) { return x.day === r.today && x.day !== day; }) : [];
+    var rsvCard = function (x) {
+          var st = x.status === '접수' ? 'new' : x.status === '취소' ? 'off' : 'done';
+          return '<button class="item rsvc rsv-' + st + '" type="button" data-rsv-id="' + esc(x.id) + '"><span class="rsvc-top"><span class="chip ' + st + '">' + esc(x.status) + '</span><span class="rsvc-day' + (x.day === r.today ? ' today' : '') + '">' + rsvDay(x.day, r.today) + '</span></span>' +
+            '<span class="rsvc-name">' + esc(x.name) + '<b>' + esc(x.party) + '명</b></span>' +
+            '<span class="rsvc-meta">' + esc(reservationPlace(x)) + ' · ' + esc(x.type) + '</span>' +
+            '<span class="rsvc-meta">' + esc(x.code) + ' · ' + (x.staff ? '담당 <b>' + esc(x.staff) + '</b>' : '<span class="rsvc-nostaff">담당 미지정</span>') + '</span>' +
+            (x.birthday ? '<span class="rsvc-bd"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9 3 12 8 12 8s3-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>생일 혜택 · ' + esc(x.birthday) + '</span>' : '') + '</button>';
+    };
     var h = '<div class="kh rsvh"><div><h1>예약</h1><span class="range">' + (F ? esc(md(day) + '(' + dowOf(day) + ')') + ' · ' + (fl === 'SPOT' ? '3층' : '2층') + ' 도면' : '날짜를 고르면 그날 도면이 나와요') + '</span></div>' +
       '<button class="btn rsvref" type="button" id="rsvRefresh" aria-label="새로고침"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>새로고침</button></div>';
+    if (todayList.length) h += '<h2 class="sec tbz" id="rsvTodayHead">오늘 홈페이지 예약 <span class="row">' + todayList.length + '건</span></h2><div class="list" id="rsvTodayList">' + todayList.map(rsvCard).join('') + '</div><p class="note" style="margin:8px 0 14px">오늘 자리 도면은 테이블 탭에서 봐요.</p>';
     h += '<div class="rsv-filters" role="group" aria-label="층 고르기"><button class="btn" type="button" data-rsvfl="GROOVE" aria-pressed="' + (fl === 'GROOVE') + '">2층 GROOVE</button><button class="btn" type="button" data-rsvfl="SPOT" aria-pressed="' + (fl === 'SPOT') + '">3층 SPOT</button></div>';
     if (F) {
       var ds = []; for (var i = 1; i <= 14; i++) ds.push(addDays(F.today, i));
@@ -6508,14 +6519,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       h += withTb(F, function () { return tbMapHtml(fl, ix); });
     } else h += state.tbFutErr ? '<p class="empty">' + esc(state.tbFutErr) + '</p>' : '<p class="load">도면을 불러오는 중…</p>';
     if (r && list.length) {
-      h += '<h2 class="sec tbz">홈페이지 예약 <span class="row">' + list.length + '건</span></h2><div class="list">' + list.map(function (x) {
-          var st = x.status === '접수' ? 'new' : x.status === '취소' ? 'off' : 'done';
-          return '<button class="item rsvc rsv-' + st + '" type="button" data-rsv-id="' + esc(x.id) + '"><span class="rsvc-top"><span class="chip ' + st + '">' + esc(x.status) + '</span><span class="rsvc-day' + (x.day === r.today ? ' today' : '') + '">' + rsvDay(x.day, r.today) + '</span></span>' +
-            '<span class="rsvc-name">' + esc(x.name) + '<b>' + esc(x.party) + '명</b></span>' +
-            '<span class="rsvc-meta">' + esc(reservationPlace(x)) + ' · ' + esc(x.type) + '</span>' +
-            '<span class="rsvc-meta">' + esc(x.code) + ' · ' + (x.staff ? '담당 <b>' + esc(x.staff) + '</b>' : '<span class="rsvc-nostaff">담당 미지정</span>') + '</span>' +
-            (x.birthday ? '<span class="rsvc-bd"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9 3 12 8 12 8s3-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>생일 혜택 · ' + esc(x.birthday) + '</span>' : '') + '</button>';
-        }).join('') + '</div>';
+      h += '<h2 class="sec tbz">홈페이지 예약 <span class="row">' + list.length + '건</span></h2><div class="list">' + list.map(rsvCard).join('') + '</div>';
     }
     area.innerHTML = h;
     $('rsvRefresh').addEventListener('click', function () { loadReservations(); loadTbFut(day); });
@@ -6527,7 +6531,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       futSheet(F, fl, b.dataset.seat, row);
     }); });
     area.querySelectorAll('[data-rsv-id]').forEach(function (b) { b.addEventListener('click', function () {
-      reservationSheet(list.filter(function (x) { return x.id === b.dataset.rsvId; })[0], r);
+      var hit = r.list.filter(function (x) { return x.id === b.dataset.rsvId; })[0]; if (hit) reservationSheet(hit, r);
     }); });
   }
   // 미래 날짜 자리: 넣기·고치기·지우기 (영업팀은 내 손님만, 승인하는 사람은 모두)
