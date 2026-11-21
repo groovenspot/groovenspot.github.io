@@ -35,14 +35,27 @@
   const t = key => L.esc(L.t('me.' + key));
   const a = key => L.esc(L.t('auth.' + key));
 
-  function profileMenu() {
-    const link = (href, label) => '<a class="btn" href="' + href + '">' + label + '</a>';
-    const panel = LoungeScreenUI.sheet('<h2>' + t('settings') + '</h2><div class="shell-stack">' +
-      link('#/me/settings', t('settings')) + link('#/alerts', L.esc(L.t('core.alerts'))) +
-      (L.open('rewards') ? link('#/rewards', t('rewards')) : '') +
-      (L.open('share') ? link('#/saved', L.esc(L.t('share.saved'))) : '') +
-      '<button type="button" class="btn" data-menu-signout>' + t('signout') + '</button></div>');
+  // 내 프로필 ≡ 메뉴 (4차 P19): 줄 목록 — 설정·알림·저장됨·팔로우 요청·차단 목록·생일/초대·QR·로그아웃
+  function profileMenu(user) {
+    const row = (icon, label, href) => '<a class="ui-menu-item" href="' + href + '">' + L.icon(icon, { size: 22 }) + '<span>' + label + '</span></a>';
+    const act = (icon, label, attrs) => '<button type="button" class="ui-menu-item" ' + attrs + '>' + L.icon(icon, { size: 22 }) + '<span>' + label + '</span></button>';
+    const text = key => L.esc(L.t(key));
+    const panel = L.sheet('<h2 class="ui-menu-title">' + text('user4.menu') + '</h2><div class="ui-menu">' +
+      row('settings', t('settings'), '#/me/settings') + row('bell', text('core.alerts'), '#/alerts') +
+      (L.open('share') ? row('bookmark', text('share.saved'), '#/saved') : '') +
+      (L.open('follow2') ? row('userPlus', text('follows.requests'), '#/requests') : '') +
+      (L.open('profile2') ? row('tagged', text('user4.tagRequests'), '#/tags') : '') +     // 나를 태그한 글 승인 (화면은 글쓰기 작업창 D)
+      row('block', t('blocks'), '#/blocks') +
+      (L.open('rewards') ? row('heart', t('rewards'), '#/rewards') : '') +
+      (user && user.private !== true && L.profileQr ? act('grid', text('user4.qr'), 'data-menu-qr') : '') +
+      (L.canInstall() ? act('home', text('core.install'), 'data-menu-install') : '') +
+      act('back', t('signout'), 'data-menu-signout') + '</div>');
+    panel.classList.add('ui-sheet-menu');
     panel.querySelector('[data-menu-signout]').onclick = exit;
+    const qr = panel.querySelector('[data-menu-qr]');
+    if (qr) qr.onclick = () => { L.closeSheet(); L.profileQr(user); };
+    const install = panel.querySelector('[data-menu-install]');
+    if (install) install.onclick = () => { L.closeSheet(); L.showInstall(false); };
   }
 
   async function renderMe(root) {
@@ -55,7 +68,7 @@
       (['2F', '3F'].includes(me.floor) ? ' · ' + me.floor : '') + '</p></div></header>' +
       (me.bio ? '<p class="shell-bio">' + L.esc(me.bio) + '</p>' : '');
     const editLink = '<a class="btn" href="#/me/edit">' + t('edit') + '</a>';
-    root.innerHTML = '<div class="shell-stack">' + legacy +
+    root.innerHTML = L.bar({ back: false, title: L.t('nav.me'), right: L.inboxIcons() }) + '<div class="shell-stack pf-sub">' + legacy +
       '<div class="shell-actions" data-me-actions>' + editLink +
       '<a class="btn" href="#/me/settings">' + t('settings') + '</a>' +
       '<a class="btn" href="#/alerts">' + L.esc(L.t('core.alerts')) + '</a>' +
@@ -63,6 +76,7 @@
         '<p class="muted">' + t('rewards') + ' · ' + L.esc(L.t('core.soon')) + '</p>') + '</div>' +
       pointsPlaceholder() +
       (L.canInstall() ? '<button class="btn" data-install>' + L.esc(L.t('core.install')) + '</button>' : '') + '</div>';
+    L.paintInbox();
     const install = root.querySelector('[data-install]');
     if (install) install.onclick = () => L.showInstall(false);
     return renderPoints(root, me);
@@ -75,11 +89,17 @@
   async function renderProfileMe(root) {
     const me = L.me;
     const U = LoungeScreenUI;
-    root.innerHTML = '<div class="profile3-surface"><header class="profile3-topbar">' +
-      '<strong>' + L.esc(me.nick) + '</strong><button type="button" class="btn" data-profile-menu aria-haspopup="dialog" aria-label="' +
-      t('settings') + '">≡</button></header><div data-own-profile>' + U.status('loading', true) + '</div></div>';
-    root.querySelector('[data-profile-menu]').onclick = profileMenu;
+    root.innerHTML = '<div data-profile-root><header class="ui-bar pf-bar-own"><div class="ui-bar-title"><h1 data-own-nick>' + L.esc(me.nick) +
+      '</h1></div><div class="ui-bar-side is-right">' +
+      (L.open('posts') ? '<a class="ui-bar-btn" href="#/compose" aria-label="' + L.esc(L.t('user4.newPost')) + '">' + L.icon('plusBox') + '</a>' : '') +
+      L.inboxIcons() + '<button type="button" class="ui-bar-btn" data-profile-menu aria-haspopup="dialog" aria-label="' +
+      L.esc(L.t('user4.menu')) + '">' + L.icon('menu') + '</button></div></header><div data-own-profile>' + U.status('loading', true) + '</div></div>';
+    L.paintInbox();
+    let shown = null;
+    root.querySelector('[data-profile-menu]').onclick = () => profileMenu(shown);
     const view = root.querySelector('[data-own-profile]');
+    const kept = L.profileKept ? L.profileKept('u:me') : null;      // 뒤로 돌아왔으면 격자·스크롤 그대로 (P31)
+    if (kept) { shown = kept.user; return L.renderProfile3(view, kept.user, true, kept.extra, kept, 'u:me'); }
     const [profile, points] = await Promise.all([L.api('user', { nick: me.nick }), L.api('points')]);
     if (!view.isConnected) return;
     if (!profile.user) {
@@ -87,12 +107,16 @@
       if (!L.me) L.needLogin();
       return;
     }
+    shown = profile.user;
     const stamps = points.stamps ?? me.stamps;
     const values = { points: new Intl.NumberFormat(L.lang).format(Number(points.points ?? me.points) || 0),
       stamps: Math.min(10, Math.max(0, Number(stamps?.n ?? stamps) || 0)) };
-    const dashboard = '<a class="profile3-dashboard" href="#/me/points">' + L.esc(L.t('me.dashboard', values)) + '</a>';
-    return L.renderProfile3(view, profile.user, true, dashboard);
+    // 포인트·스탬프 띠: 버튼 줄 위 한 줄로 작게 (의도된 차이 — PLAN 5장)
+    const dashboard = '<a class="pf-dash profile3-dashboard" href="#/me/points"><span>' + L.esc(L.t('me.dashboard', values)) + '</span>' +
+      L.icon('chevron', { size: 14 }) + '</a>';
+    return L.renderProfile3(view, profile.user, true, dashboard, null, 'u:me');
   }
+  L.profileMe = renderProfileMe;
 
   async function renderPoints(root, me) {
     const result = await L.api('points');
@@ -152,7 +176,7 @@
 
   function edit(root) {
     const me = L.me;
-    root.innerHTML = '<h1>' + t('edit') + '</h1><form class="shell-form">' +
+    root.innerHTML = L.bar({ back: 'me', title: L.t('me.edit') }) + '<form class="shell-form pf-sub">' +
       '<label class="shell-field">' + t('photo') + '<input name="file" type="file" accept="image/*"></label>' +
       '<label class="shell-field">' + a('nick') + '<input name="nick" required minlength="2" maxlength="12" value="' +
       L.esc(me.nick) + '"></label><label class="shell-field">' + t('bio') +
@@ -186,7 +210,7 @@
     const me = L.me;
     const checkbox = name => '<label class="shell-choice"><input name="' + name + '" type="checkbox"' +
       (me[name] ? ' checked' : '') + '>' + a(name) + '</label>';
-    root.innerHTML = '<div class="shell-stack"><h1>' + t('settings') + '</h1><form class="shell-form">' +
+    root.innerHTML = L.bar({ back: 'me', title: L.t('me.settings') }) + '<div class="shell-stack pf-sub"><form class="shell-form">' +
       checkbox('ads') + checkbox('night') + '<label class="shell-field">' + t('language') +
       '<select name="lang"><option value="ko" lang="ko">한국어</option><option value="en" lang="en">English</option>' +
       '<option value="ja" lang="ja">日本語</option><option value="zh" lang="zh">中文</option></select></label>' +
@@ -229,13 +253,14 @@
   L.screen('me', {
     nav: 'me',
     auth: true,
+    bar: 'own',
+    leave() { L.profileLeave?.(); },
     render(root, { id }) {
       if (id === 'edit') return L.open('profile2') ? L.profileEdit(root) : edit(root);
       if (id === 'settings') return settings(root);
       if (L.open('profile2')) {
         if (id === 'points') {
-          root.innerHTML = '<div class="shell-stack"><header class="shell-actions"><h1>' + t('points') + '</h1>' +
-            LoungeScreenUI.link('#/me', L.esc(L.t('nav.me'))) + '</header>' + pointsPlaceholder() + '</div>';
+          root.innerHTML = L.bar({ back: 'me', title: L.t('me.points') }) + '<div class="shell-stack pf-sub">' + pointsPlaceholder() + '</div>';
           return renderPoints(root, L.me);
         }
         return renderProfileMe(root);

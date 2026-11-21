@@ -21,6 +21,23 @@
     photoNumber: ['프로필 사진 {n}', 'Profile photo {n}'],
     photoLimit: ['프로필 사진은 다섯 장까지 추가할 수 있어요.', 'You can add up to five profile photos.']
   });
+  // 4차에서 새로 쓰는 문구 (새 이름 — SPEC4 1장)
+  const w = U.words('edit4', {
+    title: ['프로필 편집', 'Edit profile'],
+    change: ['사진 수정', 'Edit photo'],
+    name: ['닉네임', 'Username'],
+    bio: ['소개', 'Bio'],
+    floor: ['좋아하는 층', 'Favorite floor'],
+    link: ['인스타그램', 'Instagram'],
+    badge: ['대표 배지', 'Badge'],
+    close: ['닫기', 'Close']
+  });
+  L.i18n({
+    ja: { 'edit4.title': 'プロフィールを編集', 'edit4.change': '写真を変更', 'edit4.name': 'ニックネーム', 'edit4.bio': '自己紹介',
+      'edit4.floor': '好きなフロア', 'edit4.link': 'Instagram', 'edit4.badge': 'バッジ', 'edit4.close': '閉じる' },
+    zh: { 'edit4.title': '编辑主页', 'edit4.change': '更换照片', 'edit4.name': '昵称', 'edit4.bio': '简介',
+      'edit4.floor': '喜欢的楼层', 'edit4.link': 'Instagram', 'edit4.badge': '徽章', 'edit4.close': '关闭' }
+  });
   const esc = L.esc;
   const meText = key => esc(L.t('me.' + key));
 
@@ -78,7 +95,11 @@
   function photoViewer(rows, start = 0, change = null) {
     if (!rows.length) return;
     let list = rows, index = start, confirm = false, busy = false, startX;
-    const panel = U.sheet('<h2>' + t('photos') + '</h2><div data-viewer class="profile3-photo-viewer"></div>');
+    // 전체 화면으로 크게 보기 · 좌우로 밀거나 화살표로 넘김 (P6)
+    const panel = L.sheet('<h2 class="sr-only">' + t('photos') + '</h2><button type="button" class="pf-viewer-close" data-c-close aria-label="' +
+      w('close') + '">' + L.icon('close') + '</button><div data-viewer class="pf-viewer-body"></div>');
+    panel.classList.add('pf-viewer');
+    panel.querySelector('[data-c-close]').onclick = () => L.closeSheet();
     const content = panel.querySelector('[data-viewer]');
 
     function step(amount) {
@@ -111,16 +132,16 @@
 
     function paint() {
       const photo = list[index];
-      content.innerHTML = photoImage(photo, t('photoNumber', { n: index + 1 })) +
-        '<div class="shell-actions profile3-photo-navigation">' +
-        U.button(t('prevPhoto'), 'data-prev' + (index === 0 ? ' disabled' : '')) +
-        '<span aria-live="polite">' + (index + 1) + ' / ' + list.length + '</span>' +
-        U.button(t('nextPhoto'), 'data-next' + (index === list.length - 1 ? ' disabled' : '')) + '</div>' +
-        (change ? confirm ? '<div class="shell-stack"><p>' + t('confirmRemove') + '</p><div class="shell-actions">' +
+      const arrow = (attr, icon, label, off) => '<button type="button" class="pf-viewer-arrow" ' + attr + ' aria-label="' + label + '"' +
+        (off ? ' disabled' : '') + '>' + L.icon(icon) + '</button>';
+      content.innerHTML = '<p class="pf-viewer-count" aria-live="polite">' + (index + 1) + ' / ' + list.length + '</p>' +
+        '<div class="pf-viewer-stage">' + photoImage(photo, t('photoNumber', { n: index + 1 })) +
+        arrow('data-prev', 'back', t('prevPhoto'), index === 0) + arrow('data-next', 'chevron', t('nextPhoto'), index === list.length - 1) + '</div>' +
+        (change ? confirm ? '<div class="pf-viewer-actions"><p>' + t('confirmRemove') + '</p><div class="shell-actions">' +
           U.button(t('removePhoto'), 'data-confirm-delete', true) + U.button(t('cancel'), 'data-cancel-delete') +
-          '</div></div>' : '<div class="shell-actions">' +
+          '</div></div>' : '<div class="pf-viewer-actions"><div class="shell-actions">' +
           (photo.main ? '<strong>' + t('mainPhoto') + '</strong>' : U.button(t('makeMain'), 'data-make-main', true)) +
-          U.button(t('removePhoto'), 'data-delete-photo') + '</div>' : '') +
+          U.button(t('removePhoto'), 'data-delete-photo') + '</div></div>' : '') +
         '<p class="shell-error" role="alert"></p>';
       content.querySelector('[data-prev]').onclick = () => step(-1);
       content.querySelector('[data-next]').onclick = () => step(1);
@@ -162,20 +183,23 @@
     let rows = photoRows(user), busy = false;
     function paint() {
       const main = rows.find(row => row.main) || rows[0];
-      editor.innerHTML = '<h2>' + t('photos') + '</h2><div class="profile3-photo-primary">' +
+      editor.innerHTML = '<h2 class="sr-only">' + t('photos') + '</h2><div class="pf-photo-primary profile3-photo-primary">' +
         (main ? '<button type="button" data-main-photo aria-label="' + t('mainPhoto') +
           '">' + photoImage(main) + '</button>' :
           '<span class="shell-avatar" aria-hidden="true">' + esc(Array.from(user.nick)[0] || 'G') + '</span>') +
-        '</div><div class="profile3-photo-strip">' +
+        '</div>' + (main ? '<button type="button" class="pf-text-link" data-change-photo>' + w('change') + '</button>' : '') +
+        '<div class="pf-photo-strip">' +
         rows.map((photo, i) => '<button type="button" data-photo-index="' + i + '" aria-label="' +
           t('photoNumber', { n: i + 1 }) + '"' + (photo.main ? ' aria-current="true"' : '') +
           '>' + photoImage(photo) + '</button>').join('') +
-        (rows.length < 5 ? '<label class="btn profile3-photo-add"><span aria-hidden="true">＋</span> ' + t('addPhoto') +
+        (rows.length < 5 ? '<label class="pf-photo-add" title="' + t('addPhoto') + '">' + L.icon('plus', { size: 20 }) +
           '<input type="file" accept="image/*" aria-label="' + t('addPhoto') + '" class="sr-only"></label>' : '') +
         '</div><p role="alert" class="shell-error"></p>';
       loadPhotos(editor);
       const primary = editor.querySelector('[data-main-photo]');
       if (primary) primary.onclick = () => { if (!busy) photoViewer(rows, rows.indexOf(main), change); };
+      const changer = editor.querySelector('[data-change-photo]');
+      if (changer) changer.onclick = () => { if (!busy) photoViewer(rows, rows.indexOf(main), change); };
       for (const button of editor.querySelectorAll('[data-photo-index]')) {
         button.onclick = () => { if (!busy) photoViewer(rows, Number(button.dataset.photoIndex), change); };
       }
@@ -225,8 +249,8 @@
 
   async function render(root) {
     const member = L.me;
-    const view = U.mount(root, '<div class="shell-actions"><h1>' + meText('edit') + '</h1>' +
-      U.link('#/me', esc(L.t('nav.me'))) + '</div>');
+    root.innerHTML = L.bar({ back: 'me', title: L.t('edit4.title') }) + '<div class="pf pf-edit" data-edit>' + U.status('loading', true) + '</div>';
+    const view = root.querySelector('[data-edit]');
     const [profile, points] = await Promise.all([
       L.api('user', { nick: member.nick }), L.api('points')
     ]);
@@ -243,21 +267,34 @@
     });
     const option = (value, label, selected) => '<option value="' + esc(value) + '"' +
       (value === selected ? ' selected' : '') + '>' + label + '</option>';
-    view.innerHTML = '<section class="shell-card profile3-photo-editor" data-photo-editor></section><form class="shell-form">' +
-      '<label class="shell-field">' + esc(L.t('auth.nick')) + '<input name="nick" required minlength="2" maxlength="12" value="' +
-      esc(user.nick) + '"></label><label class="shell-field">' + meText('bio') +
-      '<textarea name="bio" rows="3" aria-describedby="profile-bio-limit">' + esc(user.bio) + '</textarea></label>' +
-      '<small id="profile-bio-limit" class="muted">' + t('bioLimit') + '</small>' +
-      '<label class="shell-field">' + meText('floor') + '<select name="floor">' +
-      ['', '2F', '3F'].map(value => option(value, value || meText('noFloor'), user.floor || '')).join('') + '</select></label>' +
-      '<label class="shell-field">' + t('instagram') + '<input name="link" maxlength="30" pattern="[A-Za-z0-9._]{1,30}"' +
-      ' autocapitalize="none" spellcheck="false" aria-describedby="profile-link-help" value="' + esc(user.link) + '"></label>' +
-      '<small id="profile-link-help" class="muted">' + t('instagramHelp') + '</small>' +
-      '<label class="shell-field">' + t('badge') + '<select name="badge">' +
-      option('', t('noBadge'), selected || '') + earned.map(badge => option(badge.key, esc(L.profileBadgeLabel(badge.key, badge.label)), selected)).join('') +
-      '</select></label><label class="shell-choice"><input name="private" type="checkbox" aria-describedby="profile-private-help"' +
-      (user.private ? ' checked' : '') + '>' + t('private') + '</label><p id="profile-private-help" class="muted">' + t('privateHelp') +
-      '</p><p class="shell-error" role="alert" hidden></p><button type="submit" class="btn btn-hot">' + meText('save') + '</button></form>';
+    const line = (label, field, help = '') => '<div class="pf-field"><label class="pf-field-row"><span class="pf-field-label">' + label + '</span>' + field + '</label>' + help + '</div>';
+    view.innerHTML = '<section class="pf-photo-editor" data-photo-editor></section><form class="pf-form">' +
+      line(w('name'), '<input name="nick" required minlength="2" maxlength="12" autocomplete="off" value="' + esc(user.nick) + '">') +
+      line(w('bio'), '<textarea name="bio" rows="3" aria-describedby="profile-bio-limit">' + esc(user.bio) + '</textarea>',
+        '<small class="pf-field-help"><span id="profile-bio-limit" class="sr-only">' + t('bioLimit') + '</span><span data-bio-count aria-hidden="true"></span></small>') +
+      line(w('floor'), '<select name="floor">' +
+        ['', '2F', '3F'].map(value => option(value, value || meText('noFloor'), user.floor || '')).join('') + '</select>') +
+      line(w('link'), '<input name="link" maxlength="30" pattern="[A-Za-z0-9._]{1,30}"' +
+        ' autocapitalize="none" spellcheck="false" aria-label="' + t('instagram') + '" aria-describedby="profile-link-help" value="' + esc(user.link) + '">',
+        '<small id="profile-link-help" class="pf-field-help">' + t('instagramHelp') + '</small>') +
+      line(w('badge'), '<select name="badge">' +
+        option('', t('noBadge'), selected || '') + earned.map(badge => option(badge.key, esc(L.profileBadgeLabel(badge.key, badge.label)), selected)).join('') +
+        '</select>') +
+      '<div class="pf-field"><label class="pf-field-row pf-switch-row"><span class="pf-field-label">' + t('private') +
+      '</span><input name="private" type="checkbox" role="switch" class="pf-switch" aria-describedby="profile-private-help"' +
+      (user.private ? ' checked' : '') + '></label><small id="profile-private-help" class="pf-field-help">' + t('privateHelp') +
+      '</small></div><p class="shell-error" role="alert" hidden></p><button type="submit" class="btn btn-hot pf-save">' + meText('save') + '</button></form>';
+    // 소개 글자 수 (P41): 0/150 — 넘치면 빨갛게
+    const bioField = view.querySelector('[name=bio]'), bioCount = view.querySelector('[data-bio-count]');
+    const countBio = () => {
+      bioField.style.height = 'auto';                                  // 쓴 만큼 칸이 늘어나게 (안에서 따로 스크롤하지 않게)
+      bioField.style.height = Math.max(44, bioField.scrollHeight) + 'px';
+      const n = [...bioField.value].length;
+      bioCount.textContent = n + '/150';
+      bioCount.classList.toggle('is-over', n > 150 || bioField.value.split(/\r\n?|\n/).length > 3);
+    };
+    bioField.oninput = countBio;
+    countBio();
 
     photoEditor(view.querySelector('[data-photo-editor]'), member, user);
     const form = view.querySelector('form');
