@@ -56,8 +56,9 @@ const LoungeScreenUI = (() => {
     else L.toast(L.t('screens.' + (response?.error === 'dup' ? 'dup' : 'failed')));
   }
   function sheet(html) {
-    const el = L.sheet(button(t('close'), 'data-c-close') + html);
-    el.querySelector('[data-c-close]').onclick = () => L.closeSheet();
+    // 4차(B15): 닫기는 모든 시트에서 오른쪽 위 ✕ 한 곳 (예전엔 왼쪽 위 '닫기' 글자 버튼). [data-c-close] 표시는 그대로 둔다.
+    const el = L.sheet(html, { close: true });
+    el.querySelector('[data-sheet-x]').setAttribute('data-c-close', '');
     return el;
   }
   function reason({ title, reasons, submit, done }) {
