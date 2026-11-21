@@ -617,6 +617,7 @@ mark.hl.cur { background: #ffd60a; color: #120800; box-shadow: 0 0 0 2px rgba(25
 .bub .bdel { margin: 4px 0 0; width: auto; min-height: 34px; padding: 0 12px; font-size: 12px; }
 .gpick .pp.gp { cursor: pointer; } .gpick .pp.gp input { width: 18px; height: 18px; min-height: 0; padding: 0; flex: none; accent-color: var(--g); }
 .gpick #gTitle { margin-bottom: 8px; }
+.gadd { margin: 0 0 8px; } .gadd #gAddQ { margin-bottom: 8px; } .gadd .plist { max-height: 46vh; overflow-y: auto; } .gadd .gedit .btn { flex: 1; }
 .gmem { background: none; border: 1px solid var(--line-2); border-radius: 999px; padding: 1px 8px; cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; color: var(--g); }
 .ginfo { border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 12px; margin: 0 0 10px; background: var(--card); }
 .gedit { display: flex; gap: 8px; margin: 0 0 8px; } .gedit input, .gedit select { flex: 1; min-height: 40px; padding: 8px 12px; } .gedit .btn { margin: 0; min-height: 40px; }
@@ -5964,20 +5965,26 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   }
   function renderChat(area) {
     var c = state.chat, w = state.dmWith, grp = /^@g\//.test(w), gtitle = grp ? (c && c.title) || ((state.dm && state.dm.convs.filter(function (x) { return x.with === w; })[0]) || {}).title || '그룹 대화' : '';
-    var hadF = document.activeElement && document.activeElement.id === 'dfQ';
+    var hadF = document.activeElement && document.activeElement.id === 'dfQ', hadGA = document.activeElement && document.activeElement.id === 'gAddQ';
     if (state.dmJump && c) { state.dmFind = { q: state.dmJump.q, id: state.dmJump.id, i: -1, jump: state.dmJump.id }; state.dmJump = null; }
     var F = state.dmFind;
     var h = '<div class="chead"><button class="btn back" id="dBack" type="button" aria-label="목록으로">' + cmIco('back') + '</button><strong>' + (grp ? esc(gtitle) + (c && c.members ? '<button type="button" class="org gmem" id="gMem">' + c.members.length + '명 ▾</button>' : '') : esc(w) + nickH(w) + (c && c.org ? '<span class="org">' + esc(c.org) + '</span>' : '')) + '</strong>' +
       '<button class="btn back" id="dFindB" type="button" aria-label="대화 안에서 찾기" aria-expanded="' + (F ? 'true' : 'false') + '" style="margin-left:auto">' + cmIco('search') + '</button><button class="btn back dsos" id="dSos" type="button" hidden aria-label="경호 호출" title="경호 호출">' + cmIco('siren') + '</button></div>';
     if (F) h += '<div class="dmfind"><div class="cfind"><input id="dfQ" type="search" placeholder="이 대화에서 찾기" autocomplete="off" enterkeyhint="search" value="' + esc(F.q || '') + '"><span class="cfn" id="dfN"></span><button type="button" id="dfUp" aria-label="이전(위)">▲</button><button type="button" id="dfDn" aria-label="다음(아래)">▼</button><button type="button" id="dfX" aria-label="검색 닫기">✕</button></div><p class="note" id="dfMsg" hidden></p></div>';
     if (grp && c && state.grInfo) {   // 멤버 · 이름 바꾸기 · 넣기 · 나가기
-      h += '<div class="ginfo"><p class="note" style="margin:0 0 6px">멤버: ' + c.members.map(function (n) { return esc(n) + nickH(n); }).join(', ') + '</p>';
-      if (c.can) {
-        var outs = ((state.dm && state.dm.people) || []).filter(function (p) { return c.members.indexOf(p.name) < 0; });
-        h += '<div class="gedit"><input id="gRen" maxlength="20" value="' + esc(c.title) + '"><button class="btn" type="button" id="gRenB">이름 바꾸기</button></div>' +
-          (outs.length ? '<div class="gedit"><select id="gAddS"><option value="">+ 멤버 넣기</option>' + outs.map(function (p) { return '<option>' + esc(p.name) + '</option>'; }).join('') + '</select><button class="btn" type="button" id="gAddB">넣기</button></div>' : '');
+      h += '<div class="ginfo"><p class="note" style="margin:0 0 6px">멤버 ' + c.members.length + '명: ' + c.members.map(function (n) { return esc(n) + nickH(n); }).join(', ') + '</p>';
+      if (c.can) h += '<div class="gedit"><input id="gRen" maxlength="20" value="' + esc(c.title) + '"><button class="btn" type="button" id="gRenB">이름 바꾸기</button></div>';
+      if (c.canAdd) {   // 👋 대화방 안에서 인원 추가 (대표 요청 2026-11-21): 여러 명 골라서 한 번에 초대
+        var outs = c.addable || ((state.dm && state.dm.people) || []).filter(function (p) { return c.members.indexOf(p.name) < 0; }), ga = state.grAdd && state.grAdd.w === w ? state.grAdd : null;
+        if (!ga) h += outs.length ? '<button class="btn btn-ok" type="button" id="gAddOpen" style="width:100%;margin:0 0 8px">' + cmIco('users') + ' 인원 추가</button>' : '';
+        else {
+          var nA = Object.keys(ga.sel).length;
+          h += '<div class="pick gpick gadd"><input id="gAddQ" placeholder="이름·닉네임·초성 찾기" autocomplete="off" value="' + esc(ga.q || '') + '"><div class="plist">' + outs.map(function (p) {
+            return '<label class="pp gp"' + (ga.q && staffHit(p.name, key(ga.q)) < 0 ? ' hidden' : '') + '><input type="checkbox" data-gadd="' + esc(p.name) + '"' + (ga.sel[p.name] ? ' checked' : '') + '><strong>' + esc(p.name) + nickH(p.name) + '</strong>' + roleChip(p.role) + teamChip(p.team) + '</label>';
+          }).join('') + '</div><div class="gedit" style="margin:8px 0 0"><button class="btn" type="button" id="gAddX">취소</button><button class="btn btn-hot" type="button" id="gAddGo"' + (nA ? '' : ' disabled') + '>' + (nA ? nA + '명 ' : '') + '초대하기</button></div></div>';
+        }
       }
-      if (!c.sysNote) h += '<button class="btn btn-bad" type="button" id="gLeave" style="width:100%">그룹 나가기</button>';
+      if (c.canLeave != null ? c.canLeave : !c.sysNote) h += '<button class="btn btn-bad" type="button" id="gLeave" style="width:100%">' + (c.sysNote ? '이 방 나가기' : '그룹 나가기') + '</button>';
       h += '<p class="msg" id="gIMsg"></p></div>';
     }
     if (!c) h += '<p class="load">불러오는 중…</p>';
@@ -6039,12 +6046,19 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     function gEdit(body, done) {
       call(Object.assign({ a: 'gr_edit', token: state.s.token, id: w.slice(3) }, body)).then(function (r) {
         if (r.error === 'auth') return toLogin(AUTH_OUT);
-        if (!r.ok) { var gm = $('gIMsg'); if (gm) gm.textContent = { forbidden: '만든 사람·대표만 바꿀 수 있어요.', text: '이름을 확인해 주세요.', many: '30명까지 돼요.' }[r.error] || '처리가 안 됐어요.'; return; }
+        if (!r.ok) { var gm = $('gIMsg'); if (gm) gm.textContent = { forbidden: '만든 사람·대표만 바꿀 수 있어요.', text: '이름을 확인해 주세요.', many: '30명까지 돼요.', sys: '손님 문의 방은 이름을 바꾸거나 기본 멤버가 나갈 수 없어요.' }[r.error] || '처리가 안 됐어요.'; var gb = $('gAddGo'); if (gb) gb.disabled = false; return; }
         done(r);
       });
     }
     if ($('gRenB')) $('gRenB').addEventListener('click', function () { gEdit({ title: $('gRen').value.trim() }, function (r) { state.chat = r; render(); }); });
-    if ($('gAddB')) $('gAddB').addEventListener('click', function () { var n = $('gAddS').value; if (n) gEdit({ add: [n] }, function (r) { state.chat = r; render(); }); });
+    if ($('gAddOpen')) $('gAddOpen').addEventListener('click', function () { state.grAdd = { w: w, sel: {}, q: '' }; render(); if ($('gAddQ')) $('gAddQ').focus(); });
+    if ($('gAddX')) $('gAddX').addEventListener('click', function () { state.grAdd = null; render(); });
+    if ($('gAddQ')) $('gAddQ').addEventListener('input', function () { var q = key(this.value); state.grAdd.q = this.value; area.querySelectorAll('[data-gadd]').forEach(function (cb) { cb.closest('label').hidden = !!q && staffHit(cb.dataset.gadd, q) < 0; }); });
+    area.querySelectorAll('[data-gadd]').forEach(function (cb) { cb.addEventListener('change', function () {
+      var ga = state.grAdd; if (!ga) return; if (cb.checked) ga.sel[cb.dataset.gadd] = 1; else delete ga.sel[cb.dataset.gadd];
+      var n = Object.keys(ga.sel).length, b = $('gAddGo'); b.disabled = !n; b.textContent = (n ? n + '명 ' : '') + '초대하기';
+    }); });
+    if ($('gAddGo')) $('gAddGo').addEventListener('click', function () { var b = this, names = Object.keys((state.grAdd || {}).sel || {}); if (!names.length) return; b.disabled = true; gEdit({ add: names }, function (r) { state.grAdd = null; state.chat = r; render(); }); });
     if ($('gLeave')) $('gLeave').addEventListener('click', function () { var b = this; if (!armed(b, '그룹 나가기')) return; gEdit({ leave: true }, function (r) { stopPoll(); state.dmView = 'list'; state.dmWith = ''; state.chat = null; state.grInfo = false; state.dm = r; render(); startPoll(loadDm, 20000); }); });
     var box = $('dmBox');   // (2026-11-19 밤: 예전 id chatBox 는 떠 있는 💬 대화창과 겹쳐서, 대화창 닫기가 이 목록을 숨기던 것)
     if (document.body.classList.contains('dmfix')) dmFit();
@@ -6076,6 +6090,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       var msg = $('dfMsg');
       if (Fx.jump && c) { var found = c.msgs.some(function (x) { return x.id === Fx.jump; }); msg.hidden = found; if (!found) msg.textContent = '찾은 메시지가 오래돼서 이 화면(최근 200개)에는 안 보여요. 내용은 메시지 검색 결과에서 볼 수 있어요.'; Fx.jump = ''; }
     }
+    if (hadGA && $('gAddQ')) { var gq = $('gAddQ'); gq.focus(); try { gq.setSelectionRange(gq.value.length, gq.value.length); } catch (e) {} }
     if (F && c) { dfApply(0); if (hadF && $('dfQ')) { var fq = $('dfQ'); fq.focus(); try { fq.setSelectionRange(fq.value.length, fq.value.length); } catch (e) {} } }
     $('dFindB').addEventListener('click', function () { state.dmFind = state.dmFind ? null : { q: '', i: -1, id: '' }; state.keepY = dmY(); render(); if (state.dmFind && $('dfQ')) $('dfQ').focus(); else markHits(area, '.bub .bt', ''); });
     if ($('dfQ')) {
