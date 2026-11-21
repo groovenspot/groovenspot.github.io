@@ -30,7 +30,7 @@
     link: '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3A4.5 4.5 0 0 0 13 4.6l-1.2 1.2M14 10a4.5 4.5 0 0 0-6.4 0l-3 3A4.5 4.5 0 0 0 11 19.4l1.2-1.2"/>',
     eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
     play: '<path d="M7 4.5v15l12.5-7.5z"/>',
-    settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.6M12 18.6v2.6M4 7.4l2.3 1.3M17.7 15.3 20 16.6M4 16.6l2.3-1.3M17.7 8.7 20 7.4"/>',
+    settings: '<g transform="translate(1.56 1.56) scale(.87)"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></g>',
     menu: '<path d="M4 6.5h16M4 12h16M4 17.5h16"/>',
     user: '<circle cx="12" cy="8.2" r="4"/><path d="M4.2 20.5a7.8 7.8 0 0 1 15.6 0"/>',
     userPlus: '<circle cx="10" cy="8.2" r="4"/><path d="M2.5 20.5a7.5 7.5 0 0 1 13.4-4.6M19 13.5v6M16 16.5h6"/>',
@@ -115,18 +115,25 @@
   L.hashtags = function (text) { var out = [], m, re = new RegExp('(?:^|[^가-힣A-Za-z0-9._@#&])#(' + TAG + ')', 'g'); while ((m = re.exec(String(text || '')))) out.push(m[1].toLowerCase()); return [...new Set(out)]; };
 
   // ── 뒤로 가기 기억 ── (core 보다 먼저 hashchange 를 받는다)
-  var trail = [location.hash || '#/tonight'], back = false, stashes = Object.create(null);
+  //  방문 기록 칸마다 순번(history.state.gl)을 적어 둔다 → 순번이 이미 있는 칸으로 왔으면 '뒤로/앞으로 가기', 없으면 '새로 연 화면'.
+  //  (예전엔 '바로 앞 주소와 같으면 뒤로'로 쳐서 피드→글→피드→글 처럼 오가면 뒤로 가기를 놓쳤다)
+  var at = 0, back = false, stashes = Object.create(null);
+  function mark() { try { history.replaceState(Object.assign({}, history.state, { gl: at }), ''); } catch (e) {} }
+  try { if (history.state && typeof history.state.gl === 'number') at = history.state.gl; else mark(); } catch (e) {}
   window.addEventListener('hashchange', function () {
-    var now = location.hash || '#/tonight';
-    if (trail.length > 1 && trail[trail.length - 2] === now) { trail.pop(); back = true; }
-    else { if (trail[trail.length - 1] !== now) trail.push(now); back = false; if (trail.length > 60) trail.shift(); }
+    var state = null;
+    try { state = history.state; } catch (e) {}
+    if (state && typeof state.gl === 'number') { back = state.gl < at; at = state.gl; }
+    else { at += 1; mark(); back = false; }
   });
   L.wentBack = function () { return back; };                      // 지금 화면이 '뒤로 가기'로 열렸나
-  L.canBack = function () { return trail.length > 1; };
-  L.back = function (fallback) { if (trail.length > 1) history.back(); else L.go(fallback || 'tonight'); };
+  L.canBack = function () { return at > 0; };
+  L.back = function (fallback) { if (at > 0) history.back(); else L.go(fallback || 'tonight'); };
   // 화면 상태 맡기기: 떠날 때 L.stash('feed', {...}) → 뒤로 돌아왔을 때만 L.unstash('feed') 가 돌려줌 (앞으로 새로 열면 null)
-  L.stash = function (name, data) { stashes[name] = { hash: location.hash, data: data }; };
-  L.unstash = function (name) { var s = stashes[name]; delete stashes[name]; return back && s && s.hash === location.hash ? s.data : null; };
+  //  · 맡길 때 주소는 '지금 그려져 있는 화면'(L.shownHash) 기준 — leave() 안에서 불러도(이미 주소가 바뀐 뒤) 떠나는 화면 것으로 맡겨진다.
+  L.stash = function (name, data) { stashes[name] = { hash: (L.shownHash && L.shownHash()) || location.hash || '#/tonight', data: data }; };
+  L.unstash = function (name) { var s = stashes[name]; delete stashes[name]; return back && s && s.hash === (location.hash || '#/tonight') ? s.data : null; };
+  L.forgetBack = function () { back = false; };                   // 같은 탭 다시 누르기 등 '새로 연 것'으로 칠 때 (core 가 부름)
 
   // ── 화면 자체 위 막대 ── L.screen(..., { bar: 'own' }) 이면 공통 헤더를 숨기고 화면이 직접 그린다.
   //  L.bar({ title, back: 'feed'(돌아갈 곳) | false, left: html, right: html, sub: html })

@@ -4,6 +4,7 @@
   var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
   var features = Object.create(null), configPending;
+  var shown = '', scrolls = Object.create(null), scrollPending = null;   // 보던 자리 기억 (keepScroll 화면)
   var gates = { rooms: 'rooms', dm: 'dm', challenge: 'challenge', compose: 'posts',
     rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety' };
   var STAFF_API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
@@ -49,6 +50,48 @@
         scale *= 0.75;
       }
     } finally { URL.revokeObjectURL(url); }
+  }
+  // 시트를 아래로 끌어 닫기: 맨 위까지 올라와 있을 때 아래로 끌면 따라 내려오고, 충분히 끌거나 빠르게 튕기면 닫힌다.
+  function dragToClose(panel) {
+    var x0 = 0, y0 = null, dy = 0, at = 0, dragging = false;
+    panel.addEventListener('touchstart', function (e) {
+      y0 = null;
+      if (e.touches.length !== 1 || panel.scrollTop > 0) return;
+      for (var el = e.target; el && el !== panel; el = el.parentElement) {
+        if (el.scrollTop > 0 || el.matches('textarea, canvas, input[type=range], [data-no-drag]')) return;   // 안쪽을 스크롤하는 중
+      }
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dy = 0; at = Date.now(); dragging = false;
+    }, { passive: true });
+    panel.addEventListener('touchmove', function (e) {
+      if (y0 == null) return;
+      var dx = e.touches[0].clientX - x0;
+      dy = e.touches[0].clientY - y0;
+      if (!dragging) {
+        if (dy < -6 || Math.abs(dx) > Math.abs(dy)) { y0 = null; return; }   // 위로·옆으로 움직이면 평소 스크롤
+        if (dy < 10) return;
+        dragging = true;
+        panel.style.transition = 'none';
+      }
+      if (e.cancelable) e.preventDefault();
+      panel.style.transform = 'translateY(' + Math.max(0, dy) + 'px)';
+    }, { passive: false });
+    function end() {
+      if (y0 == null) return;
+      y0 = null;
+      if (!dragging) return;
+      dragging = false;
+      var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (dy > Math.min(140, panel.offsetHeight * .3) || (dy > 40 && Date.now() - at < 260)) {
+        panel.style.transition = still ? 'none' : 'transform .16s ease-in';
+        panel.style.transform = 'translateY(100%)';
+        setTimeout(function () { if (panel.isConnected) L.closeSheet(); }, still ? 0 : 150);
+      } else {
+        panel.style.transition = still ? 'none' : 'transform .18s ease-out';
+        panel.style.transform = '';
+      }
+    }
+    panel.addEventListener('touchend', end);
+    panel.addEventListener('touchcancel', end);
   }
   var L = window.Lounge = {
     me: null, lang: lang,
@@ -111,12 +154,17 @@
     t: function (k, v) { var s = dict[L.lang]?.[k] || dict.en[k] || dict.ko[k] || k; if (v) Object.keys(v).forEach(function (x) { s = s.split('{' + x + '}').join(v[x]); }); return s; },
     open: function (feature) { return Object.hasOwn(features, feature) && features[feature] === true; },
     screen: function (name, def) { screens[name] = def; },
+    hasScreen: function (name) { return Boolean(screens[name]); },
     go: function (path) { location.hash = '#/' + String(path).replace(/^#?\/?/, ''); },
     toast: function (m) { var t = document.getElementById('toast'); t.textContent = m; t.hidden = false; clearTimeout(L._tt); L._tt = setTimeout(function () { t.hidden = true; }, 2600); },
-    sheet: function (html) {
+    // L.sheet(html, { close: true(오른쪽 위 ✕) , bare: true(손잡이·끌어 닫기 없음 — 전체 화면 뷰어용), cls: '클래스' })
+    sheet: function (html, opt) {
+      opt = opt || {};
       var s = document.getElementById('sheet');
       if (s.hidden) sheetFocus = document.activeElement;
-      s.innerHTML = '<div class="in" role="dialog" aria-modal="true" tabindex="-1">' + html + '</div>';
+      s.innerHTML = '<div class="in' + (opt.bare ? ' sheet-bare' : '') + (opt.cls ? ' ' + L.esc(opt.cls) : '') + '" role="dialog" aria-modal="true" tabindex="-1">' +
+        (opt.close ? '<button type="button" class="sheet-x" data-sheet-x aria-label="' + L.esc(L.t('core.close')) + '"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>' : '') +
+        html + '</div>';
       var panel = s.firstElementChild;
       var heading = panel.querySelector('h1, h2, h3');
       if (heading) { heading.id ||= 'sheet-title'; panel.setAttribute('aria-labelledby', heading.id); }
@@ -124,6 +172,9 @@
       document.body.classList.add('sheet-open');
       document.getElementById('app').inert = true;
       s.onclick = function (e) { if (e.target === s) L.closeSheet(); };
+      var x = panel.querySelector(':scope > [data-sheet-x]');
+      if (x) x.onclick = L.closeSheet;
+      if (!opt.bare) dragToClose(panel);
       panel.focus();
       return panel;
     },
@@ -182,12 +233,19 @@
       if (name === 'u') name = 'user';
       var def = screens[name];
       var view = document.getElementById('view');
+      var here = location.hash || '#/tonight';
+      // 떠나는 화면이 keepScroll 이면 보던 자리를 기억 (뒤로 돌아왔을 때 L.restoreScroll 이 되돌림)
+      if (cur?.keepScroll && shown) scrolls[shown] = window.scrollY;
       if (cur?.leave) {
         try { cur.leave(); } catch (e) { console.error(e); }
       }
       L.closeSheet();
       cur = def;
+      shown = here;
+      scrollPending = def?.keepScroll && L.wentBack?.() && Object.hasOwn(scrolls, here) ? scrolls[here] : null;
+      delete scrolls[here];
       document.getElementById('app').classList.toggle('own-bar', def?.bar === 'own');   // 화면이 위 막대를 직접 그림 (SPEC4 2장)
+      document.getElementById('app').classList.toggle('no-tabs', def?.tabs === false);  // 화면 정의에 tabs: false → 아래 탭 숨김 (글쓰기·스토리 뷰어처럼 화면을 넓게 쓰는 곳)
       var root = document.createElement('div');
       view.replaceChildren(root);
       L.paintNav(def?.nav || name);
@@ -223,10 +281,47 @@
         if (version === routeVersion) root.textContent = L.t('core.unavailable');
         console.error(e);
       }
+      if (version === routeVersion) L.restoreScroll(true);   // render 가 끝났을 때 내용이 충분하면 바로 복원 (아니면 화면이 직접 부를 때까지 기다림)
+    },
+    // 뒤로 돌아온 화면의 보던 자리 복원. 화면 정의에 keepScroll: true 를 주고, 내용을 다 그린 뒤 L.restoreScroll() 을 부른다.
+    //  · 돌려주는 값: 복원했으면 true. 앞으로 새로 연 화면·기억이 없는 화면에서는 아무 일도 안 하고 false.
+    restoreScroll: function (soft) {
+      if (scrollPending == null) return false;
+      var y = scrollPending;
+      if (soft && document.documentElement.scrollHeight - window.innerHeight < y - 4) return false;
+      scrollPending = null;
+      window.scrollTo(0, y);
+      return true;
+    },
+    shownHash: function () { return shown; },   // 지금 그려져 있는 화면의 주소 (leave() 안에서는 떠나는 화면 주소)
+    // 지금 탭을 다시 눌렀을 때: 맨 위로 부드럽게 올린 뒤 화면 새로고침 (화면 정의에 refresh() 가 있으면 그걸, 없으면 다시 그림)
+    retap: function () {
+      var def = cur, version = routeVersion;
+      var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var run = function () {
+        if (version !== routeVersion) return;
+        L.forgetBack?.();
+        if (typeof def?.refresh === 'function') { try { def.refresh(); } catch (e) { console.error(e); } }
+        else L.route();
+      };
+      if (window.scrollY < 2) return run();
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      if (reduce) return run();
+      var started = Date.now();
+      (function wait() {
+        if (window.scrollY < 2 || Date.now() - started > 800) return run();
+        requestAnimationFrame(wait);
+      })();
     },
     paintNav: function (on) {
       var items = [['tonight', 'nav.tonight'], ['feed', 'nav.feed'], ['play', 'nav.play'], ['rooms', 'nav.rooms'], ['me', 'nav.me']];
-      document.getElementById('tabbar').innerHTML = items.map(function (x, i) { return '<a href="#/' + x[0] + '"' + (x[0] === on ? ' aria-current="page"' : '') + '><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[i] + '</svg>' + L.esc(L.t(x[1])) + '</a>'; }).join('');
+      var photo = L.me?.photo ? (L.photoSrc ? L.photoSrc(L.me.photo) : L.img(L.me.photo)) : '';
+      document.getElementById('tabbar').innerHTML = items.map(function (x, i) {
+        var icon = x[0] === 'me' && photo
+          ? '<img class="tab-me" src="' + L.esc(photo) + '" alt="" width="24" height="24" decoding="async">'
+          : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (x[0] === on ? 2.3 : 1.8) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[i] + '</svg>';
+        return '<a href="#/' + x[0] + '" data-tab="' + x[0] + '"' + (x[0] === on ? ' aria-current="page"' : '') + '>' + icon + '<span>' + L.esc(L.t(x[1])) + '</span></a>';
+      }).join('');
     },
     boot: async function () {
       paintStatus();
@@ -245,6 +340,14 @@
           e.preventDefault();
           (e.shiftKey ? last : first)?.focus();
         }
+      });
+      try { history.scrollRestoration = 'manual'; } catch (e) {}   // 보던 자리는 keepScroll 화면이 직접 되돌린다
+      document.getElementById('tabbar').addEventListener('click', function (e) {
+        var link = e.target.closest('a');
+        if (!link || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        if (link.getAttribute('href') !== (location.hash || '#/tonight')) return;   // 다른 화면이면 평소대로 이동
+        e.preventDefault();
+        L.retap();
       });
       navigator.serviceWorker?.register('/lounge/sw.js').catch(() => {});
       await L.refreshMe();
@@ -279,7 +382,8 @@
   }
 
   var lastBadges = {};
-  L.paintInbox = function () { paintBadges(lastBadges); };   // 화면이 알림·메시지 아이콘을 직접 그린 뒤 부름 (SPEC4 2장)
+  L.paintInbox = function () { paintBadges(lastBadges); };
+  L.setInbox = function (key, count) { paintBadges(Object.assign({}, lastBadges, { [key]: count })); };   // 한 종류의 배지 숫자만 바꿈 (알림 화면이 부름)   // 화면이 알림·메시지 아이콘을 직접 그린 뒤 부름 (SPEC4 2장)
   function paintBadges(counts = {}) {
     lastBadges = counts;
     document.querySelectorAll('[data-lounge-inbox]').forEach(link => {
