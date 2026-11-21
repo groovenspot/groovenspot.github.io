@@ -1,0 +1,34 @@
+/* 그루브 라운지 공통 부품 모양 (4차 · ui.js 와 한 쌍) — 주인: 틀 작업창(A) */
+.ui-icon { display: block; flex: none; }
+.ui-avatar { --s: 40px; position: relative; display: inline-grid; place-items: center; flex: none; width: var(--s); height: var(--s); border-radius: 50%; background: #2a2523; color: var(--txt); text-decoration: none; }
+.ui-avatar > img, .ui-avatar > .ui-avatar-letter { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: grid; place-items: center; font-weight: 800; font-size: calc(var(--s) * .42); }
+.ui-avatar[data-story] { padding: 3px; background: var(--bg); box-shadow: 0 0 0 2px var(--g); }
+.ui-avatar[data-story="seen"] { box-shadow: 0 0 0 1.5px var(--line-2); }
+.ui-mention, .ui-hashtag { color: #9ecbff; text-decoration: none; font-weight: 600; }
+/* 화면 자체 위 막대 */
+#app.own-bar > .lounge-header { display: none; }
+.ui-bar { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: minmax(44px, auto) 1fr minmax(44px, auto); align-items: center; gap: 4px; min-height: 48px; margin: -16px -16px 0; padding: 0 6px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.ui-bar-side { display: flex; align-items: center; gap: 2px; }
+.ui-bar-side.is-right { justify-content: flex-end; }
+.ui-bar-title { min-width: 0; text-align: center; }
+.ui-bar-title h1 { font-size: 1.0625rem; font-weight: 800; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ui-bar-title p { font-size: .75rem; color: var(--muted); line-height: 1.2; }
+.ui-bar-btn { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 12px; background: none; color: var(--txt); cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.ui-bar-btn > span:not([hidden]) { position: absolute; top: 4px; right: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #ff3b4e; color: #fff; font-size: .6875rem; font-weight: 800; line-height: 18px; text-align: center; }
+/* 메뉴 시트 · 확인 시트 */
+#sheet > .in.ui-sheet-menu { padding: 8px 0 calc(10px + env(safe-area-inset-bottom)); }
+.ui-menu-title { padding: 10px 20px 8px; font-size: .9375rem; color: var(--muted); text-align: center; }
+.ui-menu { display: grid; }
+.ui-menu-item { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 52px; padding: 0 20px; border: 0; background: none; color: var(--txt); font: inherit; font-size: 1rem; font-weight: 600; text-align: left; cursor: pointer; }
+.ui-menu-item:active { background: rgba(255,255,255,.06); }
+.ui-menu-item.is-danger { color: #ff5a67; }
+.ui-menu-item.is-cancel { justify-content: center; margin-top: 6px; border-top: 1px solid var(--line); color: var(--muted); }
+.ui-confirm { display: grid; gap: 8px; margin-top: 16px; }
+.btn-danger { background: #ff3b4e; border-color: #ff3b4e; color: #fff; }
+/* 당겨서 새로고침 */
+.ui-pull { display: grid; place-items: center; height: 0; overflow: hidden; transition: height .18s ease; }
+.ui-pull > i { width: 22px; height: 22px; border: 2.5px solid var(--line-2); border-top-color: var(--txt); border-radius: 50%; opacity: .5; }
+.ui-pull.is-ready > i { opacity: 1; }
+.ui-pull.is-busy > i { opacity: 1; animation: ui-spin .7s linear infinite; }
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ui-pull { transition: none; } .ui-pull.is-busy > i { animation-duration: 2s; } }

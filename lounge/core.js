@@ -187,6 +187,7 @@
       }
       L.closeSheet();
       cur = def;
+      document.getElementById('app').classList.toggle('own-bar', def?.bar === 'own');   // 화면이 위 막대를 직접 그림 (SPEC4 2장)
       var root = document.createElement('div');
       view.replaceChildren(root);
       L.paintNav(def?.nav || name);
@@ -277,7 +278,10 @@
     return configPending;
   }
 
+  var lastBadges = {};
+  L.paintInbox = function () { paintBadges(lastBadges); };   // 화면이 알림·메시지 아이콘을 직접 그린 뒤 부름 (SPEC4 2장)
   function paintBadges(counts = {}) {
+    lastBadges = counts;
     document.querySelectorAll('[data-lounge-inbox]').forEach(link => {
       var key = link.dataset.loungeInbox;
       var count = counts[key];
