@@ -55,35 +55,35 @@
     ko: { 'alerts4.settings': '알림 설정', 'alerts4.today': '오늘', 'alerts4.week': '이번 주', 'alerts4.earlier': '이전',
       'alerts4.others': '{nick}님 외 {n}명', 'alerts4.others1': '{nick}님 외 1명', 'alerts4.one': '{nick}님',
       'alerts4.like': '이 회원님의 게시물을 좋아해요.', 'alerts4.comment': '이 댓글을 남겼어요.', 'alerts4.reply': '이 답글을 남겼어요.',
-      'alerts4.mention': '이 회원님을 언급했어요.', 'alerts4.tag': '이 사진에 회원님을 태그했어요.',
+      'alerts4.mention': '이 회원님을 언급했어요.', 'alerts4.tag': '이 사진에 회원님을 태그했어요.', 'alerts4.tag_approved': '이 사진 태그를 승인했어요.',
       'alerts4.follow': '이 회원님을 팔로우하기 시작했어요.', 'alerts4.follow_request': '이 팔로우를 요청했어요.',
       'alerts4.follow_accept': '이 팔로우 요청을 수락했어요.', 'alerts4.story_like': '이 회원님의 스토리를 좋아해요.',
       'alerts4.share': '이 메시지로 공유했어요.', 'alerts4.kind.share': '전달', 'alerts4.kind.other': '알림', 'alerts4.unreadDot': '안 읽음' },
     en: { 'alerts4.settings': 'Notification settings', 'alerts4.today': 'Today', 'alerts4.week': 'This week', 'alerts4.earlier': 'Earlier',
       'alerts4.others': '{nick} and {n} others', 'alerts4.others1': '{nick} and 1 other', 'alerts4.one': '{nick}',
       'alerts4.like': ' liked your post.', 'alerts4.comment': ' commented on your post.', 'alerts4.reply': ' replied to your comment.',
-      'alerts4.mention': ' mentioned you.', 'alerts4.tag': ' tagged you in a photo.',
+      'alerts4.mention': ' mentioned you.', 'alerts4.tag': ' tagged you in a photo.', 'alerts4.tag_approved': ' approved your photo tag.',
       'alerts4.follow': ' started following you.', 'alerts4.follow_request': ' requested to follow you.',
       'alerts4.follow_accept': ' accepted your follow request.', 'alerts4.story_like': ' liked your story.',
       'alerts4.share': ' shared something with you.', 'alerts4.kind.share': 'Share', 'alerts4.kind.other': 'Notification', 'alerts4.unreadDot': 'Unread' },
     ja: { 'alerts4.settings': '通知設定', 'alerts4.today': '今日', 'alerts4.week': '今週', 'alerts4.earlier': '以前',
       'alerts4.others': '{nick}さん、他{n}人', 'alerts4.others1': '{nick}さん、他1人', 'alerts4.one': '{nick}さん',
       'alerts4.like': 'があなたの投稿に「いいね」しました。', 'alerts4.comment': 'がコメントしました。', 'alerts4.reply': 'が返信しました。',
-      'alerts4.mention': 'があなたをメンションしました。', 'alerts4.tag': 'が写真にあなたをタグ付けしました。',
+      'alerts4.mention': 'があなたをメンションしました。', 'alerts4.tag': 'が写真にあなたをタグ付けしました。', 'alerts4.tag_approved': 'が写真のタグを承認しました。',
       'alerts4.follow': 'があなたをフォローしました。', 'alerts4.follow_request': 'からフォローリクエストが届きました。',
       'alerts4.follow_accept': 'がフォローリクエストを承認しました。', 'alerts4.story_like': 'があなたのストーリーに「いいね」しました。',
       'alerts4.share': 'がメッセージで共有しました。', 'alerts4.kind.share': '共有', 'alerts4.kind.other': 'お知らせ', 'alerts4.unreadDot': '未読' },
     zh: { 'alerts4.settings': '通知设置', 'alerts4.today': '今天', 'alerts4.week': '本周', 'alerts4.earlier': '更早',
       'alerts4.others': '{nick}等{n}人', 'alerts4.others1': '{nick}等2人', 'alerts4.one': '{nick}',
       'alerts4.like': '赞了你的帖子。', 'alerts4.comment': '评论了你的帖子。', 'alerts4.reply': '回复了你的评论。',
-      'alerts4.mention': '提到了你。', 'alerts4.tag': '在照片中标记了你。',
+      'alerts4.mention': '提到了你。', 'alerts4.tag': '在照片中标记了你。', 'alerts4.tag_approved': '通过了你的照片标记。',
       'alerts4.follow': '关注了你。', 'alerts4.follow_request': '请求关注你。',
       'alerts4.follow_accept': '通过了你的关注请求。', 'alerts4.story_like': '赞了你的快拍。',
       'alerts4.share': '通过私信分享给你。', 'alerts4.kind.share': '分享', 'alerts4.kind.other': '通知', 'alerts4.unreadDot': '未读' }
   });
   const t = (key, vars) => L.t('alerts.' + key, vars);
   const t4 = (key, vars) => L.t('alerts4.' + key, vars);
-  const TYPES = ['like', 'comment', 'reply', 'mention', 'tag', 'follow', 'follow_request', 'follow_accept', 'story_like', 'share'];
+  const TYPES = ['like', 'comment', 'reply', 'mention', 'tag', 'tag_approved', 'follow', 'follow_request', 'follow_accept', 'story_like', 'share'];
   const KIND_ICON = { dj: 'play', lost: 'search', keep: 'pin', dm: 'chat', rooms: 'chat', social: 'heart', md: 'user', rewards: 'check',
     follow: 'userPlus', follow_request: 'userPlus', follow_accept: 'check', share: 'send' };
   // 알림 종류 이름 (화면 읽기용 머리말). 낱말 표에 없는 종류가 키 그대로('alerts.share') 보이던 버그(B3)를 막는다.
