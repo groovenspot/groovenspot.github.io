@@ -136,7 +136,7 @@ const LoungeRewardUI = (() => {
     card.innerHTML = panel('<h2>' + t('screen') + '</h2>' +
       '<div style="overflow:hidden;border:2px solid #a15bff;border-radius:14px;background:#09050e;text-align:center">' +
       '<div style="background:#6d2bff;color:white;padding:6px;font-weight:800;letter-spacing:.12em">GROOVE · ' + t('preview') + '</div>' +
-      '<div data-preview style="display:grid;place-items:center;min-height:96px;padding:12px;font-size:24px;font-weight:900">—</div></div>' +
+      '<div data-preview style="display:grid;place-items:center;min-height:96px;padding:12px;font-size:24px;font-weight:900;color:#fff">—</div></div>' +
       '<form style="' + formStyle + ';margin-top:14px"><label>' + t('message') +
       '<input name="text" required style="' + inputStyle + '" aria-describedby="booking-length"></label>' +
       '<small id="booking-length" class="muted">0 / 30</small><label>' + t('time') +

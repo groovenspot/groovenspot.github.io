@@ -300,8 +300,8 @@
     .rooms-header{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:7px 12px}
     .rooms-heading{flex:1;min-width:0}.rooms-heading h1{font-size:1.13rem;overflow-wrap:anywhere}
     .rooms-header .btn{min-width:44px;padding:0 10px}
-    .rooms-pin{padding:7px 14px;background:#241b16;border-bottom:1px solid var(--line-2);max-height:5.1em;overflow:auto}
-    .rooms-pin strong{color:#ffb784;margin-inline-end:.5em}
+    .rooms-pin{padding:7px 14px;background:var(--tint-g);border-bottom:1px solid var(--line-2);max-height:5.1em;overflow:auto}
+    .rooms-pin strong{color:var(--tint-g-txt);margin-inline-end:.5em}
     .rooms-log{flex:1;min-height:0;display:flex;flex-direction:column;overflow-y:auto;
       overscroll-behavior:contain;overflow-anchor:none;padding:8px 12px}
     .rooms-chat{display:flex;flex-direction:column;gap:4px;margin-block-start:auto}
@@ -309,14 +309,14 @@
     .rooms-chat li[data-mine="true"]{grid-template-columns:minmax(0,1fr)}
     .rooms-chat [data-group-start="true"]{margin-top:8px}
     .rooms-avatar{grid-column:1;grid-row:1 / span 2;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
-      background:#30302d;color:var(--txt);font-weight:700;overflow:hidden}
+      background:var(--fill);color:var(--txt);font-weight:700;overflow:hidden}
     .rooms-avatar img{width:100%;height:100%;object-fit:cover}
     .rooms-author,.rooms-line,.rooms-chat [data-translation]{grid-column:2;min-width:0}
     .rooms-chat [data-mine="true"] .rooms-own-author{grid-column:1;justify-self:end}
     .rooms-author{font-size:.83rem;font-weight:700;margin-bottom:2px;overflow-wrap:anywhere}
     .rooms-line{display:flex;align-items:flex-end;gap:6px}
     .rooms-chat [data-mine="true"] .rooms-line{grid-column:1;flex-direction:row-reverse}
-    .rooms-bubble{color:inherit;background:#272425;border:1px solid var(--line);border-radius:6px 16px 16px 16px;
+    .rooms-bubble{color:inherit;background:var(--fill);border:1px solid var(--line);border-radius:6px 16px 16px 16px;
       padding:7px 11px;min-width:0;min-height:44px;max-width:min(82%,28rem);white-space:pre-wrap;overflow-wrap:anywhere;text-align:start;cursor:pointer;font:inherit}
     .rooms-chat [data-mine="true"] .rooms-bubble{background:var(--g);color:var(--g-ink);border-radius:16px 6px 16px 16px}
     .rooms-time{font-size:.68rem;white-space:nowrap}

@@ -251,7 +251,7 @@
       drawing = fingerprint;
       messages.innerHTML = all.map(item => {
         const bubble = item.mine ? 'end; background:var(--g);color:var(--g-ink);border-radius:18px 18px 6px 18px' :
-          'start;background:#221d1c;border-radius:18px 18px 18px 6px';
+          'start;background:var(--fill);border-radius:18px 18px 18px 6px';
         return '<article data-id="' + L.esc(item.id) + '" style="justify-self:' + bubble +
           ';max-width:84%;padding:10px 14px;min-width:0"><p style="white-space:pre-wrap">' + L.esc(item.text) + '</p>' +
           (item.photo ? '<img alt="' + t('photoAlt') + '" style="display:block;max-width:100%;max-height:300px;border-radius:12px">' : '') +
