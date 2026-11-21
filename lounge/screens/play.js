@@ -64,11 +64,11 @@
       'play.lineup': '今夜のラインナップ', 'play.lineupEmpty': 'ラインナップはタイムテーブルで確認できます', 'play.timetable': 'タイムテーブル',
       'play.going': '今夜行きます', 'play.goingOn': '行くのをやめる', 'play.goingN': '{n}人が行きます',
       'play.live': 'いまプレイ中', 'play.liveEmpty': 'いまのDJは「今夜」画面で確認できます', 'play.nextUp': '次 {dj}・{at}', 'play.tonight': '今夜を見る',
-      'play.f2': '2F ヒップホップ', 'play.f3': '3F EDM',
+      'play.f2': '2階 ヒップホップ', 'play.f3': '3階 EDM',
       'play.shelf': 'あそぶ', 'play.sGuess': 'DJ当てクイズ', 'play.sShorts': 'GROOVEショート',
       'play.subGuess': 'ヒントでDJを当てよう', 'play.subCup': '推しDJセットを選ぼう', 'play.subShorts': '短い動画をスワイプ', 'play.subVote': '今日の投票',
       'play.subChallenge': '今週の写真テーマ', 'play.doneToday': '今日は完了', 'play.plus': '+{n}P',
-      'play.battle': '今週のフロア対抗戦', 'play.myTeam': 'マイチーム {f}', 'play.team2': '2F ヒップホップ', 'play.team3': '3F EDM',
+      'play.battle': '今週のフロア対抗戦', 'play.myTeam': 'マイチーム {f}', 'play.team2': '2階 ヒップホップチーム', 'play.team3': '3階 EDMチーム',
       'play.pickTeam': 'チームを選ぶと、あそぶたびに自分のフロアに1点', 'play.battleRule': 'あそび1つ＝フロアに1点・月曜に集計',
       'play.battleBar': '2F {a}点、3F {b}点', 'play.lastWin': '先週は{f}の勝ち', 'play.lastTie': '先週は引き分け',
       'play.won': 'あなたのチームが勝ちました', 'play.contrib': '今週あなたが入れた{n}点',
@@ -89,11 +89,11 @@
       'play.lineup': '今晚阵容', 'play.lineupEmpty': '阵容请看时间表', 'play.timetable': '时间表',
       'play.going': '今晚要去', 'play.goingOn': '取消要去', 'play.goingN': '{n} 人要去',
       'play.live': '正在播放', 'play.liveEmpty': '现在的 DJ 请在“今晚”页面查看', 'play.nextUp': '下一位 {dj}·{at}', 'play.tonight': '查看今晚',
-      'play.f2': '2F 嘻哈', 'play.f3': '3F EDM',
+      'play.f2': '2楼 嘻哈', 'play.f3': '3楼 EDM',
       'play.shelf': '游戏', 'play.sGuess': '猜猜 DJ', 'play.sShorts': 'GROOVE 短视频',
       'play.subGuess': '看提示猜 DJ', 'play.subCup': '选出最爱的 DJ 演出', 'play.subShorts': '滑动看短视频', 'play.subVote': '今日投票',
       'play.subChallenge': '本周照片主题', 'play.doneToday': '今日已完成', 'play.plus': '+{n}P',
-      'play.battle': '本周楼层对抗赛', 'play.myTeam': '我的队 {f}', 'play.team2': '2F 嘻哈队', 'play.team3': '3F EDM 队',
+      'play.battle': '本周楼层对抗赛', 'play.myTeam': '我的队 {f}', 'play.team2': '2楼 嘻哈队', 'play.team3': '3楼 EDM 队',
       'play.pickTeam': '选择队伍后，每玩一项就为你的楼层加 1 分', 'play.battleRule': '每玩一项 = 楼层 1 分·周一结算',
       'play.battleBar': '2F {a} 分，3F {b} 分', 'play.lastWin': '上周 {f} 获胜', 'play.lastTie': '上周平局',
       'play.won': '你所在的队赢了', 'play.contrib': '本周你贡献了 {n} 分',
@@ -354,7 +354,7 @@
         '><b aria-hidden="true">' + (item?.done ? '✓' : '·') + '</b><span>' + (ITEM[item?.key] ? t(ITEM[item.key]) : L.esc(item?.key)) +
         '<span class="sr-only"> ' + t(item?.done ? 'stateDone' : 'stateLeft') + '</span></span><small>' +
         (pts(item?.pts) ? L.esc(item.pts) + 'P' : '') + '</small></li>').join('') + '</ul>' +
-      (cleared ? (cleared && today.streak ? '<p class="pl-note">' + t('streak') + ' ' + t('days', { n: num(today.streak) }) + '</p>' : '')
+      (cleared ? (today.streak ? '<p class="pl-note">' + t('streak') + ' ' + t('days', { n: num(today.streak) }) + '</p>' : '')
         : bonus ? '<p class="pl-note">' + t('allNote', { n: bonus }) + '</p>' : '');
     const toasts = [];
     if (today.attended) toasts.push(raw('toastAttend', { n: num(today.attended.gained) }));
