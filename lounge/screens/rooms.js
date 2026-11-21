@@ -31,7 +31,27 @@
       entered: '오픈 대화방에 입장했어요.', roomMenu: '오픈 대화방 메뉴', messageMenu: '메시지 메뉴',
       guidelines: '이용 규칙', leave: '나가기', newMessages: '새 메시지 ↓', reply: '답장',
       replyTo: '{nick} 님에게 답장', cancelReply: '답장 취소', copyText: '복사',
-      copied: '메시지를 복사했어요.', copyFailed: '메시지를 복사할 수 없어요.'
+      copied: '메시지를 복사했어요.', copyFailed: '메시지를 복사할 수 없어요.',
+      // 오픈채팅 탭 (스위치 openchat 이 켜진 회원에게만 쓰는 문구)
+      ocTitle: '오픈채팅', ocIntro: '그루브에 온 사람만 들어오는 대화방이에요.', ocBack: '오픈채팅 목록으로',
+      ocRoomMenu: '오픈채팅 메뉴', ocEntered: '오픈채팅에 입장했어요.',
+      ocNamePlaza: '그루브 광장', ocNameMusic: '음악 톡', ocNameGlobal: 'Global Lounge', ocNameTonight: '오늘 밤',
+      ocAboutPlaza: '자유 대화', ocAboutMusic: '곡 정보·신청곡', ocAboutGlobal: 'English', ocAboutTonight: '오늘 밤 이야기',
+      ocHot: '지금 뜨는 방', ocOnline: '{n}명', ocUntil: '{at}까지', ocOpens: '{at} 오픈', ocTomorrow: '내일 {time}',
+      ocClosed: '닫혀 있어요', ocOpensNote: '열리면 알림으로 알려 드려요.', ocTranslateTag: '번역 가능',
+      ocAgoNow: '방금', ocAgoMin: '{n}분 전', ocAgoHour: '{n}시간 전', ocAgoDay: '{n}일 전', ocUnread: '안 읽은 글 {n}개',
+      consentTitle: '처음 들어올 때 한 번만', consent1: '연락처·광고·다른 업소 홍보는 가려져요.',
+      consent2: '신고된 글은 운영자가 확인하고, 이 방의 대화는 90일 보관한 뒤 지워요.', consentPolicy: '개인정보처리방침 보기 (새 탭)',
+      consent3: '규칙을 어기면 채팅이 24시간 → 7일 → 영구 정지돼요.', consentAgree: '동의하고 입장',
+      consentNeed: '이용 규칙에 동의하면 들어갈 수 있어요.', consentView: '이용 규칙 보기',
+      notifyOn: '알림 켬', notifyOff: '알림 끔',
+      notifyOnDone: '알림을 켰어요. @로 부르면 알려 드려요.', notifyOffDone: '이 방 알림을 껐어요.',
+      ocPin: '공지', ocMessage: '메시지 · @닉네임 부르기', ocMention: '@부르기', ocMentionHint: '입력칸에 @닉네임을 넣어요',
+      ocMenuTitle: '{nick} 님의 글', ocMenuMine: '내 글', ocReportHint: '3명이 신고하면 자동 가림', ocBlockHint: '서로 글이 안 보여요',
+      ocDmNote: '1:1 메시지는 서로 팔로우한 사이만 보낼 수 있어요.', ocCalled: '나를 부른 글',
+      threat: '폭력 위협', filming: '불법 촬영물', drugs: '마약',
+      banUntil: '채팅이 {at}까지 정지됐어요.', banForever: '채팅이 정지됐어요. 문의는 매장으로 해 주세요.',
+      banUnknown: '채팅이 정지됐어요.', banRead: '글은 계속 볼 수 있어요.'
     },
     en: {
       title: 'Open Chat', intro: 'Any signed-in member can join an open room.',
@@ -63,7 +83,26 @@
       entered: 'You joined Open Chat.', roomMenu: 'Open Chat menu', messageMenu: 'Message menu',
       guidelines: 'Room rules', leave: 'Leave', newMessages: 'New messages ↓', reply: 'Reply',
       replyTo: 'Reply to {nick}', cancelReply: 'Cancel reply', copyText: 'Copy',
-      copied: 'Message copied.', copyFailed: 'Could not copy the message.'
+      copied: 'Message copied.', copyFailed: 'Could not copy the message.',
+      ocTitle: 'Open Chat', ocIntro: 'Chat rooms just for people who have been to GROOVE.', ocBack: 'Back to Open Chat',
+      ocRoomMenu: 'Open Chat menu', ocEntered: 'You joined Open Chat.',
+      ocNamePlaza: 'Groove Plaza', ocNameMusic: 'Music Talk', ocNameGlobal: 'Global Lounge', ocNameTonight: 'Tonight',
+      ocAboutPlaza: 'Anything goes', ocAboutMusic: 'Tracks & requests', ocAboutGlobal: 'English', ocAboutTonight: 'Tonight at GROOVE',
+      ocHot: 'Hot right now', ocOnline: '{n} online', ocUntil: 'Until {at}', ocOpens: 'Opens {at}', ocTomorrow: '{time} tomorrow',
+      ocClosed: 'Closed', ocOpensNote: 'We’ll notify you when it opens.', ocTranslateTag: 'Translation',
+      ocAgoNow: 'Just now', ocAgoMin: '{n} min ago', ocAgoHour: '{n} hr ago', ocAgoDay: '{n} d ago', ocUnread: '{n} unread',
+      consentTitle: 'Just once, before you join', consent1: 'Contact details, ads, and promotion of other venues are hidden.',
+      consent2: 'Staff review reported messages, and chats in these rooms are kept for 90 days, then deleted.', consentPolicy: 'View the privacy notice (new tab)',
+      consent3: 'Breaking the rules suspends your chat for 24 hours, then 7 days, then permanently.', consentAgree: 'Agree and join',
+      consentNeed: 'Agree to the room rules to join.', consentView: 'View room rules',
+      notifyOn: 'Alerts on', notifyOff: 'Alerts off',
+      notifyOnDone: 'Alerts on. We’ll tell you when you’re @mentioned.', notifyOffDone: 'Alerts for this room are off.',
+      ocPin: 'Notice', ocMessage: 'Message · @nickname to mention', ocMention: '@Mention', ocMentionHint: 'Adds @nickname to your message',
+      ocMenuTitle: 'Message from {nick}', ocMenuMine: 'Your message', ocReportHint: 'Hidden after 3 reports', ocBlockHint: 'Hides each other’s messages',
+      ocDmNote: 'Direct messages are only for people who follow each other.', ocCalled: 'Mentions you',
+      threat: 'Threat of violence', filming: 'Illegal filming', drugs: 'Drugs',
+      banUntil: 'Your chat is suspended until {at}.', banForever: 'Your chat is suspended. Please contact the club.',
+      banUnknown: 'Your chat is suspended.', banRead: 'You can still read messages.'
     },
     ja: {
       historyExpired: '送信済みのメッセージは履歴から削除されました。',
@@ -82,7 +121,8 @@
   const esc = L.esc;
   const t = (key, vars) => L.t('rooms.' + key, vars);
   const e = (key, vars) => esc(t(key, vars));
-  const builtinNames = { '2F': 'name2F', '3F': 'name3F', english: 'nameEnglish' };
+  const builtinNames = { '2F': 'name2F', '3F': 'name3F', english: 'nameEnglish',
+    plaza: 'ocNamePlaza', music: 'ocNameMusic', global: 'ocNameGlobal', tonight: 'ocNameTonight' };
   const nameOf = room => {
     // Both server defaults predate the Open Chat name. Keep custom room titles intact.
     if (room.id === 'english' && room.en === 'English Lounge' &&
@@ -95,6 +135,152 @@
   const btn = (key, extra = '') => '<button type="button" class="btn" ' + extra + '>' + e(key) + '</button>';
   const back = () => '<a class="shell-link" href="#/rooms">' + e('back') + '</a>';
   let active;
+
+  // ── 오픈채팅 탭 (스위치 openchat). 꺼져 있으면 아래 도우미는 하나도 쓰이지 않는다. ──
+  const ocAbout = { plaza: 'ocAboutPlaza', music: 'ocAboutMusic', global: 'ocAboutGlobal', tonight: 'ocAboutTonight' };
+  const nickChars = '가-힣A-Za-z0-9._';
+  // 서버(@호출 알림)와 같은 기준: 글자·숫자 바로 뒤의 @는 호출이 아니다. 아주 오래된 브라우저는 \p 를 몰라 좁은 기준으로 대신한다.
+  let mentionPattern;
+  try { mentionPattern = new RegExp('(^|[^\\p{L}\\p{N}._%+@-])@([' + nickChars + ']{2,12})(?![A-Za-z0-9_])', 'gu'); }
+  catch { mentionPattern = new RegExp('(^|[^' + nickChars + '%+@-])@([' + nickChars + ']{2,12})(?![A-Za-z0-9_])', 'g'); }
+  const chevron = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+  const bell = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 6-2 7-3 8h18c-1-1-3-2-3-8M10 20a2 2 0 0 0 4 0"/><path class="oc-bell-off" d="M4 3l16 18"/></svg>';
+  let ocBan = null, ocBanFor = null, ocReadPending = null, listStop = null;
+
+  const clockTime = ms => new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(ms);
+  const seoulDay = ms => Math.floor((ms + 9 * 3_600_000) / 86_400_000);
+  const monthDay = ms => new Intl.DateTimeFormat(L.lang, { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric' }).format(ms);
+  // '18:00' · '내일 12:00' · '11월 29일 18:00' (한국 시간)
+  function when(ms, now = Date.now()) {
+    const days = seoulDay(ms) - seoulDay(now);
+    return days === 0 ? clockTime(ms) : days === 1 ? t('ocTomorrow', { time: clockTime(ms) }) : monthDay(ms) + ' ' + clockTime(ms);
+  }
+  function ago(ms, now = Date.now()) {
+    const minutes = Math.floor(Math.max(0, now - ms) / 60_000);
+    if (minutes < 1) return t('ocAgoNow');
+    if (minutes < 60) return t('ocAgoMin', { n: minutes });
+    return minutes < 1440 ? t('ocAgoHour', { n: Math.floor(minutes / 60) }) : t('ocAgoDay', { n: Math.floor(minutes / 1440) });
+  }
+  const liveBan = ban => ban && (ban.until == null || ban.until === 0 || ban.until > Date.now()) ? ban : null;
+  const banText = ban => ban.until > 0 ? t('banUntil', { at: monthDay(ban.until) + ' ' + clockTime(ban.until) }) + ' ' + t('banRead')
+    : t(ban.until === 0 ? 'banForever' : 'banUnknown');
+  const stamp = value => Number.isFinite(value) && value > 0 ? value : 0;
+
+  function consentRules() {
+    // 대화 90일 보관은 개인정보처리방침의 보관기간 항목에 적혀 있다.
+    const lang = ['ko', 'en', 'ja', 'zh'].includes(L.lang) ? L.lang : 'en';
+    return '<ul class="oc-rules">' + ['consent1', 'consent2', 'consent3'].map(key => '<li>' + e(key) + '</li>').join('') + '</ul>' +
+      '<a class="shell-link oc-policy" href="/lounge/policy.html#' + lang + '-retention" target="_blank" rel="noopener noreferrer">' + e('consentPolicy') + '</a>';
+  }
+
+  // 입장 동의 창. 동의하면 done() — 닫으면 아무 일도 없다.
+  function askConsent(version, done) {
+    const panel = L.sheet('<h2>' + e('consentTitle') + '</h2>' + consentRules() +
+      '<p class="shell-error" role="status"></p><div class="oc-sheet-actions"><button type="button" class="btn btn-hot" data-agree>' +
+      e('consentAgree') + '</button><button type="button" class="btn" data-cancel>' + esc(L.t('core.close')) + '</button></div>');
+    const agree = panel.querySelector('[data-agree]');
+    panel.querySelector('[data-cancel]').onclick = L.closeSheet;
+    agree.onclick = async () => {
+      agree.disabled = true;
+      const result = await L.api('oc_agree', { version: Number.isSafeInteger(version) ? version : 1 });
+      if (!panel.isConnected) return;
+      agree.disabled = false;
+      if (result.error) { panel.querySelector('[role=status]').textContent = problem(result.error); return; }
+      L.closeSheet();
+      done();
+    };
+  }
+
+  function ocCard(room, hot, result, flags, now) {
+    const enter = room.open === true && !room.kicked;
+    const timed = room.kind === 'timed';
+    const count = Number.isSafeInteger(room.unread) && room.unread > 0 ? room.unread : 0;
+    const tag = (kind, text) => '<span class="oc-tag oc-tag-' + kind + '">' + esc(text) + '</span>';
+    const until = enter && timed && stamp(room.closesAt) ? t('ocUntil', { at: when(room.closesAt, now) }) : '';
+    const about = Object.hasOwn(ocAbout, room.id) ? t(ocAbout[room.id]) : '';
+    const unread = enter && count ? '<span class="oc-unread"><span aria-hidden="true">' + (count >= 99 ? '99+' : count) +
+      '</span><span class="sr-only">' + e('ocUnread', { n: count }) + '</span></span>' : '';
+    const people = '<span class="oc-people"><i class="oc-dot" aria-hidden="true"></i>' +
+      esc([t('ocOnline', { n: stamp(room.online) }), hot ? '' : until || about].filter(Boolean).join(' · ')) + '</span>';
+    const last = enter && stamp(room.lastAt) ? '<span class="oc-ago">' + esc(ago(room.lastAt, now)) + '</span>' : '';
+    const name = '<strong class="oc-name">' + esc(nameOf(room)) + '</strong>';
+    if (!enter) {
+      const opens = !room.kicked && timed && stamp(room.opensAt) > now ? t('ocOpens', { at: when(room.opensAt, now) }) : '';
+      return '<div class="oc-card oc-off" data-oc-room="' + esc(room.id) + '" aria-disabled="true"><span class="oc-row">' + name +
+        tag('off', room.kicked ? t('ocClosed') : opens || t('ocClosed')) + '</span><span class="oc-row oc-sub"><span>' +
+        esc(room.kicked ? t('kicked') : opens && result.consent === true && room.notify !== false ? t('ocOpensNote') : about) + '</span></span></div>';
+    }
+    const top = hot ? '<span class="oc-row">' + tag('hot', t('ocHot')) + (until ? tag('time', until) : '') + '</span>' : '';
+    const preview = hot && Array.isArray(room.preview) && room.preview.length ? '<span class="oc-preview">' +
+      room.preview.slice(-2).map(line => '<span><b>' + L.whoTag(line) + '</b> ' + esc(line?.text) + '</span>').join('') + '</span>' : '';
+    const translate = !hot && room.id === 'global' && flags.translate === true ? tag('live', t('ocTranslateTag')) : '';
+    return '<a class="oc-card' + (hot ? ' oc-hot' : '') + '" href="#/room/' + encodeURIComponent(room.id) + '" data-oc-room="' + esc(room.id) + '">' +
+      top + '<span class="oc-row">' + name + (hot ? unread + people : translate + unread) + '</span>' +
+      (hot ? preview : '<span class="oc-row oc-sub">' + people + last + '</span>') + '</a>';
+  }
+
+  function ocListScreen(root, flags, first) {
+    const section = root.querySelector('section');
+    section.classList.add('oc-page');
+    section.innerHTML = '<h1>' + e('ocTitle') + '</h1><p class="muted">' + e('ocIntro') + '</p>' +
+      '<p class="oc-ban" data-oc-ban role="status" hidden></p><ul class="oc-list"></ul>';
+    const list = section.querySelector('ul');
+    const banNote = section.querySelector('[data-oc-ban]');
+    let state = first, stopped = false, busy = false, markup, loadedAt = Date.now();
+
+    function paint() {
+      const now = Date.now();
+      const rooms = Array.isArray(state.rooms) ? state.rooms : [];
+      const hot = rooms.find(room => room.hot === true && room.open === true && !room.kicked);
+      const next = (hot ? [hot, ...rooms.filter(room => room !== hot)] : rooms)
+        .map(room => '<li>' + ocCard(room, room === hot, state, flags, now) + '</li>').join('');
+      if (next !== markup) {
+        const focused = list.contains(document.activeElement) && document.activeElement.dataset.ocRoom;
+        list.innerHTML = markup = next;
+        if (focused) list.querySelector('a[data-oc-room="' + CSS.escape(focused) + '"]')?.focus({ preventScroll: true });
+      }
+      ocBan = state.chatBan || null;
+      ocBanFor = L.me?.nick;
+      const ban = liveBan(ocBan);
+      banNote.hidden = !ban;
+      banNote.textContent = ban ? banText(ban) : '';
+    }
+
+    async function reload() {
+      if (stopped || busy || document.visibilityState === 'hidden') return;
+      busy = true;
+      const next = await L.api('rooms');
+      busy = false;
+      if (stopped || !root.isConnected || next.error) return;
+      // 스위치가 꺼졌으면 기존 화면으로 다시 그린다.
+      if (next.oc !== true) { L.route(); return; }
+      loadedAt = Date.now();
+      state = next;
+      paint();
+    }
+    const revisit = () => { if (Date.now() - loadedAt >= 5000) reload(); };
+
+    list.onclick = event => {
+      const link = event.target.closest('a[data-oc-room]');
+      if (!link || state.consent !== false) return;
+      event.preventDefault();
+      askConsent(state.consentVersion, () => {
+        state = { ...state, consent: true };
+        L.go('room/' + encodeURIComponent(link.dataset.ocRoom));
+      });
+    };
+    document.addEventListener('visibilitychange', revisit);
+    window.addEventListener('online', revisit);
+    // 방 안 화면이 실시간 연결 중에 30초마다 다시 받는 것과 같은 간격.
+    const timer = setInterval(reload, 30_000 + Math.random() * 5000);
+    listStop = () => {
+      stopped = true;
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', revisit);
+      window.removeEventListener('online', revisit);
+    };
+    paint();
+  }
 
   const styles = `<style>
     .rooms-list,.rooms-page,.rooms-chat,.rooms-vote-list{display:grid;gap:10px}
@@ -156,7 +342,8 @@
     if (error === 'busy') return t(type === 'safety' ? 'safetyBusy' : type === 'translate' ? 'translateBusy' : 'busy');
     const key = { kicked: 'kicked', room_closed: 'roomClosed', closed: 'roomClosed', dup: 'dup', not_found: 'missing',
       text: 'text', vote_closed: 'voteClosed', staff: 'staff', checkin: 'checkin', floor: 'floorError',
-      seat: 'seatPlainError', history_expired: 'historyExpired', network: 'network' }[error];
+      seat: 'seatPlainError', history_expired: 'historyExpired', network: 'network',
+      consent: 'consentNeed', chat_banned: 'banUnknown' }[error];
     return key ? t(key) : L.t('core.unavailable');
   }
 
@@ -183,14 +370,24 @@
   }
 
   L.screen('rooms', { nav: 'rooms', title: 'rooms.title', async render(root) {
-    if (!await config(root, t('title'), 'rooms') || !root.isConnected) return;
+    const flags = await config(root, t(L.open('openchat') ? 'ocTitle' : 'title'), 'rooms');
+    if (!flags || !root.isConnected) return;
+    const oc = flags.openchat === true;
+    if (oc) document.title = t('ocTitle');
     if (!L.me) return joinPrompt(root);
+    if (oc && ocReadPending) {
+      // 방에서 막 나왔으면 '읽음' 처리가 끝난 뒤에 목록을 받는다 (안 읽은 수가 남아 보이지 않게).
+      await Promise.race([ocReadPending, new Promise(resolve => setTimeout(resolve, 1500))]);
+      ocReadPending = null;
+      if (!root.isConnected) return;
+    }
     const result = await L.api('rooms');
     if (!root.isConnected) return;
     if (result.error) {
       root.querySelector('[role=status]').textContent = problem(result.error);
       return;
     }
+    if (oc && result.oc === true) return ocListScreen(root, flags, result);
     const section = root.querySelector('section');
     section.insertAdjacentHTML('beforeend', '<p class="muted">' + e('intro') + '</p><ul class="rooms-list">' +
       result.rooms.map(room => '<li><a class="shell-card" href="#/room/' + encodeURIComponent(room.id) + '">' +
@@ -201,11 +398,12 @@
         (room.kicked ? e('kicked') : e(room.open ? 'open' : 'closed') + (room.online ? '<span>' + e('people', { n: room.online }) + '</span>' : '')) +
         '</small></a></li>').join('') + '</ul><p class="shell-card muted">' + e('hours') + '</p>');
     section.querySelector('[role=status]').remove();
-  } });
+  }, leave() { listStop?.(); listStop = null; } });
 
-  function report(message) {
+  function report(message, oc) {
+    const reasons = oc ? ['abuse', 'ad', 'sexual', 'threat', 'filming', 'drugs', 'illegal', 'etc'] : ['abuse', 'ad', 'sexual', 'illegal', 'etc'];
     const panel = L.sheet('<form class="shell-form"><h2>' + e('reportTitle') + '</h2><label class="sr-only" for="room-reason">' +
-      e('report') + '</label><select id="room-reason">' + ['abuse', 'ad', 'sexual', 'illegal', 'etc']
+      e('report') + '</label><select id="room-reason">' + reasons
         .map(reason => '<option value="' + reason + '">' + e(reason) + '</option>').join('') +
       '</select><p class="shell-error" role="status"></p><div class="shell-actions"><button class="btn btn-hot">' + e('report') +
       '</button><button type="button" class="btn">' + esc(L.t('core.close')) + '</button></div></form>');
@@ -258,21 +456,29 @@
   }
 
   function chatScreen(root, id, flags) {
+    // oc: 오픈채팅이 켜진 회원. 꺼져 있으면 아래 화면은 예전과 한 글자도 다르지 않다.
+    const oc = flags.openchat === true;
+    const words = oc ? { title: 'ocTitle', back: 'ocBack', roomMenu: 'ocRoomMenu', entered: 'ocEntered', pin: 'ocPin', message: 'ocMessage' }
+      : { title: 'title', back: 'back', roomMenu: 'roomMenu', entered: 'entered', pin: 'pin', message: 'message' };
     const section = root.querySelector('section');
     section.classList.add('rooms-conversation');
-    section.innerHTML = '<header class="rooms-header"><a class="btn" href="#/rooms" aria-label="' + e('back') +
-      '">‹</a><div class="rooms-heading"><h1>' + e('title') + '</h1><p data-room-state class="muted" aria-live="polite"></p></div>' +
-      '<button class="btn" type="button" data-room-menu aria-label="' + e('roomMenu') + '">⋯</button></header>' +
+    if (oc) section.classList.add('oc-room');
+    section.innerHTML = '<header class="rooms-header"><a class="btn" href="#/rooms" aria-label="' + e(words.back) +
+      '">' + (oc ? chevron : '‹') + '</a><div class="rooms-heading"><h1>' + e(words.title) + '</h1><p data-room-state class="muted" aria-live="polite"></p></div>' +
+      (oc ? '<button class="btn oc-bell" type="button" data-oc-notify aria-pressed="true" hidden>' +
+        bell + '<span></span></button>' : '') +
+      '<button class="btn" type="button" data-room-menu aria-label="' + e(words.roomMenu) + '">⋯</button></header>' +
       '<p data-live-status class="rooms-meta-line" role="status" hidden></p><aside class="rooms-pin" data-pin hidden></aside>' +
       '<div class="rooms-log"><div data-vote></div>' + btn('older', 'data-older hidden') +
       '<p class="rooms-meta-line" data-empty hidden>' + e('empty') + '</p>' +
-      '<ol class="rooms-chat" aria-label="' + e('title') + '"></ol></div>' +
+      '<ol class="rooms-chat" aria-label="' + e(words.title) + '"></ol></div>' +
       '<div class="rooms-footer">' + btn('newMessages', 'data-latest hidden') + btn('retry', 'data-retry hidden') +
       (flags.translate ? '<p class="rooms-meta-line" data-translation-notice aria-live="polite" hidden></p>' : '') +
       '<div class="rooms-reply" data-reply-draft hidden><div class="rooms-quote" data-reply-preview></div>' +
       '<button class="btn" type="button" data-reply-cancel aria-label="' + e('cancelReply') + '">×</button></div>' +
+      (oc ? '<p class="oc-ban" data-oc-ban role="status" hidden></p>' : '') +
       '<form class="rooms-compose" hidden><label for="room-message" class="sr-only">' + e('message') +
-      '</label><textarea rows="1" id="room-message" placeholder="' + e('message') +
+      '</label><textarea rows="1" id="room-message" placeholder="' + e(words.message) +
       '" maxlength="1000" enterkeyhint="send" required></textarea><button class="btn btn-hot rooms-send" aria-label="' + e('send') +
       '"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></button></form>' +
       '<p role="status" class="shell-error"></p></div>';
@@ -296,7 +502,8 @@
     const translations = new Map();
     const translating = new Set();
     const replyTargets = new Map();
-    const time = new Intl.DateTimeFormat(L.lang, { timeZone: 'Asia/Seoul', hour: 'numeric', minute: '2-digit' });
+    const time = new Intl.DateTimeFormat(L.lang, oc ? { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
+      : { timeZone: 'Asia/Seoul', hour: 'numeric', minute: '2-digit' });
     const date = new Intl.DateTimeFormat(L.lang, { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' });
     let socket, pending, timer, reconnectTimer, refreshTimer, data, pageCursor, wantedCursor, request = 0, stopped = false, syncing = false, refreshAgain = false;
     let sending = false;
@@ -304,12 +511,106 @@
     let reconnectDelay = 1000;
     let live = false, lastSnapshot = 0, snapshotMessages;
     let replying, longPress, pressed, suppressClick = false, layoutObserver, unread = false, enteredAt;
+    // 오픈채팅: 채팅 정지, 입장 동의, 방 알림, 읽음 처리
+    const banNote = query('[data-oc-ban]');
+    const notify = query('[data-oc-notify]');
+    let ban = oc && ocBanFor === L.me?.nick ? ocBan : null, needConsent, consentShown = false, notifyBusy = false, seenSeq = 0, markedSeq = 0, readTimer;
+
+    function paintBan() {
+      if (!oc) return;
+      const current = liveBan(ban);
+      banNote.hidden = !current || !data?.room.open;
+      banNote.textContent = current ? banText(current) : '';
+      if (data) form.hidden = !data.room.open || Boolean(current);
+    }
+    async function setBan(next) {
+      ban = ocBan = next;
+      ocBanFor = L.me?.nick;
+      paintBan();
+      if (next.until != null) return;
+      // 실시간 연결의 오류에는 풀리는 시각이 없다. 목록 응답에서 한 번 받아 온다.
+      const result = await L.api('rooms');
+      if (stopped || ban !== next) return;
+      if (result.chatBan) ban = ocBan = result.chatBan;
+      paintBan();
+    }
+    function paintNotify(on) {
+      notify.hidden = false;
+      notify.setAttribute('aria-pressed', String(on));
+      notify.querySelector('span').textContent = t(on ? 'notifyOn' : 'notifyOff');
+    }
+    if (oc) notify.onclick = async () => {
+      if (notifyBusy) return;
+      const on = notify.getAttribute('aria-pressed') !== 'true';
+      notifyBusy = true;
+      paintNotify(on);
+      const result = await L.api('oc_notify', { id, on });
+      notifyBusy = false;
+      if (stopped) return;
+      if (result.error) { paintNotify(!on); L.toast(problem(result.error)); return; }
+      const saved = typeof result.notify === 'boolean' ? result.notify : on;
+      if (data) data = { ...data, room: { ...data.room, notify: saved } };
+      paintNotify(saved);
+      L.toast(t(saved ? 'notifyOnDone' : 'notifyOffDone'));
+    };
+    function stateText(room) {
+      const timed = room.kind === 'timed';
+      if (room.open) return [t('ocOnline', { n: stamp(room.online) }), timed && stamp(room.closesAt) ? t('ocUntil', { at: when(room.closesAt) }) : '']
+        .filter(Boolean).join(' · ');
+      return [t('ocClosed'), timed && stamp(room.opensAt) > Date.now() ? t('ocOpens', { at: when(room.opensAt) }) : ''].filter(Boolean).join(' · ');
+    }
+    // 글 안의 @닉네임을 눈에 띄게. 나를 부른 글이면 called.
+    function mentions(text) {
+      const self = String(L.me?.nick || '').toLowerCase();
+      let html = '', last = 0, called = false;
+      for (const match of String(text).matchAll(mentionPattern)) {
+        const start = match.index + match[1].length;
+        const token = match[2];
+        // 서버와 같은 기준: 내 닉네임 뒤에 한글이 붙어도 나를 부른 것(@지훈님), 영문·숫자·밑줄이나 '.글자'가 이어지면 다른 이름(@지훈2).
+        const mine = Boolean(self) && token.toLowerCase().startsWith(self) &&
+          !/^(?:[A-Za-z0-9_]|\.[A-Za-z0-9가-힣])/.test(text.slice(start + 1 + self.length, start + 3 + self.length));
+        const length = mine ? self.length : token.length;
+        html += esc(text.slice(last, start)) + '<span class="oc-at"' + (mine ? ' data-me="true"' : '') + '>@' + esc(token.slice(0, length)) + '</span>';
+        last = start + 1 + length;
+        called ||= mine;
+      }
+      return { html: html + esc(String(text).slice(last)), called };
+    }
+    // 읽음 처리: 첫 장을 받으면 서버가 읽음으로 표시한다. 그 뒤 실시간으로 받아 본 글은 묶어서 한 번, 나갈 때 한 번 더 알린다.
+    function flushRead() {
+      clearTimeout(readTimer);
+      readTimer = null;
+      if (!oc || seenSeq <= markedSeq) return null;
+      markedSeq = seenSeq;
+      return L.api('oc_read', { id });
+    }
+    function noteSeen() {
+      if (!oc || !data || pageCursor != null || document.visibilityState === 'hidden' || !nearEnd()) return;
+      seenSeq = Math.max(seenSeq, data.messages.at(-1)?.seq ?? 0);
+      if (seenSeq > markedSeq && !readTimer) readTimer = setTimeout(flushRead, 30_000);
+    }
+    function consentGate(version) {
+      needConsent = Number.isSafeInteger(version) ? version : 1;
+      retry.textContent = t('consentView');
+      if (consentShown) return;
+      consentShown = true;
+      showConsent();
+    }
+    function showConsent() {
+      askConsent(needConsent, () => {
+        needConsent = null;
+        retry.textContent = t('retry');
+        status.textContent = '';
+        refresh();
+      });
+    }
 
     const nearEnd = () => log.scrollHeight - log.scrollTop - log.clientHeight < 32;
     function jumpToEnd() {
       log.scrollTop = log.scrollHeight;
       unread = false;
       latest.hidden = pageCursor == null;
+      noteSeen();
     }
 
     function adjustTop() {
@@ -327,12 +628,13 @@
     }
     query('[data-reply-cancel]').onclick = () => { selectReply(); input.focus(); };
     query('[data-room-menu]').onclick = () => {
-      const panel = L.sheet('<h2>' + e('roomMenu') + '</h2><div class="rooms-actions">' +
+      const panel = L.sheet('<h2>' + e(words.roomMenu) + '</h2><div class="rooms-actions">' +
         (flags.safety ? '<a class="btn" href="#/safety">' + e('safety') + '</a>' : '') +
         btn('guidelines', 'data-rules') + '<a class="btn" href="#/rooms">' + e('leave') + '</a></div>');
       panel.querySelector('[data-rules]').onclick = () => {
-        const rules = L.sheet('<h2>' + e('guidelines') + '</h2><p>' + e('rules') + '</p><p>' + e('hours') +
-          '</p><div class="rooms-actions"><button class="btn" type="button">' + esc(L.t('core.close')) + '</button></div>');
+        const rules = L.sheet('<h2>' + e('guidelines') + '</h2>' + (oc ? consentRules() + '<p class="muted oc-note">' + e('ocDmNote') + '</p>'
+          : '<p>' + e('rules') + '</p><p>' + e('hours') + '</p>') +
+          '<div class="rooms-actions"><button class="btn" type="button">' + esc(L.t('core.close')) + '</button></div>');
         rules.querySelector('button').onclick = L.closeSheet;
       };
     };
@@ -429,7 +731,7 @@
     function messagesMarkup(messages) {
       const byId = new Map(messages.map(message => [message.id, message]));
       const sameSender = (first, second) => second && first.mine === second.mine && first.nick === second.nick;
-      const entry = '<li class="rooms-meta-line">' + e('entered') + '</li>';
+      const entry = '<li class="rooms-meta-line">' + e(words.entered) + '</li>';
       let result = '';
       let previousDay;
       let entryShown = pageCursor != null;
@@ -447,11 +749,13 @@
           (photo || esc([...message.nick][0] || 'G')) + '</span><span class="rooms-author">' + L.whoTag(message) + '</span>' : groupStart && message.tag
             ? '<span class="rooms-author rooms-own-author">' + L.whoTag(message) + '</span>' : '';
         const quote = byId.get(replyTargets.get(message.id));
+        const body = oc ? mentions(message.text) : null;
         result += '<li data-message="' + esc(message.id) + '" data-mine="' + !!message.mine +
-          '" data-group-start="' + groupStart + '">' + author +
+          '" data-group-start="' + groupStart + '"' + (body?.called ? ' data-oc-called="true"' : '') + '>' + author +
           '<div class="rooms-line"><button type="button" class="rooms-bubble" data-message-menu>' +
           (quote ? '<span class="rooms-quote">' + L.whoTag(quote) + ' · ' + esc(quote.text) + '</span>' : '') +
-          '<span>' + esc(message.text) + '</span><span class="sr-only"> · ' + e('messageMenu') + '</span></button>' +
+          '<span>' + (body ? body.html : esc(message.text)) + '</span>' + (body?.called ? '<span class="sr-only"> · ' + e('ocCalled') + '</span>' : '') +
+          '<span class="sr-only"> · ' + e('messageMenu') + '</span></button>' +
           (showTime ? '<small class="muted rooms-time">' + esc(time.format(message.at)) + '</small>' : '') + '</div>' +
           '<small class="muted" data-translation>' + esc(translations.get(message.id) || '') + '</small></li>';
       });
@@ -465,11 +769,17 @@
       if (enteredAt == null && next.room.open) enteredAt = next.messages.at(-1)?.at ?? 0;
       pageCursor = cursor;
       query('h1').textContent = nameOf(next.room);
-      query('[data-room-state]').textContent =
-        t(next.room.open ? 'open' : 'closed') + ' · ' + t('people', { n: next.room.online });
+      const roomState = query('[data-room-state]');
+      roomState.textContent = oc ? stateText(next.room)
+        : t(next.room.open ? 'open' : 'closed') + ' · ' + t('people', { n: next.room.online });
+      if (oc) {
+        roomState.dataset.open = next.room.open === true;
+        if (!notifyBusy) paintNotify(next.room.notify !== false);
+        document.title = nameOf(next.room);
+      }
       const pin = query('[data-pin]');
       pin.hidden = !next.pin;
-      pin.innerHTML = next.pin ? '<strong>' + e('pin') + '</strong><span class="shell-bio">' + esc(next.pin.text) + '</span>' : '';
+      pin.innerHTML = next.pin ? '<strong>' + e(words.pin) + '</strong><span class="shell-bio">' + esc(next.pin.text) + '</span>' : '';
       const vote = query('[data-vote]');
       if (JSON.stringify(data?.vote) !== JSON.stringify(next.vote) || data?.room.open !== next.room.open) {
         vote.innerHTML = voteMarkup(next.vote, next.room.open);
@@ -498,6 +808,8 @@
       if (cursor == null && (firstPaint || wasNearEnd)) jumpToEnd();
       if (!next.room.open) disconnect();
       data = next;
+      paintBan();
+      noteSeen();
       connect();
     }
 
@@ -535,6 +847,12 @@
       if (!next.error) {
         lastSnapshot = Date.now();
         if (!retry.hidden) status.textContent = '';
+        if (oc) {
+          if (needConsent) { needConsent = null; retry.textContent = t('retry'); }
+          if (next.chatBan !== undefined) ban = ocBan = next.chatBan;
+          // 첫 장을 받으면 서버가 그 방을 읽은 것으로 표시한다.
+          if (before == null) markedSeq = Math.max(markedSeq, next.messages.at(-1)?.seq ?? 0);
+        }
         paint(before == null && next.room.open ? mergeMessages(next, incoming) : next, before);
         return;
       }
@@ -550,6 +868,7 @@
       }
       status.textContent = problem(next.error);
       retry.hidden = false;
+      if (oc && next.error === 'consent') consentGate(next.version);
     }
 
     async function refresh() {
@@ -578,7 +897,11 @@
     older.onclick = () => showPage(data.before);
     latest.onclick = () => pageCursor == null ? jumpToEnd() : showPage(undefined);
     log.onscroll = () => { if (pageCursor == null && unread && nearEnd()) jumpToEnd(); };
-    retry.onclick = () => { status.textContent = ''; refresh(); };
+    retry.onclick = () => {
+      if (needConsent) return showConsent();
+      status.textContent = '';
+      refresh();
+    };
     async function translateMessage(message) {
       if (translations.has(message.id) || translating.has(message.id)) return;
       const notice = query('[data-translation-notice]');
@@ -602,7 +925,16 @@
       const row = target.closest('[data-message]');
       const message = data?.messages.find(item => item.id === row?.dataset.message);
       if (!message) return;
-      const panel = L.sheet('<h2>' + e('messageMenu') + '</h2><div class="rooms-actions">' +
+      const row2 = (key, attribute, hint, danger) => '<button type="button" class="btn oc-menu-row' + (danger ? ' oc-bad' : '') + '" ' + attribute +
+        '><span>' + e(key) + '</span>' + (hint ? '<small class="muted">' + e(hint) + '</small>' : '') + '</button>';
+      const canMention = !message.mine && data.room.open && !form.hidden && new RegExp('^[' + nickChars + ']{2,12}$').test(message.nick);
+      const panel = L.sheet(oc ? '<h2>' + (message.mine ? e('ocMenuMine') : e('ocMenuTitle', { nick: message.nick })) + '</h2><div class="oc-menu">' +
+        (flags.translate ? row2(translating.has(message.id) ? 'translating' : 'translate', 'data-translate' + (translating.has(message.id) ? ' disabled' : '')) : '') +
+        (canMention ? row2('ocMention', 'data-mention', 'ocMentionHint') : '') + row2('copyText', 'data-copy') +
+        (message.mine ? '' : row2('report', 'data-report', 'ocReportHint', true) + row2('block', 'data-block', 'ocBlockHint', true)) +
+        '<button class="btn" type="button" data-dismiss>' + esc(L.t('core.close')) + '</button></div>' +
+        (message.mine ? '' : '<p class="muted oc-note">' + e('ocDmNote') + '</p>')
+        : '<h2>' + e('messageMenu') + '</h2><div class="rooms-actions">' +
         (data.room.open ? btn('reply', 'data-reply') : '') + btn('copyText', 'data-copy') +
         (flags.translate ? btn(translating.has(message.id) ? 'translating' : 'translate',
           'data-translate' + (translating.has(message.id) ? ' disabled' : '')) : '') +
@@ -611,9 +943,14 @@
       panel.onclick = async event => {
         const button = event.target.closest('button');
         if (!button) return;
-        if (button.hasAttribute('data-report')) return report(message);
+        if (button.hasAttribute('data-report')) return report(message, oc);
         if (button.hasAttribute('data-block')) return block(message, refresh);
         L.closeSheet();
+        if (button.hasAttribute('data-mention')) {
+          const draft = input.value;
+          input.value = draft + (draft && !/\s$/.test(draft) ? ' ' : '') + '@' + message.nick + ' ';
+          input.focus();
+        }
         if (button.hasAttribute('data-reply')) { selectReply(message); input.focus(); }
         if (button.hasAttribute('data-translate')) await translateMessage(message);
         if (button.hasAttribute('data-copy')) {
@@ -687,6 +1024,11 @@
       result ??= await L.api('room_send', { id, text, nonce });
       if (stopped) return;
       sending = submit.disabled = false;
+      if (oc && result.error === 'chat_banned') {
+        // 쓰던 글은 입력칸에 그대로 둔다. 안내는 입력칸 자리에 보인다.
+        setBan({ until: Number.isFinite(result.until) ? result.until : null });
+        return;
+      }
       if (result.error && result.error !== 'history_expired') {
         status.textContent = problem(result.error);
         await refresh();
@@ -707,7 +1049,13 @@
       if (!stopped) jumpToEnd();
     };
     function refreshIfVisible() {
+      if (needConsent) return;
       if (document.visibilityState !== 'hidden' && (!live || Date.now() - lastSnapshot >= 30_000)) scheduleRefresh();
+    }
+    // 오픈채팅: 화면을 가리면 지금까지 본 글을 읽음으로, 다시 보면 새로 본 글을 표시.
+    function readOnVisibility() {
+      if (document.visibilityState === 'hidden') flushRead();
+      else noteSeen();
     }
 
     window.addEventListener('online', scheduleRefresh);
@@ -722,8 +1070,17 @@
     }
     adjustTop();
     document.addEventListener('visibilitychange', refreshIfVisible);
+    if (oc) {
+      document.addEventListener('visibilitychange', readOnVisibility);
+      log.addEventListener('scroll', noteSeen, { passive: true });
+    }
     timer = setInterval(refreshIfVisible, 4500 + Math.random() * 1000);
     active = () => {
+      if (oc) {
+        // 나갈 때 한 번: 목록이 이 요청이 끝난 뒤에 안 읽은 수를 받는다.
+        ocReadPending = flushRead();
+        document.removeEventListener('visibilitychange', readOnVisibility);
+      }
       stopped = true;
       clearInterval(timer);
       clearTimeout(refreshTimer);
@@ -740,8 +1097,9 @@
   }
 
   L.screen('room', { nav: 'rooms', title: 'rooms.title', async render(root, { id }) {
-    const flags = await config(root, t('title'), 'rooms');
+    const flags = await config(root, t(L.open('openchat') ? 'ocTitle' : 'title'), 'rooms');
     if (!flags || !root.isConnected) return;
+    if (flags.openchat === true) document.title = t('ocTitle');
     if (!L.me) return joinPrompt(root);
     return chatScreen(root, id, flags);
   }, leave() { active?.(); active = null; } });
