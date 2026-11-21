@@ -3913,6 +3913,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         '<b>📍 어디로?</b>: 호출 버튼을 누르면 <b>어디로 오라고 할까요?</b> → <b>입구 · 2층 카운터 · 3층 바</b> 중 하나 → 받는 사람 화면에 <b>📍 ○○로 와 주세요</b>',
         '<b>받는 사람</b>: 내 차례면 <b>화면 가득</b> 호출 카드 + 진동·알림 (빨간 화면 · 🍋 섭레콜은 주황) · 남은 초·층·인원·메모가 보여요',
         '<b>받을게요 · 지금 갈게요</b> → <b>✅ 받았어요</b> + 갈 곳 표시 · 🆕 순번·👤 지정은 <b>못 받아요 · 넘기기</b>도 돼요 · 시간이 지나면 다음 사람에게 자동으로 넘어가요',
+        '<b>지금 못 가요</b>(🙋 안내·🍋 섭레콜): 손님 응대·입력 중이라 못 갈 때 → <b>나만 그 호출에서 빠져요</b> (카드·폰 알림이 닫히고, 남은 사람이 없으면 부른 사람에게 바로 알려요) · 테이블 창을 열어 뒀거나 글을 쓰는 중에 온 호출은 <b>아래 작은 띠</b>로 떠요',
         '<b>나가기</b>: 🙋 안내·🍋 섭레콜은 큰 화면만 닫히고 아래 작은 카드로 남아요 (시간 안엔 받을 수 있어요) · 🆕 순번·👤 지정은 나가기 = 넘기기',
         '경호팀 화면에 누구에게 갔는지·몇 초 남았는지·다음 차례가 보여요 · 부르는 중엔 <b>취소</b>(두 번) · 아무도 안 받으면 <b>응답 없음</b>(⚠️ 아무도 안 받았어요)으로 알려 주고 <b>다시 부르기</b> 버튼',
         '안내·순번 호출은 <b>💬 테이블 대화</b>에 한 줄로 올라가요. 순번은 다음 사람으로 넘어갈 때 차례가 바뀌고, 두 호출 모두 받으면 <b>✅ @이름 받음</b>이 표시돼요',
@@ -5053,7 +5054,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       (notices || []).forEach(function (notice) { if (notice.data?.ref === 'gate:' + c.id) notice.close(); });
     }).catch(function () {});
   }
-  function gateOfferAction(c, take) {
+  function gateOfferAction(c, take, no) {   // no: 🙅 지금 못 가요 (동시 호출에서 나만 빠짐, 2026-11-22)
     if (!state.s || gateLeft(c) <= 0) return;
     var token = state.s.token, id = gateOfferKey(c), entry = gateOfferEntry(c);
     if (entry?.busy || entry?.passed) return;
@@ -5062,7 +5063,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     if (!take) {
       entry.collapsed = true;
       gateOfferStop(c);
-      if (broadcast) { paintGateOffer(); return; }
+      if (broadcast && !no) { paintGateOffer(); return; }
+      entry.no = !!no;
     }
     entry.busy = true;
     paintGateOffer();
@@ -5082,7 +5084,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       paintGateOffer();
     });
   }
-  // 동시 호출에서 나가도 받을 수 있는 동안 아래 카드에 남는다.
+  function gateTyping() { try { var a = document.activeElement, sh = $('sheet'); return (sh && !sh.hidden) || !!(a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)); } catch (e) { return false; } }
+  // 동시 호출에서 '나가기'는 받을 수 있는 동안 아래 카드에 남는다 · '지금 못 가요'는 그 호출에서 빠진다.
   function paintGateOffer() {
     var box = $('gateOffer'); if (!box) return;
     var token = state.s?.token || '';
@@ -5103,10 +5106,12 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     }
     if (!offers.length) { box.hidden = true; box.innerHTML = ''; state.gofferId = ''; return; }
     var c = offers.find(function (o) { return !gateOfferEntry(o)?.collapsed; }) || offers[0];
-    var entry = gateOfferEntry(c), compact = !!entry?.collapsed, busy = entry?.busy ? ' disabled' : '';
     var sequential = c.kind !== SUB.KIND && c.kind !== 'guide';
+    // ✍️ 입력 중이면 작게 (직원 건의 2026-11-22): 테이블 창을 열어 뒀거나 글을 쓰는 중에 온 안내·섭레콜은 전체 화면 대신 아래 띠로 (진동은 그대로)
+    if (!sequential && !gateOfferEntry(c) && gateTyping()) gateOfferEntries.set(gateOfferKey(c), { until: c.dl + 5000, collapsed: true, auto: true });
+    var entry = gateOfferEntry(c), compact = !!entry?.collapsed, busy = entry?.busy ? ' disabled' : '';
     var title = c.kind === SUB.KIND ? '섭레콜' : c.kind === 'md' ? '담당 없는 손님' : c.kind === 'pick' ? '나를 찾는 손님' : '안내 요청';
-    if (!compact && state.gofferId !== gateOfferKey(c)) { state.gofferId = gateOfferKey(c); try { if (navigator.vibrate) navigator.vibrate([250, 120, 250]); } catch (e) {} }
+    if ((!compact || entry?.auto) && state.gofferId !== gateOfferKey(c)) { state.gofferId = gateOfferKey(c); try { if (navigator.vibrate) navigator.vibrate([250, 120, 250]); } catch (e) {} }
     box.className = 'goffer ' + (compact ? 'gof-compact' : 'gofs'); box.hidden = false;
     box.setAttribute('role', compact ? 'region' : 'alertdialog');
     box.setAttribute('aria-label', title);
@@ -5114,11 +5119,13 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     box.innerHTML = (compact ? '' : '<div class="gof-k">입구 호출</div>') +
       '<div class="gof-h"><span class="gof-r"><span class="gof-t" data-gdl="' + c.dl + '">' + gateLeft(c) + '</span><small>초 남음</small></span><b>' + title + '</b></div>' +
       gatePlaceH(c.where) + '<div class="gof-d">' + esc(gateWhat(c) || (c.where ? '' : '입구로 와 주세요')) + (compact ? '' : c.kind === SUB.KIND ? ' · 영업진 모두에게 갔어요 · 먼저 받은 사람이 담당' : c.kind === 'guide' ? ' · 운영팀 동시 호출 · 먼저 받은 사람이 담당' : c.kind === 'md' ? ' · 내 차례' : '') + '</div>' +
-      '<div class="gof-b' + (sequential && !compact ? ' gof-seq' : '') + '"><button type="button" class="btn btn-hot" data-gok="' + esc(c.id) + '"' + busy + '>' +
-      (compact && sequential && busy ? '넘기는 중…' : '받을게요 · 지금 갈게요') + '</button>' +
+      '<div class="gof-b' + (!compact ? ' gof-seq' : '') + '"><button type="button" class="btn btn-hot" data-gok="' + esc(c.id) + '"' + busy + '>' +
+      (compact && busy && (sequential || entry?.no) ? (sequential ? '넘기는 중…' : '빠지는 중…') : '받을게요 · 지금 갈게요') + '</button>' +
       (sequential && !busy ? '<button type="button" class="btn" data-gpass="' + esc(c.id) + '">못 받아요 · 넘기기</button>' : '') +
+      (!sequential && !busy ? '<button type="button" class="btn" data-gno="' + esc(c.id) + '">지금 못 가요</button>' : '') +
       (compact ? '' : '<button type="button" class="btn" data-gexit' + busy + '>나가기</button>') + '</div>';
-    if (c.kind === SUB.KIND) { box.classList.add('subo'); (state.subOffered = state.subOffered || {})[c.id] = state.subOffered[c.id] || 1; }   // 🍋 섭레콜: 넘기기 없음
+    if (c.kind === SUB.KIND) { box.classList.add('subo'); (state.subOffered = state.subOffered || {})[c.id] = state.subOffered[c.id] || 1; }   // 🍋 섭레콜
+    box.querySelector('[data-gno]')?.addEventListener('click', function () { gateOfferAction(c, false, true); });
     box.querySelector('[data-gok]').addEventListener('click', function () { gateOfferAction(c, true); });
     box.querySelectorAll('[data-gpass], [data-gexit]').forEach(function (button) {
       button.addEventListener('click', function () {
@@ -10109,7 +10116,22 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   }
   setInterval(function () { if (state.s && state.data && state.tab === 'ops' && !document.hidden && Date.now() - (state.opsAt || 0) > pace(4500, state.opsHot)) loadOps(true); }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.tab === 'ops') loadOps(true); });
-  function opsErr(r) { return { kind: '종류를 골라 주세요.', empty: '자리 번호를 넣어 주세요. (배달은 자리만 있어도 돼요)', seat: '자리를 확인해 주세요. (예: 4 · L3 · D1 · S5)', text: '< > 는 쓸 수 없어요.', n: '인원은 1~10명이에요.', busy: '잠시 후 다시 해 주세요.', full: '이미 인원이 다 찼어요.', forbidden: '권한이 없어요.', state: '취소된 요청이에요.', notfound: '없는 요청이에요.', soon: '방금 올렸어요. 1분 뒤에 다시 올릴 수 있어요.' }[r.error] || '다시 해 주세요.'; }
+  function opsErr(r) { return { kind: '종류를 골라 주세요.', empty: '자리 번호를 넣어 주세요. (배달은 자리만 있어도 돼요)', seat: '자리를 확인해 주세요. (예: 4 · L3 · D1 · S5)', text: '< > 는 쓸 수 없어요.', n: '인원은 1~10명이에요.', busy: '잠시 후 다시 해 주세요.', full: r.by && r.by.length ? opsFullMsg(r) : '이미 인원이 다 찼어요.', forbidden: '권한이 없어요.', state: '취소된 요청이에요.', notfound: '없는 요청이에요.', soon: '방금 올렸어요. 1분 뒤에 다시 올릴 수 있어요.' }[r.error] || '다시 해 주세요.'; }
+  // ✅ 내가 할게요 — 동시에 여럿이 눌러도 (직원 건의 2026-11-22 '렉'): 누르면 바로 '맡는 중…', 먼저 누른 사람만 담당,
+  //   늦은 사람은 서버가 준 이름·새 목록으로 바로 '이미 OO님이 맡았어요' (운영 탭 카드 · 대화 🆘 고정줄 · 말풍선 버튼 공통)
+  function opsFullMsg(r) { return '이미 ' + ((r.by || []).join('·') || '다른 분') + '님이 맡았어요.'; }
+  function opsPut(r) { if (r && r.list) { state.ops = r.ok ? r : Object.assign({}, r, { ok: true, error: undefined }); opsBadge(state.ops); } }
+  function opsTakeBtn(b, id, after) {
+    if (b.dataset.busy) return; b.dataset.busy = '1'; b.disabled = true; var t0 = b.innerHTML; b.textContent = '맡는 중…';
+    var back = function (msg) { delete b.dataset.busy; b.disabled = false; b.innerHTML = t0; if (msg) toast(msg); };
+    call({ a: 'ops_take', token: state.s.token, id: id }).then(function (x) {
+      if (x.error === 'auth') return toLogin(AUTH_OUT);
+      if (!x.ok && x.error !== 'full') return back(opsErr(x));
+      opsPut(x);
+      if (x.ok) flushPush(); else toast(opsFullMsg(x));
+      after(x);
+    }).catch(function () { back('연결이 안 돼요. 다시 눌러 주세요.'); });
+  }
   function opsCall(body, btn, done) {
     if (btn) btn.disabled = true; body.token = state.s.token;
     return call(body).then(function (r) { if (btn) btn.disabled = false; if (r.error === 'auth') return toLogin(AUTH_OUT); if (r.ok) { state.ops = r; opsBadge(r); flushPush(); } if (done) done(r); }).catch(function () { if (btn) btn.disabled = false; if (done) done({ error: 'net' }); });
@@ -10324,7 +10346,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     $('opNew').addEventListener('click', opsForm);
     area.querySelectorAll('[data-opid]').forEach(function (c) {
       var id = c.dataset.opid;
-      c.querySelectorAll('[data-optake],[data-opun]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_take', id: id, on: !b.dataset.opun }, b, function (r) { if (!r.ok) state.opsMsg = opsErr(r); else if (!b.dataset.opun) state.opsMsg = '맡았어요.' + (r.list && r.list.some(function (y) { return y.id === id && !y.mine; }) ? ' 요청한 사람에게 알려요.' : ''); render(); }); }); });
+      c.querySelectorAll('[data-optake]').forEach(function (b) { b.addEventListener('click', function () { opsTakeBtn(b, id, function (r) { state.opsMsg = r.ok ? '맡았어요.' + (r.list && r.list.some(function (y) { return y.id === id && !y.mine; }) ? ' 요청한 사람에게 알려요.' : '') : opsFullMsg(r); render(); }); }); });
+      c.querySelectorAll('[data-opun]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_take', id: id, on: !b.dataset.opun }, b, function (r) { if (!r.ok) state.opsMsg = opsErr(r); else if (!b.dataset.opun) state.opsMsg = '맡았어요.' + (r.list && r.list.some(function (y) { return y.id === id && !y.mine; }) ? ' 요청한 사람에게 알려요.' : ''); render(); }); }); });
       c.querySelectorAll('[data-opurg]').forEach(function (b) { b.addEventListener('click', function () { opsCall({ a: 'ops_urgent', id: id }, b, function (r) { state.opsMsg = r.ok ? '🆘 테이블 대화에 다시 올리고 맨 위에 고정했어요. 출근한 운영팀·영업진에게 알렸어요. 인원이 다 차면 풀려요.' : opsErr(r); render(); }); }); });
       c.querySelectorAll('[data-opcx]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '요청 취소')) return; opsCall({ a: 'ops_cancel', id: id }, b, function (r) { state.opsMsg = r.ok ? '요청을 취소했어요.' : opsErr(r); render(); }); }); });
     });
@@ -11354,7 +11377,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   }
   function chatAck(id, p) {
     p.classList.add('acking');
-    call({ a: 'chat_ack', token: state.s.token, id: id }).then(function (r) { p.classList.remove('acking'); if (r.ok) { chatPaint(r, false, true); flushPush(); } }).catch(function () { p.classList.remove('acking'); });
+    call({ a: 'chat_ack', token: state.s.token, id: id }).then(function (r) { p.classList.remove('acking'); if (r.ok) { chatPaint(r, false, true); flushPush(); if (r.opsBy && r.opsBy.length) toast(opsFullMsg({ by: r.opsBy })); } }).catch(function () { p.classList.remove('acking'); });
   }
   function chatOpen(room) {
     if (room === 'gate' && state.data && !(state.data.guard || state.data.gate)) return;
@@ -11536,7 +11559,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       return '<div class="cpin"><div><b>🆘 긴급모집</b> · ' + esc(opsWhere(x) || '') + ' 🎆 퍼레이드 지원 <span class="cpn">' + x.took.length + '/' + x.need + '명</span>' + (x.memo ? '<br>' + esc(x.memo) : '') + (x.took.length ? '<br><small>✅ ' + x.took.map(function (k) { return esc(k.who); }).join(', ') + '</small>' : '') + '</div>' +
         (x.me ? '<span class="cpme">✅ 내가 맡음</span>' : guard ? '' : '<button type="button" data-cpin="' + esc(x.id) + '">✅ 내가 할게요</button>') + '</div>';
     }).join(''));
-    box.querySelectorAll('[data-cpin]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.cpin }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else { b.disabled = false; if (x.error === 'full') chatLoad(); } }).catch(function () { b.disabled = false; }); }); });
+    box.querySelectorAll('[data-cpin]').forEach(function (b) { b.addEventListener('click', function () { opsTakeBtn(b, b.dataset.cpin, function () { chatLoad(); }); }); });
   }
   // 📍 손님 위치 확인
   var WHERE_CHOICES = [['left', '🚪 나가심'], ['moved', '↔️ 이동함'], ['smoke', '🚬 흡연 중'], ['rest', '🚻 화장실']];   // 카톡 상태 보고 빈도순 (2026-11-21 대표 결정)
@@ -11760,7 +11783,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       b.disabled = true; var wout = /나갔/.test(b.dataset.cwa);   // '나갔어요 (아웃)' 한 번 = 자리 비우기 + 🧹 아웃 청소 (대표 결정 2026-11-20)
       call({ a: 'chat_send', token: state.s.token, room: 'table', text: pre + b.dataset.cwa, reply: m.id, wout: wout ? 1 : 0 }).then(function (x) { if (x.ok) { chatPaint(x, true); flushPush(); if (wout) loadTb(true); } else b.disabled = false; }).catch(function () { b.disabled = false; });
     }); });
-    L.querySelectorAll('[data-copst]').forEach(function (b) { b.addEventListener('click', function () { b.disabled = true; call({ a: 'ops_take', token: state.s.token, id: b.dataset.copst }).then(function (x) { if (x.ok) { state.ops = x; opsBadge(x); flushPush(); chatLoad(); } else b.disabled = false; }).catch(function () { b.disabled = false; }); }); });
+    L.querySelectorAll('[data-copst]').forEach(function (b) { b.addEventListener('click', function () { opsTakeBtn(b, b.dataset.copst, function () { chatLoad(); }); }); });
     L.querySelectorAll('[data-chdel]').forEach(function (b) { b.addEventListener('click', function () { if (!armed(b, '✕')) return; call({ a: 'chat_del', token: state.s.token, id: b.dataset.chdel }).then(function (x) { if (x.ok) chatPaint(x, false); }); }); });
     var finding = !!(state.cfF && state.cfF.q) && !toEnd;   // 🔍 찾는 중에는 맨 아래로 끌어내리지 않음
     if (finding) cfApply(0);
