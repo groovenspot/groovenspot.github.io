@@ -4,6 +4,8 @@
   var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
   var features = Object.create(null), configPending;
+  // 오픈채팅이 켜진 회원에게만 탭 이름이 '오픈채팅'. 지난번 값을 기억해 첫 화면부터 맞는 이름을 그린다.
+  var ocNav = read('gl_oc') === '1', navOn;
   var gates = { rooms: 'rooms', dm: 'dm', challenge: 'challenge', compose: 'posts',
     rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety' };
   var STAFF_API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
@@ -224,7 +226,8 @@
       }
     },
     paintNav: function (on) {
-      var items = [['tonight', 'nav.tonight'], ['feed', 'nav.feed'], ['play', 'nav.play'], ['rooms', 'nav.rooms'], ['me', 'nav.me']];
+      navOn = on;
+      var items = [['tonight', 'nav.tonight'], ['feed', 'nav.feed'], ['play', 'nav.play'], ['rooms', ocNav ? 'nav.openchat' : 'nav.rooms'], ['me', 'nav.me']];
       document.getElementById('tabbar').innerHTML = items.map(function (x, i) { return '<a href="#/' + x[0] + '"' + (x[0] === on ? ' aria-current="page"' : '') + '><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[i] + '</svg>' + L.esc(L.t(x[1])) + '</a>'; }).join('');
     },
     boot: async function () {
@@ -257,8 +260,8 @@
       await L.route();
     }
   };
-  L.i18n({ ko: { 'nav.tonight': '오늘 밤', 'nav.feed': '피드', 'nav.play': '놀거리', 'nav.rooms': '오픈 대화방', 'nav.me': '나', 'core.need': '매장에서 가입하면 쓸 수 있어요', 'core.needBody': '직원에게 가입 QR을 보여 달라고 하세요. 이미 가입했다면 로그인하세요.', 'core.login': '로그인' },
-           en: { 'nav.tonight': 'Tonight', 'nav.feed': 'Feed', 'nav.play': 'Play', 'nav.rooms': 'Open Chat', 'nav.me': 'Me', 'core.need': 'Join at the club to use this', 'core.needBody': 'Ask a staff member for the sign-up QR. Already a member? Log in.', 'core.login': 'Log in' } });
+  L.i18n({ ko: { 'nav.tonight': '오늘 밤', 'nav.feed': '피드', 'nav.play': '놀거리', 'nav.rooms': '오픈 대화방', 'nav.openchat': '오픈채팅', 'nav.me': '나', 'core.need': '매장에서 가입하면 쓸 수 있어요', 'core.needBody': '직원에게 가입 QR을 보여 달라고 하세요. 이미 가입했다면 로그인하세요.', 'core.login': '로그인' },
+           en: { 'nav.tonight': 'Tonight', 'nav.feed': 'Feed', 'nav.play': 'Play', 'nav.rooms': 'Open Chat', 'nav.openchat': 'Open Chat', 'nav.me': 'Me', 'core.need': 'Join at the club to use this', 'core.needBody': 'Ask a staff member for the sign-up QR. Already a member? Log in.', 'core.login': 'Log in' } });
   function paintStatus() {
     document.documentElement.lang = L.lang;
     document.getElementById('tabbar').setAttribute('aria-label', L.t('core.nav'));
@@ -273,6 +276,11 @@
   function refreshConfig() {
     if (!configPending) configPending = L.api('config').then(result => {
       features = !result.error && result.open || Object.create(null);
+      if (!result.error && L.open('openchat') !== ocNav) {
+        ocNav = !ocNav;
+        save('gl_oc', ocNav ? '1' : '');
+        L.paintNav(navOn);
+      }
     }).finally(() => { configPending = null; });
     return configPending;
   }
