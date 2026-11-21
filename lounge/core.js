@@ -16,6 +16,31 @@
     'GROOVE DJ팀': { ko: 'DJ팀', en: 'DJ Team', ja: 'DJチーム', zh: 'DJ 团队' },
     'GROOVE 경호팀': { ko: '경호팀', en: 'Security', ja: '警備チーム', zh: '安保团队' }
   };
+  // 6차(SPEC6 3장) 직원 팀별 표식: 서버는 팀 key 만 주고, 글자·모양은 여기서 정한다. 글자 순서 [ko, en, ja, zh].
+  // 색은 app.css 의 .lounge-who-tag[data-team=…]. 색만으로 구분하지 않게 팀마다 모양(아이콘)이 다르다.
+  var staffLangs = ['ko', 'en', 'ja', 'zh'];
+  var staffStar = '<path d="M12 3l2.6 5.6 6 .7-4.4 4.2 1.1 6L12 16.6 6.7 19.5l1.1-6L3.4 9.3l6-.7z"/>';
+  var staffTeams = {
+    ops: { label: ['운영', 'Ops', '運営', '运营'], icon: staffStar, fill: true },
+    clover: { label: ['MD 클로버', 'Host Clover', 'MD クローバー', 'MD Clover'], fill: true,
+      icon: '<circle cx="8.5" cy="9" r="3.6"/><circle cx="15.5" cy="9" r="3.6"/><circle cx="12" cy="14.5" r="3.6"/><path d="M12 17v4"/>' },
+    arun: { label: ['MD 아룬', 'Host Arun', 'MD アルン', 'MD Arun'], icon: '<path d="M12 3l8 9-8 9-8-9z"/>', fill: true },
+    goat: { label: ['MD 고트', 'Host Goat', 'MD ゴート', 'MD Goat'], icon: '<path d="M5 20L12 5l7 15z"/>', fill: true },
+    dj: { label: ['DJ', 'DJ', 'DJ', 'DJ'], fill: false,
+      icon: '<path d="M5 14v-2a7 7 0 0 1 14 0v2"/><rect x="3.5" y="13" width="4" height="7" rx="1.5"/><rect x="16.5" y="13" width="4" height="7" rx="1.5"/>' },
+    guard: { label: ['안전', 'Security', 'セキュリティ', '安全'], icon: '<path d="M12 3 5 6v5.5c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6z"/>', fill: false },
+    admin: { label: ['GROOVE', 'GROOVE', 'GROOVE', 'GROOVE'], icon: staffStar, fill: true },
+    groove: { label: ['GROOVE', 'GROOVE', 'GROOVE', 'GROOVE'], icon: staffStar, fill: true }
+  };
+  var staffRoles = { lead: ['팀장', 'Lead', 'リーダー', '队长'], sub: ['부팀장', 'Sub-lead', 'サブリーダー', '副队长'] };
+  // 새 서버의 직원 표식(team 칸이 있음)만 풀어 준다. team 칸이 없으면(예전 서버) null → 예전 글자 그대로.
+  function staffBadge(tag, locale) {
+    if (!tag || tag.kind !== 'staff' || typeof tag.team !== 'string') return null;
+    var team = tag.admin === true ? 'admin' : tag.team && Object.hasOwn(staffTeams, tag.team) && tag.team !== 'admin' ? tag.team : 'groove';
+    var role = team !== 'admin' && Object.hasOwn(staffRoles, tag.role) ? tag.role : '';
+    var at = staffLangs.indexOf(locale); if (at < 0) at = 1;
+    return { team: team, role: role, label: staffTeams[team].label[at], roleLabel: role ? staffRoles[role][at] : '', icon: staffTeams[team].icon, fill: staffTeams[team].fill };
+  }
   function read(key) { try { return localStorage.getItem(key) || ''; } catch (e) { return ''; } }
   function save(key, value) {
     try { if (value) localStorage.setItem(key, value); else localStorage.removeItem(key); } catch (e) {}
@@ -124,16 +149,31 @@
         return read('gs_staff') === saved && result.r === 'admin' && typeof result.a === 'string' ? result.a : '';
       } catch { return ''; }
     },
+    // 표식 글자만 (aria-label·그림 카드 등 글자만 쓰는 곳): 'VIP' · 'MD 클로버 팀장' · (예전 서버) 'GROOVE 영업팀'
     tagLabel: function (tag, locale = L.lang) {
       if (tag?.kind === 'vip') return 'VIP';
       if (tag?.kind !== 'staff') return '';
+      const badge = staffBadge(tag, locale);
+      if (badge) return badge.label + (badge.role ? ' ' + badge.roleLabel : '');
       const team = Object.hasOwn(staffTeamLabels, tag.label) ? staffTeamLabels[tag.label][locale] : '';
       return team ? 'GROOVE ' + team : 'GROOVE';
     },
+    // 표식 칩 하나 (닉네임 없이). 직원 팀별 칩 = 아이콘 + 글자 + 직책 <i>. 표식이 없으면 ''.
+    tagChip: function (tag, locale = L.lang) {
+      const badge = staffBadge(tag, locale);
+      if (badge) return '<span class="lounge-who-tag" data-kind="staff" data-team="' + badge.team + '"' + (badge.role ? ' data-role="' + badge.role + '"' : '') + '>' +
+        '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="' + (badge.fill ? 'currentColor' : 'none') +
+        '" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + badge.icon + '</svg>' +
+        L.esc(badge.label) + (badge.role ? ' <i>' + L.esc(badge.roleLabel) + '</i>' : '') + '</span>';
+      const label = L.tagLabel(tag, locale);
+      return label ? '<span class="lounge-who-tag" data-kind="' + tag.kind + '">' + L.esc(label) + '</span>' : '';
+    },
+    // 닉네임 + 표식. 직원 팀별 칩이 붙을 때는 닉네임을 따로 감싸서, 자리가 좁으면 닉네임이 먼저 줄어들고(말줄임) 칩은 한 줄로 남는다.
     whoTag: function (person, locale = L.lang) {
       const nick = L.esc(person?.nick);
-      const label = L.tagLabel(person?.tag, locale);
-      return label ? nick + ' <span class="lounge-who-tag" data-kind="' + person.tag.kind + '">' + L.esc(label) + '</span>' : nick;
+      const chip = L.tagChip(person?.tag, locale);
+      if (!chip) return nick;
+      return staffBadge(person.tag, locale) ? '<span class="lounge-who"><span class="lounge-who-nick">' + nick + '</span> ' + chip + '</span>' : nick + ' ' + chip;
     },
     img: function (key) { return key ? API.replace(/\/$/, '') + '/img/' + encodeURIComponent(key).replace(/%2F/g, '/') : ''; },
     // 라운지 서버 주소로 만든 전체 주소: L.apiUrl('p/<글id>') → 'https://…workers.dev/p/<글id>' (밖으로 보내는 공유 링크 — 서버가 미리보기(og)를 주고 앱으로 넘긴다)

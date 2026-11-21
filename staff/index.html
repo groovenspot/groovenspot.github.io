@@ -6,7 +6,7 @@
      새 외부 주소를 쓰게 되면 여기에 더해야 해요(안 그러면 그 기능만 막힘). 스크립트·스타일이 이 파일 안에 있어서 'unsafe-inline' 은 필요. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://drive.google.com https://*.googleusercontent.com https://groove-lounge-api.groovenspotbusan.workers.dev; media-src 'self' data: blob:; connect-src 'self' https://groove-staff-api.groovenspotbusan.workers.dev https://groove-lounge-api.groovenspotbusan.workers.dev; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <!-- 🔄 앱 버전: 깃허브 작업(staff-version)이 이 파일이 바뀔 때마다 자동으로 찍고 staff/version.json 도 같이 바꾼다. 손으로 고치지 않기. -->
-<meta name="gs-ver" content="758d69262b20">
+<meta name="gs-ver" content="58287071f68f">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
@@ -2734,6 +2734,60 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
 .lounge-oc-table th:first-child { text-align: left; white-space: nowrap; }
 .lounge-oc-table thead th { border-top: 0; color: var(--muted); font-size: 12px; vertical-align: bottom; }
 .lounge-oc-table th small { display: block; font-weight: 400; }
+/* 라운지 6차 (2026-11-21): 직원 팀별 표식 — 연결 띠 · 라운지 연결 현황 · 라운지 1분 안내 */
+.lounge-band { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; margin: 12px 0 0; padding: 14px; border: 1px solid rgba(255,122,26,.55); border-radius: var(--rad); background: rgba(255,122,26,.12); }
+.lounge-band[hidden] { display: none; }
+.lounge-band + .lounge-menu { margin-top: 8px; }
+.lounge-band-ico { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: rgba(255,122,26,.2); color: var(--g-ink, var(--g)); }
+.lounge-band p { margin: 0; color: var(--txt); font-size: 14px; line-height: 1.45; overflow-wrap: anywhere; word-break: keep-all; }
+.lounge-band p b { display: block; margin-bottom: 2px; font-size: 16px; font-weight: 900; }
+.lounge-band .btn { grid-column: 1 / -1; width: 100%; min-height: 48px; margin: 0; font-size: 16px; text-decoration: none; }
+.lounge-badge { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px 0 6px; border-radius: 11px; font-size: 12px; font-weight: 800; line-height: 1; white-space: nowrap; vertical-align: middle; }
+.lounge-badge svg { flex: none; width: 12px; height: 12px; }
+.lounge-badge i { margin-left: 2px; font-style: normal; font-weight: 900; opacity: .7; }
+.lounge-badge.lb-ops { background: #f6efeb; color: #161210; }
+.lounge-badge.lb-clv { background: #123524; color: #6ff0b6; box-shadow: inset 0 0 0 1px #2f8a5f; }
+.lounge-badge.lb-arn { background: #102a3f; color: #7cc8ff; box-shadow: inset 0 0 0 1px #2f79b0; }
+.lounge-badge.lb-got { background: #2c3312; color: #d5f56f; box-shadow: inset 0 0 0 1px #7f9a2a; }
+.lounge-badge.lb-dj { background: #3a1226; color: #ff86bd; box-shadow: inset 0 0 0 1px #b03a72; }
+.lounge-badge.lb-sec { background: #3a1512; color: #ff9186; box-shadow: inset 0 0 0 1px #b0473d; }
+html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 1px rgba(0,0,0,.28); }
+.lounge-link-at { margin: 10px 0 0; }
+.lounge-link-team { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--line-2); border-radius: var(--rad); background: var(--card-2); }
+.lounge-link-team h3 { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 10px; margin: 0; font-size: 17px; font-weight: 900; }
+.lounge-link-team h3 small { color: var(--muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lounge-link-team h4 { margin: 12px 0 0; color: var(--muted); font-size: 13px; font-weight: 800; }
+.lounge-link-team h4.off { color: var(--g-ink, var(--g)); }
+.lounge-people { margin: 4px 0 0; padding: 0; list-style: none; }
+.lounge-people li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 10px; min-height: 40px; padding: 6px 0; border-top: 1px solid var(--line); }
+.lounge-people li:first-child { border-top: 0; }
+.lounge-people b { min-width: 0; font-size: 15.5px; font-weight: 800; overflow-wrap: anywhere; }
+.lounge-people span { flex: none; color: var(--muted); font-size: 13px; }
+.lounge-guide section { margin-top: 18px; }
+.lounge-guide section:first-child { margin-top: 4px; }
+.lounge-guide h3 { margin: 0 0 6px; font-size: 17px; font-weight: 900; }
+.lounge-guide :is(p, li, dd) { color: var(--txt); font-size: 15px; line-height: 1.55; word-break: keep-all; overflow-wrap: anywhere; }
+.lounge-guide p { margin: 0; }
+.lounge-guide p + p, .lounge-guide :is(ol, ul) + p { margin-top: 8px; }
+.lounge-guide :is(ol, ul) { margin: 0; padding-left: 22px; }
+.lounge-guide li + li { margin-top: 2px; }
+.lounge-guide .btn { width: 100%; margin: 10px 0 0; text-decoration: none; }
+.lounge-guide .lounge-guide-badges { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
+.lounge-guide-badges li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 6px; min-height: 44px; margin: 0; padding: 6px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--card-2); font-size: 14px; font-weight: 700; }
+.lounge-guide-badges li.wide { grid-column: 1 / -1; }
+.lounge-guide-badges li.mine { border-color: var(--g); }
+.lounge-guide-mine { color: var(--g-ink, var(--g)); font-size: 12px; font-weight: 900; }
+.lounge-guide-team { margin-top: 8px; padding: 12px 14px; border: 1px solid var(--line-2); border-radius: var(--rad); background: var(--card-2); }
+.lounge-guide-team.mine { border-color: var(--g); }
+.lounge-guide-team h4 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0 0 4px; font-size: 16px; font-weight: 900; }
+.lounge-guide-team dl { margin: 0; }
+.lounge-guide-team dl > div { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+.lounge-guide-team dl > div:first-child { border-top: 0; }
+.lounge-guide-team dt { color: var(--muted); font-size: 13px; font-weight: 800; line-height: 1.4; }
+.lounge-guide-team dt small { display: block; font-size: 12px; font-weight: 600; }
+.lounge-guide-team dd { margin: 0; }
+.lounge-guide-team dd.none { color: var(--muted); }
+.lounge-guide-team dd ul { padding-left: 16px; }
 </style>
 </head>
 <body>
@@ -7823,7 +7877,9 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
     if (roles.manage) links.push(['manage', '손님 라운지 관리 / Manage Lounge', 'note']);
     else if (roles.vote) links.push(['vote', '투표 만들기 / Create vote', 'note']);
     if (roles.sales) links.push(['sales', '라운지 손님 요청 / Lounge guest requests', 'users']);
-    return '<div class="lounge-menu">' + links.map(([page, label, icon]) =>
+    if (loungeLinkLead()) links.push(['linked', '라운지 연결 현황 / Lounge link status', 'chart']);
+    links.push(['guide', '라운지 1분 안내 / Lounge guide', 'info']);
+    return loungeLinkBand() + '<div class="lounge-menu">' + links.map(([page, label, icon]) =>
       loungeButton(opIco(icon) + ' ' + label + (page === 'manage' ? loungeReportBadge() : ''),
         'type="button" data-lounge="' + page + '"')).join('') + '</div>';
   }
@@ -9648,10 +9704,128 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
     loungePaintReportBadges();
     show(typeof initial === 'string' && initial === 'display' ? 'display' : 'reports');
   }
+  // ── 라운지 6차 (2026-11-21): 직원 팀별 표식 — 연결 띠 · 라운지 연결 현황 · 라운지 1분 안내 (서버 동작 lounge_staff, 읽기만) ──
+  const LOUNGE_STAFF_LOGIN = 'https://그루브.site/lounge/#/staff-login';
+  const LOUNGE_BADGES = { '운영팀': ['ops', '운영'], '클로버': ['clv', 'MD 클로버'], '아룬': ['arn', 'MD 아룬'], '고트': ['got', 'MD 고트'], 'DJ팀': ['dj', 'DJ'], '경호팀': ['sec', '안전'] };
+  const LOUNGE_BADGE_ICONS = {
+    ops: '<path d="M12 3l2.6 5.6 6 .7-4.4 4.2 1.1 6L12 16.6 6.7 19.5l1.1-6L3.4 9.3l6-.7z"/>',
+    clv: '<circle cx="8.5" cy="9" r="3.6"/><circle cx="15.5" cy="9" r="3.6"/><circle cx="12" cy="14.5" r="3.6"/><path d="M12 17v4"/>',
+    arn: '<path d="M12 3l8 9-8 9-8-9z"/>', got: '<path d="M5 20L12 5l7 15z"/>',
+    dj: '<path d="M5 14v-2a7 7 0 0 1 14 0v2"/><rect x="3.5" y="13" width="4" height="7" rx="1.5"/><rect x="16.5" y="13" width="4" height="7" rx="1.5"/>',
+    sec: '<path d="M12 3 5 6v5.5c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6z"/>'
+  };
+  // 라운지에서 닉네임 옆에 붙는 표식 미리보기 (수습·팀 없음은 표식 없음 → '')
+  function loungeBadge(team, role) {
+    const badge = role === '관리자' ? ['ops', 'GROOVE'] : role === '수습' ? null : LOUNGE_BADGES[team];
+    if (!badge) return '';
+    const hollow = badge[0] === 'dj' || badge[0] === 'sec';
+    return '<span class="lounge-badge lb-' + badge[0] + '"><svg viewBox="0 0 24 24" fill="' + (hollow ? 'none' : 'currentColor') +
+      '" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + LOUNGE_BADGE_ICONS[badge[0]] +
+      '</svg>' + esc(badge[1]) + (role === '팀장' || role === '부팀장' ? '<i>' + esc(role) + '</i>' : '') + '</span>';
+  }
+  function loungeLinkLead() { const s = state.s; return !!s && (s.admin || (s.role === '팀장' && !!s.team)); }
+  function loungeOpenLink(label) {
+    return '<a class="btn btn-hot" href="' + esc(LOUNGE_STAFF_LOGIN) + '" target="_blank" rel="noopener">' + opIco('ext') + ' ' + label + '</a>';
+  }
+  let loungeLink;   // { session, at, data, wait } — 내 연결 여부 (미연결·모름은 1분, 연결된 뒤에는 10분 동안 다시 묻지 않음)
+  function loungeLinkBand() {
+    const mine = loungeLink?.session === state.s?.token ? loungeLink.data : null;
+    return '<div class="lounge-band" data-lounge-band role="note"' + (mine?.me?.linked === false ? '' : ' hidden') + '>' +
+      '<span class="lounge-band-ico" aria-hidden="true">' + opIco('info', 20) + '</span>' +
+      '<p><b>라운지 계정이 아직 없어요</b>직원 계정으로 로그인하면 닉네임 옆에 팀 표식이 붙어요</p>' + loungeOpenLink('라운지 열기') + '</div>';
+  }
+  function loungeLinkPaint() {
+    const off = loungeLink?.session === state.s?.token && loungeLink.data?.me?.linked === false;
+    document.querySelectorAll('[data-lounge-band]').forEach(band => { band.hidden = !off; });
+  }
+  function loungeLinkLoad(fresh) {
+    const session = state.s?.token;
+    if (!session) return Promise.reject(new Error('auth'));
+    if (loungeLink?.session === session) {
+      if (loungeLink.wait) return loungeLink.wait;
+      if (!fresh && Date.now() - loungeLink.at < (loungeLink.data?.me?.linked === true ? 600000 : 60000)) return loungeLink.data ? Promise.resolve(loungeLink.data) : Promise.reject(new Error('net'));
+    }
+    const entry = { session, at: Date.now(), data: loungeLink?.session === session ? loungeLink.data : null };
+    entry.wait = loungeStaff(session, 'lounge_staff').then(data => {
+      if (!data || !data.me) throw new Error('bad');
+      entry.data = data;
+      return data;
+    }, err => { entry.data = null; throw err; }).finally(() => { entry.wait = null; entry.at = Date.now(); loungeLinkPaint(); });
+    loungeLink = entry;
+    return entry.wait;
+  }
+  function loungeLinkClock(at) {
+    if (!at) return '';
+    const d = new Date(at), two = n => String(n).padStart(2, '0'), today = new Date().toDateString() === d.toDateString();
+    return (today ? '' : (d.getMonth() + 1) + '/' + d.getDate() + ' ') + two(d.getHours()) + ':' + two(d.getMinutes());
+  }
+  function loungeLinkPeople(list) {
+    return '<ul class="lounge-people">' + list.map(x => '<li><b>' + esc(x.name) + '</b><span>' + esc(x.team || '팀 없음') + ' · ' + esc(x.role) + '</span></li>').join('') + '</ul>';
+  }
+  async function loungeLinkStatus() {
+    const session = state.s.token, admin = !!state.s.admin;
+    const root = loungeSheet('라운지 연결 현황 / Lounge link status', '<div class="lounge-body"><p>불러오는 중… / Loading…</p></div>');
+    const panel = root.querySelector('.lounge-body');
+    let data;
+    try { data = await loungeLinkLoad(true); }
+    catch (err) { if (panel.isConnected) { panel.textContent = ''; root.querySelector('.lounge-msg').textContent = loungeError(err); } return; }
+    if (!panel.isConnected || state.s?.token !== session) return;
+    const list = Array.isArray(data.list) ? data.list : [], known = data.me.linked !== null;
+    const on = list.filter(x => x.linked === true).length;
+    let html = '<div class="lounge-counts"><article>연결 / Linked<strong>' + (known ? on : '—') + '</strong></article>' +
+      '<article>전체 / All<strong>' + list.length + '</strong></article></div>';
+    if (!known) {
+      html += '<p class="note lounge-link-at">아직 라운지에서 연결 정보를 받지 못했어요. 5분쯤 뒤에 다시 열어 주세요.</p>';
+    } else {
+      const clock = loungeLinkClock(data.at);
+      html += '<p class="note lounge-link-at">' + (clock ? '기준 ' + esc(clock) + ' · ' : '') + '5분쯤 늦을 수 있어요</p>';
+      const order = ['운영팀', '클로버', '아룬', '고트', 'DJ팀', '경호팀'];
+      const teams = admin ? order.concat(list.some(x => order.indexOf(x.team) < 0) ? [''] : []) : [null];
+      teams.forEach(team => {
+        const rows = team === null ? list : list.filter(x => team ? x.team === team : order.indexOf(x.team) < 0);
+        if (!rows.length) return;
+        const off = rows.filter(x => x.linked !== true), linked = rows.filter(x => x.linked === true);
+        html += '<section class="lounge-link-team"><h3>' + esc(team === null ? state.s.team : team || '팀 없음') +
+          '<small>연결 ' + linked.length + ' / ' + rows.length + '</small></h3>' +
+          (off.length ? '<h4 class="off">미연결 ' + off.length + '명</h4>' + loungeLinkPeople(off) : '') +
+          (linked.length ? '<h4>연결됨 ' + linked.length + '명</h4>' + loungeLinkPeople(linked) : '') + '</section>';
+      });
+      html += '<p class="note">미연결인 사람은 라운지에서 ‘직원 로그인’을 하면 연결돼요. 수습은 연결해도 정식 직원이 된 뒤에 표식이 붙어요.</p>';
+    }
+    panel.innerHTML = html;
+  }
+  function loungeGuide() {
+    const s = state.s, role = s.admin ? '관리자' : s.role, mineBadge = loungeBadge(s.team, role);
+    const group = s.team === '운영팀' ? 'ops' : SALES.includes(s.team) ? 'sales' : s.team === 'DJ팀' ? 'dj' : s.team === '경호팀' ? 'guard' : '';
+    const mine = '<span class="lounge-guide-mine">내 팀</span>';
+    const badgeRow = (team, label) => '<li' + (!s.admin && s.team === team ? ' class="mine"' : '') + '>' + esc(label || team) + ' ' + loungeBadge(team, '직원') + '</li>';
+    const cell = items => !items.length ? '<dd class="none">—</dd>' : '<dd>' + (items.length > 1 ? '<ul>' + items.map(x => '<li>' + x + '</li>').join('') + '</ul>' : items[0]) + '</dd>';
+    const teamCard = (id, name, before, during, after) => '<article class="lounge-guide-team' + (group === id ? ' mine' : '') + '"><h4>' + name + (group === id ? mine : '') + '</h4><dl>' +
+      '<div><dt>영업 전<small>19~21시</small></dt>' + cell(before) + '</div><div><dt>영업 중</dt>' + cell(during) + '</div>' +
+      '<div><dt>마감 뒤<small>다음 날</small></dt>' + cell(after) + '</div></dl></article>';
+    loungeSheet('라운지 1분 안내', '<div class="lounge-body lounge-guide">' +
+      '<section><h3>① 라운지는?</h3><p>손님용 SNS(그루브.site/lounge). 손님과 이어져 다시 오게 하고 테이블로 연결하는 곳.</p></section>' +
+      '<section><h3>② 연결 3단계</h3><ol><li>라운지 열기</li><li>‘직원 로그인’에 스태프 앱 이름·비밀번호</li><li>닉네임·사진·소개 넣기</li></ol>' +
+      '<p>끝나면 닉네임 옆에 팀 표식이 붙어요.</p>' + loungeOpenLink('라운지 열기') + '</section>' +
+      '<section><h3>③ 내 표식</h3><ul class="lounge-guide-badges">' +
+      badgeRow('운영팀') + badgeRow('클로버') + badgeRow('아룬') + badgeRow('고트') + badgeRow('DJ팀') + badgeRow('경호팀') +
+      '<li class="wide">팀장·부팀장은 뒤에 작게 ' + loungeBadge('클로버', '팀장') + '</li>' +
+      '<li class="wide' + (role === '수습' ? ' mine' : '') + '">수습은 정식 직원이 되면 붙어요</li></ul>' +
+      (mineBadge ? '<p>내 표식 ' + mineBadge + '</p>' : '') +
+      '<p>팀·권한이 바뀌면 5분 안에 자동으로 바뀌어요.</p></section>' +
+      '<section><h3>④ 팀별 하루 3분</h3>' +
+      teamCard('ops', '운영팀', ['오늘 밤 확인(포스터·타임테이블)', '공식 스토리 1개'], ['붐빔 30분마다', '신고·검수 10분 안'], ['어젯밤 사진첩 올리기']) +
+      teamCard('sales', '영업(클로버·아룬·고트)', ['스토리 1개(오늘 자리·이벤트)', '‘갈래요’ 누른 내 손님에게 인사'], ['테이블 문의 5분 안 답', '내 손님 글에 좋아요·댓글'], ['감사 메시지', '팔로우']) +
+      teamCard('dj', 'DJ팀', ['내 순서 예고 스토리'], ['끝나고 한 컷'], ['어제 나온 곡 확인']) +
+      teamCard('guard', '경호팀', [], ['입구 줄 입력(없음·10분·30분)', '안심 버튼 대응'], []) + '</section>' +
+      '<section><h3>⑤ 하지 말 것</h3><ul><li>개인 연락처 올리기(자동으로 가려져요)</li><li>손님 얼굴 허락 없이 올리기</li>' +
+      '<li>같은 손님에게 반복 메시지</li><li>술 강요 문구</li></ul></section></div>');
+  }
   function bindLoungeMenu(area) {
     const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), tonight: loungeTonight, manage: loungeManage,
-      vote: () => loungeManage('vote'), sales: loungeSales };
+      vote: () => loungeManage('vote'), sales: loungeSales, linked: loungeLinkStatus, guide: loungeGuide };
     area.querySelectorAll('[data-lounge]').forEach(b => { b.onclick = screens[b.dataset.lounge]; });
+    if (area.querySelector('[data-lounge-band]')) loungeLinkLoad().catch(() => {});   // 연결 띠: 내가 미연결일 때만 (실패하면 조용히 숨김)
     if (area.querySelector('[data-lounge=manage]')) {
       loungePaintReportBadges();
       loungeRefreshReportBadges();
