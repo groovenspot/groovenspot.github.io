@@ -45,7 +45,7 @@
 .al4-row:active { background: rgba(255,255,255,.05); }
 .al4-row:focus-visible { outline-offset: -3px; }
 .al4-kind { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: #241f1d; color: var(--txt); }
-.al4-text { flex: 1; min-width: 0; font-size: .875rem; line-height: 1.4; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+.al4-text { flex: 1; min-width: 0; font-size: .875rem; line-height: 1.4; word-break: keep-all; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
 .al4-text strong { font-weight: 800; }
 .al4-time { color: var(--muted); white-space: nowrap; }
 .al4-thumb { flex: none; width: 44px; height: 44px; border-radius: 6px; object-fit: cover; background: #241f1d; }
