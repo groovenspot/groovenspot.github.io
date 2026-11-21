@@ -233,3 +233,45 @@ a { color: var(--g); }
   .profile3-surface .profile3-badge { background: #eadcf5; color: #533273; }
   .profile3-surface .profile3-actions .btn-hot { color: #fff; }
 }
+
+/* 오픈채팅 탭 */
+.oc-list { display: grid; gap: 10px; list-style: none; margin: 4px 0 0; padding: 0; }
+.oc-card { display: grid; gap: 6px; min-height: 64px; padding: 13px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--txt); text-decoration: none; }
+.oc-hot { gap: 8px; border-color: rgba(255,122,26,.55); background: linear-gradient(160deg, #2a1608, var(--card) 70%); }
+.oc-off { opacity: .62; }
+.oc-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.oc-name { flex: 1; min-width: 0; font-size: 1.03rem; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
+.oc-hot .oc-name { font-size: 1.2rem; }
+.oc-tag { display: inline-flex; flex: none; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: .72rem; font-weight: 800; white-space: nowrap; }
+.oc-tag-hot { background: var(--g); color: var(--g-ink); }
+.oc-tag-time { background: rgba(161,91,255,.18); color: #cfb0ff; }
+.oc-tag-live { background: rgba(61,220,151,.14); color: var(--ok); }
+.oc-tag-off { background: rgba(255,255,255,.08); color: var(--muted); }
+.oc-unread { display: inline-grid; flex: none; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--g); color: var(--g-ink); font-size: .75rem; font-weight: 900; line-height: 1; }
+.oc-sub, .oc-people { color: var(--muted); font-size: .82rem; }
+.oc-people { display: inline-flex; flex: none; align-items: center; gap: 6px; }
+.oc-sub .oc-people { flex: 1; min-width: 0; }
+.oc-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.oc-ago { flex: none; white-space: nowrap; }
+.oc-preview { display: grid; gap: 2px; min-width: 0; color: #ddd3ce; font-size: .84rem; line-height: 1.5; }
+.oc-preview > span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.oc-preview b { color: #ffb27a; font-weight: 800; }
+.oc-ban { margin: 0; padding: 10px 12px; border: 1px solid rgba(255,90,95,.45); border-radius: 14px; background: #241416; color: #ffb3b5; font-size: .88rem; font-weight: 700; }
+.oc-rules { display: grid; gap: 4px; margin: 10px 0 0; padding-inline-start: 1.2em; color: #ddd3ce; font-size: .9rem; line-height: 1.55; }
+.oc-sheet-actions, .oc-menu { display: grid; gap: 8px; margin-top: 14px; }
+.oc-note { margin-top: 10px; text-align: center; font-size: .82rem; }
+.oc-menu-row { justify-content: space-between; gap: 10px; width: 100%; padding: 0 14px; text-align: start; }
+.oc-menu-row small { font-size: .76rem; font-weight: 500; text-align: end; }
+.oc-menu-row.oc-bad > span { color: #ff8a8e; }
+.oc-room .rooms-header { gap: 6px; }
+.oc-room [data-room-state] { display: flex; align-items: center; gap: 6px; font-size: .8rem; }
+.oc-room [data-room-state][data-open="true"]::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.oc-bell { flex: none; gap: 5px; min-height: 44px; font-size: .78rem; white-space: nowrap; }
+.oc-bell[aria-pressed="true"] { border-color: rgba(255,122,26,.6); color: #ffb27a; }
+.oc-bell[aria-pressed="true"] .oc-bell-off { display: none; }
+.oc-bell[aria-pressed="false"] { color: var(--muted); }
+.oc-room .rooms-pin { margin: 8px 12px 0; padding: 8px 12px; border: 1px solid rgba(255,122,26,.35); border-radius: 14px; background: #1d1611; font-size: .86rem; line-height: 1.5; }
+.oc-at { color: #ffb27a; font-weight: 800; }
+.oc-at[data-me="true"] { padding: 0 4px; border-radius: 6px; background: var(--g); color: var(--g-ink); }
+.rooms-chat [data-mine="true"] .oc-at { color: inherit; text-decoration: underline; }
+.rooms-chat [data-oc-called="true"] .rooms-bubble { border-color: var(--g); background: #2a1a0e; box-shadow: 0 0 0 1px var(--g); }
