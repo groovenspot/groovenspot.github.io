@@ -17,13 +17,13 @@
   // 4차(인스타그램 방식 공유 시트) 새 문구 — 새 키라서 네 언어를 여기 같이 둔다
   L.i18n({
     ko: { 'share4.search': '검색', 'share4.story': '스토리 이미지', 'share4.qr': 'QR 코드', 'share4.external': '다른 앱', 'share4.openSaved': '저장함 보기',
-      'share4.picked': '{n}명 선택', 'share4.remove': '{nick} 빼기', 'share4.login': '로그인하고 친구에게 보내기' },
+      'share4.picked': '{n}명 선택', 'share4.dm': '메시지로 보내기', 'share4.image': '이미지 저장', 'share4.remove': '{nick} 빼기', 'share4.login': '로그인하고 친구에게 보내기' },
     en: { 'share4.search': 'Search', 'share4.story': 'Story image', 'share4.qr': 'QR code', 'share4.external': 'Other apps', 'share4.openSaved': 'View saved',
-      'share4.picked': '{n} selected', 'share4.remove': 'Remove {nick}', 'share4.login': 'Log in to send to friends' },
+      'share4.picked': '{n} selected', 'share4.dm': 'Send in a message', 'share4.image': 'Save image', 'share4.remove': 'Remove {nick}', 'share4.login': 'Log in to send to friends' },
     ja: { 'share4.search': '検索', 'share4.story': 'ストーリー画像', 'share4.qr': 'QRコード', 'share4.external': '他のアプリ', 'share4.openSaved': '保存済みを見る',
-      'share4.picked': '{n}人を選択', 'share4.remove': '{nick}を外す', 'share4.login': 'ログインして友だちに送る' },
+      'share4.picked': '{n}人を選択', 'share4.dm': 'メッセージで送る', 'share4.image': '画像を保存', 'share4.remove': '{nick}を外す', 'share4.login': 'ログインして友だちに送る' },
     zh: { 'share4.search': '搜索', 'share4.story': '快拍图片', 'share4.qr': '二维码', 'share4.external': '其他应用', 'share4.openSaved': '查看收藏',
-      'share4.picked': '已选{n}人', 'share4.remove': '移除{nick}', 'share4.login': '登录后发送给好友' }
+      'share4.picked': '已选{n}人', 'share4.dm': '通过私信发送', 'share4.image': '保存图片', 'share4.remove': '移除{nick}', 'share4.login': '登录后发送给好友' }
   });
   const t = (key, values) => L.t('share.' + key, values);
   const t4 = (key, values) => L.esc(L.t('share4.' + key, values));
@@ -69,6 +69,14 @@
     .share-act:active > i { background:#322b28; }
     .share-act:disabled { opacity:.5; }
     .share-act[aria-pressed="true"] > i { color:var(--g); }
+    /* 프로필 공유: QR 카드가 먼저, 그 아래 '메시지로 보내기' (P42) */
+    .share-qr { display:grid; justify-items:center; margin:2px 0 4px; }
+    .share-qr-card { display:grid; justify-items:center; gap:2px; width:min(100%,196px); padding:12px 12px 10px; border-radius:20px; background:#fff; color:#120800; }
+    .share-qr-card canvas { display:block; width:100%; height:auto; image-rendering:pixelated; }
+    .share-qr-card strong { max-width:100%; font-size:1rem; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .share-qr-card small { color:#c2540a; font-size:.6875rem; font-weight:800; letter-spacing:.08em; }
+    .share-sheet.is-profile .share-actions { justify-content:center; margin-top:8px; border-top:0; padding-top:4px; }
+    .share-sub { margin:14px -18px 10px; padding:14px 18px 0; border-top:1px solid var(--line); font-size:.875rem; font-weight:800; }
     .share-saved-link { display:inline-flex; align-items:center; min-height:44px; color:#9ecbff; font-size:.8125rem; font-weight:700; text-decoration:none; }
     .share-output { display:grid; gap:8px; min-width:0; justify-items:center; }
     .share-output:empty { display:none; }
@@ -315,16 +323,12 @@
     return qrReady;
   }
 
-  function showQr(output, makeQr, href) {
+  function drawQr(canvas, makeQr, href) {
     const qr = makeQr(0, 'M');
     qr.addData(href, 'Byte');
     qr.make();
     const n = qr.getModuleCount(), cell = 8;
-    const canvas = document.createElement('canvas');
     canvas.width = canvas.height = (n + 8) * cell;
-    canvas.dataset.profileQr = '';
-    canvas.setAttribute('role', 'img');
-    canvas.setAttribute('aria-label', t('qr'));
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -332,11 +336,26 @@
     for (let row = 0; row < n; row++) for (let col = 0; col < n; col++) {
       if (qr.isDark(row, col)) ctx.fillRect((col + 4) * cell, (row + 4) * cell, cell, cell);
     }
-    const link = document.createElement('a');
-    link.href = href;
-    link.textContent = href;
-    output.replaceChildren(canvas, link);
-    link.onclick = event => { event.preventDefault(); L.closeSheet(); L.go(new URL(href).hash); };
+    canvas.dataset.href = href;
+    canvas.dataset.ready = '';
+  }
+  // QR 카드를 한 장 그림으로 (흰 바탕 + QR + @닉네임 + GROOVE LOUNGE)
+  function qrImage(canvas, nick) {
+    const card = document.createElement('canvas'), pad = 48, size = canvas.width;
+    card.width = size + pad * 2;
+    card.height = size + pad * 2 + 96;
+    const ctx = card.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, card.width, card.height);
+    ctx.drawImage(canvas, pad, pad);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#120800';
+    ctx.font = '800 34px system-ui, sans-serif';
+    ctx.fillText('@' + nick, card.width / 2, size + pad + 52, card.width - pad);
+    ctx.fillStyle = '#c2540a';
+    ctx.font = '800 20px system-ui, sans-serif';
+    ctx.fillText('GROOVE LOUNGE', card.width / 2, size + pad + 88);
+    return card.toDataURL('image/png');
   }
 
   let opening = 0;
@@ -346,15 +365,20 @@
     const version = ++opening, hash = location.hash;
     if (!enabled(await config()) || version !== opening || hash !== location.hash) return;
     const record = id ? (typeof post === 'string' ? { id } : post) : null;
-    const panel = L.sheet('<h2>' + text('title') + '</h2>' + (L.me
+    const people = L.me
       ? '<form><label class="share-search">' + L.icon('search', { size: 20 }) + '<input name="q" type="search" maxlength="64" autocomplete="off" placeholder="' +
         t4('search') + '" aria-label="' + text('search') + '"></label>' +
         '<div class="share-targets" data-share-targets role="group" aria-label="' + text('recent') + '"></div>' +
         '<div class="share-selection" data-share-picks></div>' +
         '<div class="share-send" data-share-send hidden><input name="message" maxlength="500" placeholder="' + text('message') + '" aria-label="' + text('message') +
         '"><button class="btn btn-hot" type="submit" disabled>' + text('send') + '</button></div><p role="status"></p></form>'
-      : U.button(t4('login'), 'data-share-login', true)) +
-      '<div class="share-actions" data-share-actions></div><p data-share-status role="status"></p><div class="share-output"></div>', { close: true });
+      : U.button(t4('login'), 'data-share-login', true);
+    const tools = '<div class="share-actions" data-share-actions></div><p data-share-status role="status"></p><div class="share-output"></div>';
+    const panel = L.sheet('<h2>' + text('title') + '</h2>' + (record ? people + tools
+      : '<div class="share-qr" data-share-qr hidden><div class="share-qr-card"><canvas data-profile-qr role="img" aria-label="' + text('qr') +
+        '" width="8" height="8"></canvas><strong>@' + L.esc(nick) + '</strong><small>GROOVE LOUNGE</small></div></div>' + tools +
+        '<h3 class="share-sub">' + t4('dm') + '</h3>' + people), { close: true });
+    if (!record) panel.classList.add('is-profile');
     panel.classList.add('share-sheet');
     panel.querySelector('[data-sheet-x]').dataset.shareClose = '';   // 닫기 ✕ 는 오른쪽 위 한 곳 (B15)
     const login = panel.querySelector('[data-share-login]');
@@ -363,8 +387,8 @@
 
     const controls = panel.querySelector('.share-actions'), output = panel.querySelector('.share-output');
     const status = panel.querySelector('[data-share-status]');
-    const ICON = { copy: 'link', story: 'image', qr: 'grid', external: 'send' };
-    const LABEL = { copy: () => text('copy'), story: () => t4('story'), qr: () => t4('qr'), external: () => t4('external') };
+    const ICON = { copy: 'link', story: 'image', image: 'image', external: 'send' };
+    const LABEL = { copy: () => text('copy'), story: () => t4('story'), image: () => t4('image'), external: () => record ? t4('external') : text('title') };
     function action(key, handler) {
       const button = document.createElement('button');
       button.className = 'share-act';
@@ -378,8 +402,8 @@
         catch (error) { if (panel.isConnected && error.name !== 'AbortError') status.textContent = U.t('error'); }
         finally { button.disabled = false; }
       };
-      // 순서: 링크 복사 · 스토리 이미지 · QR · 다른 앱 (저장은 그 뒤)
-      const order = ['copy', 'story', 'qr', 'external'];
+      // 순서 — 글: 링크 복사 · 스토리 이미지 · 다른 앱 (저장은 그 뒤) / 프로필: 공유 · 링크 복사 · 이미지 저장
+      const order = record ? ['copy', 'story', 'external'] : ['external', 'copy', 'image'];
       const next = [...controls.querySelectorAll('[data-share-action]')].find(other => order.indexOf(other.dataset.shareAction) > order.indexOf(key)) ||
         controls.querySelector('[data-share-save]');
       controls.insertBefore(button, next || null);
@@ -407,7 +431,8 @@
       controls.append(saveButton(record, value => { saved.hidden = !value; onSave?.(value); }, true));
       controls.after(saved);
       if (isPrivate(record) || !await publicPost(id) || !panel.isConnected) return;
-      const href = url(publicPath(id));
+      const href = L.apiUrl('p/' + encodeURIComponent(id));   // 링크 복사·다른 앱으로 공유: 미리보기가 뜨는 서버 주소 (공개 글만 열림)
+      const shown = url(publicPath(id));                        // 스토리 그림에 적는 주소: 앱에서 여는 주소 그대로
       async function checked(work) {
         const current = await publicPost(id);
         if (!panel.isConnected) return;
@@ -425,7 +450,7 @@
         canvas.height = 1920;
         canvas.setAttribute('role', 'img');
         canvas.setAttribute('aria-label', t('story'));
-        await paintStory(canvas, current, href);
+        await paintStory(canvas, current, shown);
         if (!panel.isConnected) return;
         const link = document.createElement('a');
         link.className = 'btn';
@@ -439,26 +464,43 @@
       action('copy', () => checked(() => copyLink(href)));
     } else if (profile?.private !== true) {
       const lookup = () => L.api('user', { nick });
-      if ((await lookup()).user?.private !== false || !panel.isConnected) return;
-      // 공개 프로필만: 링크 복사 · QR · 다른 앱. 누를 때마다 지금도 공개인지 다시 확인한다.
+      const first = (await lookup()).user;
+      if (first?.private !== false || !panel.isConnected) return;
+      // 공개 프로필만: QR 카드가 먼저 보이고, 그 아래 공유 · 링크 복사 · 이미지 저장. 누를 때마다 지금도 공개인지 다시 확인한다.
+      const card = panel.querySelector('[data-share-qr]'), canvas = card.querySelector('canvas');
+      const hrefOf = name => url(profilePath(name));
       async function checkedProfile(work) {
         const current = (await lookup()).user;
         if (!panel.isConnected) return;
         if (current?.private !== false) {
           controls.querySelectorAll('[data-share-action]').forEach(button => button.remove());
+          card.hidden = true;
           output.replaceChildren();
           status.textContent = t('goneProfile');
           return;
         }
-        await work(url(profilePath(current.nick || nick)), current.nick || nick);
+        await work(hrefOf(current.nick || nick), current.nick || nick);
       }
-      action('qr', () => checkedProfile(async href => {
-        const makeQr = await loadQr();
-        if (panel.isConnected) showQr(output, makeQr, href);
-      }));
       if (typeof navigator.share === 'function') action('external', () => checkedProfile((href, name) =>
         navigator.share({ title: name + ' · GROOVE LOUNGE', url: href })));
       action('copy', () => checkedProfile(href => copyLink(href)));
+      action('image', () => checkedProfile((href, name) => {
+        if (!Object.hasOwn(canvas.dataset, 'ready')) throw new Error('qr');
+        const link = document.createElement('a');
+        link.download = 'groove-' + name + '.png';
+        link.href = qrImage(canvas, name);
+        link.click();
+      }));
+      try {
+        const makeQr = await loadQr();
+        if (!panel.isConnected) return;
+        const name = first.nick || nick;
+        card.querySelector('strong').textContent = '@' + name;
+        drawQr(canvas, makeQr, hrefOf(name));
+        card.hidden = false;
+      } catch (_) {
+        if (panel.isConnected) status.textContent = U.t('error');
+      }
     }
   }
 
