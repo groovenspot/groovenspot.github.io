@@ -60,6 +60,8 @@
 .feed4-video { position: relative; }
 .feed4-playmark { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 64px; height: 64px; padding-left: 4px; border-radius: 50%; background: rgba(10,9,9,.62); color: #fff; transform: translate(-50%, -50%); }
 .feed4-frame { display: block; width: 100%; height: 100%; border: 0; background: #000; }
+.feed4-tagged { position: absolute; left: 2px; bottom: 2px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: #fff; cursor: pointer; }
+.feed4-tagged > span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: rgba(10,9,9,.72); }
 .feed4-count { position: absolute; top: 12px; right: 12px; padding: 3px 10px; border-radius: 999px; background: rgba(10,9,9,.68); color: #fff; font-size: 12px; font-weight: 600; line-height: 1.5; pointer-events: none; }
 .feed4-burst { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; opacity: 0; pointer-events: none; filter: drop-shadow(0 4px 18px rgba(0,0,0,.45)); }
 .feed4-burst.is-on { animation: feed4-burst .85s ease-out; }
@@ -78,6 +80,7 @@
 .feed4-bar .feed4-dots.post-carousel-progress > span[data-current] { background: var(--g); }
 .feed4-bar .feed4-dots.post-carousel-progress:has(> span:nth-child(8)) { display: none; }
 /* share.js 가 만드는 공유·저장 버튼(글자 버튼)을 아이콘으로 보이게 — 이름은 그대로 읽힌다 */
+.feed4-bar [data-share-save] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .feed4-bar [data-share-post], .feed4-bar [data-share-save] { display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px; min-height: 0; padding: 0; border: 0; border-radius: 12px; background: none; color: var(--txt); font-size: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .feed4-bar [data-share-post]:not(:has(svg))::before, .feed4-bar [data-share-save]:not(:has(svg))::before { content: ''; width: 25px; height: 25px; background: currentColor; -webkit-mask: var(--feed4-ico) center / contain no-repeat; mask: var(--feed4-ico) center / contain no-repeat; }
 .feed4-bar [data-share-post] { --feed4-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 3 10.5 13.5M21 3l-6.6 18-3.9-7.5L3 9.6z'/%3E%3C/svg%3E"); }
@@ -93,7 +96,11 @@
 .feed4-cap { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; white-space: pre-wrap; }
 .feed4-cap.is-open { display: block; overflow: visible; }
 .feed4-cap > p { display: inline; }
-.feed4-capmore, .feed4-allc { justify-self: start; min-width: 44px; min-height: 44px; margin: -12px 0; padding: 0; border: 0; background: none; color: var(--muted); font: inherit; text-align: left; cursor: pointer; }
+/* 2줄을 넘는 글은 feed.js 가 잘라서(is-cut) 바로 뒤에 '… 더 보기'를 붙인다 — 누르는 자리는 44px, 줄 높이는 그대로 */
+.feed4-cap.is-cut { display: block; overflow: visible; }
+.feed4-capmore { display: inline-block; min-width: 44px; margin: -12px 0; padding: 12px 0; border: 0; background: none; color: var(--muted); font: inherit; text-align: left; white-space: nowrap; cursor: pointer; }
+.feed4-capmore i { font-style: normal; }
+.feed4-allc { justify-self: start; min-width: 44px; min-height: 44px; margin: -12px 0; padding: 0; border: 0; background: none; color: var(--muted); font: inherit; text-align: left; cursor: pointer; }
 .feed4-link { display: inline-flex; align-items: center; justify-self: start; min-height: 44px; margin: -10px 0; padding: 0; border: 0; background: none; color: #ffb27a; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
 .feed4-preview { display: grid; gap: 1px; cursor: pointer; }
 .feed4-preview:empty { display: none; }
@@ -113,7 +120,10 @@
 .feed4-wait { display: grid; place-items: center; min-height: 64px; }
 .feed4-wait > i { width: 22px; height: 22px; border: 2.5px solid var(--line-2); border-top-color: var(--txt); border-radius: 50%; animation: feed4-spin .7s linear infinite; }
 @keyframes feed4-spin { to { transform: rotate(360deg); } }
-.feed4-state { display: grid; justify-items: center; gap: 12px; padding: 56px 16px; color: var(--muted); text-align: center; }
+.feed4-state { display: grid; justify-items: center; gap: 10px; padding: 56px 16px; color: var(--muted); text-align: center; }
+.feed4-state > i { display: grid; place-items: center; width: 60px; height: 60px; margin-bottom: 4px; border: 2px solid var(--line-2); border-radius: 50%; color: var(--txt); }
+.feed4-state > strong { color: var(--txt); font-size: 16px; }
+.feed4-state > .btn { margin-top: 8px; min-height: 44px; font-size: 14px; }
 .feed4-end { display: grid; justify-items: center; gap: 4px; padding: 32px 16px 8px; color: var(--muted); font-size: 13px; text-align: center; }
 .feed4-end > i { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 6px; border: 2px solid var(--g); border-radius: 50%; color: var(--g); }
 .feed4-end > strong { color: var(--txt); font-size: 15px; }
@@ -121,6 +131,8 @@
 
 /* 시트 (댓글 · 좋아요한 사람) */
 #sheet > .in.feed4-sheet { display: flex; flex-direction: column; height: 78vh; height: min(78dvh, var(--lounge-visual-height, 78dvh)); padding: 0; overflow: hidden; font-size: 14px; line-height: 1.45; }
+#sheet > .in.feed4-sheet::before { content: none; }   /* 손잡이는 아래 머리줄이 그린다 (틀이 모든 시트에 손잡이를 넣어도 겹치지 않게) */
+#sheet > .in.feed4-sheet.is-auto { height: auto; max-height: 78vh; max-height: min(78dvh, var(--lounge-visual-height, 78dvh)); padding-bottom: env(safe-area-inset-bottom); }
 .feed4-sheet-head { position: relative; display: grid; place-items: center; flex: none; min-height: 50px; border-bottom: 1px solid var(--line); }
 .feed4-sheet-head::before { content: ''; position: absolute; top: 6px; left: 50%; width: 36px; height: 4px; border-radius: 2px; background: var(--line-2); transform: translateX(-50%); }
 .feed4-sheet-head h2 { padding-top: 6px; font-size: 15px; font-weight: 800; }
@@ -155,6 +167,21 @@
 .feed4-send:disabled { opacity: .45; }
 .feed4-llist { flex: 1; min-height: 0; padding: 6px 14px; overflow-y: auto; overscroll-behavior: contain; }
 .feed4-urow { display: flex; align-items: center; gap: 12px; min-height: 60px; color: var(--txt); font-weight: 700; text-decoration: none; }
+.feed4-urow > span:not(.ui-avatar) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.feed4-pending { flex: none; padding: 3px 9px; border: 1px solid var(--line-2); border-radius: 999px; color: var(--muted); font-size: 12px; font-style: normal; font-weight: 600; }
+/* 저장 모음 고르기 */
+.feed4-col { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 0; border: 0; background: none; color: var(--txt); font: inherit; text-align: left; cursor: pointer; }
+.feed4-col:disabled { opacity: .5; }
+.feed4-col-cover { display: grid; place-items: center; flex: none; width: 48px; height: 48px; border-radius: 10px; overflow: hidden; background: var(--bg-2); color: var(--muted); }
+.feed4-col-cover img { width: 100%; height: 100%; object-fit: cover; }
+.feed4-col-name { display: grid; flex: 1; min-width: 0; line-height: 1.3; }
+.feed4-col-name b { overflow: hidden; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.feed4-col-name small { color: var(--muted); font-size: 12px; }
+.feed4-colnew { display: flex; align-items: center; gap: 8px; flex: none; padding: 10px 6px calc(10px + env(safe-area-inset-bottom)) 14px; border-top: 1px solid var(--line); }
+.feed4-colnew input { flex: 1; min-width: 0; min-height: 44px; padding: 8px 14px; border: 1px solid var(--line-2); border-radius: 22px; background: transparent; }
+/* 저장 직후 잠깐 뜨는 줄 */
+.feed4-snack { position: fixed; left: 50%; bottom: calc(var(--tab-h, 74px) + 14px + env(safe-area-inset-bottom) + var(--lounge-bottom-inset, 0px)); z-index: 12; display: flex; align-items: center; gap: 4px; width: max-content; max-width: calc(100vw - 24px); padding: 0 4px 0 16px; border-radius: 12px; background: #2a2420; color: var(--txt); font-size: 14px; transform: translateX(-50%); box-shadow: 0 6px 20px rgba(0,0,0,.45); }
+.feed4-snack button { min-height: 44px; padding: 0 12px; border: 0; background: none; color: #ffb27a; font: inherit; font-weight: 800; cursor: pointer; }
 
 /* 글 상세: 카드 아래에 댓글이 바로 */
 .feed4-detail-comments { margin-inline: -16px; border-top: 1px solid var(--line); }

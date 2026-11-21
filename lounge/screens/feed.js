@@ -314,7 +314,14 @@ const LoungePostUI = (() => {
     copy: ['링크 복사', 'Copy link'], copied: ['링크를 복사했어요.', 'Link copied.'],
     newPosts: ['새 게시물', 'New posts'], end: ['모두 확인했어요', 'You’re all caught up'],
     endBody: ['새 글이 올라오면 여기에 보여요.', 'New posts will show up here.'],
-    play: ['영상 재생', 'Play video'], edited: ['수정됨', 'Edited'], video: ['영상', 'Video']
+    play: ['영상 재생', 'Play video'], edited: ['수정됨', 'Edited'], video: ['영상', 'Video'],
+    tagged: ['태그된 사람', 'Tagged people'], taggedN: ['태그된 사람 {n}명', '{n} tagged people'], pending: ['승인 대기', 'Awaiting approval'],
+    saved: ['저장했어요', 'Saved'], toCollection: ['모음에 저장', 'Save to collection'], collections: ['모음에 저장', 'Save to collection'],
+    newCollection: ['새 모음 이름', 'New collection name'], create: ['만들기', 'Create'], items: ['{n}개', '{n} posts'],
+    savedTo: ['‘{title}’ 모음에 저장했어요.', 'Saved to “{title}”.'], collectionLimit: ['모음은 20개까지 만들 수 있어요.', 'You can create up to 20 collections.'],
+    noCollections: ['아직 모음이 없어요. 아래에서 새로 만들어 보세요.', 'No collections yet. Create one below.'],
+    gone: ['게시물을 볼 수 없어요', 'This post isn’t available'], goneBody: ['지워졌거나 볼 수 없는 글이에요.', 'It may have been deleted or isn’t visible to you.'],
+    followTitle: ['팔로우한 사람이 올린 글이 아직 없어요', 'No posts from people you follow yet'], suggest: ['추천 계정 보기', 'See suggested accounts']
   });
   L.i18n({
     ja: {
@@ -331,7 +338,14 @@ const LoungePostUI = (() => {
       'feed4.unpinned': '固定を解除しました。', 'feed4.pinLimit': '固定できるのは3件までです。',
       'feed4.save': '保存', 'feed4.unsave': '保存を取り消す', 'feed4.share': 'シェア', 'feed4.copy': 'リンクをコピー',
       'feed4.copied': 'リンクをコピーしました。', 'feed4.newPosts': '新しい投稿', 'feed4.end': 'すべてチェックしました',
-      'feed4.endBody': '新しい投稿があるとここに表示されます。', 'feed4.play': '動画を再生', 'feed4.edited': '編集済み', 'feed4.video': '動画'
+      'feed4.endBody': '新しい投稿があるとここに表示されます。', 'feed4.play': '動画を再生', 'feed4.edited': '編集済み', 'feed4.video': '動画',
+      'feed4.tagged': 'タグ付けされた人', 'feed4.taggedN': 'タグ付けされた人 {n}人', 'feed4.pending': '承認待ち',
+      'feed4.saved': '保存しました', 'feed4.toCollection': 'コレクションに保存', 'feed4.collections': 'コレクションに保存',
+      'feed4.newCollection': '新しいコレクション名', 'feed4.create': '作成', 'feed4.items': '{n}件',
+      'feed4.savedTo': '「{title}」に保存しました。', 'feed4.collectionLimit': 'コレクションは20個まで作成できます。',
+      'feed4.noCollections': 'まだコレクションがありません。下で作成できます。',
+      'feed4.gone': 'この投稿は表示できません', 'feed4.goneBody': '削除されたか、表示できない投稿です。',
+      'feed4.followTitle': 'フォロー中の人の投稿はまだありません', 'feed4.suggest': 'おすすめアカウントを見る'
     },
     zh: {
       'feed4.post': '帖子', 'feed4.search': '搜索', 'feed4.albums': '相册', 'feed4.challenge': '挑战',
@@ -345,7 +359,14 @@ const LoungePostUI = (() => {
       'feed4.pinned': '已置顶到主页。', 'feed4.unpinned': '已取消置顶。', 'feed4.pinLimit': '最多可置顶 3 条帖子。',
       'feed4.save': '收藏', 'feed4.unsave': '取消收藏', 'feed4.share': '分享', 'feed4.copy': '复制链接',
       'feed4.copied': '链接已复制。', 'feed4.newPosts': '新帖子', 'feed4.end': '你已看完全部内容',
-      'feed4.endBody': '有新帖子时会显示在这里。', 'feed4.play': '播放视频', 'feed4.edited': '已编辑', 'feed4.video': '视频'
+      'feed4.endBody': '有新帖子时会显示在这里。', 'feed4.play': '播放视频', 'feed4.edited': '已编辑', 'feed4.video': '视频',
+      'feed4.tagged': '被标记的人', 'feed4.taggedN': '{n} 位被标记的人', 'feed4.pending': '等待确认',
+      'feed4.saved': '已收藏', 'feed4.toCollection': '收藏到合集', 'feed4.collections': '收藏到合集',
+      'feed4.newCollection': '新合集名称', 'feed4.create': '创建', 'feed4.items': '{n} 条',
+      'feed4.savedTo': '已收藏到“{title}”。', 'feed4.collectionLimit': '最多可创建 20 个合集。',
+      'feed4.noCollections': '还没有合集，可在下方新建。',
+      'feed4.gone': '无法查看此帖子', 'feed4.goneBody': '帖子可能已被删除或无法查看。',
+      'feed4.followTitle': '你关注的人还没有发帖', 'feed4.suggest': '查看推荐账号'
     }
   });
 
@@ -393,6 +414,94 @@ const LoungePostUI = (() => {
     sync(post.id);
   }
 
+  // ── 저장 모음 ── 서버가 collections 를 모르면(예전 서버) 어디에도 보이지 않는다
+  let collectionsKnown = null, collectionsAsk = null;
+  function collectionsOk() {
+    if (!L.me) return Promise.resolve(false);
+    collectionsAsk ||= L.api('collections').then(result => {
+      if (Array.isArray(result.list)) return (collectionsKnown = true);
+      if (result.error === 'network' || result.error === 'server') { collectionsAsk = null; return false; }
+      return (collectionsKnown = false);
+    });
+    return collectionsAsk;
+  }
+  function markSaved(post) {
+    post.saved = true;
+    document.querySelectorAll('.feed4-bar [data-share-save]').forEach(button => {
+      if (button.dataset.shareSave !== String(post.id)) return;
+      button.setAttribute('aria-pressed', 'true');
+      if (!button.querySelector('svg')) button.textContent = L.t('feed4.unsave');
+    });
+  }
+  function openCollections(post) {
+    if (L.needLogin()) return;
+    const panel = L.sheet(sheetHead(w('collections')) + '<div class="feed4-llist" data-collections>' + spinner() + '</div>' +
+      '<form class="feed4-colnew" data-collection-new><input name="title" maxlength="20" required autocomplete="off" placeholder="' + w('newCollection') +
+      '" aria-label="' + w('newCollection') + '"><button type="submit" class="feed4-send">' + w('create') + '</button></form>');
+    panel.classList.add('feed4-sheet', 'feed4-colsheet');
+    panel.querySelector('[data-sheet-close]').onclick = () => L.closeSheet();
+    const list = panel.querySelector('[data-collections]'), form = panel.querySelector('form');
+    let busy = false;
+    async function put(id, title) {
+      const result = await L.api('save', { post: post.id, collection: id });
+      if (!result || result.ok !== true) { U.error(result); return false; }
+      markSaved(post);
+      if (panel.isConnected) L.closeSheet();
+      L.toast(L.t('feed4.savedTo', { title }));
+      return true;
+    }
+    list.addEventListener('click', async event => {
+      const button = event.target.closest('[data-collection]');
+      if (!button || busy) return;
+      busy = true;
+      button.disabled = true;
+      if (!await put(button.dataset.collection, button.dataset.title) && button.isConnected) button.disabled = false;
+      busy = false;
+    });
+    form.onsubmit = async event => {
+      event.preventDefault();
+      const title = form.elements.title.value.trim().slice(0, 20), send = form.querySelector('button');
+      if (!title || busy) return;
+      busy = true;
+      send.disabled = true;
+      const made = await L.api('collection_set', { title });
+      if (made?.ok === true && made.id != null) await put(made.id, title);
+      else if (made?.error === 'collection_limit') L.toast(L.t('feed4.collectionLimit'));
+      else U.error(made);
+      busy = false;
+      if (send.isConnected) send.disabled = false;
+    };
+    L.api('collections').then(result => {
+      if (!panel.isConnected) return;
+      if (!Array.isArray(result.list)) return L.closeSheet();
+      list.innerHTML = result.list.map(item => {
+        const cover = L.photoSrc(item.cover);
+        return '<button type="button" class="feed4-col" data-collection="' + L.esc(item.id) + '" data-title="' + L.esc(item.title) + '">' +
+          '<span class="feed4-col-cover">' + (cover ? '<img src="' + L.esc(cover) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : L.icon('bookmark', { size: 20 })) +
+          '</span><span class="feed4-col-name"><b>' + L.esc(item.title) + '</b><small>' + w('items', { n: L.count(item.count) }) + '</small></span>' +
+          L.icon('plus', { size: 20 }) + '</button>';
+      }).join('') || '<div class="feed4-cempty"><span>' + w('noCollections') + '</span></div>';
+    });
+    return panel;
+  }
+  // 저장 직후 아래에 잠깐 뜨는 줄: '저장했어요 · 모음에 저장'
+  let snackTimer;
+  function offerCollection(post) {
+    let snack = document.querySelector('.feed4-snack');
+    if (!snack) {
+      snack = document.createElement('div');
+      snack.className = 'feed4-snack';
+      snack.setAttribute('role', 'status');
+      document.body.append(snack);
+    }
+    snack.innerHTML = '<span>' + w('saved') + '</span><button type="button" data-to-collection>' + w('toCollection') + '</button>';
+    snack.hidden = false;
+    snack.querySelector('button').onclick = () => { snack.hidden = true; openCollections(post); };
+    clearTimeout(snackTimer);
+    snackTimer = setTimeout(() => { snack.hidden = true; }, 4500);
+  }
+  window.addEventListener('hashchange', () => { const snack = document.querySelector('.feed4-snack'); if (snack) snack.hidden = true; });
+
   // ── 글 카드 ──
   function buildCard(post, opt = {}) {
     const card = document.createElement('article');
@@ -437,6 +546,7 @@ const LoungePostUI = (() => {
     const floorLabel = card.dataset.floor ? post.floor + ' ' + (post.floor === '2F' ? 'GROOVE' : 'SPOT') : '';
     const sub = [floorLabel, album ? t('photos') : ''].filter(Boolean).join(' · ');
     const canFollow = member && !mine && post.author?.following === false && Boolean(L.me);
+    const tagged = (Array.isArray(post.tagged) ? post.tagged : []).filter(person => person?.nick);
 
     card.innerHTML = '<header class="feed4-head">' +
       (linked || person.photo ? L.avatar(person, 34, { link: linked, ring: true })
@@ -451,6 +561,8 @@ const LoungePostUI = (() => {
       iconButton('more', 'data-more', w('menu')) + '</header>' +
       (media.length ? '<div class="feed4-media" data-media style="aspect-ratio:' + ratio.toFixed(4) + '"' + (known || videoId ? '' : ' data-auto') + '>' +
         (sliding ? '<div class="feed4-track" data-feed-carousel></div>' : '<div class="feed4-single">' + media[0] + '</div>') +
+        (tagged.length ? '<button type="button" class="feed4-tagged" data-tagged aria-label="' + w('taggedN', { n: tagged.length }) + '"><span>' +
+          L.icon('user', { size: 16, fill: true }) + '</span></button>' : '') +
         '<span class="feed4-count" data-count hidden></span><span class="feed4-burst" data-burst aria-hidden="true">' +
         L.icon('heart', { fill: true, size: 96 }) + '</span></div>' : '') +
       '<div class="feed4-bar post-actions" data-post-layout><div class="feed4-bar-left" data-bar-left>' +
@@ -460,7 +572,7 @@ const LoungePostUI = (() => {
       '<div class="feed4-body post-card-body"><button type="button" class="feed4-likes" data-likes hidden></button>' +
       (post.text ? '<div class="feed4-cap' + (opt.detail ? ' is-open' : '') + '" data-cap>' +
         (linked ? '<a class="feed4-nick" href="' + profileLink(nick) + '">' + L.esc(nick) + '</a>' : '<strong class="feed4-nick">' + L.esc(nick) + '</strong>') +
-        ' <p>' + L.linkify(post.text) + '</p></div><button type="button" class="feed4-capmore" data-cap-more hidden>' + w('capMore') + '</button>' : '') +
+        ' <p>' + L.linkify(post.text) + '</p></div>' : '') +
       (album ? '<a class="feed4-link" href="' + albumLink + '">' + t('morePhotos') + '</a>' : '') +
       (post.challenge ? '<a class="feed4-link" href="#/challenge">' + t('challenge') + '</a>' : '') +
       (videoUrl && !images.length ? '<button type="button" class="feed4-link" data-video-play>' + w('play') + '</button>' : '') +
@@ -575,15 +687,43 @@ const LoungePostUI = (() => {
     if (allComments) allComments.onclick = () => openComments(false);
     if (preview) preview.onclick = event => { if (!event.target.closest('a')) openComments(false); };
 
-    // 글 2줄 + '더 보기'
-    const caption = card.querySelector('[data-cap]'), captionMore = card.querySelector('[data-cap-more]');
+    // 글은 2줄까지: 넘치면 둘째 줄 끝에 맞춰 자르고 바로 뒤에 회색 '… 더 보기' (누르면 전체)
+    const caption = card.querySelector('[data-cap]');
     if (caption && !opt.detail) {
-      const measure = () => { if (caption.isConnected && !caption.classList.contains('is-open')) captionMore.hidden = caption.scrollHeight <= caption.clientHeight + 1; };
-      requestAnimationFrame(measure);
-      captionMore.onclick = () => {
-        caption.classList.add('is-open');
-        captionMore.hidden = true;
+      const para = caption.querySelector('p'), full = String(post.text), chars = Array.from(full);
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'feed4-capmore';
+      more.dataset.capMore = '';
+      more.innerHTML = '<i aria-hidden="true">… </i>' + w('capMore');
+      const cut = () => {
+        if (!caption.isConnected || caption.classList.contains('is-open')) return;
+        const limit = (parseFloat(getComputedStyle(caption).lineHeight) || 20.3) * 2 + 1;
+        const fits = () => caption.offsetHeight <= limit;
+        more.remove();
+        caption.classList.add('is-cut');
+        para.innerHTML = L.linkify(full);
+        if (fits()) return;
+        caption.append(more);
+        let low = 0, high = chars.length - 1;
+        while (low < high) {
+          const middle = (low + high + 1) >> 1;
+          para.innerHTML = L.linkify(chars.slice(0, middle).join('').trimEnd());
+          if (fits()) low = middle; else high = middle - 1;
+        }
+        let text = chars.slice(0, low).join('');
+        const token = text.match(/(?:^|\s)([@#]\S*)$/);   // @닉네임·#태그 중간에서 끊기면 그 낱말 앞에서
+        if (token && !/\s/.test(chars[low] || ' ')) text = text.slice(0, text.length - token[1].length);
+        para.innerHTML = L.linkify(text.trimEnd());
       };
+      more.onclick = () => {
+        caption.classList.remove('is-cut');
+        caption.classList.add('is-open');
+        more.remove();
+        para.innerHTML = L.linkify(full);
+      };
+      requestAnimationFrame(cut);
+      if (document.fonts && document.fonts.status !== 'loaded') document.fonts.ready.then(() => requestAnimationFrame(cut));
     }
 
     // 사진: 두 번 누르면 좋아요(+하트), 손님 사진은 한 번 누르면 크게 보기
@@ -629,6 +769,7 @@ const LoungePostUI = (() => {
       mediaBox.addEventListener('click', event => {
         const play = event.target.closest('[data-video-play]');
         if (play) return playVideo();
+        if (event.target.closest('[data-tagged]')) return openTagged();
         if (event.target.closest('a, iframe')) return;
         if (event.timeStamp - lastTap < 320) {
           lastTap = -1000;
@@ -645,6 +786,14 @@ const LoungePostUI = (() => {
           timer = setTimeout(() => { if (card.isConnected) zoom(Number(button.dataset.memberPhoto)); }, 300);
         }
       });
+    }
+    // 태그된 사람 목록 (글쓴이 본인에게는 아직 승인 안 된 태그도 '승인 대기'로 보인다)
+    function openTagged() {
+      const panel = L.sheet(sheetHead(w('tagged')) + '<div class="feed4-llist" data-tagged-list>' + tagged.map(person =>
+        '<a class="feed4-urow" href="' + profileLink(person.nick) + '">' + L.avatar(person, 44) + '<span>' + L.esc(person.nick) + '</span>' +
+        (person.pending ? '<em class="feed4-pending">' + w('pending') + '</em>' : '') + '</a>').join('') + '</div>');
+      panel.classList.add('feed4-sheet', 'is-auto');
+      panel.querySelector('[data-sheet-close]').onclick = () => L.closeSheet();
     }
     // 공식 유튜브 글: 앱 안에서 재생 (눌렀을 때만 youtube-nocookie 를 부른다)
     function playVideo() {
@@ -687,10 +836,36 @@ const LoungePostUI = (() => {
     const bar = card.querySelector('.feed4-bar');
     (opt.settings || (opt.settings = L.api('config'))).then(settings => {
       if (!card.isConnected || !window.LoungeShare) return;
-      window.LoungeShare.actions(bar, post, settings);
+      window.LoungeShare.actions(bar, post, settings, saved => {
+        if (saved) collectionsOk().then(ok => { if (ok && card.isConnected) offerCollection(post); });
+      });
       const share = bar.querySelector(':scope > [data-share-post]'), save = bar.querySelector(':scope > [data-share-save]');
+      const right = card.querySelector('[data-bar-right]');
       if (share) card.querySelector('[data-bar-left]').append(share);
-      if (save) card.querySelector('[data-bar-right]').append(save);
+      if (!save) return;
+      right.append(save);
+      if (L.me) void collectionsOk();
+      // 책갈피를 길게 누르면 모음 고르기 (모음을 아는 서버일 때만 — 아니면 평소처럼 저장만)
+      let timer, held = false;
+      const cancel = () => clearTimeout(timer);
+      save.addEventListener('pointerdown', () => {
+        held = false;
+        cancel();
+        timer = setTimeout(() => {
+          if (collectionsKnown !== true || !card.isConnected) return;
+          held = true;
+          setTimeout(() => { held = false; }, 1200);   // 손을 뗄 때 클릭이 안 생기는 기기에서도 다음 누르기를 막지 않게
+          openCollections(post);
+        }, 500);
+      });
+      for (const name of ['pointerup', 'pointerleave', 'pointercancel']) save.addEventListener(name, cancel);
+      save.addEventListener('contextmenu', event => event.preventDefault());
+      right.addEventListener('click', event => {   // 길게 누른 손을 뗄 때 생기는 클릭은 저장 버튼에 닿지 않게
+        if (!held) return;
+        held = false;
+        event.stopPropagation();
+        event.preventDefault();
+      }, true);
     });
 
     // ⋯ 메뉴
@@ -743,6 +918,8 @@ const LoungePostUI = (() => {
         mine && post.canEdit === true && { label: L.t('feed4.edit'), icon: 'edit', on: () => L.go('compose?edit=' + encodeURIComponent(post.id)) },
         mine && typeof post.pinned === 'boolean' && { label: L.t(post.pinned ? 'feed4.unpin' : 'feed4.pin'), icon: 'pin', on: pin },
         save && { label: L.t(save.getAttribute('aria-pressed') === 'true' ? 'feed4.unsave' : 'feed4.save'), icon: 'bookmark', on: () => save.click() },
+        save && collectionsKnown === true && { label: L.t('feed4.toCollection'), icon: 'layers', on: () => openCollections(post) },
+        tagged.length > 0 && { label: L.t('feed4.tagged'), icon: 'tagged', on: openTagged },
         share && { label: L.t('feed4.share'), icon: 'send', on: () => share.click() },
         { label: L.t('feed4.copy'), icon: 'link', on: copyLink },
         videoUrl && { label: L.t('feed.youtube'), icon: 'play', on: () => window.open(videoUrl, '_blank', 'noopener') },
@@ -991,7 +1168,7 @@ const LoungePostUI = (() => {
     '<div class="feed4-skel-line" aria-hidden="true"></div></div>';
   const notice = (message, retry) => '<div class="feed4-state" role="status"><p>' + message + '</p>' +
     (retry ? '<button type="button" class="btn" data-retry>' + L.esc(L.t('ui.retry')) + '</button>' : '') + '</div>';
-  let active = null, listState = null;
+  let active = null, again = null, listState = null;
   // 글쓰기 화면이 글을 고치면(lounge:post-edit) 맡아 둔 목록·그려 둔 카드의 그 글도 바꿔 둔다 → 뒤로 돌아오면 고친 글이 보인다
   window.addEventListener('lounge:post-edit', event => {
     const detail = event.detail || {}, id = detail.id ?? detail.post?.id;
@@ -1011,6 +1188,7 @@ const LoungePostUI = (() => {
   function renderDetail(root, id) {
     let dead = false;
     active = () => { dead = true; };
+    again = () => { if (!root.querySelector('[data-post]')) void load(); };
     root.innerHTML = '<section class="feed4" data-feed>' + L.bar({ title: L.t('feed4.post'), back: 'feed' }) +
       '<div data-posts></div><div data-page aria-live="polite">' + skeleton() + '</div><div class="feed4-detail-comments" data-detail-comments hidden></div></section>';
     const list = root.querySelector('[data-posts]'), page = root.querySelector('[data-page]'), host = root.querySelector('[data-detail-comments]');
@@ -1018,8 +1196,10 @@ const LoungePostUI = (() => {
       page.innerHTML = skeleton();
       const response = await L.api('post_get', { id });
       if (dead) return;
-      if (!response.post) {
-        page.innerHTML = response.error === 'missing' ? notice(t('missing')) : notice(U.t('error'), true);
+      if (!response.post) {   // 지워졌거나 볼 수 없는 글: 위 막대는 그대로 두고 안내만
+        page.innerHTML = ['network', 'server'].includes(response.error) ? notice(U.t('error'), true)
+          : '<div class="feed4-state" role="status" data-gone><i aria-hidden="true">' + L.icon('image', { size: 28 }) + '</i><strong>' + w('gone') +
+            '</strong><p>' + w('goneBody') + '</p></div>';
         const retry = page.querySelector('[data-retry]');
         if (retry) retry.onclick = load;
         return;
@@ -1090,7 +1270,11 @@ const LoungePostUI = (() => {
       });
     }
     function empty() {
-      if (state.tab === 'following') return notice(t('moreEmpty'));
+      if (state.tab === 'following') {
+        const suggest = config?.open?.follow2 === true && (L.hasScreen ? L.hasScreen('suggest') : true);
+        return '<div class="feed4-state" role="status" data-empty="following"><i aria-hidden="true">' + L.icon('userPlus', { size: 28 }) + '</i><strong>' +
+          w('followTitle') + '</strong><p>' + t('moreEmpty') + '</p>' + (suggest ? '<a class="btn btn-hot" href="#/suggest">' + w('suggest') + '</a>' : '') + '</div>';
+      }
       if (state.tab === 'all') return notice(t('feedEmpty'));
       return notice(t('floorEmpty', { floor: state.tab }));
     }
@@ -1162,6 +1346,7 @@ const LoungePostUI = (() => {
       watch();
     }
     const refresh = () => load(true, true);
+    again = () => { void refresh(); };   // 아래 '피드' 탭을 다시 누르면(틀이 맨 위로 올린 뒤) 새로고침
 
     // 뒤로 돌아왔으면 보던 글·탭·자리 그대로
     paintTools();
@@ -1176,6 +1361,7 @@ const LoungePostUI = (() => {
       if (dead) return;
       config = result;
       paintTools();
+      if (page.querySelector('[data-empty]')) page.innerHTML = empty();   // 설정을 받은 뒤에야 '추천 계정 보기'를 보일지 안다
       const tray = root.querySelector('[data-story-tray]');
       if (L.storyTray && result?.open?.stories === true) {
         try { L.storyTray(tray); } catch (error) { console.error(error); }
@@ -1208,5 +1394,6 @@ const LoungePostUI = (() => {
   function render(root, params = {}) {
     if (params.id) renderDetail(root, params.id); else renderList(root, params);
   }
-  L.screen('feed', { nav: 'feed', auth: false, title: 'nav.feed', bar: 'own', render, leave() { active?.(); active = null; } });
+  L.screen('feed', { nav: 'feed', auth: false, title: 'nav.feed', bar: 'own', render,
+    refresh() { again?.(); }, leave() { active?.(); active = null; again = null; } });
 })();
