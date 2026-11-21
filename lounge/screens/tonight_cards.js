@@ -43,10 +43,11 @@
   L.i18n(dict);
   const t = (key, vars) => L.esc(L.t('tcard5.' + key, vars));
   const icon = name => L.icon ? L.icon(name) : '';
-  function mount(el, cls, visible = true) {
+  function mount(el, cls, visible) {
     el.replaceChildren();
     el.className = 'tcard5 ' + cls;
-    el.hidden = !L.open('tonight5') || !visible;
+    // 세 번째 값을 안 주면 보임. undefined 가 넘어오면(빈 recap 등) 숨김 — 기본값 문법은 undefined 를 '보임'으로 바꿔 버린다
+    el.hidden = !L.open('tonight5') || (arguments.length > 2 && !visible);
     return !el.hidden;
   }
   const image = value => U.image(value);
