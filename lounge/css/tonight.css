@@ -1,1 +1,25 @@
-/* 그루브 라운지 5차 — 오늘 밤 탭 개편: tonight (주인 작업창만 고침 · 서버 저장소 lounge/SPEC5.md 3장) */
+/* SPEC5 home; selectors are scoped so the classic view is unchanged. */
+.t5-home{max-width:640px;margin:auto;overflow-wrap:anywhere;padding-bottom:24px}
+.t5-home *{box-sizing:border-box;min-width:0}
+.t5-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px;margin-bottom:12px}
+.t5-bar>div{display:flex;flex-shrink:0}.t5-bar a,.t5-home button{min-height:44px;min-width:44px}
+.t5-logo{font-size:18px;font-weight:900;letter-spacing:.04em;line-height:1.2}
+.t5-status{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.t5-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:24px;font-size:12px}
+.t5-dot{width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--muted)}.t5-dot.is-open{background:var(--ok)}
+.t5-floors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.t5-floor{--floor:var(--g);padding:16px 12px;background:var(--card);border:1px solid var(--line);border-top:3px solid var(--floor);border-radius:16px;overflow:hidden}
+.t5-floor[data-floor="3F"]{--floor:var(--s)}.t5-floor h2{font-size:16px;margin:0}.t5-floor p{margin:6px 0}.t5-floor .muted,.t5-now-label{font-size:12px}.t5-now-label{padding-top:12px;color:var(--muted)}
+.t5-dj{display:block;font-size:26px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}.t5-next{font-size:12px;min-height:18px}
+.t5-crowd{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px;margin-top:16px}.t5-crowd small{color:var(--muted)}
+.t5-crowd-bars{display:flex;gap:3px}.t5-crowd-bars i{display:block;width:10px;height:14px;border-radius:2px;background:var(--line)}.t5-crowd-bars .on{background:var(--floor)}
+.t5-section{margin:24px 0}.t5-section[hidden]{display:none}.t5-section>h2{font-size:18px;margin:0 0 12px}
+.t5-hero{position:relative;isolation:isolate;background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin:16px 0}
+.t5-hero-image{aspect-ratio:4/5}.t5-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.t5-hero-image:before{content:"";position:absolute;inset:0;background:linear-gradient(transparent 10%,rgba(0,0,0,.85) 48%,#090909 100%);z-index:-1}
+.t5-hero-copy{padding:24px 20px}.t5-hero-image .t5-hero-copy{position:absolute;bottom:0;left:0;right:0;color:#fff;max-height:100%;overflow:auto}.t5-hero-copy h1{font-size:28px;line-height:1.2;margin:10px 0}.t5-hero-copy p{font-size:14px;margin:8px 0}
+.t5-skeleton{display:grid;gap:16px;padding:12px 0}.t5-skeleton i{display:block;height:120px;border-radius:16px;background:var(--card);animation:t5-pulse 1.4s ease-in-out infinite alternate}.t5-skeleton i:first-child{height:32px}
+@keyframes t5-pulse{to{opacity:.4}}@media(prefers-reduced-motion:reduce){.t5-skeleton i{animation:none}}
+
+/* Async parts may hide themselves or provide their own section heading. */
+.t5-section:has(>div[hidden]){display:none}
+.t5-section:has(>div h2)>h2{display:none}
