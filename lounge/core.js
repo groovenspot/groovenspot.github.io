@@ -5,7 +5,7 @@
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
   var features = Object.create(null), configPending;
   var gates = { rooms: 'rooms', dm: 'dm', challenge: 'challenge', compose: 'posts',
-    rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety' };
+    rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety', shorts: 'play1' };
   var STAFF_API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
   var staffTeamLabels = {
     'GROOVE 영업팀': { ko: '영업팀', en: 'Sales', ja: '営業チーム', zh: '销售团队' },
