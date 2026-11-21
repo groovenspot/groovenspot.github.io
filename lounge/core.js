@@ -134,6 +134,8 @@
       return label ? nick + ' <span class="lounge-who-tag" data-kind="' + person.tag.kind + '">' + L.esc(label) + '</span>' : nick;
     },
     img: function (key) { return key ? API.replace(/\/$/, '') + '/img/' + encodeURIComponent(key).replace(/%2F/g, '/') : ''; },
+    // 라운지 서버 주소로 만든 전체 주소: L.apiUrl('p/<글id>') → 'https://…workers.dev/p/<글id>' (밖으로 보내는 공유 링크 — 서버가 미리보기(og)를 주고 앱으로 넘긴다)
+    apiUrl: function (path) { return new URL(String(path || '').replace(/^\/+/, ''), new URL(API.replace(/\/$/, '') + '/', location.href)).href; },
     upload: async function (file, kind) {
       var t = session;
       if (!t) throw new Error('auth');
