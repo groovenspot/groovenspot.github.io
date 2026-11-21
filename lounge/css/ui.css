@@ -1,0 +1,69 @@
+/* 그루브 라운지 공통 부품 모양 (4차 · ui.js 와 한 쌍) — 주인: 틀 작업창(A) */
+.ui-icon { display: block; flex: none; }
+.ui-avatar { --s: 40px; position: relative; display: inline-grid; place-items: center; flex: none; width: var(--s); height: var(--s); border-radius: 50%; background: #2a2523; color: var(--txt); text-decoration: none; }
+.ui-avatar > .ui-avatar-letter { width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: calc(var(--s) * .42); }
+/* 사진은 칸에 딱 맞춰 자른다 — 세로로 긴 사진이 타원으로 찌그러지지 않게 (통합 때 고침) */
+.ui-avatar > img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.ui-avatar[data-story] > img { inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); }
+.ui-avatar[data-story] { padding: 3px; background: var(--bg); box-shadow: 0 0 0 2px var(--g); }
+.ui-avatar[data-story="seen"] { box-shadow: 0 0 0 1.5px var(--line-2); }
+.ui-mention, .ui-hashtag { color: #9ecbff; text-decoration: none; font-weight: 600; }
+/* 화면 자체 위 막대 */
+#app.own-bar > .lounge-header { display: none; }
+.ui-bar { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: minmax(44px, auto) 1fr minmax(44px, auto); align-items: center; gap: 4px; min-height: 48px; margin: -16px -16px 0; padding: 0 6px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.ui-bar-side { display: flex; align-items: center; gap: 2px; }
+.ui-bar-side.is-right { justify-content: flex-end; }
+.ui-bar-title { min-width: 0; text-align: center; }
+.ui-bar-title h1 { font-size: 1.0625rem; font-weight: 800; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ui-bar-title p { font-size: .75rem; color: var(--muted); line-height: 1.2; }
+.ui-bar-btn { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 12px; background: none; color: var(--txt); cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.ui-bar-btn > span:not([hidden]) { position: absolute; top: 4px; right: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #ff3b4e; color: #fff; font-size: .6875rem; font-weight: 800; line-height: 18px; text-align: center; }
+/* 메뉴 시트 · 확인 시트 */
+#sheet > .in.ui-sheet-menu { padding: 8px 0 calc(10px + env(safe-area-inset-bottom)); }
+.ui-menu-title { padding: 10px 20px 8px; font-size: .9375rem; color: var(--muted); text-align: center; }
+.ui-menu { display: grid; }
+.ui-menu-item { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 52px; padding: 0 20px; border: 0; background: none; color: var(--txt); font: inherit; font-size: 1rem; font-weight: 600; text-align: left; cursor: pointer; }
+.ui-menu-item:active { background: rgba(255,255,255,.06); }
+.ui-menu-item.is-danger { color: #ff5a67; }
+.ui-menu-item.is-cancel { justify-content: center; margin-top: 6px; border-top: 1px solid var(--line); color: var(--muted); }
+.ui-confirm { display: grid; gap: 8px; margin-top: 16px; }
+.btn-danger { background: #ff3b4e; border-color: #ff3b4e; color: #fff; }
+/* 당겨서 새로고침 */
+.ui-pull { display: grid; place-items: center; height: 0; overflow: hidden; transition: height .18s ease; }
+.ui-pull > i { width: 22px; height: 22px; border: 2.5px solid var(--line-2); border-top-color: var(--txt); border-radius: 50%; opacity: .5; }
+.ui-pull.is-ready > i { opacity: 1; }
+.ui-pull.is-busy > i { opacity: 1; animation: ui-spin .7s linear infinite; }
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ui-pull { transition: none; } .ui-pull.is-busy > i { animation-duration: 2s; } }
+
+/* ── 알림 화면 (screens/alerts.js · 4차 F55) ── 줄 = 아바타/종류 아이콘 + 한 문장 + 오른쪽 사진·팔로우 버튼 */
+.al4-page { min-width: 0; }
+.al4-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; margin: 0 -16px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .8125rem; }
+.al4-readall { min-height: 44px; padding: 0 8px; border: 0; background: none; color: #9ecbff; font: inherit; font-weight: 700; cursor: pointer; }
+.al4-head { margin: 0; padding: 14px 0 6px; font-size: 1rem; font-weight: 800; }
+.al4-list { margin: 0 -16px; padding: 0; list-style: none; }
+.al4-item { position: relative; display: flex; align-items: center; gap: 0; }
+.al4-item[data-read="false"] { background: rgba(255,122,26,.07); }
+.al4-row { display: flex; flex: 1; align-items: center; gap: 12px; min-width: 0; min-height: 64px; padding: 8px 16px; color: var(--txt); text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.al4-row:active { background: rgba(255,255,255,.05); }
+.al4-row:focus-visible { outline-offset: -3px; }
+.al4-kind { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: #241f1d; color: var(--txt); }
+.al4-text { flex: 1; min-width: 0; font-size: .875rem; line-height: 1.4; word-break: keep-all; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+.al4-text strong { font-weight: 800; }
+.al4-time { color: var(--muted); white-space: nowrap; }
+.al4-thumb { flex: none; width: 44px; height: 44px; border-radius: 6px; object-fit: cover; background: #241f1d; }
+.al4-dot { display: none; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--g); }
+.al4-item[data-read="false"] .al4-dot { display: block; }
+.al4-side { flex: none; padding-right: 16px; }
+.al4-item:has(.al4-side) .al4-row { padding-right: 10px; }
+.al4-empty { padding: 56px 0; text-align: center; }
+.al4 [data-more] { display: flex; margin: 12px auto; }
+/* 팔로우 요청: 맨 위 한 줄 (프로필 작업창의 목록을 그대로 받아 한 줄로 보이게) */
+.al4-requests { margin: 0 -16px; }
+.al4-requests .profile3-requests { margin: 0; padding: 0 16px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: none; }
+.al4-requests .profile3-requests summary { justify-content: space-between; min-height: 52px; font-size: .9375rem; list-style: none; }
+.al4-requests .profile3-requests summary::-webkit-details-marker { display: none; }
+.al4-requests .profile3-requests summary::before { content: none; }
+.al4-requests .profile3-requests summary::after { content: ''; width: 8px; height: 8px; margin-right: 4px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); }
+.al4-requests .profile3-requests[open] summary::after { transform: rotate(45deg); }
+.al4-settings > .ui-bar { margin-bottom: 0; }

@@ -14,38 +14,77 @@
     qr: ['프로필 QR', 'Profile QR'], gonePost: ['볼 수 없는 게시물', 'This post is unavailable'],
     goneProfile: ['볼 수 없는 프로필', 'This profile is unavailable']
   });
+  // 4차(인스타그램 방식 공유 시트) 새 문구 — 새 키라서 네 언어를 여기 같이 둔다
+  L.i18n({
+    ko: { 'share4.search': '검색', 'share4.story': '스토리 이미지', 'share4.qr': 'QR 코드', 'share4.external': '다른 앱', 'share4.openSaved': '저장함 보기',
+      'share4.picked': '{n}명 선택', 'share4.remove': '{nick} 빼기', 'share4.login': '로그인하고 친구에게 보내기' },
+    en: { 'share4.search': 'Search', 'share4.story': 'Story image', 'share4.qr': 'QR code', 'share4.external': 'Other apps', 'share4.openSaved': 'View saved',
+      'share4.picked': '{n} selected', 'share4.remove': 'Remove {nick}', 'share4.login': 'Log in to send to friends' },
+    ja: { 'share4.search': '検索', 'share4.story': 'ストーリー画像', 'share4.qr': 'QRコード', 'share4.external': '他のアプリ', 'share4.openSaved': '保存済みを見る',
+      'share4.picked': '{n}人を選択', 'share4.remove': '{nick}を外す', 'share4.login': 'ログインして友だちに送る' },
+    zh: { 'share4.search': '搜索', 'share4.story': '快拍图片', 'share4.qr': '二维码', 'share4.external': '其他应用', 'share4.openSaved': '查看收藏',
+      'share4.picked': '已选{n}人', 'share4.remove': '移除{nick}', 'share4.login': '登录后发送给好友' }
+  });
   const t = (key, values) => L.t('share.' + key, values);
+  const t4 = (key, values) => L.esc(L.t('share4.' + key, values));
   const text = (key, values) => L.esc(t(key, values));
 
   const style = document.createElement('style');
   style.textContent = `
     .share-sheet { overflow-wrap:anywhere; }
-    .share-sheet > h2 { margin:0 0 12px; }
-    .share-sheet form, .share-sheet label, .share-output { display:grid; gap:8px; min-width:0; }
-    .share-sheet form { gap:12px; }
-    .share-sheet input { width:100%; min-height:44px; }
+    .share-sheet > h2 { margin:0 0 10px; padding-left:42px; font-size:1rem; line-height:24px; text-align:center; }
+    .share-sheet form { display:grid; gap:10px; min-width:0; }
+    .share-search { position:relative; display:block; }
+    .share-search > svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
+    .share-search input { width:100%; min-height:44px; padding:8px 12px 8px 40px; border:0; border-radius:12px; background:#241f1d; }
     .share-sheet .btn, .share-ref { min-height:44px; }
-    .share-targets { display:grid; grid-auto-flow:column; grid-auto-columns:64px; gap:8px; overflow-x:auto; padding:4px; }
-    .share-target { min-height:70px; min-width:44px; display:grid; align-content:start; justify-items:center; gap:4px;
-      text-align:center; border:0; padding:2px; background:none; color:inherit; border-radius:8px; cursor:pointer; font:inherit; }
-    .share-target .share-avatar { display:grid; place-items:center; width:44px; height:44px; border-radius:50%; overflow:hidden;
-      background:var(--bg-2); border:1px solid var(--line-2); font-weight:800; }
-    .share-avatar img, .share-thumb { width:100%; height:100%; object-fit:cover; }
-    .share-target[aria-pressed="true"] .share-avatar { border:3px solid var(--g); }
-    .share-target .share-name { max-width:100%; font-size:.8em; overflow-wrap:anywhere; }
-    .share-actions { display:flex; flex-wrap:wrap; gap:8px; margin-block:14px 8px; }
-    .share-selection { display:flex; flex-wrap:wrap; gap:6px; }
-    .share-output canvas { display:block; width:min(100%,280px); height:auto; border-radius:12px; }
+    /* 받을 사람: 4칸 격자 — 아바타 + 닉네임 한 줄(길면 말줄임) */
+    .share-targets { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px 2px; padding:4px 0; }
+    .share-targets > .muted { grid-column:1/-1; padding:18px 0; text-align:center; }
+    .share-target { position:relative; min-width:0; min-height:88px; display:grid; align-content:start; justify-items:center; gap:6px;
+      text-align:center; border:0; padding:4px 2px; background:none; color:inherit; border-radius:12px; cursor:pointer; font:inherit;
+      -webkit-tap-highlight-color:transparent; }
+    .share-target .ui-avatar { pointer-events:none; }
+    .share-target .share-name { display:block; width:100%; font-size:.75rem; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; }
+    .share-target .share-check { position:absolute; top:42px; left:calc(50% + 12px); display:none; place-items:center; width:22px; height:22px;
+      border-radius:50%; background:var(--g); color:var(--g-ink); box-shadow:0 0 0 2px var(--card); }
+    .share-target[aria-pressed="true"] .share-check { display:grid; }
+    .share-target[aria-pressed="true"] .ui-avatar { box-shadow:0 0 0 2px var(--card), 0 0 0 4px var(--g); }
+    .share-selection { display:flex; flex-wrap:nowrap; gap:6px; overflow-x:auto; scrollbar-width:none; }
+    .share-selection:empty { display:none; }
+    .share-selection::-webkit-scrollbar { display:none; }
+    .share-selection .btn { flex:none; min-height:32px; padding:0 10px; border-radius:16px; font-size:.75rem; font-weight:700; white-space:nowrap; }
+    .share-send { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
+    .share-send input { min-height:44px; padding:8px 12px; border:0; border-radius:12px; background:#241f1d; }
+    .share-send .btn { padding:0 16px; }
+    .share-sheet [role=status]:empty { display:none; }
+    .share-sheet [role=status] { font-size:.8125rem; color:var(--muted); }
+    /* 아래 아이콘 줄: 링크 복사 · 스토리 이미지 · QR · 다른 앱 · 저장 */
+    .share-actions { display:flex; gap:4px; margin:12px -18px 0; padding:12px 14px 2px; border-top:1px solid var(--line); overflow-x:auto; scrollbar-width:none; }
+    .share-actions:empty { display:none; }
+    .share-actions::-webkit-scrollbar { display:none; }
+    .share-act { flex:0 0 72px; display:grid; justify-items:center; align-content:start; gap:6px; min-height:76px; padding:2px; border:0; background:none;
+      color:var(--txt); font:inherit; font-size:.6875rem; line-height:1.25; text-align:center; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    .share-act > i { display:grid; place-items:center; width:48px; height:48px; border-radius:50%; background:#241f1d; font-style:normal; }
+    .share-act:active > i { background:#322b28; }
+    .share-act:disabled { opacity:.5; }
+    .share-act[aria-pressed="true"] > i { color:var(--g); }
+    .share-saved-link { display:inline-flex; align-items:center; min-height:44px; color:#9ecbff; font-size:.8125rem; font-weight:700; text-decoration:none; }
+    .share-output { display:grid; gap:8px; min-width:0; justify-items:center; }
+    .share-output:empty { display:none; }
+    .share-output { margin-top:10px; }
+    .share-output canvas { display:block; width:min(100%,240px); height:auto; border-radius:12px; }
     .share-output canvas[data-profile-qr] { image-rendering:pixelated; }
+    .share-output > a:not(.btn) { max-width:100%; font-size:.75rem; color:var(--muted); word-break:break-all; text-align:center; }
+    .share-output input { width:100%; }
     .share-ref { color:inherit; display:flex; align-items:center; gap:8px; padding:8px; margin:6px 0;
       overflow-wrap:anywhere; text-decoration:none; border:1px solid currentColor; border-radius:10px; min-width:0; }
     .share-ref span { min-width:0; }
     .share-ref img { flex:none; width:44px; height:44px; object-fit:cover; border-radius:7px; }
+    .share-thumb { width:100%; height:100%; object-fit:cover; }
+    .btn[data-share-post], .btn[data-share-save] { min-width:48px; padding:0 12px; }
     .share-card { display:grid; gap:8px; min-width:0; padding:12px; overflow-wrap:anywhere; }
     .share-card p { white-space:pre-wrap; }
-    #sheet > .share-sheet { animation:share-slide .22s ease-out; }
-    @keyframes share-slide { from { transform:translateY(24px); opacity:.6; } }
-    @media (prefers-reduced-motion:reduce) { #sheet > .share-sheet { animation:none; } }
   `;
   document.head.append(style);
 
@@ -53,7 +92,8 @@
   const publicApi = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
   const enabled = result => result?.open?.share === true;
   const postPath = id => '#/feed/' + encodeURIComponent(id);
-  const profilePath = nick => '#/user/' + encodeURIComponent(nick);
+  const profilePath = nick => '#/u/' + encodeURIComponent(nick);          // 밖으로 나가는 링크·QR (B17)
+  const refProfilePath = nick => '#/user/' + encodeURIComponent(nick);     // 메시지 안 프로필 카드(예전 주소 유지 — 같은 화면으로 감)
   const publicPath = id => '#/p/' + encodeURIComponent(id);
   const url = path => new URL('/lounge/' + path, location.origin).href;
   const authorOf = post => post.author?.nick || 'GROOVE';
@@ -66,13 +106,20 @@
 
   function paintSave(button, saved) {
     button.setAttribute('aria-pressed', String(saved));
-    button.textContent = t(saved ? 'unsave' : 'save');
+    if (button.classList.contains('share-act')) {   // 공유 시트 아이콘 줄: 책갈피가 채워짐
+      button.innerHTML = '<i>' + L.icon('bookmark', { fill: saved }) + '</i><span>' + text('save') + '</span>';
+      button.setAttribute('aria-label', t(saved ? 'unsave' : 'save'));
+    } else {   // 카드·목록에 넣는 버튼: 책갈피 아이콘(저장됨이면 채움) + 화면 읽기용 글자
+      const label = t(saved ? 'unsave' : 'save');
+      button.innerHTML = L.icon('bookmark', { fill: saved }) + '<span class="sr-only">' + L.esc(label) + '</span>';
+      button.setAttribute('aria-label', label);
+    }
   }
 
-  function saveButton(post, done) {
+  function saveButton(post, done, icon) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'btn';
+    button.className = icon ? 'share-act' : 'btn';
     button.dataset.shareSave = post.id;
     paintSave(button, post.saved === true);
     button.onclick = async () => {
@@ -104,7 +151,8 @@
     share.type = 'button';
     share.className = 'btn';
     share.dataset.sharePost = '';
-    share.textContent = t('title');
+    share.innerHTML = L.icon('send') + '<span class="sr-only">' + text('title') + '</span>';   // 종이비행기 아이콘 + 화면 읽기용 글자
+    share.setAttribute('aria-label', t('title'));
     share.onclick = () => {
       post.saved = save.getAttribute('aria-pressed') === 'true';
       void open({ post }, done);
@@ -113,19 +161,13 @@
     container.append(share, save);
   }
 
-  function avatar(target) {
-    const photo = U.image(target.photo);
-    return '<span class="share-avatar" aria-hidden="true">' + (photo
-      ? '<img alt="" referrerpolicy="no-referrer" src="' + L.esc(photo) + '">'
-      : L.esc(Array.from(target.nick)[0])) + '</span>';
-  }
-
   function recipients(panel, ref) {
     const form = panel.querySelector('form');
     if (!form) return;
     const search = form.elements.q, message = form.elements.message;
     const results = form.querySelector('[data-share-targets]'), picks = form.querySelector('[data-share-picks]');
     const notice = form.querySelector('[role=status]'), send = form.querySelector('button[type=submit]');
+    const sendRow = form.querySelector('[data-share-send]');
     const selected = new Map();
     let rows = [], requestVersion = 0, debounce, busy = false;
 
@@ -135,9 +177,12 @@
     }
 
     function paint() {
+      // 닉네임은 한 줄(길면 말줄임) — 글자 중간 줄바꿈 버그(B4) 수정. 소속 태그는 title 로만.
       results.innerHTML = rows.length ? rows.map((target, i) =>
-        '<button type="button" class="share-target" data-target="' + i + '" aria-pressed="' + selected.has(target.nick) + '">' +
-        avatar(target) + '<span class="share-name">' + L.whoTag(target) + '</span></button>').join('') :
+        '<button type="button" class="share-target" data-target="' + i + '" aria-pressed="' + selected.has(target.nick) + '" title="' +
+        L.esc(target.nick + (L.tagLabel(target.tag) ? ' · ' + L.tagLabel(target.tag) : '')) + '">' +
+        L.avatar({ nick: target.nick, photo: U.image(target.photo) }, 56) + '<span class="share-check" aria-hidden="true">' + L.icon('check', { size: 14, stroke: 3 }) +
+        '</span><span class="share-name">' + L.esc(target.nick) + '</span></button>').join('') :
         '<span class="muted">' + text('none') + '</span>';
       results.querySelectorAll('[data-target]').forEach(button => {
         button.onclick = () => {
@@ -149,8 +194,10 @@
           results.querySelector('[data-target="' + button.dataset.target + '"]')?.focus();
         };
       });
-      picks.innerHTML = [...selected.keys()].map(nick => U.button(L.esc(nick) + ' ×', 'data-pick="' + L.esc(nick) + '"')).join('');
+      picks.innerHTML = [...selected.keys()].map(nick => U.button(L.esc(nick) + ' ×',
+        'data-pick="' + L.esc(nick) + '" aria-label="' + t4('remove', { nick }) + '"')).join('');
       picks.querySelectorAll('[data-pick]').forEach(button => { button.onclick = () => remove(button.dataset.pick); });
+      sendRow.hidden = !selected.size;      // 받을 사람을 고르면 메시지 칸 + '보내기'가 나타난다
       send.disabled = busy || !selected.size;
     }
 
@@ -300,28 +347,30 @@
     if (!enabled(await config()) || version !== opening || hash !== location.hash) return;
     const record = id ? (typeof post === 'string' ? { id } : post) : null;
     const panel = L.sheet('<h2>' + text('title') + '</h2>' + (L.me
-      ? '<form><label>' + text('search') + '<input name="q" type="search" maxlength="64" autocomplete="off"></label>' +
+      ? '<form><label class="share-search">' + L.icon('search', { size: 20 }) + '<input name="q" type="search" maxlength="64" autocomplete="off" placeholder="' +
+        t4('search') + '" aria-label="' + text('search') + '"></label>' +
         '<div class="share-targets" data-share-targets role="group" aria-label="' + text('recent') + '"></div>' +
-        '<div class="share-selection" data-share-picks></div><label>' + text('message') +
-        '<input name="message" maxlength="500"></label><button class="btn btn-hot" type="submit" disabled>' + text('send') +
-        '</button><p role="status"></p></form>'
-      : U.button(L.esc(L.t('core.login')), 'data-share-login')) +
-      '<div class="share-actions"></div><div class="share-output"></div><p data-share-status role="status"></p>' +
-      U.button(L.esc(L.t('core.close')), 'data-share-close'));
+        '<div class="share-selection" data-share-picks></div>' +
+        '<div class="share-send" data-share-send hidden><input name="message" maxlength="500" placeholder="' + text('message') + '" aria-label="' + text('message') +
+        '"><button class="btn btn-hot" type="submit" disabled>' + text('send') + '</button></div><p role="status"></p></form>'
+      : U.button(t4('login'), 'data-share-login', true)) +
+      '<div class="share-actions" data-share-actions></div><p data-share-status role="status"></p><div class="share-output"></div>', { close: true });
     panel.classList.add('share-sheet');
-    panel.querySelector('[data-share-close]').onclick = L.closeSheet;
+    panel.querySelector('[data-sheet-x]').dataset.shareClose = '';   // 닫기 ✕ 는 오른쪽 위 한 곳 (B15)
     const login = panel.querySelector('[data-share-login]');
     if (login) login.onclick = L.needLogin;
     recipients(panel, id ? { post: id } : { profile: nick });
 
     const controls = panel.querySelector('.share-actions'), output = panel.querySelector('.share-output');
     const status = panel.querySelector('[data-share-status]');
+    const ICON = { copy: 'link', story: 'image', qr: 'grid', external: 'send' };
+    const LABEL = { copy: () => text('copy'), story: () => t4('story'), qr: () => t4('qr'), external: () => t4('external') };
     function action(key, handler) {
       const button = document.createElement('button');
-      button.className = 'btn';
+      button.className = 'share-act';
       button.type = 'button';
       button.dataset.shareAction = key;
-      button.textContent = t(key);
+      button.innerHTML = '<i>' + L.icon(ICON[key]) + '</i><span>' + LABEL[key]() + '</span>';
       button.onclick = async () => {
         button.disabled = true;
         status.textContent = '';
@@ -329,16 +378,34 @@
         catch (error) { if (panel.isConnected && error.name !== 'AbortError') status.textContent = U.t('error'); }
         finally { button.disabled = false; }
       };
-      controls.prepend(button);
+      // 순서: 링크 복사 · 스토리 이미지 · QR · 다른 앱 (저장은 그 뒤)
+      const order = ['copy', 'story', 'qr', 'external'];
+      const next = [...controls.querySelectorAll('[data-share-action]')].find(other => order.indexOf(other.dataset.shareAction) > order.indexOf(key)) ||
+        controls.querySelector('[data-share-save]');
+      controls.insertBefore(button, next || null);
+    }
+    async function copyLink(href) {
+      try {
+        await navigator.clipboard.writeText(href);
+        status.textContent = t('copied');
+      } catch (_) {
+        const field = document.createElement('input');
+        field.readOnly = true;
+        field.value = href;
+        field.setAttribute('aria-label', t('copy'));
+        output.replaceChildren(field);
+        field.select();
+      }
     }
 
     if (record) {
-      controls.append(saveButton(record, onSave));
       const saved = document.createElement('a');
       saved.href = '#/saved';
-      saved.className = 'btn';
-      saved.textContent = t('saved');
-      controls.append(saved);
+      saved.className = 'share-saved-link';
+      saved.textContent = L.t('share4.openSaved') + ' ›';
+      saved.hidden = record.saved !== true;
+      controls.append(saveButton(record, value => { saved.hidden = !value; onSave?.(value); }, true));
+      controls.after(saved);
       if (isPrivate(record) || !await publicPost(id) || !panel.isConnected) return;
       const href = url(publicPath(id));
       async function checked(work) {
@@ -369,34 +436,29 @@
       }));
       if (typeof navigator.share === 'function') action('external', () => checked(current =>
         navigator.share({ title: authorOf(current) + ' · GROOVE LOUNGE', url: href })));
-      action('copy', () => checked(async () => {
-        try {
-          await navigator.clipboard.writeText(href);
-          status.textContent = t('copied');
-        } catch (_) {
-          const field = document.createElement('input');
-          field.readOnly = true;
-          field.value = href;
-          field.setAttribute('aria-label', t('copy'));
-          output.replaceChildren(field);
-          field.select();
-        }
-      }));
+      action('copy', () => checked(() => copyLink(href)));
     } else if (profile?.private !== true) {
       const lookup = () => L.api('user', { nick });
       if ((await lookup()).user?.private !== false || !panel.isConnected) return;
-      action('qr', async () => {
+      // 공개 프로필만: 링크 복사 · QR · 다른 앱. 누를 때마다 지금도 공개인지 다시 확인한다.
+      async function checkedProfile(work) {
         const current = (await lookup()).user;
         if (!panel.isConnected) return;
         if (current?.private !== false) {
-          controls.querySelector('[data-share-action=qr]')?.remove();
+          controls.querySelectorAll('[data-share-action]').forEach(button => button.remove());
           output.replaceChildren();
           status.textContent = t('goneProfile');
           return;
         }
+        await work(url(profilePath(current.nick || nick)), current.nick || nick);
+      }
+      action('qr', () => checkedProfile(async href => {
         const makeQr = await loadQr();
-        if (panel.isConnected) showQr(output, makeQr, url(profilePath(current.nick || nick)));
-      });
+        if (panel.isConnected) showQr(output, makeQr, href);
+      }));
+      if (typeof navigator.share === 'function') action('external', () => checkedProfile((href, name) =>
+        navigator.share({ title: name + ' · GROOVE LOUNGE', url: href })));
+      action('copy', () => checkedProfile(href => copyLink(href)));
     }
   }
 
@@ -404,7 +466,7 @@
     if (!ref || !['post', 'profile'].includes(ref.kind)) return '';
     const isPost = ref.kind === 'post';
     if (ref.gone || !ref.id) return '<span class="share-ref">' + text(isPost ? 'gonePost' : 'goneProfile') + '</span>';
-    const href = isPost ? postPath(ref.id) : profilePath(ref.author || ref.id);
+    const href = isPost ? postPath(ref.id) : refProfilePath(ref.author || ref.id);
     const thumb = U.image(ref.thumb);
     return '<a class="share-ref" href="' + href + '">' + (thumb
       ? '<img alt="" src="' + L.esc(thumb) + '" loading="lazy" referrerpolicy="no-referrer">' : '') +
@@ -471,6 +533,6 @@
   }
 
   window.LoungeShare = { open, actions, reference };
-  L.screen('saved', { nav: 'me', title: 'share.saved', render: renderSaved });
+  if (!L.hasScreen('saved')) L.screen('saved', { nav: 'me', title: 'share.saved', render: renderSaved });
   L.screen('p', { nav: 'feed', title: 'share.publicPost', render: renderPublic });
 })();
