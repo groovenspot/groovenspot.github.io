@@ -10,7 +10,7 @@
     todayPlain: ['오늘 {n}/{goal}', 'Today {n}/{goal}'],
     guest: ['로그인하고 {goal}개 보면 +{p}P', 'Log in and watch {goal} for +{p}P'],
     earned: ['숏츠 {goal}개 완료! +{p}P', '{goal} Shorts watched! +{p}P'],
-    rankBtn: ['DJ 불꽃 순위', 'DJ 🔥 ranking'],
+    rankBtn: ['DJ 불꽃 순위', 'DJ ranking'],
     rank: ['이번 주 DJ 불꽃 순위', 'This week’s DJ 🔥 ranking'],
     rankEmpty: ['이번 주엔 아직 불꽃이 없어요. 첫 🔥을 눌러 보세요!', 'No 🔥 yet this week. Be the first!'],
     fireCount: ['불꽃 {n}개', '{n} fires'],
@@ -29,7 +29,7 @@
       'shorts.title': 'GROOVE ショート', 'shorts.back': '遊ぶ',
       'shorts.today': '今日 {n}/{goal} · {goal}本見ると +{p}P', 'shorts.todayDone': '今日 {n}/{goal} · +{p}P 獲得',
       'shorts.todayPlain': '今日 {n}/{goal}', 'shorts.guest': 'ログインして{goal}本見ると +{p}P',
-      'shorts.earned': 'ショート{goal}本視聴完了！+{p}P', 'shorts.rankBtn': 'DJ 🔥ランキング',
+      'shorts.earned': 'ショート{goal}本視聴完了！+{p}P', 'shorts.rankBtn': 'DJランキング',
       'shorts.rank': '今週のDJ 🔥ランキング', 'shorts.rankEmpty': '今週はまだ🔥がありません。最初の🔥を押してみよう！',
       'shorts.fireCount': '🔥 {n}件', 'shorts.fire': '🔥を送る', 'shorts.play': '再生：{song}',
       'shorts.feed': 'GROOVE ショート — 上下にスワイプ', 'shorts.empty': 'まだショートがありません。もうすぐ公開！',
@@ -40,7 +40,7 @@
       'shorts.title': 'GROOVE 短视频', 'shorts.back': '娱乐',
       'shorts.today': '今日 {n}/{goal} · 看满 {goal} 个 +{p}P', 'shorts.todayDone': '今日 {n}/{goal} · 已获得 +{p}P',
       'shorts.todayPlain': '今日 {n}/{goal}', 'shorts.guest': '登录后看满 {goal} 个 +{p}P',
-      'shorts.earned': '已看完 {goal} 个短视频！+{p}P', 'shorts.rankBtn': 'DJ 🔥 排行',
+      'shorts.earned': '已看完 {goal} 个短视频！+{p}P', 'shorts.rankBtn': 'DJ 排行',
       'shorts.rank': '本周 DJ 🔥 排行', 'shorts.rankEmpty': '本周还没有🔥，来点第一个吧！',
       'shorts.fireCount': '{n} 个🔥', 'shorts.fire': '送出🔥', 'shorts.play': '播放：{song}',
       'shorts.feed': 'GROOVE 短视频 — 上下滑动', 'shorts.empty': '还没有短视频，马上就来！',
@@ -51,21 +51,17 @@
 
   const VIDEO = /^[A-Za-z0-9_-]{11}$/;
   const SEEN_MS = 3000;
+  // 색은 app.css 변수(어두운·밝은 테마 공통)로만 — 영상 칸만 늘 어둡게
   const css = `
-    .sh-screen { display:grid; gap:8px; min-width:0; }
-    .sh-top { display:flex; align-items:center; gap:6px; min-width:0; }
-    .sh-top h1 { flex:1; min-width:0; font-size:1.25rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .sh-back { flex:none; display:inline-flex; align-items:center; gap:2px; min-height:44px; min-width:44px; padding:0 10px 0 4px;
-      border-radius:12px; color:var(--txt); font-weight:800; text-decoration:none; }
-    .sh-back span { font-size:1.4rem; line-height:1; }
+    .sh-screen { display:grid; gap:8px; min-width:0; padding-top:8px; }
     .sh-bar { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; min-width:0; }
-    .sh-chip { margin:0; min-width:0; padding:5px 11px; border-radius:999px; background:#3b1d2a; color:#ffc7d7;
-      font-size:.8125rem; font-weight:800; line-height:1.35; overflow-wrap:anywhere; }
-    .sh-chip[data-done] { background:#123326; color:#8ff0c2; }
-    .sh-rank-btn { flex:none; min-height:44px; padding:0 12px; border-radius:12px; border:1px solid var(--line-2);
-      background:var(--card); color:var(--txt); font:inherit; font-size:.8125rem; font-weight:800; cursor:pointer; }
-    .sh-feed { position:relative; height:calc(100dvh - 250px); min-height:320px; overflow-y:auto; overflow-x:hidden;
-      overscroll-behavior:contain; scroll-snap-type:y mandatory; border-radius:var(--radius); background:#050404;
+    .sh-chip { margin:0; min-width:0; padding:5px 11px; border-radius:999px; border:1px solid color-mix(in srgb, #ff4f8b 45%, var(--line));
+      background:color-mix(in srgb, #ff4f8b 16%, var(--card)); color:var(--txt); font-size:.8125rem; font-weight:800; line-height:1.35; overflow-wrap:anywhere; }
+    .sh-chip[data-done] { border-color:color-mix(in srgb, var(--ok) 55%, var(--line)); background:color-mix(in srgb, var(--ok) 18%, var(--card)); }
+    .sh-rank-btn { flex:none; display:inline-flex; align-items:center; gap:4px; min-height:44px; padding:0 12px; border-radius:12px;
+      border:1px solid var(--line-2); background:var(--card); color:var(--txt); font:inherit; font-size:.8125rem; font-weight:800; cursor:pointer; }
+    .sh-feed { position:relative; height:calc(100dvh - 190px); min-height:320px; overflow-y:auto; overflow-x:hidden;
+      overscroll-behavior:contain; scroll-snap-type:y mandatory; border-radius:var(--radius); background:var(--bg-2);
       border:1px solid var(--line); scrollbar-width:none; }
     .sh-feed::-webkit-scrollbar { display:none; }
     .sh-feed:focus-visible { outline-offset:2px; }
@@ -74,37 +70,34 @@
     .sh-stage { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; container-type:size; }
     .sh-frame { position:relative; height:min(100cqh, calc(100cqw * 16 / 9)); max-width:100%; aspect-ratio:9 / 16;
       border-radius:14px; overflow:hidden; background:#141010; }
-    .sh-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+    .sh-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; background:#000; }
     .sh-thumb { position:absolute; inset:0; display:block; width:100%; height:100%; padding:0; border:0; background:#141010; cursor:pointer; }
     .sh-thumb img { display:block; width:100%; height:100%; object-fit:cover; }
     .sh-thumb:focus-visible { outline-offset:-4px; }
     .sh-play { position:absolute; left:50%; top:50%; display:grid; place-items:center; width:64px; height:64px;
-      transform:translate(-50%, -50%); border-radius:50%; background:rgb(0 0 0 / 62%); color:#fff; font-size:24px; }
+      transform:translate(-50%, -50%); border-radius:50%; background:rgb(0 0 0 / 62%); color:#fff; }
     .sh-info { flex:none; display:grid; gap:6px; min-width:0; }
-    .sh-song { margin:0; font-weight:800; line-height:1.35; overflow:hidden; overflow-wrap:anywhere;
+    .sh-song { margin:0; color:var(--txt); font-weight:800; line-height:1.35; overflow:hidden; overflow-wrap:anywhere;
       display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
     .sh-row { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; }
     .sh-dj { display:inline-flex; align-items:center; gap:6px; min-width:0; max-width:100%; min-height:44px; padding:0 12px;
-      border-radius:999px; border:1px solid var(--line-2); background:#1d1818; color:var(--txt); font-weight:800; text-decoration:none; }
+      border-radius:999px; border:1px solid var(--line-2); background:var(--card); color:var(--txt); font-weight:800; text-decoration:none; }
     .sh-dj span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .sh-dj small { flex:none; padding:1px 6px; border-radius:6px; font-size:.75rem; font-weight:900; }
-    .sh-dj small[data-floor="2F"] { background:var(--g); color:var(--g-ink); }
-    .sh-dj small[data-floor="3F"] { background:var(--s-deep); color:#fff; }
+    .sh-dj small, .sh-ranks small { flex:none; padding:1px 6px; border-radius:6px; font-size:.75rem; font-weight:900; }
+    .sh-dj small[data-floor="2F"], .sh-ranks small[data-floor="2F"] { background:var(--g); color:var(--g-ink); }
+    .sh-dj small[data-floor="3F"], .sh-ranks small[data-floor="3F"] { background:var(--s-deep); color:#fff; }
     .sh-fire { flex:none; display:inline-flex; align-items:center; justify-content:center; gap:6px; min-width:72px; min-height:44px;
-      padding:0 14px; border-radius:999px; border:1px solid var(--line-2); background:#1d1818; color:var(--txt);
+      padding:0 14px; border-radius:999px; border:1px solid var(--line-2); background:var(--card); color:var(--txt);
       font:inherit; font-weight:900; cursor:pointer; }
-    .sh-fire[aria-pressed="true"] { background:#3b1d2a; border-color:#ff9ab8; color:#ffd1de; }
+    .sh-fire[aria-pressed="true"] { border-color:#ff6f9e; background:color-mix(in srgb, #ff4f8b 22%, var(--card)); }
     .sh-flame { display:inline-block; }
     .sh-state { padding:18px 14px; border:1px dashed var(--line-2); border-radius:var(--radius); color:var(--muted); }
     .sh-ranks { margin:12px 0 0; padding:0; list-style:none; display:grid; gap:6px; }
-    .sh-ranks li { display:grid; grid-template-columns:2em minmax(0,1fr) auto; align-items:center; gap:8px; min-height:44px;
-      padding:4px 10px; border:1px solid var(--line); border-radius:12px; background:var(--bg-2); }
-    .sh-ranks b { color:#ff9ab8; }
-    .sh-ranks a, .sh-ranks span.sh-name { min-width:0; display:inline-flex; align-items:center; gap:6px; min-height:44px;
+    .sh-ranks li { display:grid; grid-template-columns:2em minmax(0,1fr) auto; align-items:center; gap:8px; min-height:48px;
+      padding:2px 10px; border:1px solid var(--line); border-radius:12px; background:var(--bg-2); }
+    .sh-ranks b { color:var(--g); font-weight:900; }
+    .sh-ranks a, .sh-ranks .sh-name { min-width:0; display:inline-flex; align-items:center; gap:6px; min-height:44px;
       color:var(--txt); font-weight:800; overflow-wrap:anywhere; }
-    .sh-ranks small { flex:none; padding:1px 6px; border-radius:6px; font-size:.75rem; font-weight:900; }
-    .sh-ranks small[data-floor="2F"] { background:var(--g); color:var(--g-ink); }
-    .sh-ranks small[data-floor="3F"] { background:var(--s-deep); color:#fff; }
     @media (prefers-reduced-motion:no-preference) {
       .sh-fire[data-pop] .sh-flame { animation:sh-pop .45s ease-out; }
     }
@@ -139,7 +132,7 @@
   function thumb(item) {
     return '<button type="button" class="sh-thumb" data-play aria-label="' + t('play', { song: label(item) }) + '">' +
       '<img src="https://i.ytimg.com/vi/' + item.id + '/hqdefault.jpg" alt="" loading="lazy" decoding="async">' +
-      '<span class="sh-play" aria-hidden="true">▶</span></button>';
+      '<span class="sh-play" aria-hidden="true">' + L.icon('play', { size: 28, fill: true }) + '</span></button>';
   }
   function itemHtml(item, i) {
     return '<article class="sh-item" data-i="' + i + '" aria-label="' + L.esc(label(item)) + (item.dj ? ' — ' + L.esc(item.dj) : '') + '">' +
@@ -154,7 +147,7 @@
   }
 
   async function rankSheet() {
-    const panel = U.sheet('<h2>' + t('rank') + '</h2><div data-sh-ranks>' + U.status('loading', true) + '</div>');
+    const panel = L.sheet('<h2>' + t('rank') + '</h2><div data-sh-ranks>' + U.status('loading', true) + '</div>', { close: true });
     const result = await L.api('shorts_djs');
     const box = panel.querySelector('[data-sh-ranks]');
     if (!box?.isConnected) return;
@@ -174,11 +167,12 @@
     style();
     const screen = document.createElement('section');
     screen.className = 'sh-screen';
-    screen.innerHTML = '<div class="sh-top"><a class="sh-back" href="#/play"><span aria-hidden="true">‹</span>' + t('back') +
-      '</a><h1>' + t('title') + '</h1></div><div class="sh-bar"><p class="sh-chip" data-chip></p>' +
-      '<button type="button" class="sh-rank-btn" data-rank>' + t('rankBtn') + '</button></div><div data-body>' +
+    screen.innerHTML = '<div class="sh-bar"><p class="sh-chip" data-chip></p>' +
+      '<button type="button" class="sh-rank-btn" data-rank><span aria-hidden="true">🔥</span>' + t('rankBtn') + '</button></div><div data-body>' +
       U.status('loading', true) + '</div>';
-    root.replaceChildren(screen);
+    // 4차 화면 틀: 화면이 위 막대를 직접 그림 (뒤로 = 놀거리)
+    root.innerHTML = L.bar({ title: L.t('shorts.title'), left: '<a class="ui-bar-btn" href="#/play" data-sh-back aria-label="' + t('back') + '">' + L.icon('back') + '</a>' });
+    root.append(screen);
     const chip = screen.querySelector('[data-chip]'), body = screen.querySelector('[data-body]');
     screen.querySelector('[data-rank]').onclick = rankSheet;
     let today = null, goal = 10, pts = 5;
@@ -355,5 +349,5 @@
     };
   }
 
-  L.screen('shorts', { nav: 'play', title: 'shorts.title', render, leave() { dispose?.(); dispose = undefined; } });
+  L.screen('shorts', { nav: 'play', bar: 'own', title: 'shorts.title', render, leave() { dispose?.(); dispose = undefined; } });
 })();

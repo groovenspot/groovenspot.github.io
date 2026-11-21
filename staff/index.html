@@ -8755,7 +8755,7 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
   const LOUNGE_PLAY_POINTS = {
     allclear: '오늘 판 올클리어 / Daily set all-clear', shorts: 'GROOVE 숏츠 / GROOVE Shorts', today: '오늘 판 / Daily set',
     attend: '출석 / Daily visit', guess: 'DJ 맞히기 / Guess the DJ', cup: '월드컵 / World Cup', vote: '투표 / Vote',
-    radio: '라디오 / Radio', survey: '설문 / Survey', streak: '연속 정답 / Answer streak', live: '지금 카드 / Live card'
+    radio: '라디오 / Radio', survey: '설문 / Survey', streak7: '7일 연속 출석 / 7-day streak'
   };
   const LOUNGE_FLOOR_NAMES = { '2F': '2F 힙합 / Hip-hop', '3F': '3F EDM', tie: '무승부 / Tie' };
   function loungeBattleBar(score) {
@@ -8812,11 +8812,8 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
         days.map(row => '<tr><td>' + esc(row.day) + '</td><td>' + loungeCount(row.visitors) + '</td><td>' + loungeMinutes(row.avgMs) +
           '</td><td>' + loungeCount(row.allclear) + '</td><td>' + loungePercent(row.allclearRate) + '</td><td>' +
           loungePercent(row.doneRate) + '</td></tr>').join('') + '</tbody></table>' : LOUNGE_EMPTY);
-      const weekdays = ['월 / Mon', '화 / Tue', '수 / Wed', '목 / Thu', '금 / Fri', '토 / Sat', '일 / Sun'];
-      const active = Array.isArray(weekdayActive) ? weekdayActive.map((value, i) => [weekdays[i] || String(i), value]) :
-        weekdayActive && typeof weekdayActive === 'object' ? Object.entries(weekdayActive).map(([key, value]) => [esc(key), value]) : [];
-      if (active.length) block('요일별 활동 / Activity by weekday', loungeMetrics(active.map(([label, value]) =>
-        [label, Number.isFinite(value) ? value : Number(value?.visitors ?? value?.n)]).filter(([, value]) => Number.isFinite(value))));
+      if (Number.isFinite(weekdayActive)) block('평일 활동 / Weekday activity',
+        loungeMetrics([['이번 주 월~목 놀거리 회원 / Members playing Mon–Thu this week', weekdayActive]]));
     } else unavailable('놀거리 통계 / Play stats', stats);
 
     if (!owner) return;

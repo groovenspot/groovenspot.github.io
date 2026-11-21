@@ -43,7 +43,8 @@
     pickTeam: ['팀을 고르면 놀거리 1개마다 우리 층에 1점', 'Pick a team. Each game you play scores 1 point for your floor.'],
     battleRule: ['놀거리 1개 = 우리 층 1점 · 월요일 결산', 'Each game = 1 point for your floor · Results on Monday'],
     battleBar: ['2F {a}점, 3F {b}점', '2F {a} points, 3F {b} points'], lastWin: ['지난주 {f} 승리', 'Last week: {f} won'],
-    lastTie: ['지난주 무승부', 'Last week: tie'], points: ['내 포인트', 'My points'],
+    lastTie: ['지난주 무승부', 'Last week: tie'], won: ['내가 보탠 팀이 이겼어요', 'Your team won'],
+    contrib: ['이번 주 내가 보탠 {n}점', 'You added {n} this week'],
     meRow: ['나 {n}위 · {p}P', 'Me · #{n} · {p}P'], meNone: ['이번 주는 아직 순위가 없어요', 'No ranking for you yet this week'],
     me: ['나', 'Me']
   });
@@ -70,6 +71,7 @@
       'play.battle': '今週のフロア対抗戦', 'play.myTeam': 'マイチーム {f}', 'play.team2': '2F ヒップホップ', 'play.team3': '3F EDM',
       'play.pickTeam': 'チームを選ぶと、あそぶたびに自分のフロアに1点', 'play.battleRule': 'あそび1つ＝フロアに1点・月曜に集計',
       'play.battleBar': '2F {a}点、3F {b}点', 'play.lastWin': '先週は{f}の勝ち', 'play.lastTie': '先週は引き分け',
+      'play.won': 'あなたのチームが勝ちました', 'play.contrib': '今週あなたが入れた{n}点',
       'play.meRow': 'わたし {n}位・{p}P', 'play.meNone': '今週はまだランキングがありません', 'play.me': 'わたし'
     },
     zh: {
@@ -94,6 +96,7 @@
       'play.battle': '本周楼层对抗赛', 'play.myTeam': '我的队 {f}', 'play.team2': '2F 嘻哈队', 'play.team3': '3F EDM 队',
       'play.pickTeam': '选择队伍后，每玩一项就为你的楼层加 1 分', 'play.battleRule': '每玩一项 = 楼层 1 分·周一结算',
       'play.battleBar': '2F {a} 分，3F {b} 分', 'play.lastWin': '上周 {f} 获胜', 'play.lastTie': '上周平局',
+      'play.won': '你所在的队赢了', 'play.contrib': '本周你贡献了 {n} 分',
       'play.meRow': '我 第 {n} 名·{p}P', 'play.meNone': '本周还没有排名', 'play.me': '我'
     }
   });
@@ -114,6 +117,7 @@
   const STYLE = `
 .pl{display:grid;gap:16px;max-width:640px;margin:auto;overflow-wrap:anywhere;min-width:0}
 .pl>*{min-width:0}
+.pl>.ui-pull{margin-bottom:-16px}
 .pl-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .pl-pill{display:inline-flex;align-items:center;gap:6px;min-height:44px;max-width:60%;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--card);color:var(--g);font:inherit;font-weight:900;cursor:pointer}
 .pl-pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -130,20 +134,18 @@
 .pl-chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
 .pl-chip{display:grid;justify-items:center;align-content:start;gap:4px;padding:10px 2px;border-radius:12px;background:var(--bg-2);text-align:center;font-size:.75rem;font-weight:800;line-height:1.3;min-width:0}
 .pl-chip b{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--line-2);color:var(--muted)}
-.pl-chip[data-done]{background:#24180e}
+.pl-chip[data-done]{background:color-mix(in srgb,var(--g) 14%,var(--bg-2))}
 .pl-chip[data-done] b{background:var(--g);color:var(--g-ink)}
 .pl-chip small{color:var(--muted);font-weight:500}
 .pl-note{font-size:.8125rem;color:var(--muted)}
 .pl-stamp{position:absolute;top:12px;right:12px;padding:4px 10px;border:2px solid var(--g);border-radius:10px;color:var(--g);font-weight:900;letter-spacing:.06em;transform:rotate(-8deg);background:var(--card)}
-.pl-now{display:grid;gap:12px;padding:18px;border-radius:var(--radius);background:#211538;border:1px solid #4b3a86;min-width:0}
-.pl-now[data-kind=nextday]{background:#2a1c0e;border-color:#6b4520}
-.pl-now[data-kind=live]{background:#2a1020;border-color:#7a2d4a}
-.pl-eyebrow{display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:800;letter-spacing:.06em;color:#d7c8ff}
-.pl-now[data-kind=nextday] .pl-eyebrow{color:#ffcf8a}
-.pl-now[data-kind=live] .pl-eyebrow{color:#ffb3c6}
+.pl-now{--tone:var(--s);display:grid;gap:12px;padding:18px;border-radius:var(--radius);background:color-mix(in srgb,var(--tone) 16%,var(--card));border:1px solid color-mix(in srgb,var(--tone) 45%,transparent);min-width:0}
+.pl-now[data-kind=nextday]{--tone:var(--g)}
+.pl-now[data-kind=live]{--tone:var(--bad)}
+.pl-eyebrow{display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:800;letter-spacing:.06em;color:color-mix(in srgb,var(--tone,var(--s)) 55%,var(--txt))}
 .pl-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
 .pl-now[data-kind=live] .pl-dot{background:var(--bad)}
-.pl-sub{color:#d9d0e8;font-size:.875rem}
+.pl-sub{color:color-mix(in srgb,var(--txt) 78%,transparent);font-size:.875rem}
 .pl-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .pl-actions .btn,.pl-cta{width:100%;gap:8px;padding-inline:10px;text-align:center}
 .pl-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
@@ -154,7 +156,7 @@
 .pl-f[data-floor="2F"]{color:var(--g)}
 .pl-f[data-floor="3F"]{color:var(--s)}
 .pl-floors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.pl-floor{display:grid;gap:2px;padding:12px;border-radius:12px;background:rgba(0,0,0,.25);min-width:0}
+.pl-floor{display:grid;gap:2px;padding:12px;border-radius:12px;background:color-mix(in srgb,var(--bg) 45%,transparent);min-width:0}
 .pl-floor strong{font-size:1.125rem}
 .pl-sec{display:grid;gap:10px;padding-top:12px;border-top:1px solid var(--line-2)}
 .pl-sec .pl-row{align-items:center}
@@ -163,16 +165,15 @@
 .pl-tile[aria-disabled]{opacity:.6}
 .pl-tile strong{display:block;font-size:.9375rem}
 .pl-tile small{display:block;color:var(--muted);font-size:.75rem;line-height:1.4}
-.pl-ico{display:grid;place-items:center;width:38px;height:38px;border-radius:11px}
-.pl-ico[data-tone=g]{background:#3a2410;color:var(--g)}
-.pl-ico[data-tone=s]{background:#2a1a4a;color:#c9a8ff}
-.pl-ico[data-tone=pink]{background:#3b1d2a;color:#ff9ab8}
-.pl-ico[data-tone=ok]{background:#14301f;color:var(--ok)}
-.pl-ico[data-tone=blue]{background:#18263f;color:#8fb4ff}
-.pl-ico[data-tone=amber]{background:#33261a;color:#ffc27a}
-.pl-badge{align-self:flex-start;min-height:1.5em;padding:2px 8px;border-radius:999px;font-size:.75rem;font-weight:800;background:#3a240f;color:var(--g)}
+.pl-ico{--tone:var(--g);display:grid;place-items:center;width:38px;height:38px;border-radius:11px;color:var(--tone);background:color-mix(in srgb,var(--tone) 18%,var(--card))}
+.pl-ico[data-tone=s]{--tone:var(--s)}
+.pl-ico[data-tone=pink]{--tone:#ff6f9f}
+.pl-ico[data-tone=ok]{--tone:var(--ok)}
+.pl-ico[data-tone=blue]{--tone:#6f9dff}
+.pl-ico[data-tone=amber]{--tone:#ffb347}
+.pl-badge{align-self:flex-start;min-height:1.5em;padding:2px 8px;border-radius:999px;font-size:.75rem;font-weight:800;background:color-mix(in srgb,var(--g) 18%,var(--card));color:var(--g)}
 .pl-badge:empty{visibility:hidden}
-.pl-badge[data-done]{background:#14301f;color:var(--ok)}
+.pl-badge[data-done]{background:color-mix(in srgb,var(--ok) 16%,var(--card));color:var(--ok)}
 .pl-badge[data-soon]{background:var(--line);color:var(--muted)}
 .pl-score{display:flex;justify-content:space-between;gap:8px;font-weight:900;font-variant-numeric:tabular-nums}
 .pl-score span:first-child{color:var(--g)}
@@ -237,8 +238,8 @@
   }
 
   // ── 놀거리 개편 1차 ──
-  let dispose;
-  const num = value => Number.isFinite(Number(value)) ? Number(value) : 0;
+  let dispose, refresher = null;
+  const num =value => Number.isFinite(Number(value)) ? Number(value) : 0;
   const pts = value => Number.isSafeInteger(value) && value > 0 ? value : 0;
 
   function injectStyle() {
@@ -315,13 +316,18 @@
     }
   }
 
+  // 포인트 알약 → 보상·굿즈·DJ 목록·주간 순위 (4차 공통 메뉴 시트, 없으면 링크 시트)
   function openMenu() {
-    const entries = [['rewards', 'rewards'], ['shop', 'shop'], ['djs', ''], ['rank', 'rewards']];
-    const panel = U.sheet('<h2>' + t('menu') + '</h2><div class="pl-menu">' + entries.map(([name, gate]) =>
+    const entries = [['rewards', 'rewards', 'check'], ['shop', 'shop', 'bookmark'], ['djs', '', 'user'], ['rank', 'rewards', 'grid']];
+    const label = (name, gate) => !gate || L.open(gate) ? raw(name) : raw(name) + ' · ' + L.t('core.soon');
+    if (typeof L.menu === 'function') {
+      return L.menu(entries.map(([name, gate, icon]) => ({ label: label(name, gate), icon,
+        on: () => !gate || L.open(gate) ? L.go(name) : L.toast(L.t('core.soon')) })), { title: raw('menu') });
+    }
+    return L.sheet('<h2>' + t('menu') + '</h2><div class="pl-menu">' + entries.map(([name, gate]) =>
       !gate || L.open(gate) ? '<a class="btn" href="#/' + name + '">' + t(name) + '</a>'
-        : '<span class="btn" aria-disabled="true" style="opacity:.6">' + t(name) + ' · ' + L.esc(L.t('core.soon')) + '</span>'
-    ).join('') + '</div>');
-    return panel;
+        : '<span class="btn" aria-disabled="true" style="opacity:.6">' + L.esc(label(name, gate)) + '</span>'
+    ).join('') + '</div>', { close: true });
   }
 
   function paintToday(box, today) {
@@ -437,28 +443,29 @@
       '<a class="btn btn-hot pl-cta" href="#/tonight">' + t('tonight') + '</a>';
   }
 
-  // 층 대항전 (battle.js battleView). 모양: { scores: {'2F', '3F'}, mine, last: { winner } } — 다른 이름도 받아 줌
+  // 층 대항전 (battle.js battleView): { week, score: {'2F','3F'}, mine: '2F'|'3F'|'', last: { week, winner: '2F'|'3F'|'tie', score } | null, won, contrib: { today, week } }
   function battleInfo(battle) {
     const floorOf = value => FLOORS.includes(value) ? value : '';
-    const score = floor => num(battle?.scores?.[floor] ?? battle?.floors?.[floor]?.score ?? battle?.floors?.[floor] ?? battle?.[floor]?.score ?? battle?.[floor]);
+    const score = floor => num(battle?.score?.[floor] ?? battle?.scores?.[floor] ?? battle?.floors?.[floor]?.score ?? battle?.floors?.[floor] ?? battle?.[floor]?.score ?? battle?.[floor]);
     const mine = floorOf(battle?.mine) || floorOf(battle?.team) || floorOf(battle?.myFloor) || floorOf(battle?.floor) ||
       (battle?.mine === undefined && battle?.team === undefined && battle?.myFloor === undefined ? floorOf(L.me?.floor) : '');
     const last = battle?.last ?? battle?.lastWeek ?? null;
     const winner = last && typeof last === 'object' ? last.winner : battle?.lastWinner;
-    return { a: score('2F'), b: score('3F'), mine, winner: floorOf(winner) || (winner === 'tie' || winner === '' && last ? 'tie' : '') };
+    return { a: score('2F'), b: score('3F'), mine, winner: floorOf(winner) || (winner === 'tie' || winner === '' && last ? 'tie' : ''),
+      won: battle?.won === true, contrib: num(battle?.contrib?.week) };
   }
 
   function paintBattle(box, battle, reload) {
     if (!battle || typeof battle !== 'object') { box.hidden = true; return; }
-    const { a, b, mine, winner } = battleInfo(battle);
+    const { a, b, mine, winner, won, contrib } = battleInfo(battle);
     const share = a + b > 0 ? Math.round(a / (a + b) * 100) : 50;
     box.hidden = false;
     box.innerHTML = '<div class="pl-row" style="align-items:center"><h2>' + t('battle') + '</h2>' +
       (mine ? '<span class="pl-k" data-pl-team>' + t('myTeam', { f: mine }) + '</span>' : '') + '</div>' +
       '<div class="pl-score"><span>2F ' + L.esc(a.toLocaleString(L.lang)) + '</span><span>' + L.esc(b.toLocaleString(L.lang)) + ' 3F</span></div>' +
       '<div class="pl-vs" role="img" aria-label="' + t('battleBar', { a, b }) + '"><i style="width:' + share + '%"></i><i></i></div>' +
-      (winner ? '<p class="pl-note">' + (winner === 'tie' ? t('lastTie') : t('lastWin', { f: floorName(winner) })) + '</p>' : '') +
-      (mine ? '<p class="pl-note">' + t('battleRule') + '</p>' : '<p class="pl-note">' + t('pickTeam') + '</p><div class="pl-actions">' +
+      (winner ? '<p class="pl-note">' + (winner === 'tie' ? t('lastTie') : t('lastWin', { f: floorName(winner) })) + (won ? ' · ' + t('won') : '') + '</p>' : '') +
+      (mine ? '<p class="pl-note">' + (contrib ? t('contrib', { n: contrib }) + ' · ' : '') + t('battleRule') + '</p>' : '<p class="pl-note">' + t('pickTeam') + '</p><div class="pl-actions">' +
         U.button(t('team2'), 'data-pl-team-pick="2F"') + U.button(t('team3'), 'data-pl-team-pick="3F"') + '</div>');
     box.querySelectorAll('[data-pl-team-pick]').forEach(button => {
       button.onclick = async () => {
@@ -505,7 +512,10 @@
     const pill = view.querySelector('[data-pl-points]');
     paintPill(pill, L.me?.points);
     pill.onclick = openMenu;
-    dispose = trackDwell();
+    const stopDwell = trackDwell();
+    const stopPull = typeof L.pull === 'function' ? L.pull(view, () => fill()) : null;
+    refresher = () => fill();
+    dispose = () => { refresher = null; stopPull?.(); stopDwell(); };
 
     async function fill() {
       const data = await L.api('play_home');
@@ -541,5 +551,10 @@
     dispose?.();
     dispose = undefined;
   }
-  L.screen('play', { nav: 'play', auth: false, title: 'nav.play', render, leave });
+  // 아래 '놀거리' 탭을 다시 누르면(틀이 맨 위로 올린 뒤) 새 화면은 데이터만 다시 받음
+  function refresh() {
+    if (refresher) return refresher();
+    return L.route();
+  }
+  L.screen('play', { nav: 'play', auth: false, title: 'nav.play', render, leave, refresh });
 })();
