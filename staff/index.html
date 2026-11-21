@@ -12552,7 +12552,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     }
     var nWait = acc.filter(function (a) { return a.status === '대기'; }).length, nOk = acc.filter(function (a) { return a.status === '승인'; }).length;   // 🎨 2026-11-20 제목줄
     var h = '<div class="gh"><div><h1>가입 승인</h1><span class="range">대기 ' + nWait + (pendingOnly ? '' : ' · 승인 ' + nOk + ' · 이름을 누르면 ' + (boss ? '팀·직책' : '직책') + ' 바꾸기') + '</span></div></div>' +
-      (boss ? '<div class="gdst" id="gdSt"><p class="load">구글 드라이브 상태 불러오는 중…</p></div>' : '');
+      (boss ? '<div class="gdst" id="gdSt"><p class="load">구글 드라이브 상태 불러오는 중…</p></div>' : '') +
+      (boss && Array.isArray(d.pushNone) ? '<details class="note pushnone" style="margin:0 0 12px"><summary style="cursor:pointer;font-weight:800">🔕 알림 안 켠 직원 ' + d.pushNone.length + '명 <small style="font-weight:600;color:var(--muted)">(앱을 닫으면 순번·호출을 못 받아요)</small></summary><p style="margin:6px 0 0;line-height:1.7">' + (d.pushNone.length ? d.pushNone.map(function (x) { return esc(x.name) + (x.team ? ' <small style="color:var(--muted)">' + esc(x.team) + '</small>' : ''); }).join(' · ') : '모두 켰어요.') + '</p></details>' : '');   // 직원 건의 2026-11-22
     // 🔑 비밀번호 초기화 (4단계 2026-11-19): 대표 = 승인된 모든 직원(나·대표 빼고), 팀장 = 자기 팀 승인된 수습·직원·부팀장 (서버와 같은 규칙)
     function pwrOk(a) { return a.status === '승인' && !a.self && a.role !== '관리자' && (boss || ((a.role === '수습' || a.role === '직원' || a.role === '부팀장') && (!a.team || !d.team || a.team === d.team))); }
     // 📣 업무 태그 (2026-11-21): 대표만 — 승인된 직원에게 '남의 업무 추가(태그)'만 켜고 끄기 (서버 dec_names · perm.decTag). 팀장·%P:keep% 사람은 원래 됨
