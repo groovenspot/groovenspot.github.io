@@ -4031,7 +4031,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         '<b>매일</b> 반복은 <b>고정 시간</b>(<b>시간 추가</b>로 여러 번) 또는 <b>매시간마다</b>(시작~끝 시각, 1시간마다 · 마감은 1시간 뒤) · 앞 회차가 안 끝나면 새로 쌓지 않고 <b>밀린 회차 N번</b>으로 표시',
         '<b>☑️ 세부 할 일</b>로 쪼개서 체크 · <b>📸</b> 표시 일은 완료를 누를 때 사진 1장을 같이 올려요 · 잘한 일엔 대표·팀장이 <b>👍</b>',
         '<b>🔗 업무 알림</b>을 누르면 업무사항 맨 위가 아니라 <b>그 업무로 바로</b> 가요 (잠깐 주황 테두리)',
-        '할 일·담당·마감은 대표가 <b>✏️ 내용 고치기</b>로 바꿔요. 완료된 일은 대표가 확인하고 <b>🗑 확인·지우기</b>로 정리해요 · 대표는 월요일에 <b>📊 주간 요약</b>을 받아요',
+        '할 일·담당·마감은 <b>대표·팀장·부팀장</b>이 <b>✏️ 내용 고치기</b>로 바꿔요. 완료된 일은 대표가 확인하고 <b>🗑 확인·지우기</b>로 정리해요 · 대표는 월요일에 <b>📊 주간 요약</b>을 받아요',
         '스스로 찾아서 올리고 끝까지 마무리한 기록은 대표가 직접 확인해요'
       ]) +
       sec('✉️ 메시지 · 👥 그룹 · 🙋 손님 문의', [
@@ -4469,7 +4469,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       if (x.cmts.length) c += '<div class="ycc">' + x.cmts.map(function (m) { return '<p' + (/^(상태 → |✏️ 고침|🔥 급함 [켬끔]$|🔒 비공개 [켬끔]$|🙋 .+ 맡음$|☑️ 세부 할 일 다 끝남$|📸 완료 사진 받기 [켬끔]$|🔁 반복 업무$)/.test(m.text) ? ' class="sys"' : '') + '><b>' + esc(m.who) + nickH(m.who) + '</b> ' + esc(m.text) + ' <small>' + esc(m.at) + '</small></p>' + chatMedia(m); }).join('') + '</div>';
       if (x.can) c += '<form class="yccf" data-deccf="1"><label class="chatpic" aria-label="사진·영상 올리기" title="사진·영상">' + cmIco('cam') + '<input type="file" data-decfile="1" accept="image/*,video/*" multiple hidden></label><input data-deccmt="1" maxlength="200" placeholder="코멘트 (예: 내일까지 견적 받을게요)" autocomplete="off" value="' + esc((state.decTxt || {})[x.id] || '') + '"><button class="btn" type="submit">보내기</button></form><div class="chatph decph" data-decph="1" hidden></div>';
       c += dxH('cardEnd', x, d);
-      if (d.admin) c += '<button class="btn" type="button" data-decedit="1" style="width:100%;margin-top:8px">' + cmIco('pen') + '내용 고치기</button>';   // 대표만 (2026-11-18)
+      if (d.admin || d.decEdit) c += '<button class="btn" type="button" data-decedit="1" style="width:100%;margin-top:8px">' + cmIco('pen') + '내용 고치기</button>';   // 대표 (2026-11-18) → 팀장·부팀장도 (대표 결정 2026-11-22)
       if (d.admin && x.status === '완료') c += '<button class="btn btn-bad" type="button" data-decdel="1" style="width:100%;margin-top:8px">' + cmIco('trash') + '확인·지우기</button>';
       return c + '</div>';
     }).join('') + '</div>';
@@ -4622,7 +4622,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       call({ a: 'dec_edit', token: state.s.token, id: x.id, what: w, who: pi.value.replace(/[,，·\s]+$/, '').trim(), due: $('deD').value }).then(function (r) {
         b.disabled = false;
         if (r.error === 'auth') return toLogin(AUTH_OUT);
-        if (!r.ok) { $('deM').textContent = { forbidden: '대표만 고칠 수 있어요.', text: '< > 는 쓸 수 없어요.', due: '마감 날짜를 다시 골라 주세요.', dup: '같은 회의에 같은 내용이 이미 있어요.', notfound: '그 사이 지워졌어요.', long: '300자까지예요.' }[r.error] || '저장하지 못했어요.'; return; }
+        if (!r.ok) { $('deM').textContent = { forbidden: '대표·팀장·부팀장만 고칠 수 있어요.', text: '< > 는 쓸 수 없어요.', due: '마감 날짜를 다시 골라 주세요.', dup: '같은 회의에 같은 내용이 이미 있어요.', notfound: '그 사이 지워졌어요.', long: '300자까지예요.' }[r.error] || '저장하지 못했어요.'; return; }
         $('sheet').hidden = true; $('sheet').innerHTML = '';
         if (state.decMd && x.id !== r.id) { state.decMd[r.id] = state.decMd[x.id]; delete state.decMd[x.id]; }
         state.data.decisions = r.decisions; saveData(state.data); render();
