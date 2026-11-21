@@ -8,15 +8,15 @@
 .feed4 .ui-bar-btn { flex: none; }
 
 /* 탭(전체·팔로잉·2F·3F) + 칩 한 줄 */
-.feed4-tabs { display: flex; align-items: center; gap: 4px; margin-inline: -16px; padding: 0 8px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
+.feed4-tabs { display: flex; align-items: center; gap: 4px; margin-inline: -16px; padding: 0 6px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
 .feed4-tabs::-webkit-scrollbar { display: none; }
 .feed4-tabset { display: flex; flex: none; }
-.feed4-tab { position: relative; flex: none; min-width: 44px; min-height: 44px; padding: 0 9px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.feed4-tab { position: relative; flex: none; min-width: 44px; min-height: 44px; padding: 0 6px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .feed4-tab[aria-pressed="true"] { color: var(--txt); font-weight: 800; }
-.feed4-tab[aria-pressed="true"]::after { content: ''; position: absolute; left: 9px; right: 9px; bottom: 0; height: 2px; border-radius: 2px; background: var(--txt); }
+.feed4-tab[aria-pressed="true"]::after { content: ''; position: absolute; left: 6px; right: 6px; bottom: 0; height: 2px; border-radius: 2px; background: var(--txt); }
 .feed4-tab:focus-visible, .feed4-chip:focus-visible { outline-offset: -3px; }
 .feed4-chips { display: flex; flex: none; gap: 2px; margin-left: auto; padding-left: 6px; }
-.feed4-chip { display: inline-flex; align-items: center; flex: none; min-width: 44px; min-height: 44px; padding: 0 3px; text-decoration: none; }
+.feed4-chip { display: inline-flex; align-items: center; flex: none; min-width: 44px; min-height: 44px; padding: 0 2px; text-decoration: none; }
 .feed4-chip > span { padding: 4px 10px; border: 1px solid var(--line-2); border-radius: 999px; color: var(--txt); font-size: 12.5px; font-weight: 700; line-height: 1.3; white-space: nowrap; }
 .feed4-chip.is-hot > span { border-color: color-mix(in srgb, var(--g) 60%, transparent); color: #ffb27a; }
 .feed4-story:empty { display: none; }
@@ -61,6 +61,7 @@
 .feed4-playmark { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 64px; height: 64px; padding-left: 4px; border-radius: 50%; background: rgba(10,9,9,.62); color: #fff; transform: translate(-50%, -50%); }
 .feed4-frame { display: block; width: 100%; height: 100%; border: 0; background: #000; }
 .feed4-tagged { position: absolute; left: 2px; bottom: 2px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: #fff; cursor: pointer; }
+.feed4-tagged:focus-visible { outline-offset: -8px; border-radius: 50%; }
 .feed4-tagged > span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: rgba(10,9,9,.72); }
 .feed4-count { position: absolute; top: 12px; right: 12px; padding: 3px 10px; border-radius: 999px; background: rgba(10,9,9,.68); color: #fff; font-size: 12px; font-weight: 600; line-height: 1.5; pointer-events: none; }
 .feed4-burst { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; opacity: 0; pointer-events: none; filter: drop-shadow(0 4px 18px rgba(0,0,0,.45)); }

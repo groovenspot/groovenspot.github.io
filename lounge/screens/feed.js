@@ -640,14 +640,10 @@ const LoungePostUI = (() => {
         allComments.hidden = !comments;
         allComments.textContent = L.t('feed4.allComments', { n: L.count(comments) });
       }
-    }
-    function paintPreview() {
-      if (!preview) return;
-      preview.innerHTML = (post.preview || []).slice(0, 2).map(comment => '<div class="feed4-pv"><b>' +
+      if (preview) preview.innerHTML = (comments ? post.preview || [] : []).slice(-2).map(comment => '<div class="feed4-pv"><b>' +
         L.esc(comment.author?.nick || comment.nick) + '</b> <span>' + L.linkify(comment.text) + '</span></div>').join('');
     }
     paint();
-    paintPreview();
     track(post.id, { card, post, paint });
 
     async function setLike(want) {
@@ -813,6 +809,12 @@ const LoungePostUI = (() => {
     }
     card.querySelectorAll('.feed4-body [data-video-play]').forEach(button => { button.onclick = playVideo; });
 
+    const face = card.querySelector('.feed4-head > a.ui-avatar[data-story]');
+    if (face) face.addEventListener('click', event => {
+      if (!L.storyOpen || !L.open('stories')) return;
+      event.preventDefault();
+      L.storyOpen(nick);
+    });
     // 팔로우
     const follow = card.querySelector('[data-follow]');
     if (follow) follow.onclick = async () => {
@@ -916,7 +918,7 @@ const LoungePostUI = (() => {
       const takeable = images[current] && takeKey(images[current]);
       L.menu([
         mine && post.canEdit === true && { label: L.t('feed4.edit'), icon: 'edit', on: () => L.go('compose?edit=' + encodeURIComponent(post.id)) },
-        mine && typeof post.pinned === 'boolean' && { label: L.t(post.pinned ? 'feed4.unpin' : 'feed4.pin'), icon: 'pin', on: pin },
+        mine && typeof post.pinned === 'boolean' && L.open('profile2') && { label: L.t(post.pinned ? 'feed4.unpin' : 'feed4.pin'), icon: 'pin', on: pin },
         save && { label: L.t(save.getAttribute('aria-pressed') === 'true' ? 'feed4.unsave' : 'feed4.save'), icon: 'bookmark', on: () => save.click() },
         save && collectionsKnown === true && { label: L.t('feed4.toCollection'), icon: 'layers', on: () => openCollections(post) },
         tagged.length > 0 && { label: L.t('feed4.tagged'), icon: 'tagged', on: openTagged },
@@ -987,6 +989,7 @@ const LoungePostUI = (() => {
         return false;
       }
       rows = data.comments;
+      if (typeof data.post?.comments === 'number') setComments(post, data.post.comments);   // 그사이 남이 쓴 댓글까지 맞춘다
       draw();
       return true;
     }
@@ -1026,6 +1029,7 @@ const LoungePostUI = (() => {
         if (!result || result.error) { del.disabled = false; return U.error(result); }
         const id = idOf(comment), before = rows.length;
         rows = rows.filter(other => idOf(other) !== id && String(other.parent || '') !== id);
+        if (Array.isArray(post.preview)) post.preview = post.preview.filter(other => String(other.id) !== id);
         setComments(post, (Number(post.comments) || 0) - (before - rows.length));
         if (replyTo && !find(idOf(replyTo))) setReply(null);
         if (host.isConnected) draw();
@@ -1089,7 +1093,15 @@ const LoungePostUI = (() => {
       const result = await L.api('comment', { id: post.id, text, ...(parent && { parent }) });
       if (!host.isConnected) return;
       send.disabled = false;
+      if (result?.error === 'parent') {   // 답하려던 댓글이 그사이 지워짐
+        setReply(null);
+        await load();
+      }
       if (!result || result.error) return U.error(result);
+      const made = result.comment;   // 서버가 돌려준 글(연락처 가림 뒤)을 보여 준다
+      if (!parent && made && Array.isArray(post.preview)) {
+        post.preview = [...post.preview, { id: made.id ?? result.cid, author: { nick: made.author?.nick || L.me?.nick }, text: made.text }].slice(-2);
+      }
       field.value = '';
       field.style.height = 'auto';
       setReply(null);
@@ -1119,6 +1131,7 @@ const LoungePostUI = (() => {
 
   // 좋아요한 사람 시트: L.openLikes(postId) — 서버가 아직 모르면(action) 조용히 닫는다
   L.openLikes = function (id) {
+    if (L.needLogin()) return null;   // 좋아요한 사람 목록은 회원만 (서버 약속)
     const panel = L.sheet(sheetHead(w('likesTitle')) + '<div class="feed4-llist" data-like-list>' + spinner() + '</div><div data-like-more></div>');
     panel.classList.add('feed4-sheet', 'feed4-lsheet');
     panel.querySelector('[data-sheet-close]').onclick = () => L.closeSheet();
