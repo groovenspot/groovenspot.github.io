@@ -1107,6 +1107,14 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 .ephotos .vph .vbox small { font-size: 11px; color: var(--muted); }
 .ephotos .vph .vbox b { font-size: 13px; }
 .ephotos .vph.bad { border-color: var(--bad); }
+/* 🎬 영상 올리기 진행·다시 시도 (직원 건의 2026-11-22) */
+.ph b .vre { display: inline-block; margin-top: 2px; padding: 1px 6px; border-radius: 8px; background: var(--g); color: #111; font-size: 11.5px; font-weight: 900; text-decoration: none; cursor: pointer; }
+.vprog { margin: -6px 0 12px; font-size: 13.5px; line-height: 1.45; }
+.vprog p { margin: 0 0 6px; }
+.vprog .vbar { height: 8px; border-radius: 4px; background: var(--line-2); overflow: hidden; margin: 0 0 6px; }
+.vprog .vbar i { display: block; height: 100%; border-radius: 4px; background: var(--g); transition: width .3s; }
+.vprog .vwhy { color: var(--bad); font-weight: 700; }
+.vprog .vwhy .btn { width: auto; min-height: 36px; padding: 4px 14px; margin-left: 6px; vertical-align: middle; }
 .ephotos .addph.addbig { width: 100%; height: 58px; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--line-2); border-radius: 14px; color: var(--txt); font-size: 17px; font-weight: 800; }
 .ycp img { width: 74px; height: 74px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line-2); background: #000; }
 .ycst { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 10px 0 0; font-size: 13px; color: var(--muted); font-weight: 700; }
@@ -4511,7 +4519,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         var w = $('decAddW').value.trim(), m = $('decAddM'), btn = f.querySelector('button[type="submit"]'), md = decMd(DEC_NEW);
         if (!w) { m.className = 'msg'; m.textContent = '할 일을 써 주세요.'; return; }
         if (btn.disabled) return;
-        if (md.vids.some(function (x) { return x.err; })) { m.className = 'msg'; m.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
+        if (md.vids.some(function (x) { return x.err; })) { m.className = 'msg'; m.textContent = '올리지 못한 영상이 있어요. 영상 칸의 ↻ 다시를 누르거나 ✕로 빼 주세요.'; return; }
         if (md.vids.some(function (x) { return !x.done; })) {   // 영상이 다 올라가면 바로 추가
           btn.disabled = true; m.className = 'msg'; m.textContent = '영상 올리는 중이에요… 다 올라가면 바로 추가해요.';
           var wt = setInterval(function () {
@@ -4561,7 +4569,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
           if (!v && !md.photos.length && !md.vids.length) return;
           if (fb.disabled) return;
           var msg = $('decMsg');
-          if (md.vids.some(function (x) { return x.err; })) { if (msg) msg.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
+          if (md.vids.some(function (x) { return x.err; })) { if (msg) msg.textContent = '올리지 못한 영상이 있어요. 영상 칸의 ↻ 다시를 누르거나 ✕로 빼 주세요.'; return; }
           if (md.vids.some(function (x) { return !x.done; })) {   // 영상이 다 올라가면 바로 보냄
             fb.disabled = true; if (msg) msg.textContent = '영상 올리는 중이에요… 다 올라가면 바로 보내요.';
             var w = setInterval(function () {
@@ -6224,7 +6232,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       ev.preventDefault();
       var text = ta.value.trim(), M = dmMdOf(w), btn = $('dBtn'); if (!text && !M.photos.length && !M.vids.length) return ta.focus();
       if (btn.disabled) return;
-      if (M.vids.some(function (v) { return v.err; })) return dmNote('올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.');
+      if (M.vids.some(function (v) { return v.err; })) return dmNote('올리지 못한 영상이 있어요. 영상 칸의 ↻ 다시를 누르거나 ✕로 빼 주세요.');
       if (M.vids.some(function (v) { return !v.done; })) {   // 영상이 다 올라가면 바로 보냄
         btn.disabled = true; dmNote('영상 올리는 중이에요… 다 올라가면 바로 보내요.', true);
         var tw = setInterval(function () { var b2 = $('dBtn'), f2 = $('dForm'); if (state.dmMd !== M || !b2 || !f2) { clearInterval(tw); if (b2) b2.disabled = false; return; } if (M.vids.some(function (v) { return v.err; })) { clearInterval(tw); b2.disabled = false; dmNote('영상을 못 올렸어요. 다시 넣어 주세요.'); } else if (M.vids.every(function (v) { return v.done; })) { clearInterval(tw); b2.disabled = false; f2.requestSubmit ? f2.requestSubmit() : b2.click(); } }, 500);
@@ -10140,6 +10148,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     if (lm && md.photos.length && /사진을 1장 이상/.test(lm.textContent)) lm.textContent = '';
     box.innerHTML = md.photos.map(function (p, i) { return '<span class="ph"><img src="' + p.url + '" alt=""><button type="button" data-lprm="' + i + '" aria-label="사진 빼기">✕</button></span>'; }).join('') +
       md.vids.map(function (v, i) { return '<span class="ph vph' + (v.err ? ' bad' : '') + '"><span class="vbox">🎬<b>' + vidBadge(v) + '</b></span><button type="button" data-lvrm="' + i + '" aria-label="영상 빼기">✕</button></span>'; }).join('');
+    var pg = $('lvProg'); if (pg) { var ph = vidStatusH(md.vids); pg.hidden = !ph; if (pg.dataset.h !== ph) { pg.dataset.h = ph; pg.innerHTML = ph; } }
     box.querySelectorAll('[data-lprm]').forEach(function (b) { b.addEventListener('click', function () { md.photos.splice(+b.dataset.lprm, 1); lvPaint(); }); });
     box.querySelectorAll('[data-lvrm]').forEach(function (b) { b.addEventListener('click', function () { var v = md.vids.splice(+b.dataset.lvrm, 1)[0]; if (v) v.gone = true; lvPaint(); }); });
   }
@@ -10170,7 +10179,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       '<textarea id="lvT" rows="2" maxlength="300" placeholder="' + (tt ? '메모 (선택) · 예) 11/22 토 타임테이블' : '지금 상황 · 예) 3층 피크 · 2층 입구 줄') + '">' + esc(state.lvText || '') + '</textarea>' +
       (tt ? '' : '<p class="note">오늘 올린 사진·영상은 손님 라운지 매장 영상에 자동으로 보여요.</p><label>층 (선택) <select id="lvFloor"><option value="">선택</option>' +
         ['2F', '3F'].map(function (f) { return '<option' + (lvMd().floor === f ? ' selected' : '') + '>' + f + '</option>'; }).join('') + '</select></label>') +
-      '<div class="ephotos" id="lvPh" hidden></div><p class="msg" id="lvMsg"></p>' +
+      '<div class="ephotos" id="lvPh" hidden></div><div class="vprog" id="lvProg" hidden aria-live="polite"></div><p class="msg" id="lvMsg"></p>' +
       '<div class="lvfb"><label class="btn">' + opIco('camera') + (tt ? ' 사진' : ' 사진·영상') + '<input type="file" id="lvFile" accept="' + (tt ? 'image/*' : 'image/*,video/*') + '" multiple hidden></label><button class="btn btn-hot" type="button" id="lvSave">올리기</button><button class="link" type="button" id="lvX">취소</button></div></div>';
     if (L.list.length) h += '<h2 class="sec tbz">올라온 것 <span class="osn">' + L.list.length + '</span></h2>';
     h += L.list.length ? '<div class="lvq">' + L.list.map(function (m) {
@@ -10239,7 +10248,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       var b = this, md = lvMd(), t = $('lvT').value.trim(), m = $('lvMsg');
       if (state.lvKind === 'tt' && !md.photos.length) { m.textContent = '타임테이블은 사진을 1장 이상 넣어 주세요.'; return; }   // 🕘 사진 없으면 못 올림
       if (!t && !md.photos.length && !md.vids.length) { m.textContent = '글이나 사진·영상을 넣어 주세요.'; return; }
-      if (md.vids.some(function (v) { return v.err; })) { m.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
+      if (md.vids.some(function (v) { return v.err; })) { m.textContent = '올리지 못한 영상이 있어요. 영상 칸의 ↻ 다시를 누르거나 ✕로 빼 주세요.'; return; }
       if (md.vids.some(function (v) { return !v.done; })) {   // 영상이 다 올라가면 바로 올림
         b.disabled = true; b.textContent = '영상 올리는 중…';
         var w = setInterval(function () {
@@ -10666,9 +10675,9 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   }
   function vidShrink(file, prog) {
     return new Promise(function (res, rej) {
-      var url = URL.createObjectURL(file), v = document.createElement('video'), ac = null, done = false, timer = null;
+      var url = URL.createObjectURL(file), v = document.createElement('video'), ac = null, done = false, timer = null, onVis = null;
       v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto'; v.src = url;
-      function cleanup() { done = true; clearTimeout(timer); try { v.pause(); } catch (e) {} try { v.removeAttribute('src'); v.load(); } catch (e) {} URL.revokeObjectURL(url); if (ac) try { ac.close(); } catch (e) {} }
+      function cleanup() { done = true; clearTimeout(timer); if (onVis) document.removeEventListener('visibilitychange', onVis); try { v.pause(); } catch (e) {} try { v.removeAttribute('src'); v.load(); } catch (e) {} URL.revokeObjectURL(url); if (ac) try { ac.close(); } catch (e) {} }
       function fail(e) { if (done) return; cleanup(); rej(e instanceof Error ? e : new Error(String(e))); }
       v.onerror = function () { fail(new Error('read')); };
       v.onloadedmetadata = function () {
@@ -10682,54 +10691,118 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         var bps = Math.max(700000, Math.min(2500000, Math.floor((VID_UP_MAX * 0.9 * 8) / dur - 96000))), mime = vidMime(), rec, chunks = [];
         try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: bps, audioBitsPerSecond: 96000 } : { videoBitsPerSecond: bps }); } catch (e) { return fail(e); }
         rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
-        rec.onstop = function () { if (done) return; var type = String(rec.mimeType || mime || 'video/webm').split(';')[0], blob = new Blob(chunks, { type: type }); cleanup(); res(blob); };
-        function frame() { if (done || v.ended) return; try { g.drawImage(v, 0, 0, cw, ch); } catch (e) {} prog(Math.min(0.99, v.currentTime / dur)); if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(frame); else setTimeout(frame, 33); }
+        var reached = 0, held = false;   // reached: 녹화가 따라간 곳(초) — 끝까지 못 갔으면(95% 미만) 잘린 영상이라 버린다
+        rec.onstop = function () { if (done) return; reached = Math.max(reached, v.ended ? dur : v.currentTime || 0); if (reached < dur * 0.95) return fail(new Error('cut')); var type = String(rec.mimeType || mime || 'video/webm').split(';')[0], blob = new Blob(chunks, { type: type }); cleanup(); res(blob); };
+        var gen = 0;   // 멈췄다 이어갈 때 예전 그리기 고리가 겹치지 않게
+        function frame(k) { if (k !== gen || done || v.ended || held) return; try { g.drawImage(v, 0, 0, cw, ch); } catch (e) {} reached = Math.max(reached, v.currentTime || 0); prog(Math.min(0.99, v.currentTime / dur), false); if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(function () { frame(k); }); else setTimeout(function () { frame(k); }, 33); }
         v.onended = function () { try { g.drawImage(v, 0, 0, cw, ch); } catch (e) {} setTimeout(function () { try { if (rec.state !== 'inactive') rec.stop(); } catch (e) { fail(e); } }, 150); };
-        timer = setTimeout(function () { try { if (rec.state !== 'inactive') rec.stop(); } catch (e) { fail(e); } }, (dur * 1.6 + 20) * 1000);   // 멈춰 버린 경우
+        // 멈춰 버린 경우의 안전 타이머: 남은 길이 기준 · 화면이 가려져 쉬는 동안은 세지 않는다
+        function arm() { clearTimeout(timer); timer = setTimeout(function () { try { if (rec.state !== 'inactive') rec.stop(); } catch (e) { fail(e); } }, (Math.max(0, dur - (v.currentTime || 0)) * 1.6 + 20) * 1000); }
+        // 📱 줄이는 중 다른 앱·화면 꺼짐 (직원 건의 2026-11-22): 재생·녹화를 멈춰 두고, 돌아오면 그 자리부터 이어서 — 예전엔 잘린 영상이 올라갈 수 있었다
+        onVis = function () {
+          if (done || v.ended) return;
+          if (document.hidden) { if (held) return; held = true; clearTimeout(timer); try { v.pause(); } catch (e) {} try { if (rec.state === 'recording' && rec.pause) rec.pause(); } catch (e) {} prog(Math.min(0.99, (v.currentTime || 0) / dur), true); }
+          else if (held) { held = false; try { if (rec.state === 'paused' && rec.resume) rec.resume(); } catch (e) {} try { if (ac && ac.resume) ac.resume(); } catch (e) {} var p2 = v.play(); if (p2 && p2.catch) p2.catch(function () { fail(new Error('cut')); }); arm(); frame(++gen); }
+        };
+        document.addEventListener('visibilitychange', onVis);
+        arm();
         try { if (ac && ac.resume) ac.resume(); } catch (e) {}
         rec.start(1000);
         var pl = v.play(); if (pl && pl.catch) pl.catch(function () { v.muted = true; v.play().catch(fail); });
-        frame();
+        frame(gen);
+        if (document.hidden) onVis();
       };
     });
   }
   // 영상 하나 준비: 작으면 바로 올리고, 크면 줄인 뒤 올린다 (v.squeeze = 줄이는 진행률)
   function vidPrep(v, paint) {
-    var at = window.__vidShrinkAt || VID_SHRINK_AT;
-    if (v.size <= at) return ycUpload(v, paint);
-    if (!vidShrinkOk()) { if (v.size <= VID_UP_MAX) return ycUpload(v, paint); v.err = 'big'; return paint(); }
-    v.squeeze = 0.001; paint();
-    vidShrink(v.file, function (p) { if (!v.gone) { v.squeeze = Math.max(0.001, p); paint(); } }).then(function (blob) {
+    vidReg(v, paint);
+    var at = window.__vidShrinkAt || VID_SHRINK_AT, src = v.src0 || v.file, size0 = v.src0 ? v.size0 : v.size;
+    if (size0 <= at) return ycUpload(v, paint);
+    if (!vidShrinkOk()) { if (size0 <= VID_UP_MAX) return ycUpload(v, paint); v.err = 'big'; return paint(); }
+    v.squeeze = 0.001; v.sqAt = Date.now(); v.sqOff = 0; v.hold = false; paint();
+    vidShrink(src, function (p, held) {
       if (v.gone) return;
-      v.squeeze = 0;
-      if (blob.size > 1000 && blob.size < v.size && blob.size <= VID_UP_MAX) { v.orig = v.size; v.file = blob; v.size = blob.size; }
-      else if (v.size > VID_UP_MAX) { v.err = 'big'; return paint(); }
+      if (held && !v.hold) v.holdAt = Date.now(); else if (!held && v.hold) v.sqOff += Date.now() - (v.holdAt || Date.now());   // 쉬는 시간은 남은 시간 셈에서 뺌
+      v.hold = !!held; v.squeeze = Math.max(0.001, p); paint();
+    }).then(function (blob) {
+      if (v.gone) return;
+      v.squeeze = 0; v.hold = false;
+      if (blob.size > 1000 && blob.size < size0 && blob.size <= VID_UP_MAX) { v.orig = size0; v.file = blob; v.size = blob.size; }
+      else if (size0 > VID_UP_MAX) { v.err = 'big'; return paint(); }
       paint(); ycUpload(v, paint);
     }).catch(function (e) {
       if (v.gone) return;
-      v.squeeze = 0;
+      v.squeeze = 0; v.hold = false;
       if (/long/.test(e && e.message)) { v.err = 'long'; return paint(); }
-      if (v.size <= VID_UP_MAX) return ycUpload(v, paint);
+      if (size0 <= VID_UP_MAX) return ycUpload(v, paint);   // 못 줄였지만 원본이 60MB 안이면 원본 그대로 (잘린 것은 안 올림)
+      if (/cut/.test(e && e.message)) { v.src0 = src; v.size0 = size0; v.err = 'cut'; return paint(); }   // 화면이 꺼져 끊김 → '다시'로 다시 줄이기
       v.err = 'big'; paint();
     });
   }
-  function vidBadge(v) { return v.err ? (v.err === 'long' ? '5분 넘음' : v.err === 'big' ? '못 줄임' : '실패') : v.squeeze ? '줄이는 중 ' + Math.floor(v.squeeze * 100) + '%' : v.done ? '✅' : Math.floor(v.prog * 100) + '%'; }
+  // 🎬 영상 올리기 안내 (직원 건의 2026-11-22 "크기 때문에 안 올라가요"): 진행(줄이는 중 %·남은 시간, 올리는 중 N/총MB) · 이유별 문구 · '다시'(올라간 곳부터 이어서)
+  //   v.err: long(5분 넘음) · big/vbig(너무 큼) · busy(1시간 12개) · cut(줄이다 화면 꺼짐) · vtype(형식) · auth · net(연결 끊김).  v.part = 다음에 올릴 조각(이어 올리기)
+  var VID_REG = {}, VID_RID = 0;
+  function vidReg(v, paint) { if (!v.rid) v.rid = 'v' + (++VID_RID); VID_REG[v.rid] = { v: v, paint: paint }; }
+  function vidCanRetry(v) { return !!v.err && !/^(long|big|vbig|vtype|auth)$/.test(v.err); }
+  function vidRetry(v, paint) {
+    if (!v || v.gone || !vidCanRetry(v)) return;
+    var cut = v.err === 'cut'; v.err = ''; v.done = false; paint();
+    if (cut) vidPrep(v, paint); else ycUpload(v, paint);
+  }
+  document.addEventListener('click', function (e) {   // 영상 칸의 '다시' (대화·메시지·연출·업무·실시간 어디서든)
+    var b = e.target && e.target.closest ? e.target.closest('[data-vre]') : null; if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    var x = VID_REG[b.getAttribute('data-vre')]; if (x) vidRetry(x.v, x.paint);
+  }, true);
+  function vidMb(n) { var m = n / 1048576; return m >= 10 ? m.toFixed(0) : m.toFixed(1); }
+  function vidEta(v) {   // 줄이기 남은 시간(대략): 지금까지 걸린 시간 ÷ 진행률
+    var p = v.squeeze || 0, t = v.sqAt ? (Date.now() - v.sqAt - (v.sqOff || 0)) / 1000 : 0; if (v.hold || p < 0.03 || t < 2) return '';
+    var left = Math.max(1, Math.round(t / p * (1 - p)));
+    return left >= 90 ? '약 ' + Math.round(left / 60) + '분 남음' : '약 ' + (left > 10 ? Math.round(left / 10) * 10 : left) + '초 남음';
+  }
+  function vidWhy(v) {
+    var big = '영상이 너무 커요. 카메라 설정을 1080p로 낮추거나 1분 이내로 잘라서 올려 주세요.';
+    return { long: '5분이 넘는 영상은 못 올려요. 잘라서 올려 주세요.', big: big, vbig: big,
+      busy: '영상은 1시간에 12개까지 올릴 수 있어요. 잠시 뒤 다시 시도해 주세요.', cut: '줄이는 중에 화면이 꺼지거나 다른 앱으로 가서 멈췄어요. 이 화면을 켜 둔 채 다시 시도해 주세요.',
+      vtype: '이 영상 형식은 올릴 수 없어요. 폰 기본 카메라로 찍은 영상을 골라 주세요.', auth: '로그인이 끝났어요. 다시 로그인한 뒤 올려 주세요.' }[v.err] || '연결이 끊겨 멈췄어요. 다시 시도하면 올라간 곳부터 이어서 올려요.';
+  }
+  // 여러 영상의 지금 상태 한 줄 + 진행 막대 (실시간 올리기 폼) — 없으면 ''
+  function vidStatusH(vids) {
+    var bad = vids.filter(function (v) { return v.err; })[0], sq = vids.filter(function (v) { return !v.err && v.squeeze; })[0], up = vids.filter(function (v) { return !v.err && !v.squeeze && !v.done; })[0];
+    var bar = function (q) { return '<div class="vbar"><i style="width:' + Math.max(2, Math.min(100, Math.round(q * 100))) + '%"></i></div>'; }, h = '';
+    if (sq) { var eta = vidEta(sq); h += bar(sq.squeeze) + '<p>🎬 <b>줄이는 중 ' + Math.floor(sq.squeeze * 100) + '%</b>' + (eta ? ' · ' + eta : '') + (sq.hold ? ' — <b>멈춤</b> · 이 화면으로 돌아오면 이어서 해요' : ' — 화면을 켜 두세요') + '</p>'; }
+    else if (up) h += bar(up.prog || 0) + '<p>⬆️ <b>올리는 중 ' + vidMb((up.prog || 0) * up.size) + '/' + vidMb(up.size) + 'MB</b>' + (up.wait ? ' · 연결이 불안정해 다시 보내는 중…' : '') + '</p>';
+    if (bad) h += '<p class="vwhy">⚠️ ' + esc(vidWhy(bad)) + (vidCanRetry(bad) ? ' <button type="button" class="btn btn-hot" data-vre="' + esc(bad.rid || '') + '">다시 시도</button>' : '') + '</p>';
+    return h;
+  }
+  function vidBadge(v) {
+    if (v.err) return (v.err === 'long' ? '5분 넘음' : v.err === 'big' || v.err === 'vbig' ? '너무 큼' : v.err === 'busy' ? '잠시 뒤' : v.err === 'cut' ? '멈춤' : v.err === 'vtype' ? '형식 안 됨' : v.err === 'auth' ? '로그인' : '끊김') +
+      (vidCanRetry(v) && v.rid ? '<br><u class="vre" role="button" tabindex="0" data-vre="' + v.rid + '">↻ 다시</u>' : '');
+    if (v.squeeze) return (v.hold ? '멈춤 ' : '줄이는 중 ') + Math.floor(v.squeeze * 100) + '%';
+    if (v.done) return '✅';
+    return v.size >= 3145728 ? vidMb((v.prog || 0) * v.size) + '/' + vidMb(v.size) + 'MB' : Math.floor((v.prog || 0) * 100) + '%';
+  }
   function vidTooBig(f) { return f.size > (vidShrinkOk() ? VID_IN_MAX : VID_UP_MAX); }
   function vidSizeMsg(f) { return vidShrinkOk() ? '영상은 5분까지 올릴 수 있어요.' : '이 폰에서는 영상을 60MB까지 올릴 수 있어요. (' + (f.size / 1048576).toFixed(0) + 'MB)'; }
   function ycUpload(v, paint) {
-    var CH = 2025000, n = Math.ceil(v.size / CH), type = ycVidType(v.file), i = 0, tries = 0;
+    vidReg(v, paint);
+    var CH = 2025000, n = Math.ceil(v.size / CH), type = ycVidType(v.file), i = v.vid ? Math.min(n, v.part | 0) : 0, tries = 0;   // v.part: 끊겼다 다시 할 때 올라간 조각 다음부터
+    if (!v.vid) v.part = 0;
     function next() {
       if (v.gone) return;
-      if (i >= n) { v.done = true; paint(); return; }
+      if (i >= n) { v.done = true; v.wait = false; paint(); return; }
       state.upAt = Date.now();   // 올리는 중에는 새 버전 새로고침을 미룬다
       ycB64(v.file.slice(i * CH, (i + 1) * CH)).then(function (d) {
         return call({ a: 'vid_up', token: state.s.token, vid: v.vid, part: i, size: v.size, type: type, data: d });
       }).then(function (r) {
         if (!r.ok) throw new Error(r.error || 'up');
-        v.vid = r.vid; i++; tries = 0; v.prog = i / n; paint(); next();
+        v.vid = r.vid; i++; v.part = i; tries = 0; v.wait = false; v.prog = i / n; paint(); next();
       }).catch(function (e) {
-        if (++tries <= 3 && !/vtype|vbig|auth/.test(String(e && e.message))) return setTimeout(next, 1500 * tries);
-        v.err = String(e && e.message || 'up'); paint();
+        var why = String(e && e.message || 'up');
+        if (/vpart/.test(why) && v.vid) { v.vid = ''; v.part = 0; i = 0; v.prog = 0; }   // 서버에 그 영상이 없어짐(오래돼 지워짐) → 처음부터
+        if (++tries <= 3 && !/vtype|vbig|auth|busy/.test(why)) { v.wait = true; paint(); return setTimeout(next, 1500 * tries); }
+        v.wait = false; v.err = /^(vtype|vbig|auth|busy)$/.test(why) ? why : 'net'; paint();
       });
     }
     next();
@@ -10920,7 +10993,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
           ev.preventDefault(); var i = f.querySelector('[data-yccmt]'), t = i.value.trim(), md = ycCmtMd(id), fb = f.querySelector('button[type="submit"]');
           if (!t && !md.photos.length && !md.vids.length) return;
           if (fb.disabled) return;
-          if (md.vids.some(function (v) { return v.err; })) { state.ycErr = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; render(); return; }
+          if (md.vids.some(function (v) { return v.err; })) { state.ycErr = '올리지 못한 영상이 있어요. 영상 칸의 ↻ 다시를 누르거나 ✕로 빼 주세요.'; render(); return; }
           if (md.vids.some(function (v) { return !v.done; })) {   // 영상이 다 올라가면 바로 보냄
             fb.disabled = true; fb.textContent = '올리는 중…';
             var w = setInterval(function () {
@@ -11123,7 +11196,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       if (!when || when === 'after:') { m.textContent = !when ? '시간을 골라 주세요.' : '순서를 골라 주세요.'; return; }
       var hq = ycHold(when); if (hq) { m.textContent = ycErr({ error: 'timetaken', at: hq.when, who: hq.by, seat: hq.seat, floor: hq.floor }); return; }
       b.disabled = true; m.textContent = '';
-      if (vids.some(function (q) { return q.err; })) { b.disabled = false; m.textContent = '올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.'; return; }
+      if (vids.some(function (q) { return q.err; })) { b.disabled = false; m.textContent = '올리지 못한 영상이 있어요. 영상 칸의 ↻ 다시를 누르거나 ✕로 빼 주세요.'; return; }
       if (vids.some(function (q) { return !q.done; })) { m.textContent = '영상 올리는 중이에요… 다 올라가면 바로 보내요.'; var w = setInterval(function () { if (!$('ycSave')) return clearInterval(w); if (vids.some(function (q) { return q.err; })) { clearInterval(w); b.disabled = false; m.textContent = '영상을 못 올렸어요. 다시 넣어 주세요.'; } else if (vids.every(function (q) { return q.done; })) { clearInterval(w); b.disabled = false; $('ycSave').click(); } }, 500); return; }
       v.only = seat === '전광만';
       var body = { a: x ? 'yc_edit' : 'yc_add', floor: fl, seat: v.only ? '' : seat, when: when, v: v, text: $('ycT').value.trim(), song: $('ycS').value.trim() };
@@ -11896,7 +11969,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     $('chatF').addEventListener('submit', function (e) {
       e.preventDefault(); var t = ta.value.trim(), room = state.chatRoom, form = this; if ((!t && !md.photos.length && !md.vids.length) || !room) return;
       var btn = this.querySelector('button'); if (btn.disabled) return;
-      if (md.vids.some(function (v) { return v.err; })) return alertBox('올리지 못한 영상이 있어요. ✕로 빼고 다시 넣어 주세요.');
+      if (md.vids.some(function (v) { return v.err; })) return alertBox('올리지 못한 영상이 있어요. 영상 칸의 ↻ 다시를 누르거나 ✕로 빼 주세요.');
       if (md.vids.some(function (v) { return !v.done; })) {
         btn.disabled = true; alertBox('영상 올리는 중이에요… 다 올라가면 바로 보내요.', true);
         var cur = md, w = setInterval(function () { if (cur !== md) { clearInterval(w); btn.disabled = false; return; } if (md.vids.some(function (v) { return v.err; })) { clearInterval(w); btn.disabled = false; alertBox('영상을 못 올렸어요. 다시 넣어 주세요.'); } else if (md.vids.every(function (v) { return v.done; })) { clearInterval(w); btn.disabled = false; form.requestSubmit(); } }, 500);
