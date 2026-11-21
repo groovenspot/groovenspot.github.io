@@ -27,7 +27,7 @@
 
 /* ② 자르기 틀 — 화면 끝까지(피드에 보일 모양 그대로). --r = 가로/세로 */
 .cx-stage-wrap { display: grid; justify-items: center; margin: -14px -16px 0; background: #000; }
-.cx-stage { --r: 1; position: relative; width: 100%; width: min(100%, calc((100dvh - 372px) * var(--r))); min-width: min(100%, 220px); aspect-ratio: var(--r); overflow: hidden; background: #000; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.cx-stage { --r: 1; position: relative; width: 100%; width: min(100%, calc((100dvh - 296px) * var(--r))); min-width: min(100%, 220px); aspect-ratio: var(--r); overflow: hidden; background: #000; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .cx-stage.is-moving { cursor: grabbing; }
 .cx-stage:focus-visible { outline-offset: -3px; }
 .cx-stage > img, .cx-slide > img { position: absolute; max-width: none; display: block; pointer-events: none; user-select: none; -webkit-user-drag: none; }

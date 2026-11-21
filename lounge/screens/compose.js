@@ -677,7 +677,7 @@
   }
 
   L.screen('compose', {
-    nav: 'feed', auth: false, selfGate: true, bar: 'own', title: 'compose4.title', render,
+    nav: 'feed', auth: false, selfGate: true, bar: 'own', tabs: false, title: 'compose4.title', render,
     leave() { release?.(); release = undefined; }
   });
   L.screen('tags', { nav: 'me', auth: true, bar: 'own', title: 'compose4.tagsTitle', render: renderTags });

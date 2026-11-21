@@ -12,7 +12,7 @@
     fresh: ['새 스토리', 'new'], seen: ['모두 봄', 'seen'],
     prev: ['이전', 'Previous'], next: ['다음', 'Next'], pause: ['멈춤', 'Pause'], play: ['재생', 'Play'], close: ['닫기', 'Close'], more: ['더 보기', 'More'],
     reply: ['메시지 보내기', 'Send message'], like: ['좋아요', 'Like'], unlike: ['좋아요 취소', 'Unlike'],
-    views: ['본 사람 {n}', 'Seen by {n}'], viewers: ['본 사람', 'Viewers'], viewersN: ['{n}명이 봤어요', 'Seen by {n}'],
+    views: ['본 사람 {n}', 'Seen by {n}'], viewsLikes: ['본 사람 {n}, 좋아요 {m}', 'Seen by {n}, {m} likes'], viewers: ['본 사람', 'Viewers'], viewersN: ['{n}명이 봤어요', 'Seen by {n}'],
     viewersNote: ['내 스토리를 본 사람 목록은 나에게만 보여요.', 'Only you can see who viewed your story.'],
     noViewers: ['아직 본 사람이 없어요.', 'No one has seen this yet.'], liked: ['좋아요를 눌렀어요', 'Liked'],
     report: ['신고하기', 'Report'], take: ['사진을 내려 주세요', 'Take this photo down'],
@@ -35,7 +35,7 @@
     ja: {
       'story.title': 'ストーリー', 'story.mine': 'あなたのストーリー', 'story.add': 'ストーリーに追加', 'story.viewMine': '自分のストーリーを見る', 'story.of': '{nick}さんのストーリー',
       'story.fresh': '新着', 'story.seen': '閲覧済み', 'story.prev': '前へ', 'story.next': '次へ', 'story.pause': '一時停止', 'story.play': '再生', 'story.close': '閉じる', 'story.more': 'その他',
-      'story.reply': 'メッセージを送る', 'story.like': 'いいね', 'story.unlike': 'いいねを取り消す', 'story.views': '閲覧 {n}', 'story.viewers': '閲覧者', 'story.viewersN': '{n}人が見ました',
+      'story.reply': 'メッセージを送る', 'story.like': 'いいね', 'story.unlike': 'いいねを取り消す', 'story.views': '閲覧 {n}', 'story.viewsLikes': '閲覧 {n}、いいね {m}', 'story.viewers': '閲覧者', 'story.viewersN': '{n}人が見ました',
       'story.viewersNote': 'ストーリーを見た人の一覧は自分だけに表示されます。', 'story.noViewers': 'まだ誰も見ていません。', 'story.liked': 'いいねしました',
       'story.report': '報告する', 'story.take': 'この写真を取り下げてください', 'story.del': 'ストーリーを削除', 'story.delAsk': 'このストーリーを削除しますか？', 'story.delBody': '削除すると元に戻せません。',
       'story.deleted': '削除しました', 'story.hidden': '非表示にしました', 'story.gone': '表示できるストーリーがありません。24時間が過ぎたか、削除されました。',
@@ -49,7 +49,7 @@
     zh: {
       'story.title': '快拍', 'story.mine': '你的快拍', 'story.add': '添加到快拍', 'story.viewMine': '查看我的快拍', 'story.of': '{nick} 的快拍',
       'story.fresh': '有新快拍', 'story.seen': '已看完', 'story.prev': '上一个', 'story.next': '下一个', 'story.pause': '暂停', 'story.play': '播放', 'story.close': '关闭', 'story.more': '更多',
-      'story.reply': '发送消息', 'story.like': '赞', 'story.unlike': '取消赞', 'story.views': '{n} 人看过', 'story.viewers': '看过的人', 'story.viewersN': '{n} 人看过',
+      'story.reply': '发送消息', 'story.like': '赞', 'story.unlike': '取消赞', 'story.views': '{n} 人看过', 'story.viewsLikes': '{n} 人看过，{m} 个赞', 'story.viewers': '看过的人', 'story.viewersN': '{n} 人看过',
       'story.viewersNote': '看过你快拍的人只有你自己能看到。', 'story.noViewers': '还没有人看过。', 'story.liked': '已点赞',
       'story.report': '举报', 'story.take': '请撤下这张照片', 'story.del': '删除快拍', 'story.delAsk': '要删除这条快拍吗？', 'story.delBody': '删除后无法恢复。',
       'story.deleted': '已删除', 'story.hidden': '已隐藏', 'story.gone': '没有可以查看的快拍。可能已超过 24 小时或已被删除。',
@@ -110,6 +110,11 @@
       }
     };
   }
+  // 폰 뒤로 버튼으로 닫을 수 있게 방문 기록에 한 칸을 더한다. 틀(ui.js)이 칸마다 적어 두는 순번(state.gl)은 그대로 둔다 —
+  // 지우면 '뒤로 돌아온 화면' 판단(L.wentBack·L.unstash)이 깨진다.
+  function pushEntry(api) {
+    try { history.pushState(Object.assign({}, history.state, { loungeStory: Date.now() }), ''); api.pushed = true; } catch { /* 주소 기록을 못 쓰면 뒤로 가기로 닫기만 안 됨 */ }
+  }
   window.addEventListener('popstate', () => {
     if (current?.pushed) { current.pushed = false; current.close(); }
     if (afterPop) { const run = afterPop; afterPop = null; run(); }
@@ -157,7 +162,9 @@
       q('menu').hidden = !story;
       if (!story || !now) { actions.innerHTML = ''; return; }
       if (now.mine) {
-        actions.innerHTML = '<button type="button" class="sv-pill" data-viewers>' + icon('eye', { size: 20 }) + '<span>' + t('views', { n: L.count(now.views || 0) }) + '</span></button>' +
+        const likes = Number(now.likes) || 0;
+        actions.innerHTML = '<button type="button" class="sv-pill" data-viewers' + (likes ? ' aria-label="' + t('viewsLikes', { n: L.count(now.views || 0), m: L.count(likes) }) + '"' : '') + '>' + icon('eye', { size: 20 }) +
+          '<span>' + t('views', { n: L.count(now.views || 0) }) + (likes ? ' · <i class="sv-heart" aria-hidden="true">♥</i> ' + L.esc(L.count(likes)) : '') + '</span></button>' +
           '<button type="button" class="sv-round" data-add aria-label="' + t('add') + '">' + icon('plus', { size: 22 }) + '</button>';
       } else {
         actions.innerHTML = (L.open('dm') && group.user?.nick && group.canMessage !== false ? '<button type="button" class="sv-pill sv-reply" data-reply>' + icon('send', { size: 18 }) + '<span>' + t('reply') + '</span></button>' : '<span class="sv-space"></span>') +
@@ -197,7 +204,20 @@
       text.hidden = !now.text;
       paintActions();
       const done = () => { if (closed || request !== version) return; loading = false; spinner.hidden = true; };
-      photo.onload = photo.onerror = done;
+      photo.onload = () => { group.refreshed = false; done(); };
+      photo.onerror = async () => {       // 오래 멈춰 둬서 사진 주소(10분)가 만료됐으면 한 번 다시 받아 이어 본다
+        if (closed || request !== version) return;
+        if (!story || !group.load || group.refreshed) return done();
+        group.refreshed = true;
+        let fresh = [];
+        try { fresh = await group.load(group) || []; } catch (error) { console.error(error); }
+        if (closed || request !== version) return;
+        const byId = new Map(fresh.map(one => [one.id, one]));
+        const kept = group.items.filter(one => byId.has(one.id)).map(one => ({ ...one, photo: byId.get(one.id).photo }));
+        if (!kept.length) { group.items = []; return void show(g, 0); }       // 그 사이에 다 사라졌으면 다음 사람으로(없으면 닫힘)
+        group.items = kept;
+        show(g, Math.max(0, kept.findIndex(one => one.id === now.id)));
+      };
       photo.setAttribute('src', url); bg.setAttribute('src', url);
       photo.alt = now.text || L.t('story.of', { nick: group.user?.nick || now.author?.nick || '' });
       if (photo.complete && photo.naturalWidth) done();
@@ -367,7 +387,7 @@
 
     const api = { close, route, pushed: false, el };
     current = api;
-    if (!route) { try { history.pushState({ loungeStory: Date.now() }, ''); api.pushed = true; } catch { /* 주소 기록을 못 쓰면 뒤로 가기만 안 됨 */ } }
+    if (!route) pushEntry(api);
     el.focus({ preventScroll: true });
     last = performance.now();
     frame = requestAnimationFrame(tick);
@@ -377,11 +397,10 @@
 
   // 본 사람 목록 (올린 사람만)
   function viewers(story, leaveTo) {
-    const panel = L.sheet('<div class="sv-sheet-head"><h2 data-viewers-title>' + t('viewers') + '</h2><button type="button" class="btn sv-sheet-close" data-viewers-close>' + t('close') + '</button></div>' +
-      '<p class="sv-sheet-note">' + t('viewersNote') + '</p><div class="sv-viewers" data-viewers-list><p class="sv-sheet-note" role="status">' + U.t('loading') + '</p></div>');
+    const panel = L.sheet('<div class="sv-sheet-head"><h2 data-viewers-title>' + t('viewers') + '</h2></div>' +
+      '<p class="sv-sheet-note">' + t('viewersNote') + '</p><div class="sv-viewers" data-viewers-list><p class="sv-sheet-note" role="status">' + U.t('loading') + '</p></div>', { close: true });
     panel.classList.add('sv-sheet');
     const list = panel.querySelector('[data-viewers-list]'), people = [];
-    panel.querySelector('[data-viewers-close]').onclick = L.closeSheet;
     async function load(before) {
       const result = await L.api('story_viewers', { id: story.id, ...(before && { before }) });
       if (!panel.isConnected) return;
@@ -443,13 +462,14 @@
     await loadTray(el);
   };
 
+  const loader = nick => async group => {        // 사진 주소는 10분만 유효하다 → 저장하지 않고 열 때마다 다시 받는다
+    const result = await L.api('story_get', { nick });
+    if (result.user) group.user = result.user;
+    return (result.items || []).map(one => ({ ...one }));
+  };
   function openPeople(nicks, at, rows, extra) {
     const groups = nicks.map((nick, n) => ({ user: rows?.[n] ? { nick, photo: rows[n].photo, tag: rows[n].tag } : { nick, photo: nick === L.me?.nick ? L.me.photo : '' },
-      items: null, load: async group => {
-        const result = await L.api('story_get', { nick });
-        if (result.user) group.user = result.user;
-        return (result.items || []).map(one => ({ ...one }));
-      } }));
+      items: null, load: loader(nick) }));
     return openViewer({ groups, at, story: true, ...extra });
   }
 
@@ -459,7 +479,7 @@
     if (!L.me) { L.needLogin(); return false; }
     const result = await L.api('story_get', { nick });
     if (!Array.isArray(result.items) || !result.items.length) return false;
-    openViewer({ groups: [{ user: result.user || { nick }, items: result.items.map(one => ({ ...one })) }], story: true, ...opt });
+    openViewer({ groups: [{ user: result.user || { nick }, items: result.items.map(one => ({ ...one })), load: loader(nick) }], story: true, ...opt });
     return true;
   };
 
@@ -510,7 +530,7 @@
       }
       const api = { close: () => finish(false), route: false, pushed: false, el };
       current = api;
-      try { history.pushState({ loungeStory: Date.now() }, ''); api.pushed = true; } catch { /* 뒤로 가기로 닫기만 안 됨 */ }
+      pushEntry(api);
       function keys(event) {
         if (!sheet().hidden) return;
         if (event.key === 'Escape' && !busy) { event.preventDefault(); event.stopPropagation(); return finish(false); }
@@ -619,7 +639,7 @@
     if (!Array.isArray(result.items) || !result.items.length) return note(t(result.error === 'forbidden' ? 'locked' : 'gone'));
     body.innerHTML = '';
     let left = false;
-    routed = openViewer({ groups: [{ user: result.user || { nick }, items: result.items.map(one => ({ ...one })) }], story: true, route: true,
+    routed = openViewer({ groups: [{ user: result.user || { nick }, items: result.items.map(one => ({ ...one })), load: loader(nick) }], story: true, route: true,
       onClose: leaving => { routed = null; if (!left && !leaving && page.isConnected) L.back('feed'); } });
     routed.leave = () => { left = true; };
   }

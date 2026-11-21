@@ -52,6 +52,7 @@ body.sv-open { overflow: hidden; }
 .sv-pill { display: inline-flex; align-items: center; gap: 8px; flex: 1; min-width: 0; min-height: 46px; padding: 0 16px; border: 1.5px solid rgba(255,255,255,.6); border-radius: 999px; background: rgba(0,0,0,.25); color: #fff; font: inherit; font-size: .9375rem; font-weight: 600; text-align: left; cursor: pointer; }
 .sv-pill > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sv-space { flex: 1; }
+.sv-heart { color: #ff4d5e; font-style: normal; }
 .sv-round { display: grid; place-items: center; flex: none; width: 46px; height: 46px; padding: 0; border: 0; border-radius: 50%; background: none; color: #fff; cursor: pointer; }
 .sv-round[data-like][aria-pressed="true"] { color: #ff4d5e; }
 .sv-layer.is-held .sv-top, .sv-layer.is-held .sv-bottom { opacity: 0; }
