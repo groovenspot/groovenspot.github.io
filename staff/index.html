@@ -2070,6 +2070,9 @@ html[data-theme="light"] .conv.inq { background: #eef6ff; }
 .dec .what .dbadge.priv { display: inline-block; height: auto; margin-inline-start: 6px; padding: 0; font-size: .8em; vertical-align: baseline; }
 .dec .dbadge.priv::before { content: "🔒"; }
 .dec .dtake { width: 100%; min-height: 48px; font-size: 16px; font-weight: 900; }
+.dec .dpick { margin-top: 8px; font-size: 15px; }   /* 👥 골라서 맡기기 (2026-11-21) */
+.dpick-list { display: flex; flex-wrap: wrap; gap: 6px; max-height: 50vh; overflow: auto; }
+.dpick-list .chip { min-height: 40px; padding: 8px 14px; font-size: 15px; }
 .dec .dflag { display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; }
 .dec .dflag button { min-height: 40px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--line-2); background: transparent; color: var(--txt); font-size: 12px; font-weight: 700; cursor: pointer; }
 .dec .dflag button[data-decflag="priv"][aria-pressed="true"] { color: #fff; background: #7136c8; border-color: #7136c8; }
@@ -3947,7 +3950,8 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
   function decQHit(x, q) { var h = decHay(x); return String(q || '').toLowerCase().split(/\s+/).filter(Boolean).every(function (w) { return h.indexOf(w) >= 0; }); }
   var decFlagPending = new Map();
   DX.badges.push(function (x) { return x.hot ? '<span class="dbadge hot">🔥 급함</span>' : ''; });
-  DX.card.push(function (x) { return x.take ? '<button class="btn btn-hot dtake" type="button" data-dectake="1">🙋 내가 맡을게요</button>' : ''; });   // 한 번 누르면 바로 (대표 선호)
+  DX.card.push(function (x) { return x.take ? '<button class="btn btn-hot dtake" type="button" data-dectake="1">🙋 내가 맡을게요</button>' +
+    (decAllMe(state.data) && (state.data.decStaff || []).length ? '<button class="btn dtake dpick" type="button" data-decpick="1">👥 골라서 맡기기</button>' : '') : ''; });   // 한 번 누르면 바로 (대표 선호) · 👥 팀장 이상은 다른 직원에게 (2026-11-21)
   DX.cardEnd.push(function (x) {
     if (!x.flag) return '';
     var disabled = decPendingFlag(x.id) ? ' aria-disabled="true"' : '';
@@ -3964,6 +3968,7 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
   DX.bind.push(function (area) {
     ['decAddHot', 'decAddPriv'].forEach(function (k) { var c = $(k); if (c) c.addEventListener('change', function () { state.decAddFl = { hot: !!($('decAddHot') || {}).checked, priv: !!($('decAddPriv') || {}).checked }; }); });
     area.querySelectorAll('[data-dectake]').forEach(function (b) { b.addEventListener('click', function () { decAct1({ a: 'dec_take', id: b.closest('[data-decid]').dataset.decid }, b); }); });
+    area.querySelectorAll('[data-decpick]').forEach(function (b) { b.addEventListener('click', function () { decPickSheet(b.closest('[data-decid]').dataset.decid); }); });
     area.querySelectorAll('[data-decflag]').forEach(function (b) { b.addEventListener('click', function () { decToggleFlag(b); }); });
   });
   function decPendingFlag(id) {
@@ -4002,6 +4007,25 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
     if (msg && !confirmed) msg.textContent = message || ({
       forbidden: '팀장 이상만 바꿀 수 있어요.', notfound: '그 사이 지워졌어요.', busy: '잠시 후 다시 해 주세요.'
     }[result?.error] || '안 됐어요. 다시 해 주세요.');
+  }
+  // 👥 골라서 맡기기 (대표 요청 2026-11-21): 이름을 찾아 누르면 그 사람이 담당 + 알림
+  function decPickSheet(id) {
+    var d = state.data, x = (d.decisions || []).filter(function (y) { return String(y.id) === String(id); })[0]; if (!x) return;
+    showSheet('<h2>👥 누구에게 맡길까요?</h2><p class="sub">' + esc(String(x.what || '').slice(0, 60)) + '</p>' +
+      '<input id="dpQ" autocomplete="off" placeholder="이름·닉네임 찾기" style="margin:0 0 10px"><div class="dpick-list" id="dpL"></div><p class="msg" id="dpM" role="alert"></p>');
+    var draw = function () {
+      var q = $('dpQ').value.trim(), l = (q ? staffFind(d.decStaff || [], q) : (d.decStaff || []).slice()).slice(0, 40);
+      $('dpL').innerHTML = l.length ? l.map(function (n) { return '<button type="button" class="chip" data-dpn="' + esc(n) + '">' + esc(n) + (n === d.name ? ' (나)' : '') + '</button>'; }).join('') : '<p class="note">찾는 이름이 없어요.</p>';
+      $('dpL').querySelectorAll('[data-dpn]').forEach(function (b) { b.addEventListener('click', function () {
+        if (b.disabled) return; b.disabled = true;
+        call({ a: 'dec_take', token: state.s.token, id: id, to: b.dataset.dpn }).then(function (r) {
+          if (r.error === 'auth') return toLogin(AUTH_OUT);
+          if (!r.ok) { b.disabled = false; $('dpM').textContent = { taken: '그 사이 다른 사람이 맡았어요.', state: '완료된 일이에요.', forbidden: '팀장 이상만 다른 사람에게 맡길 수 있어요.', who: '승인된 직원이 아니에요.', busy: '잠시 후 다시 해 주세요.', notfound: '지워진 일이에요.' }[r.error] || '맡기지 못했어요.'; return; }
+          state.data.decisions = r.decisions; saveData(state.data); $('sheetX').click(); toast('👉 ' + b.dataset.dpn + '에게 맡겼어요. 알림을 보냈어요.'); render();
+        }).catch(function () { b.disabled = false; $('dpM').textContent = '연결이 안 돼요. 다시 해 주세요.'; });
+      }); });
+    };
+    $('dpQ').addEventListener('input', draw); draw();
   }
   function decAct1(body, btn) {
     if (btn.disabled) return; btn.disabled = true;
