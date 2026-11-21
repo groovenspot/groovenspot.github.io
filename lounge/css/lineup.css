@@ -1,1 +1,33 @@
-/* 그루브 라운지 5차 — 오늘 밤 탭 개편: lineup (주인 작업창만 고침 · 서버 저장소 lounge/SPEC5.md 3장) */
+.lineup5,.lineup5-screen{min-width:0;max-width:640px;margin:0 auto;overflow-wrap:anywhere}
+.lineup5{--floor-color:var(--g);--floor-tint:rgba(255,137,64,.1)}
+.lineup5[data-floor="3F"]{--floor-color:var(--s);--floor-tint:rgba(171,126,255,.12)}
+.lineup5-tabs{display:flex;gap:8px;margin:16px 0;border-bottom:1px solid var(--line)}
+.lineup5-tabs button{flex:1;min-height:48px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font:inherit;font-weight:700;cursor:pointer}
+.lineup5-tabs button[aria-selected="true"]{color:var(--floor-color);border-bottom-color:var(--floor-color)}
+.lineup5-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.lineup5-row{border-radius:14px;padding:4px 8px;border:1px solid transparent;min-width:0}
+.lineup5-row.is-now{background:var(--floor-tint);border-color:var(--floor-color)}
+.lineup5-row.is-past .lineup5-dj{opacity:.48}
+.lineup5-dj{display:grid;grid-template-columns:46px 44px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:56px;color:inherit;text-decoration:none}
+.lineup5-dj time{font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.lineup5-name{font-weight:650;line-height:1.4}
+.lineup5-status{display:grid;gap:4px;text-align:right;font-size:12px;max-width:76px}
+.lineup5-status b,.lineup5-status small{color:var(--floor-color)}
+.lineup5-status small{font-size:11px}
+.lineup5-follow{display:block;margin-left:auto;min-height:44px;min-width:80px;padding:8px 12px;border:1px solid var(--line);border-radius:24px;background:transparent;color:var(--txt);font:inherit;font-size:12px;cursor:pointer}
+.lineup5-follow[aria-pressed="true"]{color:var(--floor-color)}
+.lineup5-more{display:flex;min-height:48px;align-items:center;justify-content:center;margin-top:12px;color:var(--txt);border:1px solid var(--line);border-radius:14px;text-decoration:none}
+.lineup5-date{color:var(--muted);margin-top:16px}
+.lineup5-parties{display:flex;overflow-x:auto;gap:14px;scroll-snap-type:x proximity;padding:4px 0 14px;max-width:100%}
+.lineup5-party{flex:0 0 76%;min-width:0;border:1px solid var(--line);border-radius:18px;padding:14px;background:var(--card);scroll-snap-align:start}
+.lineup5-party p{margin:0 0 12px;font-size:13px;color:var(--muted)}
+.lineup5-party h3{margin:14px 0 8px;font-size:18px;line-height:1.4}
+.lineup5-today{color:var(--ok);font-size:12px}
+.lineup5-poster{display:block;min-height:44px;width:100%;padding:0;border:0;background:transparent;cursor:zoom-in}
+.lineup5-poster img{display:block;width:100%;aspect-ratio:4/5;object-fit:contain;background:#111;border-radius:10px}
+.lineup5-zoom{display:block;width:100%;height:auto}
+.lineup5-parties.is-vertical{display:grid;overflow:visible;scroll-snap-type:none;gap:18px}
+.lineup5-parties.is-vertical .lineup5-party{width:100%;box-sizing:border-box}
+.lineup5-preview{line-height:1.6}
+.lineup5 button:focus-visible,.lineup5 a:focus-visible,.lineup5-party button:focus-visible{outline:2px solid var(--ok);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.lineup5-parties{scroll-behavior:auto;scroll-snap-type:none}}
