@@ -3813,6 +3813,24 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   function dmBox() { return $('dmBox'); }
   function dmY() { var bx = dmBox(); return document.body.classList.contains('dmfix') && bx ? bx.scrollTop : window.scrollY; }
   function dmSetY(y) { var bx = dmBox(); if (document.body.classList.contains('dmfix') && bx) bx.scrollTop = y; else window.scrollTo(0, y); }
+  // 📱 키보드 유지 (대표 요청 2026-11-22 밤): 메시지 화면은 보낼 때마다·새 메시지가 올 때마다 통째로 다시 그려서, 쓰던 입력칸이 지워지는 순간
+  //   아이폰이 키보드를 내리고(입력줄이 화면 아래로 떨어짐) 새 칸에 커서를 줘도 손으로 누르기 전엔 키보드가 안 올라온다.
+  //   → 지우기 직전에 숨은 칸(kbKeep)으로 커서를 넘겨 두고(키보드가 떠 있을 때 칸끼리 옮기는 건 허용됨), 다시 그린 뒤 새 입력칸으로 돌려준다.
+  function kbHold(id) {
+    var a = document.activeElement; if (!a || a.id !== id) return null;
+    var k = $('kbKeep'); if (!k) { k = document.createElement('input'); k.id = 'kbKeep'; k.type = 'text'; k.tabIndex = -1; k.autocomplete = 'off'; k.setAttribute('aria-hidden', 'true');
+      k.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0;border:0;padding:0;margin:0;font-size:16px;pointer-events:none;background:transparent;color:transparent'; document.body.appendChild(k); }
+    var sel = [a.selectionStart, a.selectionEnd];
+    try { k.focus({ preventScroll: true }); } catch (e) { k.focus(); }
+    return sel;
+  }
+  function kbBack(sel, ta) {
+    if (!sel || !ta) return;
+    try { ta.focus({ preventScroll: true }); } catch (e) { ta.focus(); }
+    var n = ta.value.length; try { ta.setSelectionRange(Math.min(sel[0], n), Math.min(sel[1], n)); } catch (e) {}
+    if (ta.value) { ta.style.height = 'auto'; ta.style.height = Math.min(140, ta.scrollHeight) + 'px'; }
+  }
+  function kbLet(sel) { var k = $('kbKeep'); if (sel && k && document.activeElement === k) k.blur(); }
   function render() {
     var d = state.data; if (!d) return;
     if (d.mustChange && state.s && !state.s.mustChange && !state.pop) { state.s.mustChange = true; save(state.s); return mustChangeView(); }   // 🔑 초기화된 계정 (목록에서 알려 줌)
@@ -6298,6 +6316,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   function renderChat(area) {
     var c = state.chat, w = state.dmWith, grp = /^@g\//.test(w), gtitle = grp ? (c && c.title) || ((state.dm && state.dm.convs.filter(function (x) { return x.with === w; })[0]) || {}).title || '그룹 대화' : '';
     var hadF = document.activeElement && document.activeElement.id === 'dfQ', hadGA = document.activeElement && document.activeElement.id === 'gAddQ';
+    var hadT = kbHold('dText');   // 📱 보내기·새 메시지로 다시 그려도 키보드가 안 내려가게 (대표 요청 2026-11-22 밤 '한 줄 칠 때마다 입력창 내려감')
     if (state.dmJump && c) { state.dmFind = { q: state.dmJump.q, id: state.dmJump.id, i: -1, jump: state.dmJump.id }; state.dmJump = null; }
     var F = state.dmFind;
     var h = '<div class="chead"><button class="btn back" id="dBack" type="button" aria-label="목록으로">' + cmIco('back') + '</button><strong>' + (grp ? esc(gtitle) + (c && c.members ? '<button type="button" class="org gmem" id="gMem">' + c.members.length + '명 ▾</button>' : '') : esc(w) + nickH(w) + (c && c.org ? '<span class="org">' + esc(c.org) + '</span>' : '')) + '</strong>' +
@@ -6432,8 +6451,10 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       $('dfDn').addEventListener('click', function () { dfApply(1); });
       $('dfX').addEventListener('click', function () { state.dmFind = null; state.keepY = dmY(); render(); });
     }
-    var f = $('dForm'); if (!f) return;
+    var f = $('dForm'); if (!f) { kbLet(hadT); return; }
     var ta = $('dText'); ta.value = state.dmDraft[w] || '';
+    kbBack(hadT, ta);
+    $('dBtn').addEventListener('mousedown', function (e) { e.preventDefault(); });   // 보내기를 눌러도 커서는 입력칸에 (안드로이드는 버튼이 커서를 가져가 키보드가 내려감)
     // 📣 @태그: 그룹은 멤버(나 빼고), 1:1 은 상대 한 명 — 이름(성 빼고)·초성·닉네임 (💬 대화창 chatAtPaint 와 같은 찾기)
     var atList = grp ? (c.members || []).filter(function (n) { return key(n) !== key(me0); }) : [c.with || w];
     function atPaint() {
@@ -12242,6 +12263,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       paintMd();
       if (ims.length) Promise.all(ims.map(shrink)).then(function (xs) { if (room !== md) return; md.photos = md.photos.concat(xs).slice(0, 3); paintMd(); }).catch(function () { alertBox('사진을 못 읽었어요.'); });
     });
+    $('chatF').querySelector('button[type=submit]').addEventListener('mousedown', function (e) { e.preventDefault(); });   // 📱 보내기를 눌러도 커서·키보드는 입력칸에 (2026-11-22 밤)
     $('chatF').addEventListener('submit', function (e) {
       e.preventDefault(); var t = ta.value.trim(), room = state.chatRoom, form = this; if ((!t && !md.photos.length && !md.vids.length) || !room) return;
       var btn = this.querySelector('button'); if (btn.disabled) return;
