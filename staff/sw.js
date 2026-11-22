@@ -135,6 +135,10 @@ function showPeek(n, previous, secondary) {
     opt.tag = 'gs-' + n.ref; opt.requireInteraction = true; opt.vibrate = [300, 120, 300, 120, 300]; opt.silent = false;
     opt.actions = [{ action: 'yc-go', title: '▶ ㄱㄱ 시작' }, { action: 'yc-open', title: '연출 탭 열기' }];
   }
+  // 🚪 입구 호출(순번·안내·섭레콜) · 🛎 운영 요청(아웃 청소 등) (직원 건의 2026-11-22 '앱을 안 들어가면 알람이 안 뜬다'):
+  //   진동 3번 + 소리(폰 기본 알림음) + 누를 때까지 남김 · 같은 호출은 한 알림으로 묶음. 놓침·이미 맡음 안내는 진동만(남기지 않음).
+  if ((n.kind === 'gate' || n.kind === 'ops') && /^(gate|ops):[-\w]{1,40}$/.test(n.ref || '')) { opt.tag = 'gs-' + n.ref; opt.renotify = true; opt.requireInteraction = true; opt.vibrate = [400, 150, 400, 150, 400]; opt.silent = false; }
+  if (n.kind === 'gate-miss' || n.kind === 'ops-done') { opt.vibrate = [400, 150, 400, 150, 400]; opt.silent = false; }
   if (n.kind === 'roar') { opt.requireInteraction = true; opt.vibrate = [500, 120, 500, 120, 900]; opt.silent = false; }
   return Promise.all([message, self.registration.showNotification(n.title, opt)]);
 }
