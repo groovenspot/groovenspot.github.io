@@ -2501,6 +2501,10 @@ html .bell[hidden] { display: none; }
 .top { flex-wrap: wrap; }
 .topnote { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: -2px; }
 .topnote[hidden], .topnote [hidden] { display: none; }
+/* 맨 위 정리 (대표 2026-11-22 밤 "상단 위치 재배치"): 1줄 = GROOVE STAFF ··· 이름·🔔·로그아웃 / 2줄 = 🌙 영업종료 · 🪑 테이블 대기 · 🔕 알림 안내 */
+.top { row-gap: 8px; }
+.top > .who { margin-left: auto; flex-wrap: nowrap; }
+html .topnote .byebtn { min-height: 36px; padding: 0 14px !important; font-size: 13px !important; border-radius: 18px; }
 .tnwait { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 14px; border-radius: 18px; border: 1px solid rgba(255,176,32,.6); background: rgba(255,176,32,.14); color: var(--warn); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
 .tnwait b { min-width: 22px; padding: 1px 7px; border-radius: 11px; background: var(--warn); color: #1a1200; font-size: 13px; text-align: center; }
 .tnpush { flex: 1 1 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px 8px 12px; border-radius: 12px; border: 1px solid rgba(255,90,90,.55); background: rgba(255,90,90,.12); font-size: 13.5px; font-weight: 700; line-height: 1.35; }
@@ -2911,9 +2915,10 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
 </head>
 <body>
 <header class="top">
-  <div class="brandw"><div class="brand">GROOVE <b>STAFF</b></div><button type="button" class="byebtn" id="byeBtn" hidden><svg class="cei cei-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span>영업종료</span></button><span class="onpill" id="onPill" hidden></span></div>
+  <div class="brandw"><div class="brand">GROOVE <b>STAFF</b></div><span class="onpill" id="onPill" hidden></span></div>
   <div class="who" id="who" hidden><button class="mebtn" id="meBtn" type="button" aria-label="내 프로필"><strong id="whoName"></strong> <span id="whoTeam"></span></button><button class="bell" id="bell" type="button" hidden aria-label="알림 켜기·끄기"><svg class="cei cei-belloff" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/></svg></button><button class="logoutb" id="logout" type="button" aria-label="로그아웃"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg><span>로그아웃</span></button></div>
   <div class="topnote" id="topNote" hidden>
+    <button type="button" class="byebtn" id="byeBtn" hidden><svg class="cei cei-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span>영업종료</span></button>
     <button type="button" class="tnwait" id="tnWait" hidden aria-label="테이블 대기 명단 보기">🪑 테이블 대기 <b id="tnWaitN">0</b></button>
     <div class="tnpush" id="tnPush" hidden role="status"><span id="tnPushT"></span><button type="button" class="btn btn-hot" id="tnPushB">켜기</button></div>
   </div>
@@ -7928,7 +7933,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       }).catch(function () { delete b.dataset.busy; b.disabled = false; paintGo(); $('roarMsg').textContent = '연결이 안 돼요.'; });
     });
   }
-  function byeBtnPaint(d) { var b = $('byeBtn'); if (!b) return; b.hidden = !(d && d.byeOk); var hi = !!(d && d.bizClosed); b.innerHTML = hi ? ceSvg('sun') + '<span>영업시작</span>' : ceSvg('moon') + '<span>영업종료</span>'; b.classList.toggle('hi', hi); }
+  function byeBtnPaint(d) { var b = $('byeBtn'); if (!b) return; b.hidden = !(d && d.byeOk); var hi = !!(d && d.bizClosed); b.innerHTML = hi ? ceSvg('sun') + '<span>영업시작</span>' : ceSvg('moon') + '<span>영업종료</span>'; b.classList.toggle('hi', hi); try { topNotePaint(); } catch (e) {} }
   function hiConfirm() {
     showSheet('<h2>🌅 영업 시작</h2><p style="font-size:18px;font-weight:900;margin:4px 0 10px">영업 시작할까요?</p>' +
       '<p class="note" style="margin:0 0 12px">출근 중인 직원에게 <b>오늘도 화이팅 🔥</b> 알림이 가요.</p><p class="msg" id="hiMsg"></p><button class="btn btn-hot" type="button" id="hiGo" style="width:100%;min-height:52px;font-size:17px">네, 영업 시작</button>');
@@ -8025,7 +8030,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     }
     topNotePaint();
   }
-  function topNotePaint() { var t = $('topNote'); if (t) t.hidden = $('tnWait').hidden && $('tnPush').hidden; }
+  function topNotePaint() { var t = $('topNote'); if (t) t.hidden = $('tnWait').hidden && $('tnPush').hidden && $('byeBtn').hidden; }
   $('tnPushB').addEventListener('click', function () { updateBell(true); });
   // 🪑 테이블 대기 배지 (직원 건의 2026-11-22): 대기 명단이 있으면 어느 탭에서든 '🪑 테이블 대기 N' → 누르면 테이블 탭 대기 명단. 0이면 숨김. 테이블을 보는 사람만(경호팀 빼고)
   function tbWaitOk() { var d = state.data; return !!(state.s && d && d.table && !d.guard); }
