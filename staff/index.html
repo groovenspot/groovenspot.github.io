@@ -3864,7 +3864,9 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     if (state.tab === 'live') return renderLive(area);
     // 🎨 리디자인 2026-11-20: 제목줄 · 신규 교육은 내 진도 막대 → 알림 받는 법 → 교육 자료 → 기능별 사용법 / 회의록은 안 읽은 문서 먼저
     var isEdu = state.tab === 'edu', list = isEdu ? edu : notes, unN = list.filter(function (n) { return !n.read; }).length;
-    var head = '<div class="gh"><div><h1>' + (isEdu ? '신규 교육' : '회의록') + '</h1><span class="range">' + (isEdu ? '처음 온 직원은 위에서부터 차례로 보면 돼요' : '문서 ' + list.length + '개' + (list.length ? (unN ? ' · 안 읽은 문서 ' + unN + '개' : ' · 모두 읽었어요') : '')) + '</span></div>' + (!isEdu && unN ? '<span class="nbadge">안 읽음 ' + unN + '</span>' : '') + '</div>';
+    var composeNote = !isEdu && d.admin && !d.guard;
+    var head = '<div class="gh"><div><h1>' + (isEdu ? '신규 교육' : '회의록') + '</h1><span class="range">' + (isEdu ? '처음 온 직원은 위에서부터 차례로 보면 돼요' : '문서 ' + list.length + '개' + (list.length ? (unN ? ' · 안 읽은 문서 ' + unN + '개' : ' · 모두 읽었어요') : '')) + '</span></div>' +
+      (composeNote ? '<button class="btn btn-hot" id="noteNew" type="button">+ 회의록 등록</button>' : !isEdu && unN ? '<span class="nbadge">안 읽음 ' + unN + '</span>' : '') + '</div>';
     var nitem = function (n) {
       var pct = n.total ? Math.max(0, Math.min(100, Math.round(n.readers / n.total * 100))) : 0;
       return '<button type="button" class="item nitem' + (n.read ? '' : ' unread') + '" data-id="' + esc(n.id) + '">' +
@@ -3881,11 +3883,12 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       var un = list.filter(function (n) { return !n.read; }), rd = list.filter(function (n) { return n.read; });
       body = (un.length ? '<h2 class="sec nsec">먼저 읽어 주세요 <small>' + un.length + '개</small></h2><div class="list nlist">' + un.map(nitem).join('') + '</div>' : '') +
         (rd.length ? '<h2 class="sec nsec">읽은 문서 <small>' + rd.length + '개</small></h2><div class="list nlist">' + rd.map(nitem).join('') + '</div>' : '') +
-        '<p class="note nfoot">회의록은 대표·기획팀이 올려요. 열면 자동으로 읽음 처리되고, 누가 안 읽었는지는 대표·팀장에게 보여요.</p>';
+        '<p class="note nfoot">회의록을 열면 자동으로 읽음 처리돼요. 읽음 현황은 대표 계정에서 확인할 수 있어요.</p>';
     }
     var prog = '';
     if (isEdu && list.length) { var rp = Math.round((list.length - unN) / list.length * 100); prog = '<div class="nprog"><div class="nph"><b>내 교육 진도</b><span>' + (list.length - unN) + ' / ' + list.length + ' 읽음</span></div><div class="nbar big" aria-hidden="true"><i style="width:' + rp + '%"></i></div><p>' + (unN ? '안 읽은 자료 ' + unN + '개 · 열면 자동으로 읽음 처리돼요' : '교육 자료를 모두 읽었어요') + '</p></div>'; }
     area.innerHTML = head + (isEdu ? prog + pushGuideHtml() + body + eduGuideHtml() : body);
+    if (composeNote) $('noteNew').addEventListener('click', noteCompose);
     area.querySelectorAll('.item').forEach(function (b) { b.addEventListener('click', function () { openDoc(b.dataset.id); }); });
     bindPushGuide();
   }
@@ -12954,6 +12957,52 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       var fall = function () { try { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); if (document.execCommand('copy')) done(); else $('pwCpM').textContent = '번호를 길게 눌러 복사해 주세요.'; } catch (e) { $('pwCpM').textContent = '번호를 길게 눌러 복사해 주세요.'; } };
       try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(temp).then(done, fall); else fall(); } catch (e) { fall(); }
     });
+  }
+  function noteCompose() {
+    var token = state.s.token;
+    showSheet('<h2>회의록 등록</h2><form id="noteForm" class="eform">' +
+      '<label>제목<input id="noteTitle" maxlength="120" required></label>' +
+      '<label>회의 날짜<input id="noteDate" type="date" value="' + today() + '" required></label>' +
+      '<label>텍스트 파일에서 불러오기 (선택)<input id="noteFile" type="file" accept=".txt,.md"></label>' +
+      '<label>본문<textarea id="noteText" rows="10" maxlength="20000" required placeholder="회의 내용을 입력하거나 붙여넣으세요."></textarea></label>' +
+      '<p class="msg" id="noteMsg" role="status"></p><button class="btn btn-hot" type="submit">등록하기</button></form>');
+    var form = $('noteForm'), fileInput = $('noteFile'), message = $('noteMsg'), title = $('noteTitle'), body = $('noteText'), date = $('noteDate');
+    var submit = form.querySelector('button[type="submit"]');
+    fileInput.addEventListener('change', async function () {
+      var file = fileInput.files[0]; if (!file) return;
+      fileInput.value = '';
+      if (!/\.(txt|md)$/i.test(file.name) || file.size > 80003) { message.textContent = '2만 자 이하의 .txt 또는 .md 파일을 선택해 주세요.'; return; }
+      if (body.value.trim() && !window.confirm('입력한 본문을 파일 내용으로 바꿀까요?')) return;
+      fileInput.disabled = submit.disabled = true;
+      try {
+        var content = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer());
+        if (!form.isConnected || state.s?.token !== token) return;
+        if (!content.trim() || content.trim().length > 20000) { message.textContent = '파일 본문은 1자 이상 2만 자 이하여야 해요.'; return; }
+        body.value = content.trim();
+        if (!title.value.trim()) title.value = file.name.replace(/\.(txt|md)$/i, '').slice(0, 120);
+        message.textContent = '파일을 불러왔어요. 내용을 확인하고 등록해 주세요.';
+      } catch (e) { message.textContent = 'UTF-8로 저장한 텍스트 파일을 선택해 주세요.'; }
+      finally { fileInput.disabled = submit.disabled = false; }
+    });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (submit.disabled || state.s?.token !== token) return;
+      var name = title.value.trim(), text = body.value.trim();
+      if (!name || !text) { message.textContent = '제목과 본문을 모두 입력해 주세요.'; return; }
+      fileInput.disabled = submit.disabled = true; message.textContent = '등록 중…';
+      call({ a: 'note_create', token: token, title: name, date: date.value, body: text }).then(function (r) {
+        if (state.s?.token !== token) return;
+        if (r.error === 'auth') { if (form.isConnected) tbCloseSheet(); return toLogin(AUTH_OUT); }
+        if (!r.ok) {
+          message.textContent = { title: '제목은 120자 이하여야 해요.', body: '본문은 2만 자 이하여야 해요.', date: '회의 날짜를 확인해 주세요.', forbidden: '회의록을 등록할 권한이 없어요.' }[r.error] || '등록하지 못했어요. 다시 시도해 주세요.';
+          return;
+        }
+        if (form.isConnected) tbCloseSheet();
+        refresh(true).then(function () { if (state.s?.token === token) toast('회의록을 등록했어요.'); });
+      }).catch(function () { message.textContent = '연결이 안 돼요. 다시 시도해 주세요.'; })
+        .finally(function () { fileInput.disabled = submit.disabled = false; });
+    });
+    title.focus();
   }
   function openDoc(id) {
     busy(true); show('docView'); $('docBody').innerHTML = ''; $('docMeta').textContent = ''; if ($('docRd')) { $('docRd').hidden = true; $('docRd').innerHTML = ''; } if ($('docRead')) $('docRead').hidden = true;
