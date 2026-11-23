@@ -4228,16 +4228,23 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   DX.card.push(function (x) { return x.take ? '<button class="btn btn-hot dtake" type="button" data-dectake="1">🙋 내가 맡을게요</button>' +
     ((decAllMe(state.data) || state.data.decTag) && (state.data.decStaff || []).length ? '<button class="btn dtake dpick" type="button" data-decpick="1">👥 골라서 맡기기</button>' : '') : ''; });   // 한 번 누르면 바로 (대표 선호) · 👥 팀장 이상은 다른 직원에게 (2026-11-21)
   DX.cardEnd.push(function (x) {
-    if (!x.flag) return '';
+    if (!x.flag && !x.flagPriv) return '';
     var disabled = decPendingFlag(x.id) ? ' aria-disabled="true"' : '';
     var note = 'dec-visibility-' + esc(x.id);
-    return '<div class="dflag" role="group" aria-label="급함·비공개"><button type="button" data-decflag="hot" aria-pressed="' + !!x.hot + '"' + disabled +
-      '>🔥 급함</button><button type="button" data-decflag="priv" aria-pressed="' + !!x.priv + '" aria-describedby="' + note + '"' + disabled + '>' +
+    return '<div class="dflag" role="group" aria-label="' + (x.flag ? '급함·비공개' : '공개 범위') + '">' +
+      (x.flag ? '<button type="button" data-decflag="hot" aria-pressed="' + !!x.hot + '"' + disabled + '>🔥 급함</button>' : '') +
+      '<button type="button" data-decflag="priv" aria-pressed="' + !!x.priv + '" aria-describedby="' + note + '"' + disabled + '>' +
       (x.priv ? '🔒 비공개' : '🔓 공개') + '</button></div><p class="dflag-note" id="' + note + '">' +
-      (x.priv ? '팀장 이상·담당·관련자만 볼 수 있어요' : '직원 모두 볼 수 있어요') + '</p>';
+      (x.priv ? (x.flagPriv ? '작성자·팀장 이상·담당·관련자만 볼 수 있어요' : '팀장 이상·담당·관련자만 볼 수 있어요') : '직원 모두 볼 수 있어요') + '</p>';
   });
-  DX.add.push(function (d) { if (d.decAdd !== 'all' || d.decTag) return ''; var f = state.decAddFl || {};   // 📣 업무 태그만 받은 직원은 🔥·🔒 없음
-    return '<div class="echk dflagadd"><label><input type="checkbox" id="decAddHot"' + (f.hot ? ' checked' : '') + '> 🔥 급함</label><label><input type="checkbox" id="decAddPriv"' + (f.priv ? ' checked' : '') + '> 🔒 비공개 <small>(팀장 이상·관련자만 봐요)</small></label></div>'; });
+  DX.add.push(function (d) {
+    var hot = d.decAdd === 'all' && !d.decTag, f = state.decAddFl || {};
+    if (!hot && !d.decOwnPriv) return '';
+    return '<div class="echk dflagadd">' +
+      (hot ? '<label><input type="checkbox" id="decAddHot"' + (f.hot ? ' checked' : '') + '> 🔥 급함</label>' : '') +
+      '<label><input type="checkbox" id="decAddPriv"' + (f.priv ? ' checked' : '') + '> 🔒 비공개 <small>(' +
+      (d.decOwnPriv ? '작성자·' : '') + '팀장 이상·관련자만 봐요)</small></label></div>';
+  });
   DX.addData.push(function () { var h = $('decAddHot'), p = $('decAddPriv'), o = {}; if (h && h.checked) o.hot = true; if (p && p.checked) o.priv = true; return o; });
   DX.err.taken = '그 사이 다른 사람이 맡았어요.';
   DX.bind.push(function (area) {
@@ -4280,7 +4287,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     redraw();
     var msg = $('decMsg');
     if (msg && !confirmed) msg.textContent = message || ({
-      forbidden: '팀장 이상만 바꿀 수 있어요.', notfound: '그 사이 지워졌어요.', busy: '잠시 후 다시 해 주세요.'
+      forbidden: '이 업무의 설정을 바꿀 권한이 없어요.', notfound: '그 사이 지워졌어요.', busy: '잠시 후 다시 해 주세요.'
     }[result?.error] || '안 됐어요. 다시 해 주세요.');
   }
   // 👥 골라서 맡기기 (대표 요청 2026-11-21): 이름을 찾아 누르면 그 사람이 담당 + 알림
@@ -4570,7 +4577,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     teams.sort(function (a, b) { return ((TO.indexOf(a) + 1) || 99) - ((TO.indexOf(b) + 1) || 99); });
     var tm = teams.indexOf(state.decTeam || '') >= 0 ? state.decTeam : '', tl = tm ? list.filter(function (x) { return (x.teams || []).indexOf(tm) >= 0; }) : list, q = String(state.decQ || '');
     var keepN = state.decNewKeep || {}, isNew = decIsNew, inNewG = function (x) { return isNew(x) || (!!keepN[x.id] && x.status !== '완료'); }, lateOf = function (x) { return x.status !== '완료' && !!x.due && x.due < t; };
-    var cnt = { '': tl.length, mine: tl.filter(function (x) { return x.mine; }).length, open: tl.filter(function (x) { return x.status !== '완료'; }).length, done: tl.filter(function (x) { return x.status === '완료'; }).length, 'new': tl.filter(isNew).length, late: tl.filter(lateOf).length };
+    var cnt = { '': tl.length, mine: tl.filter(function (x) { return x.mine || x.flagPriv; }).length, open: tl.filter(function (x) { return x.status !== '완료'; }).length, done: tl.filter(function (x) { return x.status === '완료'; }).length, 'new': tl.filter(isNew).length, late: tl.filter(lateOf).length };
     if (qOpen) h += '<div class="decq">' + cmIco('search') + '<input id="decQ" type="search" maxlength="40" autocomplete="off" enterkeyhint="search" aria-label="업무 찾기" placeholder="찾기 · 할 일·담당·이름·코멘트" value="' + esc(q) + '"></div>';
     // 한 줄 칩: 새 업무·마감 지남(있을 때만) → 전체 · 내 일 · 대기·진행 · 완료
     h += '<div class="kfil d2f" role="group" aria-label="걸러 보기">' + [['new', '새 업무'], ['late', '마감 지남'], ['', '전체'], ['mine', '내 일'], ['open', '대기·진행'], ['done', '완료']].filter(function (o) { return (o[0] !== 'done' || d.admin) && ((o[0] !== 'new' && o[0] !== 'late') || cnt[o[0]] || f === o[0]); }).map(function (o) { return '<button type="button" class="d2c-' + (o[0] || 'all') + '" data-decf="' + o[0] + '" aria-pressed="' + (f === o[0]) + '">' + o[1] + ' <b>' + cnt[o[0]] + '</b></button>'; }).join('') + '</div>';
@@ -4579,7 +4586,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     // 묶음 순서 (2026-11-21): 새 업무 → 마감 지남 → 오늘 마감 → 진행 → 대기 → 완료(접힘) · 묶음 안에서는 🔥 급함 → 내 일 → 마감 빠른 순
     var GO = { 'new': 0, late: 1, today: 2, go: 3, wait: 4, done: 5 }, GL = { 'new': '새 업무', late: '마감 지남', today: '오늘 마감', go: '진행 중', wait: '대기', done: '완료' };
     var grpOf = function (x) { return x.status === '완료' ? 'done' : inNewG(x) ? 'new' : lateOf(x) ? 'late' : x.due === t ? 'today' : x.status === '진행' ? 'go' : 'wait'; };
-    var rows = tl.filter(function (x) { return !f || (f === 'mine' ? x.mine : f === 'open' ? x.status !== '완료' : f === 'new' ? inNewG(x) : f === 'late' ? lateOf(x) : x.status === '완료'); })
+    var rows = tl.filter(function (x) { return !f || (f === 'mine' ? x.mine || x.flagPriv : f === 'open' ? x.status !== '완료' : f === 'new' ? inNewG(x) : f === 'late' ? lateOf(x) : x.status === '완료'); })
       .sort(function (a, b) { return (GO[grpOf(a)] - GO[grpOf(b)]) || ((b.hot ? 1 : 0) - (a.hot ? 1 : 0)) || (b.mine - a.mine) || String(a.due || '9').localeCompare(String(b.due || '9')); });
     var qv = q.trim(), qn = qv ? rows.filter(function (x) { return decQHit(x, qv); }).length : rows.length;
     var SYSRX = /^(업무 추가$|상태 → |✏️ 고침|🔥 급함 [켬끔]$|🔒 비공개 [켬끔]$|🙋 .+ 맡음$|☑️ 세부 할 일 다 끝남$|📸 완료 사진 받기 [켬끔]$|🔁 반복 업무$)/;
