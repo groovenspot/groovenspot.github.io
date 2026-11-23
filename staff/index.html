@@ -3268,10 +3268,6 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(pushClean, 1500); });
   window.addEventListener('load', function () { setTimeout(pushClean, 4000); });
   setInterval(function () { if (state.s && !document.hidden) oqFlush(); }, 15000);
-  document.addEventListener('click', function (e) {   // 로그아웃 → 이 사람의 보낼 것 지우기 (로그아웃 버튼 처리보다 먼저)
-    var t = e.target && e.target.closest ? e.target.closest('#logout') : null; if (!t || !state.s) return;
-    try { localStorage.removeItem(oqKey()); } catch (x) {} var el = document.getElementById('oqBar'); if (el) el.hidden = true;
-  }, true);
   // 🕘 출근 전에는 보기만 (대표 결정 2026-11-18): 테이블 넣기·승인·비딩·게스트 입력·테이블/게스트 대화는 출근 버튼을 누른 뒤에
   function inputLocked() { return !!(state.data && state.data.inputLock); }
   function punchPrompt() {
@@ -3469,6 +3465,9 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
 
   $('logout').addEventListener('click', function () {
     var t = state.s && state.s.token;
+    if (!t || !window.confirm('정말 로그아웃하시겠습니까?')) return;
+    try { localStorage.removeItem(oqKey()); } catch (e) {}
+    var queueBar = $('oqBar'); if (queueBar) queueBar.hidden = true;
     // 이 기기 알림 끄기 → 로그아웃 순서로
     var off = pushOk() ? swReg().then(function (reg) { return reg && reg.pushManager.getSubscription(); }).then(function (sub) {
       if (!sub || !t) return;
@@ -3997,7 +3996,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         '<b>@호출</b>: <code>@</code>를 치면 직원 목록이 떠요 → 성 빼고·초성·닉네임으로 찾기 (<code>@동기</code> <code>@ㄷㄱ</code>) → 부른 사람에게 알림',
         '<b>말풍선</b>: <b>두 번 누르기 = ✅ 확인</b> (내 이름이 담당으로 붙음 · 🛎 운영 요청은 = 내가 할게요) · <b>꾹 누르기 = ↩️ 답장 · 📋 복사 · ✅ 확인/취소</b> · 답장 위 인용을 누르면 원래 글로 이동',
         '<b>지우기</b>: 내가 쓴 글 옆 <b>✕</b>를 두 번',
-        '<b>읽는 자리</b>: 위로 올려 읽는 중에 새 글이 오면 <b>⬇ 새 메시지 N</b> 버튼 → 누르면 맨 아래 · 대화는 <b>최근 3일</b>까지 보이고, <b>🌙 영업 종료</b> 때 비워져요',
+        '<b>읽는 자리</b>: 위로 올려 읽는 중에 새 글이 오면 <b>⬇ 새 메시지 N</b> 버튼 → 누르면 맨 아래 · 테이블·연출 대화는 영업 종료 후에도 <b>최근 3영업일의 최신 150건</b>이 보여요. 지난 글은 검색에서 찾을 수 있어요',
         '<b>저절로 내려가는 것</b>: 새 🛎 운영 요청·🚨 경호·🆘 긴급모집 줄이 오면 맨 아래로 + 테두리 빨갛게 깜빡 · 🎆 새 연출 요청은 <b>DJ팀 계정만</b> 맨 아래로 (🎆 연출 탭도, 다른 사람은 깜빡만)',
         '<b>🆘 긴급모집</b>은 🪑 테이블 대화 <b>맨 위에 빨갛게 고정</b> + 💬 버튼도 빨갛게 깜빡',
         '<b>자동 기록</b>: 테이블 대화에 자리표·🛎 운영 탭·🚨 경호 호출에서 한 것도 한 줄씩 (✍️자리표 · ✍️운영탭 · ✍️경호 호출 · 🆘긴급모집 · 📍위치) · 연출 대화에는 ✍️연출탭',
@@ -4039,13 +4038,13 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         '<b>🙋 안내 직원 호출</b>: 출근 중인 <b>운영팀</b> 전체에 동시에 알려요. 기본 <b>60초</b> 안에 먼저 받은 사람이 담당해요',
         '<b>🆕 담당 없는 손님 → MD 순번</b>: 출근 중인 <b>영업팀</b>에게 한 명씩 <b>15초</b>씩. 오늘·어제·그제 받은 수가 적은 사람부터 <b>공평하게</b> 돌아가요',
         '<b>👤 담당 MD 호출</b>: 손님이 찾는 MD 이름을 골라 그 사람에게 <b>60초</b>',
-        '<b>📍 어디로?</b>: 호출 버튼을 누르면 <b>어디로 오라고 할까요?</b> → <b>입구 · 2층 카운터 · 3층 바</b> 중 하나 → 받는 사람 화면에 <b>📍 ○○로 와 주세요</b>',
+        '<b>📍 어디로?</b>: 호출 버튼을 누르면 <b>1층 입구 · 2층 입구 · 2층 카운터 · 3층 바</b> 중 하나를 골라요. 받는 사람 화면과 알림에 선택한 위치가 표시돼요',
         '<b>받는 사람</b>: 내 차례면 <b>화면 가득</b> 호출 카드 + 진동·알림 (빨간 화면 · 🍋 섭레콜은 주황) · 남은 초·층·인원·메모가 보여요',
         '<b>받을게요 · 지금 갈게요</b> → <b>✅ 받았어요</b> + 갈 곳 표시 · 🆕 순번·👤 지정은 <b>못 받아요 · 넘기기</b>도 돼요 · 시간이 지나면 다음 사람에게 자동으로 넘어가요',
         '<b>지금 못 가요</b>(🙋 안내·🍋 섭레콜): 손님 응대·입력 중이라 못 갈 때 → <b>나만 그 호출에서 빠져요</b> (카드·폰 알림이 닫히고, 남은 사람이 없으면 부른 사람에게 바로 알려요) · 테이블 창을 열어 뒀거나 글을 쓰는 중에 온 호출은 <b>아래 작은 띠</b>로 떠요',
         '<b>나가기</b>: 🙋 안내·🍋 섭레콜은 큰 화면만 닫히고 아래 작은 카드로 남아요 (시간 안엔 받을 수 있어요) · 🆕 순번·👤 지정은 나가기 = 넘기기',
         '경호팀 화면에 누구에게 갔는지·몇 초 남았는지·다음 차례가 보여요 · 부르는 중엔 <b>취소</b>(두 번) · 아무도 안 받으면 <b>응답 없음</b>(⚠️ 아무도 안 받았어요)으로 알려 주고 <b>다시 부르기</b> 버튼',
-        '안내·순번 호출은 <b>💬 테이블 대화</b>에 한 줄로 올라가요. 순번은 다음 사람으로 넘어갈 때 차례가 바뀌고, 두 호출 모두 받으면 <b>✅ @이름 받음</b>이 표시돼요',
+        '입구 호출은 <b>💬 테이블 대화</b>에 위치와 함께 올라가요. 순번이 넘어가면 같은 줄에 다음 사람이 표시되고, 누군가 받으면 <b>✅ @이름 받음</b>이 표시돼요',
         '<b>⏱ 차례 시간</b>(안내 60초·순번 15초)은 경호팀장·대표가 입구 탭에서 5초씩 늘리고 줄여요',
         '<b>🚫 호출 제외</b>: ' + permH('keep', ['대표']) + '가 입구 탭에서 🙋 안내·🆕 순번 차례에서 뺄 사람을 눌러 골라요 (다시 누르면 넣음 · 풀 때까지 유지 · 👤 담당 MD 지정 호출은 그대로)',
         '<b>수습</b> 직책은 호출에서 빠져요 · <b>경호팀장</b>은 🪑 테이블·🎆 연출을 보고 그 💬 대화에 쓸 수 있어요 · 대표는 3일 받은 수 확인'
@@ -4082,7 +4081,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         '<b>2층 GROOVE / 3층 SPOT</b> 고르기 → <b>날짜 칩</b>(내일부터 14일 · 숫자 = 그날 예약 수) 또는 <b>📅</b>로 날짜 찾기 → 그날 <b>세로 도면</b>',
         '날짜는 <b>내일부터 60일</b> 안까지 · 지난 날짜 예약은 안 보여요 · 위 <b>새로고침</b>',
         '<b>빈 자리를 눌러</b> 손님 이름·남/여/혼·인원·담당·메모·★ 판매 테이블 → <b>예약 잡기</b> · 도면 위에 <b>이 층 예약 N팀</b>',
-        '영업팀은 담당이 <b>나</b>로 들어가요 · <b>승인하는 사람</b>은 담당을 골라 넣을 수 있어요',
+        '예약을 대신 올릴 때는 <b>담당</b>에서 해당 직원을 골라요. 테이블 대화에서 올릴 때는 <code>3-12 민수 담당 성민 예약</code>처럼 입력해요',
         '잡은 자리를 다시 누르면 <b>고치기</b> · <b>예약 지우기</b>(두 번) — 내 손님만 (승인하는 사람은 모두)',
         '그날 영업이 시작되면 🪑 테이블 탭에 <b>📅 예약</b>(점선)으로 떠요 → 손님이 오면 <b>✅ 입장 체크</b>',
         '<b>홈페이지 예약</b>: 고른 날 것은 도면 아래 <b>홈페이지 예약 N건</b> · 그 자리는 도면에서 막혀 있어요 · 오늘 것은 맨 위 <b>오늘 홈페이지 예약 N건</b>',
@@ -5113,7 +5112,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       if (after) after(r);
     }).catch(function () { if (btn) btn.disabled = false; if (after) after({ error: 'net' }); });
   }
-  var GATE_PLACES = { gate: '입구', '2f': '2층 카운터', '3f': '3층 바' };
+  var GATE_PLACES = { gate: '입구', '1gate': '1층 입구', '2gate': '2층 입구', '2f': '2층 카운터', '3f': '3층 바' };
   function gatePlace(where) {
     return Object.prototype.hasOwnProperty.call(GATE_PLACES, where) ? '📍 ' + GATE_PLACES[where] + '로 와 주세요' : '';
   }
@@ -5123,7 +5122,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   }
   function gatePlaceSheet(onChoose) {
     showSheet('<h2 id="gateWhereTitle">어디로 오라고 할까요?</h2><div class="gate-where-choices">' +
-      ['gate', '2f', '3f'].map(function (key) {
+      ['1gate', '2gate', '2f', '3f'].map(function (key) {
         return '<button type="button" class="btn" data-gwhere="' + key + '">' + GATE_PLACES[key] + '</button>';
       }).join('') + '</div>');
     var dialog = $('sheet').querySelector('.sheet-in'), cancel = $('sheetX');
@@ -6874,7 +6873,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         return '<button type="button" class="chip' + (d === day ? ' on' : '') + '" data-rsv-day="' + d + '">' + esc(md(d) + '(' + dowOf(d) + ')') + (n ? ' <b>' + n + '</b>' : '') + '</button>'; }).join('') +
         '<label class="rsvpick">📅<input type="date" id="rsvDayPick" min="' + esc(F.today) + '" max="' + esc(F.max || '') + '" value="' + esc(day) + '" aria-label="날짜로 찾기"></label></div>';
       var ix = withTb(F, function () { return tbIndex(fl); }), tot = F.rows.filter(function (x) { return x.floor === fl && x.cur && !x.cur.blk; }).length;
-      h += '<p class="note" style="margin:0 0 8px">빈 자리를 누르면 이 날 예약을 잡아요. ' + (F.approver ? '담당을 골라 넣을 수 있어요.' : '담당은 나로 들어가요.') + ' · 이 층 예약 <b>' + tot + '</b>팀</p>';
+      h += '<p class="note" style="margin:0 0 8px">빈 자리를 누르면 이 날 예약을 잡아요. · 이 층 예약 <b>' + tot + '</b>팀</p>';
       h += withTb(F, function () { return tbMapHtml(fl, ix); });
     } else h += state.tbFutErr ? '<p class="empty">' + esc(state.tbFutErr) + '</p>' : '<p class="load">도면을 불러오는 중…</p>';
     if (r && list.length) {
@@ -6899,8 +6898,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     var when = md(F.day) + '(' + dowOf(F.day) + ')', where = (fl === 'SPOT' ? '3층 ' : '2층 ') + seat;
     if (row && row.cur && row.cur.blk) { showSheet('<h2>' + esc(where) + ' · ' + esc(when) + '</h2><p class="sub">' + esc(row.cur.blk) + ' — 홈페이지 예약으로 잡힌 자리예요. 아래 홈페이지 예약에서 확인해 주세요.</p>'); return; }
     var can = !row || F.approver || row.mine;
-    var stf = F.approver ? (F.staffs || []) : [F.me];
-    if (v.st && stf.indexOf(v.st) < 0) stf = [v.st].concat(stf);
+    var stf = Array.from(new Set([v.st, F.me].concat(F.staffs || []).filter(Boolean)));
     var h = '<h2>📅 ' + esc(where) + ' · ' + esc(when) + '</h2>' + (row ? '<p class="sub">' + esc(tbLine(v)) + (row.by ? ' · ' + esc(row.by) + ' 넣음' : '') + '</p>' : '<p class="sub">이 날 이 자리를 예약해요. 그날 영업이 시작되면 테이블 탭에 \'📅 예약\'으로 보여요.</p>');
     if (!can) { showSheet(h + '<p class="note">다른 담당 손님이에요. 고칠 수 없어요.</p>'); return; }
     h += '<label>손님 이름<input id="ftG" maxlength="20" autocomplete="off" value="' + esc(v.g || '') + '" placeholder="예) 민성"></label>' +
@@ -11791,7 +11789,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     findGo(marks, F, '[data-cmid]', $('cfN'), $('cfUp'), $('cfDn'), dir, L);
     var msg = $('cfMsg');
     if (!F.q) { msg.innerHTML = ''; return; }
-    msg.innerHTML = (marks.length ? '' : '최근 2일 대화에는 없어요. ') + '<button type="button" class="link" id="cfOld">🗂 지난 기록까지 찾기</button>';
+    msg.innerHTML = (marks.length ? '' : '현재 대화에 검색 결과가 없어요. ') + '<button type="button" class="link" id="cfOld">🗂 지난 기록까지 찾기</button>';
     $('cfOld').addEventListener('click', cfOld);
   }
   function cfOld() {

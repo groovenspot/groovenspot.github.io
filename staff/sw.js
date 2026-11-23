@@ -114,13 +114,14 @@ function locationNotice(n) {
 }
 function showPeek(n, previous, secondary) {
   var sos = n.kind === 'sos', loc = locationNotice(n);
-  var seen = loc && previous.some(function (x) { return x.data && x.data.ref === n.ref && x.data.at === n.at; });
+  var chat = /^chat:[-\w]{1,40}$/.test(n.ref || '');
+  var seen = (loc || chat) && previous.some(function (x) { return x.data && x.data.ref === n.ref && (!loc || x.data.at === n.at); });
   if (seen && secondary) return Promise.resolve();
   var message = seen ? Promise.resolve() : self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
     cs.forEach(function (c) { try { c.postMessage({ peek: { title: n.title, body: n.body, kind: n.kind || '', ref: n.ref || '' } }); } catch (x) {} });
   }).catch(noop);
   // 경호 알림과 위치 질문은 각각 같은 호출끼리 묶는다.
-  var tag = sos ? 'gs-sos' : loc ? 'gs-' + n.ref : 'gs-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  var tag = sos ? 'gs-sos' : loc || chat ? 'gs-' + n.ref : 'gs-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   var opt = { body: n.body, tag: tag, renotify: !seen, icon: '/staff/icon-192.png', badge: '/staff/badge-72.png', data: { tab: n.tab || '', ref: n.ref || '' } };
   if (loc) opt.data.at = n.at;
   if (loc && n.kind === 'where') {
