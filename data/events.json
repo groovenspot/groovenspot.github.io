@@ -2845,6 +2845,36 @@
     "flyer": "/assets/flyers/2026-11-21-school-uniform-party-mwnlitnn.jpg"
   },
   {
+    "date": "2026-11-23",
+    "title": "MONDAY NIGHT",
+    "floor": "2F+3F",
+    "open": "21:30",
+    "lineup": {
+      "2F": [
+        "MUMU",
+        "ZINO",
+        "TARO",
+        "ROAD",
+        "ZINO",
+        "KUPA",
+        "GROOVE DJ"
+      ],
+      "3F": [
+        "BILL",
+        "N",
+        "MUMU",
+        "EZZY",
+        "ZET",
+        "A:ETH",
+        "TARO",
+        "ROAD",
+        "KUPA",
+        "SPOT DJ"
+      ]
+    },
+    "flyer": "/assets/timetables/2026-11-23.webp"
+  },
+  {
     "date": "2026-11-28",
     "title": "CLOVER PAJAMA PARTY",
     "floor": "2F+3F",
