@@ -2917,6 +2917,17 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
 .d2pl li b { font-size: 14px; font-weight: 800; }
 .d2pl li small { font-size: 12px; color: var(--muted); }
 .d2pl em { font-style: normal; font-weight: 800; } .d2pl em.ok { color: var(--ok); } .d2pl em.bad { color: var(--bad); }
+.evaluation-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:12px 0; }
+.evaluation-tools select { flex:0 1 auto; min-width:120px; }
+.evaluation-tools .btn { width:auto; flex:none; }
+.evaluation-table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+.evaluation-table th, .evaluation-table td { padding:10px 6px; border-bottom:1px solid var(--line); text-align:left; overflow-wrap:anywhere; }
+.evaluation-table .evaluation-number { text-align:right; white-space:nowrap; }
+.evaluation-detail { margin:12px 0; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--card); }
+.evaluation-detail h2 { margin:0 0 8px; font-size:1.05rem; }
+.evaluation-peer label { display:grid; gap:5px; margin:9px 0; }
+.evaluation-peer select, .evaluation-peer input { width:100%; }
+.evaluation-peer .note { margin:4px 0 10px; }
 </style>
 </head>
 <body>
@@ -2997,6 +3008,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       <button type="button" role="tab" data-tab="dec" aria-selected="false" hidden>업무사항</button>
       <button type="button" role="tab" data-tab="acc" aria-selected="false" hidden>가입 승인</button>
       <button type="button" role="tab" data-tab="work" aria-selected="false" hidden>🕘 근무표</button>
+      <button type="button" role="tab" data-tab="evaluation" aria-selected="false" hidden>평가</button>
     </nav>
     <button type="button" class="tabmore" id="tabMore" hidden aria-haspopup="dialog"><span class="ti tsvi" aria-hidden="true"><svg class="tsv" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span><span class="tml">더보기</span><span class="dot" id="tabMoreDot" hidden></span></button>
     </div>
@@ -3107,7 +3119,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   // 요청마다 rid(요청 번호)를 붙이고, 끊김·5xx·JSON 아님·{error:'server'} 이면 같은 rid 로 2번까지 다시 보낸다(약 1초, 2.5초 뒤).
   // 서버는 10분 안에 같은 rid 가 오면 다시 하지 않고 처음 결과를 돌려준다(두 번 저장되지 않게). 결과가 너무 크면 {error:'dup'}:
   // 읽기는 새 rid 로 다시 받고, 쓰기는 그대로 넘긴다(이미 됐음). 그 밖의 오류(auth·busy·forbidden…)는 다시 보내지 않는다.
-  var RETRY_WAIT = [1000, 2500], RETRY_READ = /^(list|peek|brief|my_dash|img|push_key|all_feed|gd_status|gd_songs|song_check|dm_list|keep_(list|day|view)|\w+_get)$/;
+  var RETRY_WAIT = [1000, 2500], RETRY_READ = /^(list|peek|brief|my_dash|img|push_key|all_feed|eval_week|gd_status|gd_songs|song_check|dm_list|keep_(list|day|view)|\w+_get)$/;
   function newRid() {
     var a = '', c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-', u = new Uint8Array(16);
     try { crypto.getRandomValues(u); } catch (e) { for (var k = 0; k < 16; k++) u[k] = Math.floor(Math.random() * 256); }
@@ -3362,6 +3374,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     loungePendingLinks.clear();
     state.lvShare = null;
     if ($('sheet').querySelector('.lounge-screen')) $('sheetX').click();
+    state.evaluation = null; state.evaluationDenied = null; state.evaluationPeer = null;
     state.s = null; state.data = null; state.tab = 'guest'; state.tabPick = ''; state.bteam = ''; state.draft = ''; state.gday = ''; state.gteam = ''; state.gdraft = {}; state.gmsg = ''; save(null);
     state.tb = null; state.tbDay = ''; state.tbMsg = ''; state.tbErr = ''; state.tbFly = 0;
     state.yc = null; state.ycMsg = ''; state.ycErr = ''; state.ycFly = 0;
@@ -3495,7 +3508,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     if (h === 'where') { h = ''; history.replaceState(null, '', location.pathname + location.search); }
     whereLoad();
     if (h === 'sos') setTimeout(function () { loadSos(); }, 600);
-    if (['ops', 'live', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'rsv', 'me', 'work'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
+    if (['ops', 'live', 'all', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'rsv', 'me', 'work', 'evaluation'].indexOf(h) >= 0) { state.tab = h; state.tabPick = ''; }
     else {   // 다시 불러오면 마지막에 보던 탭·대화창 그대로 (대표 요청 2026-11-19)
       var lt = tabLast(); if (lt) { state.tab = lt.t; state.tabPick = lt.t; if (lt.c && lt.c === lt.t && !state.chatOpenNext) state.chatOpenNext = lt.c; }
     }
@@ -3608,7 +3621,9 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   }
 
   function goTab(t) {
+      if (t === 'evaluation' && !evaluationAllowed(state.data)) return;
       var prev = state.tab; state.tab = t; state.tabPick = '';
+      if (t === 'evaluation' && prev !== t) state.evaluation = null;
       if (prev === 'dm' && state.tab !== 'dm') stopPoll();
       if (state.tab === 'board') { state.bview = state.bview === 'edit' ? 'edit' : 'list'; state.bpost = null; }
       if (state.tab === 'dm') { state.dmView = 'list'; state.dmWith = ''; state.chat = null; }
@@ -3653,9 +3668,17 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       live: ['🎬 실시간', lvUnseen(d)],
       me: ['👤 내 프로필', 0],
       work: ['🕘 근무표', 0],
+      evaluation: ['평가', 0],
       gate: ['🚪 입구', (state.gate && state.gate.calls || []).filter(function (c) { return c.status === '호출'; }).length]
     };
     var workOn = !!d.admin;   // 👤 내 프로필(이름을 누르면): 출근·퇴근 + 내 현황 · 🕘 근무표: 대표
+    var evaluationOn = evaluationAllowed(d);
+    if (!evaluationOn) {
+      state.evaluation = null;
+      state.evaluationPeer = null;
+      if (state.tabPick === 'evaluation') state.tabPick = '';
+      if (state.tab === 'evaluation') state.tab = d.guard ? 'gate' : 'guest';
+    }
     var LEAD_TABS = { notes: 1 }, decOn = !!(d.lead || d.decAdd || (d.decisions && d.decisions.length)), hasBoard = !!(d.board && d.board.teams && d.board.teams.length), canAcc = !!(d.admin || d.approver || d.approvalScope);
     if (state.tabPick && labels[state.tabPick]) state.tab = state.tabPick;   // 응답이 잠깐 비어 게스트 현황으로 튕겼던 탭으로 되돌리기
     var want = state.tab;
@@ -3687,6 +3710,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       if (b.dataset.tab === 'yc') b.hidden = !d.yc;
       if (b.dataset.tab === 'lost') b.hidden = !d.lost;
       if (b.dataset.tab === 'work') b.hidden = !workOn;
+      if (b.dataset.tab === 'evaluation') b.hidden = !evaluationOn;
       if (b.dataset.tab === 'all') b.hidden = !d.admin;   // 📡 전체: 대표만
       if (b.dataset.tab === 'ops') b.hidden = false;   // 🛎 운영 요청: 누구나 (운영팀은 받기)
       if (b.dataset.tab === 'gate') b.hidden = !gateOn;
@@ -3716,7 +3740,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     (ord || []).filter(function (t) { return by[t]; }).concat(TAB_DEFAULT.filter(function (t) { return (ord || []).indexOf(t) < 0; })).forEach(function (t) { if (by[t]) nav.appendChild(by[t]); });
   }
   function tabOrderSheet() {
-    var vis = Array.prototype.filter.call(document.querySelectorAll('#tabs button'), function (b) { return !b.hidden; }), name = {};
+    var vis = Array.prototype.filter.call(document.querySelectorAll('#tabs button'), function (b) { return !b.hidden && b.dataset.tab !== 'evaluation'; }), name = {};
     vis.forEach(function (b) { name[b.dataset.tab] = (b.querySelector('.tl') || b).textContent.trim(); });
     var cur = vis.map(function (b) { return b.dataset.tab; });
     showSheet('<h2>↕ 탭 순서</h2><p class="sub">위로 올린 탭이 먼저 보여요. 폰은 위에서 <b>4개</b>가 아래 탭바에 바로 보이고 나머지는 <b>☰ 더보기</b>에 (PC는 위에 한 번에). 내 계정에 저장돼서 다른 폰에서도 같아요.</p><div id="toL"></div><p class="msg" id="toMsg"></p>' +
@@ -3746,6 +3770,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   function tabSvg(t) { var p = TAB_SVG[t]; return p ? '<svg class="tsv" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>' : ''; }   // 🎨 리디자인 2026-11-20: 탭 그림은 선 아이콘
   var TAB_ICON = { all: '📡', gate: '🚪', guest: '👥', table: '🪑', yc: '🎆', ops: '🛎', live: '🎬', lost: '🔎', board: '📌', dm: '✉️', keep: '🍾', edu: '🎓', notes: '📝', dec: '📋', acc: '✅', work: '🕘', me: '👤' };
   var TAB_EMO = /^([^\s0-9A-Za-z\u3131-\u318e\uac00-\ud7a3]+)\s+(.+)$/;   // '🪑 테이블' → 🪑 · 테이블
+  TAB_SVG.evaluation = '<path d="M4 4v16h16"/><path d="M8 16v-3m5 3V9m5 7V5"/>';
   function tabLabelH(t, s) {   // 글자는 그대로('🪑 테이블'), 아래 탭바에서는 그림을 위에 크게
     var m = TAB_EMO.exec(s);
     var sv = tabSvg(t);
@@ -3858,6 +3883,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     if (state.tab === 'lost') return renderLost(area);
     if (state.tab === 'me') return renderMe(area, d);
     if (state.tab === 'work') return renderWork(area, d);
+    if (state.tab === 'evaluation') return renderEvaluation(area, d);
     if (state.tab === 'gate') return renderGate(area, d);
     if (state.tab === 'all') return renderAll(area);
     if (state.tab === 'ops') return renderOps(area);
@@ -4843,6 +4869,151 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     o.list.sort(function (a, b) { return b.dn.localeCompare(a.dn); });
     return o;
   }
+  var EVALUATION_WEIGHTS = { '배달': 1, '기본 세팅': 2, '아웃 청소': 2, '자리 이동': 2, '퍼레이드 지원': 3, '온도': 1, '기타': 1 };
+  var EVALUATION_PERIODS = [['month', '이번 달'], ['lastMonth', '지난달'], ['week', '이번 주'], ['lastWeek', '지난주']];
+  var EVALUATION_PEER = [
+    ['존중', '바쁜 상황에서도 동료를 존중했나요?'], ['책임감', '어려움이 생기면 미리 공유했나요?'],
+    ['협업', '필요한 정보를 나누고 다른 팀에 협조했나요?'], ['인수인계', '이어받을 동료에게 필요한 내용을 전달했나요?'],
+    ['문제 대응', '상황을 알리고 해결에 참여했나요?']
+  ];
+  function evaluationAllowed(d) {
+    return !!(d && d.admin === true && !d.guard && state.s && state.evaluationDenied !== state.s.token);
+  }
+  function evaluationDates(period) {
+    var day = bizToday(), first = day.slice(0, 7) + '-01';
+    var monday = addDays(day, -((new Date(day + 'T00:00:00Z').getUTCDay() + 6) % 7));
+    if (period === 'week') return [monday, day];
+    if (period === 'lastWeek') return [addDays(monday, -7), addDays(monday, -1)];
+    if (period === 'lastMonth') { var last = addDays(first, -1); return [last.slice(0, 7) + '-01', last]; }
+    return [first, day];
+  }
+  function loadEvaluation(from, to) {
+    if (!evaluationAllowed(state.data)) return;
+    var query = { token: state.s.token, from: from, to: to, busy: true };
+    state.evaluation = query;
+    function finish(r) {
+      if (state.evaluation !== query || !state.s || query.token !== state.s.token || !evaluationAllowed(state.data)) return;
+      query.busy = false;
+      if (r.error === 'auth') return toLogin(AUTH_OUT);
+      if (r.error === 'forbidden') { state.evaluationDenied = query.token; state.evaluation = null; }
+      else if (r.ok && r.from === from && r.to === to && Array.isArray(r.people) && Array.isArray(r.tasks)) query.data = r;
+      if (state.tab === 'evaluation') render();
+    }
+    call({ a: 'eval_week', token: query.token, from: from, to: to }).then(finish, function () { finish({ error: 'net' }); });
+  }
+  function evaluationCount(value) { return Number.isSafeInteger(value) && value > 0 ? value : 0; }
+  function evaluationRate(kind) {
+    return Math.max.apply(null, kind.split('·').map(function (part) {
+      var key = part.trim().replace(/^[^가-힣]+/, '');
+      return Object.prototype.hasOwnProperty.call(EVALUATION_WEIGHTS, key) ? EVALUATION_WEIGHTS[key] : EVALUATION_WEIGHTS['기타'];
+    }));
+  }
+  function evaluationPeople(report) {
+    var finished = new Map();
+    report.tasks.forEach(function (task) {
+      var names = (task.ppl || []).filter(Boolean);
+      if (!names.length && task.who) names = [task.who];
+      new Set(names).forEach(function (name) { finished.set(name, (finished.get(name) || 0) + 1); });
+    });
+    return report.people.filter(function (p) { return p.role !== '관리자'; }).map(function (p) {
+      var ops = p.ops || {}, calls = p.call || {};
+      var opsRows = Object.entries(ops.done || {}).map(function (entry) {
+        var count = evaluationCount(entry[1]), rate = evaluationRate(entry[0]);
+        return { kind: entry[0], count: count, rate: rate, points: count * rate };
+      });
+      var callsCount = evaluationCount(calls.take) + evaluationCount(calls.sub) + evaluationCount(calls.pick && calls.pick.take);
+      var operating = opsRows.reduce(function (total, row) { return total + row.points; }, 0);
+      return { name: p.name, team: p.team, calls: callsCount, operating: operating, total: callsCount + operating,
+        opsRows: opsRows, volunteered: evaluationCount(p.decTake), completed: finished.get(p.name) || 0,
+        guests: evaluationCount(p.guest && p.guest.teams), cancelled: evaluationCount(ops.cancelled) };
+    }).sort(function (a, b) { return b.total - a.total || a.name.localeCompare(b.name, 'ko'); });
+  }
+  function evaluationTable(head, rows) {
+    if (!rows.length) return '<p class="empty">표시할 기록이 없어요.</p>';
+    return '<table class="evaluation-table"><thead><tr>' + head.map(function (s, i) {
+      return '<th scope="col"' + (i > 0 ? ' class="evaluation-number"' : '') + '>' + esc(s) + '</th>';
+    }).join('') + '</tr></thead><tbody>' + rows.map(function (cells) {
+      return '<tr><th scope="row">' + esc(cells[0]) + '</th>' + cells.slice(1).map(function (s) { return '<td class="evaluation-number">' + esc(s) + '</td>'; }).join('') + '</tr>';
+    }).join('') + '</tbody></table>';
+  }
+  function evaluationRubric() {
+    var rows = [
+      ['콜 응답', '1점', '입구·안내 호출 응대'], ['제가 할게요', '+1점', '업무사항에서 자발적으로 맡아 완료'],
+      ['게스트 유치', '팀당 2점', '실제 입장한 팀의 유치 담당'], ['업무 처리', '2 / 4 / 7점', '일반·중간·고난도 완료 업무'],
+      ['운영팀 업무', '1 / 2 / 3점', '기존 운영 요청 담당 기록'], ['동료평가', '10점', '항목별 0~2점, 유효 평가 3명부터 평균']
+    ];
+    return '<h2 class="sec">전체 임시 점수표</h2>' + rows.map(function (r) {
+      return '<section class="evaluation-detail"><h2>' + esc(r[0]) + ' · ' + esc(r[1]) + '</h2><p class="sub">' + esc(r[2]) + '</p>' +
+        (r[0] === '운영팀 업무' ? evaluationTable(['요청 종류', '건당'], Object.entries(EVALUATION_WEIGHTS).map(function (pair) { return [pair[0], pair[1] + '점']; })) : '') + '</section>';
+    }).join('') + '<p class="note">운영·영업·DJ팀 회의용 · 판매와 근태는 평가에서 제외</p>';
+  }
+  function evaluationDetail(person) {
+    return '<section class="evaluation-detail"><h2>' + esc(person.name) + ' · 집계 내역</h2>' + evaluationTable(['항목', '기록', '점수'], [
+      ['콜 응답', person.calls + '건', person.calls + '점'], ['제가 할게요', person.volunteered + '건 맡음', '대기'],
+      ['게스트 유치', person.guests + '팀 등록', '대기'], ['업무 처리', person.completed + '건 완료', '대기'],
+      ['운영팀 업무', person.opsRows.reduce(function (n, row) { return n + row.count; }, 0) + '건', person.operating + '점'],
+      ['동료평가', '응답 수집 전', '대기']
+    ]) + '<details><summary>운영 요청 상세</summary>' + evaluationTable(['요청 종류', '담당', '건당', '점수'], person.opsRows.map(function (r) { return [r.kind, r.count + '건', r.rate + '점', r.points + '점']; })) +
+      '<p class="note">취소 ' + person.cancelled + '건 제외 · 공동 담당은 직원마다 1건 · 복합 요청은 가장 높은 배점 1회</p></details></section>';
+  }
+  function evaluationPeerExample() {
+    return '<section class="evaluation-detail evaluation-peer"><h2>동료평가 입력 예시</h2><p class="note">가상 직원 A · 예시 응답 2명</p>' +
+      EVALUATION_PEER.map(function (row, i) {
+        return '<label>' + esc(row[0]) + '<small>' + esc(row[1]) + '</small><select data-evaluation-rating="' + i + '"><option value="">점수 선택</option><option value="0">0점 · 개선 필요</option><option value="1">1점 · 기준 충족</option><option value="2">2점 · 모범 사례</option><option value="unseen">관찰할 기회 없음</option></select></label>' +
+          '<label data-evaluation-example hidden>관찰 사례 한 줄<input maxlength="160"></label>';
+      }).join('') + '<button class="btn btn-hot" id="evaluationTry" type="button">예시 평가 반영</button><p class="note" id="evaluationResult" role="status">' + esc(state.evaluationPeer || '') + '</p></section>';
+  }
+  function bindEvaluationPeer(area) {
+    var ratings = Array.from(area.querySelectorAll('[data-evaluation-rating]'));
+    var notes = Array.from(area.querySelectorAll('[data-evaluation-example]'));
+    ratings.forEach(function (item, i) { item.addEventListener('change', function () { notes[i].hidden = item.value !== '0' && item.value !== '2'; }); });
+    $('evaluationTry').addEventListener('click', function () {
+      var result = $('evaluationResult'), scores = ratings.map(function (item) { return item.value; });
+      if (scores.indexOf('') >= 0) { result.textContent = '다섯 항목 모두 선택해 주세요.'; return; }
+      if (scores.some(function (score, i) { return (score === '0' || score === '2') && !notes[i].querySelector('input').value.trim(); })) {
+        result.textContent = '0점 또는 2점을 준 항목에 관찰 사례를 적어 주세요.'; return;
+      }
+      var observed = scores.filter(function (score) { return score !== 'unseen'; }).length;
+      var average = (14 + scores.reduce(function (total, score) { return total + (+score || 0); }, 0)) / 3;
+      state.evaluationPeer = observed === ratings.length ? '예시 동료평가 ' + average.toFixed(1) + ' / 10점' : observed + ' / 5개 항목에 유효 응답 3명 · 종합 집계 대기';
+      result.textContent = state.evaluationPeer;
+    });
+  }
+  function renderEvaluation(area, d) {
+    if (!evaluationAllowed(d)) return;
+    var mode = state.evaluationMode || 'live', period = state.evaluationPeriod || 'month', range = evaluationDates(period);
+    var h = '<div class="tbh"><div><h1>평가</h1><p class="sub">대표 전용 · 임시 배점</p></div></div>' +
+      '<div class="kfil d2pk" role="group" aria-label="평가 보기">' + [['live', '실제 집계'], ['rubric', '전체 점수표'], ['peer', '동료평가 예시']].map(function (entry) {
+        return '<button type="button" data-evaluation-mode="' + entry[0] + '" aria-pressed="' + (mode === entry[0]) + '">' + entry[1] + '</button>';
+      }).join('') + '</div>';
+    var query = state.evaluation;
+    if (mode === 'live') {
+      if (!query || query.token !== state.s.token || query.from !== range[0] || query.to !== range[1]) { loadEvaluation(range[0], range[1]); query = state.evaluation; }
+      h += '<div class="evaluation-tools"><label for="evaluationPeriod">집계 기간</label><select id="evaluationPeriod">' + EVALUATION_PERIODS.map(function (entry) {
+        return '<option value="' + entry[0] + '"' + (period === entry[0] ? ' selected' : '') + '>' + entry[1] + '</option>';
+      }).join('') + '</select><button class="btn" type="button" id="evaluationRefresh"' + (query.busy ? ' disabled' : '') + '>새로고침</button></div>' +
+        '<p class="sub">' + esc(range.join(' ~ ')) + ' · 영업일 기준</p>';
+      if (query.busy) h += '<p class="empty" role="status">평가 기록을 불러오는 중…</p>';
+      else if (!query.data) h += '<p class="empty" role="status">평가 기록을 불러오지 못했어요. 새로고침해 주세요.</p>';
+      else {
+        var people = evaluationPeople(query.data);
+        var selected = people.find(function (p) { return p.name === state.evaluationStaff; }) || people[0];
+        h += '<p class="note">임시 합계는 콜 응답과 운영팀 업무 점수입니다. 다른 항목은 근거 확인이나 평가 입력을 기다립니다.</p>' +
+          evaluationTable(['직원', '콜', '운영', '임시 합계'], people.map(function (p) { return [[p.name, p.team].filter(Boolean).join(' · '), p.calls + '점', p.operating + '점', p.total + '점']; }));
+        if (selected) h += '<div class="evaluation-tools"><label for="evaluationStaff">직원별 근거</label><select id="evaluationStaff">' + people.map(function (p) {
+          return '<option value="' + esc(p.name) + '"' + (selected.name === p.name ? ' selected' : '') + '>' + esc(p.name) + '</option>';
+        }).join('') + '</select></div>' + evaluationDetail(selected);
+      }
+    } else h += mode === 'rubric' ? evaluationRubric() : evaluationPeerExample();
+    area.innerHTML = h;
+    area.querySelectorAll('[data-evaluation-mode]').forEach(function (b) { b.addEventListener('click', function () { state.evaluationMode = b.dataset.evaluationMode; render(); }); });
+    if (mode === 'peer') bindEvaluationPeer(area);
+    if (mode !== 'live') return;
+    $('evaluationPeriod').addEventListener('change', function () { state.evaluationPeriod = this.value; render(); });
+    $('evaluationRefresh').addEventListener('click', function () { state.evaluation = null; render(); });
+    if ($('evaluationStaff')) $('evaluationStaff').addEventListener('change', function () { state.evaluationStaff = this.value; render(); });
+  }
+
   function decPerfSheet(keep) {   // keep: 열려 있는 창을 그 자리에서 다시 그림 (스크롤 그대로)
     var d = state.data; if (!d || !d.admin) return;
     var pf = state.decPf = state.decPf || {}, k = state.decPerfK || 'week', o = decPerf(d, k), K = [['week', '이번 주'], ['prev', '지난주'], ['month', '이번 달'], ['all', '전체']];
