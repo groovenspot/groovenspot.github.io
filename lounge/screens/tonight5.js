@@ -165,10 +165,10 @@
       floors(state);
       // 오늘 파티가 없으면 파티 카드가 숨어 '갈래요'가 사라진다 → 따로 한 줄
       if (!data.party) part(state, 'going', false);
-      ['quick', 'lives', 'strip', 'party', 'lineup', 'safety'].forEach(name => part(state, name, name !== 'safety'));
+      ['quick', 'partners', 'lives', 'strip', 'party', 'lineup', 'safety'].forEach(name => part(state, name, name !== 'safety'));
     } else if (phase === 'pre') {
       hero(state);
-      ['table', 'lineup', 'recap', 'parties'].forEach(name => part(state, name, true));
+      ['table', 'partners', 'lineup', 'recap', 'parties'].forEach(name => part(state, name, true));
     } else {
       part(state, 'recap', true); hero(state); part(state, 'lineup', true);
     }
