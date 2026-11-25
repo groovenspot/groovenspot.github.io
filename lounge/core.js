@@ -8,7 +8,7 @@
   var ocNav = read('gl_oc') === '1', navOn;
   var shown = '', scrolls = Object.create(null), scrollPending = null;   // 보던 자리 기억 (keepScroll 화면)
   var gates = { rooms: 'rooms', dm: 'dm', challenge: 'challenge', compose: 'posts',
-    rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety', shorts: 'play1' };
+    rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety', shorts: 'play1', partners: 'partners', partner: 'partners' };
   var STAFF_API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
   var staffTeamLabels = {
     'GROOVE 영업팀': { ko: '영업팀', en: 'Sales', ja: '営業チーム', zh: '销售团队' },
