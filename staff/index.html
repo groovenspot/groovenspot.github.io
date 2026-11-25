@@ -8771,6 +8771,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     else if (roles.vote) links.push(['vote', '투표 만들기 / Create vote', 'note']);
     if (roles.sales) links.push(['sales', '라운지 손님 요청 / Lounge guest requests', 'users']);
     if (loungeLinkLead()) links.push(['linked', '라운지 연결 현황 / Lounge link status', 'chart']);
+    if (loungeVice()) links.push(['partners', '제휴 가게 통계 / Partner venue stats', 'chart']);
     links.push(['guide', '라운지 1분 안내 / Lounge guide', 'info']);
     return loungeLinkBand() + '<div class="lounge-menu">' + links.map(([page, label, icon]) =>
       loungeButton(opIco(icon) + ' ' + label + (page === 'manage' ? loungeReportBadge() : ''),
@@ -10420,7 +10421,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         ].map(([label, value]) => [label, Number.isFinite(value) ? Math.round(value * 10) / 10 : value]));
       } });
     panel.insertAdjacentHTML('beforeend', '<div data-survey-result></div>');
-    loungePartnerStats(panel, request);
+    if (loungeVice()) loungePartnerStats(panel, request);
     if (!state.s.admin) return;
     loungeAction(panel, '주간 통계 / Weekly report', 'adm_weekly',
       loungeInput('주의 시작일 (월요일) / Week starts (Monday)', 'week', 'type="date" required', loungeWeek()),
@@ -10680,6 +10681,13 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       '" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + LOUNGE_BADGE_ICONS[badge[0]] +
       '</svg>' + esc(badge[1]) + (role === '팀장' || role === '부팀장' ? '<i>' + esc(role) + '</i>' : '') + '</span>';
   }
+  // 부팀장 이상 (대표·팀장·부팀장, 팀 상관없이) — 제휴 가게 통계 (대표 요청 2026-11-26)
+  function loungeVice() { const s = state.s; return !!s && (s.admin || s.lead || s.role === '팀장' || s.role === '부팀장'); }
+  function loungePartnerSheet() {
+    const session = state.s.token;
+    const root = loungeSheet('제휴 가게 통계 / Partner venue stats', '<div class="lounge-body"></div>');
+    loungePartnerStats(root.querySelector('.lounge-body'), (a, b) => loungeRequest(a, b, session));
+  }
   function loungeLinkLead() { const s = state.s; return !!s && (s.admin || (s.role === '팀장' && !!s.team)); }
   function loungeOpenLink(label) {
     return '<a class="btn btn-hot" href="' + esc(LOUNGE_STAFF_LOGIN) + '" target="_blank" rel="noopener">' + opIco('ext') + ' ' + label + '</a>';
@@ -10780,7 +10788,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   }
   function bindLoungeMenu(area) {
     const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), tonight: loungeTonight, manage: loungeManage,
-      vote: () => loungeManage('vote'), sales: loungeSales, linked: loungeLinkStatus, guide: loungeGuide };
+      vote: () => loungeManage('vote'), sales: loungeSales, linked: loungeLinkStatus, partners: loungePartnerSheet, guide: loungeGuide };
     area.querySelectorAll('[data-lounge]').forEach(b => { b.onclick = screens[b.dataset.lounge]; });
     if (area.querySelector('[data-lounge-band]')) loungeLinkLoad().catch(() => {});   // 연결 띠: 내가 미연결일 때만 (실패하면 조용히 숨김)
     if (area.querySelector('[data-lounge=manage]')) {
