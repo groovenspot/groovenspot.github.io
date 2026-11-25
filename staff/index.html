@@ -9665,6 +9665,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     ['safety', '안심 호출 / Safety calls', '체크인한 손님이 경호팀에 도움을 요청해요. / Checked-in guests can call security for help.'],
     ['guess', 'DJ 맞히기 / Guess the DJ', '손님이 DJ를 맞히고 포인트를 받아요. / Guests earn points for guessing the DJ.'],
     ['play1', '놀거리 개편 1차 / Play tab revamp (phase 1)', '새 놀거리 탭(오늘 판·지금 카드·GROOVE 숏츠·월드컵 무제한·층 대항전·자동 투표)을 손님에게 열어요. 꺼져 있어도 직원 계정은 미리 볼 수 있어요. / Opens the new Play tab (daily set, live cards, GROOVE Shorts, unlimited World Cup, floor battle, auto vote) to guests. Staff accounts can preview it while off.'],
+    ['partners', '제휴 가게 / Partner venues', '손님이 제휴 가게 목록·혜택을 보고, 가게에서 혜택을 쓰면 포인트를 받아요. 꺼져 있어도 직원 계정은 미리 볼 수 있어요. / Guests see partner venues and earn points when they use a perk there. Staff accounts can preview while off.'],
     ['ws_ticket', '실시간 접속 티켓 / Live connection tickets', '대화방과 메시지에 채널별 단기 접속 티켓을 써요. / Chat rooms and messages use short-lived channel tickets.'],
     ['signed_events', '이벤트 서명 / Signed events', '스태프 서버가 보내는 이벤트에 재처리 방지용 ID를 요구해요. / Staff events require an ID to prevent duplicate processing.'],
     ['accountRecovery', '계정 복구 / Account recovery', '대상 지정 복구를 사용하기 전에 켜야 해요. / Turn this on before switching to guest-specific recovery.'],
@@ -9918,7 +9919,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       invite: '친구 초대 / Invite', checkin: '체크인 / Check-in', attend: '출석 / Daily visit',
       streak: '연속 출석 / Streak', streak7: '7일 연속 출석 / 7-day streak', vote: '투표 / Vote',
       cup: '월드컵 / World Cup', survey: '설문 / Survey', radio: '라디오 / Radio',
-      post: '사진 글 / Photo post', photo: '사진 글 / Photo post', mission: '미션 / Mission'
+      post: '사진 글 / Photo post', photo: '사진 글 / Photo post', mission: '미션 / Mission',
+      partner: '제휴 가게 혜택 사용 / Partner perk used', partner_groove: '제휴 가게 → 그루브 체크인 / Partner → GROOVE check-in'
     };
     const points = Object.entries(config.rules || {}).filter(([key, pts]) => key !== 'guess' && Number.isSafeInteger(pts));
     loungeAction(panel, '포인트 값 / Point values', 'adm_kv_set', points.map(([key, pts]) =>
@@ -10347,6 +10349,67 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7);
     return date.toISOString().slice(0, 10);
   }
+  // 제휴 가게 통계 (adm_partner_stats) — 가게 이름은 같은 주소의 /partners/partners.json 에서 가져옴
+  let loungePartnerNameMap = null;
+  async function loungePartnerNames() {
+    if (loungePartnerNameMap) return loungePartnerNameMap;
+    try {
+      const res = await fetch('/partners/partners.json', { cache: 'no-cache' });
+      const data = res.ok ? await res.json() : null;
+      const map = new Map();
+      for (const p of (data && Array.isArray(data.partners) ? data.partners : [])) {
+        if (p && typeof p.id === 'string') map.set(p.id, { name: String(p.name || p.id), category: String(p.category || '') });
+      }
+      if (map.size) loungePartnerNameMap = map;
+      return map;
+    } catch (e) { return new Map(); }
+  }
+  function loungePartnerStats(panel, request) {
+    const ranges = [['today', '오늘 / Today'], ['week', '이번 주 / This week'], ['month', '이번 달 / This month']];
+    loungeAction(panel, '제휴 가게 통계 / Partner venue stats', 'adm_partner_stats',
+      '<fieldset><legend>기간 / Range</legend>' + loungeOptions('range', 'week', ranges) + '</fieldset>',
+      (value, data) => {
+        const range = String(data.get('range') || 'week');
+        return { range: ranges.some(([key]) => key === range) ? range : 'week' };
+      },
+      async (action, payload) => {
+        const box = panel.querySelector('[data-partner-result]');
+        try { return await request(action, payload); }
+        catch (err) {
+          if (['action', 'unknown'].includes(err && err.message) && box) {
+            box.innerHTML = '<p class="note">서버 준비 중이에요. 서버가 올라가면 바로 볼 수 있어요. / The server is being prepared.</p>';
+          }
+          throw err;
+        }
+      },
+      { label: '보기 / View', done: async result => {
+        const box = panel.querySelector('[data-partner-result]');
+        if (!box) return;
+        const names = await loungePartnerNames();
+        const num = v => Number.isFinite(v) ? v : 0;
+        const total = result && result.total || {};
+        const uses = num(total.uses), came = num(total.came);
+        const rate = uses ? Math.round(came / uses * 100) + '%' : '—';
+        const rows = (Array.isArray(result && result.rows) ? result.rows : []).slice()
+          .sort((a, b) => num(b.came) - num(a.came) || num(b.uses) - num(a.uses));
+        const period = result && result.from ? '<p class="note">' + esc(result.from) + (result.to && result.to !== result.from ? ' ~ ' + esc(result.to) : '') + ' 영업일 기준 / By club date</p>' : '';
+        box.innerHTML = period +
+          '<div class="lounge-counts"><article>혜택 사용 / Perks used<strong>' + loungeCount(uses) + '</strong></article>' +
+          '<article>그날 그루브 입장 / Came to GROOVE<strong>' + loungeCount(came) + '</strong></article>' +
+          '<article>이어진 비율 / Conversion<strong>' + esc(rate) + '</strong></article>' +
+          '<article>쓴 손님 / Guests<strong>' + loungeCount(num(total.members)) + '</strong></article></div>' +
+          (rows.length ? '<table class="evaluation-table" aria-label="제휴 가게별 통계 / By partner venue" style="margin-top:12px;font-size:16px"><thead><tr>' +
+            '<th scope="col">가게 / Venue</th><th scope="col">사용 / Used</th><th scope="col">입장 / Came</th><th scope="col">비율 / Rate</th></tr></thead><tbody>' +
+            rows.map(row => {
+              const info = names.get(row.pid);
+              const u = num(row.uses), c = num(row.came);
+              return '<tr><th scope="row">' + esc(info ? info.name : row.pid) +
+                (info && info.category ? '<br><small class="note">' + esc(info.category) + '</small>' : '') + '</th>' +
+                '<td><b>' + esc(u) + '</b></td><td><b>' + esc(c) + '</b></td><td>' + esc(u ? Math.round(c / u * 100) + '%' : '—') + '</td></tr>';
+            }).join('') + '</tbody></table>' : '<p class="note">이 기간에 쓴 혜택이 없어요. / No perks used in this range.</p>');
+      } });
+    panel.insertAdjacentHTML('beforeend', '<div data-partner-result></div>');
+  }
   function loungeAnalytics(panel, request) {
     panel.textContent = '';
     loungeAction(panel, '설문 결과 / Survey results', 'adm_survey_stats',
@@ -10357,6 +10420,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         ].map(([label, value]) => [label, Number.isFinite(value) ? Math.round(value * 10) / 10 : value]));
       } });
     panel.insertAdjacentHTML('beforeend', '<div data-survey-result></div>');
+    loungePartnerStats(panel, request);
     if (!state.s.admin) return;
     loungeAction(panel, '주간 통계 / Weekly report', 'adm_weekly',
       loungeInput('주의 시작일 (월요일) / Week starts (Monday)', 'week', 'type="date" required', loungeWeek()),
