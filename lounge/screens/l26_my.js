@@ -201,12 +201,7 @@
     }
   }
 
-  function linkToMy(key) {
-    const membership = L.open('l26_shell') && L.open('l26_return');
-    return link(membership ? 'l26_my' : 'me', membership ? key : 'legacy');
-  }
-
-  function benefitAction(item, available, code) {
+  function benefitAction(item, enabled, available, code) {
     switch (item.status) {
       case 'available':
         return available ? button('request', 'data-my-redeem="' + L.esc(item.key) + '"', true) : '';
@@ -217,9 +212,9 @@
         return code ? '<p>' + text(item.status === 'confirmed' ? 'confirmed' : 'showCode') +
           ' <strong class="l26-my-code">' + L.esc(code) + '</strong></p>' : '<p>' + text('checkWithStaff') + '</p>';
       case 'used':
-        return linkToMy('viewProgress');
+        return enabled ? link('l26_my', 'viewProgress') : link('me', 'legacy');
       case 'expired':
-        return linkToMy('viewNext');
+        return enabled ? link('l26_my', 'viewNext') : link('me', 'legacy');
       default:
         return '';
     }
@@ -235,7 +230,7 @@
     return '<article class="l26-my-card" data-benefit="' + L.esc(item.key) + '"><div class="l26-my-benefit-heading"><h2>' +
       text(item.key) + '</h2><p data-benefit-status="' + L.esc(state) + '">' + text(state) + '</p></div><p>' +
       text(item.condition) + '</p><p class="muted">' + deadline + '</p><div class="l26-my-benefit-action">' +
-      benefitAction(item, available, code && item.code) + '</div></article>';
+      benefitAction(item, enabled, available, code && item.code) + '</div></article>';
   }
 
   async function renderBenefits(root) {
@@ -249,7 +244,8 @@
       content.querySelector('button').onclick = () => renderBenefits(root);
       return;
     }
-    content.innerHTML = '<div class="l26-my-links">' + linkToMy('legacy') +
+    content.innerHTML = '<div class="l26-my-links">' +
+      link(L.open('l26_shell') && L.open('l26_return') ? 'l26_my' : 'me', 'legacy') +
       button('refresh', 'data-my-refresh') + '</div>' +
       (data.benefits.map(item => benefitCard(item, data.enabled)).join('') || '<p>' + text('noBenefits') + '</p>');
     content.querySelector('[data-my-refresh]').onclick = () => renderBenefits(root);
