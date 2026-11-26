@@ -1,9 +1,210 @@
 (function (L) {
+  const words = {
+    mission: ['오늘의 미션', 'Today’s mission', '今日のミッション', '今日任务'],
+    points: ['내 포인트', 'My points', 'マイポイント', '我的积分'],
+    legacy: ['기존 출석판·올클', 'Classic attendance and all-clear', 'これまでの出席・全クリア', '原版签到和全通关'],
+    more: ['다른 놀거리', 'More to play', 'もっと遊ぶ', '更多玩法'],
+    done: ['완료', 'Done', '完了', '已完成'],
+    ready: ['진행 가능', 'Ready', '参加できます', '可以开始'],
+    login: ['로그인', 'Log in', 'ログイン', '登录'],
+    guest: ['미션 진행과 포인트 확인은 회원 로그인 후 이용할 수 있어요.', 'Log in to track your mission and see your points.', 'ログインすると進捗とポイントを確認できます。', '登录后可查看任务进度和积分。'],
+    retry: ['다시 시도', 'Try again', '再試行', '重试'],
+    loading: ['미션을 불러오는 중', 'Loading your mission', 'ミッションを読み込み中', '正在加载任务'],
+    error: ['다시 불러와 주세요.', 'Please try again.', 'もう一度お試しください。', '请重试。'],
+    refresh: ['인증 상태 확인', 'Check entry status', '入場状況を確認', '查看入场状态'],
+    attend: ['출석하기', 'Check in for attendance', '出席する', '签到'],
+    like: ['앨범 좋아요', 'Like this album', 'アルバムにいいね', '点赞相册'],
+    go: ['갈래요 남기기', 'Mark as going', '行く予定を登録', '标记想去'],
+    live: ['LIVE 보기', 'Open LIVE', 'ライブを見る', '查看现场'],
+    entry: ['입장 인증하기', 'Verify your entry', '入場を認証', '验证入场'],
+    entryHelp: ['입구에서 경호팀에게 입장 인증을 요청해 주세요.', 'Ask security at the door to verify your entry.', '入口で警備スタッフに入場認証を依頼してください。', '请在入口请安保人员验证入场。'],
+    floor_vote: ['지금 가장 신나는 층은?', 'Which floor is your favorite right now?', '今いちばん盛り上がっているフロアは？', '现在哪一层最热闹？'],
+    last_night: ['어젯밤 사진 돌아보기', 'Revisit last night’s photos', '昨夜の写真を振り返る', '回顾昨晚的照片'],
+    album: ['앨범 보기', 'Open album', 'アルバムを見る', '查看相册'],
+    cup: ['DJ 월드컵 한 판', 'Play a round of DJ World Cup', 'DJワールドカップをプレイ', '玩一轮 DJ 世界杯'],
+    dj_content: ['마음에 드는 DJ 영상에 반응 남기기', 'React to a DJ clip you like', 'お気に入りのDJ動画にリアクション', '给喜欢的 DJ 短片留下反馈'],
+    going: ['오늘 밤 갈래요?', 'Going tonight?', '今夜行く予定は？', '今晚想来吗？'],
+    dj_follow: ['DJ 팔로우하기', 'Follow a DJ', 'DJをフォロー', '关注 DJ'],
+    plan_dj: ['다음 방문을 위해 DJ 팔로우하기', 'Follow a DJ for your next visit', '次の来店に向けてDJをフォロー', '为下次到访关注一位 DJ'],
+    dj: ['DJ 프로필 보기', 'View DJ profile', 'DJプロフィールを見る', '查看 DJ 资料'],
+    survey: ['지난밤 평가하기', 'Rate last night', '昨夜を評価する', '评价昨晚'],
+    radio: ['라디오 듣기', 'Listen to the radio', 'ラジオを聴く', '收听电台']
+  };
+
+  L.i18n(Object.fromEntries(['ko', 'en', 'ja', 'zh'].map((lang, index) => [
+    lang, Object.fromEntries(Object.entries(words).map(([key, variants]) => ['l26play.' + key, variants[index]]))
+  ])));
+
+  const label = key => L.esc(L.t('l26play.' + key));
+  const translated = key => L.esc(L.t(key));
+  const shelfLinks = {
+    guess: 'guess.title', cup: 'vote.cup', vote: 'vote.title', radio: 'radio.title',
+    shorts: 'shorts.title', challenge: 'challenge.title', rank: 'rank.title', rewards: 'rewards.title', play: 'l26play.legacy'
+  };
+  const missionLinks = {
+    cup: ['cup', 'vote.cup'], dj_content: ['shorts', 'shorts.title'],
+    survey: ['vote', 'l26play.survey'], radio: ['radio', 'radio.title']
+  };
+
+  function stylesheet() {
+    if (document.getElementById('l26-play-css')) return;
+    const link = document.createElement('link');
+    link.id = 'l26-play-css';
+    link.rel = 'stylesheet';
+    link.href = '/lounge/css/l26-play.css';
+    document.head.append(link);
+  }
+
+  function legacy() {
+    // Core already preserves the original hash with the shell switch off.
+    // With the shell on, replace this disabled route with its existing screen.
+    history.replaceState(history.state, '', '#/play');
+    return L.route();
+  }
+
+  function link(path, key, primary = false) {
+    return '<a class="btn' + (primary ? ' btn-hot' : '') + '" href="#/' + path + '">' + translated(key) + '</a>';
+  }
+
+  function button(action, text, classes = '', attrs = '') {
+    return '<button type="button" class="btn ' + classes + '" data-l26-action="' + action + '"' + attrs + '>' + label(text) + '</button>';
+  }
+
+  function missionControls(mission, member) {
+    const { key, id, done } = mission;
+    if (key === 'entry') return done ? '' : '<p>' + label('entryHelp') + '</p>' + button('refresh', 'refresh');
+
+    if (key === 'floor_vote') {
+      return (done ? '' : ['2F', '3F'].map(floor =>
+        '<button type="button" class="btn" data-l26-action="floor_vote" data-l26-floor="' + floor + '">' + floor + '</button>').join('')) +
+        link('l26_live', 'l26play.live');
+    }
+
+    if (key === 'last_night') {
+      return link('photos/' + encodeURIComponent(id), 'l26play.album', true) +
+        (done || !member ? '' : button('like', 'like'));
+    }
+    if (key === 'dj_follow' || key === 'plan_dj') {
+      return link('dj/' + encodeURIComponent(id), 'l26play.dj', true);
+    }
+    if (key === 'going') {
+      return done ? link('tonight', 'nav.tonight') : button('going', 'go', 'btn-hot');
+    }
+
+    const primary = missionLinks[key];
+    return primary ? link(...primary, !done) : '';
+  }
+
+  let dispose;
+  function render(root) {
+    if (!L.open('l26_play')) return legacy();
+    stylesheet();
+
+    root.className = 'l26-screen l26-play';
+    root.innerHTML = '<header class="l26-play-head"><h1>' + translated('nav.l26_play') +
+      '</h1><a class="l26-play-points" data-l26-points href="#/me" hidden></a></header>' +
+      '<section class="l26-play-mission" aria-labelledby="l26-mission-title"><h2 id="l26-mission-title">' +
+      label('mission') + '</h2><div data-l26-mission aria-busy="true"><p role="status">' + label('loading') +
+      '</p></div></section><p class="l26-play-error" data-l26-error role="status" hidden></p>' +
+      '<details class="l26-play-shelf" hidden><summary>' + label('more') +
+      '</summary><div class="l26-play-options"></div></details>';
+
+    const card = root.querySelector('[data-l26-mission]');
+    const shelf = root.querySelector('details');
+    const points = root.querySelector('[data-l26-points]');
+    const options = root.querySelector('.l26-play-options');
+    const error = root.querySelector('[data-l26-error]');
+    let last, pending, busy = false;
+
+    function paint(data) {
+      const member = Number.isFinite(data.points);
+      points.hidden = !member;
+      points.innerHTML = label('points') + ' <strong>' +
+        (member ? L.esc(data.points.toLocaleString(L.lang)) + ' P' : '') + '</strong>';
+      const mission = data.mission;
+      card.dataset.missionKey = mission.key;
+      card.innerHTML = '<h3>' + label(mission.key) + '</h3>' +
+        (member ? '<p class="l26-play-state" data-done="' + mission.done + '">' + label(mission.done ? 'done' : 'ready') + '</p>' :
+          '<p class="muted">' + label('guest') + '</p>') +
+        '<div class="l26-play-actions">' + missionControls(mission, member) + (member ? '' : button('login', 'login')) + '</div>';
+      shelf.hidden = false;
+      options.innerHTML = data.shelf.map(key => {
+        if (key === 'attend') return button('attend', data.attended ? 'done' : 'attend', '', data.attended ? ' disabled' : '');
+        return Object.hasOwn(shelfLinks, key) ? link(key, shelfLinks[key]) : '';
+      }).join('');
+    }
+
+    async function refresh() {
+      if (!root.isConnected || pending) return pending;
+      pending = L.api('l26_play');
+      try {
+        const data = await pending;
+        if (!root.isConnected) return;
+        if (['closed', 'action'].includes(data.error)) return legacy();
+        card.setAttribute('aria-busy', 'false');
+        if (!data.ok) {
+          error.hidden = false;
+          error.textContent = L.t('l26play.error');
+          if (!last) card.innerHTML = button('refresh', 'retry');
+          return;
+        }
+        error.hidden = true;
+        if (JSON.stringify(last) === JSON.stringify(data)) return;
+        last = data;
+        paint(data);
+      } finally {
+        pending = null;
+      }
+    }
+
+    root.onclick = async event => {
+      const control = event.target.closest('[data-l26-action]');
+      if (!control || busy) return;
+      const action = control.dataset.l26Action;
+      if (action === 'refresh') return refresh();
+      if (action === 'login') return L.needLogin();
+      if (L.needLogin()) return;
+
+      busy = true;
+      control.disabled = true;
+      error.hidden = true;
+      try {
+        // Ignore an obsolete recommendation if a refresh was already in flight.
+        await pending;
+        if (!control.isConnected) return;
+        let result;
+        if (action === 'like') result = await L.api('like', { id: last.mission.id });
+        if (action === 'going') result = await L.api('going');
+        if (action === 'attend') result = await L.api('attend');
+        if (action === 'floor_vote') result = await L.api('l26_floor_vote', { floor: control.dataset.l26Floor });
+        if (!root.isConnected) return;
+        if (result?.error && result.error !== 'dup') {
+          error.hidden = false;
+          error.textContent = L.t('l26play.error');
+          return;
+        }
+        await refresh();
+      } finally {
+        if (control.isConnected) control.disabled = false;
+        busy = false;
+      }
+    };
+
+    const visible = () => { if (!document.hidden && !busy) void refresh(); };
+    const timer = setInterval(visible, 60_000);
+    document.addEventListener('visibilitychange', visible);
+    dispose = () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', visible);
+      root.onclick = null;
+    };
+    return refresh();
+  }
+
   L.screen('l26_play', {
     title: 'nav.l26_play',
     nav: 'l26_home',
-    render(root) {
-      L.renderL26Shell(root, 'nav.l26_play', [['play', 'nav.play']]);
-    }
+    render,
+    leave() { dispose?.(); dispose = undefined; }
   });
 })(window.Lounge);
