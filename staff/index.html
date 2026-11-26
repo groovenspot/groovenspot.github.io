@@ -9809,7 +9809,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     try {
       const { open, meta } = await loungeOpenSnapshot(request);
       initial = open;
-      stages = Object.entries(meta).map(([key, item]) => {
+      stages = Object.entries(meta).filter(([, item]) => owner || item.owner_only !== true).map(([key, item]) => {
         const [label, description] = known.get(key) || [];
         const bilingual = (ko, text) => text ? ko + text.slice(text.indexOf(' / ')) : ko;
         return { key, kind: item.kind, label: bilingual(item.label_ko, label), description: bilingual(item.desc_ko, description) };
