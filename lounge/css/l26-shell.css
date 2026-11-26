@@ -24,3 +24,13 @@ html[data-theme="light"] .l26-shell {
   flex-wrap: wrap;
   gap: 8px;
 }
+
+#lounge-preview:not([hidden]) {
+  display: table;
+  margin: 6px auto;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}

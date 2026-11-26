@@ -3,12 +3,13 @@
   var API = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
   var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
-  var features = Object.create(null), configPending, routeShell;
+  var features = Object.create(null), configPending, routeShell, routePreview;
+  var preview = false, previewEligible = false, preferLegacy = false, nextConfigCheck = 0;
   var activeTimer, activeToken, activeSent = false;
   var legacyRoutes = {
     l26_home: 'tonight', l26_live: 'tonight', l26_lounge: 'feed', l26_my: 'me', l26_play: 'play'
   };
-  var shellTabs = { tonight: 'l26_live', feed: 'l26_lounge', rooms: 'l26_lounge', me: 'l26_my', play: 'l26_home', l26_play: 'l26_home' };
+  var shellTabs = { tonight: 'l26_live', feed: 'l26_lounge', rooms: 'l26_lounge', me: 'l26_my', play: 'l26_home', l26_play: 'l26_lounge' };
   // 오픈채팅이 켜진 회원에게만 탭 이름이 '오픈채팅'. 지난번 값을 기억해 첫 화면부터 맞는 이름을 그린다.
   var ocNav = read('gl_oc') === '1', navOn;
   var shown = '', scrolls = Object.create(null), scrollPending = null;   // 보던 자리 기억 (keepScroll 화면)
@@ -128,7 +129,21 @@
   }
   var L = window.Lounge = {
     me: null, lang: lang,
-    setToken: function (t) { session = t || ''; save('gl_token', session); if (!session) paintBadges(); scheduleActivity(); },
+    setToken: function (t) { updateSession(t); save('gl_token', session); },
+    previewMode: function () { return preferLegacy ? 'legacy' : preview ? 'preview' : ''; },
+    previewEligible: function () { return previewEligible; },
+    isPreview: function () { return preview; },
+    refreshConfig: refreshConfig,
+    togglePreview: async function () {
+      if (!previewEligible) return;
+      preferLegacy = !preferLegacy;
+      configPending = null;
+      var token = session;
+      await refreshConfig();
+      if (token !== session) return;
+      if (location.hash === '#/' + defaultRoute()) await L.route(null, true);
+      else L.go(defaultRoute());
+    },
     setLang: function (value, explicit) {
       if (!explicit && ['ja', 'zh'].includes(read('gl_lang')) && ['ko', 'en'].includes(value)) return;
       L.lang = language(value);
@@ -146,10 +161,13 @@
     },
     api: function (a, body) {
       var b = Object.assign({}, body, { a: a }); var t = session; if (t && !b.token && !b.admin) b.token = t;
+      var mode = L.previewMode();
+      if (t && b.token === t && mode) b.preview_mode = mode;
       var options = { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify(b) };
       var timeout;
       if (a === 'config') {
         var controller = new AbortController();
+        options.cache = 'no-store';
         options.signal = controller.signal;
         timeout = setTimeout(() => controller.abort(), 5000);
       }
@@ -157,7 +175,20 @@
         if (a === 'config' && !r.ok) return { error: 'server' };
         return r.json();
       })
-        .then(function (j) { if (j && j.error === 'auth' && !b.admin && t && b.token === t && session === t) { L.setToken(''); L.me = null; } return j && typeof j === 'object' ? j : { error: 'server' }; }).catch(function () { return { error: 'network' }; })
+        .then(function (j) {
+          if (t && b.token === t && session === t) {
+            if (j?.error === 'auth' && !b.admin) {
+              var wasPreview = preview;
+              L.setToken('');
+              if (wasPreview) refreshVisible();
+            }
+            if (j?.preview_ended && mode === 'preview' && L.previewMode() === mode) {
+              clearPreview();
+              refreshVisible();
+            }
+          }
+          return j && typeof j === 'object' ? j : { error: 'server' };
+        }).catch(function () { return { error: 'network' }; })
         .finally(() => { if (timeout !== undefined) clearTimeout(timeout); });
     },
     // The profile menu can use an already signed-in Staff app session on this origin.
@@ -211,6 +242,7 @@
       if (session !== t) throw new Error('auth');
       var url = new URL('up', new URL(API.replace(/\/$/, '') + '/', location.href));
       url.searchParams.set('token', t);
+      if (L.previewMode()) url.searchParams.set('preview_mode', L.previewMode());
       var result;
       try {
         var response = await fetch(url, { method: 'POST', headers: { 'content-type': blob.type }, body: blob });
@@ -294,7 +326,8 @@
       var hash = location.hash;
       var route = hash.replace(/^#\/?/, '');
       var config = configReady ? undefined : refreshConfig();
-      if (!route || Object.hasOwn(legacyRoutes, route.split(/[/?]/, 1)[0])) {
+      if (!route || route === 'me/settings' || route === 'l26_benefits' ||
+          Object.hasOwn(legacyRoutes, route.split(/[/?]/, 1)[0])) {
         await config;
         if (version !== routeVersion || hash !== location.hash) return;
       }
@@ -320,6 +353,7 @@
       L.closeSheet();
       cur = def;
       routeShell = L.open('l26_shell');
+      routePreview = preview;
       shown = here;
       scrollPending = def?.keepScroll && L.wentBack?.() && Object.hasOwn(scrolls, here) ? scrolls[here] : null;
       delete scrolls[here];
@@ -417,6 +451,7 @@
       window.addEventListener('offline', function () {
         paintStatus();
         resetActivity();
+        if (preview) clearPreview();
         if (!document.hidden) refreshVisible();
       });
       document.addEventListener('keydown', function (e) {
@@ -448,11 +483,22 @@
         if (document.hidden) scheduleActivity();
         else refreshVisible();
       });
-      window.addEventListener('pagehide', resetActivity);
+      window.addEventListener('pagehide', () => {
+        resetActivity();
+        if (preview) clearPreview();
+      });
       window.addEventListener('pageshow', event => { if (event.persisted && !document.hidden) refreshVisible(); });
+      window.addEventListener('storage', async event => {
+        if (event.key !== 'gl_token' && event.key !== null) return;
+        var token = read('gl_token');
+        if (token === session) return;
+        updateSession(token);
+        await L.refreshMe();
+        if (token === session) await L.route();
+      });
       setInterval(() => {
-        if (!document.hidden) refreshVisible();
-      }, 60_000);
+        if (!document.hidden && Date.now() >= nextConfigCheck) refreshVisible();
+      }, 5000);
       await L.route();
     }
   };
@@ -460,6 +506,7 @@
            en: { 'nav.tonight': 'Tonight', 'nav.feed': 'Feed', 'nav.play': 'Play', 'nav.rooms': 'Open Chat', 'nav.openchat': 'Open Chat', 'nav.me': 'Me', 'core.need': 'Join at the club to use this', 'core.needBody': 'Ask a staff member for the sign-up QR. Already a member? Log in.', 'core.login': 'Log in' } });
   function paintStatus() {
     document.documentElement.lang = L.lang;
+    paintPreview();
     document.getElementById('tabbar').setAttribute('aria-label', L.t('core.nav'));
     var status = document.getElementById('offline');
     status.textContent = L.t('core.offline');
@@ -497,19 +544,57 @@
     }, 5000);
   }
 
+  function paintPreview() {
+    var badge = document.getElementById('lounge-preview');
+    badge.hidden = !preview;
+    badge.textContent = preview ? L.t('core.preview') : '';
+    document.querySelectorAll('[data-lounge-preview-toggle]').forEach(button => {
+      button.hidden = !previewEligible;
+      button.textContent = L.t(preview ? 'core.previewLegacy' : 'core.previewNew');
+    });
+  }
+
+  function clearPreview() {
+    if (!preview && !previewEligible) return;
+    preview = previewEligible = false;
+    features = Object.create(null);
+    configPending = null;
+    paintPreview();
+    L.paintNav(navOn);
+  }
+
+  function updateSession(token) {
+    if (session === (token || '')) return;
+    session = token || '';
+    L.me = null;
+    configPending = null;
+    preferLegacy = false;
+    clearPreview();
+    if (!session) paintBadges();
+    resetActivity();
+  }
+
   function refreshConfig() {
-    if (!configPending) configPending = L.api('config').then(result => {
+    if (configPending) return configPending;
+    var token = session, legacy = preferLegacy;
+    var request = L.api('config').then(result => {
+      if (configPending !== request || session !== token || preferLegacy !== legacy) return;
       var wasShell = L.open('l26_shell');
       features = !result.error && result.open || Object.create(null);
+      previewEligible = Boolean(token && result.preview_eligible === true);
+      preview = previewEligible && result.preview === true;
+      nextConfigCheck = Date.now() + (previewEligible || wasShell && result.error ? 5000 : 60_000);
       var ocChanged = !result.error && L.open('openchat') !== ocNav;
       if (ocChanged) {
         ocNav = !ocNav;
         save('gl_oc', ocNav ? '1' : '');
       }
+      paintPreview();
       if (ocChanged || wasShell !== L.open('l26_shell')) L.paintNav(navOn);
       scheduleActivity();
-    }).finally(() => { configPending = null; });
-    return configPending;
+    }).finally(() => { if (configPending === request) configPending = null; });
+    configPending = request;
+    return request;
   }
 
   async function refreshVisible() {
@@ -517,7 +602,10 @@
     await refreshConfig();
     if (!shown || version !== routeVersion || document.hidden) return;
     var name = location.hash.replace(/^#\/?/, '').split(/[/?]/, 1)[0];
-    if (routeShell !== L.open('l26_shell') && (!name || Object.hasOwn(legacyRoutes, name))) return L.route(null, true);
+    if ((routeShell !== L.open('l26_shell') || routePreview !== preview) &&
+        (!name || Object.hasOwn(legacyRoutes, name) || name === 'l26_benefits')) {
+      return L.route(null, true);
+    }
     refreshBadges(version);
   }
 
@@ -567,6 +655,12 @@
     zh: { 'nav.l26_home': '首页', 'nav.l26_live': '现场', 'nav.l26_lounge': '休息室', 'nav.l26_my': '我的', 'nav.l26_play': '娱乐' }
   });
 
+  L.i18n({
+    ko: { 'core.preview': '미리보기', 'core.previewNew': '2.0 미리보기', 'core.previewLegacy': '기존 화면', 'core.previewReadOnly': '미리보기에서는 이 작업을 할 수 없어요.', 'core.previewBenefit': '혜택 신청을 시험했어요. 실제 혜택은 지급되지 않아요.' },
+    en: { 'core.preview': 'Preview', 'core.previewNew': 'Preview 2.0', 'core.previewLegacy': 'Classic view', 'core.previewReadOnly': 'This action is unavailable in preview.', 'core.previewBenefit': 'Benefit request tested. No benefit was issued.' },
+    ja: { 'core.preview': 'プレビュー', 'core.previewNew': '2.0 プレビュー', 'core.previewLegacy': '従来の画面', 'core.previewReadOnly': 'プレビューではこの操作を利用できません。', 'core.previewBenefit': '特典申請をテストしました。特典は発行されません。' },
+    zh: { 'core.preview': '预览', 'core.previewNew': '预览 2.0', 'core.previewLegacy': '经典界面', 'core.previewReadOnly': '预览模式下无法进行此操作。', 'core.previewBenefit': '已测试福利申请。未发放福利。' }
+  });
   // Stub screens keep the current destinations reachable until their lanes supply content.
   L.renderL26Shell = function (root, title, links) {
     root.className = 'l26-screen';

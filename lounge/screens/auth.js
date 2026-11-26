@@ -280,6 +280,7 @@
   const localeIndex = () => Math.max(0, policyLocales.indexOf(L.lang));
 
   const errorText = (result) => {
+    if (result.error === 'preview') return L.t('core.previewReadOnly');
     if (result.error === 'bad' && Number.isInteger(result.left)) {
       return L.t('auth.error.badLeft', { left: result.left });
     }
@@ -569,10 +570,11 @@
       button.onclick = () => { const panel = L.sheet(policy(button.dataset.policy) + '<button type="button" class="btn">' + tClose() + '</button>'); panel.querySelector('button').onclick = L.closeSheet; };
     }
   }
-  function signedIn(result, params) {
+  async function signedIn(result, params) {
     L.setToken(result.token);
     L.me = result.me;
     if (result.me.lang) L.setLang(result.me.lang);
+    await L.refreshConfig();
     L.go(/^#\/(?!login|staff-login)/.test(params.next || '') ? params.next : home());
   }
   function staffScreen(root, params) {

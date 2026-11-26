@@ -192,7 +192,7 @@
         if (!root.isConnected) return;
         if (result?.error && result.error !== 'dup') {
           error.hidden = false;
-          error.textContent = L.t('l26play.error');
+          error.textContent = L.t(result.error === 'preview' ? 'core.previewReadOnly' : 'l26play.error');
           return;
         }
         await refresh();
@@ -215,7 +215,7 @@
 
   L.screen('l26_play', {
     title: 'nav.l26_play',
-    nav: 'l26_home',
+    nav: 'l26_lounge',
     render,
     leave() { dispose?.(); dispose = undefined; }
   });

@@ -268,6 +268,7 @@
         return;
       }
       sending = false;
+      if (result.error === 'preview') { L.toast(L.t('core.previewReadOnly')); return; }
       if (result.error === 'closed') { vote.hidden = true; return; }
       if (absorb(result)) {
         paint();

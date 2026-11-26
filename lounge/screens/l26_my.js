@@ -200,6 +200,10 @@
         control.disabled = true;
         const result = await load(root, () => L.api('l26_redeem', { benefit: control.dataset.myRedeem }));
         if (!result) return;
+        if (result.preview === true) {
+          control.disabled = false;
+          return L.toast(L.t('core.previewBenefit'));
+        }
         if (result.ok) return renderBenefits(root);
         control.disabled = false;
         showError(root, result);

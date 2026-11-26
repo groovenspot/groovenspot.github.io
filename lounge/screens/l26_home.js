@@ -137,6 +137,7 @@
     const started = performance.now();
     const response = await L.api('l26_entry_issue');
     if (active !== state || !panel.isConnected) return;
+    if (response.error === 'preview') return L.toast(L.t('core.previewReadOnly'));
     if (!response.ok || typeof response.qr !== 'string' || !response.qr || response.qr.length > 2048) {
       const useLegacy = !response.error || ['action', 'closed', 'unimplemented'].includes(response.error);
       status.textContent = L.t('l26Home.' + (useLegacy ? 'checkinHelp' : 'failed'));
@@ -175,7 +176,7 @@
       }
       const result = await L.api('going');
       if (active !== state) return;
-      if (result.error) L.toast(L.t('l26Home.failed'));
+      if (result.error) L.toast(result.error === 'preview' ? L.t('core.previewReadOnly') : L.t('l26Home.failed'));
       else {
         await state.pending;
         await refresh(state);
