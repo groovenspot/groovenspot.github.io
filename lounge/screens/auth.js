@@ -1,4 +1,5 @@
 (function (L) {
+  const promoConsentVersion = '2026-11-26.1';
   const policyLocales = ['ko', 'en', 'ja', 'zh'];
   // 대표 확정 문구입니다. 바꿀 때 전문의 정적 문구와 서버 원문도 갱신합니다.
   // 키와 교체 범위는 서버 저장소 lounge/docs/policy-decisions.md 참고.
@@ -172,12 +173,29 @@
     pw: ['비밀번호', 'Password'],
     pwHint: ['8자 이상', 'At least 8 characters'],
     agree: ['동의', 'Consent'],
-    all: ['전체 동의', 'Agree to all'],
+    all: ['필수 항목 모두 동의', 'Agree to all required items', '必須項目にすべて同意', '同意全部必选项'],
     age19: ['필수 · 만 19세 이상이에요', 'Required · I am 19 or older'],
     terms: ['필수 · 이용약관과 커뮤니티 규칙', 'Required · Terms and community rules'],
     privacy: ['필수 · 개인정보 수집·이용', 'Required · Use of personal information'],
-    ads: ['선택 · 파티와 혜택 안내 (광고)', 'Optional · Party and offer updates (ads)'],
-    night: ['선택 · 야간 알림', 'Optional · Nighttime notifications'],
+    ads: ['선택 · 광고 알림 받기 (08:00–21:00 KST)', 'Optional · Receive ads (08:00–21:00 KST)', '任意 · 広告通知を受け取る（08:00〜21:00 KST）', '可选 · 接收广告通知（08:00–21:00 KST）'],
+    night: ['선택 · 야간 광고 알림도 받기 (21:00–익일 08:00 KST)', 'Optional · Also receive ads overnight (21:00–08:00 KST)', '任意 · 夜間の広告通知も受け取る（21:00〜翌08:00 KST）', '可选 · 同时接收夜间广告通知（21:00–次日 08:00 KST）'],
+    promoHelp: ['광고 알림은 영업일당 최대 한 번 받으며, 나 → 설정에서 언제든 동의를 철회할 수 있어요.', 'Get at most one promotional push per business day. You can withdraw consent at any time in Me → Settings.', '広告プッシュ通知は営業日ごとに最大1回です。マイページの設定でいつでも同意を撤回できます。', '每个营业日最多发送一条广告推送，可随时在「我的 → 设置」撤回同意。'],
+    promoHeading: ['광고 알림 동의', 'Promotional notification consent', '広告通知への同意', '广告通知同意'],
+    preferences: ['좋아하는 DJ와 층', 'Your favorite DJ and floor', '好きな DJ とフロア', '你喜欢的 DJ 和楼层'],
+    favoriteDj: ['선호 DJ', 'Favorite DJ', '好きな DJ', '喜欢的 DJ'],
+    favoriteFloor: ['선호 층', 'Favorite floor', '好きなフロア', '喜欢的楼层'],
+    none: ['선택 안 함', 'No preference', '選択しない', '不选择'],
+    continue: ['계속', 'Continue', '続ける', '继续'],
+    skip: ['건너뛰기', 'Skip', 'スキップ', '跳过'],
+    tryActivity: ['가입했어요. 바로 참여해 보세요!', 'You’re in. Try an activity!', '登録できました。さっそく参加しましょう！', '注册成功，马上试试吧！'],
+    voteFloor: ['{floor}에 투표하기', 'Vote for {floor}', '{floor}に投票', '投票给 {floor}'],
+    followDj: ['{name} 팔로우하기', 'Follow {name}', '{name}をフォロー', '关注 {name}'],
+    followDone: ['DJ를 팔로우했어요.', 'DJ followed.', 'DJ をフォローしました。', '已关注 DJ。'],
+    voteDone: ['투표했어요.', 'Vote counted.', '投票しました。', '已投票。'],
+    voteClosed: ['지금은 투표할 수 없어요. DJ를 팔로우해 보세요.', 'Voting is unavailable right now. You can follow a DJ.', '現在は投票できません。DJ をフォローできます。', '暂时无法投票，你可以关注 DJ。'],
+    entryNeeded: ['입구에서 경호팀에게 QR 확인을 받은 뒤 투표할 수 있어요.', 'Have security scan your entry QR at the entrance before voting.', '入口で警備スタッフに入場QRを確認してもらうと投票できます。', '请先在入口让安保人员扫描入场二维码，再投票。'],
+    entryLink: ['LIVE에서 입장 QR 열기', 'Open the entry QR in Live', 'LIVE で入場QRを開く', '在 LIVE 中打开入场二维码'],
+    browseDjs: ['DJ 둘러보기', 'Browse DJs', 'DJ を見る', '查看 DJ'],
     view: ['보기', 'Read'],
     start: ['가입하고 시작하기', 'Join and get started'],
     login: ['로그인', 'Log in'],
@@ -250,6 +268,7 @@
   L.i18n(Object.fromEntries(['ko', 'en'].map((lang, i) =>
     [lang, Object.fromEntries(Object.entries(copy).map(([key, pair]) => ['auth.' + key, pair[i]]))]
   )));
+  L.promoConsentVersion = promoConsentVersion;
   const t = (key, vars) => L.esc(L.t('auth.' + key, vars));
   const nickCharacters = {
     hangul: ['한글(가~힣)', 'Hangul syllables', 'ハングルの音節（가〜힣）', '韩文音节（가～힣）'],
@@ -356,7 +375,106 @@
         name + '">' + t(name) + '</label>' +
         (name === 'terms' || name === 'privacy'
           ? '<button type="button" class="shell-link" data-policy="' + name + '" aria-label="' + t(name + 'Title') + '">' + t('view') + '</button>'
-          : '') + '</div>').join('') + '</fieldset>';
+          : '') + '</div>').join('') + '<p class="muted">' + t('promoHelp') + '</p></fieldset>';
+  }
+
+  const home = () => L.open('l26_shell') ? 'l26_home' : 'me';
+  const goHome = () => L.go(home());
+
+  function activation(root) {
+    const owner = L.me.id;
+    const current = node => node.isConnected && L.me?.id === owner;
+    const select = (name, label, options) => '<label class="shell-field">' + t(label) +
+      '<select name="' + name + '"><option value="">' + t('none') + '</option>' + options + '</select></label>';
+    root.innerHTML = '<section class="shell-auth"><h1 tabindex="-1">' + t('preferences') + '</h1><form class="shell-form">' +
+      select('dj', 'favoriteDj', '') + select('floor', 'favoriteFloor', '<option>2F</option><option>3F</option>') +
+      '<p class="shell-error" role="alert" hidden></p><div class="shell-actions"><button type="submit" class="btn btn-hot">' +
+      t('continue') + '</button><button type="button" class="btn" data-skip>' + t('skip') + '</button></div></form></section>';
+    root.querySelector('h1').focus();
+    const form = root.querySelector('form');
+    let djs = [];
+    let previewDj;
+    L.api('djs').then(result => {
+      if (!current(root) || !Array.isArray(result.djs)) return;
+      djs = result.djs;
+      if (form.isConnected) {
+        for (const { key, name } of djs) form.elements.dj.add(new Option(name, key));
+      }
+      previewDj?.();
+    });
+
+    function tryActivity({ floor, dj } = {}) {
+      if (!L.open('l26_shell')) return goHome();
+      const floors = floor ? [floor, floor === '2F' ? '3F' : '2F'] : ['2F', '3F'];
+      const retryIds = new Map();
+      root.innerHTML = '<section class="shell-auth"><h1 tabindex="-1">' + t('tryActivity') + '</h1>' +
+        '<div class="shell-actions" data-dj><a class="btn" href="#/lineup">' + t('browseDjs') + '</a></div>' +
+        (L.open('l26_floor') ? '<div class="shell-actions">' + floors.map(f => '<button type="button" class="btn" data-vote="' +
+          f + '">' + t('voteFloor', { floor: f }) + '</button>').join('') + '</div>' : '') +
+        '<p role="status" hidden></p><a class="shell-link" data-entry hidden href="#/l26_live">' + t('entryLink') + '</a>' +
+        '<a class="btn" href="#/l26_home">' + L.esc(L.t('nav.l26_home')) + '</a></section>';
+      const screen = root.firstElementChild;
+      const status = screen.querySelector('[role=status]');
+      const entry = screen.querySelector('[data-entry]');
+      let busy = false;
+      async function attempt(button, action, fields, success) {
+        if (busy) return;
+        busy = true;
+        status.hidden = true;
+        entry.hidden = true;
+        button.disabled = true;
+        const result = await L.api(action, fields);
+        if (!current(screen)) return;
+        button.disabled = false;
+        busy = false;
+        if (result.ok) {
+          L.toast(L.t('auth.' + success));
+          goHome();
+          return;
+        }
+        const key = { entry_required: 'entryNeeded', voting_closed: 'voteClosed', closed: 'voteClosed', already_voted: 'voteDone' }[result.error];
+        status.textContent = key ? L.t('auth.' + key) : errorText(result);
+        status.hidden = false;
+        entry.hidden = result.error !== 'entry_required' || !L.open('l26_entry');
+      }
+      previewDj = () => {
+        const favorite = djs.find(item => item.key === dj) || djs[0];
+        if (!current(screen) || !favorite) return;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-hot';
+        button.textContent = L.t('auth.followDj', { name: favorite.name });
+        button.onclick = () => attempt(button, 'l26_activation_follow', { key: favorite.key }, 'followDone');
+        screen.querySelector('[data-dj]').replaceChildren(button);
+      };
+      previewDj();
+      for (const button of screen.querySelectorAll('[data-vote]')) {
+        button.onclick = () => {
+          const selected = button.dataset.vote;
+          if (!retryIds.has(selected)) retryIds.set(selected, crypto.randomUUID());
+          return attempt(button, 'l26_floor_vote', { floor: selected, request_id: retryIds.get(selected) }, 'voteDone');
+        };
+      }
+      screen.querySelector('h1').focus();
+    }
+
+    form.querySelector('[data-skip]').onclick = () => tryActivity();
+    form.onsubmit = async event => {
+      event.preventDefault();
+      const fields = { dj: form.elements.dj.value, floor: form.elements.floor.value };
+      if (!fields.dj && !fields.floor) return tryActivity();
+      const button = form.querySelector('[type=submit]');
+      const error = form.querySelector('[role=alert]');
+      button.disabled = true;
+      error.hidden = true;
+      const result = await L.api('l26_activation_prefs', fields);
+      if (!current(form)) return;
+      button.disabled = false;
+      if (result.ok) return tryActivity(fields);
+      if (result.error === 'closed') return goHome();
+      error.textContent = errorText(result);
+      error.hidden = false;
+    };
   }
 
   function formScreen(action, params, root) {
@@ -386,21 +504,7 @@
         byline.innerHTML = t('invite').replace('{name}', () => L.whoTag(inviter));
         byline.hidden = false;
       });
-      const { all } = form.elements;
-      const boxes = [...form.querySelectorAll('.shell-consent-row input')];
-      all.onchange = () => boxes.forEach(box => { box.checked = all.checked; });
-      for (const box of boxes) {
-        box.onchange = () => {
-          all.checked = boxes.every(item => item.checked);
-          all.indeterminate = !all.checked && boxes.some(item => item.checked);
-        };
-      }
-      for (const button of form.querySelectorAll('[data-policy]')) {
-        button.onclick = () => {
-          const panel = L.sheet(policy(button.dataset.policy) + '<button type="button" class="btn">' + tClose() + '</button>');
-          panel.querySelector('button').onclick = L.closeSheet;
-        };
-      }
+      wireConsent(form);
     }
     form.onsubmit = async event => {
       event.preventDefault();
@@ -412,6 +516,7 @@
       if (joining) {
         body.nick = data.get('nick').trim();
         body.lang = L.lang;
+        body.consent_version = promoConsentVersion;
         for (const field of ['age19', 'terms', 'privacy', 'ads', 'night']) body[field] = data.has(field);
         if (!(body.age19 && body.terms && body.privacy)) {
           error.textContent = errorText({ error: 'agree' });
@@ -432,7 +537,8 @@
       L.setToken(result.token);
       L.me = result.me;
       if (result.me.lang) L.setLang(result.me.lang);
-      const next = loggingIn && /^#\/(?!login(?:[/?]|$))/.test(params.next || '') ? params.next : 'me';
+      if (joining && L.open('l26_shell')) return activation(root);
+      const next = loggingIn && /^#\/(?!login(?:[/?]|$))/.test(params.next || '') ? params.next : home();
       L.go(next);
       if (joining) window.addEventListener('hashchange', () => L.showInstall(true), { once: true });
     };
@@ -456,7 +562,7 @@
   // 직원 계정으로 로그인 (2026-11-20): 직원 앱 이름·비밀번호 → 처음이면 닉네임·동의
   function wireConsent(form) {
     const { all } = form.elements;
-    const boxes = [...form.querySelectorAll('.shell-consent-row input')];
+    const boxes = ['age19', 'terms', 'privacy'].map(name => form.elements[name]);
     all.onchange = () => boxes.forEach(box => { box.checked = all.checked; });
     for (const box of boxes) box.onchange = () => { all.checked = boxes.every(item => item.checked); all.indeterminate = !all.checked && boxes.some(item => item.checked); };
     for (const button of form.querySelectorAll('[data-policy]')) {
@@ -467,7 +573,7 @@
     L.setToken(result.token);
     L.me = result.me;
     if (result.me.lang) L.setLang(result.me.lang);
-    L.go(/^#\/(?!login|staff-login)/.test(params.next || '') ? params.next : 'me');
+    L.go(/^#\/(?!login|staff-login)/.test(params.next || '') ? params.next : home());
   }
   function staffScreen(root, params) {
     root.innerHTML = '<section class="shell-auth"><header class="shell-brand">GROOVE</header><h1>' + t('staffLogin') + '</h1>' +
@@ -501,7 +607,7 @@
     form.onsubmit = async event => {
       event.preventDefault();
       const data = new FormData(form), button = form.querySelector('[type=submit]');
-      const body = { ticket, nick: data.get('nick').trim(), lang: L.lang };
+      const body = { ticket, nick: data.get('nick').trim(), lang: L.lang, consent_version: promoConsentVersion };
       for (const field of ['age19', 'terms', 'privacy', 'ads', 'night']) body[field] = data.has(field);
       if (!(body.age19 && body.terms && body.privacy)) { error.textContent = errorText({ error: 'agree' }); error.hidden = false; return; }
       error.hidden = true; button.disabled = true;

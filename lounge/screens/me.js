@@ -5,6 +5,8 @@
     settings: ['설정', 'Settings'],
     points: ['내 포인트', 'My points'],
     stamps: ['방문 스탬프', 'Visit stamps'],
+    entry: ['입장 QR', 'Entry QR'],
+    verifiedStampHelp: ['입구 직원이 내 QR을 확인하면 영업일마다 스탬프 1개를 받아요.', 'Get one stamp per business day when entrance staff verify your QR.'],
     stampHelp: ['입구 QR로 체크인하면 하루에 스탬프 1개를 받아요.', 'Scan the entrance QR to get one stamp per day.'],
     badges: ['배지', 'Badges'],
     noBadges: ['아직 배지가 없어요.', 'No badges yet.'],
@@ -38,6 +40,32 @@
   const t = key => L.esc(L.t('me.' + key));
   const a = key => L.esc(L.t('auth.' + key));
 
+  let entryScript;
+  function bindEntry(root) {
+    const button = root.querySelector('[data-entry-open]');
+    if (!button) return;
+    button.onclick = async () => {
+      button.disabled = true;
+      try {
+        if (!L.showEntryQr) {
+          entryScript ||= new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = '/lounge/screens/l26_entry.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.append(script);
+          }).catch(error => { entryScript = null; throw error; });
+          await entryScript;
+        }
+        if (button.isConnected) L.showEntryQr();
+      } catch {
+        if (button.isConnected) button.textContent = L.t('auth.retry');
+      } finally {
+        button.disabled = false;
+      }
+    };
+  }
+
   // 내 프로필 ≡ 메뉴 (4차 P19): 줄 목록 — 설정·알림·저장됨·팔로우 요청·차단 목록·생일/초대·QR·로그아웃
   function profileMenu(user) {
     const row = (icon, label, href) => '<a class="ui-menu-item" href="' + href + '">' + L.icon(icon, { size: 22 }) + '<span>' + label + '</span></a>';
@@ -50,10 +78,12 @@
       (L.open('profile2') ? row('tagged', text('user4.tagRequests'), '#/tags') : '') +     // 나를 태그한 글 승인 (화면은 글쓰기 작업창 D)
       row('block', t('blocks'), '#/blocks') +
       (L.open('rewards') ? row('heart', t('rewards'), '#/rewards') : '') +
+      (L.open('l26_entry') ? act('grid', t('entry'), 'data-entry-open') : '') +
       (user && user.private !== true && L.profileQr ? act('grid', text('user4.qr'), 'data-menu-qr') : '') +
       (L.canInstall() ? act('home', text('core.install'), 'data-menu-install') : '') +
       act('back', t('signout'), 'data-menu-signout') + '</div>');
     panel.classList.add('ui-sheet-menu');
+    bindEntry(panel);
     panel.querySelector('[data-menu-signout]').onclick = exit;
     const qr = panel.querySelector('[data-menu-qr]');
     if (qr) qr.onclick = () => { L.closeSheet(); L.profileQr(user); };
@@ -136,7 +166,8 @@
       L.esc(balance) + 'P</p></section><section class="shell-card"><header class="shell-row"><h2>' +
       t('stamps') + '</h2><strong>' + n + ' / 10</strong></header><div class="shell-stamps" aria-hidden="true">' +
       Array.from({ length: 10 }, (_, i) => '<span class="' + (i < n ? 'filled' : '') + '">' + (i < n ? '✓' : '') + '</span>').join('') +
-      '</div><p class="muted">' + t('stampHelp') + '</p></section>' +
+      '</div><p class="muted">' + t(L.open('l26_entry') ? 'verifiedStampHelp' : 'stampHelp') + '</p>' +
+      (L.open('l26_entry') ? '<button class="btn btn-hot" type="button" data-entry-open>' + t('entry') + '</button>' : '') + '</section>' +
       '<section class="shell-card"><h2>' + t('earn') + '</h2><p>' + t('ways') + '</p></section>' +
       (result.error ? '<p class="shell-error" role="status">' + L.esc(L.errorText(result)) + '</p>' :
         '<section class="shell-card"><h2>' + t('badges') + '</h2>' +
@@ -152,6 +183,7 @@
             '<small class="muted">' + L.esc(when) + '</small></span><strong>' +
             (delta > 0 ? '+' : '') + delta + 'P</strong></li>';
         }).join('') + '</ul>' : '<p class="muted">' + t('noLedger') + '</p>') + '</section>');
+    bindEntry(panel);
     if (result.error === 'auth') L.needLogin();
   }
 
@@ -212,14 +244,16 @@
   function settings(root) {
     const me = L.me;
     const checkbox = name => '<label class="shell-choice"><input name="' + name + '" type="checkbox"' +
-      (me[name] ? ' checked' : '') + '>' + a(name) + '</label>';
+      (me.promo?.[name] ? ' checked' : '') + '>' + a(name) + '</label>';
     const mode = L.theme();
     const themeRow = v => '<label class="shell-choice"><input type="radio" name="gl-theme" value="' + v + '"' + (mode === v ? ' checked' : '') +
       '>' + t(v === 'dark' ? 'themeDark' : 'themeLight') + '</label>';
     root.innerHTML = L.bar({ back: 'me', title: L.t('me.settings') }) + '<div class="shell-stack pf-sub">' +
       '<fieldset class="shell-consent" data-theme-pick><legend class="shell-field">' + t('theme') + '</legend>' +
       themeRow('dark') + themeRow('light') + '</fieldset><form class="shell-form">' +
-      checkbox('ads') + checkbox('night') + '<label class="shell-field">' + t('language') +
+      '<fieldset class="shell-consent" id="promo"><legend>' + a('promoHeading') + '</legend>' +
+      checkbox('ads') + checkbox('night') + '<p class="muted">' + a('promoHelp') + '</p></fieldset>' +
+      '<label class="shell-field">' + t('language') +
       '<select name="lang"><option value="ko" lang="ko">한국어</option><option value="en" lang="en">English</option>' +
       '<option value="ja" lang="ja">日本語</option><option value="zh" lang="zh">中文</option></select></label>' +
       submit('save') + '</form><section class="shell-card"><h2>' + a('reset') + '</h2><p>' + a('resetHelp') + '</p></section>' +
@@ -232,7 +266,12 @@
     const form = root.querySelector('form');
     form.elements.lang.value = L.lang;
     formResult(form, async data => {
-      const body = { ads: data.has('ads'), night: data.has('night'), lang: data.get('lang') };
+      const body = { lang: data.get('lang'), consent_version: L.promoConsentVersion };
+      for (const kind of ['ads', 'night']) {
+        if (data.has(kind) !== Boolean(me.promo?.[kind]) || (!data.has(kind) && me[kind] && !me.promo?.[kind])) {
+          body[kind] = data.has(kind);
+        }
+      }
       const result = await L.api('prefs_set', body);
       if (result.error) throw new Error(result.error);
       if (L.me !== me) return;

@@ -3,7 +3,12 @@
   var API = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
   var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
-  var features = Object.create(null), configPending;
+  var features = Object.create(null), configPending, routeShell;
+  var activeTimer, activeToken, activeSent = false;
+  var legacyRoutes = {
+    l26_home: 'tonight', l26_live: 'tonight', l26_lounge: 'feed', l26_my: 'me', l26_play: 'play'
+  };
+  var shellTabs = { tonight: 'l26_live', feed: 'l26_lounge', rooms: 'l26_lounge', me: 'l26_my', play: 'l26_home', l26_play: 'l26_home' };
   // 오픈채팅이 켜진 회원에게만 탭 이름이 '오픈채팅'. 지난번 값을 기억해 첫 화면부터 맞는 이름을 그린다.
   var ocNav = read('gl_oc') === '1', navOn;
   var shown = '', scrolls = Object.create(null), scrollPending = null;   // 보던 자리 기억 (keepScroll 화면)
@@ -52,7 +57,8 @@
     '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
     '<rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/>',
     '<path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2zM18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/>',
-    '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
+    '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    '<path d="M3 10l9-7 9 7v10H3zM9 20v-6h6v6"/>'
   ];
 
   async function resize(file) {
@@ -122,7 +128,7 @@
   }
   var L = window.Lounge = {
     me: null, lang: lang,
-    setToken: function (t) { session = t || ''; save('gl_token', session); if (!session) paintBadges(); },
+    setToken: function (t) { session = t || ''; save('gl_token', session); if (!session) paintBadges(); scheduleActivity(); },
     setLang: function (value, explicit) {
       if (!explicit && ['ja', 'zh'].includes(read('gl_lang')) && ['ko', 'en'].includes(value)) return;
       L.lang = language(value);
@@ -140,8 +146,19 @@
     },
     api: function (a, body) {
       var b = Object.assign({}, body, { a: a }); var t = session; if (t && !b.token && !b.admin) b.token = t;
-      return fetch(API, { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify(b) }).then(function (r) { return r.json(); })
-        .then(function (j) { if (j && j.error === 'auth' && !b.admin && t && b.token === t && session === t) { L.setToken(''); L.me = null; } return j && typeof j === 'object' ? j : { error: 'server' }; }).catch(function () { return { error: 'network' }; });
+      var options = { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify(b) };
+      var timeout;
+      if (a === 'config') {
+        var controller = new AbortController();
+        options.signal = controller.signal;
+        timeout = setTimeout(() => controller.abort(), 5000);
+      }
+      return fetch(API, options).then(function (r) {
+        if (a === 'config' && !r.ok) return { error: 'server' };
+        return r.json();
+      })
+        .then(function (j) { if (j && j.error === 'auth' && !b.admin && t && b.token === t && session === t) { L.setToken(''); L.me = null; } return j && typeof j === 'object' ? j : { error: 'server' }; }).catch(function () { return { error: 'network' }; })
+        .finally(() => { if (timeout !== undefined) clearTimeout(timeout); });
     },
     // The profile menu can use an already signed-in Staff app session on this origin.
     staffAdmin: async function () {
@@ -272,9 +289,16 @@
         '</p><button class="btn" type="button">' + L.esc(L.t('core.close')) + '</button>');
       panel.querySelector('button').onclick = L.closeSheet;
     },
-    route: async function () {
+    route: async function (event, configReady = false) {
       var version = ++routeVersion;
-      var h = location.hash.replace(/^#\/?/, '') || 'tonight';
+      var hash = location.hash;
+      var route = hash.replace(/^#\/?/, '');
+      var config = configReady ? undefined : refreshConfig();
+      if (!route || Object.hasOwn(legacyRoutes, route.split(/[/?]/, 1)[0])) {
+        await config;
+        if (version !== routeVersion || hash !== location.hash) return;
+      }
+      var h = route || defaultRoute();
       var qi = h.indexOf('?');
       var path = qi < 0 ? h : h.slice(0, qi);
       var params = Object.create(null);
@@ -284,9 +308,10 @@
         try { params.id = decodeURIComponent(rest.join('/')); } catch (e) { params.id = rest.join('/'); }
       }
       if (name === 'u') name = 'user';
+      if (Object.hasOwn(legacyRoutes, name) && !L.open('l26_shell')) name = legacyRoutes[name];
       var def = screens[name];
       var view = document.getElementById('view');
-      var here = location.hash || '#/tonight';
+      var here = hash || '#/' + defaultRoute();
       // 떠나는 화면이 keepScroll 이면 보던 자리를 기억 (뒤로 돌아왔을 때 L.restoreScroll 이 되돌림)
       if (cur?.keepScroll && shown) scrolls[shown] = window.scrollY;
       if (cur?.leave) {
@@ -294,6 +319,7 @@
       }
       L.closeSheet();
       cur = def;
+      routeShell = L.open('l26_shell');
       shown = here;
       scrollPending = def?.keepScroll && L.wentBack?.() && Object.hasOwn(scrolls, here) ? scrolls[here] : null;
       delete scrolls[here];
@@ -309,7 +335,6 @@
       window.scrollTo(0, 0);
       view.focus({ preventScroll: true });
       var gate = Object.hasOwn(gates, name) && gates[name];
-      var config = refreshConfig();
       if (gate || ['play', 'tonight', 'me', 'user'].includes(name)) await config;
       if (version !== routeVersion) return;
       refreshBadges(version, config);
@@ -368,19 +393,32 @@
     },
     paintNav: function (on) {
       navOn = on;
-      var items = [['tonight', 'nav.tonight'], ['feed', 'nav.feed'], ['play', 'nav.play'], ['rooms', ocNav ? 'nav.openchat' : 'nav.rooms'], ['me', 'nav.me']];
+      var shell = L.open('l26_shell');
+      document.getElementById('app').classList.toggle('l26-shell', shell);
+      document.querySelector('.shell-brand').href = '#/' + defaultRoute();
+      if (shell && Object.hasOwn(shellTabs, on)) on = shellTabs[on];
+      var items = shell
+        ? [['l26_home', 'nav.l26_home', 5], ['l26_live', 'nav.l26_live', 0], ['l26_lounge', 'nav.l26_lounge', 1], ['l26_my', 'nav.l26_my', 4]]
+        : [['tonight', 'nav.tonight'], ['feed', 'nav.feed'], ['play', 'nav.play'], ['rooms', ocNav ? 'nav.openchat' : 'nav.rooms'], ['me', 'nav.me']];
       var photo = L.me?.photo ? (L.photoSrc ? L.photoSrc(L.me.photo) : L.img(L.me.photo)) : '';
       document.getElementById('tabbar').innerHTML = items.map(function (x, i) {
-        var icon = x[0] === 'me' && photo
+        var icon = (x[0] === 'me' || x[0] === 'l26_my') && photo
           ? '<img class="tab-me" src="' + L.esc(photo) + '" alt="" width="24" height="24" decoding="async">'
-          : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (x[0] === on ? 2.3 : 1.8) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[i] + '</svg>';
+          : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (x[0] === on ? 2.3 : 1.8) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[x[2] ?? i] + '</svg>';
         return '<a href="#/' + x[0] + '" data-tab="' + x[0] + '"' + (x[0] === on ? ' aria-current="page"' : '') + '>' + icon + '<span>' + L.esc(L.t(x[1])) + '</span></a>';
       }).join('');
     },
     boot: async function () {
       paintStatus();
-      window.addEventListener('online', paintStatus);
-      window.addEventListener('offline', paintStatus);
+      window.addEventListener('online', function () {
+        paintStatus();
+        if (!document.hidden) refreshVisible();
+      });
+      window.addEventListener('offline', function () {
+        paintStatus();
+        resetActivity();
+        if (!document.hidden) refreshVisible();
+      });
       document.addEventListener('keydown', function (e) {
         var sheet = document.getElementById('sheet');
         if (sheet.hidden) return;
@@ -399,7 +437,7 @@
       document.getElementById('tabbar').addEventListener('click', function (e) {
         var link = e.target.closest('a');
         if (!link || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-        if (link.getAttribute('href') !== (location.hash || '#/tonight')) return;   // 다른 화면이면 평소대로 이동
+        if (link.getAttribute('href') !== (location.hash || '#/' + defaultRoute())) return;   // 다른 화면이면 평소대로 이동
         e.preventDefault();
         L.retap();
       });
@@ -407,10 +445,13 @@
       await L.refreshMe();
       window.addEventListener('hashchange', L.route);
       document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) refreshBadges(routeVersion, refreshConfig());
+        if (document.hidden) scheduleActivity();
+        else refreshVisible();
       });
+      window.addEventListener('pagehide', resetActivity);
+      window.addEventListener('pageshow', event => { if (event.persisted && !document.hidden) refreshVisible(); });
       setInterval(() => {
-        if (!document.hidden && L.me) refreshBadges(routeVersion, refreshConfig());
+        if (!document.hidden) refreshVisible();
       }, 60_000);
       await L.route();
     }
@@ -428,16 +469,56 @@
     });
   }
 
+  function defaultRoute() {
+    return L.open('l26_shell') ? 'l26_home' : 'tonight';
+  }
+
+  function resetActivity() {
+    clearTimeout(activeTimer);
+    activeTimer = undefined;
+    activeSent = false;
+    activeToken = undefined;
+  }
+
+  function scheduleActivity() {
+    if (document.visibilityState !== 'visible' || !navigator.onLine || !session || !L.open('l26_shell') || !L.open('l26_metrics')) {
+      resetActivity();
+      return;
+    }
+    if (activeToken !== session) resetActivity();
+    if (activeTimer !== undefined || activeSent) return;
+    activeToken = session;
+    activeTimer = setTimeout(function () {
+      activeTimer = undefined;
+      if (document.visibilityState !== 'visible' || !navigator.onLine || activeToken !== session ||
+          !L.open('l26_shell') || !L.open('l26_metrics')) return;
+      activeSent = true;
+      L.api('l26_active');
+    }, 5000);
+  }
+
   function refreshConfig() {
     if (!configPending) configPending = L.api('config').then(result => {
+      var wasShell = L.open('l26_shell');
       features = !result.error && result.open || Object.create(null);
-      if (!result.error && L.open('openchat') !== ocNav) {
+      var ocChanged = !result.error && L.open('openchat') !== ocNav;
+      if (ocChanged) {
         ocNav = !ocNav;
         save('gl_oc', ocNav ? '1' : '');
-        L.paintNav(navOn);
       }
+      if (ocChanged || wasShell !== L.open('l26_shell')) L.paintNav(navOn);
+      scheduleActivity();
     }).finally(() => { configPending = null; });
     return configPending;
+  }
+
+  async function refreshVisible() {
+    var version = routeVersion;
+    await refreshConfig();
+    if (!shown || version !== routeVersion || document.hidden) return;
+    var name = location.hash.replace(/^#\/?/, '').split(/[/?]/, 1)[0];
+    if (routeShell !== L.open('l26_shell') && (!name || Object.hasOwn(legacyRoutes, name))) return L.route(null, true);
+    refreshBadges(version);
   }
 
   var lastBadges = {};
@@ -479,5 +560,19 @@
       'core.install': 'Add to Home Screen', 'core.installBody': 'In Safari, tap Share, then choose Add to Home Screen.',
       'core.alerts': 'Notifications', 'core.dm': 'Messages', 'core.unread': '{label}, {count} unread' }
   });
+  L.i18n({
+    ko: { 'nav.l26_home': 'HOME', 'nav.l26_live': 'LIVE', 'nav.l26_lounge': '라운지', 'nav.l26_my': 'MY', 'nav.l26_play': '놀거리' },
+    en: { 'nav.l26_home': 'HOME', 'nav.l26_live': 'LIVE', 'nav.l26_lounge': 'Lounge', 'nav.l26_my': 'MY', 'nav.l26_play': 'Play' },
+    ja: { 'nav.l26_home': 'ホーム', 'nav.l26_live': 'ライブ', 'nav.l26_lounge': 'ラウンジ', 'nav.l26_my': 'マイページ', 'nav.l26_play': '遊び' },
+    zh: { 'nav.l26_home': '首页', 'nav.l26_live': '现场', 'nav.l26_lounge': '休息室', 'nav.l26_my': '我的', 'nav.l26_play': '娱乐' }
+  });
+
+  // Stub screens keep the current destinations reachable until their lanes supply content.
+  L.renderL26Shell = function (root, title, links) {
+    root.className = 'l26-screen';
+    root.innerHTML = '<h1>' + L.esc(L.t(title)) + '</h1><div class="l26-links">' +
+      links.map(([path, label]) => '<a class="btn" href="#/' + path + '">' + L.esc(L.t(label)) + '</a>').join('') +
+      '</div>';
+  };
   L.screen('rooms', { nav: 'rooms', render: function (root) { root.innerHTML = '<h1>' + L.esc(L.t('nav.rooms')) + '</h1><p class="muted">' + L.esc(L.t('core.soon')) + '</p>'; } });
 })();
