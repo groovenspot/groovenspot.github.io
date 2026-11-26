@@ -1,0 +1,88 @@
+.l26-live {
+  max-width: 620px;
+  margin-inline: auto;
+  display: grid;
+  gap: 18px;
+}
+
+.l26-live [hidden] { display: none; }
+.l26-live h1, .l26-live h2, .l26-live h3, .l26-live p { margin: 0; }
+.l26-live h2 { font-size: 1.05rem; margin-bottom: 8px; }
+.l26-live h3 { font-size: .9rem; }
+.l26-live h3 span { font-size: .75rem; }
+
+.l26-live-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.l26-live-card {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-top: 2px solid currentColor;
+  border-radius: 12px;
+  background: var(--card);
+  overflow-wrap: anywhere;
+}
+
+.l26-live-card [data-live-dj] { margin-top: 6px; color: var(--txt); }
+.l26-live-dj { font-weight: 700; }
+.l26-live-card .muted, .l26-live-card details { font-size: .82rem; }
+.l26-live-card details { margin-top: 6px; }
+.l26-live-card summary { cursor: pointer; }
+.l26-live-card ul { padding-inline-start: 1.25em; margin: 4px 0; }
+
+.l26-live-links { display: flex; flex-wrap: wrap; gap: 0 16px; }
+.l26-live-links a { display: inline-flex; align-items: center; min-height: 38px; }
+
+.l26-live-entry {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.l26-live-entry h2 { margin: 0; }
+.l26-live-entry img {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: min(100%, 240px);
+  height: auto;
+  background: #fff;
+  image-rendering: pixelated;
+}
+
+.l26-live-entry p { grid-column: 1 / -1; }
+.l26-live-entry p:empty { display: none; }
+
+.l26-live-choice button {
+  display: block;
+  color: inherit;
+  width: 100%;
+  min-height: 54px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.l26-live-choice button:disabled { cursor: default; }
+.l26-live-choice button:focus-visible, .l26-live a:focus-visible, .l26-live summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.l26-live-choice [data-live-count] {
+  margin-block: 4px;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.l26-live [data-live-vote] > .muted { margin-block: 5px; font-size: .85rem; }
