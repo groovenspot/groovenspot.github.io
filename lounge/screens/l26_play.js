@@ -75,7 +75,7 @@
     if (key === 'entry') return done ? '' : '<p>' + label('entryHelp') + '</p>' + button('refresh', 'refresh');
 
     if (key === 'floor_vote') {
-      return (done ? '' : ['2F', '3F'].map(floor =>
+      return (mission.vote_status !== 'ready' ? '' : ['2F', '3F'].map(floor =>
         '<button type="button" class="btn" data-l26-action="floor_vote" data-l26-floor="' + floor + '">' + floor + '</button>').join('')) +
         link('l26_live', 'l26play.live');
     }
@@ -114,7 +114,7 @@
     const points = root.querySelector('[data-l26-points]');
     const options = root.querySelector('.l26-play-options');
     const error = root.querySelector('[data-l26-error]');
-    let last, pending, busy = false;
+    let last, pending, voteRequest, busy = false;
 
     function paint(data) {
       const member = Number.isFinite(data.points);
@@ -176,7 +176,19 @@
         if (action === 'like') result = await L.api('like', { id: last.mission.id });
         if (action === 'going') result = await L.api('going');
         if (action === 'attend') result = await L.api('attend');
-        if (action === 'floor_vote') result = await L.api('l26_floor_vote', { floor: control.dataset.l26Floor });
+        if (action === 'floor_vote') {
+          if (last.mission.vote_status !== 'ready') return;
+          const floor = control.dataset.l26Floor;
+          if (voteRequest?.floor !== floor || voteRequest.day !== last.biz_day) {
+            voteRequest = { floor, day: last.biz_day, request_id: crypto.randomUUID() };
+          }
+          result = await L.api('l26_floor_vote', { floor, request_id: voteRequest.request_id });
+          if (result.error !== 'network' && result.error !== 'server') voteRequest = undefined;
+          if (['already_voted', 'voting_closed', 'entry_required', 'closed'].includes(result.error)) {
+            await refresh();
+            return;
+          }
+        }
         if (!root.isConnected) return;
         if (result?.error && result.error !== 'dup') {
           error.hidden = false;
