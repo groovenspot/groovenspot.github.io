@@ -3,7 +3,7 @@
   var API = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
   var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
-  var features = Object.create(null), configPending;
+  var features = Object.create(null), configPending, routeShell;
   var activeTimer, activeToken, activeSent = false;
   var legacyRoutes = {
     l26_home: 'tonight', l26_live: 'tonight', l26_lounge: 'feed', l26_my: 'me', l26_play: 'play'
@@ -292,12 +292,13 @@
     route: async function (event, configReady = false) {
       var version = ++routeVersion;
       var hash = location.hash;
+      var route = hash.replace(/^#\/?/, '');
       var config = configReady ? undefined : refreshConfig();
-      if (!hash || Object.hasOwn(legacyRoutes, hash.replace(/^#\/?/, '').split(/[/?]/, 1)[0])) {
+      if (!route || Object.hasOwn(legacyRoutes, route.split(/[/?]/, 1)[0])) {
         await config;
         if (version !== routeVersion || hash !== location.hash) return;
       }
-      var h = hash.replace(/^#\/?/, '') || defaultRoute();
+      var h = route || defaultRoute();
       var qi = h.indexOf('?');
       var path = qi < 0 ? h : h.slice(0, qi);
       var params = Object.create(null);
@@ -318,6 +319,7 @@
       }
       L.closeSheet();
       cur = def;
+      routeShell = L.open('l26_shell');
       shown = here;
       scrollPending = def?.keepScroll && L.wentBack?.() && Object.hasOwn(scrolls, here) ? scrolls[here] : null;
       delete scrolls[here];
@@ -511,11 +513,11 @@
   }
 
   async function refreshVisible() {
-    var wasShell = L.open('l26_shell'), version = routeVersion;
+    var version = routeVersion;
     await refreshConfig();
-    if (version !== routeVersion || document.hidden) return;
+    if (!shown || version !== routeVersion || document.hidden) return;
     var name = location.hash.replace(/^#\/?/, '').split(/[/?]/, 1)[0];
-    if (wasShell !== L.open('l26_shell') && (!name || Object.hasOwn(legacyRoutes, name))) return L.route(null, true);
+    if (routeShell !== L.open('l26_shell') && (!name || Object.hasOwn(legacyRoutes, name))) return L.route(null, true);
     refreshBadges(version);
   }
 
