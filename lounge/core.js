@@ -5,7 +5,8 @@
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
   var features = Object.create(null), configPending, routeShell, routePreview;
   var preview = false, previewEligible = false, previewRequested = false, nextConfigCheck = 0;
-  var activeTimer, activeToken, activeSent = false;
+  var activeTimer, activeAttempt, activeRecorded;
+  var activityDayMs = 86_400_000, activityDayShift = 3_600_000; // 08:00 KST is 23:00 UTC.
   var legacyRoutes = {
     l26_home: 'tonight', l26_live: 'tonight', l26_lounge: 'feed', l26_my: 'me', l26_play: 'play'
   };
@@ -168,14 +169,14 @@
       if (t && b.token === t && mode) b.preview_mode = mode;
       var options = { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify(b) };
       var timeout;
-      if (a === 'config') {
+      if (a === 'config' || a === 'l26_active') {
         var controller = new AbortController();
-        options.cache = 'no-store';
+        if (a === 'config') options.cache = 'no-store';
         options.signal = controller.signal;
         timeout = setTimeout(() => controller.abort(), 5000);
       }
       return fetch(API, options).then(function (r) {
-        if (a === 'config' && !r.ok) return { error: 'server' };
+        if ((a === 'config' || a === 'l26_active') && !r.ok) return { error: 'server' };
         return r.json();
       })
         .then(function (j) {
@@ -541,25 +542,72 @@
   function resetActivity() {
     clearTimeout(activeTimer);
     activeTimer = undefined;
-    activeSent = false;
-    activeToken = undefined;
+    activeAttempt = undefined;
+  }
+
+  function canRecordActivity() {
+    return document.visibilityState === 'visible' && navigator.onLine && session && L.me &&
+      !previewRequested && !preview && L.open('l26_metrics');
+  }
+
+  function activityDay(now) {
+    return new Date(now + activityDayShift).toISOString().slice(0, 10);
+  }
+
+  function activityAlarm(delay, callback) {
+    activeTimer = setTimeout(function () {
+      activeTimer = undefined;
+      callback();
+    }, delay);
   }
 
   function scheduleActivity() {
-    if (document.visibilityState !== 'visible' || !navigator.onLine || !session || !L.open('l26_shell') || !L.open('l26_metrics')) {
+    if (!canRecordActivity()) {
       resetActivity();
       return;
     }
-    if (activeToken !== session) resetActivity();
-    if (activeTimer !== undefined || activeSent) return;
-    activeToken = session;
-    activeTimer = setTimeout(function () {
-      activeTimer = undefined;
-      if (document.visibilityState !== 'visible' || !navigator.onLine || activeToken !== session ||
-          !L.open('l26_shell') || !L.open('l26_metrics')) return;
-      activeSent = true;
-      L.api('l26_active');
-    }, 5000);
+    var now = Date.now();
+    var day = activityDay(now);
+    var dayEndsIn = activityDayMs - (now + activityDayShift) % activityDayMs;
+    if (activeAttempt?.token === session && activeAttempt.day === day) return;
+    resetActivity();
+    var attempt = activeAttempt = { token: session, day: day, readyAt: performance.now() + 5000, retry: 5000 };
+    if (activeRecorded?.token === session && activeRecorded.day === day) {
+      activityAlarm(dayEndsIn, function () {
+        activeAttempt = undefined;
+        scheduleActivity();
+      });
+    } else {
+      activityAlarm(Math.min(5000, dayEndsIn), () => recordActivity(attempt));
+    }
+  }
+
+  async function recordActivity(attempt) {
+    if (activeAttempt !== attempt) return;
+    if (!canRecordActivity() || activityDay(Date.now()) !== attempt.day) {
+      scheduleActivity();
+      return;
+    }
+    var remaining = attempt.readyAt - performance.now();
+    if (remaining > 0) {
+      activityAlarm(Math.ceil(remaining), () => recordActivity(attempt));
+      return;
+    }
+    var result = await L.api('l26_active', { biz_day: attempt.day, event_id: 'active:' + L.me.id + ':' + attempt.day });
+    if (activeAttempt !== attempt) return;
+    if (result.ok === true && (!result.biz_day || result.biz_day === attempt.day)) {
+      activeRecorded = attempt;
+      activeAttempt = undefined;
+      scheduleActivity();
+    } else {
+      var dayEndsIn = activityDayMs - (Date.now() + activityDayShift) % activityDayMs;
+      if (!canRecordActivity() || activityDay(Date.now()) !== attempt.day) {
+        scheduleActivity();
+        return;
+      }
+      activityAlarm(Math.min(attempt.retry, dayEndsIn), () => recordActivity(attempt));
+      attempt.retry = Math.min(attempt.retry * 2, 60_000);
+    }
   }
 
   function paintPreview() {
