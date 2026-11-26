@@ -561,8 +561,8 @@
   L.i18n({
     ko: { 'nav.l26_home': 'HOME', 'nav.l26_live': 'LIVE', 'nav.l26_lounge': '라운지', 'nav.l26_my': 'MY', 'nav.l26_play': '놀거리' },
     en: { 'nav.l26_home': 'HOME', 'nav.l26_live': 'LIVE', 'nav.l26_lounge': 'Lounge', 'nav.l26_my': 'MY', 'nav.l26_play': 'Play' },
-    ja: { 'nav.l26_home': 'HOME', 'nav.l26_live': 'LIVE', 'nav.l26_lounge': 'ラウンジ', 'nav.l26_my': 'MY', 'nav.l26_play': '遊び' },
-    zh: { 'nav.l26_home': 'HOME', 'nav.l26_live': 'LIVE', 'nav.l26_lounge': '休息室', 'nav.l26_my': 'MY', 'nav.l26_play': '娱乐' }
+    ja: { 'nav.l26_home': 'ホーム', 'nav.l26_live': 'ライブ', 'nav.l26_lounge': 'ラウンジ', 'nav.l26_my': 'マイページ', 'nav.l26_play': '遊び' },
+    zh: { 'nav.l26_home': '首页', 'nav.l26_live': '现场', 'nav.l26_lounge': '休息室', 'nav.l26_my': '我的', 'nav.l26_play': '娱乐' }
   });
 
   // Stub screens keep the current destinations reachable until their lanes supply content.
