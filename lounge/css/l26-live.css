@@ -37,29 +37,6 @@
 .l26-live-links { display: flex; flex-wrap: wrap; gap: 0 16px; }
 .l26-live-links a { display: inline-flex; align-items: center; min-height: 38px; }
 
-.l26-live-entry {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-}
-
-.l26-live-entry h2 { margin: 0; }
-.l26-live-entry img {
-  grid-column: 1 / -1;
-  justify-self: center;
-  width: min(100%, 240px);
-  height: auto;
-  background: #fff;
-  image-rendering: pixelated;
-}
-
-.l26-live-entry p { grid-column: 1 / -1; }
-.l26-live-entry p:empty { display: none; }
-
 .l26-live-choice button {
   display: block;
   color: inherit;
