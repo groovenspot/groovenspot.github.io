@@ -8681,7 +8681,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   async function loungeRequest(action, body, session) {
     const token = session ? await loungeToken(session) : '';
     if (session && state.s?.token !== session) throw new Error('auth');
-    const res = await fetch(loungeUrl(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    const res = await fetch(loungeUrl(), { method: 'POST', ...(action === 'config' && { signal: AbortSignal.timeout(5000) }), headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
       body: JSON.stringify({ ...body, a: action, ...(token && { admin: token }) }) });
     if (!res.ok) throw new Error('net');
     const result = await res.json();
@@ -8721,6 +8721,9 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       merch: '술과 술 교환권은 등록할 수 없어요. / Alcohol and vouchers for alcohol are excluded.',
       key: '서버에서 이 설정을 아직 받지 않아요. / This setting is not yet supported.',
       missing: '대상을 찾을 수 없어요. / This item could not be found.',
+      entry_closed: '영업 시간에만 입장을 인증할 수 있어요. / Entry verification is available during business hours.',
+      entry_qr: 'QR을 쓸 수 없어요. 손님에게 새 QR을 받아 주세요. / Ask the guest for a new QR.',
+      entry_duplicate: '이번 영업일에 이미 입장을 인증했어요. / Entry is already verified for this business day.',
       qr_closed: '영업 시간에만 가입할 수 있어요. / Sign-up opens during club hours.',
       auth: '다시 로그인해 주세요. / Sign in again.',
       forbidden: '이 작업을 할 권한이 없어요. / You don’t have access.',
@@ -8761,11 +8764,24 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   function loungeButton(label, attrs = '', hot = false) {
     return '<button class="btn' + (hot ? ' btn-hot' : '') + '" ' + attrs + '>' + label + '</button>';
   }
+  let entryConfig, entryConfigAt = 0, entryConfigPending;
+  function loungeEntryConfig() {
+    if (entryConfigPending || Date.now() - entryConfigAt < 30_000) return;
+    entryConfigAt = Date.now();
+    entryConfigPending = loungeRequest('config').then(result => result.open || {}, () => ({})).then(config => {
+      entryConfig = config;
+      document.querySelectorAll('[data-lounge="entry"]').forEach(button => { button.hidden = config.l26_entry !== true; });
+      document.querySelectorAll('[data-lounge="checkin"]').forEach(button => { button.hidden = config.l26_entry === true; });
+      document.querySelectorAll('[data-entry-metrics]').forEach(button => { button.hidden = config.l26_metrics !== true; });
+      loungeQuick();
+    }).finally(() => { entryConfigPending = null; });
+  }
   function loungeMenu() {
     if (!state.s) return '';
     const roles = loungeRoles();
     const links = [['join', '손님 가입 QR / Guest sign-up QR', 'users']];
-    if (roles.checkin) links.push(['checkin', '입구 체크인 QR / Check-in QR', 'shield']);
+    if (roles.checkin) links.push(['checkin', '입구 체크인 QR / Check-in QR', 'shield'],
+      ['entry', '입장 QR 스캔 / Scan entry QR', 'shield']);
     if (roles.dj || roles.crowd || roles.line) links.push(['tonight', '오늘 밤 입력 / Tonight setup', 'clock']);
     if (roles.manage) links.push(['manage', '손님 라운지 관리 / Manage Lounge', 'note']);
     else if (roles.vote) links.push(['vote', '투표 만들기 / Create vote', 'note']);
@@ -8775,12 +8791,15 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     links.push(['guide', '라운지 1분 안내 / Lounge guide', 'info']);
     return loungeLinkBand() + '<div class="lounge-menu">' + links.map(([page, label, icon]) =>
       loungeButton(opIco(icon) + ' ' + label + (page === 'manage' ? loungeReportBadge() : ''),
-        'type="button" data-lounge="' + page + '"')).join('') + '</div>';
+        'type="button" data-lounge="' + page + '"' +
+        ((page === 'entry' && entryConfig?.l26_entry !== true) || (page === 'checkin' && entryConfig?.l26_entry === true) ? ' hidden' : ''))).join('') + '</div>';
   }
   function loungeQuick() {
     const area = $('loungeQuick');
     if (!state.s || state.pop || state.tab === 'dm') { area.hidden = true; return; }
     const roles = loungeRoles(), links = [];
+    if (roles.checkin) loungeEntryConfig();
+    if (roles.checkin && entryConfig?.l26_entry === true) links.push(['entry', '입장 QR 스캔', 'Scan entry QR', 'shield']);
     if (roles.dj || roles.crowd || roles.line) links.push(['tonight', '오늘 밤', 'Tonight', 'clock']);
     if (roles.manage) links.push(['reports', '라운지 검수', 'Review', 'note'], ['display', '전광판', 'Display', 'tv']);
     area.hidden = !links.length;
@@ -8791,7 +8810,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       '<span class="lounge-quick-icon">' + opIco(icon) + (page === 'reports' ? loungeReportBadge() : '') + '</span>' +
       '<span>' + ko + '<small>' + en + '</small></span>',
       'type="button" data-quick-lounge="' + page + '"')).join('');
-    const screens = { tonight: loungeTonight, reports: loungeManage, display: () => loungeManage('display') };
+    const screens = { entry: loungeEntryScanner, tonight: loungeTonight, reports: loungeManage, display: () => loungeManage('display') };
     area.querySelectorAll('button').forEach(button => { button.onclick = screens[button.dataset.quickLounge]; });
     if (roles.manage) { loungePaintReportBadges(); loungeRefreshReportBadges(); }
   }
@@ -8823,6 +8842,165 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       }
     }
   }
+  let entryDecoder;
+  function loadEntryDecoder() {
+    if (window.jsQR) return Promise.resolve(window.jsQR);
+    entryDecoder ||= new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = '/assets/vendor/jsqr-1.4.0.js';
+      script.onload = () => window.jsQR ? resolve(window.jsQR) : reject(new Error('qr'));
+      script.onerror = reject;
+      document.head.append(script);
+    }).catch(error => { entryDecoder = null; throw error; });
+    return entryDecoder;
+  }
+
+  function loungeEntryScanner() {
+    const session = state.s?.token;
+    if (!session || !loungeRoles().checkin || entryConfig?.l26_entry !== true) return;
+    const root = loungeSheet('입장 QR 스캔 / Scan entry QR',
+      '<div class="lounge-body"><video playsinline muted hidden aria-label="카메라 / Camera" style="width:100%;max-height:50dvh"></video>' +
+      loungeButton('카메라 켜기 / Start camera', 'type="button" data-entry-camera', true) +
+      '<label>QR 사진 / QR photo <input type="file" accept="image/*" capture="environment" data-entry-photo></label>' +
+      loungeButton('같은 요청 다시 보내기 / Retry scan', 'type="button" data-entry-retry hidden') + '</div>');
+    const video = root.querySelector('video'), msg = root.querySelector('.lounge-msg');
+    const camera = root.querySelector('[data-entry-camera]'), photo = root.querySelector('[data-entry-photo]');
+    const retry = root.querySelector('[data-entry-retry]');
+    const frame = document.createElement('canvas'), pen = frame.getContext('2d', { willReadFrequently: true });
+    const live = () => root.isConnected && state.s?.token === session;
+    let stream, ticker, attempt, pending, reading = false, cameraRun = 0;
+
+    function stopCamera() {
+      cameraRun++;
+      clearInterval(ticker);
+      stream?.getTracks().forEach(track => track.stop());
+      stream = null;
+      video.srcObject = null;
+      video.hidden = true;
+      camera.textContent = '카메라 켜기 / Start camera';
+    }
+
+    function updateControls() {
+      camera.disabled = pending || reading || !!attempt;
+      photo.disabled = pending || reading || !!attempt;
+      retry.hidden = !attempt;
+      retry.disabled = pending;
+    }
+
+    const observer = new MutationObserver(() => {
+      if (live()) return;
+      stopCamera();
+      attempt = null;
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+    });
+    observer.observe($('sheet'), { childList: true, attributes: true, attributeFilter: ['hidden'] });
+    function onVisibility() {
+      if (document.hidden) stopCamera();
+    }
+    document.addEventListener('visibilitychange', onVisibility);
+
+    function decode(source, width, height, scan) {
+      const scale = Math.min(1, 960 / Math.max(width, height));
+      frame.width = Math.max(1, Math.round(width * scale));
+      frame.height = Math.max(1, Math.round(height * scale));
+      pen.drawImage(source, 0, 0, frame.width, frame.height);
+      const image = pen.getImageData(0, 0, frame.width, frame.height);
+      try { return scan(image.data, image.width, image.height, { inversionAttempts: 'dontInvert' })?.data; }
+      finally { frame.width = 0; }
+    }
+
+    async function submit() {
+      if (!live() || pending || !attempt) return;
+      pending = true;
+      updateControls();
+      msg.textContent = '입장 확인 중… / Verifying entry…';
+      try {
+        const result = await loungeStaff(session, 'l26_entry_scan', attempt);
+        if (!live()) return;
+        attempt = null;
+        msg.textContent = result.ok ? '입장 인증 완료 / Entry verified' : loungeError(new Error('server'));
+      } catch (error) {
+        if (!live()) return;
+        const transient = ['busy', 'net', 'server'].includes(error.message) || error instanceof TypeError;
+        if (!transient) attempt = null;
+        msg.textContent = loungeError(error);
+      } finally {
+        pending = false;
+        if (live()) updateControls();
+      }
+    }
+
+    function accept(qr) {
+      if (typeof qr !== 'string' || !/^l26\.[A-Za-z0-9_-]{43}$/.test(qr)) {
+        msg.textContent = '손님 앱의 입장 QR을 보여 주세요. / Scan an Entry QR from the guest app.';
+        return;
+      }
+      stopCamera();
+      attempt = { qr, request_id: newRid() };
+      submit();
+    }
+
+    retry.onclick = submit;
+    camera.onclick = async () => {
+      if (stream) return stopCamera();
+      const run = ++cameraRun;
+      camera.disabled = true;
+      let next;
+      try {
+        const scan = await loadEntryDecoder();
+        if (!live() || document.hidden || run !== cameraRun) return;
+        next = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+        if (!live() || document.hidden || run !== cameraRun) {
+          next.getTracks().forEach(track => track.stop());
+          return;
+        }
+        stream = next;
+        video.srcObject = stream;
+        video.hidden = false;
+        await video.play();
+        if (!live() || run !== cameraRun) return;
+        camera.textContent = '카메라 끄기 / Stop camera';
+        msg.textContent = '';
+        ticker = setInterval(() => {
+          if (!live() || document.hidden) return stopCamera();
+          if (video.readyState < 2 || !video.videoWidth) return;
+          const qr = decode(video, video.videoWidth, video.videoHeight, scan);
+          if (qr) accept(qr);
+        }, 180);
+      } catch {
+        if (run === cameraRun) {
+          stopCamera();
+          msg.textContent = '카메라를 열 수 없어요. QR 사진을 선택해 주세요. / Camera unavailable. Choose a QR photo.';
+        }
+      } finally {
+        if (live()) updateControls();
+      }
+    };
+
+    photo.onchange = async () => {
+      const file = photo.files[0];
+      photo.value = '';
+      if (!file || pending || reading || attempt) return;
+      stopCamera();
+      reading = true;
+      updateControls();
+      let image;
+      try {
+        const scan = await loadEntryDecoder();
+        if (!live()) return;
+        image = await createImageBitmap(file);
+        if (live()) accept(decode(image, image.width, image.height, scan));
+      } catch {
+        if (live()) msg.textContent = '사진을 읽을 수 없어요. / Could not read the photo.';
+      } finally {
+        image?.close();
+        reading = false;
+        if (live()) updateControls();
+      }
+    };
+  }
+
   async function loungeQr(checkin) {
     const session = state.s.token;
     const sales = SALES.includes(state.s.team);
@@ -10588,6 +10766,31 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     load.onclick = () => refresh();
     refresh();
   }
+  async function loungeEntryMetrics(panel, request) {
+    const data = await request('adm_l26_metrics');
+    if (!panel.isConnected) return;
+    const labels = {
+      d1: 'D1 전경 이용 / D1 activity', d7: 'D7 전경 이용 / D7 activity',
+      reconnect_7d: '7일 내 재접속 / Reconnect within 7 days', revisit_14d: '14일 내 인증 재방문 / Verified revisit within 14 days'
+    };
+    const format = new Intl.NumberFormat('ko-KR', { style: 'percent', maximumFractionDigits: 1 });
+    function rows(metrics) {
+      return Object.entries(labels).filter(([key]) => metrics[key]).map(([key, label]) => {
+        const value = metrics[key];
+        const rate = value.rate === null ? '미측정 / Unmeasured' : format.format(value.rate);
+        const observed = value.observation_complete === null ? '표본 없음 / No sample' : value.observation_complete ?
+          '관찰 완료 / Complete' : '관찰 중 / In progress';
+        return '<article><b>' + label + ' · ' + rate + '</b><p>성공 / Numerator ' + loungeCount(value.numerator) +
+          ' · 분모 / Denominator ' + loungeCount(value.denominator) + ' · 표본 / Sample ' + loungeCount(value.sample_size) +
+          '</p><p>' + observed + '</p></article>';
+      }).join('');
+    }
+    panel.innerHTML = '<p class="note">' + esc(data.from) + ' ~ ' + esc(data.to) + ' · KST 08:00</p>' +
+      '<div class="lounge-list">' + rows(data.metrics) + '</div>' +
+      (data.cohorts.length ? '<details><summary>영업일별 코호트 / Daily cohorts</summary>' + data.cohorts.map(cohort =>
+        '<section class="lounge-list"><h3>' + esc(cohort.biz_day) + '</h3>' + rows(cohort.metrics) + '</section>').join('') + '</details>' : '');
+  }
+
   function loungeManage(initial = 'reports') {
     if (!state.s) return;
     const roles = loungeRoles();
@@ -10608,12 +10811,13 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       ['display', '전광판 예약 / Display'], ['stats', '통계 / Stats'],
       ['analytics', state.s.admin ? '설문 · 주간 / Reports' : '설문 결과 / Surveys']];
     tabs.push(['play', '놀거리 / Play'], ['stages', '단계 스위치 / Feature switches']);
-    if (state.s.admin) tabs.push(['settings', '포인트 · 라디오 / Settings']);
+    if (state.s.admin) tabs.push(['metrics', '입장 · 재방문 지표 / Entry and retention'], ['settings', '포인트 · 라디오 / Settings']);
     const screens = {
       reports: panel => loungeReports(panel, session), rooms: panel => loungeRooms(panel, request),
       members: panel => loungeMemberSearch(panel, session), resetqr: panel => loungeResetQr(panel, session),
       boundreset: panel => loungeBoundRecovery(panel, session),
       stats: panel => loungeStats(panel, session),
+      metrics: panel => loungeEntryMetrics(panel, request),
       programming: panel => loungeProgramming(panel, request), rewards: panel => loungeRewardSetup(panel, session, request),
       analytics: panel => loungeAnalytics(panel, request),
       orders: panel => loungeFulfillment(panel, session, request, true),
@@ -10624,7 +10828,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     };
     const primary = ['reports', 'rooms', 'display'];
     const navButton = ([tab, label]) => loungeButton(label + (tab === 'reports' ? loungeReportBadge() : ''),
-      'type="button" data-admin-tab="' + tab + '"');
+      'type="button" data-admin-tab="' + tab + '"' +
+      (tab === 'metrics' ? ' data-entry-metrics' + (entryConfig?.l26_metrics === true ? '' : ' hidden') : ''));
     const root = loungeSheet('손님 라운지 관리 / Manage Lounge', '<nav class="lounge-nav" aria-label="관리 메뉴 / Management">' +
       '<div class="lounge-tabs lounge-main-tabs">' + primary.map(id => navButton(tabs.find(([tab]) => tab === id))).join('') + '</div>' +
       '<details class="lounge-nav-extra"><summary>관리 메뉴 더 보기 / More tools</summary><div class="lounge-tabs">' +
@@ -10787,7 +10992,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       '<li>같은 손님에게 반복 메시지</li><li>술 강요 문구</li></ul></section></div>');
   }
   function bindLoungeMenu(area) {
-    const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), tonight: loungeTonight, manage: loungeManage,
+    const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), entry: loungeEntryScanner, tonight: loungeTonight, manage: loungeManage,
       vote: () => loungeManage('vote'), sales: loungeSales, linked: loungeLinkStatus, partners: loungePartnerSheet, guide: loungeGuide };
     area.querySelectorAll('[data-lounge]').forEach(b => { b.onclick = screens[b.dataset.lounge]; });
     if (area.querySelector('[data-lounge-band]')) loungeLinkLoad().catch(() => {});   // 연결 띠: 내가 미연결일 때만 (실패하면 조용히 숨김)
