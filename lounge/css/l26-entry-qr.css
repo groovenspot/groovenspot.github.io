@@ -1,0 +1,30 @@
+.l26-entry-qr {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.l26-entry-qr [hidden], .l26-entry-qr[hidden] { display: none; }
+.l26-entry-qr h2, .l26-entry-qr p { margin: 0; }
+.l26-entry-qr img, .l26-entry-qr p { grid-column: 1 / -1; }
+.l26-entry-qr img {
+  justify-self: center;
+  width: min(100%, 259px);
+  height: auto;
+  background: #fff;
+  image-rendering: pixelated;
+}
+.l26-entry-qr [data-entry-countdown] {
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.l26-entry-qr.is-verified [role=status] {
+  font-size: 1.2rem;
+  font-weight: 800;
+}

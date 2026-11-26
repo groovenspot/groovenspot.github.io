@@ -2748,6 +2748,26 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
 .lounge-screen .lounge-report-meta { margin: 6px 0 0; }
 .lounge-screen [data-chat-report] input[name=note] { margin-top: 10px; }
 .lounge-cards :is([data-chat-report], [data-chat-banned]) .lounge-msg:empty { display: none; }
+
+.lounge-entry-result {
+  padding: 14px;
+  border: 2px solid currentColor;
+  border-radius: 12px;
+  color: #fff;
+  background: #292733;
+}
+.lounge-entry-result:empty { display: none; }
+.lounge-entry-result strong {
+  display: block;
+  font-size: clamp(1.4rem, 6vw, 2rem);
+  line-height: 1.25;
+}
+.lounge-entry-result span { display: block; margin-top: 4px; font-size: 1rem; }
+.lounge-entry-result[data-result="success"] { background: #12452c; color: #d6ffe4; }
+.lounge-entry-result[data-result="expired"] { background: #563507; color: #ffecbd; }
+.lounge-entry-result[data-result="duplicate"] { background: #203e60; color: #e1f0ff; }
+.lounge-entry-result[data-result="denied"] { background: #5a1924; color: #ffe1e6; }
+
 .lounge-ban-now { margin: 8px 0; color: var(--warn); font-weight: 800; }
 .lounge-screen .lounge-ban-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 8px; }
 .lounge-screen .lounge-ban-steps .btn { flex-direction: column; gap: 2px; padding: 6px 4px; font-size: 13px; word-break: keep-all; overflow-wrap: normal; }
@@ -8991,6 +9011,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       '<label>QR 사진 / QR photo <input type="file" accept="image/*" capture="environment" data-entry-photo></label>' +
       loungeButton('같은 요청 다시 보내기 / Retry scan', 'type="button" data-entry-retry hidden') + '</div>');
     const video = root.querySelector('video'), msg = root.querySelector('.lounge-msg');
+    msg.classList.add('lounge-entry-result');
     const camera = root.querySelector('[data-entry-camera]'), photo = root.querySelector('[data-entry-photo]');
     const retry = root.querySelector('[data-entry-retry]');
     const frame = document.createElement('canvas'), pen = frame.getContext('2d', { willReadFrequently: true });
@@ -9005,6 +9026,15 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       video.srcObject = null;
       video.hidden = true;
       camera.textContent = '카메라 켜기 / Start camera';
+    }
+
+    function scanResult(state, title, detail) {
+      msg.dataset.result = state;
+      const heading = document.createElement('strong');
+      heading.textContent = title;
+      const hint = document.createElement('span');
+      hint.textContent = detail;
+      msg.replaceChildren(heading, hint);
     }
 
     function updateControls() {
@@ -9041,17 +9071,31 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       if (!live() || pending || !attempt) return;
       pending = true;
       updateControls();
-      msg.textContent = '입장 확인 중… / Verifying entry…';
+      scanResult('pending', '입장 확인 중…', 'Verifying entry…');
       try {
         const result = await loungeStaff(session, 'l26_entry_scan', attempt);
         if (!live()) return;
+        if (!result.ok) throw new Error('server');
         attempt = null;
-        msg.textContent = result.ok ? '입장 인증 완료 / Entry verified' : loungeError(new Error('server'));
+        scanResult('success', '입장 인증 완료', 'Entry verified');
       } catch (error) {
         if (!live()) return;
         const transient = ['busy', 'net', 'server'].includes(error.message) || error instanceof TypeError;
         if (!transient) attempt = null;
-        msg.textContent = loungeError(error);
+        switch (error.message) {
+          case 'entry_qr':
+            scanResult('expired', 'QR 만료 또는 무효', '손님에게 새 QR을 받아 주세요. / Ask the guest for a new QR.');
+            break;
+          case 'entry_duplicate':
+            scanResult('duplicate', '이미 인증된 입장', '오늘 입장 인증이 완료됐어요. / Entry already verified today.');
+            break;
+          case 'forbidden':
+          case 'auth':
+            scanResult('denied', '스캔 권한 없음', loungeError(error));
+            break;
+          default:
+            scanResult('failed', '입장 인증 실패', loungeError(error));
+        }
       } finally {
         pending = false;
         if (live()) updateControls();

@@ -14,12 +14,6 @@
     noSchedule: ['등록된 일정 없음', 'No schedule listed', '予定なし', '暂无演出安排'],
     showStale: ['마지막으로 받은 공연 정보예요.', 'Showing the last received show info.', '最後に取得した公演情報です。', '正在显示上次获取的演出信息。'],
     showError: ['공연 정보를 불러오지 못했어요.', 'Show info is unavailable.', '公演情報を取得できませんでした。', '无法获取演出信息。'],
-    qr: ['입장 QR', 'Entry QR', '入場QR', '入场二维码'],
-    showQr: ['QR 띄우기', 'Show QR', 'QRを表示', '显示二维码'],
-    staff: ['입구 직원에게 보여 주세요.', 'Show this to staff at the entrance.', '入口のスタッフに提示してください。', '请向入口工作人员出示。'],
-    qrExpired: ['입장 QR이 만료됐어요. 다시 발급해 주세요.', 'Your entry QR expired. Request a new one.', '入場QRの期限が切れました。再発行してください。', '入场二维码已过期，请重新获取。'],
-    verified: ['입장이 확인됐어요.', 'Entry verified.', '入場確認済みです。', '入场已验证。'],
-    qrError: ['입장 QR을 불러오지 못했어요.', 'Entry QR is unavailable.', '入場QRを取得できませんでした。', '无法获取入场二维码。'],
     vote: ['층 응원 투표', 'Floor vote', 'フロア応援投票', '楼层应援投票'],
     hours: ['21:00–다음 날 07:00 (KST)', '21:00–07:00 next day (KST)', '21:00–翌07:00 (KST)', '21:00–次日07:00 (KST)'],
     final: ['{day} 최종 결과', '{day} final result', '{day} 最終結果', '{day} 最终结果'],
@@ -46,7 +40,7 @@
   const countLabel = value => new Intl.NumberFormat(L.lang).format(value);
   const loginLink = () => '#/login?next=' + encodeURIComponent('#/l26_live');
 
-  let controller, qrLibrary, retryVote;
+  let controller, entryScript, retryVote;
   function loadStyles() {
     if (document.querySelector('link[href="/lounge/css/l26-live.css"]')) return;
     const link = document.createElement('link');
@@ -56,16 +50,16 @@
     document.head.append(link);
   }
 
-  function loadQr() {
-    if (typeof window.qrcode === 'function') return Promise.resolve(window.qrcode);
-    qrLibrary ||= new Promise((resolve, reject) => {
+  function loadEntry() {
+    if (L.mountEntryQr) return Promise.resolve();
+    entryScript ||= new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = '/assets/vendor/qrcode-generator-1.4.4.js';
-      script.onload = () => typeof window.qrcode === 'function' ? resolve(window.qrcode) : reject(new Error('qr'));
-      script.onerror = () => { script.remove(); reject(new Error('qr')); };
+      script.src = '/lounge/l26-entry-qr.js';
+      script.onload = resolve;
+      script.onerror = () => { script.remove(); reject(new Error('entry')); };
       document.head.append(script);
-    }).catch(error => { qrLibrary = null; throw error; });
-    return qrLibrary;
+    }).catch(error => { entryScript = null; throw error; });
+    return entryScript;
   }
 
   // The shared API owns session handling. Bound how long LIVE waits for a reply.
@@ -91,64 +85,6 @@
         '</ul>' : '<p class="muted">' + t('noSchedule') + '</p>') + '</details>';
   }
 
-  function mountEntry(root, active, updateVote) {
-    if (!L.open('l26_entry')) return () => {};
-    const section = root.querySelector('[data-live-entry]');
-    const button = section.querySelector('button');
-    const message = section.querySelector('[role=status]');
-    const image = section.querySelector('img');
-    let expiry;
-    section.hidden = false;
-    if (!L.me) {
-      button.hidden = true;
-      section.querySelector('a').hidden = false;
-    }
-    button.onclick = async () => {
-      if (!L.me) { L.go('login?next=' + encodeURIComponent('#/l26_live')); return; }
-      const member = L.me.id;
-      button.disabled = true;
-      message.textContent = t('loading');
-      const result = await request('l26_entry_issue');
-      if (!active()) return;
-      if (result.error === 'auth') { L.go('login?next=' + encodeURIComponent('#/l26_live')); return; }
-      if (L.me?.id !== member) { button.disabled = false; return; }
-      if (result.ok && result.verified === true) {
-        button.hidden = true;
-        message.textContent = t('verified');
-        updateVote();
-        return;
-      }
-      try {
-        if (!result.ok || typeof result.qr !== 'string' || !result.qr || result.qr.length > 2048 ||
-            !Number.isSafeInteger(result.expires_at) || result.expires_at <= Date.now()) throw new Error('qr');
-        const makeQr = await loadQr();
-        if (!active() || L.me?.id !== member) return;
-        if (result.expires_at <= Date.now()) throw new Error('qr');
-        const qr = makeQr(0, 'M');
-        qr.addData(result.qr, 'Byte');
-        qr.make();
-        image.src = qr.createDataURL(6, 24);
-        image.hidden = false;
-        button.hidden = true;
-        message.textContent = t('staff');
-        expiry = setTimeout(() => {
-          image.hidden = true;
-          image.removeAttribute('src');
-          button.hidden = false;
-          message.textContent = t('qrExpired');
-        }, result.expires_at - Date.now());
-      } catch {
-        if (active()) message.textContent = t('qrError');
-      } finally {
-        if (active()) button.disabled = false;
-      }
-    };
-    return () => {
-      clearTimeout(expiry);
-      image.removeAttribute('src');
-    };
-  }
-
   function render(root) {
     loadStyles();
     root.className = 'l26-screen l26-live';
@@ -160,9 +96,7 @@
       '</div><p class="muted" data-live-show-stale hidden>' + t('showStale') + '</p><nav class="l26-live-links"><a href="#/tonight">' + t('tonight') + '</a><a href="#/lineup">' +
       t('schedule') + '</a><a href="#/djs">' + t('djs') + '</a>' +
       (L.open('sales') ? '<a href="#/table">' + t('table') + '</a>' : '') + '</nav></section>' +
-      '<section class="l26-live-entry" data-live-entry hidden><h2>' + t('qr') + '</h2><button type="button" class="btn">' +
-      t('showQr') + '</button><a href="' + loginLink() + '" hidden>' + L.esc(L.t('core.login')) + '</a>' +
-      '<img alt="' + t('qr') + '" hidden><p class="muted" role="status"></p></section>' +
+      '<section data-live-entry hidden></section>' +
       '<section data-live-vote hidden aria-labelledby="l26-live-vote"><h2 id="l26-live-vote">' + t('vote') + '</h2>' +
       '<p class="muted">' + t('hours') + '</p><div class="l26-live-grid">' +
       floors.map(([floor, genre]) => '<article class="l26-live-choice" data-l26-floor="' + floor +
@@ -182,7 +116,7 @@
       count: vote.querySelector('[data-live-count="' + floor + '"]')
     }));
     let timer, round, failures = 0, revision = 0, stopped = false, sending = false, hint, readPending = false;
-    let showPending = false, showKey;
+    let showPending = false, showKey, entry, refreshQueued = false;
     const active = () => !stopped && root.isConnected;
     const expiryDelay = () => round?.closes_at - round?.updated_at - (performance.now() - round?.receivedAt);
     const currentRetry = () => retryVote?.day === round?.biz_day && retryVote?.member === L.me?.id ? retryVote : null;
@@ -233,7 +167,9 @@
     }
 
     async function refresh() {
-      if (!active() || vote.hidden || document.hidden || sending || readPending) return;
+      if (!active() || vote.hidden || document.hidden || sending) return;
+      if (readPending) { refreshQueued = true; return; }
+      refreshQueued = false;
       clearTimeout(timer);
       readPending = true;
       const observedRevision = revision;
@@ -248,6 +184,7 @@
       }
       if (!absorb(result)) failures++;
       paint();
+      if (refreshQueued) { refresh(); return; }
       schedule(failures ? Math.min(60_000, pollMs * 2 ** (failures - 1)) : Math.max(0, pollMs - (performance.now() - started)));
     }
 
@@ -319,22 +256,36 @@
 
     function visible() {
       if (document.hidden) clearTimeout(timer);
-      else { loadShow(); refresh(); }
+      else { loadShow(); refresh(); if (!entry) mountEntry(); }
     }
     function offline() {
       if (vote.hidden) return;
       failures = Math.max(1, failures);
       paint();
     }
-    const closeEntry = mountEntry(root, active, refresh);
+    async function mountEntry() {
+      if (!L.open('l26_entry')) return;
+      try {
+        await loadEntry();
+      } catch {
+        return;
+      }
+      if (active() && !entry) {
+        entry = L.mountEntryQr(root.querySelector('[data-live-entry]'), {
+          loginHref: loginLink(),
+          onVerified: refresh
+        });
+      }
+    }
+    mountEntry();
     const showTimer = setInterval(loadShow, 60_000);
     controller = {
-      refresh() { loadShow(); refresh(); },
+      refresh() { loadShow(); refresh(); if (entry) entry.refresh(); else mountEntry(); },
       leave() {
         stopped = true;
         clearTimeout(timer);
         clearInterval(showTimer);
-        closeEntry();
+        entry?.destroy();
         document.removeEventListener('visibilitychange', visible);
         window.removeEventListener('online', visible);
         window.removeEventListener('offline', offline);
