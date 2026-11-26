@@ -574,7 +574,7 @@
     L.setToken(result.token);
     L.me = result.me;
     if (result.me.lang) L.setLang(result.me.lang);
-    await L.refreshConfig();
+    await L.refreshConfig?.();
     L.go(/^#\/(?!login|staff-login)/.test(params.next || '') ? params.next : home());
   }
   function staffScreen(root, params) {

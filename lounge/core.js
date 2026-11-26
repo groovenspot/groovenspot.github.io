@@ -546,8 +546,10 @@
 
   function paintPreview() {
     var badge = document.getElementById('lounge-preview');
-    badge.hidden = !preview;
-    badge.textContent = preview ? L.t('core.preview') : '';
+    if (badge) {
+      badge.hidden = !preview;
+      badge.textContent = preview ? L.t('core.preview') : '';
+    }
     document.querySelectorAll('[data-lounge-preview-toggle]').forEach(button => {
       button.hidden = !previewEligible;
       button.textContent = L.t(preview ? 'core.previewLegacy' : 'core.previewNew');

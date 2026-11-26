@@ -681,7 +681,7 @@
       const url = new URL('ws', new URL((window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/').replace(/\/$/, '') + '/', location.href));
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       url.searchParams.set('ch', channel);
-      if (L.previewMode()) url.searchParams.set('preview_mode', L.previewMode());
+      if (L.previewMode?.()) url.searchParams.set('preview_mode', L.previewMode());
       url.searchParams.set('live', '1');
       if (result.ticket) url.searchParams.set('ticket', result.ticket);
       else if (result.error === 'ticket_off') url.searchParams.set('token', token);

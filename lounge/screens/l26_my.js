@@ -168,7 +168,7 @@
 
   function benefitCard(item, enabled) {
     const available = item.status === 'available' && enabled;
-    const code = ['requested', 'confirmed'].includes(item.status);
+    const code = item.code && ['requested', 'confirmed'].includes(item.status);
     const deadline = item.expires_at
       ? text('expires', { date: new Date(item.expires_at + 9 * 3_600_000).toISOString().slice(0, 10) })
       : text('validity', { days: item.validity_days });

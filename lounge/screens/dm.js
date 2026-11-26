@@ -66,7 +66,7 @@
       const url = apiURL('ws');
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       url.searchParams.set('ch', 'dm');
-      if (L.previewMode()) url.searchParams.set('preview_mode', L.previewMode());
+      if (L.previewMode?.()) url.searchParams.set('preview_mode', L.previewMode());
       if (result.ticket) url.searchParams.set('ticket', result.ticket);
       else if (result.error === 'ticket_off') url.searchParams.set('token', current);
       else {
@@ -213,7 +213,7 @@
     if (session !== token()) throw new Error('auth');
     const url = apiURL('dm-upload');
     url.search = new URLSearchParams({ token: session, nick });
-    if (L.previewMode()) url.searchParams.set('preview_mode', L.previewMode());
+    if (L.previewMode?.()) url.searchParams.set('preview_mode', L.previewMode());
     const response = await fetch(url, { method: 'POST', body: blob, referrerPolicy: 'no-referrer' });
     const result = await response.json();
     if (!response.ok || !result.key) throw new Error(result.error || 'photo');
