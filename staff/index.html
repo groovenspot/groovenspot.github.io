@@ -8701,7 +8701,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   async function loungeRequest(action, body, session) {
     const token = session ? await loungeToken(session) : '';
     if (session && state.s?.token !== session) throw new Error('auth');
-    const res = await fetch(loungeUrl(), { method: 'POST', ...(action === 'config' && { signal: AbortSignal.timeout(5000) }), headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    const timedRead = action === 'config' || action === 'adm_l26_entry_ops';
+    const res = await fetch(loungeUrl(), { method: 'POST', ...(timedRead && { signal: AbortSignal.timeout(5000) }), headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
       body: JSON.stringify({ ...body, a: action, ...(token && { admin: token }) }) });
     if (!res.ok) throw new Error('net');
     const result = await res.json();
@@ -11605,8 +11606,61 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   // ── 📡 전체 (대표만, 2026-11-18): 누구에게 어떤 알림이 갔는지 + 테이블·연출·게스트 대화를 한 화면에. 켜 두면 5초마다 새로 ──
   var ALL_F = [['', '전체'], ['al', '🔔 알림'], ['sos', '🚨 경호'], ['ops', '🛎 운영'], ['urg', '🆘 긴급모집'], ['where', '📍 위치'], ['move', '🔀 자리 이동'], ['live', '🎬 실시간'], ['keep', '🍾 킵'], ['table', '🪑 테이블'], ['yc', '🎆 연출'], ['guest', '👥 게스트']];   // 2026-11-19 업데이트
   var ALL_TABS = ['ops', 'live', 'gate', 'guest', 'table', 'yc', 'lost', 'board', 'dm', 'edu', 'notes', 'dec', 'acc', 'keep', 'me', 'work'];
+  let entryOpsSnapshot, entryOpsPending;
+  async function loadEntryOps(session) {
+    if (entryOpsPending === session) return;
+    entryOpsPending = session;
+    let data;
+    try {
+      data = await loungeRequest('adm_l26_entry_ops', {}, session);
+    } catch {
+      data = null;
+    } finally {
+      if (entryOpsPending === session) entryOpsPending = null;
+    }
+    if (state.s?.token !== session) return;
+    const signature = JSON.stringify(data);
+    if (entryOpsSnapshot?.session === session && entryOpsSnapshot.signature === signature) return;
+    entryOpsSnapshot = { session, data, signature };
+    const panel = $('allEntryOps');
+    if (state.tab === 'all' && panel) panel.outerHTML = entryOpsHtml();
+  }
+  function entryOpsHtml() {
+    const snapshot = entryOpsSnapshot?.session === state.s?.token ? entryOpsSnapshot : null;
+    const data = snapshot?.data;
+    const hot = data?.alerts?.scan_success_rate_low || data?.alerts?.scan_processing_slow;
+    const start = '<section class="bd' + (hot ? ' hot' : '') + '" id="allEntryOps" aria-label="라운지 입장 운영 지표">' +
+      '<div class="bdr"><b>라운지 입장 운영 지표</b>' + (data ? '<span>' + esc(data.biz_day) + ' · 08:00 KST</span>' : '') + '</div>';
+    if (!data) return start + '<p class="note">' + (snapshot ? '운영 지표를 불러오지 못했어요.' : '운영 지표를 불러오는 중…') + '</p></section>';
+    const flags = data.switches;
+    const flag = key => '<code>' + key + '</code> ' + (flags[key] ? 'ON' : 'OFF');
+    const switches = '<p class="note">' + flag('l26_entry') + ' · ' + flag('l26_metrics') + '</p>';
+    if (!flags.l26_metrics) return start + switches + '<p class="note">지표 수집 꺼짐</p></section>';
+    const { entry_verification: members, scan_requests: scan, scan_processing_ms: timing, alerts } = data;
+    const percent = new Intl.NumberFormat('ko-KR', { style: 'percent', maximumFractionDigits: 2 });
+    const rate = value => value === null ? '미측정' : percent.format(value);
+    const ms = value => value === null ? '미측정' : loungeCount(value) + ' ms';
+    const reasonLabels = {
+      entry_duplicate: '중복 스캔', entry_qr: 'QR 만료·무효', entry_closed: '영업 종료',
+      suspended: '이용 정지', banned: '이용 제한', auth: '회원 확인 실패', conflict: '요청 충돌', server: '서버 오류'
+    };
+    const reasons = Object.entries(scan.failures).map(([reason, n]) =>
+      esc(Object.hasOwn(reasonLabels, reason) ? reasonLabels[reason] : reason) + ' ' + loungeCount(n) + '건');
+    return start + switches +
+      '<div class="bdr"><b>고유 회원 체크인율</b><span>' + rate(members.rate) + '</span><small>인증 회원 ' +
+      loungeCount(members.numerator) + '명 · 경호팀 실입장 ' +
+      (members.denominator === null ? '미측정' : loungeCount(members.denominator) + '명') + '</small></div>' +
+      '<div class="bdr"><b>스캔 요청 성공률</b><span>' + rate(scan.rate) + '</span><small>시도 ' +
+      loungeCount(scan.attempts) + '건 · 성공 ' + loungeCount(scan.successes) + '건 · 실패 ' +
+      loungeCount(scan.attempts - scan.successes) + '건' + (reasons.length ? ' · ' + reasons.join(' · ') : '') + '</small></div>' +
+      '<div class="bdr"><b>스캔 처리 시간</b><span>평균 ' + ms(timing.avg) + '</span><small>최대 ' + ms(timing.max) +
+      ' · 10초 초과 ' + loungeCount(timing.slow_count) + '건 · 스태프 서버 전송부터 라운지 검증까지</small></div>' +
+      (alerts.scan_success_rate_low ? '<p class="warn">스캔 30건 이상 · 성공률 95% 미만</p>' : '') +
+      (alerts.scan_processing_slow ? '<p class="warn">스캔 처리 10초 초과 2건 이상</p>' : '') + '</section>';
+  }
   function loadAll(quiet) {
     if (!state.s || state.allFly) return;
+    if (state.s.admin) loadEntryOps(state.s.token);
     if (!state.all && state.tab === 'all') $('listArea').innerHTML = '<p class="load">불러오는 중…</p>';
     state.allFly = 1;
     return call({ a: 'all_feed', token: state.s.token }).then(function (r) {
@@ -11647,7 +11701,12 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       '<span>🎬 실시간 <b>' + (r.lv || 0) + '</b></span><span>🕘 출근 <b>' + (r.duty || 0) + '</b>명</span></div>';
   }
   function renderAll(area) {
-    if (!state.all) { area.innerHTML = state.allErr ? '<p class="empty">' + esc(state.allErr) + '</p>' : '<p class="load">불러오는 중…</p>'; if (!state.allFly && !state.allErr) loadAll(); return; }   // 실패해도 5초마다 다시 불러옴
+    if (!state.all) {
+      area.innerHTML = (state.s?.admin ? entryOpsHtml() : '') +
+        (state.allErr ? '<p class="empty">' + esc(state.allErr) + '</p>' : '<p class="load">불러오는 중…</p>');
+      if (!state.allFly && !state.allErr) loadAll();
+      return;
+    }
     var A = state.all, f = state.allF || '', prev = state.allSeen || '', today = String(A.now || '').slice(0, 10);
     var nAl = A.list.filter(function (x) { return x.t === 'al'; }).length;
     A.list.forEach(function (x) { if (x.ops && !x.ops.took) x.ops = null; if (x.sos && !x.sos.go) x.sos = null; });   // 배포 직후 서버가 아직 예전 버전이면 (몇 분) 진행 상황 없이
@@ -11670,6 +11729,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       '<button type="button" class="alt urgl' + (A.urgOpen ? ' on' : '') + '" data-allf="urg">' + opIco('alert', 16) + '<small>긴급모집</small><b>' + (A.urgOpen || 0) + '</b></button>' +
       '<button type="button" class="alt opsl' + (A.opsOpen ? ' on' : '') + '" data-allf="ops">' + opIco('bell', 16) + '<small>운영 대기</small><b>' + (A.opsOpen || 0) + '</b></button>' +
       '<span class="alt dutyl">' + opIco('users', 16) + '<small>출근</small><b>' + (A.duty || 0) + '</b></span></div>';
+    if (state.s?.admin) h += entryOpsHtml();
     // ⏳ 안 끝난 일 · ⏱ 오늘 응답 시간 · 🌙 영업 마감 리포트 (대표 요청 2026-11-19)
     var pend = A.pend || [];
     h += '<details class="bd' + (pend.length ? ' hot' : '') + '" id="bdPend"' + (state.bdPend === false ? '' : ' open') + '><summary>' + opIco('clock') + '<span>안 끝난 일</span><b class="osn">' + pend.length + '</b></summary>' + (pend.length ? pend.map(function (x) {
