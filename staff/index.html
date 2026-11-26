@@ -8773,6 +8773,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       document.querySelectorAll('[data-lounge="entry"]').forEach(button => { button.hidden = config.l26_entry !== true; });
       document.querySelectorAll('[data-lounge="checkin"]').forEach(button => { button.hidden = config.l26_entry === true; });
       document.querySelectorAll('[data-entry-metrics]').forEach(button => { button.hidden = config.l26_metrics !== true; });
+      document.querySelectorAll('[data-lounge="returnBenefits"]').forEach(button => { button.hidden = !Object.hasOwn(config, 'l26_return'); });
+      document.querySelectorAll('[data-lounge="returnScore"]').forEach(button => { button.hidden = config.l26_staff_score !== true; });
       loungeQuick();
     }).finally(() => { entryConfigPending = null; });
   }
@@ -8781,7 +8783,9 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     const roles = loungeRoles();
     const links = [['join', '손님 가입 QR / Guest sign-up QR', 'users']];
     if (roles.checkin) links.push(['checkin', '입구 체크인 QR / Check-in QR', 'shield'],
-      ['entry', '입장 QR 스캔 / Scan entry QR', 'shield']);
+      ['entry', '입장 QR 스캔 / Scan entry QR', 'shield'],
+      ['returnBenefits', '방문 혜택 처리 / Visit benefits', 'note']);
+    links.push(['returnScore', '재접속 기여 점수 / Activation score', 'chart']);
     if (roles.dj || roles.crowd || roles.line) links.push(['tonight', '오늘 밤 입력 / Tonight setup', 'clock']);
     if (roles.manage) links.push(['manage', '손님 라운지 관리 / Manage Lounge', 'note']);
     else if (roles.vote) links.push(['vote', '투표 만들기 / Create vote', 'note']);
@@ -8792,13 +8796,15 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     return loungeLinkBand() + '<div class="lounge-menu">' + links.map(([page, label, icon]) =>
       loungeButton(opIco(icon) + ' ' + label + (page === 'manage' ? loungeReportBadge() : ''),
         'type="button" data-lounge="' + page + '"' +
-        ((page === 'entry' && entryConfig?.l26_entry !== true) || (page === 'checkin' && entryConfig?.l26_entry === true) ? ' hidden' : ''))).join('') + '</div>';
+        ((page === 'entry' && entryConfig?.l26_entry !== true) || (page === 'checkin' && entryConfig?.l26_entry === true) ||
+          (page === 'returnBenefits' && !Object.hasOwn(entryConfig || {}, 'l26_return')) ||
+          (page === 'returnScore' && entryConfig?.l26_staff_score !== true) ? ' hidden' : ''))).join('') + '</div>';
   }
   function loungeQuick() {
     const area = $('loungeQuick');
     if (!state.s || state.pop || state.tab === 'dm') { area.hidden = true; return; }
     const roles = loungeRoles(), links = [];
-    if (roles.checkin) loungeEntryConfig();
+    loungeEntryConfig();
     if (roles.checkin && entryConfig?.l26_entry === true) links.push(['entry', '입장 QR 스캔', 'Scan entry QR', 'shield']);
     if (roles.dj || roles.crowd || roles.line) links.push(['tonight', '오늘 밤', 'Tonight', 'clock']);
     if (roles.manage) links.push(['reports', '라운지 검수', 'Review', 'note'], ['display', '전광판', 'Display', 'tv']);
@@ -8820,6 +8826,127 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     $('sheetX').textContent = '닫기 / Close';
     return document.querySelector('#sheet .lounge-screen');
   }
+  function loungeReturnBenefits() {
+    const session = state.s?.token;
+    if (!session || !loungeRoles().checkin) return;
+    const root = loungeSheet('방문 혜택 처리 / Visit benefits',
+      '<div class="lounge-body"><label>손님 혜택 코드 / Guest benefit code ' +
+      '<input data-return-code type="text" autocomplete="off" autocapitalize="characters" maxlength="19" placeholder="LR-…"></label>' +
+      '<p>혜택 사용 조건을 확인하고, 손님에게 혜택을 제공한 뒤 사용 완료를 눌러 주세요. / Check the terms and mark the benefit used after providing it.</p>' +
+      '<div class="lounge-actions">' +
+      loungeButton('상태 확인 / Check status', 'type="button" data-return-step="status"') +
+      loungeButton('직원 확인 / Confirm', 'type="button" data-return-step="confirm"', true) +
+      loungeButton('사용 완료 / Mark used', 'type="button" data-return-step="complete" disabled') + '</div></div>');
+    const input = root.querySelector('[data-return-code]'), msg = root.querySelector('.lounge-msg');
+    const controls = [...root.querySelectorAll('[data-return-step]')];
+    const complete = root.querySelector('[data-return-step="complete"]');
+    const labels = {
+      priority: '입장 우선 / Priority entry',
+      upgrade: '자리 업그레이드 / Seat upgrade',
+      merch: '굿즈 / Merchandise',
+      song: '신청곡권 / Song request'
+    };
+    const conditions = {
+      priority: '입장 전 입구에서 사용 / Use at the entrance before entry',
+      upgrade: '영업 중 이용 가능한 자리 확인 / Check seat availability during opening hours',
+      merch: '영업 중 매장에서 수령 / Collect in person during opening hours',
+      song: '영업 중 DJ와 신청 가능 여부 확인 / Confirm song availability with the DJ'
+    };
+    const statuses = {
+      requested: '직원 확인 대기 / Awaiting confirmation',
+      confirmed: '직원 확인 완료 / Confirmed',
+      used: '사용 완료 / Used',
+      expired: '만료 / Expired',
+      unavailable: '처리할 수 없는 코드 / Unavailable code',
+      claimed: '다른 직원이 확인했어요. / Another staff member confirmed this benefit.'
+    };
+    let loaded;
+    const current = () => input.value.trim().toUpperCase();
+    const live = code => root.isConnected && state.s?.token === session && current() === code;
+    input.oninput = () => { loaded = null; complete.disabled = true; msg.textContent = ''; };
+
+    async function read(code) {
+      const result = await loungeRequest('l26_staff_redeem_status', { code }, session);
+      if (live(code)) loaded = result;
+    }
+    controls.forEach(control => {
+      control.onclick = async () => {
+        const code = current(), step = control.dataset.returnStep;
+        if (!/^LR-[A-F0-9]{16}$/.test(code)) {
+          msg.textContent = '손님 화면에 표시된 코드를 입력해 주세요. / Enter the code shown on the guest’s screen.';
+          return;
+        }
+        input.disabled = true;
+        controls.forEach(button => { button.disabled = true; });
+        try {
+          if (step === 'status') {
+            await read(code);
+          } else {
+            const result = await loungeStaff(session, 'l26_redeem_confirm', { code, step });
+            if (!live(code)) return;
+            const expected = step === 'confirm' ? 'confirmed' : 'used';
+            loaded = result.queued ? null : {
+              ...loaded, status: result.status, can_complete: result.status === 'confirmed'
+            };
+            for (let attempt = 0; result.queued && attempt < 5 && live(code) && loaded?.status !== expected; attempt++) {
+              if (attempt) await new Promise(resolve => setTimeout(resolve, 1200));
+              if (!live(code)) return;
+              try { await read(code); } catch (error) { if (error.message !== 'missing') throw error; }
+            }
+          }
+          if (loaded?.status === 'confirmed' && !loaded.can_complete) loaded = { ...loaded, status: 'claimed' };
+          if (live(code)) msg.textContent = loaded
+            ? [labels[loaded.benefit], statuses[loaded.status], conditions[loaded.benefit]].filter(Boolean).join(' · ')
+            : '요청을 전송했어요. 잠시 후 상태를 확인해 주세요. / Request sent. Check the status shortly.';
+        } catch (error) {
+          if (live(code)) msg.textContent = loungeError(error);
+        } finally {
+          if (live(code)) {
+            input.disabled = false;
+            controls.forEach(button => { button.disabled = false; });
+            complete.disabled = !loaded?.can_complete;
+          }
+        }
+      };
+    });
+  }
+
+  function loungeReturnScore() {
+    const session = state.s?.token;
+    if (!session || entryConfig?.l26_staff_score !== true) return;
+    const root = loungeSheet('재접속 기여 점수 / Activation score',
+      '<div class="lounge-body" data-return-score></div>' +
+      (state.s.admin ? loungeButton('집계 요청 / Sync scores', 'type="button" data-return-sync') : ''));
+    const scores = root.querySelector('[data-return-score]'), msg = root.querySelector('.lounge-msg');
+    const refresh = async () => {
+      try {
+        const result = await loungeRequest('l26_staff_score', {}, session);
+        if (!root.isConnected || state.s?.token !== session) return;
+        scores.innerHTML = '<p>내 점수 / My score <strong>' + loungeCount(result.mine) + '</strong></p>' +
+          '<h3>상위 5명 / Top 5</h3><ol>' + result.top.map(row => '<li>' + esc(row.staff_id) + ' · ' +
+            loungeCount(row.points) + '</li>').join('') + '</ol>';
+      } catch (error) {
+        if (root.isConnected) msg.textContent = loungeError(error);
+      }
+    };
+    const sync = root.querySelector('[data-return-sync]');
+    if (sync) sync.onclick = async () => {
+      sync.disabled = true;
+      try {
+        const result = await loungeStaff(session, 'activation_score_sync');
+        if (root.isConnected) msg.textContent = result.queued
+          ? '집계를 요청했어요. 잠시 후 다시 열어 확인해 주세요. / Sync requested. Reopen shortly to check.'
+          : '집계를 처리했어요. / Sync processed.';
+        if (!result.queued) await refresh();
+      } catch (error) {
+        if (root.isConnected) msg.textContent = loungeError(error);
+      } finally {
+        sync.disabled = false;
+      }
+    };
+    refresh();
+  }
+
   function loungeCount(value) { return Number.isFinite(value) ? esc(value) : '—'; }
   function loungeSignupStats(stats) {
     if (!stats) return '';
@@ -10992,7 +11119,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       '<li>같은 손님에게 반복 메시지</li><li>술 강요 문구</li></ul></section></div>');
   }
   function bindLoungeMenu(area) {
-    const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), entry: loungeEntryScanner, tonight: loungeTonight, manage: loungeManage,
+    const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), entry: loungeEntryScanner,
+      returnBenefits: loungeReturnBenefits, returnScore: loungeReturnScore, tonight: loungeTonight, manage: loungeManage,
       vote: () => loungeManage('vote'), sales: loungeSales, linked: loungeLinkStatus, partners: loungePartnerSheet, guide: loungeGuide };
     area.querySelectorAll('[data-lounge]').forEach(b => { b.onclick = screens[b.dataset.lounge]; });
     if (area.querySelector('[data-lounge-band]')) loungeLinkLoad().catch(() => {});   // 연결 띠: 내가 미연결일 때만 (실패하면 조용히 숨김)
