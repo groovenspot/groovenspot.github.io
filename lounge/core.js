@@ -4,7 +4,7 @@
   var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
   var features = Object.create(null), configPending, routeShell, routePreview;
-  var preview = false, previewEligible = false, preferLegacy = false, nextConfigCheck = 0;
+  var preview = false, previewEligible = false, previewRequested = false, nextConfigCheck = 0;
   var activeTimer, activeToken, activeSent = false;
   var legacyRoutes = {
     l26_home: 'tonight', l26_live: 'tonight', l26_lounge: 'feed', l26_my: 'me', l26_play: 'play'
@@ -129,15 +129,18 @@
   }
   var L = window.Lounge = {
     me: null, lang: lang,
-    setToken: function (t) { updateSession(t); save('gl_token', session); },
-    previewMode: function () { return preferLegacy ? 'legacy' : preview ? 'preview' : ''; },
+    setToken: function (t) {
+      if (!t || session !== t) save('gl_preview', '');
+      updateSession(t);
+      save('gl_token', session);
+    },
+    previewMode: function () { return previewRequested ? 'preview' : ''; },
     previewEligible: function () { return previewEligible; },
     isPreview: function () { return preview; },
     refreshConfig: refreshConfig,
     togglePreview: async function () {
-      if (!previewEligible) return;
-      preferLegacy = !preferLegacy;
-      configPending = null;
+      if (!previewEligible || !L.me) return;
+      setPreviewRequest(!previewRequested);
       var token = session;
       await refreshConfig();
       if (token !== session) return;
@@ -183,6 +186,7 @@
               if (wasPreview) refreshVisible();
             }
             if (j?.preview_ended && mode === 'preview' && L.previewMode() === mode) {
+              setPreviewRequest(false);
               clearPreview();
               refreshVisible();
             }
@@ -478,6 +482,7 @@
       });
       navigator.serviceWorker?.register('/lounge/sw.js').catch(() => {});
       await L.refreshMe();
+      previewRequested = storedPreviewRequest();
       window.addEventListener('hashchange', L.route);
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) scheduleActivity();
@@ -489,15 +494,28 @@
       });
       window.addEventListener('pageshow', event => { if (event.persisted && !document.hidden) refreshVisible(); });
       window.addEventListener('storage', async event => {
+        if (event.key === 'gl_preview') {
+          var requested = storedPreviewRequest();
+          if (requested !== previewRequested) {
+            previewRequested = requested;
+            configPending = null;
+            resetActivity();
+            await refreshVisible();
+          }
+          return;
+        }
         if (event.key !== 'gl_token' && event.key !== null) return;
         var token = read('gl_token');
         if (token === session) return;
         updateSession(token);
         await L.refreshMe();
-        if (token === session) await L.route();
+        if (token === session) {
+          previewRequested = storedPreviewRequest();
+          await L.route();
+        }
       });
       setInterval(() => {
-        if (!document.hidden && (previewEligible || Date.now() >= nextConfigCheck)) refreshVisible();
+        if (!document.hidden && (previewRequested || Date.now() >= nextConfigCheck)) refreshVisible();
       }, 5000);
       await L.route();
     }
@@ -566,12 +584,23 @@
     L.paintNav(navOn);
   }
 
+  function storedPreviewRequest() {
+    return Boolean(session && L.me && read('gl_preview') === L.me.id);
+  }
+
+  function setPreviewRequest(requested) {
+    previewRequested = requested;
+    save('gl_preview', requested ? L.me.id : '');
+    configPending = null;
+    resetActivity();
+  }
+
   function updateSession(token) {
     if (session === (token || '')) return;
     session = token || '';
     L.me = null;
     configPending = null;
-    preferLegacy = false;
+    previewRequested = false;
     clearPreview();
     if (!session) paintBadges();
     resetActivity();
@@ -579,13 +608,16 @@
 
   function refreshConfig() {
     if (configPending) return configPending;
-    var token = session, legacy = preferLegacy;
+    var token = session, requested = previewRequested;
     var request = L.api('config').then(result => {
-      if (configPending !== request || session !== token || preferLegacy !== legacy) return;
+      if (configPending !== request || session !== token || previewRequested !== requested) return;
       var wasShell = L.open('l26_shell');
       features = !result.error && result.open || Object.create(null);
       previewEligible = Boolean(token && result.preview_eligible === true);
-      preview = previewEligible && result.preview === true;
+      if (requested && !previewEligible) setPreviewRequest(false);
+      var nextPreview = requested && previewEligible;
+      if (preview !== nextPreview) resetActivity();
+      preview = nextPreview;
       nextConfigCheck = Date.now() + (wasShell && result.error ? 5000 : 60_000);
       var ocChanged = !result.error && L.open('openchat') !== ocNav;
       if (ocChanged) {
