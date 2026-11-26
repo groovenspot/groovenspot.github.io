@@ -3,7 +3,7 @@
     mission: ['오늘의 미션', 'Today’s mission', '今日のミッション', '今日任务'],
     points: ['내 포인트', 'My points', 'マイポイント', '我的积分'],
     legacy: ['기존 출석판·올클', 'Classic attendance and all-clear', 'これまでの出席・全クリア', '原版签到和全通关'],
-    more: ['다른 놀거리', 'More to play', 'もっと遊ぶ', '更多玩法'],
+    more: ['선택형 놀거리', 'Optional activities', '自由に選べる遊び', '可选玩法'],
     done: ['완료', 'Done', '完了', '已完成'],
     ready: ['진행 가능', 'Ready', '参加できます', '可以开始'],
     login: ['로그인', 'Log in', 'ログイン', '登录'],
@@ -101,8 +101,10 @@
     stylesheet();
 
     root.className = 'l26-screen l26-play';
-    root.innerHTML = '<header class="l26-play-head"><h1>' + translated('nav.l26_play') +
-      '</h1><a class="l26-play-points" data-l26-points href="#/me" hidden></a></header>' +
+    root.innerHTML = '<header class="l26-play-head"><div class="l26-play-heading">' +
+      '<button class="ui-bar-btn" type="button" data-ui-back="l26_lounge" aria-label="' + translated('ui.back') + '">' +
+      L.icon('back') + '</button><h1>' + translated('nav.l26_play') +
+      '</h1></div><a class="l26-play-points" data-l26-points href="#/me" hidden></a></header>' +
       '<section class="l26-play-mission" aria-labelledby="l26-mission-title"><h2 id="l26-mission-title">' +
       label('mission') + '</h2><div data-l26-mission aria-busy="true"><p role="status">' + label('loading') +
       '</p></div></section><p class="l26-play-error" data-l26-error role="status" hidden></p>' +
@@ -114,6 +116,8 @@
     const points = root.querySelector('[data-l26-points]');
     const options = root.querySelector('.l26-play-options');
     const error = root.querySelector('[data-l26-error]');
+    const hash = location.hash;
+    shelf.open = L.unstash('l26_play') === true;
     let last, pending, voteRequest, busy = false;
 
     function paint(data) {
@@ -127,11 +131,11 @@
         (member ? '<p class="l26-play-state" data-done="' + mission.done + '">' + label(mission.done ? 'done' : 'ready') + '</p>' :
           '<p class="muted">' + label('guest') + '</p>') +
         '<div class="l26-play-actions">' + missionControls(mission, member) + (member ? '' : button('login', 'login')) + '</div>';
-      shelf.hidden = false;
       options.innerHTML = data.shelf.map(key => {
         if (key === 'attend') return button('attend', data.attended ? 'done' : 'attend', '', data.attended ? ' disabled' : '');
         return Object.hasOwn(shelfLinks, key) ? link(key, shelfLinks[key]) : '';
       }).join('');
+      shelf.hidden = !options.childElementCount;
     }
 
     async function refresh() {
@@ -139,7 +143,7 @@
       pending = L.api('l26_play');
       try {
         const data = await pending;
-        if (!root.isConnected) return;
+        if (!root.isConnected || hash !== location.hash) return;
         if (['closed', 'action'].includes(data.error)) return legacy();
         card.setAttribute('aria-busy', 'false');
         if (!data.ok) {
@@ -206,6 +210,7 @@
     const timer = setInterval(visible, 60_000);
     document.addEventListener('visibilitychange', visible);
     dispose = () => {
+      L.stash('l26_play', shelf.open);
       clearInterval(timer);
       document.removeEventListener('visibilitychange', visible);
       root.onclick = null;
@@ -216,6 +221,7 @@
   L.screen('l26_play', {
     title: 'nav.l26_play',
     nav: 'l26_lounge',
+    keepScroll: true,
     render,
     leave() { dispose?.(); dispose = undefined; }
   });

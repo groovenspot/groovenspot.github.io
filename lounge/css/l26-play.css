@@ -13,6 +13,16 @@
   gap: 8px 16px;
 }
 
+.l26-play-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.l26-play-heading .ui-bar-btn {
+  flex: none;
+}
+
 .l26-play h1,
 .l26-play h2,
 .l26-play h3,
