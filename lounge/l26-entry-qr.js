@@ -65,7 +65,7 @@
       if (key) button.textContent = t(key);
     }
     function clearQr() {
-      clearInterval(tick);
+      clearTimeout(tick);
       image.hidden = countdown.hidden = true;
       image.removeAttribute('src');
       expires = 0;
@@ -75,7 +75,8 @@
       if (foreground()) poll = setTimeout(refresh, delay);
     }
     function remaining() {
-      const seconds = Math.ceil((expires - performance.now()) / 1000);
+      const ms = expires - performance.now();
+      const seconds = Math.ceil(ms / 1000);
       if (seconds <= 0) {
         clearQr();
         if (foreground()) {
@@ -85,6 +86,7 @@
         return;
       }
       countdown.textContent = t('countdown').replace('{s}', seconds);
+      tick = setTimeout(remaining, Math.ceil(ms - (seconds - 1) * 1000));
     }
 
     async function read(issue) {
@@ -142,7 +144,6 @@
           image.src = qr.createDataURL(7, 28);
           image.hidden = countdown.hidden = false;
           message('staff');
-          tick = setInterval(remaining, 250);
           remaining();
           schedule(pollMs);
         } else if (wanted) {
