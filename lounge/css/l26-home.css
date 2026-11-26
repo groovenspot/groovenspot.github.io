@@ -29,6 +29,37 @@
   text-align: center;
 }
 
+.l26-home-floors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.l26-home-floor {
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  background: var(--card);
+  font-weight: 750;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.l26-home-floor:disabled {
+  opacity: .6;
+  cursor: default;
+}
+
+.l26-home-floor span {
+  font-variant-numeric: tabular-nums;
+}
+
+.l26-home [data-home-vote-status]:empty {
+  display: none;
+}
+
 .l26-home-cards,
 .l26-home-slots {
   list-style: none;
