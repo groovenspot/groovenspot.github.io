@@ -155,8 +155,9 @@
     if (!next) return '<p>' + text('allRequested') + '</p>';
     const current = Math.min(visits, next.visits);
     const label = text('progress', { current: formatPoints(current), target: formatPoints(next.visits) });
-    return '<h3>' + text(next.key) + '</h3><label class="l26-my-progress"><span>' + label + '</span>' +
-      '<progress value="' + L.esc(current) + '" max="' + L.esc(next.visits) + '"></progress></label><p>' +
+    return '<h3>' + text(next.key) + '</h3><div class="l26-my-progress"><span id="l26-my-progress-label">' + label + '</span>' +
+      '<progress aria-labelledby="l26-my-progress-label" value="' + L.esc(current) + '" max="' +
+      L.esc(next.visits) + '"></progress></div><p>' +
       (next.status === 'available' ? text('ready') : text('moreVisits', { n: formatPoints(next.visits - visits) })) + '</p>';
   }
 
