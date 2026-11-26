@@ -3068,5 +3068,17 @@
       ]
     },
     "flyer": "/assets/timetables/2026-11-29.webp"
+  },
+  {
+    "date": "2026-12-05",
+    "title": "THE GROOVE SPOT'S PLAN",
+    "floor": "2F+3F",
+    "open": "21:00",
+    "flyer": "/assets/flyers/2026-12-05.webp",
+    "desc": {
+      "ko": "MY OTT SERIES VOL.2 · 그루브스팟's 플랜 — 입장 시 게임 칩 증정, 매장 곳곳 미니게임(비어퐁·뽑기·타이머 멈추기·카드게임)",
+      "en": "MY OTT SERIES VOL.2 · The Groove Spot's Plan — game chip at the door, mini games across both floors"
+    },
+    "ig": "https://www.instagram.com/p/DgH38UHTmfL/"
   }
 ]
