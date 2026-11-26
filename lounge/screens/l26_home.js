@@ -273,7 +273,10 @@
     } else {
       const { server_now, ...view } = response;
       if (Number.isFinite(server_now)) state.clock = { serverNow: server_now, receivedAt: performance.now() };
+      const wasCheckingVote = state.checkingVote;
+      state.checkingVote = false;
       applyView(state, view);
+      if (wasCheckingVote) updateVoteControls(state);
       // Align refreshes to server minute boundaries, including the KST phase changes.
       const nextMinute = Number.isFinite(server_now) ? 60_000 - server_now % 60_000 : 60_000;
       state.timer = setTimeout(state.refresh, nextMinute);
