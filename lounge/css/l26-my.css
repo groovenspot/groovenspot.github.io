@@ -1,0 +1,92 @@
+.l26-my {
+  max-width: 620px;
+  margin-inline: auto;
+}
+
+.l26-my [data-my-content] {
+  display: grid;
+  gap: 12px;
+}
+
+.l26-my h2,
+.l26-my h3,
+.l26-my p {
+  margin: 0;
+}
+
+.l26-my h2 {
+  font-size: 1rem;
+}
+
+.l26-my-card {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.l26-my-entry {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  border-color: var(--field-border);
+  background: var(--tint-g);
+  color: var(--tint-g-txt);
+}
+
+.l26-my-entry p {
+  margin-top: 4px;
+}
+
+.l26-my-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.l26-my-stats strong {
+  font-size: 1.65rem;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.l26-my-badges,
+.l26-my-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.l26-my-badges,
+.l26-my-history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.l26-my-badges li {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: .875rem;
+}
+
+.l26-my-history {
+  display: grid;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.l26-my-code {
+  display: block;
+  font-family: ui-monospace, monospace;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.l26-my-legacy {
+  margin-block: 12px;
+}
