@@ -497,7 +497,7 @@
         if (token === session) await L.route();
       });
       setInterval(() => {
-        if (!document.hidden && Date.now() >= nextConfigCheck) refreshVisible();
+        if (!document.hidden && (previewEligible || Date.now() >= nextConfigCheck)) refreshVisible();
       }, 5000);
       await L.route();
     }
@@ -548,7 +548,8 @@
     var badge = document.getElementById('lounge-preview');
     if (badge) {
       badge.hidden = !preview;
-      badge.textContent = preview ? L.t('core.preview') : '';
+      var label = preview ? L.t('core.preview') : '';
+      if (badge.textContent !== label) badge.textContent = label;
     }
     document.querySelectorAll('[data-lounge-preview-toggle]').forEach(button => {
       button.hidden = !previewEligible;
@@ -585,7 +586,7 @@
       features = !result.error && result.open || Object.create(null);
       previewEligible = Boolean(token && result.preview_eligible === true);
       preview = previewEligible && result.preview === true;
-      nextConfigCheck = Date.now() + (previewEligible || wasShell && result.error ? 5000 : 60_000);
+      nextConfigCheck = Date.now() + (wasShell && result.error ? 5000 : 60_000);
       var ocChanged = !result.error && L.open('openchat') !== ocNav;
       if (ocChanged) {
         ocNav = !ocNav;
