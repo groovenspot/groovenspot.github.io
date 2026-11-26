@@ -270,7 +270,7 @@
       } catch {
         return;
       }
-      if (active() && !entry) {
+      if (active() && L.open('l26_entry') && !entry) {
         entry = L.mountEntryQr(root.querySelector('[data-live-entry]'), {
           loginHref: loginLink(),
           onVerified: refresh
