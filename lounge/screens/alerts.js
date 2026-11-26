@@ -7,12 +7,13 @@
       enable: '폰 알림 켜기', disable: '폰 알림 끄기', types: '받을 폰 알림',
       preview: '잠금 화면에 표시할 내용', sensitive: '메시지·신고·안심 알림 내용 숨기기',
       all: '모든 내용 숨기기', details: '내용 표시',
-      hours: '오전 7시부터 낮 12시까지는 폰 알림을 쉬어요. 밤 알림 동의는 나 → 설정에서 바꿀 수 있어요.',
+      hours: '서비스 알림은 오전 7시부터 낮 12시까지 쉬어요.',
+      serviceNight: '밤에도 서비스 알림 받기', promo: '광고 알림 설정', ad: '광고',
       install: '아이폰·아이패드(16.4 이상)는 Safari에서 공유 → 홈 화면에 추가를 누르세요. 홈 화면에서 라운지를 열고 폰 알림을 켜 주세요.',
       unsupported: '이 브라우저는 폰 알림을 지원하지 않아요.', denied: '브라우저 설정에서 알림을 허용해 주세요.',
       failed: '알림을 불러오거나 저장하지 못했어요. 다시 시도해 주세요.', retry: '다시 시도',
       lostPage: '분실물 확인', dj: '팔로우한 DJ', lost: '분실물', keep: '킵 만료', dm: '메시지',
-      rooms: '오픈 대화방', social: '팔로우와 활동', md: '담당 MD', rewards: '보상',
+      rooms: '오픈 대화방', social: '팔로우와 활동', md: '매장·예약 안내', rewards: '보상',
       follow: '새 팔로워', follow_request: '팔로우 요청', follow_accept: '팔로우 요청 수락'
     },
     en: {
@@ -21,19 +22,22 @@
       enable: 'Turn on push', disable: 'Turn off push', types: 'Push categories',
       preview: 'Lock screen previews', sensitive: 'Hide messages, reports and safety alerts',
       all: 'Hide all details', details: 'Show details',
-      hours: 'Phone notifications are quiet from 7 am to noon. Change your night preferences under Me → Settings.',
+      hours: 'Service notifications are quiet from 7 am to noon.',
+      serviceNight: 'Receive service notifications at night', promo: 'Promotional notification settings', ad: 'Ad',
       install: 'On iPhone or iPad, use version 16.4 or later. In Safari, tap Share → Add to Home Screen. Open Lounge from your Home Screen and turn on push.',
       unsupported: 'This browser does not support push notifications.', denied: 'Allow notifications in your browser settings.',
       failed: 'Could not load or save notifications. Please try again.', retry: 'Try again',
       lostPage: 'Check lost and found', dj: 'DJs you follow', lost: 'Lost and found', keep: 'Keep expiry', dm: 'Messages',
-      rooms: 'Open Chat', social: 'Follows and activity', md: 'Your host', rewards: 'Rewards',
+      rooms: 'Open Chat', social: 'Follows and activity', md: 'Club and reservation updates', rewards: 'Rewards',
       follow: 'New follower', follow_request: 'Follow request', follow_accept: 'Follow request accepted'
     },
     ja: {
+      serviceNight: '夜間もサービス通知を受け取る', promo: '広告通知の設定', ad: '広告',
       preview: 'ロック画面の通知プレビュー', sensitive: 'メッセージ・通報・安全通知の内容を隠す',
       all: 'すべての内容を隠す', details: '内容を表示する'
     },
     zh: {
+      serviceNight: '夜间也接收服务通知', promo: '广告通知设置', ad: '广告',
       preview: '锁屏通知预览', sensitive: '隐藏私信、举报和安全通知的内容',
       all: '隐藏所有内容', details: '显示通知详情'
     }
@@ -267,14 +271,17 @@
       '<section class="shell-card" data-phone><h2>' + e(t('phone')) + '</h2>' +
       '<button type="button" class="btn btn-hot" data-push hidden></button><p class="muted" role="status" data-push-hint></p>' +
       '<p class="muted">' + e(t('hours')) + '</p><fieldset class="shell-consent" data-prefs disabled><legend>' + e(t('types')) + '</legend>' +
+      '<label class="shell-choice"><input type="checkbox" name="serviceNight">' + e(t('serviceNight')) + '</label>' +
       kinds.map(kind => '<label class="shell-choice"><input type="checkbox" name="' + kind + '">' + e(t(kind)) + '</label>').join('') +
       '<label class="shell-field">' + e(t('preview')) + '<select name="preview">' +
       ['sensitive', 'all', 'details'].map(mode => '<option value="' + mode + '">' + e(t(mode)) + '</option>').join('') +
       '</select></label>' +
       '</fieldset><p role="alert" class="shell-error" data-pref-error hidden></p><button type="button" class="btn" data-pref-retry hidden>' +
-      e(t('retry')) + '</button></section>';
+      e(t('retry')) + '</button></section><section class="shell-card"><a class="shell-link" href="#/me/settings">' +
+      e(t('promo')) + '</a></section>';
     const prefs = root.querySelector('[data-prefs]');
     const preview = prefs.querySelector('[name=preview]');
+    const serviceNight = prefs.querySelector('[name=serviceNight]');
     const prefError = root.querySelector('[data-pref-error]');
     const prefRetry = root.querySelector('[data-pref-retry]');
     let savedPreview = 'sensitive';
@@ -298,6 +305,7 @@
           preview.closest('label').before(label);
         }
         for (const input of prefs.querySelectorAll('input')) input.checked = result.prefs[input.name];
+        serviceNight.checked = result.serviceNight === true;
         preview.value = savedPreview = result.preview || 'sensitive';
         prefs.disabled = false;
       } catch {
@@ -310,14 +318,15 @@
     prefRetry.onclick = loadPrefs;
     prefs.onchange = async event => {
       const input = event.target;
-      if (input !== preview && !kinds.includes(input.name) && !followKinds.includes(input.name)) return;
+      if (input !== preview && input !== serviceNight && !kinds.includes(input.name) && !followKinds.includes(input.name)) return;
       prefs.disabled = true;
       prefError.hidden = true;
       try {
         if (input === preview) {
           const result = await action('alert_prefs', { preview: preview.value });
           preview.value = savedPreview = result.preview;
-        } else await action('alert_prefs', { prefs: { [input.name]: input.checked } });
+        } else if (input === serviceNight) await action('alert_prefs', { serviceNight: input.checked });
+        else await action('alert_prefs', { prefs: { [input.name]: input.checked } });
       } catch {
         if (input === preview) preview.value = savedPreview;
         else input.checked = !input.checked;
@@ -359,7 +368,7 @@
     // 태그 알림은 태그 승인 화면(#/tags)으로 (스토리·글쓰기 작업창이 만든 화면)
     const target = n.type === 'tag' && L.hasScreen('tags') ? '#/tags' : safeTarget(n.url);
     row.innerHTML = '<a class="al4-row" href="' + e(target) + '">' + lead +
-      '<span class="al4-text"><span class="sr-only">' + e(kindLabel(n.kind)) + ': </span>' + sentence(n) +
+      '<span class="al4-text"><span class="sr-only">' + e(n.category === 'promo' ? t('ad') : kindLabel(n.kind)) + ': </span>' + sentence(n) +
       ' <time class="al4-time" datetime="' + e(new Date(n.at).toISOString()) + '">' + e(L.ago(n.at)) + '</time></span>' +
       (thumb ? '<img class="al4-thumb" src="' + e(thumb) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') +
       '<i class="al4-dot" role="img" aria-label="' + e(t4('unreadDot')) + '"></i></a>';

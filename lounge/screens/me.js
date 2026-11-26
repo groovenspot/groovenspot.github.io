@@ -244,14 +244,16 @@
   function settings(root) {
     const me = L.me;
     const checkbox = name => '<label class="shell-choice"><input name="' + name + '" type="checkbox"' +
-      (me[name] ? ' checked' : '') + '>' + a(name) + '</label>';
+      (me.promo?.[name] ? ' checked' : '') + '>' + a(name) + '</label>';
     const mode = L.theme();
     const themeRow = v => '<label class="shell-choice"><input type="radio" name="gl-theme" value="' + v + '"' + (mode === v ? ' checked' : '') +
       '>' + t(v === 'dark' ? 'themeDark' : 'themeLight') + '</label>';
     root.innerHTML = L.bar({ back: 'me', title: L.t('me.settings') }) + '<div class="shell-stack pf-sub">' +
       '<fieldset class="shell-consent" data-theme-pick><legend class="shell-field">' + t('theme') + '</legend>' +
       themeRow('dark') + themeRow('light') + '</fieldset><form class="shell-form">' +
-      checkbox('ads') + checkbox('night') + '<label class="shell-field">' + t('language') +
+      '<fieldset class="shell-consent" id="promo"><legend>' + a('promoHeading') + '</legend>' +
+      checkbox('ads') + checkbox('night') + '<p class="muted">' + a('promoHelp') + '</p></fieldset>' +
+      '<label class="shell-field">' + t('language') +
       '<select name="lang"><option value="ko" lang="ko">한국어</option><option value="en" lang="en">English</option>' +
       '<option value="ja" lang="ja">日本語</option><option value="zh" lang="zh">中文</option></select></label>' +
       submit('save') + '</form><section class="shell-card"><h2>' + a('reset') + '</h2><p>' + a('resetHelp') + '</p></section>' +
@@ -264,7 +266,12 @@
     const form = root.querySelector('form');
     form.elements.lang.value = L.lang;
     formResult(form, async data => {
-      const body = { ads: data.has('ads'), night: data.has('night'), lang: data.get('lang') };
+      const body = { lang: data.get('lang'), consent_version: L.promoConsentVersion };
+      for (const kind of ['ads', 'night']) {
+        if (data.has(kind) !== Boolean(me.promo?.[kind]) || (!data.has(kind) && me[kind] && !me.promo?.[kind])) {
+          body[kind] = data.has(kind);
+        }
+      }
       const result = await L.api('prefs_set', body);
       if (result.error) throw new Error(result.error);
       if (L.me !== me) return;
