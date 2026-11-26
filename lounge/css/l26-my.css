@@ -41,16 +41,90 @@
   margin-top: 4px;
 }
 
-.l26-my-stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+.l26-my-membership {
+  gap: 16px;
+  justify-items: stretch;
+  border-color: var(--field-border);
 }
 
-.l26-my-stats strong {
-  font-size: 1.65rem;
+.l26-my-visit-count,
+.l26-my-points,
+.l26-my-benefit-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.l26-my-visit-count strong,
+.l26-my-points strong {
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
+}
+
+.l26-my-visit-count strong {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.l26-my-next,
+.l26-my-progress {
+  display: grid;
+  gap: 8px;
+}
+
+.l26-my-next {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.l26-my-next .btn {
+  justify-self: start;
+}
+
+.l26-my-progress progress {
+  width: 100%;
+  height: 12px;
+  accent-color: var(--g);
+}
+
+.l26-my-visit-group {
+  display: grid;
+  width: 100%;
+  gap: 8px;
+  justify-items: start;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.l26-my-visit-group h3 {
+  font-size: .9375rem;
+}
+
+.l26-my-benefit-heading {
+  width: 100%;
+}
+
+.l26-my [data-benefit-status] {
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: .8125rem;
+  font-weight: 600;
+}
+
+.l26-my [data-benefit-status="available"] {
+  border-color: var(--field-border);
+  background: var(--tint-g);
+  color: var(--tint-g-txt);
+}
+
+.l26-my-benefit-action {
+  width: 100%;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
 }
 
 .l26-my-badges,
