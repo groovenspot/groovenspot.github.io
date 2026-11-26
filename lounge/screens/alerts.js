@@ -366,8 +366,7 @@
     const lead = from ? L.avatar(from, 44)
       : '<span class="al4-kind" aria-hidden="true">' + L.icon(KIND_ICON[n.kind] || 'bell', { size: 22 }) + '</span>';
     // 태그 알림은 태그 승인 화면(#/tags)으로 (스토리·글쓰기 작업창이 만든 화면)
-    const target = n.category === 'promo' ? (L.open('l26_shell') ? '#/l26_home' : '#/tonight')
-      : n.type === 'tag' && L.hasScreen('tags') ? '#/tags' : safeTarget(n.url);
+    const target = n.type === 'tag' && L.hasScreen('tags') ? '#/tags' : safeTarget(n.url);
     row.innerHTML = '<a class="al4-row" href="' + e(target) + '">' + lead +
       '<span class="al4-text"><span class="sr-only">' + e(n.category === 'promo' ? t('ad') : kindLabel(n.kind)) + ': </span>' + sentence(n) +
       ' <time class="al4-time" datetime="' + e(new Date(n.at).toISOString()) + '">' + e(L.ago(n.at)) + '</time></span>' +
