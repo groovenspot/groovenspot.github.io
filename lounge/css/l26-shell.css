@@ -1,0 +1,26 @@
+#app.l26-shell #tabbar {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.l26-shell {
+  --l26-floor-2f: #ff9651;
+  --l26-floor-3f: #b58aff;
+}
+
+html[data-theme="light"] .l26-shell {
+  --l26-floor-2f: #a7450a;
+  --l26-floor-3f: #6537ba;
+}
+
+.l26-shell [data-l26-floor="2F"] { color: var(--l26-floor-2f); }
+.l26-shell [data-l26-floor="3F"] { color: var(--l26-floor-3f); }
+
+.l26-screen {
+  padding: 20px 16px;
+}
+
+.l26-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

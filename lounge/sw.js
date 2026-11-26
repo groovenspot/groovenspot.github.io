@@ -1,5 +1,5 @@
 /* 그루브 라운지 서비스워커 */
-const CACHE = 'groove-lounge-shell-v16';
+const CACHE = 'groove-lounge-shell-v17';
 const API = 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
 const SHELL = [
   '/lounge/', '/lounge/app.css', '/lounge/core.js', '/lounge/ui.js',
@@ -14,12 +14,17 @@ const SHELL = [
   '/lounge/screens/rank.js', '/lounge/screens/songs.js',
   '/lounge/screens/share.js', '/lounge/screens/story.js', '/lounge/screens/explore.js',
   '/lounge/screens/lineup.js', '/lounge/screens/tonight_cards.js', '/lounge/screens/tonight5.js', '/lounge/screens/partners.js',
+  '/lounge/css/l26-shell.css',
+  '/lounge/screens/l26_home.js', '/lounge/screens/l26_live.js', '/lounge/screens/l26_lounge.js',
+  '/lounge/screens/l26_my.js', '/lounge/screens/l26_play.js',
   '/lounge/i18n/ja.js', '/lounge/i18n/zh.js',
   '/assets/icon.png', '/assets/icon-512.png'
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE)
+    .then(cache => cache.addAll(SHELL.map(url => new Request(new URL(url, self.location.origin), { cache: 'reload' }))))
+    .then(() => self.skipWaiting()));
 });
 
 async function deviceBinding(change) {
@@ -207,7 +212,7 @@ self.addEventListener('fetch', event => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
-      const response = await fetch(request);
+      const response = await fetch(request, { cache: 'no-cache' });
       if (response.ok) {
         try { await cache.put(key, response.clone()); } catch (e) {}
       }
