@@ -150,6 +150,7 @@
 .feed4-c-text { white-space: pre-wrap; }
 .feed4-c-text > p { display: inline; }
 .feed4-c-text .lounge-who-tag { margin-left: 2px; }
+.feed4-c-text .feed4-nick > .lounge-who-tag { vertical-align: bottom; }
 .feed4-c-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 0 14px; min-height: 30px; color: var(--muted); font-size: 12px; font-weight: 600; }
 .feed4-c-meta time { font-weight: 500; }
 .feed4-c-meta button { min-width: 44px; min-height: 44px; margin: -7px 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }

@@ -149,7 +149,7 @@
 /* 오늘 판 = 하이라이트 */
 .pl-chips{display:flex;gap:12px;margin:0;padding:2px 0;list-style:none;overflow-x:auto;scrollbar-width:none}
 .pl-chips::-webkit-scrollbar{display:none}
-.pl-chip{display:grid;justify-items:center;gap:5px;flex:1 0 64px;max-width:76px;text-align:center;font-size:.75rem;line-height:1.25;min-width:0}
+.pl-chip{position:relative;display:grid;justify-items:center;gap:5px;flex:1 0 64px;max-width:76px;text-align:center;font-size:.75rem;line-height:1.25;min-width:0}
 .pl-chip>b{position:relative;display:grid;place-items:center;width:62px;height:62px;border-radius:50%;padding:2px;box-sizing:border-box;background:var(--line-2)}
 .pl-chip>b>i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;border:3px solid var(--bg);box-sizing:border-box;background:var(--fill);color:var(--muted);font-style:normal}
 .pl-chip[data-done]>b{background:var(--ring)}
