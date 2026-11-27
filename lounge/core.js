@@ -4,6 +4,8 @@
   var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
   var features = Object.create(null), configPending, routeShell, routePreview, routeFollowCounts, routeDjFeedback;
+  var routePublic, viewerMedia = '';
+  var guestAuth = new Set(['login', 'join', 'reset', 'staff-login', 'terms', 'privacy']);
   var preview = false, previewEligible = false, previewRequested = false, nextConfigCheck = 0;
   var activeTimer, activeAttempt, activeRecorded;
   var activityDayMs = 86_400_000, activityDayShift = 3_600_000; // 08:00 KST is 23:00 UTC.
@@ -239,7 +241,18 @@
       if (!chip) return nick;
       return staffBadge(person.tag, locale) ? '<span class="lounge-who"><span class="lounge-who-nick">' + nick + '</span> ' + chip + '</span>' : nick + ' ' + chip;
     },
-    img: function (key) { return key ? API.replace(/\/$/, '') + '/img/' + encodeURIComponent(key).replace(/%2F/g, '/') : ''; },
+    mediaSrc: function (value) {
+      if (!viewerMedia || !L.me) return value;
+      var url = URL.parse(value, location.href);
+      if (url?.origin === new URL(API, location.href).origin && url.pathname.startsWith('/img/') &&
+          !url.searchParams.has('media') && !url.searchParams.has('admin') && !url.searchParams.has('token')) {
+        url.searchParams.set('viewer_media', viewerMedia);
+        return url.href;
+      }
+      return value;
+    },
+    img: function (key) { return key ? L.mediaSrc(L.apiUrl('img/' + encodeURIComponent(key).replace(/%2F/g, '/'))) : ''; },
+    publicGuest: function () { return !L.me && L.open('l26_public_view'); },
     // 라운지 서버 주소로 만든 전체 주소: L.apiUrl('p/<글id>') → 'https://…workers.dev/p/<글id>' (밖으로 보내는 공유 링크 — 서버가 미리보기(og)를 주고 앱으로 넘긴다)
     apiUrl: function (path) { return new URL(String(path || '').replace(/^\/+/, ''), new URL(API.replace(/\/$/, '') + '/', location.href)).href; },
     upload: async function (file, kind) {
@@ -333,9 +346,11 @@
       var hash = location.hash;
       var route = hash.replace(/^#\/?/, '');
       var config = configReady ? undefined : refreshConfig();
-      if (!route || route === 'me/settings' || route === 'l26_benefits' ||
+      const requestedScreen = route.split(/[/?]/, 1)[0];
+      if ((!L.me && !guestAuth.has(requestedScreen)) || !shown || !route || requestedScreen === 'l26_public' ||
+          route === 'me/settings' || route === 'l26_benefits' ||
           route === 'l26_dj_feedback' || route === 'alerts/settings' ||
-          Object.hasOwn(legacyRoutes, route.split(/[/?]/, 1)[0])) {
+          Object.hasOwn(legacyRoutes, requestedScreen)) {
         await config;
         if (version !== routeVersion || hash !== location.hash) return;
       }
@@ -349,6 +364,14 @@
         try { params.id = decodeURIComponent(rest.join('/')); } catch (e) { params.id = rest.join('/'); }
       }
       if (name === 'u') name = 'user';
+      const publicGuest = L.publicGuest();
+      const authRoute = guestAuth.has(name) || (/^(?:l26[_-])?self[_-]join$/.test(name) && L.hasScreen(name));
+      if (publicGuest && !authRoute) {
+        params.live = name === 'l26_live' || (name === 'l26_public' && params.live === '1');
+        name = 'l26_public';
+      } else if (name === 'l26_public' && !L.open('l26_public_view')) {
+        name = defaultRoute();
+      }
       if (Object.hasOwn(legacyRoutes, name) && !L.open('l26_shell')) name = legacyRoutes[name];
       var def = screens[name];
       var view = document.getElementById('view');
@@ -360,6 +383,8 @@
       }
       L.closeSheet();
       cur = def;
+      routePublic = L.open('l26_public_view');
+      document.getElementById('app').classList.toggle('public-view', publicGuest || name === 'l26_public');
       routeShell = L.open('l26_shell');
       routePreview = preview;
       routeDjFeedback = L.open('l26_dj_feedback');
@@ -367,7 +392,7 @@
       scrollPending = def?.keepScroll && L.wentBack?.() && Object.hasOwn(scrolls, here) ? scrolls[here] : null;
       delete scrolls[here];
       document.getElementById('app').classList.toggle('own-bar', def?.bar === 'own');   // 화면이 위 막대를 직접 그림 (SPEC4 2장)
-      document.getElementById('app').classList.toggle('no-tabs', def?.tabs === false);  // 화면 정의에 tabs: false → 아래 탭 숨김 (글쓰기·스토리 뷰어처럼 화면을 넓게 쓰는 곳)
+      document.getElementById('app').classList.toggle('no-tabs', publicGuest || def?.tabs === false);  // 화면 정의에 tabs: false → 아래 탭 숨김 (글쓰기·스토리 뷰어처럼 화면을 넓게 쓰는 곳)
       var root = document.createElement('div');
       view.replaceChildren(root);
       L.paintNav(name === 'l26_play' ? name : def?.nav || name);
@@ -381,7 +406,7 @@
       if (gate || ['play', 'tonight', 'me'].includes(name) || followerScreens.includes(name)) await config;
       if (version !== routeVersion) return;
       routeFollowCounts = L.open('l26_follow_counts');
-      refreshBadges(version, config);
+      if (name !== 'l26_public' && !publicGuest) refreshBadges(version, config);
       if (gate && !L.open(gate) && !def?.selfGate) {   // 꺼진 기능: 화면 제목 + 준비 중 (selfGate 화면은 스스로 처리 — 통합 때 Claude)
         root.innerHTML = (def?.title && title !== titleKey ? '<h1>' + L.esc(title) + '</h1>' : '') + '<p class="muted">' + L.esc(L.t('core.soon')) + '</p>';
         return;
@@ -437,11 +462,16 @@
     },
     paintNav: function (on) {
       navOn = on;
-      var shell = L.open('l26_shell');
+      var shell = L.open('l26_shell') || document.getElementById('app').classList.contains('public-view');
       var playTab = L.open('l26_play') ? 'l26_play' : 'play';
       var app = document.getElementById('app');
       app.classList.toggle('l26-shell', shell);
       document.querySelector('.shell-brand').href = '#/' + defaultRoute();
+      if (app.classList.contains('public-view')) {
+        app.querySelector('.l26-feed-shortcuts')?.remove();
+        document.getElementById('tabbar').replaceChildren();
+        return;
+      }
       if (shell) {
         if (on === 'play' || on === 'l26_play') on = playTab;
         else if (Object.hasOwn(shellTabs, on)) on = shellTabs[on];
@@ -560,7 +590,7 @@
   }
 
   function defaultRoute() {
-    return L.open('l26_shell') ? 'l26_home' : 'tonight';
+    return L.publicGuest() ? 'l26_public' : L.open('l26_shell') ? 'l26_home' : 'tonight';
   }
 
   function resetActivity() {
@@ -670,6 +700,7 @@
   function updateSession(token) {
     if (session === (token || '')) return;
     session = token || '';
+    viewerMedia = '';
     L.me = null;
     configPending = null;
     previewRequested = false;
@@ -685,6 +716,7 @@
       if (configPending !== request || session !== token || previewRequested !== requested) return;
       var wasShell = L.open('l26_shell'), wasPlay = L.open('l26_play');
       features = !result.error && result.open || Object.create(null);
+      viewerMedia = typeof result.viewer_media === 'string' ? result.viewer_media : '';
       previewEligible = Boolean(token && result.preview_eligible === true);
       if (requested && !previewEligible) setPreviewRequest(false);
       var nextPreview = requested && previewEligible;
@@ -708,6 +740,8 @@
     var version = routeVersion;
     await refreshConfig();
     if (!shown || version !== routeVersion || document.hidden) return;
+    if (routePublic !== L.open('l26_public_view')) return L.route(null, true);
+    if (document.getElementById('app').classList.contains('public-view')) return;
     var name = location.hash.replace(/^#\/?/, '').split(/[/?]/, 1)[0];
     if (name === 'u') name = 'user';
     const followerScreenChanged = followerScreens.includes(name) && routeFollowCounts !== L.open('l26_follow_counts');

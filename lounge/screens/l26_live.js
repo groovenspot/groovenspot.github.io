@@ -406,7 +406,10 @@
 
   L.screen('l26_live', {
     title: 'nav.l26_live',
-    render,
+    render(root) {
+      if (!L.me && L.open('l26_public_view')) return L.publicView.mount(root, true);
+      return render(root);
+    },
     refresh() { controller?.refresh(); },
     leave() { controller?.leave(); controller = null; }
   });
