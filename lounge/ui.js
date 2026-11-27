@@ -78,10 +78,11 @@
     return hit ? '/lounge/assets/dj-logos/' + hit + '.png' : '';
   };
   // 로고가 있으면 <img class="l26-dj-logo">, 없으면 fallback(보통 이름 글자)
-  L.djMark = function (name, fallback, cls) {
+  //  · 이름 글자는 화면에서만 숨겨 둠(읽기 프로그램·검색용). label=false 면 숨긴 이름도 안 넣음
+  L.djMark = function (name, fallback, cls, label) {
     var src = L.djLogo(name);
-    return src ? '<img class="l26-dj-logo' + (cls ? ' ' + cls : '') + '" src="' + src + '" alt="' + L.esc(name) +
-      '" loading="lazy" decoding="async">' : (fallback == null ? L.esc(name) : fallback);
+    return src ? '<img class="l26-dj-logo' + (cls ? ' ' + cls : '') + '" src="' + src + '" alt="" loading="lazy" decoding="async">' +
+      (label === false ? '' : '<span class="sr-only">' + L.esc(name) + '</span>') : (fallback == null ? L.esc(name) : fallback);
   };
 
   L.l26Skeleton = function (label, compact = false, attrs = '') {

@@ -36,7 +36,7 @@
       return;
     }
     view.innerHTML = djs.length ? '<ul class="lounge-list shell-ledger">' + djs.map(dj =>
-      '<li class="shell-card shell-row">' + U.link(path(dj.key), L.djMark(dj.name, '', 'is-sm') + '<span>' + L.esc(dj.name) + '</span>') +
+      '<li class="shell-card shell-row">' + U.link(path(dj.key), L.djMark(dj.name, '', 'is-sm', false) + '<span>' + L.esc(dj.name) + '</span>') +
       '<span class="muted">' + L.esc(dj.floor) + '</span></li>').join('') + '</ul>' : U.status('empty');
   }
 
@@ -70,7 +70,7 @@
     const slots = Array.isArray(dj.slots) ? dj.slots : [];
     const floor = dj.floor || dj.now?.floor || dj.next?.floor || slots[0]?.floor;
     const slotText = slot => L.esc([slot.floor, slot.at].filter(Boolean).join(' · '));
-    view.innerHTML = '<div class="lounge-list"><section class="shell-card">' + L.djMark(dj.name, '', 'is-hero') + '<h2>' + L.esc(dj.name) + '</h2>' +
+    view.innerHTML = '<div class="lounge-list"><section class="shell-card">' + L.djMark(dj.name, '', 'is-hero', false) + '<h2>' + L.esc(dj.name) + '</h2>' +
       (floor ? '<p class="muted">' + L.esc(floor) + '</p>' : '') +
       (L.open('l26_follow_counts') ? '<p class="l26-follow-count" data-dj-follower-count aria-live="polite" hidden></p>' : '') +
       '<div class="shell-actions">' + U.button('', 'data-dj-follow', true) +
