@@ -53,7 +53,7 @@
       floors.map(f=>'<button type="button" role="tab" aria-selected="'+(f===floor)+'" tabindex="'+(f===floor?0:-1)+'" data-floor-tab="'+f+'">'+f+(f==='2F'?' GROOVE':' SPOT')+'</button>').join('')+'</div><div role="tabpanel" aria-label="'+floor+'">'+
       (visible.length?'<ol class="lineup5-list">'+visible.map((row,i)=>{
         const index=start+i, mine=followed.has(row.key);
-        const body='<time>'+L.esc(row.at)+'</time>'+L.avatar({nick:row.dj,photo:U.url(row.photo)},44)+
+        const body='<time>'+L.esc(row.at)+'</time>'+L.avatar({nick:row.dj,photo:L.djLogo(row.dj)||U.url(row.photo)},44,{cls:L.djLogo(row.dj)?'is-logo':''})+
           '<span class="lineup5-name">'+L.esc(row.dj)+'</span><span class="lineup5-status">'+(index===current?'<b>'+t('now')+'</b>':'')+(mine?'<small>★ '+t('alert')+'</small>':'')+'</span>';
         return '<li class="lineup5-row'+(index===current?' is-now':current>=0 && index<current?' is-past':'')+'">'+
           (row.key?'<a class="lineup5-dj" href="#/dj/'+encodeURIComponent(row.key)+'">'+body+'</a>':'<div class="lineup5-dj">'+body+'</div>')+

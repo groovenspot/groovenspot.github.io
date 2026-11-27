@@ -42,18 +42,32 @@
   const translated = key => L.esc(L.t(key));
   // Published GROOVE SESSIONS clips from /data/videos.json.
   const tiles = {
-    cup: ['vote.cup', 'play', 'whM3ZZUnSVE'],
-    guess: ['l26play.guess', 'search'],
-    radio: ['radio.title', 'play', 'eY3RZgw7fvE'],
-    vote: ['vote.title', 'check'],
-    attend: ['l26play.attend', 'check'],
-    shorts: ['shorts.title', 'play'],
-    challenge: ['challenge.title', 'camera'],
-    rank: ['rank.title', 'layers'],
-    rewards: ['rewards.title', 'heart'],
-    shop: ['shop.title', 'bookmark'],
-    play: ['l26play.legacy', 'grid'],
-    djs: ['dj.list', 'user']
+    cup: ['vote.cup', 'whM3ZZUnSVE'],
+    guess: ['l26play.guess'],
+    radio: ['radio.title', 'eY3RZgw7fvE'],
+    vote: ['vote.title'],
+    attend: ['l26play.attend'],
+    shorts: ['shorts.title'],
+    challenge: ['challenge.title'],
+    rank: ['rank.title'],
+    rewards: ['rewards.title'],
+    shop: ['shop.title'],
+    play: ['l26play.legacy'],
+    djs: ['dj.list']
+  };
+  const artwork = {
+    cup: '<path d="M59 13h42v23a21 21 0 0 1-42 0zm0 7H43v6a20 20 0 0 0 18 20m40-26h16v6a20 20 0 0 1-18 20M80 57v11m-19 0h38M22 22v12m-6-6h12m110 18v14m-7-7h14"/>',
+    radio: '<rect x="36" y="25" width="88" height="44" rx="8"/><path d="m47 25 67-16M47 39h32m-32 8h32m-32 8h32"/><circle cx="103" cy="47" r="11"/><path d="M17 34v16m126-16v16"/>',
+    guess: '<path d="M48 47V32a32 32 0 0 1 64 0v15M48 42h9v22H45a5 5 0 0 1-5-5V47a5 5 0 0 1 5-5zm64 0h-9v22h12a5 5 0 0 0 5-5V47a5 5 0 0 0-5-5z"/><path d="M70 32a10 10 0 1 1 15 9c-4 3-5 5-5 9m0 8v1M23 23v16m-8-8h16m103 19 9-9m-9 19h13"/>',
+    vote: '<path d="M47 36h66l13 17v17H34V53l13-17zm-13 17h92M58 53h44"/><path d="M63 6h34v40H63z" fill="var(--l26-play-ink)"/><path d="m72 25 6 6 11-13M17 39h8m111-14 7-7m-4 25h10"/>',
+    attend: '<rect x="44" y="15" width="72" height="52" rx="7"/><path d="M44 29h72M61 9v13m38-13v13M62 42h9m-9 11h9m11-11h9m-9 11h9"/><circle cx="108" cy="56" r="17" fill="var(--l26-play-ink)"/><path d="m100 56 5 5 10-11M23 49v12m-6-6h12m107-39h11m-5.5-5.5v11"/>',
+    shorts: '<rect x="55" y="6" width="50" height="66" rx="8"/><path d="m75 29 16 10-16 10zM73 62h14M34 25v31m-11-23v15m103-16v22m10-31v37"/>',
+    challenge: '<path d="M43 28h14l7-12h32l7 12h14a7 7 0 0 1 7 7v28a7 7 0 0 1-7 7H43a7 7 0 0 1-7-7V35a7 7 0 0 1 7-7z"/><circle cx="80" cy="48" r="15"/><path d="M80 41v14m-7-7h14m24-11h4M24 12v12m-6-6h12m109 24v16m-8-8h16"/>',
+    rank: '<path d="M27 69V46h33v23m0 0V31h40v38m0 0V51h33v18M20 69h120m-60-64 4 8 9 1-6 6 1 9-8-4-8 4 1-9-6-6 9-1zM42 27v10m-5-5h10m70 2h12"/>',
+    rewards: '<path d="M38 32h84v14H38zm8 14v24h68V46M80 32v38M80 32c-16 0-31-2-29-13 2-13 23-4 29 13zm0 0c16 0 31-2 29-13-2-13-23-4-29 13zM19 42v14m-7-7h14m115 1 8 8m0-8-8 8"/>',
+    shop: '<path d="M47 26h66l7 43H40zM66 29V17a14 14 0 0 1 28 0v12m-6 13 8 8-15 15-9-9 15-14z"/><path d="M86 47h1M24 31v16m-8-8h16m105 12h9m-4.5-4.5v9"/>',
+    play: '<rect x="37" y="12" width="86" height="53" rx="8" transform="rotate(-7 80 39)"/><path d="M58 32v19m-10-10h20m16 11 25-3m-21-16h1m15 1h1M21 18v12m-6-6h12m113 28v14m-7-7h14"/>',
+    djs: '<rect x="26" y="20" width="108" height="48" rx="6"/><circle cx="55" cy="44" r="15"/><circle cx="105" cy="44" r="15"/><path d="M55 44h1m49 0h1M80 28v32m-5-22h10m-10 13h10M20 11h16m88 0h16"/>'
   };
   const missionLinks = {
     cup: ['cup', 'vote.cup'], dj_content: ['shorts', 'shorts.title'],
@@ -87,13 +101,14 @@
   }
 
   function activity(key, enabled, attended) {
-    const [title, icon, video] = tiles[key];
+    const [title, video] = tiles[key];
     const attendance = key === 'attend';
     const done = attendance && attended;
     const attrs = ' class="l26-play-tile" data-play-activity="' + key + '"';
     const content = '<span class="l26-play-tile-art" aria-hidden="true">' +
-      (video ? '<span class="l26-play-thumb" style="background-image:url(https://i.ytimg.com/vi/' + video + '/hqdefault.jpg)"></span>' : '') +
-      L.icon(enabled ? icon : 'lock', { size: 23 }) + '</span><span class="l26-play-tile-name"><span>' +
+      '<svg class="l26-play-illustration" viewBox="0 0 160 76" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' +
+      artwork[key] + '</svg>' + (video ? '<img class="l26-play-thumb" alt="" loading="lazy" src="https://i.ytimg.com/vi/' + video + '/hqdefault.jpg">' : '') +
+      (video || !enabled ? '<span class="l26-play-tile-icon">' + L.icon(enabled ? 'play' : 'lock', { size: 20 }) + '</span>' : '') + '</span><span class="l26-play-tile-name"><span>' +
       (done ? label('attendanceDone') : translated(title)) +
       (enabled ? '' : '<small>' + translated('core.soon') + '</small>') + '</span>' +
       (enabled && !done ? L.icon('chevron', { size: 16 }) : '') + '</span>';
@@ -145,9 +160,12 @@
       '<path d="M166 55l3.5 10.5L180 69l-10.5 3.5L166 83l-3.5-10.5L152 69l10.5-3.5L166 55Z" fill="var(--l26-play-ink)"/>' +
       '<path d="M189 57v12m-6-6h12m-11 16v8m-4-4h8" stroke="var(--l26-play-ink)" stroke-width="2"/></g></svg></div>' +
       '<div class="l26-play-mission-copy" data-l26-mission aria-busy="true">' + missionHeading() +
-      '<p role="status">' + label('loading') + '</p></div></section><p class="l26-play-error" data-l26-error role="status" hidden></p>' +
+      L.l26Skeleton(label('loading'), true) + '</div></section><p class="l26-play-error" data-l26-error role="status" hidden></p>' +
       '<div class="l26-play-featured" hidden></div>';
 
+    root.addEventListener('error', event => {
+      if (event.target.matches('.l26-play-thumb')) event.target.remove();
+    }, true);
     const card = root.querySelector('[data-l26-mission]');
     const points = root.querySelector('[data-l26-points]');
     const status = root.querySelector('.l26-play-member');
@@ -189,9 +207,9 @@
         if (['closed', 'action'].includes(data.error)) return legacy();
         card.setAttribute('aria-busy', 'false');
         if (!data.ok) {
-          error.hidden = false;
-          error.textContent = L.t('l26play.error');
-          if (!last) card.innerHTML = missionHeading() + button('refresh', 'retry');
+          error.hidden = !last;
+          if (last) error.textContent = L.t('l26play.error');
+          else card.innerHTML = missionHeading() + L.l26Empty(label('error'), 'layers', true, '', button('refresh', 'retry'));
           return;
         }
         error.hidden = true;

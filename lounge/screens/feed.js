@@ -1180,7 +1180,8 @@ const LoungePostUI = (() => {
   const TABS = ['all', 'following', '2F', '3F'], TAB_KEY = 'gl_feed_tab';
   const remembered = () => { try { return localStorage.getItem(TAB_KEY) || ''; } catch { return ''; } };
   const remember = tab => { try { localStorage.setItem(TAB_KEY, tab); } catch { /* 저장을 막아 둔 브라우저 */ } };
-  const skeleton = () => '<div class="feed4-skel" role="status" data-post-skeleton><span class="sr-only">' + U.t('loading') + '</span>' +
+  const skeleton = () => L.open('l26_shell') ? L.l26Skeleton(U.t('loading'), false, ' data-post-skeleton') :
+    '<div class="feed4-skel" role="status" data-post-skeleton><span class="sr-only">' + U.t('loading') + '</span>' +
     '<div class="feed4-skel-head" aria-hidden="true"><i></i><b></b></div><div class="feed4-skel-media post-skeleton-media" aria-hidden="true"></div>' +
     '<div class="feed4-skel-line" aria-hidden="true"></div></div>';
   const notice = (message, retry) => '<div class="feed4-state" role="status"><p>' + message + '</p>' +
@@ -1255,7 +1256,14 @@ const LoungePostUI = (() => {
       '<button type="button" class="feed4-new" data-new hidden>' + L.icon('back', { size: 16 }) + '<span>' + w('newPosts') + '</span></button>' +
       '<div data-posts></div><div data-page aria-live="polite"></div><div class="feed4-sentinel" data-sentinel aria-hidden="true"></div></div></section>';
     const body = root.querySelector('[data-feed-body]'), tools = root.querySelector('[data-post-tools]');
-    const feed = root.querySelector('[data-feed]'), logo = feed.querySelector('.feed4-logo');
+    const feed = root.querySelector('[data-feed]');
+    const legacyRight = feed.querySelector('.ui-bar-side.is-right');
+    const compose = feed.querySelector('[data-compose-slot]');
+    const search = feed.querySelector('a[href="#/explore"]');
+    const titleRow = document.createElement('header');
+    titleRow.className = 'feed4-title';
+    titleRow.innerHTML = '<h1>' + L.esc(L.t('nav.feed')) + '</h1><div></div>';
+    const actions = titleRow.lastElementChild;
     const list = root.querySelector('[data-posts]'), page = root.querySelector('[data-page]');
     const sentinel = root.querySelector('[data-sentinel]'), pill = root.querySelector('[data-new]');
     list.classList.add('feed4-cards', 'feed4-bleed');
@@ -1274,14 +1282,16 @@ const LoungePostUI = (() => {
       if (next === shellState) return;
       shellState = next;
       feed.classList.toggle('feed4-l26', shell);
-      logo.setAttribute('href', shell ? '#/l26_home' : '#/tonight');
-      logo.innerHTML = shell ? 'GROOVE<span> LOUNGE</span>' : 'GROOVE LOUNGE';
-      if (shell) logo.setAttribute('aria-label', 'GROOVE LOUNGE');
-      else logo.removeAttribute('aria-label');
       feed.querySelector('.feed4-openchat')?.remove();
       feed.querySelector('.feed4-shortcuts')?.remove();
-      if (!shell) return;
-      feed.querySelector('.ui-bar-side.is-right').insertAdjacentHTML('beforeend',
+      if (!shell) {
+        legacyRight.prepend(compose, search);
+        titleRow.remove();
+        return;
+      }
+      feed.querySelector('[data-feed-body]').before(titleRow);
+      actions.append(compose, search);
+      actions.insertAdjacentHTML('beforeend',
         '<a class="ui-bar-btn feed4-openchat" href="#/rooms" aria-label="' + chat + '" title="' + chat + '">' +
         L.icon('comment') + '</a>');
       tools.insertAdjacentHTML('afterend', '<div class="feed4-shortcuts">' +
@@ -1334,6 +1344,15 @@ const LoungePostUI = (() => {
       });
     }
     function empty() {
+      if (L.open('l26_shell')) {
+        if (state.tab !== 'following') {
+          const message = state.tab === 'all' ? t('feedEmpty') : t('floorEmpty', { floor: state.tab });
+          return L.l26Empty('<p>' + message + '</p>', 'image');
+        }
+        const suggest = config?.open?.follow2 === true && (L.hasScreen ? L.hasScreen('suggest') : true);
+        return L.l26Empty('<strong>' + w('followTitle') + '</strong><p>' + t('moreEmpty') + '</p>', 'userPlus', false,
+          ' data-empty="following"', suggest ? '<a class="btn btn-hot" href="#/suggest">' + w('suggest') + '</a>' : '');
+      }
       if (state.tab === 'following') {
         const suggest = config?.open?.follow2 === true && (L.hasScreen ? L.hasScreen('suggest') : true);
         return '<div class="feed4-state" role="status" data-empty="following"><i aria-hidden="true">' + L.icon('userPlus', { size: 28 }) + '</i><strong>' +

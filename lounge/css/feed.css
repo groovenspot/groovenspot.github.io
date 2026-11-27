@@ -150,6 +150,7 @@
 .feed4-c-text { white-space: pre-wrap; }
 .feed4-c-text > p { display: inline; }
 .feed4-c-text .lounge-who-tag { margin-left: 2px; }
+.feed4-c-text .feed4-nick > .lounge-who-tag { vertical-align: bottom; }
 .feed4-c-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 0 14px; min-height: 30px; color: var(--muted); font-size: 12px; font-weight: 600; }
 .feed4-c-meta time { font-weight: 500; }
 .feed4-c-meta button { min-width: 44px; min-height: 44px; margin: -7px 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
@@ -220,27 +221,58 @@ html[data-lounge-keyboard] .feed4-detail-comments .feed4-cform.is-page { bottom:
   font-family: var(--l26-font, "Pretendard Variable", Pretendard, system-ui, sans-serif);
 }
 
-.feed4-l26 .ui-bar {
-  background: var(--l26-bg, light-dark(#ffffff, #08080a));
+#app.l26-shell:has(.feed4-l26) > .lounge-header { display: flex; }
+.feed4-l26 > .ui-bar { display: none; }
+
+.feed4-title,
+.feed4-title > div {
+  display: flex;
+  align-items: center;
 }
 
-.feed4-l26 :is(.feed4-logo, .ui-bar-btn) {
-  color: var(--l26-text, light-dark(#111113, #f5f5f7));
+.feed4-title {
+  justify-content: space-between;
+  gap: var(--l26-gap);
+  margin-block-end: var(--l26-gap);
 }
 
-.feed4-l26 .feed4-logo {
-  display: inline-block;
-  align-content: center;
-  font-size: var(--l26-size-caption, 12px);
-  font-weight: var(--l26-weight-title, 800);
+.feed4-title h1 {
+  margin: 0;
+  color: var(--l26-text);
+  font-size: var(--l26-size-title);
+  font-weight: var(--l26-weight-title);
 }
 
-@media (max-width: 355px) {
-  .feed4-l26 .feed4-logo span { display: none; }
+.feed4-title .ui-bar-btn { color: var(--l26-text); }
+.feed4-title .feed4-openchat {
+  background: color-mix(in srgb, var(--l26-brand) 15%, transparent);
 }
 
-.feed4-l26 .feed4-openchat {
-  background: color-mix(in srgb, var(--l26-brand, #ff2d87) 15%, transparent);
+.feed4-l26 [data-page] > .l26-state { margin-block: var(--l26-gap); }
+
+.feed4-l26 .l26-state-art {
+  inline-size: 100%;
+  aspect-ratio: auto;
+  min-block-size: clamp(220px, calc(100svh - 468px), 380px);
+}
+
+.feed4-l26 .l26-empty .l26-state-art {
+  background:
+    radial-gradient(circle at center, color-mix(in srgb, var(--l26-brand) 24%, transparent), transparent 40%),
+    linear-gradient(145deg, color-mix(in srgb, var(--l26-floor-3f) 30%, transparent),
+      color-mix(in srgb, var(--l26-brand) 14%, transparent));
+}
+
+.feed4-l26 .l26-empty .l26-state-art svg { width: 52px; height: 52px; }
+
+.feed4-l26 .feed4-card:not(:has([data-media])):has([data-cap]) {
+  margin: var(--l26-gap) var(--l26-page);
+  border: 0;
+  border-inline-start: 3px solid var(--l26-brand);
+  border-radius: var(--l26-card-radius);
+  background:
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--l26-floor-3f) 23%, transparent), transparent 70%),
+    var(--l26-card);
 }
 
 .feed4-shortcuts {

@@ -1,6 +1,7 @@
 (function (L) {
   const copy = {
     title: ['입장 QR', 'Entry QR', '入場QR', '入场二维码'],
+    entrance: ['입구에서 이 QR을 보여주세요', 'Show this QR at the entrance', '入口でこのQRを提示してください', '请在入口出示此二维码'],
     show: ['QR 띄우기', 'Show QR', 'QRを表示', '显示二维码'],
     retry: ['다시 시도', 'Try again', '再試行', '重试'],
     checking: ['입장 인증 확인 중…', 'Checking entry…', '入場認証を確認中…', '正在检查入场验证…'],
@@ -28,7 +29,7 @@
     return generator;
   }
 
-  L.mountEntryQr = function (root, { loginHref, onVerified } = {}) {
+  L.mountEntryQr = function (root, { loginHref, onVerified, automatic = false } = {}) {
     const t = key => copy[key][Math.max(0, languages.indexOf(L.lang))];
     root.hidden = !L.open('l26_entry');
     if (root.hidden) return { refresh() {}, destroy() {} };
@@ -40,7 +41,7 @@
       document.head.append(link);
     }
     root.classList.add('l26-entry-qr');
-    root.innerHTML = '<h2>' + t('title') + '</h2><button type="button" class="btn" hidden></button>' +
+    root.innerHTML = '<h2>' + t(automatic ? 'entrance' : 'title') + '</h2><button type="button" class="btn" hidden></button>' +
       '<a hidden></a><img alt="' + t('title') + '" hidden><p data-entry-countdown hidden></p><p role="status" hidden></p>';
     const button = root.querySelector('button');
     const login = root.querySelector('a');
@@ -49,6 +50,8 @@
     const image = root.querySelector('img');
     const countdown = root.querySelector('[data-entry-countdown]');
     const status = root.querySelector('[role=status]');
+    if (automatic) status.insertAdjacentHTML('beforebegin', '<span class="l26-entry-placeholder" aria-hidden="true" hidden></span>');
+    const placeholder = automatic && root.querySelector('.l26-entry-placeholder');
     let member, verifiedDay, verifiedUntil = 0, expires = 0, poll, tick, pending;
     let wanted = false, checked = false, failures = 0, stopped = false;
     const active = () => !stopped && root.isConnected;
@@ -56,6 +59,7 @@
 
     function message(key) {
       status.hidden = !key;
+      if (placeholder) placeholder.hidden = !['checking', 'issuing', 'renewing'].includes(key);
       const value = key ? t(key) : '';
       if (status.textContent !== value) status.textContent = value;
       root.classList.toggle('is-verified', key === 'verified');
@@ -105,6 +109,7 @@
           clearQr();
           offer();
           login.hidden = !loginHref;
+          if (automatic) root.hidden = true;
           message();
           return;
         }
@@ -143,11 +148,11 @@
           qr.make();
           image.src = qr.createDataURL(7, 28);
           image.hidden = countdown.hidden = false;
-          message('staff');
+          message(automatic ? null : 'staff');
           remaining();
           schedule(pollMs);
         } else if (wanted) {
-          message('staff');
+          message(automatic ? null : 'staff');
           schedule(expires ? pollMs : 0);
         } else {
           offer('show');
@@ -184,7 +189,8 @@
       if (L.me?.id !== member) {
         member = L.me?.id;
         pending = null;
-        checked = wanted = false;
+        checked = false;
+        wanted = automatic && Boolean(member);
         verifiedDay = undefined;
         failures = 0;
         clearQr();
@@ -200,7 +206,7 @@
       offer();
       if (!wanted) message('checking');
       else if (!expires && status.textContent !== t('renewing')) message('issuing');
-      read(wanted && checked && !expires);
+      read(wanted && !expires && (checked || automatic));
     }
 
     function connection() {
