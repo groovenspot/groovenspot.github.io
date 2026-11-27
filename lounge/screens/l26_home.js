@@ -131,7 +131,10 @@
 
   function videoLink(video, hero = false) {
     return '<a class="l26-home-video" href="https://www.youtube.com/watch?v=' + video.youtube +
-      '" rel="noopener">' + picture('https://i.ytimg.com/vi/' + video.youtube + '/hqdefault.jpg', hero) +
+      '" rel="noopener"><svg class="l26-home-session-art" viewBox="0 0 200 100" fill="none" aria-hidden="true">' +
+      '<path d="M20 43v14m16-23v32m16-21v10m16-32v54m16-44v34m16-50v66m16-41v16m16-29v42m16-36v30m16-24v18m16-16v14" ' +
+      'stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>' +
+      picture('https://i.ytimg.com/vi/' + video.youtube + '/hqdefault.jpg', hero) +
       '<span class="l26-home-video-label">' + L.icon('play', { size: 18, fill: true }) +
       '<span>GROOVE SESSIONS · ' + L.esc(video.dj) + '</span></span></a>';
   }
@@ -260,6 +263,43 @@
       (commands.has(action.kind) || url.test(action.route) ? L.icon('chevron', { size: 16 }) : '') + '</li>';
   }
 
+  function paintEntrance(state, hero, show) {
+    if (!show) {
+      state.entrance?.destroy();
+      state.entrance = null;
+      state.entranceCard?.remove();
+      state.entranceCard = null;
+      return;
+    }
+    if (state.entranceCard) return;
+    const card = state.entranceCard = document.createElement('section');
+    card.className = 'l26-home-entrance';
+    card.innerHTML = L.l26Skeleton(t('loading'));
+    hero.after(card);
+    L.loadEntryQr().then(() => {
+      if (active !== state || state.entranceCard !== card) return;
+      state.entrance = L.mountEntryQr(card, {
+        automatic: true,
+        onVerified() {
+          state.entryVerified = true;
+          paintEntrance(state, hero, false);
+          void refresh(state);
+        }
+      });
+    }).catch(() => {
+      if (state.entranceCard !== card) return;
+      card.remove();
+      state.entranceCard = null;
+    });
+  }
+
+  function syncEntrance(state, hero) {
+    const { phase, verified_entry, primary_action, cards } = state.view;
+    if (phase !== 'live') state.entryVerified = false;
+    paintEntrance(state, hero, phase === 'live' && !verified_entry && !state.entryVerified && Boolean(L.me) &&
+      L.open('l26_entry') && [primary_action, ...cards].some(action => action.kind === 'entry_qr'));
+  }
+
   function paint(state, data) {
     const primary = data.primary_action;
     const hasBallot = primary.kind === 'floor_vote' && (primary.vote_status === 'ready' ||
@@ -268,7 +308,10 @@
     const official = '<section class="l26-home-official" hidden></section>';
     const mediaFirst = data.phase === 'afternoon';
     state.root.dataset.homePhase = data.phase;
-    state.root.querySelector('[data-home-main]').innerHTML = '<header class="l26-home-heading"><h1>' + L.esc(L.t('nav.tonight')) +
+    const main = state.root.querySelector('[data-home-main]');
+    // Keep the mounted QR in the document across data-only refreshes, including countdown updates.
+    const previous = Array.from(main.children).filter(child => child !== state.entranceCard);
+    main.insertAdjacentHTML('beforeend', '<header class="l26-home-heading"><h1>' + L.esc(L.t('nav.tonight')) +
       '</h1></header><section class="t5-hero l26-home-hero" aria-label="' + label(primary) + '">' +
       '<div class="l26-home-artwork" aria-hidden="true"></div><div class="t5-hero-copy">' +
       '<p class="l26-home-hero-note"></p><h2 class="l26-home-hero-title"></h2><p class="l26-home-countdown"></p>' +
@@ -277,7 +320,11 @@
       (hasBallot ? voteControls(primary) : control(primary, 'btn btn-hot l26-home-primary')) + '</div></section>' +
       (mediaFirst ? official + cards : cards + official) +
       '<div class="l26-home-links">' + (!L.me ? '<a href="#/join">' + t('join') + '</a>' : '') +
-      '<a href="#/' + (L.open('l26_play') ? 'l26_play' : 'play') + '">' + L.esc(L.t('nav.l26_play')) + '</a></div>';
+      '<a href="#/' + (L.open('l26_play') ? 'l26_play' : 'play') + '">' + L.esc(L.t('nav.l26_play')) + '</a></div>');
+    previous.forEach(child => child.remove());
+    const hero = main.querySelector('.l26-home-hero');
+    if (state.entranceCard) hero.after(state.entranceCard);
+    syncEntrance(state, hero);
     if (state.stories) {
       state.root.querySelector(data.phase === 'morning' ? '.l26-home-official' : '.l26-home-cards').before(state.stories);
     }
@@ -292,6 +339,7 @@
     if (snapshot === state.snapshot) {
       loadMedia(state);
       paintMedia(state);
+      syncEntrance(state, state.root.querySelector('.l26-home-hero'));
       return;
     }
     if (view.primary_action.vote_status !== 'ready' ||
@@ -450,8 +498,8 @@
       if (!L.open('l26_home')) return legacy();
       loadStyles();
       root.className = 'l26-screen l26-home';
-      root.innerHTML = '<div data-home-main><h1>' + L.esc(L.t('nav.tonight')) + '</h1><p role="status">' + t('loading') +
-        '</p></div><section data-home-dj-feedback hidden></section>';
+      root.innerHTML = '<div data-home-main><h1>' + L.esc(L.t('nav.tonight')) + '</h1>' + L.l26Skeleton(t('loading')) +
+        '</div><section data-home-dj-feedback hidden></section>';
       const state = active = { root, voteRevision: 0,
         djFeedback: L.mountDjFeedback(root.querySelector('[data-home-dj-feedback]'), 'home') };
       if (L.me && L.open('stories') && L.storyTray) {
@@ -478,6 +526,7 @@
       if (!active) return;
       clearTimeout(active.timer);
       clearTimeout(active.qrTimer);
+      active.entrance?.destroy();
       active.djFeedback.destroy();
       document.removeEventListener('visibilitychange', active.refresh);
       active = null;

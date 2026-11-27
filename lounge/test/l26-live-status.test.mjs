@@ -7,23 +7,25 @@ const source = await readFile(new URL('../screens/l26_live.js', import.meta.url)
 const at = (time, day = '2026-11-27') => Date.parse(day + 'T' + time + '+09:00');
 const scheduled = { opensAt: at('21:00:00'), closesAt: at('07:00:00', '2026-11-28') };
 
-async function renderVenue(now, response) {
+async function renderVenue(now, response, scheduleOnly = false) {
   const nodes = new Map();
   function node(selector) {
     if (!nodes.has(selector)) nodes.set(selector, { dataset: {}, querySelector: () => null });
     return nodes.get(selector);
   }
   node('[data-live-vote]').querySelector = node;
-  const root = { isConnected: true, querySelector: node, querySelectorAll: () => [] };
+  const root = { isConnected: true, addEventListener() {}, querySelector: node, querySelectorAll: () => [] };
   let screen;
   const Lounge = {
     lang: 'ko', t: key => key, esc: value => String(value), icon: () => '', open: () => false,
     screen: (name, definition) => { screen = definition; },
+    l26Skeleton: () => '', l26Empty: label => label, photoSrc: value => value,
     mountDjFeedback: () => ({ refresh() {}, destroy() {} }),
     api: async () => ({ floors: { '2F': { now: 'DJ A' } }, ...response })
   };
   runInNewContext(source, {
     Date: { now: () => now },
+    fetch: async () => ({ ok: true, json: async () => [{ dj: 'DJ B', youtube: 'whM3ZZUnSVE' }] }),
     setTimeout() {}, clearTimeout() {},
     window: { Lounge, addEventListener() {}, removeEventListener() {} },
     document: { hidden: false, querySelector: () => true, addEventListener() {}, removeEventListener() {} }
@@ -33,7 +35,9 @@ async function renderVenue(now, response) {
   screen.leave();
 
   const badge = node('[data-live-venue]');
-  return [badge.dataset.liveVenue, badge.textContent, node('[data-live-dj="2F"]').innerHTML.includes('data-live-current')];
+  const schedule = node('[data-live-dj="2F"]').innerHTML;
+  if (scheduleOnly) return schedule;
+  return [badge.dataset.liveVenue, badge.textContent, schedule.includes('data-live-current')];
 }
 
 const cases = [
@@ -58,3 +62,14 @@ for (const [name, now, response, state, label] of cases) {
     assert.deepEqual(await renderVenue(now, response), [state, label, state === 'open']);
   });
 }
+
+test('before opening shows every floor slot with available session art', async () => {
+  const schedule = await renderVenue(at('20:00:00'), {
+    open: false,
+    timetable: [{ floor: '2F', at: '21:00', dj: 'DJ A' },
+      { floor: '3F', at: '21:30', dj: 'DJ C' }, { floor: '2F', at: '00:30', dj: 'DJ B' }]
+  }, true);
+  assert.match(schedule, /<time>21:00<\/time><strong>DJ A<\/strong>/);
+  assert.match(schedule, /<time>00:30<\/time><strong>DJ B<\/strong><img src="https:\/\/i.ytimg.com\/vi\/whM3ZZUnSVE/);
+  assert.doesNotMatch(schedule, /<details|DJ C|다음 DJ/);
+});

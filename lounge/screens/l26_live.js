@@ -51,7 +51,7 @@
   const shareLabel = value => new Intl.NumberFormat(L.lang, { style: 'percent', maximumFractionDigits: 1 }).format(value);
   const loginLink = () => '#/login?next=' + encodeURIComponent('#/l26_live');
 
-  let controller, entryScript, retryVote;
+  let controller, retryVote;
   function loadStyles() {
     if (document.querySelector('link[href="/lounge/css/l26-live.css"]')) return;
     const link = document.createElement('link');
@@ -59,18 +59,6 @@
     link.href = '/lounge/css/l26-live.css';
     link.onerror = () => link.remove();
     document.head.append(link);
-  }
-
-  function loadEntry() {
-    if (L.mountEntryQr) return Promise.resolve();
-    entryScript ||= new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = '/lounge/l26-entry-qr.js';
-      script.onload = resolve;
-      script.onerror = () => { script.remove(); reject(new Error('entry')); };
-      document.head.append(script);
-    }).catch(error => { entryScript = null; throw error; });
-    return entryScript;
   }
 
   // The shared API owns session handling. Bound how long LIVE waits for a reply.
@@ -110,22 +98,34 @@
     return { state: 'pre', openingTime };
   }
 
-  function floorSchedule(floor, data, state) {
+  function sessionThumbnail(slot, sessions) {
+    const key = name => String(name || '').trim().toUpperCase();
+    const session = sessions.find(video => key(video.dj) === key(slot.dj) && /^[\w-]{11}$/.test(video.youtube));
+    return session ? 'https://i.ytimg.com/vi/' + session.youtube + '/mqdefault.jpg' : L.photoSrc(slot.photo);
+  }
+
+  function floorSchedule(floor, data, state, sessions) {
     const info = data.floors?.[floor] || {};
-    const slots = (data.timetable || []).filter(slot => slot.floor === floor);
+    const slots = (data.timetable || []).filter(slot => slot.floor === floor && slot.dj);
+    if (!slots.length && state !== 'open' && info.next) slots.push({ at: info.nextAt, dj: info.next });
     const nextIndex = slots.findIndex(slot => slot.at === info.nextAt && slot.dj === info.next);
     const previous = slots[nextIndex - 1];
     const matching = slots.filter(slot => slot.dj === info.now);
     const currentTime = previous && previous.dj === info.now ? previous.at : matching.length === 1 ? matching[0].at : '';
-    const live = state === 'open';
-    const next = info.next ? { dj: info.next, at: info.nextAt } : state === 'pre' ? slots[0] : null;
     const time = at => at ? '<time>' + L.esc(at) + '</time>' : '';
-    return '<dl class="l26-live-slots">' + (live ? '<div data-live-current><dt>' + t('dj') + '</dt><dd><strong class="l26-live-dj">' +
-      L.esc(info.now || t('noDj')) + '</strong>' + time(info.now && currentTime) + '</dd></div>' : '') +
-      '<div><dt>' + t('next') + '</dt><dd><strong>' + L.esc(next?.dj || t('noDj')) + '</strong>' +
-      time(next?.at) + '</dd></div></dl><details><summary>' + t('schedule') + L.icon('down', { size: 16 }) + '</summary>' +
-      (slots.length ? '<ul>' + slots.map(slot => '<li>' + L.esc([slot.at, slot.dj].filter(Boolean).join(' · ')) + '</li>').join('') +
-        '</ul>' : '<p class="muted">' + t('noSchedule') + '</p>') + '</details>';
+    const lineup = slots.length ? '<ul class="l26-live-lineup">' + slots.map(slot => {
+      const thumbnail = sessionThumbnail(slot, sessions);
+      return '<li>' + time(slot.at) + '<strong>' + L.esc(slot.dj) + '</strong>' +
+        (thumbnail ? '<img src="' + L.esc(thumbnail) + '" alt="" loading="lazy" width="44" height="30">' : '') + '</li>';
+    }).join('') + '</ul>' : L.l26Empty(t('noSchedule'), 'layers', true);
+    if (state !== 'open') {
+      return '<h3 class="l26-live-lineup-title">' + t('schedule') + '</h3>' + lineup;
+    }
+    return '<dl class="l26-live-slots"><div data-live-current><dt>' + t('dj') + '</dt><dd><strong class="l26-live-dj">' +
+      L.esc(info.now || t('noDj')) + '</strong>' + time(info.now && currentTime) + '</dd></div>' +
+      '<div><dt>' + t('next') + '</dt><dd><strong>' + L.esc(info.next || t('noDj')) + '</strong>' +
+      time(info.next && info.nextAt) + '</dd></div></dl><details><summary>' + t('schedule') + L.icon('down', { size: 16 }) +
+      '</summary>' + lineup + '</details>';
   }
 
   function render(root) {
@@ -136,7 +136,7 @@
       '</p><p data-live-hours hidden></p></div></header>' +
       '<div class="l26-live-grid">' + floors.map(([floor, genre]) =>
         '<article class="l26-live-card" data-l26-floor="' + floor + '"><div class="l26-live-cover"><h2><strong>' + floor +
-        '</strong><span>' + genre + '</span></h2></div><div data-live-dj="' + floor + '">' + t('loading') + '</div></article>').join('') +
+        '</strong><span>' + genre + '</span></h2></div><div data-live-dj="' + floor + '">' + L.l26Skeleton(t('loading'), true) + '</div></article>').join('') +
       '</div><p class="muted" data-live-show-stale hidden>' + t('showStale') + '</p></section>' +
       '<section data-live-entry hidden></section><section data-live-dj-feedback hidden></section>' +
       '<section data-live-vote hidden aria-labelledby="l26-live-vote"><h2 id="l26-live-vote">' + t('vote') + '</h2>' +
@@ -170,6 +170,10 @@
     }));
     let timer, round, failures = 0, revision = 0, stopped = false, sending = false, hint, readPending = false;
     let showPending = false, showKey, showTimer, entry, refreshQueued = false;
+    let sessions = [], sessionRequest, scheduleData;
+    root.addEventListener('error', event => {
+      if (event.target.matches('.l26-live-lineup img')) event.target.remove();
+    }, true);
     const active = () => !stopped && root.isConnected;
     const expiryDelay = () => round?.closes_at - round?.updated_at - (performance.now() - round?.receivedAt);
     const currentRetry = () => retryVote?.day === round?.biz_day && retryVote?.member === L.me?.id ? retryVote : null;
@@ -313,10 +317,27 @@
       venue.textContent = t(state === 'unknown' ? 'showUnknown' : state, { time: openingTime });
       hours.hidden = typeof data.hours !== 'string' || !data.hours;
       hours.textContent = hours.hidden ? '' : t('venueHours') + ' ' + data.hours + ' KST';
-      const markup = floors.map(([floor]) => data.error ? '<p class="muted">' + t('showError') + '</p>' : floorSchedule(floor, data, state));
+      scheduleData = { data, state };
+      paintSchedule();
+      if (!data.error && data.timetable?.length && !sessionRequest) {
+        sessionRequest = fetch('/data/videos.json').then(response => response.ok ? response.json() : [])
+          .then(videos => {
+            if (!active() || !Array.isArray(videos)) return;
+            sessions = videos;
+            paintSchedule();
+          }).catch(() => { sessionRequest = null; });
+      }
+    }
+
+    function paintSchedule() {
+      const { data, state } = scheduleData;
+      const markup = floors.map(([floor]) => data.error ? L.l26Empty(t('showError'), 'layers', true) :
+        floorSchedule(floor, data, state, sessions));
       const key = markup.join('');
       if (showKey === key) {
-        root.querySelectorAll('[data-live-current][hidden]').forEach(item => { item.hidden = false; });
+        if (venue.dataset.liveVenue === 'open') {
+          root.querySelectorAll('[data-live-current][hidden]').forEach(item => { item.hidden = false; });
+        }
         return;
       }
       if (!data.error) showKey = key;
@@ -324,7 +345,11 @@
         const slot = root.querySelector('[data-live-dj="' + floor + '"]');
         const wasOpen = slot.querySelector('details')?.open;
         slot.innerHTML = markup[index];
-        if (wasOpen && !data.error) slot.querySelector('details').open = true;
+        const details = slot.querySelector('details');
+        if (details && wasOpen) details.open = true;
+      }
+      if (venue.dataset.liveVenue !== 'open') {
+        root.querySelectorAll('[data-live-current]').forEach(item => { item.hidden = true; });
       }
     }
 
@@ -340,7 +365,7 @@
     async function mountEntry() {
       if (!L.open('l26_entry')) return;
       try {
-        await loadEntry();
+        await L.loadEntryQr();
       } catch {
         return;
       }

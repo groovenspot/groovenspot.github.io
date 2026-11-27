@@ -64,7 +64,6 @@
   const button = (key, attr, hot = false) => '<button type="button" class="btn' + (hot ? ' btn-hot' : '') +
     '" ' + attr + '>' + text(key) + '</button>';
   const formatPoints = value => L.esc(new Intl.NumberFormat(L.lang).format(value));
-  const busy = '<p role="status">';
   let qrScript;
 
   function stylesheet() {
@@ -114,16 +113,22 @@
     stylesheet();
     root.className = 'l26-screen l26-my';
     root.innerHTML = '<h1>' + title + '</h1><div data-my-content aria-busy="true">' +
-      busy + text('loading') + '</p></div><p data-my-status role="status" hidden></p>';
+      L.l26Skeleton(text('loading')) + '</div><p data-my-status role="status" hidden></p>';
     return root.querySelector('[data-my-content]');
   }
 
-  function membershipProfile(content) {
+  function membershipProfile(content, followers) {
     const member = L.me;
-    content.insertAdjacentHTML('beforebegin', '<div class="l26-my-intro">' +
+    content.insertAdjacentHTML('beforebegin', '<section class="l26-my-card l26-my-intro"' + (followers ? ' data-my-profile' : '') + '>' +
       '<a class="l26-my-identity" href="#/me" aria-label="' + text('legacy') + ' · ' + L.esc(member.nick) + '">' +
-      L.avatar(member, 52) + '<strong>' + L.esc(member.nick) + '</strong></a></div>');
-    return content.previousElementSibling;
+      L.avatar(member, 112) + '<strong>' + L.esc(member.nick) + '</strong></a>' +
+      (followers ? '<div class="l26-my-profile-stats" aria-busy="true">' +
+        L.l26Skeleton(text('loading'), true) + '</div>' : '') +
+      (L.open('l26_entry') ? button('entry', 'data-my-qr aria-description="' + text('entryHelp') + '"', true) : '') + '</section>');
+    const intro = content.previousElementSibling;
+    const qr = intro.querySelector('[data-my-qr]');
+    if (qr) qr.onclick = () => openMembershipEntryQr(qr);
+    return intro;
   }
 
   function showError(root, data) {
@@ -144,7 +149,7 @@
 
   function visitHistory(kind, title, dates, empty, next) {
     return '<div class="l26-my-visit-group" data-my-history="' + kind + '"><h3>' + text(title) + '</h3>' +
-      (dates.length ? '<ul class="l26-my-history">' + visitItems(dates) + '</ul>' : '<p>' + text(empty) + '</p>') +
+      (dates.length ? '<ul class="l26-my-history">' + visitItems(dates) + '</ul>' : L.l26Empty(text(empty), 'layers', true)) +
       (next ? button('more', 'data-my-more aria-label="' + text('more') + ' · ' + text(title) + '"') : '') + '</div>';
   }
 
@@ -174,17 +179,15 @@
       (next.status === 'available' ? text('ready') : text('moreVisits', { n: formatPoints(next.visits - visits) })) + '</p>';
   }
 
-  function entryCard() {
-    return L.open('l26_entry') ? '<section class="l26-my-card l26-my-entry"><div><h2>' + text('entry') + '</h2><p>' +
-      text('entryHelp') + '</p></div>' + button('entry', 'data-my-qr', true) + '</section>' : '';
-  }
-
   async function showProfile(root, panel) {
     const result = await load(root, () => L.api('l26_my_profile'));
     if (!result) return;
     const { profile } = result;
     if (!profile) {
-      if (result.error === 'closed') return panel.remove();
+      if (result.error === 'closed') {
+        panel.parentElement.removeAttribute('data-my-profile');
+        return panel.remove();
+      }
       panel.removeAttribute('aria-busy');
       panel.innerHTML = '<p role="status">' + L.esc(L.errorText(result)) + '</p>' + button('retry', 'data-profile-retry');
       panel.querySelector('button').onclick = () => {
@@ -194,16 +197,15 @@
       };
       return;
     }
-    const photo = LoungeScreenUI.image(profile.photo);
+    const identity = panel.parentElement.querySelector('.l26-my-identity');
+    identity.innerHTML = L.avatar({ ...L.me, ...profile }, 112) + '<strong>' + L.esc(profile.nick) + '</strong>';
     const stat = (key, href) => {
       const body = '<strong>' + formatPoints(profile[key]) + '</strong><span>' + text(key) + '</span>';
       return href ? '<a href="#/' + href + '">' + body + '</a>' : '<span>' + body + '</span>';
     };
     const nick = encodeURIComponent(profile.nick);
     panel.removeAttribute('aria-busy');
-    panel.innerHTML = '<a class="l26-follow-profile" href="#/me" aria-label="' + text('legacy') + '">' +
-      (photo ? '<img src="' + L.esc(photo) + '" alt="">' : '<span aria-hidden="true">' + L.esc(Array.from(profile.nick)[0]) + '</span>') +
-      '<strong>' + L.esc(profile.nick) + '</strong></a><div class="l26-follow-stats">' +
+    panel.innerHTML = '<div class="l26-follow-stats">' +
       stat('posts', L.open('profile2') ? 'me' : '') + stat('followers', 'followers/' + nick) +
       stat('following', 'following/' + nick) + '</div>';
   }
@@ -213,20 +215,15 @@
     const membership = L.open('l26_return');
     if (!membership && !followers) return legacy(root);
     const content = frame(root, L.esc(L.t('nav.l26_my')));
-    if (followers) {
-      content.insertAdjacentHTML('beforebegin', '<section class="l26-my-card l26-follow-summary" data-my-profile aria-busy="true">' +
-        busy + text('loading') + '</p></section>');
-      void showProfile(root, root.querySelector('[data-my-profile]'));
-    }
+    const intro = membershipProfile(content, followers);
+    if (followers) void showProfile(root, intro.querySelector('.l26-my-profile-stats'));
     const result = membership && await load(root, () => L.api('l26_return'));
     if (membership && !result) return;
     if (result?.error === 'closed' && !followers) return legacy(root);
     if (!membership || result.error === 'closed') {
       content.removeAttribute('aria-busy');
-      content.innerHTML = entryCard() + '<div class="l26-my-links">' + link('djs', 'djs') +
+      content.innerHTML = '<div class="l26-my-links">' + link('djs', 'djs') +
         link('me/settings', 'settings') + '</div>';
-      const qr = content.querySelector('[data-my-qr]');
-      if (qr) qr.onclick = () => openMembershipEntryQr(qr);
       const data = await load(root, () => L.api('l26_benefits'));
       if (data?.ok && data.benefits.length) {
         content.querySelector('.l26-my-links').insertAdjacentHTML('afterbegin', link('l26_benefits', 'benefits'));
@@ -237,7 +234,7 @@
     if (!result.ok) {
       showError(root, result);
       content.innerHTML = button('retry', 'data-my-retry');
-      content.querySelector('button').onclick = () => showMembership(root);
+      content.querySelector('button').onclick = () => renderMy(root);
       return;
     }
 
@@ -248,7 +245,6 @@
       '</h2><strong data-my-visits>' + formatPoints(result.visits) + '</strong></div>' +
       '<div class="l26-my-next"><h2>' + text('next') + '</h2>' +
       benefitProgress(result.next_benefit, result.visits) + link('l26_benefits', 'benefits') + '</div></section>' +
-      entryCard() +
       '<section class="l26-my-card l26-my-points"><h2>' + text('points') +
       '</h2><strong>' + formatPoints(result.points) + '</strong></section>' +
       '<div class="l26-my-awards"><h3>' + text('badges') + '</h3>' +
@@ -261,8 +257,6 @@
       link('djs', 'djs') + link('me/settings', 'settings') +
       (L.open('l26_dj_feedback') ? '<a href="#/alerts/settings">' + L.esc(L.djReviewLabel('reminder')) + '</a>' : '') + '</div>';
 
-    const qr = content.querySelector('[data-my-qr]');
-    if (qr) qr.onclick = () => openMembershipEntryQr(qr);
     bindHistory(root, content, 'verified', result.next_before, 'before', 'entries', 'next_before');
     if (result.next_legacy_before) {
       bindHistory(root, content, 'self', result.next_legacy_before, 'legacy_before', 'legacy_checkins', 'next_legacy_before');
@@ -333,21 +327,6 @@
     });
   }
 
-  async function showMembership(root) {
-    const ready = renderMy(root);
-    const content = root.querySelector('[data-my-content]');
-    if (!content) return ready;
-    const intro = membershipProfile(content);
-    await ready;
-    const qr = content.querySelector('[data-my-qr]');
-    if (qr && root.isConnected) {
-      const card = qr.closest('.l26-my-entry');
-      qr.setAttribute('aria-description', L.t('l26my.entryHelp'));
-      intro.append(qr);
-      card.remove();
-    }
-  }
-
-  L.screen('l26_my', { title: 'nav.l26_my', auth: true, render: showMembership });
+  L.screen('l26_my', { title: 'nav.l26_my', auth: true, render: renderMy });
   L.screen('l26_benefits', { title: 'l26my.benefits', nav: 'me', auth: true, render: renderBenefits });
 })(window.Lounge);

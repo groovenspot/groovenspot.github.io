@@ -175,26 +175,37 @@ button.l26-play-tile:not(:disabled) { cursor: pointer; }
   display: grid;
   place-items: center;
   aspect-ratio: var(--l26-video, 16 / 9);
-  background:
-    repeating-radial-gradient(ellipse at center, rgb(8 8 10 / .32) 0 1px, transparent 2px 13px),
-    linear-gradient(135deg, var(--l26-play-activity), var(--l26-play-card));
+  background: radial-gradient(ellipse at 50% 32%,
+    color-mix(in srgb, var(--l26-play-activity) 34%, var(--l26-play-ink)), var(--l26-play-ink) 85%);
+  color: var(--l26-play-activity);
 }
 
 .l26-play-thumb {
   position: absolute;
   inset: 0;
-  background-position: center;
-  background-size: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.l26-play-tile-art svg {
-  z-index: 1;
-  box-sizing: content-box;
-  padding: 9px;
+.l26-play-illustration {
+  position: absolute;
+  inset-block-start: 3%;
+  width: 84%;
+  height: 67%;
+}
+
+.l26-play-tile-icon {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 8px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: var(--l26-play-activity);
-  color: var(--l26-play-ink);
-  transform: translateY(-12px);
+  background: var(--l26-play-ink);
+  color: var(--l26-play-photo-text);
 }
 
 .l26-play-tile-name {
