@@ -5,8 +5,9 @@
     attendance: ['오늘 출석', 'Today’s check-in', '今日の出席', '今日签到'],
     guess: ['DJ 맞히기', 'Guess the DJ', 'DJ当てクイズ', '猜猜 DJ'],
     legacy: ['기존 출석판·올클', 'Classic attendance and all-clear', 'これまでの出席・全クリア', '原版签到和全通关'],
-    more: ['더 많은 놀거리', 'More activities', 'その他の遊び', '更多玩法'],
     done: ['완료', 'Done', '完了', '已完成'],
+    attendancePending: ['미완료', 'Pending', '未完了', '未完成'],
+    attendanceDone: ['출석 완료', 'Checked in', '出席済み', '已签到'],
     ready: ['진행 가능', 'Ready', '参加できます', '可以开始'],
     login: ['로그인', 'Log in', 'ログイン', '登录'],
     guest: ['미션 진행과 포인트 확인은 회원 로그인 후 이용할 수 있어요.', 'Log in to track your mission and see your points.', 'ログインすると進捗とポイントを確認できます。', '登录后可查看任务进度和积分。'],
@@ -14,7 +15,7 @@
     loading: ['미션을 불러오는 중', 'Loading your mission', 'ミッションを読み込み中', '正在加载任务'],
     error: ['다시 불러와 주세요.', 'Please try again.', 'もう一度お試しください。', '请重试。'],
     refresh: ['인증 상태 확인', 'Check entry status', '入場状況を確認', '查看入场状态'],
-    attend: ['출석하기', 'Check in for attendance', '出席する', '签到'],
+    attend: ['출석하기', 'Check in', '出席する', '签到'],
     like: ['앨범 좋아요', 'Like this album', 'アルバムにいいね', '点赞相册'],
     go: ['갈래요 남기기', 'Mark as going', '行く予定を登録', '标记想去'],
     live: ['LIVE 보기', 'Open LIVE', 'ライブを見る', '查看现场'],
@@ -39,16 +40,20 @@
 
   const label = key => L.esc(L.t('l26play.' + key));
   const translated = key => L.esc(L.t(key));
-  const shelfLinks = {
-    guess: 'l26play.guess', cup: 'vote.cup', vote: 'vote.title', radio: 'radio.title',
-    shorts: 'shorts.title', challenge: 'challenge.title', rank: 'rank.title', rewards: 'rewards.title', play: 'l26play.legacy'
-  };
   // Published GROOVE SESSIONS clips from /data/videos.json.
-  const featured = {
-    cup: { icon: 'play', video: 'whM3ZZUnSVE' },
-    guess: { icon: 'search' },
-    radio: { icon: 'play', video: 'eY3RZgw7fvE' },
-    vote: { icon: 'check' }
+  const tiles = {
+    cup: ['vote.cup', 'play', 'whM3ZZUnSVE'],
+    guess: ['l26play.guess', 'search'],
+    radio: ['radio.title', 'play', 'eY3RZgw7fvE'],
+    vote: ['vote.title', 'check'],
+    attend: ['l26play.attend', 'check'],
+    shorts: ['shorts.title', 'play'],
+    challenge: ['challenge.title', 'camera'],
+    rank: ['rank.title', 'layers'],
+    rewards: ['rewards.title', 'heart'],
+    shop: ['shop.title', 'bookmark'],
+    play: ['l26play.legacy', 'grid'],
+    djs: ['dj.list', 'user']
   };
   const missionLinks = {
     cup: ['cup', 'vote.cup'], dj_content: ['shorts', 'shorts.title'],
@@ -77,17 +82,24 @@
     return '<a class="btn' + (primary ? ' btn-hot' : '') + '" href="#/' + path + '">' + translated(key) + '</a>';
   }
 
-  function button(action, text, classes = '', attrs = '') {
-    return '<button type="button" class="btn ' + classes + '" data-l26-action="' + action + '"' + attrs + '>' + label(text) + '</button>';
+  function button(action, text, classes = '') {
+    return '<button type="button" class="btn ' + classes + '" data-l26-action="' + action + '">' + label(text) + '</button>';
   }
 
-  function activity(key) {
-    const { icon, video } = featured[key];
-    return '<a class="l26-play-tile" href="#/' + key + '" data-play-activity="' + key + '">' +
-      '<span class="l26-play-tile-art" aria-hidden="true">' +
+  function activity(key, enabled, attended) {
+    const [title, icon, video] = tiles[key];
+    const attendance = key === 'attend';
+    const done = attendance && attended;
+    const attrs = ' class="l26-play-tile" data-play-activity="' + key + '"';
+    const content = '<span class="l26-play-tile-art" aria-hidden="true">' +
       (video ? '<span class="l26-play-thumb" style="background-image:url(https://i.ytimg.com/vi/' + video + '/hqdefault.jpg)"></span>' : '') +
-      L.icon(icon, { size: 23 }) + '</span><span class="l26-play-tile-name">' + translated(shelfLinks[key]) +
-      L.icon('chevron', { size: 16 }) + '</span></a>';
+      L.icon(enabled ? icon : 'lock', { size: 23 }) + '</span><span class="l26-play-tile-name"><span>' +
+      (done ? label('attendanceDone') : translated(title)) +
+      (enabled ? '' : '<small>' + translated('core.soon') + '</small>') + '</span>' +
+      (enabled && !done ? L.icon('chevron', { size: 16 }) : '') + '</span>';
+    if (!enabled) return '<div' + attrs + ' aria-disabled="true">' + content + '</div>';
+    if (attendance) return '<button type="button" data-l26-action="attend"' + attrs + (done ? ' disabled' : '') + '>' + content + '</button>';
+    return '<a href="#/' + key + '"' + attrs + '>' + content + '</a>';
   }
 
   function missionControls(mission, member) {
@@ -121,10 +133,8 @@
     stylesheet();
 
     root.className = 'l26-screen l26-play';
-    root.innerHTML = '<header class="l26-play-head"><div class="l26-play-heading">' +
-      '<button class="ui-bar-btn" type="button" data-ui-back="l26_lounge" aria-label="' + translated('ui.back') + '">' +
-      L.icon('back') + '</button><h1>' + translated('nav.l26_play') +
-      '</h1></div></header><div class="l26-play-member" hidden>' +
+    root.innerHTML = '<header class="l26-play-head"><h1>' + translated('nav.l26_play') +
+      '</h1></header><div class="l26-play-member" hidden>' +
       '<a class="l26-play-points" data-l26-points href="#/me" hidden></a><div class="l26-play-attendance" hidden></div></div>' +
       '<section class="l26-play-mission" aria-labelledby="l26-mission-title"><div class="l26-play-mission-art" aria-hidden="true">' +
       '<svg viewBox="0 0 360 142" fill="none"><g stroke="currentColor" opacity=".45">' +
@@ -136,32 +146,28 @@
       '<path d="M189 57v12m-6-6h12m-11 16v8m-4-4h8" stroke="var(--l26-play-ink)" stroke-width="2"/></g></svg></div>' +
       '<div class="l26-play-mission-copy" data-l26-mission aria-busy="true">' + missionHeading() +
       '<p role="status">' + label('loading') + '</p></div></section><p class="l26-play-error" data-l26-error role="status" hidden></p>' +
-      '<div class="l26-play-featured" hidden></div>' +
-      '<details class="l26-play-shelf" hidden><summary>' + label('more') +
-      L.icon('down', { size: 16 }) + '</summary><div class="l26-play-options"></div></details>';
+      '<div class="l26-play-featured" hidden></div>';
 
     const card = root.querySelector('[data-l26-mission]');
-    const shelf = root.querySelector('details');
     const points = root.querySelector('[data-l26-points]');
     const status = root.querySelector('.l26-play-member');
     const attendance = root.querySelector('.l26-play-attendance');
     const activities = root.querySelector('.l26-play-featured');
-    const options = root.querySelector('.l26-play-options');
     const error = root.querySelector('[data-l26-error]');
     const hash = location.hash;
-    shelf.open = L.unstash('l26_play') === true;
     let last, pending, voteRequest, busy = false;
 
     function paint(data) {
       const member = Number.isFinite(data.points);
-      const showAttendance = data.shelf.includes('attend');
+      const shelf = new Set(data.shelf);
+      const showAttendance = shelf.has('attend');
       status.hidden = !member && !showAttendance;
       points.hidden = !member;
       points.innerHTML = '<span>' + label('points') + '</span><strong>' +
         (member ? L.esc(data.points.toLocaleString(L.lang)) + ' P' : '') + '</strong>' + L.icon('chevron', { size: 16 });
       attendance.hidden = !showAttendance;
-      attendance.innerHTML = '<span>' + label('attendance') + '</span>' +
-        button('attend', data.attended ? 'done' : 'attend', '', data.attended ? ' disabled' : '');
+      attendance.innerHTML = '<span>' + label('attendance') + '</span><strong>' +
+        label(member ? data.attended ? 'done' : 'attendancePending' : 'login') + '</strong>';
       const mission = data.mission;
       card.dataset.missionKey = mission.key;
       const missionState = member ? '<p class="l26-play-state" data-done="' + mission.done + '">' +
@@ -169,11 +175,9 @@
       card.innerHTML = missionHeading(missionState) + '<h3>' + label(mission.key) + '</h3>' +
         (member ? '' : '<p class="muted">' + label('guest') + '</p>') +
         '<div class="l26-play-actions">' + missionControls(mission, member) + (member ? '' : button('login', 'login')) + '</div>';
-      activities.innerHTML = Object.keys(featured).filter(key => data.shelf.includes(key)).map(activity).join('');
-      activities.hidden = !activities.childElementCount;
-      options.innerHTML = data.shelf.filter(key => Object.hasOwn(shelfLinks, key) && !Object.hasOwn(featured, key))
-        .map(key => link(key, shelfLinks[key])).join('');
-      shelf.hidden = !options.childElementCount;
+      shelf.add('djs');
+      activities.innerHTML = Object.keys(tiles).map(key => activity(key, shelf.has(key), data.attended)).join('');
+      activities.hidden = false;
     }
 
     async function refresh() {
@@ -191,9 +195,10 @@
           return;
         }
         error.hidden = true;
-        if (JSON.stringify(last) === JSON.stringify(data)) return;
-        last = data;
-        paint(data);
+        const display = L.open('shop') && !data.shelf.includes('shop') ? { ...data, shelf: [...data.shelf, 'shop'] } : data;
+        if (JSON.stringify(last) === JSON.stringify(display)) return;
+        last = display;
+        paint(display);
       } finally {
         pending = null;
       }
@@ -248,7 +253,6 @@
     const timer = setInterval(visible, 60_000);
     document.addEventListener('visibilitychange', visible);
     dispose = () => {
-      L.stash('l26_play', shelf.open);
       clearInterval(timer);
       document.removeEventListener('visibilitychange', visible);
       root.onclick = null;
