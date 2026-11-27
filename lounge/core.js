@@ -365,7 +365,7 @@
       }
       if (name === 'u') name = 'user';
       const publicGuest = L.publicGuest();
-      const authRoute = guestAuth.has(name) || (/^(?:l26[_-])?self[_-]join$/.test(name) && L.hasScreen(name));
+      const authRoute = guestAuth.has(name) || (name === 'signup' && L.hasScreen('signup'));
       if (publicGuest && !authRoute) {
         params.live = name === 'l26_live' || (name === 'l26_public' && params.live === '1');
         name = 'l26_public';

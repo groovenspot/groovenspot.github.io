@@ -69,9 +69,8 @@
 
   function join(data) {
     if (L.me) return '';
-    const route = data.join_route;
-    const self = typeof route === 'string' && /^(?:join|(?:l26[_-])?self[_-]join)$/.test(route) && L.hasScreen(route);
-    return '<div class="public-actions"><a class="btn btn-hot" href="#/' + (self ? route : 'join') + '">' +
+    const self = data.join_route === 'signup' && L.hasScreen('signup');
+    return '<div class="public-actions"><a class="btn btn-hot" href="#/' + (self ? 'signup' : 'join') + '">' +
       text(self ? 'join' : 'qr') + '</a><a class="btn" href="#/login">' + L.esc(L.t('core.login')) + '</a></div>';
   }
 
