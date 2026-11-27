@@ -1255,10 +1255,43 @@ const LoungePostUI = (() => {
       '<button type="button" class="feed4-new" data-new hidden>' + L.icon('back', { size: 16 }) + '<span>' + w('newPosts') + '</span></button>' +
       '<div data-posts></div><div data-page aria-live="polite"></div><div class="feed4-sentinel" data-sentinel aria-hidden="true"></div></div></section>';
     const body = root.querySelector('[data-feed-body]'), tools = root.querySelector('[data-post-tools]');
+    const feed = root.querySelector('[data-feed]'), logo = feed.querySelector('.feed4-logo');
     const list = root.querySelector('[data-posts]'), page = root.querySelector('[data-page]');
     const sentinel = root.querySelector('[data-sentinel]'), pill = root.querySelector('[data-new]');
     list.classList.add('feed4-cards', 'feed4-bleed');
     L.paintInbox();
+
+    const sectionLink = (name, icon) =>
+      '<a href="#/l26_lounge?section=' + name + '">' + L.icon(icon, { size: 16 }) +
+      L.esc(L.t('community.' + name)) + '</a>';
+    let shellState = '';
+    function paintShell(isOpen = L.open) {
+      const shell = isOpen('l26_shell');
+      const replay = shell && isOpen('l26_recap');
+      const chat = shell ? L.esc(L.t(isOpen('openchat') ? 'nav.openchat' : 'nav.rooms')) : '';
+      const community = shell && document.querySelector('#app > .l26-feed-shortcuts');
+      const next = shell ? replay + ':' + Boolean(community) + ':' + chat : '';
+      if (next === shellState) return;
+      shellState = next;
+      feed.classList.toggle('feed4-l26', shell);
+      logo.setAttribute('href', shell ? '#/l26_home' : '#/tonight');
+      logo.innerHTML = shell ? 'GROOVE<span> LOUNGE</span>' : 'GROOVE LOUNGE';
+      if (shell) logo.setAttribute('aria-label', 'GROOVE LOUNGE');
+      else logo.removeAttribute('aria-label');
+      feed.querySelector('.feed4-openchat')?.remove();
+      feed.querySelector('.feed4-shortcuts')?.remove();
+      if (!shell) return;
+      feed.querySelector('.ui-bar-side.is-right').insertAdjacentHTML('beforeend',
+        '<a class="ui-bar-btn feed4-openchat" href="#/rooms" aria-label="' + chat + '" title="' + chat + '">' +
+        L.icon('comment') + '</a>');
+      tools.insertAdjacentHTML('afterend', '<div class="feed4-shortcuts">' +
+        (replay ? sectionLink('replay', 'image') : '') + sectionLink('music', 'play') +
+        (community ? '<a href="#/l26_lounge">' + L.esc(L.t('nav.l26_lounge')) + '</a>' : '') + '</div>');
+    }
+    paintShell();
+    // On a direct feed link, core may paint the tabs after the feed has mounted.
+    const shellObserver = new MutationObserver(() => paintShell());
+    shellObserver.observe(document.getElementById('tabbar'), { childList: true });
     // 스토리 줄(작업창 D): 켜져 있고 로그인했으면 자리를 먼저 잡아 둔다 — 늦게 뜨면서 글을 아래로 밀지 않게
     const tray = root.querySelector('[data-story-tray]'), trayWrap = root.querySelector('[data-story-wrap]');
     let trayStarted = false;
@@ -1310,8 +1343,11 @@ const LoungePostUI = (() => {
       return notice(t('floorEmpty', { floor: state.tab }));
     }
     function append(posts) {
-      const fresh = posts.filter(post => post && !ids.has(post.id));
-      fresh.forEach(post => ids.add(post.id));
+      const fresh = posts.filter(post => {
+        if (!post || ids.has(post.id)) return false;
+        ids.add(post.id);
+        return true;
+      });
       L.feedCards(list, fresh, cardOptions);
       return fresh;
     }
@@ -1377,7 +1413,10 @@ const LoungePostUI = (() => {
       finish();
       watch();
     }
-    const refresh = () => load(true, true);
+    const refresh = () => {
+      paintShell();
+      return load(true, true);
+    };
     again = () => { void refresh(); };   // 아래 '피드' 탭을 다시 누르면(틀이 맨 위로 올린 뒤) 새로고침
 
     // 뒤로 돌아왔으면 보던 글·탭·자리 그대로
@@ -1393,6 +1432,7 @@ const LoungePostUI = (() => {
     known = settings.then(result => {
       if (dead) return;
       config = result;
+      if (result?.open) paintShell(key => result.open[key] === true);
       paintTools();
       if (page.querySelector('[data-empty]')) page.innerHTML = empty();   // 설정을 받은 뒤에야 '추천 계정 보기'를 보일지 안다
       if (result?.open?.stories === true) startTray();
@@ -1414,6 +1454,7 @@ const LoungePostUI = (() => {
 
     active = () => {
       dead = true;
+      shellObserver.disconnect();
       state.scroll = window.scrollY;
       clearInterval(timer);
       stopMore?.();

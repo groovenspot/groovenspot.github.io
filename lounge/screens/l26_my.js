@@ -9,6 +9,8 @@
     selfCheckinHelp: ['방문 혜택은 인증 방문으로 쌓여요.', 'Verified visits count toward visit benefits.', '認証済み来店で特典を獲得できます。', '已验证到访计入到访权益。'],
     noSelfCheckins: ['과거 셀프 체크인 기록이 없어요.', 'You have no past self check-ins.', '過去のセルフチェックインはありません。', '暂无以往自助签到记录。'],
     points: ['포인트', 'Points', 'ポイント', '积分'],
+    badges: ['방문 배지', 'Visit badges', '来店バッジ', '到访徽章'],
+    noBadges: ['첫 인증 방문에 획득', 'Earned on your first verified visit', '初回の認証済み来店で獲得', '首次验证到访后获得'],
     next: ['다음 혜택', 'Next benefit', '次の特典', '下一项权益'],
     progress: ['인증 방문 {current}/{target}회', 'Verified visits {current}/{target}', '認証済み来店 {current}/{target}回', '已验证到访 {current}/{target} 次'],
     ready: ['지금 요청할 수 있어요.', 'Available to request.', '今すぐ申請できます。', '现在可以申请。'],
@@ -114,6 +116,14 @@
     root.innerHTML = '<h1>' + title + '</h1><div data-my-content aria-busy="true">' +
       busy + text('loading') + '</p></div><p data-my-status role="status" hidden></p>';
     return root.querySelector('[data-my-content]');
+  }
+
+  function membershipProfile(content) {
+    const member = L.me;
+    content.insertAdjacentHTML('beforebegin', '<div class="l26-my-intro">' +
+      '<a class="l26-my-identity" href="#/me" aria-label="' + text('legacy') + ' · ' + L.esc(member.nick) + '">' +
+      L.avatar(member, 52) + '<strong>' + L.esc(member.nick) + '</strong></a></div>');
+    return content.previousElementSibling;
   }
 
   function showError(root, data) {
@@ -227,12 +237,13 @@
     if (!result.ok) {
       showError(root, result);
       content.innerHTML = button('retry', 'data-my-retry');
-      content.querySelector('button').onclick = () => renderMy(root);
+      content.querySelector('button').onclick = () => showMembership(root);
       return;
     }
 
     const badges = result.badges.map(key => '<li>' + text(key) + '</li>').join('');
     content.innerHTML =
+      '<section class="l26-my-pass"><h2>GROOVE<br> MEMBERSHIP</h2>' +
       '<section class="l26-my-card l26-my-membership"><div class="l26-my-visit-count"><h2>' + text('visits') +
       '</h2><strong data-my-visits>' + formatPoints(result.visits) + '</strong></div>' +
       '<div class="l26-my-next"><h2>' + text('next') + '</h2>' +
@@ -240,7 +251,8 @@
       entryCard() +
       '<section class="l26-my-card l26-my-points"><h2>' + text('points') +
       '</h2><strong>' + formatPoints(result.points) + '</strong></section>' +
-      (badges ? '<ul class="l26-my-badges">' + badges + '</ul>' : '') +
+      '<div class="l26-my-awards"><h3>' + text('badges') + '</h3>' +
+      (badges ? '<ul class="l26-my-badges">' + badges + '</ul>' : '<p>' + text('noBadges') + '</p>') + '</div></section>' +
       '<section class="l26-my-card"><h2>' + text('history') + '</h2><p class="muted">' + text('selfCheckinHelp') + '</p>' +
       visitHistory('verified', 'visits', result.entries, 'empty', result.next_before) +
       (Array.isArray(result.legacy_checkins)
@@ -321,6 +333,21 @@
     });
   }
 
-  L.screen('l26_my', { title: 'nav.l26_my', auth: true, render: renderMy });
+  async function showMembership(root) {
+    const ready = renderMy(root);
+    const content = root.querySelector('[data-my-content]');
+    if (!content) return ready;
+    const intro = membershipProfile(content);
+    await ready;
+    const qr = content.querySelector('[data-my-qr]');
+    if (qr && root.isConnected) {
+      const card = qr.closest('.l26-my-entry');
+      qr.setAttribute('aria-description', L.t('l26my.entryHelp'));
+      intro.append(qr);
+      card.remove();
+    }
+  }
+
+  L.screen('l26_my', { title: 'nav.l26_my', auth: true, render: showMembership });
   L.screen('l26_benefits', { title: 'l26my.benefits', nav: 'me', auth: true, render: renderBenefits });
 })(window.Lounge);
