@@ -3,8 +3,13 @@
   const pollMs = 5000;
   const timeZone = 'Asia/Seoul';
   const text = {
-    dj: ['현재 DJ', 'Current DJs', '出演中のDJ', '当前 DJ'],
+    dj: ['현재 DJ', 'Current DJ', '出演中のDJ', '当前 DJ'],
     next: ['다음 DJ', 'Up next', '次のDJ', '下一位 DJ'],
+    open: ['영업 중', 'Open now', '営業中', '营业中'],
+    notOpen: ['영업시간 외', 'Venue closed', '営業時間外', '非营业时间'],
+    showUnknown: ['영업 상태 확인 불가', 'Venue status unavailable', '営業状況を確認できません', '营业状态暂不可用'],
+    venueHours: ['영업시간', 'Venue hours', '営業時間', '营业时间'],
+    visit: ['공연·방문 정보', 'Show & visit info', '公演・来店情報', '演出与到访信息'],
     schedule: ['타임테이블', 'Timetable', 'タイムテーブル', '演出时间表'],
     tonight: ['공연 정보', 'Show info', '公演情報', '演出信息'],
     djs: ['DJ 목록', 'DJ directory', 'DJ一覧', 'DJ 列表'],
@@ -15,6 +20,7 @@
     showStale: ['마지막으로 받은 공연 정보예요.', 'Showing the last received show info.', '最後に取得した公演情報です。', '正在显示上次获取的演出信息。'],
     showError: ['공연 정보를 불러오지 못했어요.', 'Show info is unavailable.', '公演情報を取得できませんでした。', '无法获取演出信息。'],
     vote: ['층 응원 투표', 'Floor vote', 'フロア応援投票', '楼层应援投票'],
+    emptyVote: ['투표 대기', 'Awaiting votes', '投票待ち', '等待投票'],
     hours: ['21:00–다음 날 07:00 (KST)', '21:00–07:00 next day (KST)', '21:00–翌07:00 (KST)', '21:00–次日07:00 (KST)'],
     final: ['{day} 최종 결과', '{day} final result', '{day} 最終結果', '{day} 最终结果'],
     finalizing: ['최종 결과를 불러오는 중', 'Loading the final result', '最終結果を読み込み中', '正在加载最终结果'],
@@ -38,6 +44,7 @@
     timeZone, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
   }).format(at);
   const countLabel = value => new Intl.NumberFormat(L.lang).format(value);
+  const shareLabel = value => new Intl.NumberFormat(L.lang, { style: 'percent', maximumFractionDigits: 1 }).format(value);
   const loginLink = () => '#/login?next=' + encodeURIComponent('#/l26_live');
 
   let controller, entryScript, retryVote;
@@ -78,9 +85,17 @@
   function floorSchedule(floor, data) {
     const info = data.floors?.[floor] || {};
     const slots = (data.timetable || []).filter(slot => slot.floor === floor);
-    return '<p class="l26-live-dj">' + L.esc(info.now || t('noDj')) + '</p>' +
-      (info.next ? '<p class="muted">' + t('next') + ' · ' + L.esc([info.nextAt, info.next].filter(Boolean).join(' · ')) + '</p>' : '') +
-      '<details><summary>' + t('schedule') + '</summary>' +
+    const nextIndex = slots.findIndex(slot => slot.at === info.nextAt && slot.dj === info.next);
+    const previous = slots[nextIndex - 1];
+    const matching = slots.filter(slot => slot.dj === info.now);
+    const currentTime = previous && previous.dj === info.now ? previous.at : matching.length === 1 ? matching[0].at : '';
+    const live = data.open === true && !data.stale;
+    const next = info.next ? { dj: info.next, at: info.nextAt } : data.open === false ? slots[0] : null;
+    const time = at => at ? '<time>' + L.esc(at) + '</time>' : '';
+    return '<dl class="l26-live-slots">' + (live ? '<div data-live-current><dt>' + t('dj') + '</dt><dd><strong class="l26-live-dj">' +
+      L.esc(info.now || t('noDj')) + '</strong>' + time(info.now && currentTime) + '</dd></div>' : '') +
+      '<div><dt>' + t('next') + '</dt><dd><strong>' + L.esc(next?.dj || t('noDj')) + '</strong>' +
+      time(next?.at) + '</dd></div></dl><details><summary>' + t('schedule') + L.icon('down', { size: 16 }) + '</summary>' +
       (slots.length ? '<ul>' + slots.map(slot => '<li>' + L.esc([slot.at, slot.dj].filter(Boolean).join(' · ')) + '</li>').join('') +
         '</ul>' : '<p class="muted">' + t('noSchedule') + '</p>') + '</details>';
   }
@@ -88,33 +103,42 @@
   function render(root) {
     loadStyles();
     root.className = 'l26-screen l26-live';
-    root.innerHTML = '<h1>' + L.esc(L.t('nav.l26_live')) + '</h1>' +
-      '<section aria-labelledby="l26-live-dj"><h2 id="l26-live-dj">' + t('dj') + '</h2>' +
+    root.innerHTML = '<section aria-labelledby="l26-live-dj"><header class="l26-live-head"><h1 id="l26-live-dj">' +
+      L.esc(L.t('nav.l26_live')) + '</h1><div class="l26-live-venue"><p data-live-venue>' + t('loading') +
+      '</p><p data-live-hours hidden></p></div></header>' +
       '<div class="l26-live-grid">' + floors.map(([floor, genre]) =>
-        '<article class="l26-live-card" data-l26-floor="' + floor + '"><h3>' + floor + ' <span>' + genre +
-        '</span></h3><div data-live-dj="' + floor + '">' + t('loading') + '</div></article>').join('') +
-      '</div><p class="muted" data-live-show-stale hidden>' + t('showStale') + '</p><nav class="l26-live-links"><a href="#/tonight">' + t('tonight') + '</a><a href="#/lineup">' +
-      t('schedule') + '</a><a href="#/djs">' + t('djs') + '</a>' +
-      (L.open('sales') ? '<a href="#/table">' + t('table') + '</a>' : '') + '</nav></section>' +
+        '<article class="l26-live-card" data-l26-floor="' + floor + '"><div class="l26-live-cover"><h2><strong>' + floor +
+        '</strong><span>' + genre + '</span></h2></div><div data-live-dj="' + floor + '">' + t('loading') + '</div></article>').join('') +
+      '</div><p class="muted" data-live-show-stale hidden>' + t('showStale') + '</p></section>' +
       '<section data-live-entry hidden></section><section data-live-dj-feedback hidden></section>' +
       '<section data-live-vote hidden aria-labelledby="l26-live-vote"><h2 id="l26-live-vote">' + t('vote') + '</h2>' +
-      '<p class="muted">' + t('hours') + '</p><div class="l26-live-grid">' +
+      '<p class="muted">' + t('hours') + '</p><div class="l26-live-match"><span class="l26-live-vs" aria-hidden="true">VS</span>' +
       floors.map(([floor, genre]) => '<article class="l26-live-choice" data-l26-floor="' + floor +
-        '"><button type="button" class="l26-live-card" data-live-ballot="' + floor + '" disabled>' + floor + ' ' + genre +
-        '</button><p data-live-count="' + floor + '" aria-label="' + floor + ' ' + t('vote') + '" hidden></p></article>').join('') +
-      '</div><p role="status" class="muted" data-live-status>' + t('loading') +
+        '"><button type="button" data-live-ballot="' + floor + '" disabled><strong>' + floor + '</strong><span>' + genre +
+        '</span><span class="l26-live-score"><span data-live-share hidden></span>' +
+        '<span data-live-count="' + floor + '" hidden></span></span></button></article>').join('') + '</div>' +
+      '<div class="l26-live-split" data-live-split hidden aria-hidden="true"><span></span><span></span></div>' +
+      '<p class="muted" data-live-empty hidden>' + t('emptyVote') + '</p><p role="status" class="muted" data-live-status>' + t('loading') +
       '</p><a data-live-sign-in href="' + loginLink() + '" hidden>' + L.esc(L.t('core.login')) + '</a>' +
-      '<p class="muted" data-live-connection hidden></p></section>';
+      '<p class="muted" data-live-connection hidden></p></section>' +
+      '<nav aria-labelledby="l26-live-visit"><h2 id="l26-live-visit">' + t('visit') + '</h2><div class="l26-live-links">' +
+      [['tonight', 'tonight'], ['lineup', 'schedule'], ['djs', 'djs'], ...(L.open('sales') ? [['table', 'table']] : [])].map(([path, key]) =>
+        '<a class="btn" href="#/' + path + '">' + t(key) + L.icon('chevron', { size: 16 }) + '</a>').join('') + '</div></nav>';
 
     const djFeedback = L.mountDjFeedback(root.querySelector('[data-live-dj-feedback]'), 'live');
     const vote = root.querySelector('[data-live-vote]');
     const status = root.querySelector('[data-live-status]');
     const connection = root.querySelector('[data-live-connection]');
     const signIn = root.querySelector('[data-live-sign-in]');
+    const split = vote.querySelector('[data-live-split]');
+    const empty = vote.querySelector('[data-live-empty]');
+    const venue = root.querySelector('[data-live-venue]');
+    const hours = root.querySelector('[data-live-hours]');
     const controls = floors.map(([floor]) => ({
       floor,
       button: vote.querySelector('[data-live-ballot="' + floor + '"]'),
-      count: vote.querySelector('[data-live-count="' + floor + '"]')
+      count: vote.querySelector('[data-live-count="' + floor + '"]'),
+      share: vote.querySelector('[data-l26-floor="' + floor + '"] [data-live-share]')
     }));
     let timer, round, failures = 0, revision = 0, stopped = false, sending = false, hint, readPending = false;
     let showPending = false, showKey, entry, refreshQueued = false;
@@ -126,11 +150,17 @@
       const expired = round?.status === 'open' && expiryDelay() <= 0;
       const voteStatus = expired ? 'closed' : round?.vote_status;
       const retry = currentRetry();
-      for (const { floor, button, count } of controls) {
+      const total = round ? round.counts['2F'] + round.counts['3F'] : 0;
+      split.hidden = total === 0;
+      empty.hidden = !round || total > 0;
+      for (const { floor, button, count, share } of controls) {
         button.disabled = voteStatus !== 'ready' || sending || failures > 0 || Boolean(retry && retry.floor !== floor);
         count.hidden = !round;
         count.textContent = round ? countLabel(round.counts[floor]) : '';
+        share.hidden = total === 0;
+        share.textContent = total ? shareLabel(round.counts[floor] / total) : '';
       }
+      if (total) split.style.setProperty('--l26-vote-split', (round.counts['2F'] / total) * 100 + '%');
       const message = sending ? t('sending') : hint ? t(hint) :
         round?.status === 'final' ? t('final', { day: round.biz_day }) :
         expired ? t('finalizing') : voteStatus && text[voteStatus] ? t(voteStatus) : t('loading');
@@ -244,16 +274,29 @@
       showPending = false;
       if (!active()) return;
       root.querySelector('[data-live-show-stale]').hidden = !(data.stale || (data.error && showKey));
-      if (data.error && showKey) return;
+      if (data.error && showKey) {
+        venue.dataset.liveVenue = 'unknown';
+        venue.textContent = t('showUnknown');
+        root.querySelectorAll('.l26-live-slots [data-live-current]').forEach(item => { item.hidden = true; });
+        return;
+      }
+      const state = data.stale ? 'unknown' : data.open === true ? 'open' : data.open === false ? 'notOpen' : 'unknown';
+      venue.dataset.liveVenue = state;
+      venue.textContent = t(state === 'unknown' ? 'showUnknown' : state);
+      hours.hidden = typeof data.hours !== 'string' || !data.hours;
+      hours.textContent = hours.hidden ? '' : t('venueHours') + ' ' + data.hours + ' KST';
       const markup = floors.map(([floor]) => data.error ? '<p class="muted">' + t('showError') + '</p>' : floorSchedule(floor, data));
       const key = markup.join('');
-      if (showKey === key) return;
+      if (showKey === key) {
+        root.querySelectorAll('[data-live-current][hidden]').forEach(item => { item.hidden = false; });
+        return;
+      }
       if (!data.error) showKey = key;
       for (const [index, [floor]] of floors.entries()) {
         const slot = root.querySelector('[data-live-dj="' + floor + '"]');
         const wasOpen = slot.querySelector('details')?.open;
         slot.innerHTML = markup[index];
-        if (wasOpen) slot.querySelector('details').open = true;
+        if (wasOpen && !data.error) slot.querySelector('details').open = true;
       }
     }
 

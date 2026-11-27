@@ -2,8 +2,10 @@
   const words = {
     mission: ['오늘의 미션', 'Today’s mission', '今日のミッション', '今日任务'],
     points: ['내 포인트', 'My points', 'マイポイント', '我的积分'],
+    attendance: ['오늘 출석', 'Today’s check-in', '今日の出席', '今日签到'],
+    guess: ['DJ 맞히기', 'Guess the DJ', 'DJ当てクイズ', '猜猜 DJ'],
     legacy: ['기존 출석판·올클', 'Classic attendance and all-clear', 'これまでの出席・全クリア', '原版签到和全通关'],
-    more: ['선택형 놀거리', 'Optional activities', '自由に選べる遊び', '可选玩法'],
+    more: ['더 많은 놀거리', 'More activities', 'その他の遊び', '更多玩法'],
     done: ['완료', 'Done', '完了', '已完成'],
     ready: ['진행 가능', 'Ready', '参加できます', '可以开始'],
     login: ['로그인', 'Log in', 'ログイン', '登录'],
@@ -38,13 +40,22 @@
   const label = key => L.esc(L.t('l26play.' + key));
   const translated = key => L.esc(L.t(key));
   const shelfLinks = {
-    guess: 'guess.title', cup: 'vote.cup', vote: 'vote.title', radio: 'radio.title',
+    guess: 'l26play.guess', cup: 'vote.cup', vote: 'vote.title', radio: 'radio.title',
     shorts: 'shorts.title', challenge: 'challenge.title', rank: 'rank.title', rewards: 'rewards.title', play: 'l26play.legacy'
+  };
+  // Published GROOVE SESSIONS clips from /data/videos.json.
+  const featured = {
+    cup: { icon: 'play', video: 'whM3ZZUnSVE' },
+    guess: { icon: 'search' },
+    radio: { icon: 'play', video: 'eY3RZgw7fvE' },
+    vote: { icon: 'check' }
   };
   const missionLinks = {
     cup: ['cup', 'vote.cup'], dj_content: ['shorts', 'shorts.title'],
     survey: ['vote', 'l26play.survey'], radio: ['radio', 'radio.title']
   };
+  const missionHeading = (state = '') => '<header class="l26-play-mission-meta"><h2 id="l26-mission-title">' +
+    label('mission') + '</h2>' + state + '</header>';
 
   function stylesheet() {
     if (document.getElementById('l26-play-css')) return;
@@ -68,6 +79,15 @@
 
   function button(action, text, classes = '', attrs = '') {
     return '<button type="button" class="btn ' + classes + '" data-l26-action="' + action + '"' + attrs + '>' + label(text) + '</button>';
+  }
+
+  function activity(key) {
+    const { icon, video } = featured[key];
+    return '<a class="l26-play-tile" href="#/' + key + '" data-play-activity="' + key + '">' +
+      '<span class="l26-play-tile-art" aria-hidden="true">' +
+      (video ? '<span class="l26-play-thumb" style="background-image:url(https://i.ytimg.com/vi/' + video + '/hqdefault.jpg)"></span>' : '') +
+      L.icon(icon, { size: 23 }) + '</span><span class="l26-play-tile-name">' + translated(shelfLinks[key]) +
+      L.icon('chevron', { size: 16 }) + '</span></a>';
   }
 
   function missionControls(mission, member) {
@@ -104,16 +124,28 @@
     root.innerHTML = '<header class="l26-play-head"><div class="l26-play-heading">' +
       '<button class="ui-bar-btn" type="button" data-ui-back="l26_lounge" aria-label="' + translated('ui.back') + '">' +
       L.icon('back') + '</button><h1>' + translated('nav.l26_play') +
-      '</h1></div><a class="l26-play-points" data-l26-points href="#/me" hidden></a></header>' +
-      '<section class="l26-play-mission" aria-labelledby="l26-mission-title"><h2 id="l26-mission-title">' +
-      label('mission') + '</h2><div data-l26-mission aria-busy="true"><p role="status">' + label('loading') +
-      '</p></div></section><p class="l26-play-error" data-l26-error role="status" hidden></p>' +
+      '</h1></div></header><div class="l26-play-member" hidden>' +
+      '<a class="l26-play-points" data-l26-points href="#/me" hidden></a><div class="l26-play-attendance" hidden></div></div>' +
+      '<section class="l26-play-mission" aria-labelledby="l26-mission-title"><div class="l26-play-mission-art" aria-hidden="true">' +
+      '<svg viewBox="0 0 360 142" fill="none"><g stroke="currentColor" opacity=".45">' +
+      '<circle cx="180" cy="71" r="64"/><circle cx="180" cy="71" r="86" stroke-dasharray="2 5"/>' +
+      '<path d="M0 71h103m154 0h103M180 0v16m0 110v16M50 48v46m10-35v24m240-35v46m10-35v24"/></g>' +
+      '<g transform="rotate(-12 180 71)"><path d="M118 42h124v16a13 13 0 0 0 0 26v16H118V84a13 13 0 0 0 0-26Z" ' +
+      'fill="currentColor" stroke="currentColor" stroke-width="3"/><path d="M214 45v52" stroke="var(--l26-play-ink)" stroke-dasharray="3 4"/>' +
+      '<path d="M166 55l3.5 10.5L180 69l-10.5 3.5L166 83l-3.5-10.5L152 69l10.5-3.5L166 55Z" fill="var(--l26-play-ink)"/>' +
+      '<path d="M189 57v12m-6-6h12m-11 16v8m-4-4h8" stroke="var(--l26-play-ink)" stroke-width="2"/></g></svg></div>' +
+      '<div class="l26-play-mission-copy" data-l26-mission aria-busy="true">' + missionHeading() +
+      '<p role="status">' + label('loading') + '</p></div></section><p class="l26-play-error" data-l26-error role="status" hidden></p>' +
+      '<div class="l26-play-featured" hidden></div>' +
       '<details class="l26-play-shelf" hidden><summary>' + label('more') +
-      '</summary><div class="l26-play-options"></div></details>';
+      L.icon('down', { size: 16 }) + '</summary><div class="l26-play-options"></div></details>';
 
     const card = root.querySelector('[data-l26-mission]');
     const shelf = root.querySelector('details');
     const points = root.querySelector('[data-l26-points]');
+    const status = root.querySelector('.l26-play-member');
+    const attendance = root.querySelector('.l26-play-attendance');
+    const activities = root.querySelector('.l26-play-featured');
     const options = root.querySelector('.l26-play-options');
     const error = root.querySelector('[data-l26-error]');
     const hash = location.hash;
@@ -122,19 +154,25 @@
 
     function paint(data) {
       const member = Number.isFinite(data.points);
+      const showAttendance = data.shelf.includes('attend');
+      status.hidden = !member && !showAttendance;
       points.hidden = !member;
-      points.innerHTML = label('points') + ' <strong>' +
-        (member ? L.esc(data.points.toLocaleString(L.lang)) + ' P' : '') + '</strong>';
+      points.innerHTML = '<span>' + label('points') + '</span><strong>' +
+        (member ? L.esc(data.points.toLocaleString(L.lang)) + ' P' : '') + '</strong>' + L.icon('chevron', { size: 16 });
+      attendance.hidden = !showAttendance;
+      attendance.innerHTML = '<span>' + label('attendance') + '</span>' +
+        button('attend', data.attended ? 'done' : 'attend', '', data.attended ? ' disabled' : '');
       const mission = data.mission;
       card.dataset.missionKey = mission.key;
-      card.innerHTML = '<h3>' + label(mission.key) + '</h3>' +
-        (member ? '<p class="l26-play-state" data-done="' + mission.done + '">' + label(mission.done ? 'done' : 'ready') + '</p>' :
-          '<p class="muted">' + label('guest') + '</p>') +
+      const missionState = member ? '<p class="l26-play-state" data-done="' + mission.done + '">' +
+        label(mission.done ? 'done' : 'ready') + '</p>' : '';
+      card.innerHTML = missionHeading(missionState) + '<h3>' + label(mission.key) + '</h3>' +
+        (member ? '' : '<p class="muted">' + label('guest') + '</p>') +
         '<div class="l26-play-actions">' + missionControls(mission, member) + (member ? '' : button('login', 'login')) + '</div>';
-      options.innerHTML = data.shelf.map(key => {
-        if (key === 'attend') return button('attend', data.attended ? 'done' : 'attend', '', data.attended ? ' disabled' : '');
-        return Object.hasOwn(shelfLinks, key) ? link(key, shelfLinks[key]) : '';
-      }).join('');
+      activities.innerHTML = Object.keys(featured).filter(key => data.shelf.includes(key)).map(activity).join('');
+      activities.hidden = !activities.childElementCount;
+      options.innerHTML = data.shelf.filter(key => Object.hasOwn(shelfLinks, key) && !Object.hasOwn(featured, key))
+        .map(key => link(key, shelfLinks[key])).join('');
       shelf.hidden = !options.childElementCount;
     }
 
@@ -149,7 +187,7 @@
         if (!data.ok) {
           error.hidden = false;
           error.textContent = L.t('l26play.error');
-          if (!last) card.innerHTML = button('refresh', 'retry');
+          if (!last) card.innerHTML = missionHeading() + button('refresh', 'retry');
           return;
         }
         error.hidden = true;
@@ -220,7 +258,6 @@
 
   L.screen('l26_play', {
     title: 'nav.l26_play',
-    nav: 'l26_lounge',
     keepScroll: true,
     render,
     leave() { dispose?.(); dispose = undefined; }
