@@ -20,7 +20,7 @@
     noSchedule: ['등록된 일정 없음', 'No schedule listed', '予定なし', '暂无演出安排'],
     showStale: ['마지막으로 받은 공연 정보예요.', 'Showing the last received show info.', '最後に取得した公演情報です。', '正在显示上次获取的演出信息。'],
     showError: ['공연 정보를 불러오지 못했어요.', 'Show info is unavailable.', '公演情報を取得できませんでした。', '无法获取演出信息。'],
-    hype: ['하입', 'Hype', 'HYPE', '打call'],
+    hype: ['HYPE', 'HYPE', 'HYPE', 'HYPE'],
     hypeAria: ['{floor} DJ에게 하입 보내기', 'Send hype to the {floor} DJ', '{floor}のDJにHYPEを送る', '为{floor} DJ打call'],
     hypeCount: ['오늘 밤 🔥 {n}', 'Tonight 🔥 {n}', '今夜 🔥 {n}', '今晚 🔥 {n}'],
     hypeSignIn: ['로그인하면 DJ에게 하입을 보낼 수 있어요.', 'Sign in to send hype to the DJ.', 'ログインするとDJにHYPEを送れます。', '登录后可为DJ打call。'],
