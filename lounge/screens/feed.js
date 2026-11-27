@@ -1269,7 +1269,8 @@ const LoungePostUI = (() => {
       const shell = isOpen('l26_shell');
       const replay = shell && isOpen('l26_recap');
       const chat = shell ? L.esc(L.t(isOpen('openchat') ? 'nav.openchat' : 'nav.rooms')) : '';
-      const next = shell ? replay + ':' + chat : '';
+      const community = shell && document.querySelector('#app > .l26-feed-shortcuts');
+      const next = shell ? replay + ':' + Boolean(community) + ':' + chat : '';
       if (next === shellState) return;
       shellState = next;
       feed.classList.toggle('feed4-l26', shell);
@@ -1284,7 +1285,8 @@ const LoungePostUI = (() => {
         '<a class="ui-bar-btn feed4-openchat" href="#/rooms" aria-label="' + chat + '" title="' + chat + '">' +
         L.icon('comment') + '</a>');
       tools.insertAdjacentHTML('afterend', '<div class="feed4-shortcuts">' +
-        (replay ? sectionLink('replay', 'image') : '') + sectionLink('music', 'play') + '</div>');
+        (replay ? sectionLink('replay', 'image') : '') + sectionLink('music', 'play') +
+        (community ? '<a href="#/l26_lounge">' + L.esc(L.t('nav.l26_lounge')) + '</a>' : '') + '</div>');
     }
     paintShell();
     // On a direct feed link, core may paint the tabs after the feed has mounted.
