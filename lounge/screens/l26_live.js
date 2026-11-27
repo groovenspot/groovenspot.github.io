@@ -122,9 +122,8 @@
     const currentTime = previous && previous.dj === info.now ? previous.at : matching.length === 1 ? matching[0].at : '';
     const time = at => at ? '<time>' + L.esc(at) + '</time>' : '';
     const lineup = slots.length ? '<ul class="l26-live-lineup">' + slots.map(slot => {
-      const thumbnail = sessionThumbnail(slot, sessions);
-      return '<li>' + time(slot.at) + '<strong>' + L.djMark(slot.dj, null, 'is-sm') + '</strong>' +
-        (thumbnail ? '<img src="' + L.esc(thumbnail) + '" alt="" loading="lazy" width="44" height="30">' : '') + '</li>';
+      // 타임테이블은 DJ 로고만 (대표 요청 2026-11-28 — 유튜브 썸네일 뺌)
+      return '<li>' + time(slot.at) + '<strong>' + L.djMark(slot.dj, null, 'is-sm') + '</strong></li>';
     }).join('') + '</ul>' : L.l26Empty(t('noSchedule'), 'layers', true);
     if (state !== 'open') {
       return '<h3 class="l26-live-lineup-title">' + t('schedule') + '</h3>' + lineup;
