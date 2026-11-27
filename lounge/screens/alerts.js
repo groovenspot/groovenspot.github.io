@@ -89,9 +89,10 @@
   const t4 = (key, vars) => L.t('alerts4.' + key, vars);
   const TYPES = ['like', 'comment', 'reply', 'mention', 'tag', 'tag_approved', 'follow', 'follow_request', 'follow_accept', 'story_like', 'share'];
   const KIND_ICON = { dj: 'play', lost: 'search', keep: 'pin', dm: 'chat', rooms: 'chat', social: 'heart', md: 'user', rewards: 'check',
-    follow: 'userPlus', follow_request: 'userPlus', follow_accept: 'check', share: 'send' };
+    dj_review: 'play', follow: 'userPlus', follow_request: 'userPlus', follow_accept: 'check', share: 'send' };
   // 알림 종류 이름 (화면 읽기용 머리말). 낱말 표에 없는 종류가 키 그대로('alerts.share') 보이던 버그(B3)를 막는다.
   function kindLabel(kind) {
+    if (kind === 'dj_review') return L.djReviewLabel('title');
     const known = L.t('alerts.' + kind);
     if (known !== 'alerts.' + kind) return known;
     const extra = t4('kind.' + kind);
@@ -277,7 +278,11 @@
       ['sensitive', 'all', 'details'].map(mode => '<option value="' + mode + '">' + e(t(mode)) + '</option>').join('') +
       '</select></label>' +
       '</fieldset><p role="alert" class="shell-error" data-pref-error hidden></p><button type="button" class="btn" data-pref-retry hidden>' +
-      e(t('retry')) + '</button></section><section class="shell-card"><a class="shell-link" href="#/me/settings">' +
+      e(t('retry')) + '</button></section>' +
+      (L.open('l26_dj_feedback') ? '<section class="shell-card" data-dj-pref><label class="shell-choice">' +
+        '<input type="checkbox" name="dj_review" disabled>' + e(L.djReviewLabel('reminder')) + '</label>' +
+        '<p class="muted">' + e(L.djReviewLabel('inboxOnly')) + '</p><p role="status" data-dj-pref-error></p></section>' : '') +
+      '<section class="shell-card"><a class="shell-link" href="#/me/settings">' +
       e(t('promo')) + '</a></section>';
     const prefs = root.querySelector('[data-prefs]');
     const preview = prefs.querySelector('[name=preview]');
@@ -336,7 +341,33 @@
         prefs.disabled = false;
       }
     };
-    await Promise.all([loadPrefs(), pushSettings(root.querySelector('[data-phone]'))]);
+    const djReview = root.querySelector('[data-dj-pref]');
+    async function loadDjPreference() {
+      if (!djReview) return;
+      const input = djReview.querySelector('input');
+      const status = djReview.querySelector('[data-dj-pref-error]');
+      try {
+        const result = await action('l26_dj_review_pref');
+        input.checked = result.enabled;
+        input.disabled = result.preview === true;
+      } catch {
+        status.textContent = t('failed');
+      }
+      input.onchange = async () => {
+        input.disabled = true;
+        status.textContent = '';
+        try {
+          const result = await action('l26_dj_review_pref', { enabled: input.checked });
+          input.checked = result.enabled;
+        } catch {
+          input.checked = !input.checked;
+          status.textContent = t('failed');
+        } finally {
+          input.disabled = L.isPreview() || !L.open('l26_dj_feedback');
+        }
+      };
+    }
+    await Promise.all([loadPrefs(), loadDjPreference(), pushSettings(root.querySelector('[data-phone]'))]);
   }
 
   // ── 알림 한 줄 (F55) ── 아바타(보낸 사람) 또는 종류 아이콘 + 한 문장(굵은 닉네임 + 내용 + 회색 지난 시간) + 오른쪽 글 사진 / 팔로우 버튼

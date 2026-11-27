@@ -110,7 +110,7 @@
         '<article class="l26-live-card" data-l26-floor="' + floor + '"><div class="l26-live-cover"><h2><strong>' + floor +
         '</strong><span>' + genre + '</span></h2></div><div data-live-dj="' + floor + '">' + t('loading') + '</div></article>').join('') +
       '</div><p class="muted" data-live-show-stale hidden>' + t('showStale') + '</p></section>' +
-      '<section data-live-entry hidden></section>' +
+      '<section data-live-entry hidden></section><section data-live-dj-feedback hidden></section>' +
       '<section data-live-vote hidden aria-labelledby="l26-live-vote"><h2 id="l26-live-vote">' + t('vote') + '</h2>' +
       '<p class="muted">' + t('hours') + '</p><div class="l26-live-match"><span class="l26-live-vs" aria-hidden="true">VS</span>' +
       floors.map(([floor, genre]) => '<article class="l26-live-choice" data-l26-floor="' + floor +
@@ -125,6 +125,7 @@
       [['tonight', 'tonight'], ['lineup', 'schedule'], ['djs', 'djs'], ...(L.open('sales') ? [['table', 'table']] : [])].map(([path, key]) =>
         '<a class="btn" href="#/' + path + '">' + t(key) + L.icon('chevron', { size: 16 }) + '</a>').join('') + '</div></nav>';
 
+    const djFeedback = L.mountDjFeedback(root.querySelector('[data-live-dj-feedback]'), 'live');
     const vote = root.querySelector('[data-live-vote]');
     const status = root.querySelector('[data-live-status]');
     const connection = root.querySelector('[data-live-connection]');
@@ -268,6 +269,7 @@
     async function loadShow() {
       if (document.hidden || showPending) return;
       showPending = true;
+      void djFeedback.refresh();
       const data = await request('tonight');
       showPending = false;
       if (!active()) return;
@@ -330,6 +332,7 @@
         clearTimeout(timer);
         clearInterval(showTimer);
         entry?.destroy();
+        djFeedback.destroy();
         document.removeEventListener('visibilitychange', visible);
         window.removeEventListener('online', visible);
         window.removeEventListener('offline', offline);

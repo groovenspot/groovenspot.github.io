@@ -4,6 +4,10 @@
   padding: 10px 0 16px;
 }
 
+.l26-home [data-home-main] {
+  display: contents;
+}
+
 .l26-home-heading,
 .l26-home-hero,
 .l26-home-card {

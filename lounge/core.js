@@ -3,13 +3,14 @@
   var API = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
   var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
-  var features = Object.create(null), configPending, routeShell, routePreview;
+  var features = Object.create(null), configPending, routeShell, routePreview, routeFollowCounts, routeDjFeedback;
   var preview = false, previewEligible = false, previewRequested = false, nextConfigCheck = 0;
   var activeTimer, activeAttempt, activeRecorded;
   var activityDayMs = 86_400_000, activityDayShift = 3_600_000; // 08:00 KST is 23:00 UTC.
   var legacyRoutes = {
     l26_home: 'tonight', l26_live: 'tonight', l26_lounge: 'feed', l26_my: 'me', l26_play: 'play'
   };
+  var followerScreens = ['l26_my', 'l26_lounge', 'dj', 'user', 'followers', 'following'];
   var shellTabs = { tonight: 'l26_live', feed: 'l26_lounge', rooms: 'l26_lounge', me: 'l26_my', play: 'l26_lounge', l26_play: 'l26_lounge' };
   // 오픈채팅이 켜진 회원에게만 탭 이름이 '오픈채팅'. 지난번 값을 기억해 첫 화면부터 맞는 이름을 그린다.
   var ocNav = read('gl_oc') === '1', navOn;
@@ -332,6 +333,7 @@
       var route = hash.replace(/^#\/?/, '');
       var config = configReady ? undefined : refreshConfig();
       if (!route || route === 'me/settings' || route === 'l26_benefits' ||
+          route === 'l26_dj_feedback' || route === 'alerts/settings' ||
           Object.hasOwn(legacyRoutes, route.split(/[/?]/, 1)[0])) {
         await config;
         if (version !== routeVersion || hash !== location.hash) return;
@@ -359,6 +361,7 @@
       cur = def;
       routeShell = L.open('l26_shell');
       routePreview = preview;
+      routeDjFeedback = L.open('l26_dj_feedback');
       shown = here;
       scrollPending = def?.keepScroll && L.wentBack?.() && Object.hasOwn(scrolls, here) ? scrolls[here] : null;
       delete scrolls[here];
@@ -374,8 +377,9 @@
       window.scrollTo(0, 0);
       view.focus({ preventScroll: true });
       var gate = Object.hasOwn(gates, name) && gates[name];
-      if (gate || ['play', 'tonight', 'me', 'user'].includes(name)) await config;
+      if (gate || ['play', 'tonight', 'me'].includes(name) || followerScreens.includes(name)) await config;
       if (version !== routeVersion) return;
+      routeFollowCounts = L.open('l26_follow_counts');
       refreshBadges(version, config);
       if (gate && !L.open(gate) && !def?.selfGate) {   // 꺼진 기능: 화면 제목 + 준비 중 (selfGate 화면은 스스로 처리 — 통합 때 Claude)
         root.innerHTML = (def?.title && title !== titleKey ? '<h1>' + L.esc(title) + '</h1>' : '') + '<p class="muted">' + L.esc(L.t('core.soon')) + '</p>';
@@ -685,8 +689,14 @@
     await refreshConfig();
     if (!shown || version !== routeVersion || document.hidden) return;
     var name = location.hash.replace(/^#\/?/, '').split(/[/?]/, 1)[0];
-    if ((routeShell !== L.open('l26_shell') || routePreview !== preview) &&
-        (!name || Object.hasOwn(legacyRoutes, name) || name === 'l26_benefits')) {
+    if (name === 'u') name = 'user';
+    const followerScreenChanged = followerScreens.includes(name) && routeFollowCounts !== L.open('l26_follow_counts');
+    if (followerScreenChanged || ((routeShell !== L.open('l26_shell') || routePreview !== preview) &&
+        (!name || Object.hasOwn(legacyRoutes, name) || name === 'l26_benefits'))) {
+      return L.route(null, true);
+    }
+    if (routeDjFeedback !== L.open('l26_dj_feedback') &&
+        ['l26_dj_feedback', 'l26_my', 'alerts'].includes(name)) {
       return L.route(null, true);
     }
     refreshBadges(version);

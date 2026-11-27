@@ -7,6 +7,12 @@
     videos: ['최근 유튜브 세트', 'Recent YouTube sets'], instagram: ['인스타그램', 'Instagram'],
     missing: ['DJ를 찾을 수 없어요', 'DJ not found']
   });
+  const followerLabels = ['팔로워 {n}명', '{n} followers', 'フォロワー {n} 人', '{n} 位粉丝'];
+  const oneFollower = ['팔로워 1명', '1 follower', 'フォロワー 1 人', '1 位粉丝'];
+  L.i18n(Object.fromEntries(['ko', 'en', 'ja', 'zh'].map((lang, i) => [lang, {
+    'dj.followers': followerLabels[i],
+    'dj.oneFollower': oneFollower[i]
+  }])));
   // The public video catalog uses stage names in Latin script for these DJs.
   const videoNames = new Map([
     ['뮤트', 'mute'], ['비누', 'binu'], ['우지', 'uzi'], ['이지', 'ezzy'],
@@ -66,6 +72,7 @@
     const slotText = slot => L.esc([slot.floor, slot.at].filter(Boolean).join(' · '));
     view.innerHTML = '<div class="lounge-list"><section class="shell-card"><h2>' + L.esc(dj.name) + '</h2>' +
       (floor ? '<p class="muted">' + L.esc(floor) + '</p>' : '') +
+      (L.open('l26_follow_counts') ? '<p class="l26-follow-count" data-dj-follower-count aria-live="polite" hidden></p>' : '') +
       '<div class="shell-actions">' + U.button('', 'data-dj-follow', true) +
       (ig ? '<a class="btn" href="' + L.esc(ig) + '" target="_blank" rel="noopener noreferrer">' + t('instagram') + '</a>' : '') +
       '</div></section><section class="shell-card"><h2>' + t('today') + '</h2>' +
@@ -78,11 +85,18 @@
 
     let following = Boolean(dj.following);
     const button = view.querySelector('[data-dj-follow]');
-    function paintFollow() {
+    const count = view.querySelector('[data-dj-follower-count]');
+    function paintFollow(followers) {
+      if (count) {
+        count.hidden = !Number.isInteger(followers);
+        const label = followers === 1 ? 'dj.oneFollower' : 'dj.followers';
+        count.textContent = count.hidden ? '' : L.t(label, { n: new Intl.NumberFormat(L.lang).format(followers) });
+      }
       button.textContent = L.t('dj.' + (following ? 'unfollow' : 'follow'));
       button.setAttribute('aria-pressed', following);
     }
-    paintFollow();
+    paintFollow(dj.followers);
+    if (count && L.isPreview()) button.disabled = true;
     button.onclick = async () => {
       if (L.needLogin() || button.disabled) return;
       button.disabled = true;
@@ -91,7 +105,7 @@
       button.disabled = false;
       if (result.error) return U.error(result);
       following = Boolean(result.following);
-      paintFollow();
+      paintFollow(result.followers);
     };
     const videos = await recentSets(dj);
     if (view.isConnected) view.querySelector('[data-dj-videos]').innerHTML = videos;

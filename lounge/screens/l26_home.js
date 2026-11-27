@@ -120,7 +120,7 @@
     const primary = data.primary_action;
     const hasBallot = primary.kind === 'floor_vote' && (primary.vote_status === 'ready' ||
       (primary.vote_status === 'voted' && floors.every(floor => Number.isSafeInteger(primary.counts?.[floor]))));
-    state.root.innerHTML = '<header class="l26-home-heading"><h1>' + L.esc(L.t('nav.l26_home')) +
+    state.root.querySelector('[data-home-main]').innerHTML = '<header class="l26-home-heading"><h1>' + L.esc(L.t('nav.l26_home')) +
       '</h1><p>' + t(data.phase) + '</p></header><section class="l26-home-hero" aria-label="' + label(primary) + '">' +
       (primary.first ? '<p>' + t('first') + '</p>' : '') + details(primary) +
       (hasBallot ? voteControls(primary) : control(primary, 'btn btn-hot l26-home-primary')) + '</section>' +
@@ -279,6 +279,7 @@
       applyView(state, view);
       if (wasCheckingVote) updateVoteControls(state);
       // Align refreshes to server minute boundaries, including the KST phase changes.
+      void state.djFeedback.refresh();
       const nextMinute = Number.isFinite(server_now) ? 60_000 - server_now % 60_000 : 60_000;
       state.timer = setTimeout(state.refresh, nextMinute);
       return;
@@ -292,8 +293,10 @@
       if (!L.open('l26_home')) return legacy();
       loadStyles();
       root.className = 'l26-screen l26-home';
-      root.innerHTML = '<h1>' + L.esc(L.t('nav.l26_home')) + '</h1><p role="status">' + t('loading') + '</p>';
-      const state = active = { root, voteRevision: 0 };
+      root.innerHTML = '<div data-home-main><h1>' + L.esc(L.t('nav.l26_home')) + '</h1><p role="status">' +
+        t('loading') + '</p></div><section data-home-dj-feedback hidden></section>';
+      const state = active = { root, voteRevision: 0,
+        djFeedback: L.mountDjFeedback(root.querySelector('[data-home-dj-feedback]'), 'home') };
       state.refresh = () => { if (!document.hidden) return refresh(state); };
       root.addEventListener('click', event => {
         const button = event.target.closest('button[data-home-command]');
@@ -306,6 +309,7 @@
       if (!active) return;
       clearTimeout(active.timer);
       clearTimeout(active.qrTimer);
+      active.djFeedback.destroy();
       document.removeEventListener('visibilitychange', active.refresh);
       active = null;
     }
