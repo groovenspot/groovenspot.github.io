@@ -147,7 +147,7 @@
       const image = lives.filter(row => row?.floor === floor).flatMap(row =>
         Array.isArray(row.imgs) ? row.imgs : [row.img]).map(photoFrom).find(Boolean);
       const dj = slots.find(slot => slot.floor === floor)?.dj;
-      return '<div class="l26-home-floor-visual" data-l26-floor="' + floor + '">' +
+      return '<div class="l26-home-floor-visual" data-home-floor-art="' + floor + '">' +
         picture(image || '/assets/img/floor-' + floor.toLowerCase() + '.webp', true) +
         '<div><strong>' + floor + '</strong><span>' + (floor === '2F' ? t('hiphop') : 'EDM') +
         (dj ? ' · ' + L.esc(dj) : '') + '</span></div></div>';
@@ -201,7 +201,7 @@
     const resultSlot = state.root.querySelector('.l26-home-results');
     putMarkup(resultSlot, primary.live && result?.biz_day === lastNight && result.status === 'final' &&
       floors.every(floor => Number.isSafeInteger(result.counts?.[floor]) && result.counts[floor] >= 0)
-      ? '<ul aria-label="' + t('finalVote') + '">' + floors.map(floor => '<li><b data-l26-floor="' + floor + '">' +
+      ? '<ul aria-label="' + t('finalVote') + '">' + floors.map(floor => '<li><b data-home-result-floor="' + floor + '">' +
         floor + '</b> <strong>' + new Intl.NumberFormat(L.lang).format(result.counts[floor]) + '</strong></li>').join('') + '</ul>'
       : '');
 
