@@ -93,13 +93,26 @@
     return card;
   }
 
+  // 🔥 하입 (2026-11-28): 손님이 LIVE 에서 보낸 하입 — 이번 달 합계와 최근 세트별
+  function hypeBlock(hype) {
+    if (!hype) return [];
+    const box = element('section', undefined, { class: 'dj-hype' });
+    box.append(element('h3', '🔥 하입 / Hype'), element('p', '이번 달 ' + Number(hype.month || 0).toLocaleString() + '번 / This month'));
+    if (hype.sets?.length) {
+      const list = element('ul');
+      for (const set of hype.sets) list.append(element('li', set.floor + ' · ' + time(set.starts_at) + '–' + kst(set.ends_at).slice(11) + ' · 🔥 ' + Number(set.hype || 0).toLocaleString()));
+      box.append(list);
+    } else box.append(element('p', '아직 기록된 세트가 없어요. / No sets yet.'));
+    return [box];
+  }
+
   async function personal(panel, request, active) {
     panel.classList.add('dj-report');
     panel.textContent = label('waiting');
     try {
       const data = await request('mine');
       if (!active()) return;
-      panel.replaceChildren(element('p', label('independent')),
+      panel.replaceChildren(element('p', label('independent')), ...hypeBlock(data.hype),
         ...data.months.map(month => summary(month, month.month, false)));
     } catch {
       if (active()) panel.replaceChildren(element('p', label('failure')), button('retry', () => personal(panel, request, active)));
@@ -250,7 +263,7 @@
         filterForm.hidden = false;
         status.textContent = data.djs.length ? '' : label('empty');
         const djs = data.djs.map(dj => {
-          const card = summary(dj, dj.dj_name, true);
+          const card = summary(dj, dj.dj_name + (dj.hype ? ' · 🔥 ' + dj.hype.toLocaleString() : ''), true);
           for (const [key, periods] of [['weekly', dj.weeks], ['monthly', dj.months]]) {
             card.append(section(key, periods.map(period => summary(period, period.key, true))));
           }
