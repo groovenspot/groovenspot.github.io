@@ -51,7 +51,7 @@
   L.icons = ICONS;
 
   // 사진 주소: 전체 주소면 그대로, 키면 L.img
-  L.photoSrc = function (value) { return !value ? '' : /^(https?:)?\/\//.test(value) ? value : L.img(value); };
+  L.photoSrc = function (value) { return !value ? '' : /^((https?:)?\/\/|\/|data:|blob:)/.test(value) ? value : L.img(value); };   // '/lounge/assets/…'(DJ 로고) 같은 사이트 안 경로는 그대로 (2026-11-28 라인업 ? 아이콘)
 
   // 아바타: L.avatar({nick, photo, story}, 44, { link: true, ring: true })
   //  · story: '' | 'new' | 'seen' (스토리 테두리 — ring 을 켰을 때만 그림) · link: 프로필로 가는 <a> 로 감쌈
