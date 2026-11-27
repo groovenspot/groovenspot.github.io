@@ -96,7 +96,7 @@
       '</div><p class="muted" data-live-show-stale hidden>' + t('showStale') + '</p><nav class="l26-live-links"><a href="#/tonight">' + t('tonight') + '</a><a href="#/lineup">' +
       t('schedule') + '</a><a href="#/djs">' + t('djs') + '</a>' +
       (L.open('sales') ? '<a href="#/table">' + t('table') + '</a>' : '') + '</nav></section>' +
-      '<section data-live-entry hidden></section>' +
+      '<section data-live-entry hidden></section><section data-live-dj-feedback hidden></section>' +
       '<section data-live-vote hidden aria-labelledby="l26-live-vote"><h2 id="l26-live-vote">' + t('vote') + '</h2>' +
       '<p class="muted">' + t('hours') + '</p><div class="l26-live-grid">' +
       floors.map(([floor, genre]) => '<article class="l26-live-choice" data-l26-floor="' + floor +
@@ -106,6 +106,7 @@
       '</p><a data-live-sign-in href="' + loginLink() + '" hidden>' + L.esc(L.t('core.login')) + '</a>' +
       '<p class="muted" data-live-connection hidden></p></section>';
 
+    const djFeedback = L.mountDjFeedback(root.querySelector('[data-live-dj-feedback]'), 'live');
     const vote = root.querySelector('[data-live-vote]');
     const status = root.querySelector('[data-live-status]');
     const connection = root.querySelector('[data-live-connection]');
@@ -238,6 +239,7 @@
     async function loadShow() {
       if (document.hidden || showPending) return;
       showPending = true;
+      void djFeedback.refresh();
       const data = await request('tonight');
       showPending = false;
       if (!active()) return;
@@ -287,6 +289,7 @@
         clearTimeout(timer);
         clearInterval(showTimer);
         entry?.destroy();
+        djFeedback.destroy();
         document.removeEventListener('visibilitychange', visible);
         window.removeEventListener('online', visible);
         window.removeEventListener('offline', offline);

@@ -191,7 +191,8 @@
       (Array.isArray(result.legacy_checkins)
         ? visitHistory('self', 'selfCheckins', result.legacy_checkins, 'noSelfCheckins', result.next_legacy_before) : '') + '</section>' +
       '<div class="l26-my-links">' + link('me', 'legacy') + (L.open('rewards') ? link('rewards', 'legacyRewards') : '') +
-      link('djs', 'djs') + link('me/settings', 'settings') + '</div>';
+      link('djs', 'djs') + link('me/settings', 'settings') +
+      (L.open('l26_dj_feedback') ? '<a href="#/alerts/settings">' + L.esc(L.djReviewLabel('reminder')) + '</a>' : '') + '</div>';
 
     const qr = content.querySelector('[data-my-qr]');
     if (qr) qr.onclick = () => openMembershipEntryQr(qr);

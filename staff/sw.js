@@ -5,7 +5,8 @@
    서버(API)·사진·version.json 같은 다른 요청은 저장하지 않는다. */
 var API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
 var SHELL = 'gs-shell-v1', WAIT = 3500;
-var PAGE = '/staff/', STATIC = ['/staff/manifest.webmanifest', '/staff/icon-192.png', '/staff/icon-512.png', '/staff/badge-72.png'];
+var PAGE = '/staff/', STATIC = ['/staff/manifest.webmanifest', '/staff/icon-192.png', '/staff/icon-512.png', '/staff/badge-72.png',
+  '/staff/l26-dj-feedback.js', '/staff/l26-dj-feedback.css'];
 function noop() {}
 // 안드로이드 알림 버튼은 2개까지 → 가장 많은 답 하나 + '다른 답' (누르면 앱의 전체 화면 카드: 4개 버튼·직접 입력) (2026-11-21)
 var WHERE_ACTIONS = [

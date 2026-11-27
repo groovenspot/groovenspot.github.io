@@ -1,0 +1,41 @@
+.dj-review {
+  margin-block: 1rem;
+  min-width: 0;
+}
+
+.dj-review-list {
+  display: grid;
+  gap: .75rem;
+}
+
+.dj-review-card {
+  padding: .875rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--card);
+  overflow-wrap: anywhere;
+}
+
+.dj-review-card h3,
+.dj-review-card p {
+  margin: 0 0 .5rem;
+}
+
+.dj-review-actions {
+  display: grid;
+  gap: .375rem;
+}
+
+.dj-review-actions .btn {
+  min-height: 44px;
+  text-align: start;
+  white-space: normal;
+}
+
+.dj-review-actions .btn span {
+  margin-inline-end: .25rem;
+}
+
+.dj-review-card p:last-child {
+  margin-bottom: 0;
+}
