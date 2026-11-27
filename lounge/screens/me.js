@@ -5,8 +5,9 @@
     settings: ['설정', 'Settings'],
     points: ['내 포인트', 'My points'],
     stamps: ['방문 스탬프', 'Visit stamps'],
-    entry: ['입장 QR', 'Entry QR'],
-    verifiedStampHelp: ['입구 직원이 내 QR을 확인하면 영업일마다 스탬프 1개를 받아요.', 'Get one stamp per business day when entrance staff verify your QR.'],
+    entry: ['입장 QR', 'Entry QR', '入場QR', '入场二维码'],
+    verifiedStampHelp: ['입구 직원이 내 QR을 확인하면 영업일마다 스탬프 1개를 받아요.', 'Get one stamp per business day when entrance staff verify your QR.',
+      '入口でスタッフがQRコードを確認すると、営業日ごとにスタンプを1つ受け取れます。', '入口工作人员确认你的二维码后，每个营业日可获得一枚印章。'],
     stampHelp: ['입구 QR로 체크인하면 하루에 스탬프 1개를 받아요.', 'Scan the entrance QR to get one stamp per day.'],
     badges: ['배지', 'Badges'],
     noBadges: ['아직 배지가 없어요.', 'No badges yet.'],
@@ -34,8 +35,9 @@
     dashboard: ['내 포인트 {points}P · 방문 스탬프 {stamps}/10', 'My points {points}P · Visit stamps {stamps}/10'],
     deletionPending: ['탈퇴했어요. 남은 정보는 순차적으로 삭제하고 있어요.', 'Your account was deleted. We’re finishing the removal of your data.']
   };
-  L.i18n(Object.fromEntries(['ko', 'en'].map((lang, i) =>
-    [lang, Object.fromEntries(Object.entries(copy).map(([key, pair]) => ['me.' + key, pair[i]]))]
+  L.i18n(Object.fromEntries(['ko', 'en', 'ja', 'zh'].map((lang, i) =>
+    [lang, Object.fromEntries(Object.entries(copy).filter(([, variants]) => variants[i])
+      .map(([key, variants]) => ['me.' + key, variants[i]]))]
   )));
   const t = key => L.esc(L.t('me.' + key));
   const a = key => L.esc(L.t('auth.' + key));

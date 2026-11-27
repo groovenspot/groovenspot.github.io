@@ -308,7 +308,7 @@
         root.querySelectorAll('.l26-live-slots [data-live-current]').forEach(item => { item.hidden = true; });
         return;
       }
-      const { state, openingTime } = venueState(data, Date.now());
+      const { state, openingTime } = venueState(data, hasTimestamp(data.server_now) ? data.server_now : Date.now());
       venue.dataset.liveVenue = state;
       venue.textContent = t(state === 'unknown' ? 'showUnknown' : state, { time: openingTime });
       hours.hidden = typeof data.hours !== 'string' || !data.hours;

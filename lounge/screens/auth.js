@@ -265,8 +265,9 @@
     'error.bio': ['소개를 60자까지 써 주세요.', 'Keep your bio to 60 characters.'],
     'error.generic': ['지금은 처리할 수 없어요. 잠시 뒤 다시 시도해 주세요.', 'Could not complete this right now. Try again later.']
   };
-  L.i18n(Object.fromEntries(['ko', 'en'].map((lang, i) =>
-    [lang, Object.fromEntries(Object.entries(copy).map(([key, pair]) => ['auth.' + key, pair[i]]))]
+  L.i18n(Object.fromEntries(['ko', 'en', 'ja', 'zh'].map((lang, i) =>
+    [lang, Object.fromEntries(Object.entries(copy).filter(([, variants]) => variants[i])
+      .map(([key, variants]) => ['auth.' + key, variants[i]]))]
   )));
   L.promoConsentVersion = promoConsentVersion;
   const t = (key, vars) => L.esc(L.t('auth.' + key, vars));

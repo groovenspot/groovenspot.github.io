@@ -40,6 +40,8 @@ const cases = [
   ['19:30 early staff open with extended timing', at('19:30:00'), { open: true, phase: 'open', ...scheduled }, 'pre', '오픈 전 · 21:00 오픈'],
   ['20:59:59 legacy staff open', at('20:59:59'), { open: true }, 'pre', '오픈 전 · 21:00 오픈'],
   ['21:00 inclusive opening', at('21:00:00'), { open: true, phase: 'open', ...scheduled }, 'open', '영업 중'],
+  ['server opening time takes priority over a slow device clock', at('19:30:00'), { open: true, phase: 'open', server_now: at('21:00:00'), ...scheduled }, 'open', '영업 중'],
+  ['server time at close hides the current DJ on a slow device', at('23:00:00'), { open: true, server_now: at('07:00:00', '2026-11-28') }, 'after', '영업 종료'],
   ['scheduled time alone cannot open the venue', at('21:00:00'), { open: false, phase: 'pre' }, 'pre', '오픈 전 · 21:00 오픈'],
   ['00:00 overnight opening', at('00:00:00', '2026-11-28'), { open: true, ...scheduled }, 'open', '영업 중'],
   ['06:59:59 before closing', at('06:59:59', '2026-11-28'), { open: true }, 'open', '영업 중'],
