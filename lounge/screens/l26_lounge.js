@@ -15,6 +15,12 @@
     sparse: ['공개할 수 있는 영업 기록이 아직 없어요.', 'There are no records available to share for this night yet.', '公開できる営業記録はまだありません。', '这晚暂无可公开的营业记录。'],
     schedule: ['DJ 일정', 'DJ lineup', 'DJラインナップ', 'DJ 排期'],
     votes: ['지난 투표 결과', 'Past poll results', '過去の投票結果', '往期投票结果'],
+    officialAccount: ['GROOVE 공식 계정', 'GROOVE official account', 'GROOVE 公式アカウント', 'GROOVE 官方账号'],
+    officialFollowers: ['팔로워 {n}명', '{n} followers', 'フォロワー {n} 人', '{n} 位粉丝'],
+    officialOneFollower: ['팔로워 1명', '1 follower', 'フォロワー 1 人', '1 位粉丝'],
+    officialFollow: ['팔로우', 'Follow', 'フォローする', '关注'],
+    officialUnfollow: ['팔로우 취소', 'Unfollow', 'フォローを解除', '取消关注'],
+    officialRetry: ['다시 시도', 'Try again', '再試行', '重试'],
     officialVideo: ['YouTube에서 보기', 'Watch on YouTube', 'YouTubeで見る', '在 YouTube 上观看'],
     visits: ['인증 방문 {n}명', '{n} verified visits', '認証済みの来店 {n} 人', '{n} 位已验证来访者'],
     photo: ['공식 현장 사진', 'Official venue photo', '公式の会場写真', '官方现场照片'],
@@ -172,12 +178,55 @@
     });
   }
 
+  async function official(view) {
+    const count = view.querySelector('[data-official-count]');
+    const button = view.querySelector('[data-official-follow]');
+    const member = L.me;
+    let following = false;
+    function paint(result) {
+      following = result.following;
+      const label = result.followers === 1 ? 'community.officialOneFollower' : 'community.officialFollowers';
+      count.textContent = L.t(label, { n: new Intl.NumberFormat(L.lang).format(result.followers) });
+      button.textContent = L.t(following ? 'community.officialUnfollow' : 'community.officialFollow');
+      button.setAttribute('aria-pressed', String(following));
+      button.hidden = false;
+      button.disabled = L.isPreview();
+    }
+    const result = await L.api('l26_official_status');
+    if (!view.isConnected || L.me !== member) return;
+    if (result.error === 'closed') return view.remove();
+    if (!result.ok) {
+      count.textContent = L.t('community.unavailable');
+      button.textContent = L.t('community.officialRetry');
+      button.hidden = false;
+      button.disabled = false;
+      button.onclick = () => { button.disabled = true; void official(view); };
+      return;
+    }
+    paint(result);
+    button.onclick = async () => {
+      if (button.disabled || L.needLogin()) return;
+      button.disabled = true;
+      const update = await L.api(following ? 'l26_official_unfollow' : 'l26_official_follow');
+      if (!view.isConnected || L.me !== member) return;
+      if (update.error === 'closed') return view.remove();
+      if (!update.ok) {
+        button.disabled = false;
+        return L.toast(L.errorText(update));
+      }
+      paint(update);
+    };
+  }
+
   function render(root) {
     stylesheet();
     root.className = 'l26-screen l26-community';
     const recap = L.open('l26_recap');
     const chatLabel = esc(L.t(L.open('openchat') ? 'nav.openchat' : 'nav.rooms'));
     root.innerHTML = '<h1>' + esc(L.t('nav.l26_lounge')) + '</h1>' +
+      (L.open('l26_follow_counts') ? '<section class="l26-official-card" data-official-card><div><h2>' + t('officialAccount') +
+        '</h2><p class="l26-follow-count" data-official-count role="status">' + t('loading') + '</p></div>' +
+        '<button class="btn btn-hot" type="button" data-official-follow hidden></button></section>' : '') +
       (recap ? '<section class="community-replay"><h2>' + t('recap') +
         '</h2><div data-community-replay aria-live="polite"><p class="muted">' + t('loading') + '</p></div></section>' : '') +
       '<section class="community-music"><h2>' + t('music') + '</h2><a href="' + sessions +
@@ -191,6 +240,8 @@
       '<div class="community-shortcuts">' + link('rooms', chatLabel, 'community-more') +
       link(L.open('l26_play') ? 'l26_play' : 'play', t('play'), 'community-more') + '</div>';
 
+    const account = root.querySelector('[data-official-card]');
+    if (account) void official(account);
     void preview(root.querySelector('[data-community-feed]'), root.querySelector('.community-timetables'));
     L.storyTray?.(root.querySelector('[data-community-stories]'));
     if (recap) stopRefresh = watchReplay(root.querySelector('[data-community-replay]'));

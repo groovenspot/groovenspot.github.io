@@ -1,0 +1,72 @@
+.l26-follow-summary {
+  margin-block-end: 12px;
+}
+
+.l26-follow-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.l26-follow-profile > :is(img, span) {
+  display: grid;
+  flex: 0 0 44px;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.l26-follow-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin-block-start: 10px;
+}
+
+.l26-follow-stats > * {
+  display: grid;
+  align-content: center;
+  min-height: 44px;
+  padding: 4px;
+  color: inherit;
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.l26-follow-stats strong,
+.l26-follow-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.l26-follow-stats span span,
+.l26-follow-stats a span {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.l26-official-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.l26-official-card h2,
+.l26-follow-count {
+  margin: 0;
+}
+
+.l26-official-card [data-official-follow] {
+  min-height: 44px;
+}

@@ -638,7 +638,7 @@
     const bio = String(user.bio || '');
     view.classList.add('pf');
     view.innerHTML = '<section class="pf-head" data-profile-head><div class="pf-top">' + avatar +
-      '<div class="pf-stats profile3-stats">' + stats(user, follow2 && L.me && !user.locked) + '</div></div>' +
+      '<div class="pf-stats profile3-stats">' + stats(user, (follow2 || L.open('l26_follow_counts')) && L.me && !user.locked) + '</div></div>' +
       (chips ? '<div class="pf-id profile3-name" data-user-name>' + chips + '</div>' : '') +
       (bio ? '<div class="pf-bio is-short" data-bio><p class="shell-bio">' + (L.linkify ? L.linkify(bio) : esc(bio)) + '</p>' +
         '<button type="button" class="pf-more" aria-expanded="false" data-more-bio hidden><span>' + profile('moreBio') + '</span></button></div>' : '') +
@@ -1074,6 +1074,7 @@
       return enhanced(view, user, false, '', kept, stashKey);
     }
     const follow2 = L.open('follow2');
+    const followerLinks = L.open('l26_follow_counts') && L.me && !user.locked;
     view.innerHTML = '<article style="' + U.card + '">' + (photo ? '<img alt="" src="' + L.esc(photo) +
       '" style="width:76px;height:76px;object-fit:cover;border-radius:50%;border:2px solid var(--g)">' : '') +
       '<h2 data-user-name>' + L.whoTag(user) + '</h2><p style="white-space:pre-wrap">' + L.esc(user.bio) + '</p>' +
@@ -1096,8 +1097,11 @@
         }
         return;
       }
-      counts.innerHTML = '<b>' + t('followers') + ' ' + (Number(user.followers) || 0) +
-        '</b> · ' + t('following') + ' ' + (Number(user.following) || 0);
+      const totals = ['followers', 'following'].map(key => {
+        const body = '<b>' + t(key) + ' ' + (L.open('l26_follow_counts') ? esc(format(user[key])) : Number(user[key]) || 0) + '</b>';
+        return followerLinks ? '<a href="' + esc(path(key, user.nick)) + '">' + body + '</a>' : body;
+      });
+      counts.innerHTML = totals.join(' · ');
       if (follow) {
         follow.textContent = L.t('user.' + (following ? 'unfollow' : 'follow'));
         follow.setAttribute('aria-pressed', following);

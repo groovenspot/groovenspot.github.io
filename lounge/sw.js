@@ -1,5 +1,5 @@
 /* 그루브 라운지 서비스워커 */
-const CACHE = 'groove-lounge-shell-v20';
+const CACHE = 'groove-lounge-shell-v21';
 const API = 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
 const SHELL = [
   '/lounge/', '/lounge/app.css', '/lounge/core.js', '/lounge/ui.js',
@@ -14,7 +14,7 @@ const SHELL = [
   '/lounge/screens/rank.js', '/lounge/screens/songs.js',
   '/lounge/screens/share.js', '/lounge/screens/story.js', '/lounge/screens/explore.js',
   '/lounge/screens/lineup.js', '/lounge/screens/tonight_cards.js', '/lounge/screens/tonight5.js', '/lounge/screens/partners.js',
-  '/lounge/css/l26-shell.css', '/lounge/css/l26-home.css', '/lounge/css/l26-live.css', '/lounge/css/l26-play.css',
+  '/lounge/css/l26-followers.css', '/lounge/css/l26-shell.css', '/lounge/css/l26-home.css', '/lounge/css/l26-live.css', '/lounge/css/l26-play.css',
   '/lounge/screens/l26_home.js', '/lounge/screens/l26_live.js', '/lounge/screens/l26_lounge.js',
   '/lounge/screens/l26_my.js', '/lounge/screens/l26_play.js',
   '/lounge/i18n/ja.js', '/lounge/i18n/zh.js',

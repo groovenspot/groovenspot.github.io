@@ -206,11 +206,14 @@
       const tabbed = name === 'followers' || name === 'following';
       const stashKey = 'follows:' + name + ':' + nick.toLowerCase();
       const kept = L.profileKept ? L.profileKept(stashKey) : null;
-      root.innerHTML = L.bar({ back: name === 'suggest' || mine ? 'me' : 'u/' + nick,
+      const classicLists = tabbed && L.open('l26_follow_counts');
+      const myBack = classicLists && L.open('l26_shell') ? 'l26_my' : 'me';
+      root.innerHTML = L.bar({ back: name === 'suggest' || mine ? myBack : 'u/' + nick,
         title: tabbed || name === 'mutuals' ? nick : L.t(titleKey), sub: name === 'mutuals' ? t('mutuals') : '' }) +
         '<div class="pf pf-list" data-follow-list>' + U.status('loading', true) + '</div>';
       const view = root.querySelector('[data-follow-list]');
-      if (!await enabled()) { if (view.isConnected) view.innerHTML = U.status('soon'); return; }
+      const follow2 = await enabled();
+      if (!follow2 && !classicLists) { if (view.isConnected) view.innerHTML = U.status('soon'); return; }
       if (!view.isConnected || !L.me) return;
       const tabs = tabbed ? ['followers', 'following'] : [name];
       const state = kept?.state || { tab: name, query: '', lists: Object.fromEntries(tabs.map(tab =>
@@ -231,6 +234,7 @@
       const ownFollowers = () => state.tab === 'followers' && mine;
 
       function extras(row) {
+        if (!follow2 || (classicLists && L.isPreview())) return '';
         if (ownFollowers()) return (stateOf(row) === 'none' ? followButton(row, { cls: 'pf-btn-small' }) : '') +
           '<button type="button" class="pf-btn pf-btn-small" data-remove aria-label="' + t('remove') + '"><span class="pf-btn-in">' + w('removeShort') + '</span></button>';
         if (state.tab === 'suggest') return followButton(row, { cls: 'pf-btn-small' }) +
@@ -293,7 +297,8 @@
           paint();
           return;
         }
-        for (const row of result.list || []) if (row?.nick) data.rows.set(row.nick.toLowerCase(), row);
+        const rows = result.list || (classicLists && remote() && (result.people || result[tab]?.map(nick => ({ nick })))) || [];
+        for (const row of rows) if (row?.nick) data.rows.set(row.nick.toLowerCase(), row);
         if (!state.query && Number.isFinite(result.n)) data.n = result.n;
         data.cursor = remote() && result.before != null && JSON.stringify(result.before) !== JSON.stringify(before) ? result.before : null;
         paint();

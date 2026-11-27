@@ -2781,6 +2781,10 @@ html:where([data-theme="light"]) .lounge-chip-plain { color: var(--muted); }
 .lounge-screen [data-room-results] .lounge-room-when { color: var(--g); font-weight: 800; }
 .lounge-screen [data-room-results] [data-room-kind=venue] .lounge-room-when { color: var(--muted); font-weight: 400; }
 .lounge-cards :is([data-chat-report], [data-chat-banned], [data-room-results] article) .lounge-options { margin-top: 8px; }
+.lounge-growth-table { overflow-x: auto; margin: 8px 0 14px; }
+.lounge-growth-table th[scope="row"] { text-align: left; }
+.lounge-growth form { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin: 12px 0; }
+.lounge-growth label { display: grid; gap: 4px; }
 .lounge-oc-stats { margin: 10px 0; padding: 0 12px; border: 1px solid var(--line-2); border-radius: var(--rad); background: var(--card-2); }
 .lounge-oc-stats > div { padding-bottom: 12px; overflow-x: auto; }
 .lounge-oc-table { font-variant-numeric: tabular-nums; }
@@ -3092,6 +3096,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
 
 <script src="/assets/vendor/qrcode-generator-1.4.4.js"></script>
 <script src="/assets/media-share.js?v=2"></script>
+<script src="/staff/l26-followers.js"></script>
 <script>
 (function () {
   'use strict';
@@ -8707,7 +8712,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   async function loungeRequest(action, body, session) {
     const token = session ? await loungeToken(session) : '';
     if (session && state.s?.token !== session) throw new Error('auth');
-    const timedRead = action === 'config' || action === 'adm_l26_entry_ops';
+    const timedRead = ['config', 'adm_l26_entry_ops', 'adm_l26_followers'].includes(action);
     const res = await fetch(loungeUrl(), { method: 'POST', ...(timedRead && { signal: AbortSignal.timeout(5000) }), headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
       body: JSON.stringify({ ...body, a: action, ...(token && { admin: token }) }) });
     if (!res.ok) throw new Error('net');
@@ -8800,6 +8805,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       document.querySelectorAll('[data-lounge="entry"]').forEach(button => { button.hidden = config.l26_entry !== true; });
       document.querySelectorAll('[data-lounge="checkin"]').forEach(button => { button.hidden = config.l26_entry === true; });
       document.querySelectorAll('[data-entry-metrics]').forEach(button => { button.hidden = config.l26_metrics !== true; });
+      document.querySelectorAll('[data-follower-growth]').forEach(button => { button.hidden = config.l26_follow_counts !== true; });
       document.querySelectorAll('[data-lounge="returnBenefits"]').forEach(button => { button.hidden = !Object.hasOwn(config, 'l26_return'); });
       document.querySelectorAll('[data-lounge="returnScore"]').forEach(button => { button.hidden = config.l26_staff_score !== true; });
       loungeQuick();
@@ -11007,12 +11013,14 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       ['analytics', state.s.admin ? '설문 · 주간 / Reports' : '설문 결과 / Surveys']];
     tabs.push(['play', '놀거리 / Play'], ['stages', '단계 스위치 / Feature switches']);
     if (state.s.admin) tabs.push(['metrics', '입장 · 재방문 지표 / Entry and retention'], ['settings', '포인트 · 라디오 / Settings']);
+    if (state.s.admin) tabs.push(['followerGrowth', '팔로워 성장 / Follower growth']);
     const screens = {
       reports: panel => loungeReports(panel, session), rooms: panel => loungeRooms(panel, request),
       members: panel => loungeMemberSearch(panel, session), resetqr: panel => loungeResetQr(panel, session),
       boundreset: panel => loungeBoundRecovery(panel, session),
       stats: panel => loungeStats(panel, session),
       metrics: panel => loungeEntryMetrics(panel, request),
+      followerGrowth: panel => window.LoungeFollowerGrowth.render(panel, request, esc, loungeError),
       programming: panel => loungeProgramming(panel, request), rewards: panel => loungeRewardSetup(panel, session, request),
       analytics: panel => loungeAnalytics(panel, request),
       orders: panel => loungeFulfillment(panel, session, request, true),
@@ -11024,7 +11032,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     const primary = ['reports', 'rooms', 'display'];
     const navButton = ([tab, label]) => loungeButton(label + (tab === 'reports' ? loungeReportBadge() : ''),
       'type="button" data-admin-tab="' + tab + '"' +
-      (tab === 'metrics' ? ' data-entry-metrics' + (entryConfig?.l26_metrics === true ? '' : ' hidden') : ''));
+      (tab === 'metrics' ? ' data-entry-metrics' + (entryConfig?.l26_metrics === true ? '' : ' hidden') : '') +
+      (tab === 'followerGrowth' ? ' data-follower-growth' + (entryConfig?.l26_follow_counts === true ? '' : ' hidden') : ''));
     const root = loungeSheet('손님 라운지 관리 / Manage Lounge', '<nav class="lounge-nav" aria-label="관리 메뉴 / Management">' +
       '<div class="lounge-tabs lounge-main-tabs">' + primary.map(id => navButton(tabs.find(([tab]) => tab === id))).join('') + '</div>' +
       '<details class="lounge-nav-extra"><summary>관리 메뉴 더 보기 / More tools</summary><div class="lounge-tabs">' +

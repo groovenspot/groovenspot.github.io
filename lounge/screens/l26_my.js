@@ -19,6 +19,9 @@
     regular: ['단골', 'Regular', '常連', '常客'],
     benefits: ['내 방문 혜택', 'My visit benefits', '来店特典', '我的到访权益'],
     legacy: ['내 프로필', 'My profile', 'プロフィール', '我的资料'],
+    posts: ['게시물', 'Posts', '投稿', '帖子'],
+    followers: ['팔로워', 'Followers', 'フォロワー', '粉丝'],
+    following: ['팔로잉', 'Following', 'フォロー中', '关注'],
     legacyRewards: ['기존 보상', 'Rewards', '既存の特典', '奖励'],
     djs: ['DJ 팔로우', 'Follow DJs', 'DJをフォロー', '关注 DJ'],
     settings: ['알림 설정', 'Notification settings', '通知設定', '通知设置'],
@@ -161,12 +164,65 @@
       (next.status === 'available' ? text('ready') : text('moreVisits', { n: formatPoints(next.visits - visits) })) + '</p>';
   }
 
-  async function renderMy(root) {
-    if (!L.open('l26_return')) return legacy(root);
-    const content = frame(root, L.esc(L.t('nav.l26_my')));
-    const result = await load(root, () => L.api('l26_return'));
+  function entryCard() {
+    return L.open('l26_entry') ? '<section class="l26-my-card l26-my-entry"><div><h2>' + text('entry') + '</h2><p>' +
+      text('entryHelp') + '</p></div>' + button('entry', 'data-my-qr', true) + '</section>' : '';
+  }
+
+  async function showProfile(root, panel) {
+    const result = await load(root, () => L.api('l26_my_profile'));
     if (!result) return;
-    if (result.error === 'closed') return legacy(root);
+    const { profile } = result;
+    if (!profile) {
+      if (result.error === 'closed') return panel.remove();
+      panel.removeAttribute('aria-busy');
+      panel.innerHTML = '<p role="status">' + L.esc(L.errorText(result)) + '</p>' + button('retry', 'data-profile-retry');
+      panel.querySelector('button').onclick = () => {
+        panel.setAttribute('aria-busy', 'true');
+        panel.querySelector('button').disabled = true;
+        void showProfile(root, panel);
+      };
+      return;
+    }
+    const photo = LoungeScreenUI.image(profile.photo);
+    const stat = (key, href) => {
+      const body = '<strong>' + formatPoints(profile[key]) + '</strong><span>' + text(key) + '</span>';
+      return href ? '<a href="#/' + href + '">' + body + '</a>' : '<span>' + body + '</span>';
+    };
+    const nick = encodeURIComponent(profile.nick);
+    panel.removeAttribute('aria-busy');
+    panel.innerHTML = '<a class="l26-follow-profile" href="#/me" aria-label="' + text('legacy') + '">' +
+      (photo ? '<img src="' + L.esc(photo) + '" alt="">' : '<span aria-hidden="true">' + L.esc(Array.from(profile.nick)[0]) + '</span>') +
+      '<strong>' + L.esc(profile.nick) + '</strong></a><div class="l26-follow-stats">' +
+      stat('posts', L.open('profile2') ? 'me' : '') + stat('followers', 'followers/' + nick) +
+      stat('following', 'following/' + nick) + '</div>';
+  }
+
+  async function renderMy(root) {
+    const followers = L.open('l26_follow_counts');
+    const membership = L.open('l26_return');
+    if (!membership && !followers) return legacy(root);
+    const content = frame(root, L.esc(L.t('nav.l26_my')));
+    if (followers) {
+      content.insertAdjacentHTML('beforebegin', '<section class="l26-my-card l26-follow-summary" data-my-profile aria-busy="true">' +
+        busy + text('loading') + '</p></section>');
+      void showProfile(root, root.querySelector('[data-my-profile]'));
+    }
+    const result = membership && await load(root, () => L.api('l26_return'));
+    if (membership && !result) return;
+    if (result?.error === 'closed' && !followers) return legacy(root);
+    if (!membership || result.error === 'closed') {
+      content.removeAttribute('aria-busy');
+      content.innerHTML = entryCard() + '<div class="l26-my-links">' + link('djs', 'djs') +
+        link('me/settings', 'settings') + '</div>';
+      const qr = content.querySelector('[data-my-qr]');
+      if (qr) qr.onclick = () => openMembershipEntryQr(qr);
+      const data = await load(root, () => L.api('l26_benefits'));
+      if (data?.ok && data.benefits.length) {
+        content.querySelector('.l26-my-links').insertAdjacentHTML('afterbegin', link('l26_benefits', 'benefits'));
+      }
+      return;
+    }
     content.removeAttribute('aria-busy');
     if (!result.ok) {
       showError(root, result);
@@ -181,8 +237,7 @@
       '</h2><strong data-my-visits>' + formatPoints(result.visits) + '</strong></div>' +
       '<div class="l26-my-next"><h2>' + text('next') + '</h2>' +
       benefitProgress(result.next_benefit, result.visits) + link('l26_benefits', 'benefits') + '</div></section>' +
-      (L.open('l26_entry') ? '<section class="l26-my-card l26-my-entry"><div><h2>' + text('entry') + '</h2><p>' +
-        text('entryHelp') + '</p></div>' + button('entry', 'data-my-qr', true) + '</section>' : '') +
+      entryCard() +
       '<section class="l26-my-card l26-my-points"><h2>' + text('points') +
       '</h2><strong>' + formatPoints(result.points) + '</strong></section>' +
       (badges ? '<ul class="l26-my-badges">' + badges + '</ul>' : '') +
