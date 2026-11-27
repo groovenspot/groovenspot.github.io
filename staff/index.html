@@ -1357,6 +1357,10 @@ html:where([data-theme="light"]) .lvc .lvtt { color: #0b5cad; }
 /* 🚨 경호 호출 */
 #listArea { padding-bottom: calc(84px + var(--bbh) + env(safe-area-inset-bottom)); }   /* 아래 🚨·💬 동그라미 버튼이 댓글 칸을 가리지 않게 */
 .sosfab { position: fixed; left: 16px; bottom: calc(18px + var(--bbh) + env(safe-area-inset-bottom)); z-index: 15; width: 58px; height: 58px; border-radius: 50%; border: 2px solid #ff8a9b; background: #e0203f; color: #fff; font-size: 26px; cursor: pointer; box-shadow: 0 8px 24px rgba(224,32,63,.45); }
+/* 📱 아이폰(iOS 26) 고정 메뉴 어긋남 보정 (2026-11-28): 키보드를 닫은 뒤 등 사파리가 '고정 기준 화면'(레이아웃 뷰포트)을 실제 보이는 화면과 어긋나게 두면
+   아래 탭바·🚨·💬 가 화면 중간에 뜨고 위 이름 줄이 사라진다 → 보이는 화면(visualViewport)과의 차이만큼 옮긴다(--vvy 아래·--vvt 위, 평소 0). */
+body.hasbar .tabbar, .sosfab, .chatfab { translate: 0 var(--vvy, 0px); }
+body:not(.dmfix):not(.kbd) .top { top: var(--vvt, 0px); }
 .sosbar { position: sticky; top: 0; z-index: 6; padding: 10px 14px; background: #3a0610; border-bottom: 2px solid #ff3b5c; display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow: auto; }   /* 머리줄 바로 아래 (탭을 가리지 않게 흐름 안에) */
 .sosbar .sosi { display: flex; flex-direction: column; gap: 6px; }
 .sosbar .sosh { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -3892,6 +3896,20 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     sosLift();
   }
   if (DMFIX_OK) { window.visualViewport.addEventListener('resize', dmFitSoon); window.visualViewport.addEventListener('scroll', dmFitSoon); window.addEventListener('resize', dmFitSoon); document.addEventListener('focusin', function () { setTimeout(dmFitSoon, 60); setTimeout(dmFitSoon, 350); }); document.addEventListener('input', function (e) { if (e.target && (e.target.id === 'chatIn' || e.target.id === 'dText')) dmFitSoon(); }); }
+  // 📱 아이폰 고정 메뉴 보정 (2026-11-28): 고정 기준 화면 아래끝(probe) ↔ 보이는 화면 아래끝 차이 = --vvy, 보이는 화면이 내려간 만큼 = --vvt. 키보드가 떠 있거나 확대 중이면 0.
+  var vvP = null, vvY = 0, vvT = 0, vvR = 0;
+  function vvFix() {
+    vvR = 0; var b = document.body, vv = window.visualViewport, y = 0, t = 0;
+    if (vv && COARSE_MQ.matches && !b.classList.contains('kbd') && !kbdEl(document.activeElement) && Math.abs(vv.scale - 1) < 0.01) {
+      if (!vvP) { vvP = document.createElement('div'); vvP.setAttribute('aria-hidden', 'true'); vvP.style.cssText = 'position:fixed;left:0;bottom:0;width:0;height:0;pointer-events:none;visibility:hidden'; b.appendChild(vvP); }
+      y = Math.round(vv.offsetTop + vv.height - vvP.getBoundingClientRect().top); t = Math.round(vv.offsetTop);
+      if (Math.abs(y) < 2) y = 0; if (t < 2) t = 0;
+    }
+    if (y !== vvY) { vvY = y; b.style.setProperty('--vvy', y + 'px'); }
+    if (t !== vvT) { vvT = t; b.style.setProperty('--vvt', t + 'px'); }
+  }
+  function vvFixSoon() { if (!vvR) vvR = requestAnimationFrame(vvFix); }
+  if (DMFIX_OK) { window.visualViewport.addEventListener('resize', vvFixSoon); window.visualViewport.addEventListener('scroll', vvFixSoon); window.addEventListener('resize', vvFixSoon); window.addEventListener('scroll', vvFixSoon, { passive: true }); document.addEventListener('focusin', vvFixSoon); document.addEventListener('focusout', function () { setTimeout(vvFixSoon, 150); setTimeout(vvFixSoon, 600); }); window.addEventListener('pageshow', vvFixSoon); document.addEventListener('visibilitychange', vvFixSoon); }
   function dmBox() { return $('dmBox'); }
   function dmY() { var bx = dmBox(); return document.body.classList.contains('dmfix') && bx ? bx.scrollTop : window.scrollY; }
   function dmSetY(y) { var bx = dmBox(); if (document.body.classList.contains('dmfix') && bx) bx.scrollTop = y; else window.scrollTo(0, y); }
@@ -8566,7 +8584,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     }
     topNotePaint();
   }
-  function topNotePaint() { var t = $('topNote'); if (t) t.hidden = $('tnWait').hidden && $('tnPush').hidden && $('byeBtn').hidden; }
+  function topNotePaint() { var t = $('topNote'); if (!t) return; var h = $('tnWait').hidden && $('tnPush').hidden && $('byeBtn').hidden; if (t.hidden !== h) { t.hidden = h; dmFitSoon(); } }   // 위 이름 줄 높이가 바뀌면 메시지 틀도 다시 맞춤
   $('tnPushB').addEventListener('click', function () { updateBell(true); });
   // 🪑 테이블 대기 배지 (직원 건의 2026-11-22): 대기 명단이 있으면 어느 탭에서든 '🪑 테이블 대기 N' → 누르면 테이블 탭 대기 명단. 0이면 숨김. 테이블을 보는 사람만(경호팀 빼고)
   function tbWaitOk() { var d = state.data; return !!(state.s && d && d.table && !d.guard); }
