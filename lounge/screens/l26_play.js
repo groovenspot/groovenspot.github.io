@@ -3,6 +3,7 @@
     mission: ['오늘의 미션', 'Today’s mission', '今日のミッション', '今日任务'],
     points: ['내 포인트', 'My points', 'マイポイント', '我的积分'],
     attendance: ['오늘 출석', 'Today’s check-in', '今日の出席', '今日签到'],
+    guess: ['DJ 맞히기', 'Guess the DJ', 'DJ当てクイズ', '猜猜 DJ'],
     legacy: ['기존 출석판·올클', 'Classic attendance and all-clear', 'これまでの出席・全クリア', '原版签到和全通关'],
     more: ['더 많은 놀거리', 'More activities', 'その他の遊び', '更多玩法'],
     done: ['완료', 'Done', '完了', '已完成'],
@@ -39,7 +40,7 @@
   const label = key => L.esc(L.t('l26play.' + key));
   const translated = key => L.esc(L.t(key));
   const shelfLinks = {
-    guess: 'guess.title', cup: 'vote.cup', vote: 'vote.title', radio: 'radio.title',
+    guess: 'l26play.guess', cup: 'vote.cup', vote: 'vote.title', radio: 'radio.title',
     shorts: 'shorts.title', challenge: 'challenge.title', rank: 'rank.title', rewards: 'rewards.title', play: 'l26play.legacy'
   };
   // Published GROOVE SESSIONS clips from /data/videos.json.
@@ -53,6 +54,8 @@
     cup: ['cup', 'vote.cup'], dj_content: ['shorts', 'shorts.title'],
     survey: ['vote', 'l26play.survey'], radio: ['radio', 'radio.title']
   };
+  const missionHeading = (state = '') => '<header class="l26-play-mission-meta"><h2 id="l26-mission-title">' +
+    label('mission') + '</h2>' + state + '</header>';
 
   function stylesheet() {
     if (document.getElementById('l26-play-css')) return;
@@ -131,9 +134,8 @@
       'fill="currentColor" stroke="currentColor" stroke-width="3"/><path d="M214 45v52" stroke="#08080A" stroke-dasharray="3 4"/>' +
       '<path d="M166 55l3.5 10.5L180 69l-10.5 3.5L166 83l-3.5-10.5L152 69l10.5-3.5L166 55Z" fill="#08080A"/>' +
       '<path d="M189 57v12m-6-6h12m-11 16v8m-4-4h8" stroke="#08080A" stroke-width="2"/></g></svg></div>' +
-      '<div class="l26-play-mission-copy"><h2 id="l26-mission-title">' + label('mission') +
-      '</h2><div data-l26-mission aria-busy="true"><p role="status">' + label('loading') +
-      '</p></div></div></section><p class="l26-play-error" data-l26-error role="status" hidden></p>' +
+      '<div class="l26-play-mission-copy" data-l26-mission aria-busy="true">' + missionHeading() +
+      '<p role="status">' + label('loading') + '</p></div></section><p class="l26-play-error" data-l26-error role="status" hidden></p>' +
       '<div class="l26-play-featured" hidden></div>' +
       '<details class="l26-play-shelf" hidden><summary>' + label('more') +
       L.icon('down', { size: 16 }) + '</summary><div class="l26-play-options"></div></details>';
@@ -162,9 +164,10 @@
         button('attend', data.attended ? 'done' : 'attend', '', data.attended ? ' disabled' : '');
       const mission = data.mission;
       card.dataset.missionKey = mission.key;
-      card.innerHTML = '<h3>' + label(mission.key) + '</h3>' +
-        (member ? '<p class="l26-play-state" data-done="' + mission.done + '">' + label(mission.done ? 'done' : 'ready') + '</p>' :
-          '<p class="muted">' + label('guest') + '</p>') +
+      const missionState = member ? '<p class="l26-play-state" data-done="' + mission.done + '">' +
+        label(mission.done ? 'done' : 'ready') + '</p>' : '';
+      card.innerHTML = missionHeading(missionState) + '<h3>' + label(mission.key) + '</h3>' +
+        (member ? '' : '<p class="muted">' + label('guest') + '</p>') +
         '<div class="l26-play-actions">' + missionControls(mission, member) + (member ? '' : button('login', 'login')) + '</div>';
       activities.innerHTML = Object.keys(featured).filter(key => data.shelf.includes(key)).map(activity).join('');
       activities.hidden = !activities.childElementCount;
@@ -184,7 +187,7 @@
         if (!data.ok) {
           error.hidden = false;
           error.textContent = L.t('l26play.error');
-          if (!last) card.innerHTML = button('refresh', 'retry');
+          if (!last) card.innerHTML = missionHeading() + button('refresh', 'retry');
           return;
         }
         error.hidden = true;

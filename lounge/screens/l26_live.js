@@ -115,8 +115,8 @@
       '<p class="muted">' + t('hours') + '</p><div class="l26-live-match"><span class="l26-live-vs" aria-hidden="true">VS</span>' +
       floors.map(([floor, genre]) => '<article class="l26-live-choice" data-l26-floor="' + floor +
         '"><button type="button" data-live-ballot="' + floor + '" disabled><strong>' + floor + '</strong><span>' + genre +
-        '</span></button><div class="l26-live-score"><span data-live-share hidden></span>' +
-        '<span data-live-count="' + floor + '" hidden></span></div></article>').join('') + '</div>' +
+        '</span><span class="l26-live-score"><span data-live-share hidden></span>' +
+        '<span data-live-count="' + floor + '" hidden></span></span></button></article>').join('') + '</div>' +
       '<div class="l26-live-split" data-live-split hidden aria-hidden="true"><span></span><span></span></div>' +
       '<p class="muted" data-live-empty hidden>' + t('emptyVote') + '</p><p role="status" class="muted" data-live-status>' + t('loading') +
       '</p><a data-live-sign-in href="' + loginLink() + '" hidden>' + L.esc(L.t('core.login')) + '</a>' +
