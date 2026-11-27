@@ -5641,12 +5641,12 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     document.querySelectorAll('[data-gbar]').forEach(function (el) { var dl = +el.dataset.gbar, w = +el.dataset.gw || 15; el.style.width = Math.max(0, Math.min(100, (dl - Date.now()) / (w * 10))).toFixed(0) + '%'; });
     if (due && state.s && !document.hidden && Date.now() - (state.gateAt || 0) > 2500) { loadGate(true); if (!$('gateOffer').hidden) paintGateOffer(); }
   }, 1000);
-  // 받아 오기: 입구 화면(경호팀·대표)은 호출 중이면 3초, 아니면 10초 · 받을 수도 있는 사람(출근 중 MD·운영팀)은 8초 (알림이 먼저 감)
+  // 받아 오기: 입구 화면(경호팀·대표)은 호출 중이면 3초, 아니면 10초 · 받을 수도 있는 사람(출근 중 MD·운영팀)은 영업 중 3초, 그 밖엔 8초
   setInterval(function () {
     if (!state.s || !state.data || document.hidden) return;
     var live = state.gate && (state.gate.calls || []).some(function (c) { return c.status === '호출'; }), age = Date.now() - (state.gateAt || 0);
     if (state.tab === 'gate' && gateCanSee() && age > (live ? 2800 : pace(9500))) loadGate(true);
-    else if (state.tab !== 'gate' && gateMine() && age > pace(7800)) loadGate(true);
+    else if (state.tab !== 'gate' && gateMine() && age > (bizHours() ? 2800 : pace(7800))) loadGate(true);   // ⏱ 순번 15초 — 영업 중엔 3초마다 (알림이 늦게 와서 놓침, 호철 2026-11-28)
   }, 1000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && state.s && state.data && (gateMine() || state.tab === 'gate')) loadGate(true); });
 
