@@ -10,7 +10,7 @@
   var legacyRoutes = {
     l26_home: 'tonight', l26_live: 'tonight', l26_lounge: 'feed', l26_my: 'me', l26_play: 'play'
   };
-  var shellTabs = { tonight: 'l26_home', l26_lounge: 'feed', rooms: 'feed', me: 'l26_my' };
+  var shellTabs = { tonight: 'l26_live', l26_lounge: 'feed', rooms: 'feed', me: 'l26_my' };
   // 오픈채팅이 켜진 회원에게만 탭 이름이 '오픈채팅'. 지난번 값을 기억해 첫 화면부터 맞는 이름을 그린다.
   var ocNav = read('gl_oc') === '1', navOn;
   var shown = '', scrolls = Object.create(null), scrollPending = null;   // 보던 자리 기억 (keepScroll 화면)
