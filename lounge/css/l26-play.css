@@ -7,8 +7,10 @@ html[data-theme="light"] #view:has(> .l26-play) { background: var(--l26-bg, #FFF
   --l26-play-text: var(--l26-text, #F5F5F7);
   --l26-play-muted: var(--l26-muted, #A1A1AA);
   --l26-play-brand: var(--l26-brand, #FF2D87);
-  --l26-play-orange: var(--l26-2f, #FF7A1A);
-  --l26-play-purple: var(--l26-3f, #A15BFF);
+  --l26-play-orange: var(--l26-floor-2f, #FF7A1A);
+  --l26-play-purple: var(--l26-floor-3f, #A15BFF);
+  --l26-play-ink: var(--l26-dark-bg, #08080A);
+  --l26-play-photo-text: var(--l26-dark-text, #F5F5F7);
   display: grid;
   gap: var(--l26-section, 24px);
   max-width: 620px;
@@ -17,6 +19,12 @@ html[data-theme="light"] #view:has(> .l26-play) { background: var(--l26-bg, #FFF
   background: var(--l26-play-bg);
   color: var(--l26-play-text);
   font: var(--l26-weight-body, 500) var(--l26-size-body, 15px)/1.4 var(--l26-font, "Pretendard Variable", Pretendard, system-ui, sans-serif);
+}
+
+/* The four-tab shell assigns its own floor colors. */
+.l26-shell:has(> #tabbar [data-tab="l26_lounge"]) .l26-play {
+  --l26-play-orange: #FF7A1A;
+  --l26-play-purple: #A15BFF;
 }
 
 html[data-theme="light"] .l26-play {
@@ -97,7 +105,7 @@ html[data-theme="light"] .l26-play {
   background:
     radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--l26-play-purple) 45%, transparent), transparent 67%),
     repeating-linear-gradient(120deg, transparent 0 10px, rgb(255 255 255 / .07) 11px 12px),
-    #08080A;
+    var(--l26-play-ink);
 }
 
 .l26-play-mission-art svg { display: block; width: 100%; max-height: 184px; }
@@ -142,7 +150,7 @@ html[data-theme="light"] .l26-play {
   background: transparent;
   text-align: start;
 }
-.l26-play .btn-hot { background: var(--l26-play-brand); border-color: var(--l26-play-brand); color: #08080A; }
+.l26-play .btn-hot { background: var(--l26-play-brand); border-color: var(--l26-play-brand); color: var(--l26-play-ink); }
 
 .l26-play-featured, .l26-play-options {
   display: grid;
@@ -171,7 +179,7 @@ html[data-theme="light"] .l26-play {
   position: relative;
   display: grid;
   place-items: center;
-  aspect-ratio: var(--l26-video-ratio, 16 / 9);
+  aspect-ratio: var(--l26-video, 16 / 9);
   background:
     repeating-radial-gradient(ellipse at center, rgb(8 8 10 / .32) 0 1px, transparent 2px 13px),
     linear-gradient(135deg, var(--l26-play-activity), var(--l26-play-card));
@@ -190,7 +198,7 @@ html[data-theme="light"] .l26-play {
   padding: 9px;
   border-radius: 50%;
   background: var(--l26-play-activity);
-  color: #08080A;
+  color: var(--l26-play-ink);
   transform: translateY(-12px);
 }
 
@@ -208,8 +216,8 @@ html[data-theme="light"] .l26-play {
 .l26-play-tile-name {
   position: absolute;
   inset: auto 0 0;
-  background: linear-gradient(transparent, rgb(8 8 10 / .95) 65%);
-  color: #F5F5F7;
+  background: linear-gradient(transparent, color-mix(in srgb, var(--l26-play-ink) 95%, transparent) 65%);
+  color: var(--l26-play-photo-text);
 }
 .l26-play-shelf summary { cursor: pointer; }
 .l26-play-shelf summary::-webkit-details-marker { display: none; }

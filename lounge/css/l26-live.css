@@ -6,9 +6,11 @@ html[data-theme="light"] #view:has(> .l26-live) { background: var(--l26-bg, #FFF
   --l26-live-card: var(--l26-card, #17171C);
   --l26-live-text: var(--l26-text, #F5F5F7);
   --l26-live-muted: var(--l26-muted, #A1A1AA);
-  --l26-live-2f: var(--l26-2f, #FF7A1A);
-  --l26-live-3f: var(--l26-3f, #A15BFF);
+  --l26-live-2f: var(--l26-floor-2f, #FF7A1A);
+  --l26-live-3f: var(--l26-floor-3f, #A15BFF);
   --l26-live-brand: var(--l26-brand, #FF2D87);
+  --l26-live-ink: var(--l26-dark-bg, #08080A);
+  --l26-live-photo-text: var(--l26-dark-text, #F5F5F7);
   display: grid;
   gap: var(--l26-section, 24px);
   max-width: 620px;
@@ -17,6 +19,12 @@ html[data-theme="light"] #view:has(> .l26-live) { background: var(--l26-bg, #FFF
   background: var(--l26-live-bg);
   color: var(--l26-live-text);
   font: var(--l26-weight-body, 500) var(--l26-size-body, 15px)/1.4 var(--l26-font, "Pretendard Variable", Pretendard, system-ui, sans-serif);
+}
+
+/* The four-tab shell assigns its own floor colors. */
+.l26-shell:has(> #tabbar [data-tab="l26_lounge"]) .l26-live {
+  --l26-live-2f: #FF7A1A;
+  --l26-live-3f: #A15BFF;
 }
 
 html[data-theme="light"] .l26-live {
@@ -95,14 +103,14 @@ html[data-theme="light"] .l26-live {
 .l26-live-cover {
   display: grid;
   align-items: end;
-  aspect-ratio: var(--l26-poster-ratio, 4 / 5);
+  aspect-ratio: var(--l26-poster, 4 / 5);
   padding: var(--l26-gap, 12px);
   border-bottom: 3px solid var(--l26-live-floor);
   background-image:
-    linear-gradient(180deg, transparent 25%, rgb(8 8 10 / .85) 88%),
+    linear-gradient(180deg, transparent 25%, color-mix(in srgb, var(--l26-live-ink) 85%, transparent) 88%),
     var(--l26-live-photo),
     repeating-radial-gradient(ellipse at 100% 0, var(--l26-live-floor) 0 1px, transparent 2px 14px),
-    linear-gradient(140deg, var(--l26-live-floor), #08080A);
+    linear-gradient(140deg, var(--l26-live-floor), var(--l26-live-ink));
   background-position: center;
   background-size: cover;
 }
@@ -116,9 +124,9 @@ html[data-theme="light"] .l26-live {
   line-height: .9;
   letter-spacing: -.07em;
 }
-.l26-live-cover h2 span { color: #F5F5F7; font-size: var(--l26-size-caption, 12px); letter-spacing: .12em; }
+.l26-live-cover h2 span { color: var(--l26-live-photo-text); font-size: var(--l26-size-caption, 12px); letter-spacing: .12em; }
 
-.l26-live [data-live-dj] { padding: 10px var(--l26-gap, 12px); }
+.l26-live [data-live-dj] { padding: 10px var(--l26-gap, 12px); color: var(--l26-live-text); }
 .l26-live .l26-live-slots { display: grid; gap: 6px; margin-bottom: 4px; }
 .l26-live-slots dt { font-size: var(--l26-size-caption, 12px); color: var(--l26-live-muted); }
 .l26-live-slots dd { display: flex; flex-wrap: wrap; gap: 0 6px; align-items: baseline; }
@@ -180,7 +188,7 @@ html[data-theme="light"] .l26-live {
   min-height: max(48px, var(--l26-touch, 44px));
   border: 0;
   background: var(--l26-live-brand);
-  color: #08080A;
+  color: var(--l26-live-ink);
   text-align: center;
 }
 .l26-live [data-live-entry] > p { color: var(--l26-live-text); }
@@ -220,12 +228,12 @@ html[data-theme="light"] .l26-live {
   width: 100%;
   min-height: 92px;
   padding: 5px 16px;
-  border: 1px solid color-mix(in srgb, #08080A 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--l26-live-ink) 25%, transparent);
   border-radius: var(--l26-button-radius, 12px);
   background:
     repeating-linear-gradient(125deg, transparent 0 9px, rgb(8 8 10 / .07) 10px 11px),
     var(--l26-live-floor);
-  color: #08080A;
+  color: var(--l26-live-ink);
   font: inherit;
   cursor: pointer;
 }

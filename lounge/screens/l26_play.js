@@ -131,9 +131,9 @@
       '<circle cx="180" cy="71" r="64"/><circle cx="180" cy="71" r="86" stroke-dasharray="2 5"/>' +
       '<path d="M0 71h103m154 0h103M180 0v16m0 110v16M50 48v46m10-35v24m240-35v46m10-35v24"/></g>' +
       '<g transform="rotate(-12 180 71)"><path d="M118 42h124v16a13 13 0 0 0 0 26v16H118V84a13 13 0 0 0 0-26Z" ' +
-      'fill="currentColor" stroke="currentColor" stroke-width="3"/><path d="M214 45v52" stroke="#08080A" stroke-dasharray="3 4"/>' +
-      '<path d="M166 55l3.5 10.5L180 69l-10.5 3.5L166 83l-3.5-10.5L152 69l10.5-3.5L166 55Z" fill="#08080A"/>' +
-      '<path d="M189 57v12m-6-6h12m-11 16v8m-4-4h8" stroke="#08080A" stroke-width="2"/></g></svg></div>' +
+      'fill="currentColor" stroke="currentColor" stroke-width="3"/><path d="M214 45v52" stroke="var(--l26-play-ink)" stroke-dasharray="3 4"/>' +
+      '<path d="M166 55l3.5 10.5L180 69l-10.5 3.5L166 83l-3.5-10.5L152 69l10.5-3.5L166 55Z" fill="var(--l26-play-ink)"/>' +
+      '<path d="M189 57v12m-6-6h12m-11 16v8m-4-4h8" stroke="var(--l26-play-ink)" stroke-width="2"/></g></svg></div>' +
       '<div class="l26-play-mission-copy" data-l26-mission aria-busy="true">' + missionHeading() +
       '<p role="status">' + label('loading') + '</p></div></section><p class="l26-play-error" data-l26-error role="status" hidden></p>' +
       '<div class="l26-play-featured" hidden></div>' +
