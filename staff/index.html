@@ -6,7 +6,7 @@
      새 외부 주소를 쓰게 되면 여기에 더해야 해요(안 그러면 그 기능만 막힘). 스크립트·스타일이 이 파일 안에 있어서 'unsafe-inline' 은 필요. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://drive.google.com https://*.googleusercontent.com https://groove-lounge-api.groovenspotbusan.workers.dev; media-src 'self' data: blob:; connect-src 'self' https://groove-staff-api.groovenspotbusan.workers.dev https://groove-lounge-api.groovenspotbusan.workers.dev; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <!-- 🔄 앱 버전: 깃허브 작업(staff-version)이 이 파일이 바뀔 때마다 자동으로 찍고 staff/version.json 도 같이 바꾼다. 손으로 고치지 않기. -->
-<meta name="gs-ver" content="27f4c2aaf35e">
+<meta name="gs-ver" content="2ec07a345ddf">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
@@ -12582,25 +12582,34 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       if (state.tab === 'anon') render();
     }).catch(function () { state.anFly = 0; state.anErr = '연결이 안 돼요.'; if (state.tab === 'anon') render(); });
   }
-  function anonErr(r) { return ({ empty: '내용을 써 주세요.', long: '1000자까지 쓸 수 있어요.', rate: '잠시 뒤에 다시 보내 주세요. (1시간에 5개까지)', full: '오늘은 익명함이 꽉 찼어요. 내일 다시 보내 주세요.', forbidden: '대표님만 할 수 있어요.' })[r && r.error] || '보내지 못했어요. 다시 시도해 주세요.'; }
+  function anonErr(r) { return ({ empty: '내용을 써 주세요.', long: '1000자까지 쓸 수 있어요.', rate: '잠시 뒤에 다시 보내 주세요. (1시간에 5개까지)', full: '오늘은 익명함이 꽉 찼어요. 내일 다시 보내 주세요.', forbidden: '대표님만 할 수 있어요.', notfound: '글을 찾지 못했어요.', gone: '지워진 글은 고칠 수 없어요.' })[r && r.error] || '다시 시도해 주세요.'; }
+  function anonKeyOf(id) { var x = anonStore().filter(function (y) { return y.id === id; })[0]; return x ? x.key : ''; }
   function renderAnon(area, d) {
     var boss = !!d.admin, A = state.an;
-    var h = '<div class="tbh"><div><h1>🕊 익명함</h1><p class="sub">' + (boss ? '직원들이 이름 없이 남긴 글이에요. 누가 썼는지는 서버에도 남지 않아요.' : '이름 없이 <b>대표님에게만</b> 보내는 글이에요.') + '</p></div></div>';
+    var h = '<div class="tbh"><div><h1>🕊 익명함</h1><p class="sub">' + (boss ? '직원들이 이름 없이 남긴 글이에요.' : '대표님에게만 보내는 글이에요.') + '</p></div></div>';
     h += '<p class="msg ok" id="anBox"' + (state.anMsg ? '' : ' hidden') + '>' + esc(state.anMsg || '') + '</p>'; state.anMsg = '';
     if (!boss) {
-      h += '<p class="lfinfo">' + opIco('info', 18) + '<span>이름·계정·보낸 시간은 저장되지 않아요(날짜만). 대표님도 누가 썼는지 알 수 없어요. 건의·불편한 점·하고 싶은 말 뭐든 편하게 남겨 주세요. 대표님 답장은 이 휴대폰에서만 볼 수 있어요.</span></p>' +
-        '<form id="anF" novalidate><label>대표님께<textarea id="anT" maxlength="1000" rows="5" placeholder="하고 싶은 말을 편하게 써 주세요">' + esc(state.anDraft || '') + '</textarea></label>' +
+      h += '<form id="anF" novalidate><label>대표님께<textarea id="anT" maxlength="1000" rows="5" placeholder="하고 싶은 말을 편하게 써 주세요">' + esc(state.anDraft || '') + '</textarea></label>' +
         '<button class="btn btn-hot" type="submit" style="width:100%">익명으로 보내기</button><p class="msg" id="anM" role="alert"></p></form>';
       h += '<h2 class="sec">내가 보낸 글</h2>';
     }
     if (!A) { h += state.anErr ? '<p class="empty">' + esc(state.anErr) + '</p>' : '<p class="load">불러오는 중…</p>'; area.innerHTML = h; if (!state.anFly) loadAnon(true); return anonBind(area, boss); }
     if (!A.list.length) h += '<p class="empty">' + (boss ? '아직 온 글이 없어요.' : '이 휴대폰에서 보낸 글이 없어요.') + '</p>';
+    var md = function (v) { return String(v || '').slice(5, 10).replace('-', '/'); };
     A.list.forEach(function (x) {
-      h += '<div class="lfi" data-anid="' + esc(x.id) + '"><div class="lfm" style="display:block"><span>' + esc(tbDayLabel(x.day)) + (boss && !x.read ? ' · <b style="color:var(--g)">새 글</b>' : '') + (x.del ? ' · 대표님이 정리한 글' : '') + '</span>' +
-        '<p style="white-space:pre-wrap;margin:6px 0 0">' + esc(x.text) + '</p>' +
-        (x.reply && !boss ? '<p style="white-space:pre-wrap;margin:10px 0 0;padding:10px;border-radius:10px;background:var(--line-2)"><b>대표님 답장</b> <small>' + esc(String(x.replyAt).slice(5, 16).replace('-', '/')) + '</small><br>' + esc(x.reply) + '</p>' : '') + '</div>' +
-        (boss ? '<div style="margin-top:10px"><div style="font-size:13px;font-weight:800;margin-bottom:6px">답장 <small style="font-weight:600;color:var(--muted)">쓴 사람 휴대폰에만 보여요</small></div><textarea data-anr="1" maxlength="1000" rows="3" placeholder="답장 쓰기" style="display:block;width:100%;box-sizing:border-box">' + esc(x.reply || '') + '</textarea></div>' +
-          '<div class="lfb"><button class="btn btn-ok" type="button" data-ansave="1">' + opIco('check') + ' 답장 저장</button><button class="link" type="button" data-andel="1">지우기</button></div>' : '') + '</div>';
+      h += '<div class="lfi" data-anid="' + esc(x.id) + '"><div class="lfm" style="display:block"><span>' + esc(tbDayLabel(x.day)) +
+          (boss && !x.read ? ' · <b style="color:var(--g)">' + (x.edited ? '고친 글' : '새 글') + '</b>' : '') +
+          (x.edited ? ' · 수정됨 ' + esc(md(x.edited)) : '') + (x.del ? ' · 대표님이 정리한 글' : '') +
+          (boss && x.hidden ? ' · <b style="color:var(--muted)">쓴 사람이 목록에서 지운 글</b>' : '') + '</span>' +
+        '<p style="white-space:pre-wrap;margin:6px 0 0" data-antx="1">' + esc(x.text) + '</p>' +
+        (boss && x.prev && x.prev.length ? '<details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:var(--muted)">이전 내용 ' + x.prev.length + '개</summary>' +
+          x.prev.slice().reverse().map(function (p) { return '<p style="white-space:pre-wrap;margin:6px 0 0;padding:8px;border-radius:8px;background:var(--line-2);font-size:13px"><small>' + esc(tbDayLabel(p.day)) + '</small><br>' + esc(p.text) + '</p>'; }).join('') + '</details>' : '') +
+        (x.reply && !boss ? '<p style="white-space:pre-wrap;margin:10px 0 0;padding:10px;border-radius:10px;background:var(--line-2)"><b>대표님 답장</b> <small>' + esc(String(x.replyAt).slice(5, 16).replace('-', '/')) + '</small><br>' + esc(x.reply) + '</p>' : '') +
+        (!boss && !x.del ? '<div class="lfb" data-anown="1"><button class="btn" type="button" data-anedit="1">' + opIco('edit') + ' 고치기</button><button class="link" type="button" data-anhide="1">지우기</button></div>' : '') +
+        (!boss && x.del ? '<div class="lfb"><button class="link" type="button" data-anhide="1">목록에서 지우기</button></div>' : '') +
+        (boss ? '<div style="margin-top:10px"><div style="font-size:13px;font-weight:800;margin-bottom:6px">답장 <small style="font-weight:600;color:var(--muted)">쓴 사람 휴대폰에만 보여요</small></div><textarea data-anr="1" maxlength="1000" rows="2" placeholder="답장 쓰기">' + esc(x.reply || '') + '</textarea>' +
+          '<div class="lfb"><button class="btn btn-ok" type="button" data-ansave="1">' + opIco('check') + ' 답장 저장</button><button class="link" type="button" data-andel="1">지우기</button>' +
+          '</div></div>' : '') + '</div></div>';
     });
     if (state.anErr) h += '<p class="msg">' + esc(state.anErr) + '</p>';
     area.innerHTML = h;
@@ -12623,12 +12632,40 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         }).catch(function () { btn.disabled = false; m.textContent = '연결이 안 돼요. 다시 시도해 주세요.'; });
       });
     }
-    if (!boss) return;
+    if (!boss) {   // 쓴 사람: 고치기·지우기 (2026-11-28) — 지우면 내 목록에서만 빠짐
+      area.querySelectorAll('[data-anid]').forEach(function (card) {
+        var id = card.dataset.anid, eb = card.querySelector('[data-anedit]'), hb = card.querySelector('[data-anhide]');
+        var done = function (r, msg) { if (r && r.ok) { state.an = r; state.anMsg = msg; state.anErr = ''; } else state.anErr = anonErr(r); render(); };
+        var fail = function () { state.anErr = '연결이 안 돼요.'; render(); };
+        if (eb) eb.addEventListener('click', function () {
+          var tx = card.querySelector('[data-antx]'), own = card.querySelector('[data-anown]'); if (!tx || !own) return;
+          var cur = (state.an.list.filter(function (y) { return y.id === id; })[0] || {}).text || '';
+          tx.outerHTML = '<textarea data-anet="1" maxlength="1000" rows="4" style="margin-top:6px">' + esc(cur) + '</textarea>';
+          own.innerHTML = '<button class="btn btn-ok" type="button" data-anes="1">' + opIco('check') + ' 고친 내용 보내기</button><button class="link" type="button" data-anec="1">취소</button>';
+          var ta = card.querySelector('[data-anet]'); ta.focus();
+          card.querySelector('[data-anec]').addEventListener('click', function () { render(); });
+          var sb = card.querySelector('[data-anes]');
+          sb.addEventListener('click', function () {
+            var v = ta.value.trim(); if (!v) { state.anErr = '내용을 써 주세요.'; render(); return; }
+            sb.disabled = true;
+            call({ a: 'anon_edit', token: state.s.token, id: id, key: anonKeyOf(id), keys: anonKeyList(), text: v }).then(function (r) { done(r, '고쳤어요.'); }).catch(fail);
+          });
+        });
+        if (hb) hb.addEventListener('click', function () {
+          if (!armed(hb, hb.textContent)) return; hb.disabled = true;
+          call({ a: 'anon_hide', token: state.s.token, id: id, key: anonKeyOf(id), keys: anonKeyList() }).then(function (r) {
+            if (r && r.ok) { try { localStorage.setItem(AN_K, JSON.stringify(anonStore().filter(function (y) { return y.id !== id; }))); } catch (x) {} }
+            done(r, '지웠어요.');
+          }).catch(fail);
+        });
+      });
+      return;
+    }
     area.querySelectorAll('[data-anid]').forEach(function (card) {
       var id = card.dataset.anid, ta = card.querySelector('[data-anr]');
       var sv = card.querySelector('[data-ansave]'), dl = card.querySelector('[data-andel]');
-      sv.addEventListener('click', function () { sv.disabled = true; call({ a: 'anon_reply', token: state.s.token, id: id, text: ta.value }).then(function (r) { if (r && r.ok) { state.an = r; state.anMsg = '답장을 저장했어요.'; } else state.anErr = anonErr(r); render(); }); });
-      dl.addEventListener('click', function () { if (!armed(dl, '지우기')) return; dl.disabled = true; call({ a: 'anon_del', token: state.s.token, id: id }).then(function (r) { if (r && r.ok) { state.an = r; state.anMsg = '지웠어요.'; } else state.anErr = anonErr(r); render(); }); });
+      sv.addEventListener('click', function () { sv.disabled = true; call({ a: 'anon_reply', token: state.s.token, id: id, text: ta.value }).then(function (r) { if (r && r.ok) { state.an = r; state.anMsg = '답장을 저장했어요.'; } else state.anErr = anonErr(r); render(); }).catch(function () { state.anErr = '연결이 안 돼요.'; render(); }); });
+      dl.addEventListener('click', function () { if (!armed(dl, '지우기')) return; dl.disabled = true; call({ a: 'anon_del', token: state.s.token, id: id }).then(function (r) { if (r && r.ok) { state.an = r; state.anMsg = '지웠어요.'; } else state.anErr = anonErr(r); render(); }).catch(function () { state.anErr = '연결이 안 돼요.'; render(); }); });
     });
   }
   function renderLost(area) {
