@@ -52,7 +52,7 @@
     rank: ['rank.title'],
     rewards: ['rewards.title'],
     shop: ['shop.title'],
-    play: ['l26play.legacy'],
+    partners: ['pt.title'],
     djs: ['dj.list']
   };
   const artwork = {
@@ -66,7 +66,7 @@
     rank: '<path d="M27 69V46h33v23m0 0V31h40v38m0 0V51h33v18M20 69h120m-60-64 4 8 9 1-6 6 1 9-8-4-8 4 1-9-6-6 9-1zM42 27v10m-5-5h10m70 2h12"/>',
     rewards: '<path d="M38 32h84v14H38zm8 14v24h68V46M80 32v38M80 32c-16 0-31-2-29-13 2-13 23-4 29 13zm0 0c16 0 31-2 29-13-2-13-23-4-29 13zM19 42v14m-7-7h14m115 1 8 8m0-8-8 8"/>',
     shop: '<path d="M47 26h66l7 43H40zM66 29V17a14 14 0 0 1 28 0v12m-6 13 8 8-15 15-9-9 15-14z"/><path d="M86 47h1M24 31v16m-8-8h16m105 12h9m-4.5-4.5v9"/>',
-    play: '<rect x="37" y="12" width="86" height="53" rx="8" transform="rotate(-7 80 39)"/><path d="M58 32v19m-10-10h20m16 11 25-3m-21-16h1m15 1h1M21 18v12m-6-6h12m113 28v14m-7-7h14"/>',
+    partners: '<path d="M38 30h84l-6-16H44zm0 0v8a10 10 0 0 0 21 0 10 10 0 0 0 21 0 10 10 0 0 0 21 0 10 10 0 0 0 21 0v-8M44 46v24h72V46M70 70V54h20v16M22 22v12m-6-6h12m110 18v14m-7-7h14"/>',
     djs: '<rect x="26" y="20" width="108" height="48" rx="6"/><circle cx="55" cy="44" r="15"/><circle cx="105" cy="44" r="15"/><path d="M55 44h1m49 0h1M80 28v32m-5-22h10m-10 13h10M20 11h16m88 0h16"/>'
   };
   const missionLinks = {
@@ -194,6 +194,7 @@
         (member ? '' : '<p class="muted">' + label('guest') + '</p>') +
         '<div class="l26-play-actions">' + missionControls(mission, member) + (member ? '' : button('login', 'login')) + '</div>';
       shelf.add('djs');
+      if (L.open('partners')) shelf.add('partners');
       activities.innerHTML = Object.keys(tiles).map(key => activity(key, shelf.has(key), data.attended)).join('');
       activities.hidden = false;
     }

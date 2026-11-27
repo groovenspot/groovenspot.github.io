@@ -292,10 +292,16 @@
     }).catch(() => {});
   };
 
-  L.screen('partners', { nav: 'tonight', title: 'pt.title', bar: 'own', keepScroll: true, render: root => renderList(root) });
+  // 2.0 홈·놀거리에서 쓰는 목록(가까운 순) — 화면마다 같은 json 을 한 번만 읽음
+  L.partnerList = load;
+
+  // 2.0 에서는 '오늘 밤' 탭(l26_home)에 불이 들어오게
+  const homeNav = () => { if (L.open('l26_home')) L.paintNav?.('l26_home'); };
+  L.screen('partners', { nav: 'tonight', title: 'pt.title', bar: 'own', keepScroll: true, render: root => { homeNav(); return renderList(root); } });
   L.screen('partner', {
     nav: 'tonight', title: 'pt.title', bar: 'own',
     render(root, params) {
+      homeNav();
       const raw = String(params.id || '');
       const m = /^(partner-\d{2,3})(\/use)?$/.exec(raw);
       if (!m) { root.innerHTML = '<div class="pt">' + L.bar({ title: L.t('pt.title'), back: 'partners' }) + '<p class="muted pt-state">' + t('notFound') + '</p></div>'; return; }

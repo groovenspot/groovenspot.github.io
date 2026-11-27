@@ -12,6 +12,10 @@
     first: ['첫 라운지 활동을 시작해 보세요.', 'Take your first step in the Lounge.', 'ラウンジで最初のアクションを。', '开启你的首次休息室活动。'],
     replay: ['리플레이 보기', 'Explore replays', 'リプレイを見る', '查看回放'],
     lineup: ['오늘 DJ 타임테이블', 'Today’s DJ timetable', '今日のDJタイムテーブル', '今日 DJ 时间表'],
+    partners: ['제휴 가게 혜택', 'Partner perks', '提携店舗の特典', '合作商家优惠'],
+    partnersSub: ['그루브 가기 전 1차, 끝나고 2차', 'Before Groove, after Groove', 'Grooveの前にも、あとにも', '去 Groove 前后都能享用'],
+    partnersCount: ['제휴 가게 {n}곳', '{n} partner places', '提携店舗 {n}件', '{n} 家合作商家'],
+    partnersWalk: ['도보 {n}분', '{n} min walk', '徒歩{n}分', '步行 {n} 分钟'],
     music: ['추천 음악 듣기', 'Listen to Groove Radio', 'Grooveラジオを聴く', '收听 Groove 电台'],
     going: ['오늘 갈래요', 'I’m going tonight', '今夜行きます', '今晚要去'],
     plan: ['방문 계획 보기', 'Plan a visit', '来店の計画を見る', '计划到店'],
@@ -265,6 +269,28 @@
       (commands.has(action.kind) || url.test(action.route) ? L.icon('chevron', { size: 16 }) : '') + '</li>';
   }
 
+  function partnerCard() {
+    return '<li class="l26-home-card l26-home-partners" data-home-card="partners">' +
+      '<div class="l26-home-card-art l26-home-partner-art" aria-hidden="true" data-home-partner-art></div><div>' +
+      '<a class="l26-home-card-link" href="#/partners">' + t('partners') + '</a>' +
+      '<p class="muted" data-home-partner-sub>' + t('partnersSub') + '</p></div>' + L.icon('chevron', { size: 16 }) + '</li>';
+  }
+
+  function paintPartners(state) {
+    const card = state.root.querySelector('[data-home-card=partners]');
+    if (!card) return;
+    L.partnerList().then(rows => {
+      if (!card.isConnected || !rows.length) return;
+      const art = card.querySelector('[data-home-partner-art]');
+      art.innerHTML = rows.filter(row => row.thumb).slice(0, 3).map(row =>
+        '<img src="' + L.esc(row.thumb) + '" alt="" loading="lazy" decoding="async">').join('');
+      const near = rows[0];
+      const raw = (key, vars) => L.t('l26Home.' + key, vars);
+      card.querySelector('[data-home-partner-sub]').textContent = raw('partnersCount', { n: rows.length }) +
+        (near ? ' · ' + near.name + (near.walk ? ' ' + raw('partnersWalk', { n: near.walk }) : '') : '');
+    }).catch(() => {});
+  }
+
   function paintEntrance(state, hero, show) {
     if (!show) {
       state.entrance?.destroy();
@@ -306,7 +332,12 @@
     const primary = data.primary_action;
     const hasBallot = primary.kind === 'floor_vote' && (primary.vote_status === 'ready' ||
       (primary.vote_status === 'voted' && floors.every(floor => Number.isSafeInteger(primary.counts?.[floor]))));
-    const cards = '<ul class="l26-home-cards">' + data.cards.slice(0, 3).map(actionCard).join('') + '</ul>';
+    // 제휴 가게 혜택: LIVE 탭과 겹치는 '오늘 DJ 타임테이블' 카드 자리에 넣음 (스위치 partners 켜졌을 때)
+    const partnersOn = L.open('partners') && typeof L.partnerList === 'function';
+    const list = partnersOn
+      ? data.cards.filter(action => action.kind !== 'lineup' && action.kind !== 'djs').slice(0, 2)
+      : data.cards.slice(0, 3);
+    const cards = '<ul class="l26-home-cards">' + list.map(actionCard).join('') + (partnersOn ? partnerCard() : '') + '</ul>';
     const official = '<section class="l26-home-official" hidden></section>';
     const mediaFirst = data.phase === 'afternoon';
     state.root.dataset.homePhase = data.phase;
@@ -333,6 +364,7 @@
     state.root.dataset.verifiedEntry = String(data.verified_entry);
     loadMedia(state);
     paintMedia(state);
+    paintPartners(state);
     updateVoteControls(state);
   }
 

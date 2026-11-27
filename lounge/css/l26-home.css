@@ -372,3 +372,10 @@
 
 .l26-home-entrance [data-entry-countdown],
 .l26-home-entrance [role="status"] { color: var(--l26-muted); font-size: var(--l26-size-caption); }
+
+/* 제휴 가게 혜택 카드 — 포스터 3장 겹쳐 보이기 */
+.l26-home-partner-art { position: relative; overflow: hidden; }
+.l26-home-partner-art img { position: absolute; inset-block: 8%; inline-size: 58%; block-size: 84%; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 8px rgb(0 0 0 / .5); }
+.l26-home-partner-art img:nth-child(1) { inset-inline-start: 4%; transform: rotate(-6deg); }
+.l26-home-partner-art img:nth-child(2) { inset-inline-start: 21%; z-index: 1; }
+.l26-home-partner-art img:nth-child(3) { inset-inline-start: 38%; z-index: 2; transform: rotate(6deg); }
