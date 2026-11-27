@@ -4,6 +4,11 @@
     planning: ['오늘 밤 계획', 'Plan tonight', '今夜の予定', '今晚计划'],
     live: ['오늘 밤 라이브', 'Tonight live', '今夜のライブ', '今晚现场'],
     morning: ['지난밤 돌아보기', 'After last night', '昨夜を振り返る', '昨夜回顾'],
+    stories: ['스토리', 'Stories', 'ストーリー', '快拍'],
+    officialSets: ['공식 DJ 세트', 'Official DJ sets', '公式DJセット', '官方 DJ 现场'],
+    lastNight: ['지난밤', 'Last night', '昨夜', '昨夜'],
+    finalVote: ['지난밤 층 투표 결과', 'Last night’s floor vote', '昨夜のフロア投票結果', '昨夜楼层投票结果'],
+    hiphop: ['힙합 · R&B', 'Hip-hop · R&B', 'ヒップホップ · R&B', '嘻哈 · R&B'],
     first: ['첫 라운지 활동을 시작해 보세요.', 'Take your first step in the Lounge.', 'ラウンジで最初のアクションを。', '开启你的首次休息室活动。'],
     replay: ['리플레이 보기', 'Explore replays', 'リプレイを見る', '查看回放'],
     lineup: ['오늘 DJ 타임테이블', 'Today’s DJ timetable', '今日のDJタイムテーブル', '今日 DJ 时间表'],
@@ -43,6 +48,9 @@
   const url = /^(?:lineup|parties|table|tonight|radio|photos(?:\/[\w.%-]+)?|me|l26_live|l26_lounge|songs\?day=\d{4}-\d{2}-\d{2})$/;
   const commands = new Set(['going', 'entry_qr', 'checkin']);
   const floors = ['2F', '3F'];
+  const hour = 3_600_000;
+  const day = 24 * hour;
+  const U = LoungeScreenUI;
   let active, qrLibrary;
 
   function loadStyles() {
@@ -116,27 +124,176 @@
     status.textContent = message ? L.t('l26Home.' + message) : '';
   }
 
+  function picture(src, eager = false) {
+    return src ? '<img src="' + L.esc(src) + '" alt="" decoding="async"' +
+      (eager ? ' fetchpriority="high"' : ' loading="lazy"') + '>' : '';
+  }
+
+  function videoLink(video, hero = false) {
+    return '<a class="l26-home-video" href="https://www.youtube.com/watch?v=' + video.youtube +
+      '" rel="noopener">' + picture('https://i.ytimg.com/vi/' + video.youtube + '/hqdefault.jpg', hero) +
+      '<span class="l26-home-video-label">' + L.icon('play', { size: 18, fill: true }) +
+      '<span>GROOVE SESSIONS · ' + L.esc(video.dj) + '</span></span></a>';
+  }
+
+  function photoFrom(row) {
+    return U.image(typeof row === 'string' ? row : row?.thumb || row?.src);
+  }
+
+  function floorVisual(tonight, actions) {
+    const lives = Array.isArray(tonight?.lives) ? tonight.lives : [];
+    const slots = actions.find(action => action.kind === 'djs')?.slots || [];
+    return floors.map(floor => {
+      const image = lives.filter(row => row?.floor === floor).flatMap(row =>
+        Array.isArray(row.imgs) ? row.imgs : [row.img]).map(photoFrom).find(Boolean);
+      const dj = slots.find(slot => slot.floor === floor)?.dj;
+      return '<div class="l26-home-floor-visual" data-l26-floor="' + floor + '">' +
+        picture(image || '/assets/img/floor-' + floor.toLowerCase() + '.webp', true) +
+        '<div><strong>' + floor + '</strong><span>' + (floor === '2F' ? t('hiphop') : 'EDM') +
+        (dj ? ' · ' + L.esc(dj) : '') + '</span></div></div>';
+    }).join('');
+  }
+
+  function putMarkup(node, html) {
+    if (node.l26Markup === html) return;
+    node.l26Markup = html;
+    node.innerHTML = html;
+  }
+
+  function paintMedia(state) {
+    const { phase, primary_action: primary } = state.view;
+    const tonight = state.tonight;
+    const poster = tonight?.party?.poster || tonight?.poster;
+    const posterSrc = U.url(typeof poster === 'string' ? poster : poster?.url);
+    const lastNight = state.clock
+      ? new Date(state.clock.serverNow + 9 * hour - day).toISOString().slice(0, 10) : '';
+    const recapSrc = [state.recap?.photos, tonight?.recap?.album?.photos]
+      .filter(Array.isArray).flat().map(photoFrom).find(Boolean);
+    const [video, nextVideo] = state.videos || [];
+    const heroVideo = phase === 'afternoon' && !recapSrc && video;
+    const artwork = state.root.querySelector('.l26-home-artwork');
+    const art = phase === 'live' ? floorVisual(tonight, [primary, ...state.view.cards])
+      : phase === 'planning' ? picture(posterSrc, true)
+      : heroVideo ? videoLink(heroVideo, true) : picture(recapSrc, true);
+    if (heroVideo || phase === 'live') artwork.removeAttribute('aria-hidden');
+    else artwork.setAttribute('aria-hidden', 'true');
+    putMarkup(artwork, art);
+
+    const partyTitle = phase === 'planning' && (tonight?.party?.title || tonight?.poster?.title);
+    const title = state.root.querySelector('.l26-home-hero-title');
+    title.textContent = partyTitle || L.t('l26Home.' + phase);
+    const note = state.root.querySelector('.l26-home-hero-note');
+    const partyDay = tonight?.party?.day || tonight?.day;
+    note.textContent = phase === 'morning' && lastNight ? L.t('l26Home.lastNight') + ' · ' + dateLabel(lastNight)
+      : phase === 'planning' && /^\d{4}-\d{2}-\d{2}$/.test(partyDay) ? dateLabel(partyDay) : '';
+    const countdown = state.root.querySelector('.l26-home-countdown');
+    countdown.textContent = '';
+    if (phase === 'planning' && tonight && !tonight.open && state.clock) {
+      const now = state.clock.serverNow + performance.now() - state.clock.receivedAt;
+      const kstDay = new Date(now + 9 * hour).toISOString().slice(0, 10);
+      const opens = typeof tonight.hours === 'string' && tonight.hours.match(/^([01]\d|2[0-3]):[0-5]\d/)?.[0];
+      const opensAt = tonight.opensAt || Date.parse(kstDay + 'T' + (opens || '21:00') + ':00+09:00');
+      const minutes = Math.ceil((opensAt - now) / 60_000);
+      if (minutes > 0) countdown.textContent = L.t('t5.countdown', { h: Math.floor(minutes / 60), m: minutes % 60 });
+    }
+
+    const result = state.result;
+    const resultSlot = state.root.querySelector('.l26-home-results');
+    putMarkup(resultSlot, primary.live && result?.biz_day === lastNight && result.status === 'final' &&
+      floors.every(floor => Number.isSafeInteger(result.counts?.[floor]) && result.counts[floor] >= 0)
+      ? '<ul aria-label="' + t('finalVote') + '">' + floors.map(floor => '<li><b data-l26-floor="' + floor + '">' +
+        floor + '</b> <strong>' + new Intl.NumberFormat(L.lang).format(result.counts[floor]) + '</strong></li>').join('') + '</ul>'
+      : '');
+
+    for (const card of state.root.querySelectorAll('[data-home-card] .l26-home-card-art')) {
+      const action = state.view.cards.find(item => item.kind === card.parentElement.dataset.homeCard);
+      const dj = action?.slots?.[0];
+      const portrait = dj && Array.isArray(tonight?.timetable) && tonight.timetable.find(slot =>
+        slot.floor === dj.floor && slot.dj === dj.dj && slot.photo)?.photo;
+      if (portrait) putMarkup(card, picture(U.url(portrait)));
+    }
+    const official = state.root.querySelector('.l26-home-official');
+    const featured = heroVideo ? nextVideo : video;
+    official.hidden = !featured;
+    putMarkup(official, featured ? '<h2>' + t('officialSets') + '</h2>' + videoLink(featured) : '');
+  }
+
+  function loadMedia(state) {
+    // Artwork is optional. The existing HOME response remains authoritative for all actions.
+    const { phase, primary_action: primary } = state.view;
+    const serverNow = state.clock?.serverNow ?? Date.now();
+    const period = phase + ':' + Math.floor((serverNow + 2 * hour) / day); // Club day rolls at 07:00 KST.
+    const key = [period, primary.route, primary.live, Math.floor(serverNow / 300_000)].join(':');
+    if (key === state.mediaKey) return;
+    if (period !== state.mediaPeriod) {
+      state.tonight = state.recap = state.result = null;
+      state.mediaPeriod = period;
+    }
+    state.mediaKey = key;
+    const show = (field, request, read) => {
+      void request.then(response => {
+        if (active !== state || state.mediaKey !== key) return;
+        const value = read(response);
+        if (value != null) state[field] = value;
+        paintMedia(state);
+      }).catch(() => {});
+    };
+    show('tonight', L.api('tonight'), response => !response.error ? response : null);
+    if (phase === 'afternoon' && primary.route === 'l26_lounge' && L.open('l26_recap')) {
+      show('recap', L.api('l26_recap'), response => response.recap);
+    } else {
+      state.recap = null;
+    }
+    if (phase === 'morning' && primary.live) show('result', L.api('l26_floor'), response => response.ok ? response : null);
+    if (!state.videos) {
+      state.videoRequest ??= fetch('/data/videos.json').then(response => response.ok ? response.json() : [])
+        .then(rows => Array.isArray(rows) ? rows.filter(row => /^[\w-]{11}$/.test(row?.youtube) &&
+          typeof row.dj === 'string' && row.dj).slice(0, 2) : []).catch(() => []);
+      show('videos', state.videoRequest, rows => rows);
+    }
+  }
+
+  function actionCard(action) {
+    return '<li class="l26-home-card" data-home-card="' + L.esc(action.kind) + '">' +
+      '<div class="l26-home-card-art" aria-hidden="true"></div><div>' +
+      control(action, 'l26-home-card-link') + details(action) + '</div>' +
+      (commands.has(action.kind) || url.test(action.route) ? L.icon('chevron', { size: 16 }) : '') + '</li>';
+  }
+
   function paint(state, data) {
     const primary = data.primary_action;
     const hasBallot = primary.kind === 'floor_vote' && (primary.vote_status === 'ready' ||
       (primary.vote_status === 'voted' && floors.every(floor => Number.isSafeInteger(primary.counts?.[floor]))));
-    state.root.innerHTML = '<header class="l26-home-heading"><h1>' + L.esc(L.t('nav.l26_home')) +
-      '</h1><p>' + t(data.phase) + '</p></header><section class="l26-home-hero" aria-label="' + label(primary) + '">' +
+    const cards = '<ul class="l26-home-cards">' + data.cards.slice(0, 3).map(actionCard).join('') + '</ul>';
+    const official = '<section class="l26-home-official" hidden></section>';
+    const mediaFirst = data.phase === 'afternoon';
+    state.root.dataset.homePhase = data.phase;
+    state.root.innerHTML = '<header class="l26-home-heading"><h1>' + L.esc(L.t('nav.tonight')) +
+      '</h1></header><section class="t5-hero l26-home-hero" aria-label="' + label(primary) + '">' +
+      '<div class="l26-home-artwork" aria-hidden="true"></div><div class="t5-hero-copy">' +
+      '<p class="l26-home-hero-note"></p><h2 class="l26-home-hero-title"></h2><p class="l26-home-countdown"></p>' +
+      '<div class="l26-home-results"></div>' +
       (primary.first ? '<p>' + t('first') + '</p>' : '') + details(primary) +
-      (hasBallot ? voteControls(primary) : control(primary, 'btn btn-hot l26-home-primary')) + '</section>' +
-      '<ul class="l26-home-cards">' + data.cards.slice(0, 3).map(action =>
-        '<li class="l26-home-card" data-home-card="' + L.esc(action.kind) + '">' +
-        control(action, 'l26-home-card-link') + details(action) + '</li>').join('') + '</ul>' +
+      (hasBallot ? voteControls(primary) : control(primary, 'btn btn-hot l26-home-primary')) + '</div></section>' +
+      (mediaFirst ? official + cards : cards + official) +
       '<div class="l26-home-links">' + (!L.me ? '<a href="#/join">' + t('join') + '</a>' : '') +
       '<a href="#/' + (L.open('l26_play') ? 'l26_play' : 'play') + '">' + L.esc(L.t('nav.l26_play')) + '</a></div>';
-    state.root.dataset.homePhase = data.phase;
+    if (state.stories) {
+      state.root.querySelector(data.phase === 'morning' ? '.l26-home-official' : '.l26-home-cards').before(state.stories);
+    }
     state.root.dataset.verifiedEntry = String(data.verified_entry);
+    loadMedia(state);
+    paintMedia(state);
     updateVoteControls(state);
   }
 
   function applyView(state, view) {
     const snapshot = JSON.stringify(view);
-    if (snapshot === state.snapshot) return;
+    if (snapshot === state.snapshot) {
+      loadMedia(state);
+      paintMedia(state);
+      return;
+    }
     if (view.primary_action.vote_status !== 'ready' ||
         view.primary_action.biz_day !== state.view?.primary_action.biz_day) {
       state.retryVote = null;
@@ -287,20 +444,32 @@
   }
 
   L.screen('l26_home', {
-    title: 'nav.l26_home',
+    title: 'nav.tonight',
     render(root) {
       if (!L.open('l26_home')) return legacy();
       loadStyles();
       root.className = 'l26-screen l26-home';
-      root.innerHTML = '<h1>' + L.esc(L.t('nav.l26_home')) + '</h1><p role="status">' + t('loading') + '</p>';
+      root.innerHTML = '<h1>' + L.esc(L.t('nav.tonight')) + '</h1><p role="status">' + t('loading') + '</p>';
       const state = active = { root, voteRevision: 0 };
+      if (L.me && L.open('stories') && L.storyTray) {
+        state.stories = document.createElement('section');
+        state.stories.className = 'l26-home-stories';
+        state.stories.innerHTML = '<h2>' + t('stories') + '</h2><div data-story-tray hidden></div>';
+      }
       state.refresh = () => { if (!document.hidden) return refresh(state); };
       root.addEventListener('click', event => {
         const button = event.target.closest('button[data-home-command]');
         if (button) void act(state, button);
       });
+      root.addEventListener('error', event => {
+        if (event.target instanceof HTMLImageElement && event.target.closest('.l26-home-artwork, .l26-home-card-art, .l26-home-official')) {
+          event.target.remove();
+        }
+      }, true);
       document.addEventListener('visibilitychange', state.refresh);
-      return refresh(state);
+      return refresh(state).then(() => {
+        if (active === state && state.stories?.isConnected) void L.storyTray(state.stories.lastElementChild);
+      });
     },
     leave() {
       if (!active) return;

@@ -10,7 +10,7 @@
   var legacyRoutes = {
     l26_home: 'tonight', l26_live: 'tonight', l26_lounge: 'feed', l26_my: 'me', l26_play: 'play'
   };
-  var shellTabs = { tonight: 'l26_live', feed: 'l26_lounge', rooms: 'l26_lounge', me: 'l26_my', play: 'l26_lounge', l26_play: 'l26_lounge' };
+  var shellTabs = { tonight: 'l26_home', l26_lounge: 'feed', rooms: 'feed', me: 'l26_my' };
   // 오픈채팅이 켜진 회원에게만 탭 이름이 '오픈채팅'. 지난번 값을 기억해 첫 화면부터 맞는 이름을 그린다.
   var ocNav = read('gl_oc') === '1', navOn;
   var shown = '', scrolls = Object.create(null), scrollPending = null;   // 보던 자리 기억 (keepScroll 화면)
@@ -60,7 +60,8 @@
     '<rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/>',
     '<path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2zM18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/>',
     '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-    '<path d="M3 10l9-7 9 7v10H3zM9 20v-6h6v6"/>'
+    '<path d="M3 10l9-7 9 7v10H3zM9 20v-6h6v6"/>',
+    '<circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4m8.4-8.4a6 6 0 0 1 0 8.4M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/>'
   ];
 
   async function resize(file) {
@@ -366,7 +367,7 @@
       document.getElementById('app').classList.toggle('no-tabs', def?.tabs === false);  // 화면 정의에 tabs: false → 아래 탭 숨김 (글쓰기·스토리 뷰어처럼 화면을 넓게 쓰는 곳)
       var root = document.createElement('div');
       view.replaceChildren(root);
-      L.paintNav(def?.nav || name);
+      L.paintNav(name === 'l26_play' ? name : def?.nav || name);
       paintStatus();
       var titleKey = def?.title || 'nav.' + name;
       var title = L.t(titleKey);
@@ -433,11 +434,16 @@
     paintNav: function (on) {
       navOn = on;
       var shell = L.open('l26_shell');
-      document.getElementById('app').classList.toggle('l26-shell', shell);
+      var playTab = L.open('l26_play') ? 'l26_play' : 'play';
+      var app = document.getElementById('app');
+      app.classList.toggle('l26-shell', shell);
       document.querySelector('.shell-brand').href = '#/' + defaultRoute();
-      if (shell && Object.hasOwn(shellTabs, on)) on = shellTabs[on];
+      if (shell) {
+        if (on === 'play' || on === 'l26_play') on = playTab;
+        else if (Object.hasOwn(shellTabs, on)) on = shellTabs[on];
+      }
       var items = shell
-        ? [['l26_home', 'nav.l26_home', 5], ['l26_live', 'nav.l26_live', 0], ['l26_lounge', 'nav.l26_lounge', 1], ['l26_my', 'nav.l26_my', 4]]
+        ? [['l26_home', 'nav.tonight', 5], ['l26_live', 'nav.l26_live', 6], ['feed', 'nav.feed', 1], [playTab, 'nav.l26_play', 2], ['l26_my', 'nav.l26_my', 4]]
         : [['tonight', 'nav.tonight'], ['feed', 'nav.feed'], ['play', 'nav.play'], ['rooms', ocNav ? 'nav.openchat' : 'nav.rooms'], ['me', 'nav.me']];
       var photo = L.me?.photo ? (L.photoSrc ? L.photoSrc(L.me.photo) : L.img(L.me.photo)) : '';
       document.getElementById('tabbar').innerHTML = items.map(function (x, i) {
@@ -446,6 +452,20 @@
           : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (x[0] === on ? 2.3 : 1.8) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[x[2] ?? i] + '</svg>';
         return '<a href="#/' + x[0] + '" data-tab="' + x[0] + '"' + (x[0] === on ? ' aria-current="page"' : '') + '>' + icon + '<span>' + L.esc(L.t(x[1])) + '</span></a>';
       }).join('');
+      // The Feed tab opens the feed directly. Keep the community and chat entry points in this shell.
+      var shortcuts = app.querySelector(':scope > .l26-feed-shortcuts');
+      if (!shell || shown.replace(/^#\/?/, '').split('?', 1)[0] !== 'feed') {
+        shortcuts?.remove();
+      } else {
+        if (!shortcuts) {
+          shortcuts = document.createElement('nav');
+          shortcuts.className = 'l26-feed-shortcuts';
+          app.insertBefore(shortcuts, document.getElementById('view'));
+        }
+        shortcuts.setAttribute('aria-label', L.t('nav.feed'));
+        shortcuts.innerHTML = '<a href="#/l26_lounge">' + L.esc(L.t('nav.l26_lounge')) + '</a><a href="#/rooms">' +
+          L.esc(L.t(ocNav ? 'nav.openchat' : 'nav.rooms')) + '</a>';
+      }
     },
     boot: async function () {
       paintStatus();
@@ -659,7 +679,7 @@
     var token = session, requested = previewRequested;
     var request = L.api('config').then(result => {
       if (configPending !== request || session !== token || previewRequested !== requested) return;
-      var wasShell = L.open('l26_shell');
+      var wasShell = L.open('l26_shell'), wasPlay = L.open('l26_play');
       features = !result.error && result.open || Object.create(null);
       previewEligible = Boolean(token && result.preview_eligible === true);
       if (requested && !previewEligible) setPreviewRequest(false);
@@ -673,7 +693,7 @@
         save('gl_oc', ocNav ? '1' : '');
       }
       paintPreview();
-      if (ocChanged || wasShell !== L.open('l26_shell')) L.paintNav(navOn);
+      if (ocChanged || wasShell !== L.open('l26_shell') || (wasShell && wasPlay !== L.open('l26_play'))) L.paintNav(navOn);
       scheduleActivity();
     }).finally(() => { if (configPending === request) configPending = null; });
     configPending = request;
