@@ -1,19 +1,152 @@
-#app.l26-shell #tabbar {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
 .l26-shell {
-  --l26-floor-2f: #ff9651;
-  --l26-floor-3f: #b58aff;
+  --l26-dark-bg: #08080A;
+  --l26-dark-text: #F5F5F7;
+  --l26-bg: var(--l26-dark-bg);
+  --l26-card: #17171C;
+  --l26-text: var(--l26-dark-text);
+  --l26-muted: #A1A1AA;
+  --l26-brand: #FF2D87;
+  --l26-floor-2f: #FF7A1A;
+  --l26-floor-3f: #A15BFF;
+
+  --l26-font: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --l26-size-title: 28px;
+  --l26-size-heading: 20px;
+  --l26-size-body: 15px;
+  --l26-size-caption: 12px;
+  --l26-weight-title: 800;
+  --l26-weight-heading: 700;
+  --l26-weight-body: 500;
+  --l26-weight-caption: 500;
+
+  --l26-page: 16px;
+  --l26-gap: 12px;
+  --l26-section: 24px;
+  --l26-card-radius: 18px;
+  --l26-button-radius: 12px;
+  --l26-touch: 44px;
+  --l26-tab: 60px;
+  --l26-poster: 4 / 5;
+  --l26-profile: 1 / 1;
+  --l26-video: 16 / 9;
+
+  /* The fixed tab bar, scroll clearance and conversation composers share this height. */
+  --tab-h: var(--l26-tab);
 }
 
 html[data-theme="light"] .l26-shell {
-  --l26-floor-2f: #a7450a;
-  --l26-floor-3f: #6537ba;
+  --l26-bg: #FFFFFF;
+  --l26-card: #F5F5F7;
+  --l26-text: #111113;
+  --l26-muted: #606068;
 }
+
+#app.l26-shell:has(> #view > .l26-screen),
+#app.l26-shell > .lounge-header,
+#app.l26-shell > #tabbar {
+  background: var(--l26-bg);
+  color: var(--l26-text);
+  font-family: var(--l26-font);
+}
+
+#app.l26-shell > .lounge-header {
+  padding-inline: var(--l26-page) calc(var(--l26-page) / 2);
+  border-color: color-mix(in srgb, var(--l26-muted) 22%, transparent);
+}
+
+.l26-shell .lounge-header .shell-brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--l26-touch);
+  color: var(--l26-text);
+  font-size: var(--l26-size-body);
+  font-weight: var(--l26-weight-title);
+  letter-spacing: .06em;
+}
+
+.l26-shell .lounge-header .shell-brand::before {
+  content: "";
+  inline-size: .65em;
+  block-size: .65em;
+  margin-inline-end: .65em;
+  border-radius: 50%;
+  background: var(--l26-brand);
+}
+
+.l26-shell .lounge-inboxes a {
+  color: var(--l26-text);
+  border-radius: var(--l26-button-radius);
+}
+
+#app.l26-shell > #tabbar {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-color: color-mix(in srgb, var(--l26-muted) 26%, transparent);
+}
+
+#app.l26-shell > #tabbar a {
+  position: relative;
+  min-height: var(--l26-touch);
+  color: var(--l26-muted);
+  font-size: var(--l26-size-caption);
+  font-weight: var(--l26-weight-caption);
+}
+
+#app.l26-shell > #tabbar a[aria-current="page"] {
+  color: var(--l26-text);
+  font-weight: var(--l26-weight-heading);
+}
+
+.l26-shell #tabbar a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline: 29%;
+  block-size: 3px;
+  border-radius: 0 0 var(--l26-button-radius) var(--l26-button-radius);
+  background: var(--l26-brand);
+}
+
+.l26-shell #tabbar .tab-me { aspect-ratio: var(--l26-profile); }
+
+#app.l26-shell #tabbar a[aria-current="page"] .tab-me {
+  box-shadow: 0 0 0 1px var(--l26-bg), 0 0 0 2.5px var(--l26-brand);
+}
+
+.l26-shell :is(#tabbar, .lounge-header) a:focus-visible { outline-color: var(--l26-brand); }
+
+.l26-shell > .l26-feed-shortcuts {
+  display: flex;
+  gap: var(--l26-gap);
+  max-inline-size: 640px;
+  margin-inline: auto;
+  padding: 4px var(--l26-page);
+  background: var(--l26-bg);
+}
+
+.l26-feed-shortcuts a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--l26-touch);
+  padding-inline: var(--l26-gap);
+  border-radius: var(--l26-button-radius);
+  background: var(--l26-card);
+  color: var(--l26-text);
+  font: var(--l26-weight-heading) var(--l26-size-body)/1.2 var(--l26-font);
+  text-decoration: none;
+}
+
+.l26-feed-shortcuts a:focus-visible { outline-color: var(--l26-brand); }
 
 .l26-shell [data-l26-floor="2F"] { color: var(--l26-floor-2f); }
 .l26-shell [data-l26-floor="3F"] { color: var(--l26-floor-3f); }
+
+html[data-theme="light"] .l26-shell [data-l26-floor="2F"] {
+  color: color-mix(in srgb, var(--l26-floor-2f) 56%, var(--l26-text));
+}
+
+html[data-theme="light"] .l26-shell [data-l26-floor="3F"] {
+  color: color-mix(in srgb, var(--l26-floor-3f) 64%, var(--l26-text));
+}
 
 .l26-screen {
   padding: 20px 16px;
