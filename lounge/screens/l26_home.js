@@ -213,7 +213,9 @@
       const dj = action?.slots?.[0];
       const portrait = dj && Array.isArray(tonight?.timetable) && tonight.timetable.find(slot =>
         slot.floor === dj.floor && slot.dj === dj.dj && slot.photo)?.photo;
-      if (portrait) putMarkup(card, picture(U.url(portrait)));
+      const logo = dj && L.djLogo(dj.dj);
+      if (logo) putMarkup(card, '<img class="l26-dj-logo is-art" src="' + logo + '" alt="" decoding="async">');
+      else if (portrait) putMarkup(card, picture(U.url(portrait)));
     }
     const official = state.root.querySelector('.l26-home-official');
     const featured = heroVideo ? nextVideo : video;

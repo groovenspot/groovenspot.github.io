@@ -115,15 +115,15 @@
     const time = at => at ? '<time>' + L.esc(at) + '</time>' : '';
     const lineup = slots.length ? '<ul class="l26-live-lineup">' + slots.map(slot => {
       const thumbnail = sessionThumbnail(slot, sessions);
-      return '<li>' + time(slot.at) + '<strong>' + L.esc(slot.dj) + '</strong>' +
+      return '<li>' + time(slot.at) + '<strong>' + L.djMark(slot.dj, null, 'is-sm') + '</strong>' +
         (thumbnail ? '<img src="' + L.esc(thumbnail) + '" alt="" loading="lazy" width="44" height="30">' : '') + '</li>';
     }).join('') + '</ul>' : L.l26Empty(t('noSchedule'), 'layers', true);
     if (state !== 'open') {
       return '<h3 class="l26-live-lineup-title">' + t('schedule') + '</h3>' + lineup;
     }
     return '<dl class="l26-live-slots"><div data-live-current><dt>' + t('dj') + '</dt><dd><strong class="l26-live-dj">' +
-      L.esc(info.now || t('noDj')) + '</strong>' + time(info.now && currentTime) + '</dd></div>' +
-      '<div><dt>' + t('next') + '</dt><dd><strong>' + L.esc(info.next || t('noDj')) + '</strong>' +
+      (info.now ? L.djMark(info.now) : t('noDj')) + '</strong>' + time(info.now && currentTime) + '</dd></div>' +
+      '<div><dt>' + t('next') + '</dt><dd><strong>' + (info.next ? L.djMark(info.next, null, 'is-sm') : t('noDj')) + '</strong>' +
       time(info.next && info.nextAt) + '</dd></div></dl><details><summary>' + t('schedule') + L.icon('down', { size: 16 }) +
       '</summary>' + lineup + '</details>';
   }

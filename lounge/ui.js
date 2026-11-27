@@ -67,6 +67,23 @@
     return '<span' + attrs + '>' + inner + '</span>';
   };
 
+  // DJ 로고: 이름(한글·영문·대소문자 무관) → /lounge/assets/dj-logos/<키>.png, 없으면 ''
+  var DJ_LOGOS = { road: 'road', '로드': 'road', mumu: 'mumu', '무무': 'mumu', mute: 'mute', '뮤트': 'mute',
+    bill: 'bill', '빌': 'bill', aeth: 'aeth', a_eth: 'aeth', 'a:eth': 'aeth', '에이스': 'aeth', n: 'n', '엔': 'n',
+    uzi: 'uzi', 'u-zi': 'uzi', 'u·zi': 'uzi', 'dju-zi': 'uzi', '우지': 'uzi', wook2: 'wook2', wook: 'wook2', '욱이': 'wook2',
+    ezzy: 'ezzy', '이지': 'ezzy', zet: 'zet', '제트': 'zet', kupa: 'kupa', '쿠파': 'kupa', dia: 'dia', '디아': 'dia' };
+  L.djLogo = function (name) {
+    var key = String(name || '').trim().toLowerCase().replace(/^dj[\s.]*/, '').replace(/[\s]/g, '');
+    var hit = DJ_LOGOS[key] || DJ_LOGOS[key.replace(/[^a-z0-9가-힣]/g, '')];
+    return hit ? '/lounge/assets/dj-logos/' + hit + '.png' : '';
+  };
+  // 로고가 있으면 <img class="l26-dj-logo">, 없으면 fallback(보통 이름 글자)
+  L.djMark = function (name, fallback, cls) {
+    var src = L.djLogo(name);
+    return src ? '<img class="l26-dj-logo' + (cls ? ' ' + cls : '') + '" src="' + src + '" alt="' + L.esc(name) +
+      '" loading="lazy" decoding="async">' : (fallback == null ? L.esc(name) : fallback);
+  };
+
   L.l26Skeleton = function (label, compact = false, attrs = '') {
     return '<div class="l26-state l26-skeleton' + (compact ? ' is-compact' : '') + '" role="status"' + attrs +
       '><span class="sr-only">' + label + '</span><span class="l26-state-art" aria-hidden="true"></span>' +
