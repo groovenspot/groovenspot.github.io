@@ -1,7 +1,9 @@
 (function (L) {
   const words = {
     recap: ['어젯밤', 'Last night', '昨夜', '昨夜'],
+    replay: ['리플레이', 'Replay', 'リプレイ', '回顾'],
     music: ['음악', 'Music', '音楽', '音乐'],
+    latest: ['최근 공식 영상', 'Recent official sets', '最新の公式映像', '最新官方视频'],
     guests: ['손님 피드', 'Guest feed', 'ゲストの投稿', '访客动态'],
     play: ['놀거리 열기', 'Explore games', '遊びを開く', '查看游戏'],
     compose: ['글 쓰기', 'Write a post', '投稿する', '发帖'],
@@ -25,8 +27,6 @@
     Object.fromEntries(Object.entries(words).map(([key, values]) => ['community.' + key, values[index]]))])));
   const esc = L.esc;
   const t = (key, vars) => esc(L.t('community.' + key, vars));
-  // Published GROOVE SESSIONS entry in data/videos.json.
-  const sessions = 'https://www.youtube.com/watch?v=whM3ZZUnSVE';
   const photoUrl = /^https:\/\/groove-staff-api\.groovenspotbusan\.workers\.dev\/lounge-recap-media\/[a-f0-9]{12}\/cf[a-z0-9]+$/;
   let stopRefresh;
 
@@ -43,6 +43,42 @@
     document.head.append(style);
   }
 
+  let recentVideos;
+  function videoCard({ youtube, title, dj, duration, session }, index) {
+    const credit = (index === 0 ? 'GROOVE SESSIONS ' + esc(String(session).padStart(3, '0')) + ' · ' : '') + esc(dj);
+    return '<a class="community-video" href="https://www.youtube.com/watch?v=' + youtube +
+      '" target="_blank" rel="noopener noreferrer"><span class="community-video-art">' +
+      '<img data-src="https://i.ytimg.com/vi/' + youtube + '/mqdefault.jpg" width="320" height="180" alt="" decoding="async" referrerpolicy="no-referrer">' +
+      '<span class="community-video-play">' + L.icon('play', { size: 22, fill: true }) + '</span>' +
+      '<span class="community-video-runtime">' + esc(duration) + '</span></span>' +
+      '<span class="community-video-copy"><span class="community-video-meta">' + credit + '</span><strong>' + esc(title) +
+      '</strong><span class="sr-only"> ' + t('officialVideo') + '</span></span></a>';
+  }
+
+  async function music(view) {
+    try {
+      if (!recentVideos) {
+        const response = await fetch('/data/videos.json');
+        if (!response.ok) throw new Error('Video catalog unavailable');
+        const catalog = await response.json();
+        const videos = catalog.filter(video => video && typeof video.youtube === 'string' &&
+          /^[\w-]{11}$/.test(video.youtube) && Number.isFinite(Number(video.session)) &&
+          [video.title, video.dj, video.duration].every(value => typeof value === 'string' && value.trim()))
+          .sort((a, b) => Number(b.session) - Number(a.session)).slice(0, 2);
+        if (!videos.length) throw new Error('No published video in catalog');
+        recentVideos = videos;
+      }
+      if (!view.isConnected) return;
+      view.innerHTML = recentVideos.map(videoCard).join('');
+      for (const image of view.querySelectorAll('img')) {
+        image.addEventListener('error', () => image.remove(), { once: true });
+        image.src = image.dataset.src;
+      }
+    } catch {
+      if (view.isConnected) view.innerHTML = '<p class="muted">' + t('unavailable') + '</p>';
+    }
+  }
+
   function replay(view, result) {
     const { recap, biz_day: day } = result;
     if (result.error || !recap) {
@@ -50,11 +86,12 @@
       return;
     }
     const slots = recap.timetable || [];
-    const photos = (recap.photos || []).filter(url => photoUrl.test(url));
+    const photos = [...new Set((recap.photos || []).filter(url => photoUrl.test(url)))];
     const votes = recap.votes || [];
     const hasRecords = Boolean(slots.length || votes.length || recap.verified_visits);
     view.innerHTML =
-      (photos.length ? '<div class="community-photos"></div>' : '') +
+      (photos.length ? '<div class="community-photos"' +
+        (photos.length > 1 ? ' role="group" tabindex="0" aria-label="' + t('photo') + '"' : '') + '></div>' : '') +
       '<p class="community-meta"><time datetime="' + esc(day) + '">' + esc(day) + '</time>' +
       (recap.verified_visits ? '<span>' + t('visits', { n: recap.verified_visits }) + '</span>' : '') + '</p>' +
       '<p data-replay-empty' + (hasRecords || photos.length ? ' hidden' : '') + '>' + t('sparse') + '</p>' +
@@ -75,6 +112,7 @@
       image.referrerPolicy = 'no-referrer';
       image.addEventListener('error', () => {
         image.remove();
+        if (tray.children.length === 1) tray.removeAttribute('tabindex');
         if (tray.children.length || !tray.isConnected) return;
         tray.remove();
         if (!hasRecords) view.querySelector('[data-replay-empty]').hidden = false;
@@ -84,7 +122,7 @@
     }
   }
 
-  function watchReplay(view) {
+  function watchReplay(view, onReady) {
     let version = 0, last, recordedDay, timer;
     const section = view.closest('section');
     async function refresh() {
@@ -98,6 +136,7 @@
         last = current;
         replay(view, result);
       }
+      onReady();
       if (result.recap && L.me && recordedDay !== result.biz_day) {
         recordedDay = result.biz_day;
         void L.api('l26_recap_view', { biz_day: recordedDay });
@@ -143,7 +182,8 @@
         link('feed/' + encodeURIComponent(group.id), '<time datetime="' + esc(group.biz_day) + '">' + esc(group.biz_day) +
           '</time><span>' + t('group', { n: group.count }) + '</span>', 'community-post')).join('');
     }
-    const details = await Promise.all((result.guests || []).map(({ id }) => L.api('post_get', { id })));
+    const ids = new Set((result.guests || []).map(({ id }) => id));
+    const details = await Promise.all([...ids].map(id => L.api('post_get', { id })));
     if (!view.isConnected) return;
     const posts = details.flatMap(({ post }) => post?.kind === 'member' ? [post] : []);
     if (!posts.length) {
@@ -180,8 +220,9 @@
     root.innerHTML = '<h1>' + esc(L.t('nav.l26_lounge')) + '</h1>' +
       (recap ? '<section class="community-replay"><h2>' + t('recap') +
         '</h2><div data-community-replay aria-live="polite"><p class="muted">' + t('loading') + '</p></div></section>' : '') +
-      '<section class="community-music"><h2>' + t('music') + '</h2><a href="' + sessions +
-      '" target="_blank" rel="noopener noreferrer"><strong>MUMU · GROOVE SESSIONS 041</strong><span>' + t('officialVideo') + ' ↗</span></a></section>' +
+      '<section class="community-music"><header><h2>' + t('music') + '</h2><p>' + t('latest') +
+      '</p></header><div data-community-music aria-live="polite"><div class="community-video-art" role="status">' +
+      '<span class="sr-only">' + t('loading') + '</span></div></div></section>' +
       '<section class="community-guests"><header><h2>' + t('guests') + '</h2>' +
       (L.open('posts') ? link('compose', t('compose'), 'btn btn-hot') : '') + '</header>' +
       '<div data-community-stories hidden></div>' +
@@ -193,11 +234,35 @@
 
     void preview(root.querySelector('[data-community-feed]'), root.querySelector('.community-timetables'));
     L.storyTray?.(root.querySelector('[data-community-stories]'));
-    if (recap) stopRefresh = watchReplay(root.querySelector('[data-community-replay]'));
+    const replayReady = recap ? new Promise(resolve => {
+      stopRefresh = watchReplay(root.querySelector('[data-community-replay]'), resolve);
+    }) : Promise.resolve();
+    const musicView = root.querySelector('[data-community-music]');
+    return Promise.all([replayReady, music(musicView)]);
   }
 
-  L.screen('l26_lounge', { title: 'nav.l26_lounge', render, leave() {
-    stopRefresh?.();
-    stopRefresh = undefined;
-  } });
+  L.screen('l26_lounge', {
+    title: 'nav.l26_lounge',
+    async render(root, { section } = {}) {
+      const ready = render(root);
+      if (section !== 'replay' && section !== 'music') return;
+      const style = document.getElementById('l26-community-css');
+      const styleReady = style.sheet ? Promise.resolve() : new Promise(resolve => {
+        style.addEventListener('load', resolve, { once: true });
+        style.addEventListener('error', resolve, { once: true });
+      });
+      await Promise.all([ready, styleReady]);
+      if (!root.isConnected) return;
+      const replay = root.querySelector('.community-replay:not([hidden])');
+      const target = (section === 'replay' && replay) || root.querySelector('.community-music');
+      const heading = target.querySelector('h2');
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+      target.scrollIntoView({ block: 'start' });
+    },
+    leave() {
+      stopRefresh?.();
+      stopRefresh = undefined;
+    }
+  });
 })(window.Lounge);

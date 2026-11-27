@@ -205,3 +205,64 @@ html[data-lounge-keyboard] .feed4-detail-comments .feed4-cform.is-page { bottom:
   .feed4-skel-head i, .feed4-skel-head b, .feed4-skel-media, .feed4-skel-line { animation: none; }
   .feed4-wait > i { animation-duration: 2s; }
 }
+
+/* The 2.0 feed keeps the same story, filter and post layout. */
+#app.l26-shell:has(:is(.feed4-l26, .l26-community, .l26-my)) {
+  background-color: var(--l26-bg, light-dark(#ffffff, #08080a));
+}
+
+.feed4-l26 {
+  font-family: var(--l26-font, "Pretendard Variable", Pretendard, system-ui, sans-serif);
+}
+
+.feed4-l26 .ui-bar {
+  background: var(--l26-bg, light-dark(#ffffff, #08080a));
+}
+
+.feed4-l26 :is(.feed4-logo, .ui-bar-btn) {
+  color: var(--l26-text, light-dark(#111113, #f5f5f7));
+}
+
+.feed4-l26 .feed4-logo {
+  display: inline-block;
+  align-content: center;
+  font-size: var(--l26-size-meta, 12px);
+  font-weight: var(--l26-weight-heavy, 800);
+}
+
+@media (max-width: 355px) {
+  .feed4-l26 .feed4-logo span { display: none; }
+}
+
+.feed4-l26 .feed4-openchat {
+  background: color-mix(in srgb, var(--l26-brand, #ff2d87) 15%, transparent);
+}
+
+.feed4-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--l26-gap, 12px);
+  padding-inline: var(--l26-page, 16px);
+  margin-inline: calc(-1 * var(--l26-page, 16px));
+  border-bottom: 1px solid var(--line);
+}
+
+.feed4-shortcuts a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--l26-touch, 44px);
+  color: var(--l26-text, light-dark(#111113, #f5f5f7));
+  font-size: var(--l26-size-meta, 12px);
+  font-weight: var(--l26-weight-bold, 700);
+  text-decoration: none;
+}
+
+.feed4-shortcuts svg {
+  color: var(--l26-brand, #ff2d87);
+}
+
+.feed4-shortcuts a:focus-visible {
+  outline-color: var(--l26-brand, #ff2d87);
+  outline-offset: -2px;
+}
