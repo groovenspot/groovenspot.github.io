@@ -67,6 +67,31 @@
     return '<span' + attrs + '>' + inner + '</span>';
   };
 
+  L.l26Skeleton = function (label, compact = false, attrs = '') {
+    return '<div class="l26-state l26-skeleton' + (compact ? ' is-compact' : '') + '" role="status"' + attrs +
+      '><span class="sr-only">' + label + '</span><span class="l26-state-art" aria-hidden="true"></span>' +
+      '<span class="l26-state-lines" aria-hidden="true"><i></i><i></i></span></div>';
+  };
+
+  L.l26Empty = function (label, icon, compact = false, attrs = '', actions = '') {
+    return '<div class="l26-state l26-empty' + (compact ? ' is-compact' : '') + '" role="status"' + attrs +
+      '><span class="l26-state-art" aria-hidden="true">' + L.icon(icon, { size: compact ? 18 : 30 }) +
+      '</span><div>' + label + actions + '</div></div>';
+  };
+
+  let entryScript;
+  L.loadEntryQr = function () {
+    if (L.mountEntryQr) return Promise.resolve();
+    entryScript ||= new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = '/lounge/l26-entry-qr.js';
+      script.onload = resolve;
+      script.onerror = () => { script.remove(); reject(new Error('entry')); };
+      document.head.append(script);
+    }).catch(error => { entryScript = null; throw error; });
+    return entryScript;
+  };
+
   // 지난 시간: 방금 · 5분 · 3시간 · 2일 · 1주 · (그 뒤는 날짜). L.ago(at, true) = '5분 전' 처럼 긴 모양
   var AGO = {
     ko: { now: '방금', m: '{n}분', h: '{n}시간', d: '{n}일', w: '{n}주', ago: '{t} 전' },

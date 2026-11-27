@@ -89,7 +89,7 @@
 
 .l26-home[data-home-phase="planning"] .t5-hero { display: grid; }
 .l26-home[data-home-phase="planning"] :is(.l26-home-artwork, .t5-hero-copy) { grid-area: 1 / 1; }
-.l26-home[data-home-phase="planning"] .l26-home-artwork { aspect-ratio: var(--l26-poster); }
+.l26-home[data-home-phase="planning"] .l26-home-artwork { aspect-ratio: 10 / 13; }
 .l26-home[data-home-phase="planning"] .t5-hero-copy {
   z-index: 1;
   align-self: end;
@@ -130,6 +130,10 @@
 
 .l26-home [data-home-floor-art="3F"],
 .l26-home [data-home-result-floor="3F"] { --l26-art-accent: var(--l26-floor-3f); }
+
+.l26-home:has(.l26-home-entrance:not([hidden])) .l26-home-floor-visual {
+  aspect-ratio: var(--l26-poster);
+}
 
 .l26-home-floor-visual::after {
   content: "";
@@ -284,6 +288,17 @@
 }
 
 .l26-home-artwork > .l26-home-video { border-radius: 0; }
+.l26-home[data-home-phase="afternoon"] :is(.l26-home-artwork, .l26-home-video) { aspect-ratio: 3 / 2; }
+
+.l26-home-session-art {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: var(--l26-page);
+  color: color-mix(in srgb, var(--l26-brand) 45%, var(--l26-dark-text));
+}
 
 .l26-home-video > img {
   position: absolute;
@@ -331,3 +346,29 @@
 }
 
 .l26-home [data-home-main] { display: contents; }
+
+.l26-home .l26-home-entrance:not([hidden]) {
+  margin-block-start: calc(var(--l26-gap) - var(--l26-section));
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: var(--l26-gap);
+  padding: var(--l26-page);
+  border: 1px solid color-mix(in srgb, var(--l26-brand) 55%, var(--l26-card));
+  border-radius: var(--l26-card-radius);
+  background: var(--l26-card);
+  color: var(--l26-text);
+  text-align: center;
+}
+
+.l26-home-entrance :is(img, .l26-entry-placeholder) {
+  width: min(100%, 220px);
+  aspect-ratio: 1;
+  border-radius: 4px;
+}
+
+.l26-home-entrance .l26-entry-placeholder {
+  background: color-mix(in srgb, var(--l26-muted) 18%, transparent);
+}
+
+.l26-home-entrance [data-entry-countdown],
+.l26-home-entrance [role="status"] { color: var(--l26-muted); font-size: var(--l26-size-caption); }
