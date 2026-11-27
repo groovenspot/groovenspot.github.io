@@ -8,9 +8,10 @@
     missing: ['DJ를 찾을 수 없어요', 'DJ not found']
   });
   const followerLabels = ['팔로워 {n}명', '{n} followers', 'フォロワー {n} 人', '{n} 位粉丝'];
+  const oneFollower = ['팔로워 1명', '1 follower', 'フォロワー 1 人', '1 位粉丝'];
   L.i18n(Object.fromEntries(['ko', 'en', 'ja', 'zh'].map((lang, i) => [lang, {
     'dj.followers': followerLabels[i],
-    ...(lang === 'en' && { 'dj.oneFollower': '1 follower' })
+    'dj.oneFollower': oneFollower[i]
   }])));
   // The public video catalog uses stage names in Latin script for these DJs.
   const videoNames = new Map([
@@ -88,7 +89,7 @@
     function paintFollow(followers) {
       if (count) {
         count.hidden = !Number.isInteger(followers);
-        const label = L.lang === 'en' && followers === 1 ? 'dj.oneFollower' : 'dj.followers';
+        const label = followers === 1 ? 'dj.oneFollower' : 'dj.followers';
         count.textContent = count.hidden ? '' : L.t(label, { n: new Intl.NumberFormat(L.lang).format(followers) });
       }
       button.textContent = L.t('dj.' + (following ? 'unfollow' : 'follow'));
