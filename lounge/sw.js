@@ -1,5 +1,5 @@
 /* 그루브 라운지 서비스워커 */
-const CACHE = 'groove-lounge-shell-v20';
+const CACHE = 'groove-lounge-shell-v21';
 const API = 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
 const SHELL = [
   '/lounge/', '/lounge/app.css', '/lounge/core.js', '/lounge/ui.js',
