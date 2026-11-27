@@ -2969,6 +2969,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
 .profile-work-check input { width:18px; height:18px; min-height:0; margin:0; accent-color:var(--g); flex:none; }
 .profile-work-preview { white-space:pre-wrap; overflow-wrap:anywhere; background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:12px; }
 </style>
+<link rel="stylesheet" href="/staff/l26-dj-feedback.css">
 </head>
 <body>
 <header class="top">
@@ -3097,6 +3098,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
 <script src="/assets/vendor/qrcode-generator-1.4.4.js"></script>
 <script src="/assets/media-share.js?v=2"></script>
 <script src="/staff/l26-followers.js"></script>
+<script src="/staff/l26-dj-feedback.js"></script>
 <script>
 (function () {
   'use strict';
@@ -8808,6 +8810,10 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       document.querySelectorAll('[data-follower-growth]').forEach(button => { button.hidden = config.l26_follow_counts !== true; });
       document.querySelectorAll('[data-lounge="returnBenefits"]').forEach(button => { button.hidden = !Object.hasOwn(config, 'l26_return'); });
       document.querySelectorAll('[data-lounge="returnScore"]').forEach(button => { button.hidden = config.l26_staff_score !== true; });
+      document.querySelectorAll('[data-dj-review-nav]').forEach(button => { button.hidden = config.l26_dj_feedback !== true; });
+      if (!config.l26_dj_feedback && document.querySelector('#sheet .dj-report')) {
+        $('sheetX').click();
+      }
       loungeQuick();
     }).finally(() => { entryConfigPending = null; });
   }
@@ -8819,6 +8825,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       ['entry', '입장 QR 스캔 / Scan entry QR', 'shield'],
       ['returnBenefits', '방문 혜택 처리 / Visit benefits', 'note']);
     links.push(['returnScore', '재접속 기여 점수 / Activation score', 'chart']);
+    if (state.s.team === 'DJ팀') links.push(['djReview', GrooveDjReview.label('mine'), 'chart']);
     if (roles.dj || roles.crowd || roles.line) links.push(['tonight', '오늘 밤 입력 / Tonight setup', 'clock']);
     if (roles.manage) links.push(['manage', '손님 라운지 관리 / Manage Lounge', 'note']);
     else if (roles.vote) links.push(['vote', '투표 만들기 / Create vote', 'note']);
@@ -8828,10 +8835,11 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     links.push(['guide', '라운지 1분 안내 / Lounge guide', 'info']);
     return loungeLinkBand() + '<div class="lounge-menu">' + links.map(([page, label, icon]) =>
       loungeButton(opIco(icon) + ' ' + label + (page === 'manage' ? loungeReportBadge() : ''),
-        'type="button" data-lounge="' + page + '"' +
+        'type="button" data-lounge="' + page + '"' + (page === 'djReview' ? ' data-dj-review-nav' : '') +
         ((page === 'entry' && entryConfig?.l26_entry !== true) || (page === 'checkin' && entryConfig?.l26_entry === true) ||
           (page === 'returnBenefits' && !Object.hasOwn(entryConfig || {}, 'l26_return')) ||
-          (page === 'returnScore' && entryConfig?.l26_staff_score !== true) ? ' hidden' : ''))).join('') + '</div>';
+          (page === 'returnScore' && entryConfig?.l26_staff_score !== true) ||
+          (page === 'djReview' && entryConfig?.l26_dj_feedback !== true) ? ' hidden' : ''))).join('') + '</div>';
   }
   function loungeQuick() {
     const area = $('loungeQuick');
@@ -8858,6 +8866,20 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       '<p class="msg lounge-msg" role="status"></p></section>');
     $('sheetX').textContent = '닫기 / Close';
     return document.querySelector('#sheet .lounge-screen');
+  }
+  function loungeDjReview(panel, session, owner) {
+    const allowed = () => panel.isConnected && state.s?.token === session && entryConfig?.l26_dj_feedback === true;
+    const request = (task, args) => {
+      if (!allowed()) return Promise.reject(new Error('closed'));
+      return loungeStaff(session, 'l26_dj_review_staff', { ...args, task });
+    };
+    if (allowed()) return GrooveDjReview[owner ? 'owner' : 'personal'](panel, request, allowed);
+  }
+  function loungeDjMine() {
+    const session = state.s?.token;
+    if (!session || state.s.team !== 'DJ팀' || entryConfig?.l26_dj_feedback !== true) return;
+    const root = loungeSheet(GrooveDjReview.label('mine'), '<div class="lounge-body"></div>');
+    return loungeDjReview(root.querySelector('.lounge-body'), session, false);
   }
   function loungeReturnBenefits() {
     const session = state.s?.token;
@@ -11014,7 +11036,9 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     tabs.push(['play', '놀거리 / Play'], ['stages', '단계 스위치 / Feature switches']);
     if (state.s.admin) tabs.push(['metrics', '입장 · 재방문 지표 / Entry and retention'], ['settings', '포인트 · 라디오 / Settings']);
     if (state.s.admin) tabs.push(['followerGrowth', '팔로워 성장 / Follower growth']);
+    if (state.s.admin) tabs.push(['djReview', GrooveDjReview.label('title')]);
     const screens = {
+      djReview: panel => loungeDjReview(panel, session, true),
       reports: panel => loungeReports(panel, session), rooms: panel => loungeRooms(panel, request),
       members: panel => loungeMemberSearch(panel, session), resetqr: panel => loungeResetQr(panel, session),
       boundreset: panel => loungeBoundRecovery(panel, session),
@@ -11033,7 +11057,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     const navButton = ([tab, label]) => loungeButton(label + (tab === 'reports' ? loungeReportBadge() : ''),
       'type="button" data-admin-tab="' + tab + '"' +
       (tab === 'metrics' ? ' data-entry-metrics' + (entryConfig?.l26_metrics === true ? '' : ' hidden') : '') +
-      (tab === 'followerGrowth' ? ' data-follower-growth' + (entryConfig?.l26_follow_counts === true ? '' : ' hidden') : ''));
+      (tab === 'followerGrowth' ? ' data-follower-growth' + (entryConfig?.l26_follow_counts === true ? '' : ' hidden') : '') +
+      (tab === 'djReview' ? ' data-dj-review-nav' + (entryConfig?.l26_dj_feedback === true ? '' : ' hidden') : ''));
     const root = loungeSheet('손님 라운지 관리 / Manage Lounge', '<nav class="lounge-nav" aria-label="관리 메뉴 / Management">' +
       '<div class="lounge-tabs lounge-main-tabs">' + primary.map(id => navButton(tabs.find(([tab]) => tab === id))).join('') + '</div>' +
       '<details class="lounge-nav-extra"><summary>관리 메뉴 더 보기 / More tools</summary><div class="lounge-tabs">' +
@@ -11197,7 +11222,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   }
   function bindLoungeMenu(area) {
     const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), entry: loungeEntryScanner,
-      returnBenefits: loungeReturnBenefits, returnScore: loungeReturnScore, tonight: loungeTonight, manage: loungeManage,
+      returnBenefits: loungeReturnBenefits, returnScore: loungeReturnScore, djReview: loungeDjMine, tonight: loungeTonight, manage: loungeManage,
       vote: () => loungeManage('vote'), sales: loungeSales, linked: loungeLinkStatus, partners: loungePartnerSheet, guide: loungeGuide };
     area.querySelectorAll('[data-lounge]').forEach(b => { b.onclick = screens[b.dataset.lounge]; });
     if (area.querySelector('[data-lounge-band]')) loungeLinkLoad().catch(() => {});   // 연결 띠: 내가 미연결일 때만 (실패하면 조용히 숨김)

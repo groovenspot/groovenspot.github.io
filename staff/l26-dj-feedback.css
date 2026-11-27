@@ -1,0 +1,50 @@
+.dj-report {
+  display: grid;
+  gap: .75rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.dj-report-fields,
+.dj-report-set-actions,
+.dj-report-ratios {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: .5rem;
+}
+
+.dj-report-fields > label {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.dj-report-fields > .dj-report-confirmation {
+  flex-basis: 100%;
+}
+
+.dj-report-fields input:not([type=checkbox]),
+.dj-report-fields select {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.dj-report-card {
+  border: 1px solid var(--line);
+  border-radius: .75rem;
+  padding: .625rem;
+  margin-block: .5rem;
+}
+
+.dj-report-card :is(h4, p) {
+  margin: .125rem 0;
+}
+
+.dj-report details {
+  padding: .375rem 0;
+}
+
+.dj-report summary {
+  cursor: pointer;
+  padding: .5rem 0;
+}
