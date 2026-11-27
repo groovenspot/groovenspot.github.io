@@ -244,7 +244,7 @@
     mediaSrc: function (value) {
       if (!viewerMedia || !L.me) return value;
       var url = URL.parse(value, location.href);
-      if (url?.origin === new URL(API, location.href).origin && url.pathname.startsWith('/img/') &&
+      if (url?.origin === new URL(API, location.href).origin && /^\/img\/p\/[\w:-]+\/[\w-]+\.(?:jpg|webp)$/.test(url.pathname) &&
           !url.searchParams.has('media') && !url.searchParams.has('admin') && !url.searchParams.has('token')) {
         url.searchParams.set('viewer_media', viewerMedia);
         return url.href;
