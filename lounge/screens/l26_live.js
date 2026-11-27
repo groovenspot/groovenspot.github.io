@@ -27,6 +27,7 @@
     hypeEntry: ['입장 QR 인증을 하면 하입을 보낼 수 있어요.', 'Verify your entry QR to send hype.', '入場QR認証をするとHYPEを送れます。', '完成入场二维码验证后即可打call。'],
     hypeStaff: ['직원 계정의 하입은 집계되지 않아요.', 'Hype from staff accounts isn’t counted.', 'スタッフアカウントのHYPEは集計されません。', '员工账号的打call不计入统计。'],
     hypeCap: ['잠깐! 1분에 {n}번까지 보낼 수 있어요.', 'Slow down! Up to {n} per minute.', 'ちょっと待って！1分に{n}回までです。', '慢一点！每分钟最多{n}次。'],
+    hypeNotNow: ['지금 플레이 중일 때 HYPE를 보낼 수 있어요.', 'You can send HYPE while this DJ is playing.', 'このDJがプレイ中のときにHYPEを送れます。', '该DJ演出时才能打call。'],
     hypeNight: ['오늘 밤 하입을 다 보냈어요. 고마워요!', 'You’ve used all of tonight’s hype. Thanks!', '今夜のHYPEは使い切りました。ありがとう！', '今晚的打call已用完，谢谢！'],
     vote: ['층 응원 투표', 'Floor vote', 'フロア応援投票', '楼层应援投票'],
     emptyVote: ['투표 대기', 'Awaiting votes', '投票待ち', '等待投票'],
@@ -415,7 +416,7 @@
 
   // 🔥 DJ 하입 (2026-11-28): 영업 중 층마다 🔥 버튼. 누른 만큼 바로 올리고 1.2초마다 모아서 보냄(서버가 1분 30번·하룻밤 600번까지만 셈)
   function mountHype(root, active) {
-    const boxes = Object.fromEntries(floors.map(([floor]) => [floor, root.querySelector('[data-live-hype="' + floor + '"]')]));
+    const boxes = Object.fromEntries(floors.map(([floor]) => [floor, root.querySelector('[data-live-hype="' + floor + '"]')]).filter(([, box]) => box));
     const pending = { '2F': 0, '3F': 0 };
     let data = null, poll, flushTimer, sending = false, note = { '2F': '', '3F': '' };
     const fmt = n => Number(n || 0).toLocaleString();
@@ -470,7 +471,7 @@
     }
     async function flush() {
       if (sending || !live()) return;
-      const floor = ['2F', '3F'].find(f => pending[f] > 0);
+      const floor = Object.keys(boxes).find(f => pending[f] > 0);
       if (!floor) return;
       const n = Math.min(pending[floor], data?.limit?.minute || 30);
       sending = true;
@@ -502,6 +503,10 @@
     poll = setInterval(load, 7000);
     root.addEventListener('l26:leave', () => clearInterval(poll), { once: true });
   }
+
+  // DJ 프로필에서도 같은 HYPE 버튼 (2026-11-28): root 안의 [data-live-hype="층"] 칸에 붙임
+  L.mountHype = root => { if (!L.open('l26_floor')) return false; loadStyles(); mountHype(root, () => root.isConnected); return true; };
+  L.hypeNotNow = () => t('hypeNotNow');
 
   L.screen('l26_live', {
     title: 'nav.l26_live',

@@ -75,7 +75,10 @@
       (L.open('l26_follow_counts') ? '<p class="l26-follow-count" data-dj-follower-count aria-live="polite" hidden></p>' : '') +
       '<div class="shell-actions">' + U.button('', 'data-dj-follow', true) +
       (ig ? '<a class="btn" href="' + L.esc(ig) + '" target="_blank" rel="noopener noreferrer">' + t('instagram') + '</a>' : '') +
-      '</div></section><section class="shell-card"><h2>' + t('today') + '</h2>' +
+      '</div>' + (L.mountHype && L.open('l26_floor') ? (dj.now?.floor === '2F' || dj.now?.floor === '3F'
+        ? '<div class="l26-hype" data-live-hype="' + L.esc(dj.now.floor) + '" hidden></div>'
+        : '<p class="muted" data-dj-hype-off>🔥 ' + L.esc(L.hypeNotNow()) + '</p>') : '') +
+      '</section><section class="shell-card"><h2>' + t('today') + '</h2>' +
       (dj.day ? '<p class="muted">' + L.esc(dj.day) + '</p>' : '') +
       (dj.now ? '<p>' + t('now') + ' · ' + slotText(dj.now) + '</p>' : '') +
       (slots.length ? '<ul>' + slots.map(slot => '<li>' + slotText(slot) + '</li>').join('') + '</ul>' : U.status('empty')) +
@@ -83,6 +86,7 @@
       '<section class="shell-card"><h2>' + t('videos') + '</h2><div data-dj-videos>' + U.status('loading', true) +
       '</div></section></div>';
 
+    if (view.querySelector('[data-live-hype]')) L.mountHype(view);   // 🔥 지금 플레이 중인 DJ 프로필에서도 HYPE
     let following = Boolean(dj.following);
     const button = view.querySelector('[data-dj-follow]');
     const count = view.querySelector('[data-dj-follower-count]');
