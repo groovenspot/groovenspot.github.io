@@ -29,6 +29,8 @@
     cupVoters: ['{n}명 참여', '{n} players'], cupMine: ['내 우승 · {name}', 'My winner · {name}'],
     cupTheme: ['이번 주 주제전', 'Theme of the week'], theme2f: ['2F 힙합전', '2F Hip-hop Cup'],
     theme3f: ['3F EDM전', '3F EDM Cup'], themenew: ['이번 주 신곡전', 'New This Week Cup'],
+    cupPractice: ['입장 인증 전에는 포인트 없이 연습할 수 있어요', 'Practice without points until entry is verified'],
+    cupPracticeDone: ['연습을 마쳤어요', 'Practice complete'],
     cupFirst: ['오늘 첫 판을 끝내면 포인트를 받아요', 'Finish your first cup today to earn points'],
     cupFree: ['오늘 포인트는 받았어요 · 계속 즐겨요', 'Today’s points are in · keep playing'],
     cupSaving: ['결과 저장 중', 'Saving your result'], cupRetry: ['다시 저장', 'Save again'],
@@ -40,6 +42,7 @@
       'vote.cupSame': '同じ優勝を選んだお客さん {pct}%', 'vote.cupVoters': '{n}人が参加',
       'vote.cupMine': '自分の優勝 · {name}', 'vote.cupTheme': '今週のテーマ戦', 'vote.theme2f': '2F ヒップホップ戦',
       'vote.theme3f': '3F EDM戦', 'vote.themenew': '今週の新曲戦',
+      'vote.cupPractice': '入場認証前はポイントなしで練習できます', 'vote.cupPracticeDone': '練習が終わりました',
       'vote.cupFirst': '今日最初の対決を終えるとポイントがもらえます', 'vote.cupFree': '今日のポイントは獲得済み · 何度でも遊べます',
       'vote.cupSaving': '結果を保存中', 'vote.cupRetry': 'もう一度保存', 'vote.cupPoints': '+{n}P'
     },
@@ -48,6 +51,7 @@
       'vote.cupSame': '{pct}% 的客人选了同一个冠军', 'vote.cupVoters': '{n} 人参与',
       'vote.cupMine': '我的冠军 · {name}', 'vote.cupTheme': '本周主题赛', 'vote.theme2f': '2F 嘻哈赛',
       'vote.theme3f': '3F EDM 赛', 'vote.themenew': '本周新曲赛',
+      'vote.cupPractice': '入场验证前可进行无积分练习', 'vote.cupPracticeDone': '练习已完成',
       'vote.cupFirst': '完成今天第一场对决即可获得积分', 'vote.cupFree': '今天的积分已领取 · 可以继续玩',
       'vote.cupSaving': '正在保存结果', 'vote.cupRetry': '重新保存', 'vote.cupPoints': '+{n}P'
     }
@@ -260,7 +264,7 @@
             return U.error(response);
           }
           view.querySelector('[data-result]').innerHTML = Number(response.gained) > 0
-            ? t('earned', { n: Number(response.gained) }) : U.t('saved');
+            ? t('earned', { n: Number(response.gained) }) : response.practice ? t('cupPracticeDone') : U.t('saved');
         };
         return;
       }
@@ -303,7 +307,7 @@
   function cupList(view, data, start) {
     const entries = (data?.cups || []).filter(cup => Array.isArray(cup.items) && cup.items.length === 16)
       .sort((a, b) => Number(Boolean(b.theme)) - Number(Boolean(a.theme)));
-    const hint = L.me && entries.length ? '<p class="muted" data-cup-hint>' + t(data.played ? 'cupFree' : 'cupFirst') + '</p>' : '';
+    const hint = L.me && entries.length ? '<p class="muted" data-cup-hint>' + t(L.me.access?.locked ? 'cupPractice' : data.played ? 'cupFree' : 'cupFirst') + '</p>' : '';
     view.innerHTML = hint + (entries.map((cup, i) => {
       const color = THEME_COLOR[cup.theme];
       const mine = Number.isInteger(cup.myWinner) && cup.items[cup.myWinner];
@@ -351,7 +355,7 @@
       outcome.innerHTML = (same ? '<p role="status" data-cup-same style="margin:0 0 8px;font-weight:800">' +
         t('cupSame', { pct }) + '</p><div aria-hidden="true" style="height:8px;border-radius:999px;background:var(--line-2);' +
         'overflow:hidden"><div style="height:100%;width:' + pct + '%;background:' + color + '"></div></div>'
-        : '<p role="status">' + U.t('saved') + '</p>') +
+        : '<p role="status">' + (response.practice ? t('cupPracticeDone') : U.t('saved')) + '</p>') +
         (gained > 0 ? '<p data-cup-points style="margin:10px 0 0;font-weight:800;color:var(--g)">' +
           t('cupPoints', { n: gained }) + '</p>' : '');
     }

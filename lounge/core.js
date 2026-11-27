@@ -10,6 +10,7 @@
   var legacyRoutes = {
     l26_home: 'tonight', l26_live: 'tonight', l26_lounge: 'feed', l26_my: 'me', l26_play: 'play'
   };
+  var lockedScreens = new Set(['l26_access', 'login', 'reset', 'terms', 'privacy', 'djs', 'dj', 'cup']);
   var followerScreens = ['l26_my', 'l26_lounge', 'dj', 'user', 'followers', 'following'];
   var shellTabs = { tonight: 'l26_live', l26_lounge: 'feed', rooms: 'feed', me: 'l26_my' };
   // 오픈채팅이 켜진 회원에게만 탭 이름이 '오픈채팅'. 지난번 값을 기억해 첫 화면부터 맞는 이름을 그린다.
@@ -349,6 +350,11 @@
         try { params.id = decodeURIComponent(rest.join('/')); } catch (e) { params.id = rest.join('/'); }
       }
       if (name === 'u') name = 'user';
+      if (L.me?.access?.locked && !lockedScreens.has(name) && path !== 'me/settings') {
+        history.replaceState(history.state, '', '#/l26_access');
+        return L.route(null, configReady);
+      }
+
       if (Object.hasOwn(legacyRoutes, name) && !L.open('l26_shell')) name = legacyRoutes[name];
       var def = screens[name];
       var view = document.getElementById('view');
@@ -370,7 +376,7 @@
       document.getElementById('app').classList.toggle('no-tabs', def?.tabs === false);  // 화면 정의에 tabs: false → 아래 탭 숨김 (글쓰기·스토리 뷰어처럼 화면을 넓게 쓰는 곳)
       var root = document.createElement('div');
       view.replaceChildren(root);
-      L.paintNav(name === 'l26_play' ? name : def?.nav || name);
+      L.paintNav(L.me?.access?.locked || name === 'l26_play' ? name : def?.nav || name);
       paintStatus();
       var titleKey = def?.title || 'nav.' + name;
       var title = L.t(titleKey);
@@ -449,6 +455,13 @@
       var items = shell
         ? [['l26_home', 'nav.tonight', 5], ['l26_live', 'nav.l26_live', 6], ['feed', 'nav.feed', 1], [playTab, 'nav.l26_play', 2], ['l26_my', 'nav.l26_my', 4]]
         : [['tonight', 'nav.tonight'], ['feed', 'nav.feed'], ['play', 'nav.play'], ['rooms', ocNav ? 'nav.openchat' : 'nav.rooms'], ['me', 'nav.me']];
+      app.classList.toggle('l26-account-locked', !!L.me?.access?.locked);
+      if (L.me?.access?.locked) {
+        items = [['djs', 'l26Access.djs', 6], ['cup', 'nav.l26_play', 2], ['l26_access', 'nav.me', 4]];
+        if (on === 'dj') on = 'djs';
+        if (on === 'me') on = 'l26_access';
+        document.querySelector('.shell-brand').href = '#/l26_access';
+      }
       var photo = L.me?.photo ? (L.photoSrc ? L.photoSrc(L.me.photo) : L.img(L.me.photo)) : '';
       document.getElementById('tabbar').innerHTML = items.map(function (x, i) {
         var icon = (x[0] === 'me' || x[0] === 'l26_my') && photo
@@ -740,7 +753,7 @@
 
   async function refreshBadges(version, config) {
     var token = session;
-    if (!L.me || !token) { paintBadges(); return; }
+    if (!L.me || !token || L.me.access?.locked) { paintBadges(); return; }
     await config;
     if (token !== session || version !== routeVersion) return;
     var [alerts, dm] = await Promise.all([
@@ -762,10 +775,10 @@
       'core.alerts': 'Notifications', 'core.dm': 'Messages', 'core.unread': '{label}, {count} unread' }
   });
   L.i18n({
-    ko: { 'nav.l26_home': 'HOME', 'nav.l26_live': 'LIVE', 'nav.l26_lounge': '라운지', 'nav.l26_my': 'MY', 'nav.l26_play': '놀거리' },
-    en: { 'nav.l26_home': 'HOME', 'nav.l26_live': 'LIVE', 'nav.l26_lounge': 'Lounge', 'nav.l26_my': 'MY', 'nav.l26_play': 'Play' },
-    ja: { 'nav.l26_home': 'ホーム', 'nav.l26_live': 'ライブ', 'nav.l26_lounge': 'ラウンジ', 'nav.l26_my': 'マイページ', 'nav.l26_play': '遊び' },
-    zh: { 'nav.l26_home': '首页', 'nav.l26_live': '现场', 'nav.l26_lounge': '休息室', 'nav.l26_my': '我的', 'nav.l26_play': '娱乐' }
+    ko: { 'l26Access.djs': 'DJ', 'nav.l26_home': 'HOME', 'nav.l26_live': 'LIVE', 'nav.l26_lounge': '라운지', 'nav.l26_my': 'MY', 'nav.l26_play': '놀거리' },
+    en: { 'l26Access.djs': 'DJs', 'nav.l26_home': 'HOME', 'nav.l26_live': 'LIVE', 'nav.l26_lounge': 'Lounge', 'nav.l26_my': 'MY', 'nav.l26_play': 'Play' },
+    ja: { 'l26Access.djs': 'DJ', 'nav.l26_home': 'ホーム', 'nav.l26_live': 'ライブ', 'nav.l26_lounge': 'ラウンジ', 'nav.l26_my': 'マイページ', 'nav.l26_play': '遊び' },
+    zh: { 'l26Access.djs': 'DJ', 'nav.l26_home': '首页', 'nav.l26_live': '现场', 'nav.l26_lounge': '休息室', 'nav.l26_my': '我的', 'nav.l26_play': '娱乐' }
   });
 
   L.i18n({
