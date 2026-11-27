@@ -262,11 +262,11 @@ html[data-lounge-keyboard] #view .rooms-conversation { --rooms-tabs: 0px; }
 .rooms-chat [data-mine="true"] .oc-at { color: inherit; text-decoration: underline; }
 .rooms-chat [data-oc-called="true"] .rooms-bubble { border-color: var(--g); background: var(--tint-g); box-shadow: 0 0 0 1px var(--g); }
 
-/* DJ 로고 (흰색 투명 PNG) */
-.l26-dj-logo{display:block;width:auto;max-width:100%;height:44px;object-fit:contain;object-position:left center}
-.l26-dj-logo.is-sm{display:inline-block;height:22px;max-width:96px;vertical-align:middle}
-.l26-dj-logo.is-hero{height:96px;max-width:min(320px,100%);margin:4px 0 12px}
-.l26-dj-logo.is-art{width:100%;height:100%;max-width:none;object-fit:contain;object-position:center;padding:14%;box-sizing:border-box}
+/* DJ 로고 (흰색 투명 PNG) — 크기는 L.djMark 가 로고 모양별로 면적을 맞춰 넣음 */
+.l26-dj-logo{display:block;max-width:100%;object-fit:contain;object-position:left center}
+.l26-dj-logo.is-sm{display:inline-block;vertical-align:middle}
+.l26-dj-logo.is-hero{margin:4px 0 14px}
+.l26-home-card-art img.l26-dj-logo.is-art{place-self:center;max-width:82%;max-height:78%;object-fit:contain;object-position:center}
 .shell-row .btn .l26-dj-logo.is-sm{margin-right:8px}
 .ui-avatar.is-logo{background:#0c0c10}
-.ui-avatar.is-logo img{object-fit:contain;padding:12%;box-sizing:border-box}
+.ui-avatar.is-logo img{object-fit:contain;padding:10%;box-sizing:border-box}

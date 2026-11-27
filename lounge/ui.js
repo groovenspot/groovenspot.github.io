@@ -68,21 +68,35 @@
   };
 
   // DJ 로고: 이름(한글·영문·대소문자 무관) → /lounge/assets/dj-logos/<키>.png, 없으면 ''
-  var DJ_LOGOS = { road: 'road', '로드': 'road', mumu: 'mumu', '무무': 'mumu', mute: 'mute', '뮤트': 'mute',
-    bill: 'bill', '빌': 'bill', aeth: 'aeth', a_eth: 'aeth', 'a:eth': 'aeth', '에이스': 'aeth', n: 'n', '엔': 'n',
-    uzi: 'uzi', 'u-zi': 'uzi', 'u·zi': 'uzi', 'dju-zi': 'uzi', '우지': 'uzi', wook2: 'wook2', wook: 'wook2', '욱이': 'wook2',
-    ezzy: 'ezzy', '이지': 'ezzy', zet: 'zet', '제트': 'zet', kupa: 'kupa', '쿠파': 'kupa', dia: 'dia', '디아': 'dia' };
-  L.djLogo = function (name) {
+  // 이름(소문자, 공백·기호 뺀 것) → 로고 파일 키. 영문 키는 파일 이름과 같음
+  var DJ_LOGOS = {'2as': '2as', 'aeth': 'aeth', 'aurede': 'aurede', 'bill': 'bill', 'binu': 'binu', 'brixx': 'brixx', 'bucky': 'bucky', 'calebo': 'calebo', 'cantar': 'cantar', 'dia': 'dia', 'ezzy': 'ezzy', 'franken': 'franken', 'gg': 'gg', 'gio': 'gio', 'hendorphin': 'hendorphin', 'hermit': 'hermit', 'huno': 'huno', 'johny': 'johny', 'juntaro': 'juntaro', 'juya': 'juya', 'keyna': 'keyna', 'kupa': 'kupa', 'lily': 'lily', 'mad': 'mad', 'mumu': 'mumu', 'mute': 'mute', 'n': 'n', 'neo': 'neo', 'pad': 'pad', 'potaito': 'potaito', 'riya': 'riya', 'road': 'road', 'sendow': 'sendow', 'siz': 'siz', 'sunghoon': 'sunghoon', 'taro': 'taro', 'uzi': 'uzi', 'vandalrock': 'vandalrock', 'wook2': 'wook2', 'wooscar': 'wooscar', 'yuka': 'yuka', 'zet': 'zet', '로드': 'road', '무무': 'mumu', '뮤트': 'mute', '빌': 'bill', 'a_eth': 'aeth', '에이스': 'aeth', '에스': 'aeth', '엔': 'n', 'u-zi': 'uzi', 'dju-zi': 'uzi', 'djuzi': 'uzi', '우지': 'uzi', 'wook': 'wook2', '욱이': 'wook2', '이지': 'ezzy', '제트': 'zet', '쿠파': 'kupa', '디아': 'dia', '투에이에스': '2as', '허밋': 'hermit', '유카': 'yuka', '칼레보': 'calebo', '브릭스': 'brixx', 'johnyrighthere': 'johny', '조니': 'johny', '매드': 'mad', '지오': 'gio', '오레드': 'aurede', '오리드': 'aurede', '키나': 'keyna', '케이나': 'keyna', '비누': 'binu', '샌도우': 'sendow', '센도우': 'sendow', '버키': 'bucky', '칸타르': 'cantar', '칸타': 'cantar', '주야': 'juya', '프랑켄': 'franken', '반달락': 'vandalrock', '반달록': 'vandalrock', '우스카': 'wooscar', '준타로': 'juntaro', '릴리': 'lily', '패드': 'pad', '타로': 'taro', '리야': 'riya', '후노': 'huno', '포테이토': 'potaito', '헨돌핀': 'hendorphin', '헨도르핀': 'hendorphin', '네오': 'neo', '지지': 'gg', '성훈': 'sunghoon', '시즈': 'siz'};
+  // 로고 가로÷세로 (여백 잘라낸 파일 기준) — 모양이 달라도 눈에 보이는 크기가 같도록 면적을 맞춤
+  var DJ_LOGO_RATIO = {'2as': 3.0, 'aeth': 1.89, 'aurede': 4.0, 'bill': 1.28, 'binu': 2.25, 'brixx': 3.95, 'bucky': 2.64, 'calebo': 4.32, 'cantar': 4.17, 'dia': 1.68, 'ezzy': 1.8, 'franken': 1.5, 'gg': 2.88, 'gio': 1.51, 'hendorphin': 3.92, 'hermit': 2.8, 'huno': 4.44, 'johny': 2.37, 'juntaro': 1.59, 'juya': 2.05, 'keyna': 2.09, 'kupa': 2.91, 'lily': 2.01, 'mad': 3.68, 'mumu': 3.24, 'mute': 6.82, 'n': 0.83, 'neo': 1.44, 'pad': 2.46, 'potaito': 4.58, 'riya': 2.05, 'road': 4.35, 'sendow': 3.07, 'siz': 1.85, 'sunghoon': 4.29, 'taro': 2.41, 'uzi': 3.8, 'vandalrock': 3.39, 'wook2': 1.33, 'wooscar': 3.02, 'yuka': 1.79, 'zet': 2.89};
+  // 자리 크기 [가로, 세로, 채움 비율]
+  var DJ_LOGO_BOX = { '': [168, 64, 0.62], 'is-sm': [104, 30, 0.62], 'is-hero': [320, 128, 0.62], 'is-art': [150, 110, 0.5] };
+  function djLogoKey(name) {
     var key = String(name || '').trim().toLowerCase().replace(/^dj[\s.]*/, '').replace(/[\s]/g, '');
-    var hit = DJ_LOGOS[key] || DJ_LOGOS[key.replace(/[^a-z0-9가-힣]/g, '')];
+    return DJ_LOGOS[key] || DJ_LOGOS[key.replace(/[^a-z0-9가-힣]/g, '')] || '';
+  }
+  L.djLogo = function (name) {
+    var hit = djLogoKey(name);
     return hit ? '/lounge/assets/dj-logos/' + hit + '.png' : '';
+  };
+  L.djLogoSize = function (name, cls) {
+    var r = DJ_LOGO_RATIO[djLogoKey(name)] || 2, box = DJ_LOGO_BOX[cls || ''] || DJ_LOGO_BOX[''];
+    var area = box[0] * box[1] * box[2], w = Math.sqrt(area * r), h = w / r;
+    var k = Math.min(1, box[0] / w, box[1] / h);
+    return [Math.round(w * k), Math.round(h * k)];
   };
   // 로고가 있으면 <img class="l26-dj-logo">, 없으면 fallback(보통 이름 글자)
   //  · 이름 글자는 화면에서만 숨겨 둠(읽기 프로그램·검색용). label=false 면 숨긴 이름도 안 넣음
   L.djMark = function (name, fallback, cls, label) {
     var src = L.djLogo(name);
-    return src ? '<img class="l26-dj-logo' + (cls ? ' ' + cls : '') + '" src="' + src + '" alt="" loading="lazy" decoding="async">' +
-      (label === false ? '' : '<span class="sr-only">' + L.esc(name) + '</span>') : (fallback == null ? L.esc(name) : fallback);
+    if (!src) return fallback == null ? L.esc(name) : fallback;
+    var size = L.djLogoSize(name, cls);
+    return '<img class="l26-dj-logo' + (cls ? ' ' + cls : '') + '" src="' + src + '" alt="" width="' + size[0] +
+      '" height="' + size[1] + '" style="width:' + size[0] + 'px;height:' + size[1] + 'px" loading="lazy" decoding="async">' +
+      (label === false ? '' : '<span class="sr-only">' + L.esc(name) + '</span>');
   };
 
   L.l26Skeleton = function (label, compact = false, attrs = '') {

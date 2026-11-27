@@ -214,7 +214,7 @@
       const portrait = dj && Array.isArray(tonight?.timetable) && tonight.timetable.find(slot =>
         slot.floor === dj.floor && slot.dj === dj.dj && slot.photo)?.photo;
       const logo = dj && L.djLogo(dj.dj);
-      if (logo) putMarkup(card, '<img class="l26-dj-logo is-art" src="' + logo + '" alt="" decoding="async">');
+      if (logo) putMarkup(card, L.djMark(dj.dj, '', 'is-art', false));
       else if (portrait) putMarkup(card, picture(U.url(portrait)));
     }
     const official = state.root.querySelector('.l26-home-official');
