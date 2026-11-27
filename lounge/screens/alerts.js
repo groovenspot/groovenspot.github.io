@@ -8,7 +8,7 @@
       preview: '잠금 화면에 표시할 내용', sensitive: '메시지·신고·안심 알림 내용 숨기기',
       all: '모든 내용 숨기기', details: '내용 표시',
       hours: '서비스 알림은 오전 7시부터 낮 12시까지 쉬어요.',
-      serviceNight: '밤에도 서비스 알림 받기', promo: '광고 알림 설정', ad: '광고',
+      serviceNight: '쉬는 시간(오전 7시~낮 12시)에도 받기', promo: '광고 알림 설정', ad: '광고',
       install: '아이폰·아이패드(16.4 이상)는 Safari에서 공유 → 홈 화면에 추가를 누르세요. 홈 화면에서 라운지를 열고 폰 알림을 켜 주세요.',
       unsupported: '이 브라우저는 폰 알림을 지원하지 않아요.', denied: '브라우저 설정에서 알림을 허용해 주세요.',
       failed: '알림을 불러오거나 저장하지 못했어요. 다시 시도해 주세요.', retry: '다시 시도',
@@ -23,7 +23,7 @@
       preview: 'Lock screen previews', sensitive: 'Hide messages, reports and safety alerts',
       all: 'Hide all details', details: 'Show details',
       hours: 'Service notifications are quiet from 7 am to noon.',
-      serviceNight: 'Receive service notifications at night', promo: 'Promotional notification settings', ad: 'Ad',
+      serviceNight: 'Also receive during quiet hours (7 am–noon)', promo: 'Promotional notification settings', ad: 'Ad',
       install: 'On iPhone or iPad, use version 16.4 or later. In Safari, tap Share → Add to Home Screen. Open Lounge from your Home Screen and turn on push.',
       unsupported: 'This browser does not support push notifications.', denied: 'Allow notifications in your browser settings.',
       failed: 'Could not load or save notifications. Please try again.', retry: 'Try again',
@@ -32,12 +32,12 @@
       follow: 'New follower', follow_request: 'Follow request', follow_accept: 'Follow request accepted'
     },
     ja: {
-      serviceNight: '夜間もサービス通知を受け取る', promo: '広告通知の設定', ad: '広告',
+      serviceNight: '休止時間（午前7時〜正午）も受け取る', promo: '広告通知の設定', ad: '広告',
       preview: 'ロック画面の通知プレビュー', sensitive: 'メッセージ・通報・安全通知の内容を隠す',
       all: 'すべての内容を隠す', details: '内容を表示する'
     },
     zh: {
-      serviceNight: '夜间也接收服务通知', promo: '广告通知设置', ad: '广告',
+      serviceNight: '休息时段（上午7点至中午12点）也接收', promo: '广告通知设置', ad: '广告',
       preview: '锁屏通知预览', sensitive: '隐藏私信、举报和安全通知的内容',
       all: '隐藏所有内容', details: '显示通知详情'
     }

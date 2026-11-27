@@ -149,7 +149,7 @@
 
   function visitHistory(kind, title, dates, empty, next) {
     return '<div class="l26-my-visit-group" data-my-history="' + kind + '"><h3>' + text(title) + '</h3>' +
-      (dates.length ? '<ul class="l26-my-history">' + visitItems(dates) + '</ul>' : L.l26Empty(text(empty), 'layers', true)) +
+      (dates.length ? '<ul class="l26-my-history">' + visitItems(dates) + '</ul>' : L.l26Empty(text(empty), 'pin', true)) +
       (next ? button('more', 'data-my-more aria-label="' + text('more') + ' · ' + text(title) + '"') : '') + '</div>';
   }
 
@@ -255,7 +255,7 @@
         ? visitHistory('self', 'selfCheckins', result.legacy_checkins, 'noSelfCheckins', result.next_legacy_before) : '') + '</section>' +
       '<div class="l26-my-links">' + link('me', 'legacy') + (L.open('rewards') ? link('rewards', 'legacyRewards') : '') +
       link('djs', 'djs') + link('me/settings', 'settings') +
-      (L.open('l26_dj_feedback') ? '<a href="#/alerts/settings">' + L.esc(L.djReviewLabel('reminder')) + '</a>' : '') + '</div>';
+      (L.open('l26_dj_feedback') ? '<a class="btn" href="#/alerts/settings">' + L.esc(L.djReviewLabel('reminder')) + '</a>' : '') + '</div>';
 
     bindHistory(root, content, 'verified', result.next_before, 'before', 'entries', 'next_before');
     if (result.next_legacy_before) {

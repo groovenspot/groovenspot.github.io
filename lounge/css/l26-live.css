@@ -293,3 +293,26 @@ html[data-theme="light"] .l26-live {
 .l26-live-split span:last-child { background: var(--l26-live-3f); }
 .l26-live [data-live-sign-in] { justify-self: start; border: 1px solid color-mix(in srgb, var(--l26-live-muted) 25%, transparent); }
 .l26-live :is(button, a, summary):focus-visible { outline-color: var(--l26-live-brand); outline-offset: -3px; }
+
+/* 🔥 DJ 하입 (2026-11-28) */
+.l26-hype { display: grid; justify-items: center; gap: 6px; padding: 14px 12px 18px; text-align: center; min-width: 0; }
+.l26-hype > * { max-width: 100%; }
+.l26-hype-btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; max-width: 220px; min-height: 56px; padding: 0 12px; border: 0; border-radius: 999px;
+  background: linear-gradient(135deg, #FF7A1A, #FF2D55); color: #fff; font: inherit; font-size: 20px; font-weight: 800;
+  letter-spacing: .02em; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 6px 22px rgba(255, 74, 40, .38); overflow: visible;
+}
+.l26-live-card[data-l26-floor="3F"] .l26-hype-btn { background: linear-gradient(135deg, #9B5CFF, #FF2D95); box-shadow: 0 6px 22px rgba(155, 92, 255, .4); }
+.l26-hype-btn span { font-size: 24px; line-height: 1; }
+.l26-hype-btn:disabled { background: var(--l26-live-card, #17171C); color: var(--l26-live-ink, #A1A1AA); box-shadow: none; outline: 1px solid rgba(255,255,255,.14); cursor: default; }
+.l26-hype-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.l26-hype-btn.is-pop { animation: l26-hype-pop .18s ease-out; }
+.l26-hype-n { margin: 0; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.l26-hype-msg { margin: 0; font-size: 13px; }
+.l26-hype-link { font-size: 14px; font-weight: 700; }
+.l26-hype-fire { position: absolute; left: 50%; top: 0; font-size: 22px; pointer-events: none; animation: l26-hype-fly .9s ease-out forwards; }
+@keyframes l26-hype-pop { 50% { transform: scale(.93); } }
+@keyframes l26-hype-fly { from { opacity: 1; transform: translate(-50%, 0) scale(1); } to { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), -70px) scale(1.4); } }
+@media (prefers-reduced-motion: reduce) { .l26-hype-btn.is-pop, .l26-hype-fire { animation: none; } .l26-hype-fire { display: none; } }

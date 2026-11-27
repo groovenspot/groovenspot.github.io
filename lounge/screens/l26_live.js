@@ -20,6 +20,15 @@
     noSchedule: ['등록된 일정 없음', 'No schedule listed', '予定なし', '暂无演出安排'],
     showStale: ['마지막으로 받은 공연 정보예요.', 'Showing the last received show info.', '最後に取得した公演情報です。', '正在显示上次获取的演出信息。'],
     showError: ['공연 정보를 불러오지 못했어요.', 'Show info is unavailable.', '公演情報を取得できませんでした。', '无法获取演出信息。'],
+    hype: ['HYPE', 'HYPE', 'HYPE', 'HYPE'],
+    hypeAria: ['{floor} DJ에게 하입 보내기', 'Send hype to the {floor} DJ', '{floor}のDJにHYPEを送る', '为{floor} DJ打call'],
+    hypeCount: ['오늘 밤 🔥 {n}', 'Tonight 🔥 {n}', '今夜 🔥 {n}', '今晚 🔥 {n}'],
+    hypeSignIn: ['로그인하면 DJ에게 하입을 보낼 수 있어요.', 'Sign in to send hype to the DJ.', 'ログインするとDJにHYPEを送れます。', '登录后可为DJ打call。'],
+    hypeEntry: ['입장 QR 인증을 하면 하입을 보낼 수 있어요.', 'Verify your entry QR to send hype.', '入場QR認証をするとHYPEを送れます。', '完成入场二维码验证后即可打call。'],
+    hypeStaff: ['직원 계정의 하입은 집계되지 않아요.', 'Hype from staff accounts isn’t counted.', 'スタッフアカウントのHYPEは集計されません。', '员工账号的打call不计入统计。'],
+    hypeCap: ['잠깐! 1분에 {n}번까지 보낼 수 있어요.', 'Slow down! Up to {n} per minute.', 'ちょっと待って！1分に{n}回までです。', '慢一点！每分钟最多{n}次。'],
+    hypeNotNow: ['지금 플레이 중일 때 HYPE를 보낼 수 있어요.', 'You can send HYPE while this DJ is playing.', 'このDJがプレイ中のときにHYPEを送れます。', '该DJ演出时才能打call。'],
+    hypeNight: ['오늘 밤 하입을 다 보냈어요. 고마워요!', 'You’ve used all of tonight’s hype. Thanks!', '今夜のHYPEは使い切りました。ありがとう！', '今晚的打call已用完，谢谢！'],
     vote: ['층 응원 투표', 'Floor vote', 'フロア応援投票', '楼层应援投票'],
     emptyVote: ['투표 대기', 'Awaiting votes', '投票待ち', '等待投票'],
     hours: ['21:00–다음 날 07:00 (KST)', '21:00–07:00 next day (KST)', '21:00–翌07:00 (KST)', '21:00–次日07:00 (KST)'],
@@ -114,9 +123,8 @@
     const currentTime = previous && previous.dj === info.now ? previous.at : matching.length === 1 ? matching[0].at : '';
     const time = at => at ? '<time>' + L.esc(at) + '</time>' : '';
     const lineup = slots.length ? '<ul class="l26-live-lineup">' + slots.map(slot => {
-      const thumbnail = sessionThumbnail(slot, sessions);
-      return '<li>' + time(slot.at) + '<strong>' + L.djMark(slot.dj, null, 'is-sm') + '</strong>' +
-        (thumbnail ? '<img src="' + L.esc(thumbnail) + '" alt="" loading="lazy" width="44" height="30">' : '') + '</li>';
+      // 타임테이블은 DJ 로고만 (대표 요청 2026-11-28 — 유튜브 썸네일 뺌)
+      return '<li>' + time(slot.at) + '<strong>' + L.djMark(slot.dj, null, 'is-sm') + '</strong></li>';
     }).join('') + '</ul>' : L.l26Empty(t('noSchedule'), 'layers', true);
     if (state !== 'open') {
       return '<h3 class="l26-live-lineup-title">' + t('schedule') + '</h3>' + lineup;
@@ -136,7 +144,8 @@
       '</p><p data-live-hours hidden></p></div></header>' +
       '<div class="l26-live-grid">' + floors.map(([floor, genre]) =>
         '<article class="l26-live-card" data-l26-floor="' + floor + '"><div class="l26-live-cover"><h2><strong>' + floor +
-        '</strong><span>' + genre + '</span></h2></div><div data-live-dj="' + floor + '">' + L.l26Skeleton(t('loading'), true) + '</div></article>').join('') +
+        '</strong><span>' + genre + '</span></h2></div><div data-live-dj="' + floor + '">' + L.l26Skeleton(t('loading'), true) + '</div>' +
+        '<div class="l26-hype" data-live-hype="' + floor + '" hidden></div></article>').join('') +
       '</div><p class="muted" data-live-show-stale hidden>' + t('showStale') + '</p></section>' +
       '<section data-live-entry hidden></section><section data-live-dj-feedback hidden></section>' +
       '<section data-live-vote hidden aria-labelledby="l26-live-vote"><h2 id="l26-live-vote">' + t('vote') + '</h2>' +
@@ -399,10 +408,105 @@
     window.addEventListener('offline', offline);
     loadShow();
     if (!L.open('l26_floor')) return;
+    mountHype(root, active);
     vote.hidden = false;
     for (const { floor, button } of controls) button.onclick = () => cast(floor);
     refresh();
   }
+
+  // 🔥 DJ 하입 (2026-11-28): 영업 중 층마다 🔥 버튼. 누른 만큼 바로 올리고 1.2초마다 모아서 보냄(서버가 1분 30번·하룻밤 600번까지만 셈)
+  function mountHype(root, active) {
+    const boxes = Object.fromEntries(floors.map(([floor]) => [floor, root.querySelector('[data-live-hype="' + floor + '"]')]).filter(([, box]) => box));
+    const pending = { '2F': 0, '3F': 0 };
+    let data = null, poll, flushTimer, sending = false, note = { '2F': '', '3F': '' };
+    const fmt = n => Number(n || 0).toLocaleString();
+    const live = () => active() && document.contains(root);
+    function paint() {
+      const status = data?.hype_status;
+      for (const [floor, box] of Object.entries(boxes)) {
+        if (!data || !data.ok || status === 'closed') { box.hidden = true; continue; }
+        const total = (data.counts?.[floor] || 0) + pending[floor];
+        const can = status === 'ready';
+        const msg = note[floor] || (status === 'sign_in' ? t('hypeSignIn') : status === 'entry_required' ? t('hypeEntry') :
+          status === 'staff' ? t('hypeStaff') : '');
+        const key = [status, total, msg].join('|');
+        if (box.dataset.key === key) continue;
+        box.dataset.key = key;
+        const button = box.querySelector('button');
+        if (button && box.dataset.can === String(can)) {
+          box.querySelector('[data-hype-n]').textContent = t('hypeCount', { n: fmt(total) });
+          box.querySelector('[data-hype-msg]').textContent = msg;
+          box.querySelector('[data-hype-msg]').hidden = !msg;
+        } else {
+          box.dataset.can = String(can);
+          box.innerHTML = '<button type="button" class="l26-hype-btn" data-hype="' + floor + '"' + (can ? '' : ' disabled') +
+            ' aria-label="' + L.esc(t('hypeAria', { floor })) + '"><span aria-hidden="true">🔥</span><b>' + t('hype') + '</b></button>' +
+            '<p class="l26-hype-n" data-hype-n aria-live="polite">' + L.esc(t('hypeCount', { n: fmt(total) })) + '</p>' +
+            '<p class="muted l26-hype-msg" data-hype-msg' + (msg ? '' : ' hidden') + '>' + L.esc(msg) + '</p>' +
+            (status === 'sign_in' ? '<a class="l26-hype-link" href="#/login">' + L.esc(L.t('core.login')) + '</a>' : '');
+          const b = box.querySelector('button');
+          if (can) b.onclick = event => tap(floor, b, event);
+        }
+        box.hidden = false;
+      }
+    }
+    function burst(button) {
+      const fire = document.createElement('span');
+      fire.className = 'l26-hype-fire';
+      fire.textContent = '🔥';
+      fire.style.setProperty('--dx', (Math.random() * 60 - 30).toFixed(0) + 'px');
+      button.append(fire);
+      setTimeout(() => fire.remove(), 900);
+      button.classList.remove('is-pop'); void button.offsetWidth; button.classList.add('is-pop');
+    }
+    function tap(floor, button) {
+      if (data?.hype_status !== 'ready') return;
+      pending[floor]++;
+      note[floor] = '';
+      try { navigator.vibrate?.(8); } catch (e) {}
+      burst(button);
+      paint();
+      clearTimeout(flushTimer);
+      flushTimer = setTimeout(flush, 1200);
+    }
+    async function flush() {
+      if (sending || !live()) return;
+      const floor = Object.keys(boxes).find(f => pending[f] > 0);
+      if (!floor) return;
+      const n = Math.min(pending[floor], data?.limit?.minute || 30);
+      sending = true;
+      const result = await request('l26_hype_tap', { floor, n });
+      sending = false;
+      pending[floor] -= n;
+      if (result?.ok) {
+        data = result;
+        if (result.capped) {
+          pending[floor] = 0;
+          note[floor] = (result.mine?.[floor] || 0) + (result.mine?.[floor === '2F' ? '3F' : '2F'] || 0) >= (result.limit?.night || 600)
+            ? t('hypeNight') : t('hypeCap', { n: result.limit?.minute || 30 });
+        }
+      } else if (result?.error && result.error !== 'network') {
+        pending[floor] = 0;
+        load();
+      }
+      paint();
+      if (pending['2F'] || pending['3F']) flushTimer = setTimeout(flush, 1200);
+    }
+    async function load() {
+      if (!live()) { clearInterval(poll); return; }
+      if (document.hidden || sending) return;
+      const result = await request('l26_hype');
+      if (result?.ok) { data = result; paint(); }
+      else if (result?.error === 'closed') { data = null; paint(); }
+    }
+    load();
+    poll = setInterval(load, 7000);
+    root.addEventListener('l26:leave', () => clearInterval(poll), { once: true });
+  }
+
+  // DJ 프로필에서도 같은 HYPE 버튼 (2026-11-28): root 안의 [data-live-hype="층"] 칸에 붙임
+  L.mountHype = root => { if (!L.open('l26_floor')) return false; loadStyles(); mountHype(root, () => root.isConnected); return true; };
+  L.hypeNotNow = () => t('hypeNotNow');
 
   L.screen('l26_live', {
     title: 'nav.l26_live',
