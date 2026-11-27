@@ -6,7 +6,8 @@
     dj: ['현재 DJ', 'Current DJ', '出演中のDJ', '当前 DJ'],
     next: ['다음 DJ', 'Up next', '次のDJ', '下一位 DJ'],
     open: ['영업 중', 'Open now', '営業中', '营业中'],
-    notOpen: ['영업시간 외', 'Venue closed', '営業時間外', '非营业时间'],
+    pre: ['오픈 전 · {time} 오픈', 'Before opening · Opens at {time}', '開店前 · {time} 開店', '营业前 · {time} 开门'],
+    after: ['영업 종료', 'Closed for the night', '営業終了', '营业结束'],
     showUnknown: ['영업 상태 확인 불가', 'Venue status unavailable', '営業状況を確認できません', '营业状态暂不可用'],
     venueHours: ['영업시간', 'Venue hours', '営業時間', '营业时间'],
     visit: ['공연·방문 정보', 'Show & visit info', '公演・来店情報', '演出与到访信息'],
@@ -43,6 +44,9 @@
   const clockLabel = at => new Intl.DateTimeFormat(L.lang, {
     timeZone, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
   }).format(at);
+  const kstTime = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  const minuteOfDay = time => Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
+  const hasTimestamp = at => Number.isSafeInteger(at) && at > 0 && at <= 8.64e15;
   const countLabel = value => new Intl.NumberFormat(L.lang).format(value);
   const shareLabel = value => new Intl.NumberFormat(L.lang, { style: 'percent', maximumFractionDigits: 1 }).format(value);
   const loginLink = () => '#/login?next=' + encodeURIComponent('#/l26_live');
@@ -82,15 +86,39 @@
     }
   }
 
-  function floorSchedule(floor, data) {
+  function venueState(data, now) {
+    if (data.error || data.stale || typeof data.open !== 'boolean') return { state: 'unknown' };
+    const [scheduledOpen, scheduledClose] = typeof data.hours === 'string' ?
+      data.hours.match(/(?:[01]\d|2[0-3]):[0-5]\d/g) || [] : [];
+    const opensAt = hasTimestamp(data.opensAt) ? data.opensAt : null;
+    const closesAt = hasTimestamp(data.closesAt) ? data.closesAt : null;
+    const openingTime = opensAt ? kstTime.format(opensAt) : scheduledOpen || '21:00';
+    const start = minuteOfDay(openingTime);
+    const end = minuteOfDay(closesAt ? kstTime.format(closesAt) : scheduledClose || '07:00');
+    const minute = minuteOfDay(kstTime.format(now));
+    const overnight = end <= start;
+    const inHours = overnight ? minute >= start || minute < end : minute >= start && minute < end;
+    const afterHours = !inHours && minute >= end && (!overnight || minute < 12 * 60);
+
+    if (data.phase === 'after' || afterHours) return { state: 'after' };
+    if (inHours && data.phase !== 'pre' && data.open && (!opensAt || now >= opensAt) && (!closesAt || now < closesAt)) {
+      return { state: 'open' };
+    }
+    if (inHours && data.phase !== 'pre' && ((overnight && minute < end) || (closesAt && now >= closesAt))) {
+      return { state: 'after' };
+    }
+    return { state: 'pre', openingTime };
+  }
+
+  function floorSchedule(floor, data, state) {
     const info = data.floors?.[floor] || {};
     const slots = (data.timetable || []).filter(slot => slot.floor === floor);
     const nextIndex = slots.findIndex(slot => slot.at === info.nextAt && slot.dj === info.next);
     const previous = slots[nextIndex - 1];
     const matching = slots.filter(slot => slot.dj === info.now);
     const currentTime = previous && previous.dj === info.now ? previous.at : matching.length === 1 ? matching[0].at : '';
-    const live = data.open === true && !data.stale;
-    const next = info.next ? { dj: info.next, at: info.nextAt } : data.open === false ? slots[0] : null;
+    const live = state === 'open';
+    const next = info.next ? { dj: info.next, at: info.nextAt } : state === 'pre' ? slots[0] : null;
     const time = at => at ? '<time>' + L.esc(at) + '</time>' : '';
     return '<dl class="l26-live-slots">' + (live ? '<div data-live-current><dt>' + t('dj') + '</dt><dd><strong class="l26-live-dj">' +
       L.esc(info.now || t('noDj')) + '</strong>' + time(info.now && currentTime) + '</dd></div>' : '') +
@@ -141,7 +169,7 @@
       share: vote.querySelector('[data-l26-floor="' + floor + '"] [data-live-share]')
     }));
     let timer, round, failures = 0, revision = 0, stopped = false, sending = false, hint, readPending = false;
-    let showPending = false, showKey, entry, refreshQueued = false;
+    let showPending = false, showKey, showTimer, entry, refreshQueued = false;
     const active = () => !stopped && root.isConnected;
     const expiryDelay = () => round?.closes_at - round?.updated_at - (performance.now() - round?.receivedAt);
     const currentRetry = () => retryVote?.day === round?.biz_day && retryVote?.member === L.me?.id ? retryVote : null;
@@ -280,12 +308,12 @@
         root.querySelectorAll('.l26-live-slots [data-live-current]').forEach(item => { item.hidden = true; });
         return;
       }
-      const state = data.stale ? 'unknown' : data.open === true ? 'open' : data.open === false ? 'notOpen' : 'unknown';
+      const { state, openingTime } = venueState(data, Date.now());
       venue.dataset.liveVenue = state;
-      venue.textContent = t(state === 'unknown' ? 'showUnknown' : state);
+      venue.textContent = t(state === 'unknown' ? 'showUnknown' : state, { time: openingTime });
       hours.hidden = typeof data.hours !== 'string' || !data.hours;
       hours.textContent = hours.hidden ? '' : t('venueHours') + ' ' + data.hours + ' KST';
-      const markup = floors.map(([floor]) => data.error ? '<p class="muted">' + t('showError') + '</p>' : floorSchedule(floor, data));
+      const markup = floors.map(([floor]) => data.error ? '<p class="muted">' + t('showError') + '</p>' : floorSchedule(floor, data, state));
       const key = markup.join('');
       if (showKey === key) {
         root.querySelectorAll('[data-live-current][hidden]').forEach(item => { item.hidden = false; });
@@ -323,14 +351,17 @@
         });
       }
     }
+    function scheduleShow() {
+      showTimer = setTimeout(() => { loadShow(); scheduleShow(); }, 60_000 - Date.now() % 60_000);
+    }
     mountEntry();
-    const showTimer = setInterval(loadShow, 60_000);
+    scheduleShow();
     controller = {
       refresh() { loadShow(); refresh(); if (entry) entry.refresh(); else mountEntry(); },
       leave() {
         stopped = true;
         clearTimeout(timer);
-        clearInterval(showTimer);
+        clearTimeout(showTimer);
         entry?.destroy();
         djFeedback.destroy();
         document.removeEventListener('visibilitychange', visible);
