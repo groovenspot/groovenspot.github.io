@@ -55,3 +55,10 @@
 .public-actions .btn { flex: 1 1 auto; }
 .public-actions .btn-hot { background: var(--l26-brand); border-color: var(--l26-brand); }
 .l26-public [data-program-retry] { margin-top: 8px; }
+.public-legal { display: grid; gap: 6px; margin-block-start: 8px; padding-block: 16px 8px; border-top: 1px solid var(--line-2); font-size: .85rem; color: var(--muted, inherit); overflow-wrap: anywhere; }
+.public-legal nav { display: flex; flex-wrap: wrap; gap: 0 16px; }
+.public-legal a { display: inline-flex; align-items: center; min-height: 44px; color: inherit; }
+.public-legal nav a:first-child { color: var(--l26-brand); }
+.public-legal p { margin: 0; }
+.public-legal p a { min-height: 0; text-decoration: underline; }
+[data-theme="light"] .public-legal nav a:first-child { color: #c2185b; }

@@ -15,7 +15,7 @@
   .policy-header { position: sticky; z-index: 1; top: 0; padding-block: 12px; flex-wrap: wrap; background: var(--bg); }
   @media (min-width: 550px) { html { scroll-padding-block-start: 78px; } }
   .policy-header nav, .policy-toc { display: flex; flex-wrap: wrap; gap: 6px 16px; }
-  .policy-header a, .policy-toc a, .policy-contact a { display: inline-flex; align-items: center; min-height: 44px; }
+  .policy-header a, .policy-toc a, .policy-contact a, .policy-section a[href^="mailto:"], .policy-section a[href^="tel:"] { display: inline-flex; align-items: center; min-height: 44px; }
   .policy-header [aria-current] { color: var(--txt); text-decoration: none; font-weight: 800; }
   .policy-main { padding-block: 24px 48px; }
   .policy-main article { display: grid; gap: 16px; margin-block-end: 40px; overflow-wrap: anywhere; }
@@ -52,20 +52,19 @@
 <article id="ko" lang="ko" aria-labelledby="ko-title">
 <header class="policy-intro">
 <h1 id="ko-title">라운지 이용약관과 개인정보처리방침</h1>
-<p data-l26-signup-notice>셀프 가입 추가 고지 · 2026년 11월 28일 · 셀프 가입 공개 시 적용.</p>
 <p>공지일 · <span data-policy-announcement>2026년 11월 20일</span></p>
 <p>추가 공지 · 2026년 11월 21일 — 오픈채팅 탭의 입장 동의와 대화 보관 기간(90일)을 4번 표에 더했어요.</p>
 <p>운영자 · 더스팟앤그루브 (CLUB GROOVE N SPOT)</p>
 <p>시행일 · <span data-policy-decision="effectiveDate">2026년 11월 28일</span></p>
+<p>개정 이력 · 2026년 11월 28일 — 카카오 로그인 항목, 처리 근거, 국외 이전, 파기, 안전성 확보조치, 쿠키·기기 저장, 보호책임자, 권익침해 구제, 변경 고지와 약관(서비스 변경·책임 제한·게시물 권리·임시조치·준거법) 내용을 더했어요. 이전 버전은 12번에서 확인할 수 있어요.</p>
 </header>
 <nav class="policy-toc" aria-label="라운지 이용약관과 개인정보처리방침">
 <a href="#ko-terms">이용약관</a>
 <a href="#ko-rules">커뮤니티 규칙</a>
-<a href="#ko-privacy">개인정보처리방침</a>
+<a href="#ko-privacy"><strong>개인정보처리방침</strong></a>
 </nav>
 <section class="shell-card policy-section" aria-labelledby="ko-terms">
 <h2 id="ko-terms">1. 이용약관</h2>
-<p data-l26-signup-notice>셀프 가입은 만 19세 이상이 이용할 수 있어요. SMS 인증은 휴대폰 소유를 확인하며, 생년월일 입력과 성인 확인 체크는 자기신고예요. 프로필은 처음에 비공개예요. 경호팀이 현장에서 실제 신분증으로 본인과 나이를 확인하고 입장을 인증할 때까지는 DJ·공식 계정 팔로우와 보상 없는 일부 놀거리만 사용할 수 있어요. 글, 댓글, DM, 채팅, 포인트, 혜택, 층 투표와 DJ 리뷰는 잠겨 있어요. 투표와 리뷰에는 별도의 참여 자격도 적용돼요.</p>
 <p>카카오 신규 가입은 한국 시간 기준 현재 연도에서 출생연도를 뺀 값이 19 이상이고 이용약관과 개인정보처리방침에 동의한 경우에 할 수 있어요. 출생연도가 제공되지 않으면 가입이 보류됩니다. 카카오 로그인은 카카오 계정에 접근할 수 있음을 확인합니다. 경호팀이 실물 신분증으로 본인과 나이를 확인하고 입장을 인증할 때까지 커뮤니티와 보상 기능이 잠겨요. 양력 생일 당일 이렇게 입장이 확인되면 생일 칭호를 연 1회 받을 수 있어요.</p>
 <ol>
 <li><strong>가입과 계정.</strong> 그루브 라운지는 더스팟앤그루브가 운영하는 만 19세 이상 전용 서비스예요. 손님은 매장에서 직원이 제공하는 가입 QR로 가입하고, 나이 요건을 확인한 뒤 이용약관과 커뮤니티 규칙 및 필수 개인정보 안내를 확인해 주세요. 닉네임은 다른 손님에게 보입니다. 계정과 비밀번호는 본인만 사용하고, 계정을 다른 사람에게 빌려주거나 다른 사람의 계정·번호·QR을 허락 없이 사용하지 마세요. 로그인 문제가 있으면 매장 직원에게 문의해 주세요.</li>
@@ -75,6 +74,11 @@
 <li><strong>담당 MD, 테이블과 조각 모집.</strong> 테이블 문의는 예약 확정을 의미하지 않습니다. 문의는 담당 MD 또는 예약 담당 직원이 확인해요. 조각 모집은 다른 손님과 함께 테이블을 이용하려는 신청이며, 담당 직원이 확인한 뒤 확정됩니다. 조각의 결제·정산은 매장에서 담당 MD와 진행해 주세요. 손님끼리 송금을 요청하거나 결제 정보를 주고받지 마세요. 담당 MD의 파티·혜택 광고는 별도 광고 안내에 동의한 경우에만 보내요.</li>
 <li><strong>신고, 이용 제한과 이의 제기.</strong> 신고가 들어오면 게시물이나 사진이 임시로 가려질 수 있습니다. 직원이 신고와 관련 자료를 검토해 다시 보이게 하거나 삭제하고, 필요한 경우 경고·이용 정지·계정 이용 제한을 적용합니다. 사유 안내나 재검토를 원하면 신고 또는 제한의 대상과 시점을 적어 연락해 주세요. 긴급한 안전 문제가 있으면 즉시 매장 직원 또는 경호팀에 알리고, 긴급 신고가 필요한 경우 현지 긴급 신고 서비스를 이용하세요.</li>
 <li><strong>변경과 탈퇴.</strong> 내 설정에서 계정 삭제를 요청할 수 있습니다. 라운지 계정 삭제와 스태프 시스템에 접수된 예약·주문·킵의 확인은 각각 처리되므로 진행 중인 요청은 매장에 문의해 주세요. 중요한 약관 변경은 적용 전에 라운지에 알리고, 필요한 경우 별도로 동의를 받습니다. <span data-policy-decision="noticeAndAppeal">일반 변경은 시행 7일 전, 이용자에게 불리하거나 중요한 변경은 30일 전에 라운지에서 공지합니다. 이용 제한에 이의를 제기하면 담당자와 답변 목표 시점을 접수할 때 알려 드립니다.</span></li>
+<li><strong>서비스 변경과 중단.</strong> 운영이나 기술상 필요하면 기능을 바꾸거나 중단할 수 있어요. 미리 알릴 수 있으면 라운지에 먼저 공지하고, 장애·긴급 점검처럼 미리 알릴 수 없으면 바로 뒤에 알려요. 서비스를 끝내게 되면 남은 포인트와 진행 중인 주문의 처리 방법을 미리 안내해요.</li>
+<li><strong>책임의 제한.</strong> 천재지변, 통신·제공업체 장애, 이용자 본인의 잘못, 다른 이용자가 올린 게시물이나 손님끼리의 거래처럼 운영자가 통제할 수 없는 일로 생긴 손해는 책임지지 않아요. 다만 운영자의 고의 또는 중대한 과실로 생긴 손해와 법률상 책임을 제한할 수 없는 경우는 예외예요.</li>
+<li><strong>게시물의 권리.</strong> 이용자가 올린 글·사진의 저작권은 작성자에게 있어요. 작성자는 라운지에서 게시물을 보여 주는 데 필요한 범위(게시·표시, 크기 조정·압축, 자동 번역, 신고 검토)에서 운영자가 무상으로 이용하도록 허락해요. 라운지 밖 홍보에 쓰려면 건별로 따로 동의를 받아요. 게시물을 지우면 이 허락도 끝나요(신고 보관 기록은 4번 표 기준).</li>
+<li><strong>권리침해 신고와 임시조치.</strong> 게시물 때문에 사생활 침해나 명예훼손 같은 권리 침해를 당했다면 신고 메뉴, 전화 <a href="tel:050713015970">0507-1301-5970</a> 또는 매장으로 침해 내용과 게시물을 알려 삭제나 반박 내용 게재를 요청할 수 있어요. 요청을 받으면 지체 없이 삭제·임시조치 등 필요한 조치를 하고 요청한 사람과 게시한 사람에게 알려요. 침해 여부를 판단하기 어렵거나 다툼이 예상되면 최대 30일 동안 게시물을 가릴 수 있어요(정보통신망법 제44조의2 임시조치). 게시한 사람은 그동안 다시 게시해 달라고 이의를 제기할 수 있어요.</li>
+<li><strong>준거법과 관할.</strong> 이 약관은 대한민국 법을 따릅니다. 분쟁으로 소송이 필요하면 민사소송법에 따른 관할 법원에 제기해요.</li>
 </ol>
 </section>
 <section class="shell-card policy-section" aria-labelledby="ko-rules">
@@ -88,10 +92,12 @@
 </ul>
 </section>
 <section class="shell-card policy-section" aria-labelledby="ko-privacy">
-<h2 id="ko-privacy">3. 개인정보의 수집·이용 및 공개 범위</h2>
-<p data-l26-signup-notice>가입 시 휴대폰 번호, 닉네임, 비밀번호, 생년월일과 동의 여부가 필요해요. 생년월일은 성인 여부를 계산하는 데만 사용하며 신분증 사본·번호는 수집하지 않아요. 계정에는 번호 해시·뒤 4자리, 비밀번호 해시, 자기신고와 휴대폰·나이·입장 인증 상태, 약관 버전과 동의 시각, 선택 동의 및 초대 출처를 계정 운영과 중복 가입 방지에 사용해요. 일회용 코드는 해시로 5분간 유효하고, 번호·접속 주소 해시의 발송 제한 기록은 24시간 이후 정리 작업에서 삭제해요. 문자 발송을 위해 번호와 코드를 SMS 수탁사에 전달하고 보안 확인을 위해 Cloudflare Turnstile에서 접속 정보를 처리해요. SMS 수탁사와 해당 위탁·국외 이전 사항은 기능 공개 전에 이 방침에 고지합니다. 광고 및 야간 광고 수신은 각각 선택이며 계정 설정에서 바꿀 수 있어요.</p>
+<h2 id="ko-privacy">3. 개인정보처리방침 — 수집·이용과 공개 범위</h2>
+<p>이 개인정보처리방침은 더스팟앤그루브(그루브 클럽)가 그루브 라운지에서 처리하는 개인정보에 적용돼요.</p>
+<nav class="policy-toc" aria-label="개인정보처리방침 목차"><a href="#ko-privacy">3. 수집·이용</a><a href="#ko-retention">4. 항목·보관기간</a><a href="#ko-providers">5. 위탁·국외 이전</a><a href="#ko-rights">6. 권리 행사</a><a href="#ko-destruction">7. 파기</a><a href="#ko-security">8. 안전성 확보조치</a><a href="#ko-cookies">9. 쿠키·기기 저장</a><a href="#ko-officer">10. 보호책임자</a><a href="#ko-remedy">11. 권익침해 구제</a><a href="#ko-changes">12. 변경·이전 버전</a></nav>
+<p><strong>처리 근거.</strong> 회원 가입과 라운지 이용 계약을 이행하는 데 꼭 필요한 정보는 동의 없이 개인정보 보호법 제15조 제1항 제4호에 따라 처리해요. 여기에는 닉네임, 로그인 정보(카카오 회원번호 변환값 또는 휴대폰 번호 변환값·뒤 네 자리, 비밀번호 검증값, 세션), 가입 연령 확인 결과, 약관 확인 기록, 이용자가 직접 올리거나 보낸 글·사진·메시지·요청, 방문·포인트 등 기능 제공 기록, 신고·이용 제한 등 안전한 운영에 필요한 기록이 들어가요. 가입 화면의 개인정보처리방침 확인 체크는 이 내용을 읽었다는 확인이에요.</p><p><strong>동의를 받아 처리하는 정보.</strong> 카카오에서 받는 생일(월·일)과 닉네임 제안, 직접 등록하는 생일, 광고·야간 광고 수신, 웹 푸시, 오픈채팅 탭의 90일 보관, 프로필 사진·소개 같은 선택 항목은 각각 따로 동의하거나 직접 선택할 때만 처리하고, 언제든 끌 수 있어요. 동의하지 않아도 기본 기능은 쓸 수 있어요. 법령에 보관 의무가 있으면 그 법령에 따라 보관해요.</p>
 <p>카카오에서 서비스 사용자 ID와 신규 가입에 필요한 출생연도를 받습니다. 동의한 경우 닉네임을 입력란에 제안하고 양력 생일(월·일)을 생일 방문 확인에 사용합니다. 출생연도와 카카오 닉네임 제안은 가입 절차에서만 사용하며, 카카오 토큰은 사용자 조회에만 사용한 뒤 폐기합니다. 계정 연결과 중복 방지에는 ID 해시를, 카카오 측 연결 해제에는 암호화된 ID를 사용합니다. 짧게 유효한 로그인 쿠키로 시작한 브라우저를 확인합니다. 회원이 선택한 닉네임, 복구 비밀번호 해시, 가입·약관 동의 기록을 회원 관리에 사용합니다. 연결을 해제하면 생일 정보와 연결이 삭제되고 모든 기기의 세션이 종료됩니다. 카카오에 연결 해제를 전달할 때까지 암호화된 ID를 보관합니다. 이미 획득한 칭호는 탈퇴 시까지 유지됩니다. MY 설정에서 연결을 해제하거나 탈퇴할 수 있어요.</p>
-<p>가입할 때 닉네임, 휴대폰 번호, 비밀번호, 만 19세 이상 확인과 필수 동의 여부를 받습니다. 휴대폰 번호는 확인용 변환값과 뒤 네 자리로, 비밀번호는 솔트를 넣어 계산한 검증값으로 보관합니다. 전체 휴대폰 번호와 비밀번호 원문을 라운지 계정 표에 남기지 않습니다. 직원은 직원 앱 인증과 연동할 수 있으며, 그 경우 직원 계정 이름과 비밀번호 입력은 자격 확인을 위해 스태프 서버로 전달합니다. 공개 프로필에서는 직원도 닉네임을 사용합니다.</p>
+<p>매장 가입 QR로 가입할 때 닉네임, 휴대폰 번호, 비밀번호, 만 19세 이상 확인과 필수 동의 여부를 받습니다. 휴대폰 번호는 확인용 변환값과 뒤 네 자리로, 비밀번호는 솔트를 넣어 계산한 검증값으로 보관합니다. 전체 휴대폰 번호와 비밀번호 원문을 라운지 계정 표에 남기지 않습니다. 직원은 직원 앱 인증과 연동할 수 있으며, 그 경우 직원 계정 이름과 비밀번호 입력은 자격 확인을 위해 스태프 서버로 전달합니다. 공개 프로필에서는 직원도 닉네임을 사용합니다.</p>
 <p>공개 프로필에는 닉네임, 설정한 프로필 사진·소개·선호 층과 일부 활동 정보가 표시될 수 있습니다. 선호 층과 요청에 선택한 층은 매장 층 정보예요. 이 기능에서 GPS나 기기의 실시간 위치는 수집하지 않습니다. 휴대폰 번호, 킵 연결 정보, 담당 MD 정보와 직원 계정의 실명은 일반 공개 프로필에 표시하지 않습니다. 권한 있는 직원은 회원 확인·킵 연결에 필요한 범위에서 닉네임, 번호 뒤 네 자리와 연결 정보를 볼 수 있으며 담당 MD 이름은 해당 손님이 본인 문의 화면 등에서 볼 수 있습니다. 직원 가입 QR을 통해 가입할 때 가입 집계와 처리에 필요한 회원 ID·닉네임·번호 뒤 네 자리 및 QR 담당 직원 식별자를 스태프 서버에 전달합니다.</p>
 <p>공개 글·사진, 순위·챌린지 결과와 전광판 게시물은 다른 손님이나 매장 방문자가 볼 수 있습니다. 오픈 대화방 글은 해당 방 이용자에게, 1:1 메시지는 상대방에게 표시합니다. 신고·안전 요청·예약·굿즈 운영에 필요한 정보는 해당 업무를 맡은 직원만 이용하도록 제한합니다. 테이블 문의에는 층·인원·메모가, 조각 확정 요청에는 참여자 닉네임과 회원 ID 및 모집 조건이 직원에게 전달될 수 있습니다. 경호 요청에는 닉네임·회원 ID·층 및 입력한 자리 정보가 전달될 수 있습니다. 불필요한 연락처, 결제 정보, 민감한 개인정보는 메모에 적지 마세요.</p>
 <ul>
@@ -126,23 +132,50 @@
 </tbody></table></div>
 </section>
 <section class="shell-card policy-section" aria-labelledby="ko-providers">
-<h2 id="ko-providers">5. 처리 위탁, 국외 처리와 기기 저장</h2>
+<h2 id="ko-providers">5. 처리 위탁과 개인정보 국외 이전</h2>
 <ul>
-<li>라운지 서비스 운영과 사진 저장에 Cloudflare Workers, Durable Objects, R2를 사용합니다. 사용자가 자동 번역을 실행하면 <strong>Cloudflare Workers AI</strong>에 요청한 문장과 대상 언어를 보내고 번역문을 받아 표시합니다. 서비스는 번역 호출에 전화번호나 회원 ID를 별도 필드로 넣지 않습니다. 문장 자체에 개인정보가 있으면 같이 처리됩니다. <span data-policy-decision="cloudflareProcessing">국외 처리가 적용되는 경우 수탁 법인·연락처, 처리 지역·항목·시기·방법·보관, 재위탁과 번역 입력의 학습·로그 처리, 적용 근거 및 거부 방법과 영향을 해당 처리 전에 안내합니다.</span></li>
-<li>휴대기기 알림을 켜면 브라우저·운영체제의 푸시 서비스에 내용을 담지 않은 알림 신호를 보냅니다. 기기가 라운지 서버에서 알림을 받아 화면에 표시합니다. 화면이나 잠금 화면에 알림이 남을 수 있어요. <span data-policy-decision="pushProviders">기기에서 선택할 수 있는 푸시 제공자와 연락처·국가·보관 및 국외 처리 정보는 알림을 켤 때 안내합니다. 알림 메뉴 또는 기기 설정에서 수신을 해제할 수 있습니다.</span></li>
+<li>라운지 서비스 운영과 사진 저장에 Cloudflare Workers, Durable Objects, R2를 사용합니다. 사용자가 자동 번역을 실행하면 <strong>Cloudflare Workers AI</strong>에 요청한 문장과 대상 언어를 보내고 번역문을 받아 표시합니다. 서비스는 번역 호출에 전화번호나 회원 ID를 별도 필드로 넣지 않습니다. 문장 자체에 개인정보가 있으면 같이 처리됩니다. 라운지 서버와 데이터·사진 저장, 자동 번역은 미국 회사인 Cloudflare, Inc.의 서비스로 처리해요. 정보가 국외로 이전되는 내용은 아래 표와 같아요(개인정보 보호법 제28조의8 제1항 제3호, 계약 이행을 위한 처리위탁·보관으로 이 방침에 공개).</li>
+<li>휴대기기 알림을 켜면 브라우저·운영체제의 푸시 서비스에 내용을 담지 않은 알림 신호를 보냅니다. 기기가 라운지 서버에서 알림을 받아 화면에 표시합니다. 화면이나 잠금 화면에 알림이 남을 수 있어요. 알림 신호는 사용하는 브라우저 회사의 푸시 서비스(예: Chrome·Android는 Google, Safari·iPhone은 Apple, Firefox는 Mozilla)를 거쳐 기기에 전달돼요. 신호에는 알림 내용을 담지 않고, 기기가 라운지 서버에서 직접 내용을 받아요. 알림 메뉴 또는 기기 설정에서 수신을 해제할 수 있어요.</li>
 <li>스태프 서버는 가입 처리, 신고 알림, 안전 대응, 보상·예약·굿즈·MD 응대 및 킵 연결에 필요한 데이터를 처리합니다. 운영 권한은 업무에 따라 제한합니다. <span data-policy-decision="staffProcessors">스태프 시스템의 사본·백업·열람과 외부 전달은 담당자가 권한을 관리합니다. 외부 위탁, 법령에 따른 제공 및 재제공은 승인된 범위의 필요한 정보로 제한하고 그 처리를 기록합니다.</span></li>
-<li>라디오·동영상·외부 링크나 외부 이미지가 열리면 해당 서비스에 접속 정보가 전달될 수 있습니다. 각 제공업체의 안내를 확인해 주세요. 라운지는 로그인 유지와 언어 설정에 브라우저 저장소를, 오프라인 화면에는 서비스워커 캐시를 사용합니다. <span data-policy-decision="externalContent">외부 콘텐츠·폰트 제공자와 실제 사용하는 접속 로그·분석 항목을 안내합니다. 선택 동의가 필요한 경우 이를 따로 받고, 제공되는 설정에서 선택을 변경할 수 있습니다.</span></li>
+<li>라디오·동영상·외부 링크나 외부 이미지가 열리면 해당 서비스에 접속 정보가 전달될 수 있습니다. 각 제공업체의 안내를 확인해 주세요. 라운지 화면 파일은 GitHub, Inc.(미국)의 GitHub Pages에서 제공돼요. 화면을 열면 GitHub가 접속 주소(IP)·브라우저 정보 같은 접속 기록을 처리해요. 글꼴은 jsDelivr(cdn.jsdelivr.net)에서, DJ 세션 썸네일·영상은 YouTube(i.ytimg.com, youtube.com)에서 불러와 그 서비스에 접속 정보가 전달돼요. 라운지는 광고·분석용 추적 도구를 쓰지 않아요. 기기 저장(쿠키·브라우저 저장소)은 9번에서 안내해요.</li>
 </ul>
+<div class="policy-table"><table role="table"><tbody role="rowgroup"><tr role="row"><th scope="row" role="rowheader">이전받는 자·연락처</th><td role="cell">Cloudflare, Inc. (미국) · <a href="mailto:privacy@cloudflare.com">privacy@cloudflare.com</a></td></tr><tr role="row"><th scope="row" role="rowheader">이전 국가</th><td role="cell">미국 및 Cloudflare 데이터센터가 있는 국가(가까운 접속 지점 포함)</td></tr><tr role="row"><th scope="row" role="rowheader">이전 항목</th><td role="cell">4번 표의 라운지 계정·활동 정보, 올린 사진, 접속 정보(IP 등), 자동 번역을 요청한 문장과 대상 언어</td></tr><tr role="row"><th scope="row" role="rowheader">이전 목적</th><td role="cell">서버 운영(Workers, Durable Objects), 사진 저장(R2), 자동 번역(Workers AI)</td></tr><tr role="row"><th scope="row" role="rowheader">이전 시기·방법</th><td role="cell">라운지를 이용할 때마다 정보통신망으로 전송돼요</td></tr><tr role="row"><th scope="row" role="rowheader">보유·이용 기간</th><td role="cell">4번 표의 보관기간까지(탈퇴 또는 보관기간 종료 시 삭제). 번역 요청 문장은 라운지가 번역 기록으로 따로 저장하지 않아요</td></tr><tr role="row"><th scope="row" role="rowheader">거부 방법과 결과</th><td role="cell">라운지는 Cloudflare 위에서만 동작해서, 이전을 원하지 않으면 가입하지 않거나 탈퇴해야 하고 이 경우 라운지를 쓸 수 없어요. 자동 번역만 원하지 않으면 번역 버튼을 누르지 않으면 되고, 글은 원문으로 보여요.</td></tr></tbody></table></div>
 </section>
 <section class="shell-card policy-section" aria-labelledby="ko-rights">
 <h2 id="ko-rights">6. 선택권, 권리와 삭제</h2>
 <ul>
 <li>광고 안내와 야간 알림은 각각 선택 사항입니다. 동의하지 않아도 계정 가입과 기본 기능을 이용할 수 있습니다. 내 설정에서 광고·야간 설정을 바꾸고, 알림 메뉴와 기기 설정에서 푸시 구독·권한을 해제할 수 있습니다. 선택 기능인 프로필 사진, 생일, 번역과 초대도 사용하지 않을 수 있습니다.</li>
-<li>개인정보 열람·정정·삭제·처리정지 및 선택 동의 철회를 요청할 수 있습니다. 내 설정에서 탈퇴를 요청하거나 문의처로 연락해 주세요. 요청을 확인하는 데 필요한 최소 정보만 요청합니다. 비밀번호나 신분증 원본을 메시지로 보내지 마세요. <span data-policy-decision="privacyContact">개인정보 보호책임자는 그루브 클럽 대표입니다. 문의 전화는 0507-1301-5970입니다. 서면 요청은 부산 부산진구 중앙대로680번가길 52의 매장에서 접수합니다.</span> <span data-policy-decision="rightsProcedure">본인 또는 대리인이 요청하면 권한을 확인하는 데 필요한 최소 자료만 받습니다. 접수 시 처리 절차와 답변 예정 시점, 이용할 수 있는 공식 분쟁 구제 창구를 안내합니다.</span></li>
+<li>개인정보 열람·정정·삭제·처리정지 및 선택 동의 철회를 요청할 수 있습니다. 내 설정에서 탈퇴를 요청하거나 문의처로 연락해 주세요. 요청을 확인하는 데 필요한 최소 정보만 요청합니다. 비밀번호나 신분증 원본을 메시지로 보내지 마세요. 개인정보 보호책임자는 그루브 클럽 대표예요. 열람·정정·삭제·처리정지 요청과 문의는 전화 <a href="tel:050713015970">0507-1301-5970</a>, 라운지 앱 안의 문의·신고 기능 또는 매장 서면(부산광역시 부산진구 중앙대로680번가길 52, 2~3층)으로 접수해요. <span data-policy-decision="rightsProcedure">본인 또는 대리인이 요청하면 권한을 확인하는 데 필요한 최소 자료만 받습니다. 접수 시 처리 절차와 답변 예정 시점, 이용할 수 있는 공식 분쟁 구제 창구를 안내합니다.</span></li>
 <li>탈퇴 요청이 확인되면 계정 이용을 중단하고 라운지 계정, 프로필, 활동 기록, 업로드, 구독과 요청 기록을 정리합니다. 서비스 안전이나 법령상 보관 의무에 필요한 기록은 별도로 보관하고 기간이 끝나면 지웁니다. 다른 사람이 이미 저장한 공개물이나 기기 알림은 해당 사본에서도 삭제해야 합니다. <span data-policy-decision="deletionCompletion">탈퇴 확인 뒤 라운지 접근을 즉시 제한합니다. R2와 스태프 사본은 30일 안에 정리하며 실패한 삭제는 재시도합니다. 백업 순환 만료 일정과 주문·예약의 법정 보관 예외, 신고에 필요한 최소 자료 및 예외는 별도로 안내합니다.</span></li>
+<li>광고·야간 광고 수신에 동의했다면 동의한 날부터 2년마다 동의 상태를 다시 알려 드리고 계속 받을지 확인해요(정보통신망법 제50조 제8항). 수신을 끄면 그때부터 광고 알림을 보내지 않아요.</li>
 </ul>
 </section>
+<section class="shell-card policy-section" aria-labelledby="ko-destruction">
+<h2 id="ko-destruction">7. 개인정보의 파기</h2>
+<ul><li><strong>언제.</strong> 보관기간이 끝나거나 처리 목적을 이루면(탈퇴, 카카오 연결 해제, 게시물 삭제 등) 지체 없이 파기해요.</li><li><strong>절차.</strong> 보관기간이 정해진 기록은 서버의 자동 정리 작업이 주기적으로(약 5분~하루 간격) 찾아 지워요. 탈퇴하면 바로 계정 접근을 막고 계정·프로필·활동·업로드 기록을 지우며, 사진 저장소(R2)와 스태프 사본은 30일 안에 정리하고 실패하면 다시 시도해요. 법령이나 분쟁 대응 때문에 따로 보관하는 기록은 다른 정보와 분리해 접근을 제한하고, 기간이 끝나면 같은 방법으로 파기해요.</li><li><strong>방법.</strong> 전자 파일은 데이터베이스와 저장소에서 삭제해 서비스에서 다시 열거나 되살릴 수 없게 해요. 종이에 출력한 기록이 있으면 분쇄하거나 소각해요.</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="ko-security">
+<h2 id="ko-security">8. 개인정보의 안전성 확보조치</h2>
+<ul><li><strong>접근 권한 관리.</strong> 직원 권한을 역할(관리·운영·경호·DJ 등)로 나누고, 업무에 필요한 정보만 보게 해요. 직원용 접근 토큰은 서명으로 검증해요.</li><li><strong>접근 기록.</strong> 신고 증거 열람, 게시물 가리기·제재, 킵 연결, 기능 설정 변경 같은 관리 작업은 누가 언제 했는지 기록해요.</li><li><strong>비밀번호와 식별값 보호.</strong> 비밀번호는 솔트를 넣은 PBKDF2(SHA-256) 검증값으로만 저장하고 원문은 남기지 않아요. 휴대폰 번호와 카카오 회원번호는 비밀 키로 만든 변환값으로 대조하고, 카카오 연결 해제에 필요한 ID는 AES-GCM으로 암호화해 보관해요.</li><li><strong>전송 구간 암호화.</strong> 라운지의 모든 통신은 HTTPS로 암호화해요. 카카오 로그인 쿠키는 HTTPS에서만 보내고 화면 스크립트가 읽을 수 없게(Secure·HttpOnly) 설정해요.</li><li><strong>부정 접근 방지.</strong> 로그인 실패 횟수를 제한하고, 서비스 비밀 키는 코드 저장소가 아닌 Cloudflare 비밀값으로 따로 보관해요.</li><li><strong>물리적 보호.</strong> 서버와 저장소는 Cloudflare 데이터센터에 있고, 시설의 물리 보안은 Cloudflare가 관리해요.</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="ko-cookies">
+<h2 id="ko-cookies">9. 자동수집장치(쿠키·브라우저 저장소)의 설치·운영과 거부</h2>
+<ul><li>라운지는 광고·분석용 쿠키나 추적 도구를 쓰지 않아요.</li><li><strong>브라우저 저장소(localStorage).</strong> 로그인 유지 토큰, 언어, 화면 테마를 기기에 저장해요.</li><li><strong>카카오 로그인 쿠키.</strong> 카카오 로그인을 시작한 브라우저를 확인하려고 10분 동안만 유효한 쿠키를 두고, 로그인이 끝나면 지워요.</li><li><strong>서비스워커 캐시·IndexedDB.</strong> 화면 파일을 저장해 빠르게·오프라인으로 열고, 알림을 받을 기기 연결 정보를 저장해요.</li><li><strong>거부 방법.</strong> 브라우저 설정에서 이 사이트의 쿠키·사이트 데이터를 지우거나 막을 수 있어요(예: Chrome 설정 › 개인정보 보호 및 보안 › 서드 파티 쿠키·사이트 데이터, iPhone 설정 › Safari › 고급 › 웹 사이트 데이터). 막으면 로그인 유지, 카카오 로그인, 오프라인 화면과 알림이 동작하지 않을 수 있어요.</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="ko-officer">
+<h2 id="ko-officer">10. 개인정보 보호책임자</h2>
+<ul><li>개인정보 보호책임자 · 직책: 대표 (더스팟앤그루브)</li><li>전화 · <a href="tel:050713015970">0507-1301-5970</a></li><li>앱 안 · 라운지의 문의·신고 기능</li><li>서면 · 부산광역시 부산진구 중앙대로680번가길 52, 2~3층 매장</li><li>개인정보 열람·정정·삭제·처리정지 요청과 고충 처리는 위 연락처로 접수하면 지체 없이 답해 드려요.</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="ko-remedy">
+<h2 id="ko-remedy">11. 권익침해 구제방법</h2>
+<p>개인정보 침해로 상담이나 구제가 필요하면 아래 기관에 문의할 수 있어요.</p><ul><li>개인정보분쟁조정위원회 · 1833-6972 · <a href="https://www.kopico.go.kr" target="_blank" rel="noopener noreferrer">www.kopico.go.kr</a></li><li>개인정보침해신고센터(한국인터넷진흥원) · 118 · <a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener noreferrer">privacy.kisa.or.kr</a></li><li>대검찰청 · 1301 · <a href="https://www.spo.go.kr" target="_blank" rel="noopener noreferrer">www.spo.go.kr</a></li><li>경찰청 · 182 · <a href="https://ecrm.police.go.kr" target="_blank" rel="noopener noreferrer">ecrm.police.go.kr</a></li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="ko-changes">
+<h2 id="ko-changes">12. 처리방침 변경과 이전 버전</h2>
+<ul><li>이 방침을 바꾸면 시행 7일 전(이용자에게 불리하거나 중요한 변경은 30일 전) 라운지 공지와 이 페이지 맨 위에 바뀐 내용과 시행일을 알려요.</li><li>시행일 · 2026년 11월 28일. 이전 버전과 바뀐 내용 전체는 <a href="https://github.com/groovenspot/groovenspot.github.io/commits/main/lounge/policy.html" target="_blank" rel="noopener noreferrer">변경 기록</a>에서 날짜별로 볼 수 있어요. 매장이나 위 연락처로 요청해도 이전 버전을 보내 드려요.</li></ul>
+</section>
 <footer class="shell-card policy-contact">
+<p>상호 더스팟앤그루브 · 대표 김동기 · 사업자등록번호 790-36-01644 · 부산광역시 부산진구 중앙대로680번가길 52, 2~3층 · <a href="tel:050713015970">0507-1301-5970</a></p>
 <p>문의 전화 · <a href="tel:050713015970">0507-1301-5970</a></p>
 <a href="/lounge/">라운지로 돌아가기</a>
 </footer>
@@ -150,20 +183,19 @@
 <article id="en" lang="en" aria-labelledby="en-title">
 <header class="policy-intro">
 <h1 id="en-title">Lounge terms and privacy notice</h1>
-<p data-l26-signup-notice>Self-signup notice · November 28, 2026 · Applies when self-signup opens.</p>
 <p>Notice date · <span data-policy-announcement>20 November 2026</span></p>
 <p>Additional notice · 21 November 2026 — the table in section 4 now covers entry consent and the 90-day message retention for rooms in the Open Chat tab.</p>
 <p>Operator · 더스팟앤그루브 (CLUB GROOVE N SPOT)</p>
 <p>Effective date · <span data-policy-decision="effectiveDate">28 November 2026</span></p>
+<p>Revision history · 28 November 2026 — added Kakao login data, legal bases, transfers abroad, destruction, security measures, cookies and device storage, the privacy officer, remedies, change notices, and terms on service changes, limitation of liability, rights in posts, temporary measures and governing law. See section 12 for past versions.</p>
 </header>
 <nav class="policy-toc" aria-label="Lounge terms and privacy notice">
 <a href="#en-terms">Terms of use</a>
 <a href="#en-rules">Community rules</a>
-<a href="#en-privacy">Privacy notice</a>
+<a href="#en-privacy"><strong>Privacy policy</strong></a>
 </nav>
 <section class="shell-card policy-section" aria-labelledby="en-terms">
 <h2 id="en-terms">1. Terms of use</h2>
-<p data-l26-signup-notice>Self-signup is available to adults aged 19 or older. SMS verifies possession of your phone. Your date of birth and age declaration are self-reported. Profiles are private by default. Until a door guard checks your ID, confirms your age, and verifies entry, you can follow DJs and the official account and use selected activities without rewards. Posting, comments, messages, chat, points, benefits, floor voting, and DJ reviews stay locked. Voting and reviews have their own eligibility rules.</p>
 <p>To join with Kakao, the current year in Korea minus your birth year must be at least 19, and you must accept the Terms of Service and Privacy Policy. Signup is paused if Kakao does not supply your birth year. Kakao sign-in verifies your Kakao account. A door guard checks your physical ID for identity and age and verifies entry before community and rewards features unlock. Entry verified this way on your solar birthday qualifies for the birthday title once per calendar year.</p>
 <ol>
 <li><strong>Registration and accounts.</strong> Groove Lounge is operated by The Spot &amp; Groove (CLUB GROOVE N SPOT) for guests aged 19 or older. Guests join with a staff-issued QR code at the club. Confirm that you meet the age requirement and review the required terms, community rules and privacy notice when joining. Other guests can see your nickname. Keep your account and password to yourself. Do not share your account or use another person’s account, phone number or QR code without permission. Ask staff at the club for account help.</li>
@@ -173,6 +205,11 @@
 <li><strong>Assigned hosts, table inquiries and groups.</strong> A table inquiry does not confirm a booking. Your assigned host or a reservations staff member reviews it. A table group is a request to share a table and is confirmed after staff review. Arrange payment and settlement with the host at the club. Do not ask other guests to transfer money or exchange payment details. Hosts send party or offer advertising only if you opt into promotional messages.</li>
 <li><strong>Reports, restrictions and appeals.</strong> We may temporarily hide a post or photo after a report. Authorized staff review the report and relevant material. They may restore or remove content or apply a warning, suspension or account restriction when appropriate. Contact us if you want an explanation or review. Include the item or restriction and the approximate time. For urgent safety concerns, contact club staff or security immediately. In an emergency, contact the local emergency services.</li>
 <li><strong>Changes and account deletion.</strong> You can request account deletion in Me settings. Lounge deletion is handled separately from bookings, orders and bottle-keep arrangements already received by staff. Ask the club about pending requests. We announce material changes before they apply and seek additional consent where required. <span data-policy-decision="noticeAndAppeal">We give notice in the Lounge 7 days before ordinary changes and 30 days before material changes or changes that disadvantage users. When we receive an appeal against a restriction, we tell you who will handle it and when we aim to reply.</span></li>
+<li><strong>Changes to and suspension of the service.</strong> We may change or stop features for operational or technical reasons. Where we can, we announce it in the Lounge first; for outages or urgent maintenance we tell you right after. If we close the service, we tell you in advance how remaining points and open orders will be handled.</li>
+<li><strong>Limitation of liability.</strong> We are not liable for losses caused by events outside our control, such as natural disasters, network or provider outages, your own fault, content posted by other users, or dealings between guests. This does not apply to losses caused by our intent or gross negligence, or where the law does not allow liability to be limited.</li>
+<li><strong>Rights in your posts.</strong> You keep the copyright in the posts and photos you upload. You allow us to use them free of charge only as needed to show them in the Lounge (posting and display, resizing and compression, automatic translation, report review). Any use outside the Lounge, such as promotion, needs your separate consent each time. This permission ends when you delete the post (report records follow the section 4 table).</li>
+<li><strong>Infringement reports and temporary measures.</strong> If a post infringes your rights, for example your privacy or reputation, you can ask us to remove it or post your rebuttal through Report, by phone <a href="tel:050713015970">0507-1301-5970</a>, or at the venue, explaining the infringement and identifying the post. We act without delay, for example by removing it or applying a temporary measure, and tell both you and the poster. If infringement is unclear or disputed, we may hide the post for up to 30 days (temporary measure under Article 44-2 of the Network Act). The poster may object and ask for it to be restored during that time.</li>
+<li><strong>Governing law and jurisdiction.</strong> These terms are governed by the laws of the Republic of Korea. Any lawsuit goes to the court with jurisdiction under the Korean Civil Procedure Act.</li>
 </ol>
 </section>
 <section class="shell-card policy-section" aria-labelledby="en-rules">
@@ -186,10 +223,12 @@
 </ul>
 </section>
 <section class="shell-card policy-section" aria-labelledby="en-privacy">
-<h2 id="en-privacy">3. Personal information, purposes and visibility</h2>
-<p data-l26-signup-notice>We ask for a phone number, nickname, password, date of birth, and consent choices. We use date of birth to check age and collect no ID number or copy. For account operation and duplicate prevention we keep the phone hash and last four digits, a password hash, the age declaration and verification statuses, the terms version and consent timestamps, optional consents, and the signup source. One-time code hashes are valid for five minutes. Rate-limit records use hashed phone numbers and IP addresses and are cleared by scheduled cleanup after 24 hours. The SMS processor receives the number and code for delivery, and Cloudflare Turnstile processes connection data for the security check. We will publish the SMS processor and applicable processing and overseas transfer details here before self-signup opens. Marketing and nighttime marketing are separately optional and can be changed in account settings.</p>
+<h2 id="en-privacy">3. Privacy policy — collection, use and visibility</h2>
+<p>This privacy policy covers personal information that The Spot & Groove (더스팟앤그루브, Groove Club) processes in Groove Lounge.</p>
+<nav class="policy-toc" aria-label="Privacy policy contents"><a href="#en-privacy">3. Collection and use</a><a href="#en-retention">4. Data and retention</a><a href="#en-providers">5. Processors and transfers abroad</a><a href="#en-rights">6. Your rights</a><a href="#en-destruction">7. Destruction</a><a href="#en-security">8. Security measures</a><a href="#en-cookies">9. Cookies and device storage</a><a href="#en-officer">10. Privacy officer</a><a href="#en-remedy">11. Remedies</a><a href="#en-changes">12. Changes and past versions</a></nav>
+<p><strong>Legal basis.</strong> Information we need to sign you up and provide the Lounge under our agreement with you is processed without separate consent under Article 15(1)(4) of the Personal Information Protection Act. This covers your nickname, sign-in data (a derived value of your Kakao user number or of your phone number and its last four digits, a password verifier, sessions), the result of the age check, your acceptance record, posts, photos, messages and requests you create, records needed to run features such as visits and points, and records needed to keep the service safe such as reports and restrictions. The privacy checkbox at sign-up confirms that you have read this policy.</p><p><strong>Data processed with consent.</strong> Optional items — birthday (month/day) and the nickname suggestion from Kakao, a birthday you enter, promotional and late-night promotional messages, web push, 90-day retention in the Open Chat tab, and profile photo and bio — are processed only when you agree to or choose each one, and you can turn them off at any time. The core features work without them. Where a law requires us to keep records, we keep them under that law.</p>
 <p>Kakao supplies a service user ID and the birth year required for new sign-ups. If you consent, we suggest your Kakao nickname in the form and use your solar birth month and day for birthday visits. The birth year and suggested nickname are used during signup. We discard Kakao tokens after looking up your account. We use a hashed ID to link accounts and prevent duplicates, and an encrypted ID to disconnect the app at Kakao. A short-lived login cookie identifies the browser that started sign-in. We keep your chosen nickname, recovery password hash, signup status, and consent records for account management. Disconnecting removes the connection and birthday data and signs you out on every device. The encrypted ID is retained until disconnection is sent to Kakao. Earned titles are kept until account deletion. Use MY settings to disconnect Kakao or delete your account.</p>
-<p>When you register, we collect your nickname, phone number and password, plus confirmation that you are 19 or older and have provided the required agreements. We store a keyed value derived from your phone number and its last four digits. We store a salted password verifier. The Lounge account table does not retain the full phone number or plaintext password. Staff can use linked staff-app authentication, which sends the entered staff account name and password to the staff server for verification. Staff use nicknames on public profiles.</p>
+<p>When you join with an in-club sign-up QR, we collect your nickname, phone number and password, plus confirmation that you are 19 or older and have provided the required agreements. We store a keyed value derived from your phone number and its last four digits. We store a salted password verifier. The Lounge account table does not retain the full phone number or plaintext password. Staff can use linked staff-app authentication, which sends the entered staff account name and password to the staff server for verification. Staff use nicknames on public profiles.</p>
 <p>Public profiles can show a nickname, profile photo, bio, preferred floor and some activity information. The floor you choose for your profile or a request is a floor inside the club. These features do not collect GPS or your device’s live location. Phone numbers, bottle-keep links, assigned-host data and staff-account real names are excluded from public profiles. Staff with the relevant permissions can access limited information, including a nickname, last four phone digits or linking information as needed to verify a member and link their bottle keep. Guests may see their own host’s name on their inquiry screen or in their own account. Registration through a staff QR code sends the member ID, nickname, last four phone digits and QR staff identifier to the staff server for registration processing and counts.</p>
 <p>Other guests or club visitors may see public posts and photos, rankings, challenge results and content shown on the venue display. Open Chat messages are visible to users of that room. Direct messages are shown to the other participant. Staff use reports, safety calls, bookings and merchandise requests as needed for their assigned duties. Table inquiries may send the floor, group size and note to staff. Group confirmation may send participant nicknames and member IDs and the group details. A security request may send the nickname, member ID, floor and optional seat. Leave contact details, payment details and sensitive data out of free-text notes.</p>
 <ul>
@@ -224,23 +263,50 @@
 </tbody></table></div>
 </section>
 <section class="shell-card policy-section" aria-labelledby="en-providers">
-<h2 id="en-providers">5. Service providers, cross-border processing and device storage</h2>
+<h2 id="en-providers">5. Processors and transfers of personal information abroad</h2>
 <ul>
-<li>We use Cloudflare Workers, Durable Objects and R2 to operate the service and store photos. When you request translation, we send the selected text and target language to <strong>Cloudflare Workers AI</strong> and display the result. The request does not include your phone number or member ID in separate fields. Any personal data in the selected text is processed with it. <span data-policy-decision="cloudflareProcessing">Where processing abroad applies, we provide information before it occurs about the processor and its contact, the region, data, timing, method, retention, subprocessors, any training or logging of translation inputs, the basis for the transfer, and how to refuse it and with what effect.</span></li>
-<li>When you enable phone notifications, we send a signal without notification content to the browser or operating system’s push provider. Your device retrieves the notice from the Lounge server. Notices can remain visible on the device or lock screen. <span data-policy-decision="pushProviders">When you turn on push, we provide information about the provider for your device, its contact, country, retention and processing abroad. You can turn it off in Alerts or in your device settings.</span></li>
+<li>We use Cloudflare Workers, Durable Objects and R2 to operate the service and store photos. When you request translation, we send the selected text and target language to <strong>Cloudflare Workers AI</strong> and display the result. The request does not include your phone number or member ID in separate fields. Any personal data in the selected text is processed with it. The Lounge server, data and photo storage and automatic translation run on services of Cloudflare, Inc., a US company. The transfer abroad is described in the table below (Article 28-8(1)(3) of the Personal Information Protection Act: entrustment and storage needed to perform our agreement with you, disclosed in this policy).</li>
+<li>When you enable phone notifications, we send a signal without notification content to the browser or operating system’s push provider. Your device retrieves the notice from the Lounge server. Notices can remain visible on the device or lock screen. Push signals reach your device through your browser maker’s push service (for example Google for Chrome and Android, Apple for Safari and iPhone, Mozilla for Firefox). The signal carries no notification content; your device fetches the content directly from the Lounge server. You can turn push off in Alerts or in your device settings.</li>
 <li>The staff server processes information needed for registration, report alerts, safety response, rewards, bookings, orders, host service and bottle-keep linking. Access is limited by job responsibility. <span data-policy-decision="staffProcessors">Authorized staff manage access to staff-system copies and backups and any external sharing. Outsourcing, disclosures required by law and onward sharing are limited to necessary data within the authorized scope and are recorded.</span></li>
-<li>When you open radio, video, an external link or external media, that provider may receive connection information. Check the provider’s own notice. The Lounge uses browser storage for your session and language preferences and a service worker cache for offline screens. <span data-policy-decision="externalContent">We disclose external content and font providers and the access logs and analytics we actually use. Where optional consent is required, we request it separately and let you change your choice in the available settings.</span></li>
+<li>When you open radio, video, an external link or external media, that provider may receive connection information. Check the provider’s own notice. The Lounge screens are served from GitHub Pages by GitHub, Inc. (USA). When you open them, GitHub processes access records such as your IP address and browser details. Fonts load from jsDelivr (cdn.jsdelivr.net) and DJ session thumbnails and videos from YouTube (i.ytimg.com, youtube.com), which receive connection information. The Lounge uses no advertising or analytics trackers. Device storage (cookies and browser storage) is described in section 9.</li>
 </ul>
+<div class="policy-table"><table role="table"><tbody role="rowgroup"><tr role="row"><th scope="row" role="rowheader">Recipient and contact</th><td role="cell">Cloudflare, Inc. (USA) · <a href="mailto:privacy@cloudflare.com">privacy@cloudflare.com</a></td></tr><tr role="row"><th scope="row" role="rowheader">Countries</th><td role="cell">The United States and countries where Cloudflare has data centers (including the nearest network location)</td></tr><tr role="row"><th scope="row" role="rowheader">Data</th><td role="cell">Lounge account and activity data in the section 4 table, uploaded photos, connection data (such as IP address), and text and target language you send for translation</td></tr><tr role="row"><th scope="row" role="rowheader">Purpose</th><td role="cell">Running the server (Workers, Durable Objects), photo storage (R2), automatic translation (Workers AI)</td></tr><tr role="row"><th scope="row" role="rowheader">When and how</th><td role="cell">Sent over the network each time you use the Lounge</td></tr><tr role="row"><th scope="row" role="rowheader">Retention</th><td role="cell">Until the end of the retention periods in section 4 (deleted when you leave or the period ends). The Lounge does not keep translation requests in a separate translation log</td></tr><tr role="row"><th scope="row" role="rowheader">How to refuse and effect</th><td role="cell">The Lounge runs only on Cloudflare, so to avoid the transfer you must not sign up or must delete your account, and you then cannot use the Lounge. To avoid translation only, do not tap Translate; posts stay in the original language.</td></tr></tbody></table></div>
 </section>
 <section class="shell-card policy-section" aria-labelledby="en-rights">
 <h2 id="en-rights">6. Choices, rights and account deletion</h2>
 <ul>
 <li>Promotional messages and nighttime notifications are separate choices. Declining either does not prevent registration or access to basic services. Update them in Me settings. Disable push in the Alerts menu and revoke its permission in device or browser settings. You can also choose whether to use optional profiles, birthday benefits, translation and invites.</li>
-<li>You can ask to access, correct or delete personal information, restrict processing or withdraw optional consent. Request account deletion in Me settings or contact us for help. We ask for the minimum information required to verify your request. Do not send your password or original ID in a message. <span data-policy-decision="privacyContact">The Groove Club representative is responsible for personal information protection. Contact the club at 0507-1301-5970. Written requests are accepted at the club, 52 Jungang-daero 680beonga-gil, Busanjin-gu, Busan.</span> <span data-policy-decision="rightsProcedure">For requests by you or a representative, we collect only the minimum needed to verify authority. On receipt, we explain the response process, when we expect to reply, and the official channels available for dispute resolution.</span></li>
+<li>You can ask to access, correct or delete personal information, restrict processing or withdraw optional consent. Request account deletion in Me settings or contact us for help. We ask for the minimum information required to verify your request. Do not send your password or original ID in a message. The privacy officer is the representative of Groove Club. Send requests to access, correct, delete or suspend processing, and other questions, by phone <a href="tel:050713015970">0507-1301-5970</a>, through the in-app inquiry and report features, or in writing at the venue (2F–3F, 52 Jungang-daero 680beonga-gil, Busanjin-gu, Busan). <span data-policy-decision="rightsProcedure">For requests by you or a representative, we collect only the minimum needed to verify authority. On receipt, we explain the response process, when we expect to reply, and the official channels available for dispute resolution.</span></li>
 <li>After a deletion request is verified, account access ends and we clear the Lounge account, profile, activity, uploads, subscriptions and requests. Records required for service safety or legal obligations are kept separately and removed when their retention period ends. Copies already saved by other people and notices in device history may need to be removed separately. <span data-policy-decision="deletionCompletion">After account deletion is verified, Lounge access is restricted immediately. We clear R2 and staff copies within 30 days and retry failed deletions. We separately explain backup rotation, legal exceptions for order or reservation records, and minimum reporting evidence and its exceptions.</span></li>
+<li>If you agreed to promotional or late-night promotional messages, we remind you of your choice every two years from the date you agreed and check whether you want to keep receiving them (Article 50(8) of the Network Act). Once you turn them off we stop sending promotional notifications.</li>
 </ul>
 </section>
+<section class="shell-card policy-section" aria-labelledby="en-destruction">
+<h2 id="en-destruction">7. Destruction of personal information</h2>
+<ul><li><strong>When.</strong> We destroy information without delay once its retention period ends or its purpose is met (for example when you leave, disconnect Kakao or delete a post).</li><li><strong>Process.</strong> Automatic clean-up jobs on the server find and delete records with set retention periods regularly (about every 5 minutes to once a day). When you leave, we block account access at once and delete your account, profile, activity and uploads; photo storage (R2) and staff copies are cleared within 30 days, with failed deletions retried. Records kept separately for legal or dispute reasons are isolated with restricted access and destroyed the same way when their period ends.</li><li><strong>Method.</strong> Electronic files are deleted from the database and storage so they cannot be reopened or restored in the service. Any printed records are shredded or incinerated.</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="en-security">
+<h2 id="en-security">8. Security measures</h2>
+<ul><li><strong>Access control.</strong> Staff permissions are split by role (admin, operations, door, DJ and others) so staff see only what their work needs. Staff access tokens are verified by signature.</li><li><strong>Access records.</strong> Admin actions such as viewing report evidence, hiding posts and applying restrictions, linking keeps and changing feature settings are logged with who did them and when.</li><li><strong>Passwords and identifiers.</strong> Passwords are stored only as salted PBKDF2 (SHA-256) verifiers, never in plain text. Phone numbers and Kakao user numbers are matched using values derived with a secret key, and the ID needed to disconnect Kakao is stored encrypted with AES-GCM.</li><li><strong>Encryption in transit.</strong> All Lounge traffic uses HTTPS. The Kakao login cookie is sent only over HTTPS and cannot be read by page scripts (Secure, HttpOnly).</li><li><strong>Preventing misuse.</strong> Failed sign-in attempts are limited, and service secret keys are kept as Cloudflare secrets, not in the code repository.</li><li><strong>Physical protection.</strong> Servers and storage are in Cloudflare data centers, whose physical security Cloudflare manages.</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="en-cookies">
+<h2 id="en-cookies">9. Cookies and browser storage: use and how to refuse</h2>
+<ul><li>The Lounge uses no advertising or analytics cookies or trackers.</li><li><strong>Browser storage (localStorage).</strong> Stores your sign-in token, language and display theme on your device.</li><li><strong>Kakao login cookie.</strong> A cookie valid for only 10 minutes confirms the browser that started Kakao login and is removed when sign-in finishes.</li><li><strong>Service worker cache and IndexedDB.</strong> Store screen files so the Lounge opens quickly and offline, and store the device link for notifications.</li><li><strong>How to refuse.</strong> You can clear or block cookies and site data for this site in your browser settings (for example Chrome Settings › Privacy and security › Third-party cookies and site data; iPhone Settings › Safari › Advanced › Website Data). If you do, staying signed in, Kakao login, offline screens and notifications may not work.</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="en-officer">
+<h2 id="en-officer">10. Privacy officer</h2>
+<ul><li>Privacy officer · Position: Representative (The Spot & Groove)</li><li>Phone · <a href="tel:050713015970">0507-1301-5970</a></li><li>In the app · the Lounge inquiry and report features</li><li>In writing · the venue, 2F–3F, 52 Jungang-daero 680beonga-gil, Busanjin-gu, Busan</li><li>Requests to access, correct, delete or suspend processing and complaints sent to these contacts are answered without delay.</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="en-remedy">
+<h2 id="en-remedy">11. Remedies for infringement</h2>
+<p>If you need advice or a remedy for a privacy infringement, you can contact these Korean agencies.</p><ul><li>Personal Information Dispute Mediation Committee · 1833-6972 · <a href="https://www.kopico.go.kr" target="_blank" rel="noopener noreferrer">www.kopico.go.kr</a></li><li>Privacy Infringement Report Center (KISA) · 118 · <a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener noreferrer">privacy.kisa.or.kr</a></li><li>Supreme Prosecutors’ Office · 1301 · <a href="https://www.spo.go.kr" target="_blank" rel="noopener noreferrer">www.spo.go.kr</a></li><li>Korean National Police Agency · 182 · <a href="https://ecrm.police.go.kr" target="_blank" rel="noopener noreferrer">ecrm.police.go.kr</a></li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="en-changes">
+<h2 id="en-changes">12. Changes and past versions</h2>
+<ul><li>When we change this policy, we announce the changes and the effective date in the Lounge and at the top of this page 7 days before they apply (30 days for changes that are unfavorable to you or significant).</li><li>Effective date · 28 November 2026. Past versions and every change are listed by date in the <a href="https://github.com/groovenspot/groovenspot.github.io/commits/main/lounge/policy.html" target="_blank" rel="noopener noreferrer">change history</a>. You can also ask at the venue or through the contacts above for a past version.</li></ul>
+</section>
 <footer class="shell-card policy-contact">
+<p>Business name 더스팟앤그루브 (The Spot & Groove) · Representative 김동기 · Business registration no. 790-36-01644 · 2F–3F, 52 Jungang-daero 680beonga-gil, Busanjin-gu, Busan · <a href="tel:050713015970">0507-1301-5970</a></p>
 <p>Contact the club · <a href="tel:050713015970">0507-1301-5970</a></p>
 <a href="/lounge/">Back to Lounge</a>
 </footer>
@@ -248,20 +314,19 @@
 <article id="ja" lang="ja" aria-labelledby="ja-title">
 <header class="policy-intro">
 <h1 id="ja-title">ラウンジ利用規約とプライバシー通知</h1>
-<p data-l26-signup-notice>セルフ登録のお知らせ · 2026年11月28日 · セルフ登録の公開時から適用。</p>
 <p>告知日 · <span data-policy-announcement>2026年11月20日</span></p>
 <p>追加のお知らせ · 2026年11月21日 — オープンチャットタブのルームの入室時の同意と投稿の保存期間（90日）を第4項の表に追加しました。</p>
 <p>運営者 · 더스팟앤그루브 (CLUB GROOVE N SPOT)</p>
 <p>施行日 · <span data-policy-decision="effectiveDate">2026年11月27日</span></p>
+<p>改定履歴 · 2026年11月28日 — Kakaoログインの項目、処理の根拠、国外移転、破棄、安全管理措置、クッキー・端末保存、保護責任者、権利侵害の救済、変更の告知と、規約（サービスの変更・責任の制限・投稿の権利・一時措置・準拠法）を追加しました。過去の版は第12項で確認できます。</p>
 </header>
 <nav class="policy-toc" aria-label="ラウンジ利用規約とプライバシー通知">
 <a href="#ja-terms">利用規約</a>
 <a href="#ja-rules">コミュニティルール</a>
-<a href="#ja-privacy">プライバシー通知</a>
+<a href="#ja-privacy"><strong>プライバシーポリシー</strong></a>
 </nav>
 <section class="shell-card policy-section" aria-labelledby="ja-terms">
 <h2 id="ja-terms">1. 利用規約</h2>
-<p data-l26-signup-notice>セルフ登録は満19歳以上が対象です。SMS認証は電話番号の所持を確認します。生年月日と年齢は自己申告です。プロフィールは初期設定で非公開です。入口の警備担当者が身分証で本人と年齢を確認し、入場を認証するまでは、DJ・公式アカウントのフォローと一部の報酬のない遊びに限られます。投稿、コメント、メッセージ、チャット、ポイント、特典、フロア投票、DJレビューは利用できません。投票とレビューには別の参加条件があります。</p>
 <p>Kakaoで新規登録するには、韓国時間の今年から出生年を引いた数が19以上であり、利用規約とプライバシーポリシーに同意する必要があります。出生年が提供されない場合は登録を保留します。KakaoログインはKakaoアカウントを確認する手続きです。入口の警備担当者が身分証の原本で本人と年齢を確認し、入場を認証するとコミュニティと特典が使えます。新暦の誕生日当日にこの方法で入場が確認されると、年に1回、誕生日称号を獲得できます。</p>
 <ol>
 <li><strong>会員登録とアカウント。</strong> Groove Lounge は 더스팟앤그루브（CLUB GROOVE N SPOT）が運営する満19歳以上のお客様向けサービスです。店内でスタッフ発行の登録用QRコードを使って登録してください。年齢条件を満たしていることを確認し、利用規約、コミュニティルール、必須の個人情報の取り扱い案内をお読みください。ニックネームは他のお客様に表示されます。アカウントとパスワードはご本人だけで使い、他人のアカウント、電話番号、QRコードを無断で使用しないでください。ログインでお困りの際は店内のスタッフにお声がけください。</li>
@@ -271,6 +336,11 @@
 <li><strong>担当スタッフ、テーブル、相席募集。</strong> テーブルの問い合わせだけでは予約は確定しません。担当スタッフまたは予約担当者が確認します。相席募集は他のお客様とテーブルを利用するための申請で、スタッフの確認後に確定します。支払いと精算は店頭で担当スタッフと行ってください。お客様同士で送金を求めたり決済情報を交換したりしないでください。担当スタッフからのパーティーや特典の広告は、別途同意いただいた方にのみ送ります。</li>
 <li><strong>通報、利用制限、異議申立て。</strong> 通報を受けると、投稿や写真を一時的に非表示にすることがあります。担当スタッフが通報と関連資料を確認し、再表示、削除、警告、一時停止、アカウントの利用制限などの措置を取ります。理由の説明や再確認を希望する場合は、通報や制限の対象と時期をお知らせください。緊急の安全上の問題は店内スタッフや警備員に知らせ、緊急通報が必要な場合は現地の緊急通報機関に連絡してください。</li>
 <li><strong>変更と退会。</strong> マイページの設定からアカウントの削除を申請できます。ラウンジの削除手続きとスタッフ側で受け付けた予約、注文、ボトルキープの手続きは別々です。手続き中の内容は店舗にお問い合わせください。重要な規約変更は施行前にラウンジでお知らせし、必要に応じて別途同意を求めます。 <span data-policy-decision="noticeAndAppeal">通常の変更は施行の7日前に、お客様に不利な変更や重要な変更は30日前にラウンジでお知らせします。利用制限への異議申立てを受け付けた際には、担当者と回答の目安をお伝えします。</span></li>
+<li><strong>サービスの変更と中断.</strong> 運営上・技術上必要な場合、機能を変更または中断することがあります。事前に告知できる場合はラウンジで先にお知らせし、障害・緊急点検など事前に告知できない場合は直後にお知らせします。サービスを終了する場合は、残りのポイントと進行中の注文の扱いを事前に案内します。</li>
+<li><strong>責任の制限.</strong> 天災、通信・提供事業者の障害、利用者ご本人の過失、他の利用者の投稿や客同士の取引など、運営者が管理できない事由による損害については責任を負いません。ただし、運営者の故意または重大な過失による損害、および法律上責任を制限できない場合は除きます。</li>
+<li><strong>投稿の権利.</strong> 投稿した文章・写真の著作権は投稿者に帰属します。投稿者は、ラウンジで投稿を表示するために必要な範囲（掲載・表示、サイズ調整・圧縮、自動翻訳、通報の確認）で、運営者が無償で利用することを許諾します。ラウンジ外の宣伝に使う場合は、その都度別途同意を得ます。投稿を削除すると、この許諾も終了します（通報の保存記録は第4項の表の基準に従います）。</li>
+<li><strong>権利侵害の申告と一時措置.</strong> 投稿によりプライバシーの侵害や名誉毀損などの権利侵害を受けた場合、通報メニュー、電話 <a href="tel:050713015970">0507-1301-5970</a>、または店舗で、侵害の内容と投稿を示して削除や反論の掲載を求めることができます。請求を受けたら遅滞なく削除・一時措置など必要な措置をとり、請求者と投稿者に通知します。侵害かどうかの判断が難しい、または争いが予想される場合は、最長30日間投稿を非表示にすることがあります（情報通信網法第44条の2の一時措置）。投稿者はその間に再掲載を求めて異議を申し立てることができます。</li>
+<li><strong>準拠法と管轄.</strong> この規約は大韓民国の法律に従います。紛争で訴訟が必要な場合は、民事訴訟法に基づく管轄裁判所に提起します。</li>
 </ol>
 </section>
 <section class="shell-card policy-section" aria-labelledby="ja-rules">
@@ -284,10 +354,12 @@
 </ul>
 </section>
 <section class="shell-card policy-section" aria-labelledby="ja-privacy">
-<h2 id="ja-privacy">3. 個人情報の収集・利用と公開範囲</h2>
-<p data-l26-signup-notice>登録時に電話番号、ニックネーム、パスワード、生年月日と同意の選択を求めます。生年月日は年齢確認に使い、身分証番号や写しは取得しません。電話番号のハッシュと末尾4桁、パスワードのハッシュ、自己申告と認証状況、規約の版と同意時刻、任意同意、登録経路はアカウント管理と重複防止に使用します。認証コードのハッシュは5分間有効です。送信制限用の電話番号とIPアドレスのハッシュは24時間後に定期処理で削除します。SMS事業者は配信用の番号とコードを、Cloudflare Turnstileはセキュリティ確認用の接続情報を処理します。SMS委託先と該当する国外移転情報は公開前にここで告知します。広告と夜間広告への同意はそれぞれ任意です。</p>
+<h2 id="ja-privacy">3. プライバシーポリシー — 収集・利用と公開範囲</h2>
+<p>このプライバシーポリシーは、더스팟앤그루브（グルーヴクラブ）がグルーヴラウンジで取り扱う個人情報に適用されます。</p>
+<nav class="policy-toc" aria-label="プライバシーポリシー目次"><a href="#ja-privacy">3. 収集・利用</a><a href="#ja-retention">4. 項目・保存期間</a><a href="#ja-providers">5. 委託・国外移転</a><a href="#ja-rights">6. 権利の行使</a><a href="#ja-destruction">7. 破棄</a><a href="#ja-security">8. 安全管理措置</a><a href="#ja-cookies">9. クッキー・端末保存</a><a href="#ja-officer">10. 保護責任者</a><a href="#ja-remedy">11. 権利侵害の救済</a><a href="#ja-changes">12. 変更・過去の版</a></nav>
+<p><strong>処理の根拠.</strong> 会員登録とラウンジ利用契約の履行に必要な情報は、個人情報保護法第15条第1項第4号に基づき、同意なしで処理します。ニックネーム、ログイン情報（Kakao会員番号の変換値または電話番号の変換値・下4桁、パスワード検証値、セッション）、登録年齢の確認結果、規約確認の記録、ご自身が投稿・送信した文章・写真・メッセージ・依頼、来店・ポイントなど機能提供の記録、通報・利用制限など安全な運営に必要な記録が含まれます。登録画面のプライバシーポリシー確認のチェックは、この内容を読んだことの確認です。</p><p><strong>同意を得て処理する情報.</strong> Kakaoから受け取る誕生日（月日）とニックネーム候補、ご自身で登録する誕生日、広告・深夜広告の受信、ウェブプッシュ、オープンチャットタブの90日保存、プロフィール写真・紹介などの任意項目は、それぞれ同意または選択した場合にのみ処理し、いつでもオフにできます。同意しなくても基本機能は使えます。法令で保存義務がある場合は、その法令に従って保存します。</p>
 <p>KakaoからサービスユーザーIDと、新規登録に必要な出生年を取得します。同意がある場合は、Kakaoのニックネームを入力候補として表示し、新暦の誕生日（月日）を誕生日来店の判定に使います。出生年と候補のニックネームは登録手続きでのみ使用します。Kakaoのトークンはユーザー情報の取得後に破棄します。連携と重複防止にはIDのハッシュを、Kakao側の連携解除には暗号化したIDを使用します。有効期間の短いログインCookieで手続きを開始したブラウザーを確認します。選択したニックネーム、復旧用パスワードのハッシュ、登録・同意記録はアカウント管理に使用します。連携解除時に連携と誕生日情報を削除し、すべての端末からログアウトします。Kakaoに解除が伝わるまで暗号化したIDを保管します。獲得済み称号は退会まで保持します。MY設定から連携解除や退会ができます。</p>
-<p>登録時にニックネーム、携帯電話番号、パスワード、満19歳以上であることと必須事項への同意の確認を受け取ります。電話番号は照合用の変換値と下4桁、パスワードはソルト付きの検証値を保存します。電話番号全体と平文のパスワードはラウンジのアカウント表に残しません。スタッフがスタッフ用アプリの認証を利用する場合、入力されたスタッフアカウント名とパスワードを資格確認のためスタッフサーバーに送信します。スタッフも公開プロフィールではニックネームを使います。</p>
+<p>店舗の登録QRで登録する際に、ニックネーム、携帯電話番号、パスワード、満19歳以上であることと必須事項への同意の確認を受け取ります。電話番号は照合用の変換値と下4桁、パスワードはソルト付きの検証値を保存します。電話番号全体と平文のパスワードはラウンジのアカウント表に残しません。スタッフがスタッフ用アプリの認証を利用する場合、入力されたスタッフアカウント名とパスワードを資格確認のためスタッフサーバーに送信します。スタッフも公開プロフィールではニックネームを使います。</p>
 <p>公開プロフィールにはニックネーム、設定した写真、自己紹介、好みのフロア、一部の活動情報が表示されます。プロフィールや申請で選ぶフロアは店内の階を示します。これらの機能でGPSや端末のリアルタイム位置情報は収集しません。電話番号、ボトルキープの連携情報、担当スタッフ情報、スタッフアカウントの実名は公開プロフィールには表示しません。権限のあるスタッフは会員確認やボトルキープ連携に必要な範囲で、ニックネーム、電話番号の下4桁、連携情報を参照できます。お客様はご自身の担当スタッフ名を問い合わせ画面などで確認できます。登録用QRを使うと、登録手続きと集計に必要な会員ID、ニックネーム、電話番号の下4桁、QR担当者の識別子がスタッフサーバーに送信されます。</p>
 <p>公開の投稿や写真、ランキング、チャレンジ結果、店内スクリーンに表示された投稿は他のお客様や来店者に見られる場合があります。ルームの投稿はそのルームの利用者に、個別メッセージは相手に表示されます。通報、安全対応、予約、グッズの情報は担当業務に必要な範囲で扱います。テーブル問い合わせのフロア、人数、メモ、相席確定時の参加者のニックネーム・会員IDと募集条件はスタッフに送信される場合があります。警備の要請ではニックネーム、会員ID、フロア、入力された座席情報が送信される場合があります。メモには不要な連絡先、決済情報、機微な情報を書かないでください。</p>
 <ul>
@@ -322,23 +394,50 @@
 </tbody></table></div>
 </section>
 <section class="shell-card policy-section" aria-labelledby="ja-providers">
-<h2 id="ja-providers">5. 委託、国外での取り扱い、端末への保存</h2>
+<h2 id="ja-providers">5. 処理の委託と個人情報の国外移転</h2>
 <ul>
-<li>サービス運営と写真保管には Cloudflare Workers、Durable Objects、R2 を使用します。翻訳を実行すると選択した文章と対象言語を <strong>Cloudflare Workers AI</strong> に送り、翻訳結果を表示します。電話番号や会員IDを別の項目で送ることはありません。選択した文章に含まれる個人情報は文章とともに処理されます。 <span data-policy-decision="cloudflareProcessing">国外処理が適用される場合は、委託先法人と連絡先、地域・項目・時期・方法・保存、再委託、翻訳入力の学習・ログ処理、根拠、拒否の方法と影響を処理前に案内します。</span></li>
-<li>端末通知を有効にすると、内容を含まない信号をブラウザーやOSの通知事業者に送信します。端末はラウンジから通知内容を受け取ります。通知が端末やロック画面に残る場合があります。 <span data-policy-decision="pushProviders">プッシュ通知を有効にする際、端末の提供元、連絡先、国、保存と国外処理について案内します。通知画面または端末設定で受信を解除できます。</span></li>
+<li>サービス運営と写真保管には Cloudflare Workers、Durable Objects、R2 を使用します。翻訳を実行すると選択した文章と対象言語を <strong>Cloudflare Workers AI</strong> に送り、翻訳結果を表示します。電話番号や会員IDを別の項目で送ることはありません。選択した文章に含まれる個人情報は文章とともに処理されます。 ラウンジのサーバー、データ・写真の保存、自動翻訳は米国企業 Cloudflare, Inc. のサービスで処理します。国外移転の内容は下の表のとおりです（個人情報保護法第28条の8第1項第3号：契約の履行に必要な処理委託・保管として本ポリシーで公開）。</li>
+<li>端末通知を有効にすると、内容を含まない信号をブラウザーやOSの通知事業者に送信します。端末はラウンジから通知内容を受け取ります。通知が端末やロック画面に残る場合があります。 通知の信号は、お使いのブラウザー提供元のプッシュサービス（例：Chrome・AndroidはGoogle、Safari・iPhoneはApple、FirefoxはMozilla）を経由して端末に届きます。信号には通知内容を含めず、端末がラウンジのサーバーから直接内容を受け取ります。通知画面または端末設定で受信を解除できます。</li>
 <li>スタッフサーバーでは登録、通報通知、安全対応、特典、予約・注文、担当者の対応、キープ連携に必要な情報を業務ごとの権限の範囲で処理します。 <span data-policy-decision="staffProcessors">スタッフ側の写し・バックアップ・閲覧・外部提供は担当者が権限を管理します。外部委託、法令に基づく提供、再提供は承認範囲の必要な情報に限定し、処理を記録します。</span></li>
-<li>ラジオ、動画、外部リンク、外部画像を開くと、提供元に接続情報が伝わる場合があります。各提供元の案内をご確認ください。ログインの維持や言語設定にブラウザーの保存領域を、オフライン表示にサービスワーカーのキャッシュを使います。 <span data-policy-decision="externalContent">外部コンテンツ・フォント提供元と、実際に利用するアクセスログ・分析項目を案内します。任意同意が必要な場合は別に求め、用意された設定で変更できます。</span></li>
+<li>ラジオ、動画、外部リンク、外部画像を開くと、提供元に接続情報が伝わる場合があります。各提供元の案内をご確認ください。ラウンジの画面ファイルは GitHub, Inc.（米国）の GitHub Pages から配信されます。画面を開くと、GitHub が IPアドレスやブラウザー情報などのアクセス記録を処理します。フォントは jsDelivr（cdn.jsdelivr.net）から、DJセッションのサムネイル・動画は YouTube（i.ytimg.com、youtube.com）から読み込み、これらのサービスに接続情報が伝わります。ラウンジは広告・分析用のトラッキングツールを使いません。 端末への保存（クッキー・ブラウザーの保存領域）は第9項で案内します。</li>
 </ul>
+<div class="policy-table"><table role="table"><tbody role="rowgroup"><tr role="row"><th scope="row" role="rowheader">移転先・連絡先</th><td role="cell">Cloudflare, Inc.（米国）· <a href="mailto:privacy@cloudflare.com">privacy@cloudflare.com</a></td></tr><tr role="row"><th scope="row" role="rowheader">移転先の国</th><td role="cell">米国および Cloudflare のデータセンターがある国（最寄りの接続拠点を含む）</td></tr><tr role="row"><th scope="row" role="rowheader">移転する項目</th><td role="cell">第4項の表のラウンジのアカウント・活動情報、投稿した写真、接続情報（IPなど）、自動翻訳を依頼した文章と翻訳先の言語</td></tr><tr role="row"><th scope="row" role="rowheader">移転の目的</th><td role="cell">サーバー運営（Workers、Durable Objects）、写真の保存（R2）、自動翻訳（Workers AI）</td></tr><tr role="row"><th scope="row" role="rowheader">移転の時期・方法</th><td role="cell">ラウンジを利用するたびにネットワーク経由で送信されます</td></tr><tr role="row"><th scope="row" role="rowheader">保有・利用期間</th><td role="cell">第4項の表の保存期間まで（退会または期間終了時に削除）。翻訳を依頼した文章は、ラウンジが翻訳記録として別に保存しません</td></tr><tr role="row"><th scope="row" role="rowheader">拒否の方法と結果</th><td role="cell">ラウンジは Cloudflare 上でのみ動作するため、移転を望まない場合は登録しないか退会する必要があり、その場合ラウンジは利用できません。自動翻訳だけを避けたい場合は翻訳ボタンを押さなければ、原文のまま表示されます。</td></tr></tbody></table></div>
 </section>
 <section class="shell-card policy-section" aria-labelledby="ja-rights">
 <h2 id="ja-rights">6. 選択、権利、アカウント削除</h2>
 <ul>
 <li>広告案内と夜間通知はそれぞれ任意です。同意しなくても登録と基本機能を利用できます。マイページの設定で変更でき、通知画面と端末設定で購読や通知許可を解除できます。写真、誕生日、翻訳、招待も利用しない選択ができます。</li>
-<li>個人情報の開示、訂正、削除、処理の停止、任意同意の撤回を請求できます。設定で退会を申請するか店舗へご連絡ください。ご本人の確認に必要な最小限の情報をお願いします。パスワードや身分証原本をメッセージで送らないでください。 <span data-policy-decision="privacyContact">個人情報保護責任者はグルーヴクラブの代表です。問い合わせは 0507-1301-5970 へ。書面による請求は釜山広域市釜山鎮区中央大路680番街キル52の店舗で受け付けます。</span> <span data-policy-decision="rightsProcedure">本人または代理人の請求では権限確認に必要な最小限の資料のみ受け取ります。受付時に回答手続き、回答予定時期、利用できる公的な紛争解決窓口を案内します。</span></li>
+<li>個人情報の開示、訂正、削除、処理の停止、任意同意の撤回を請求できます。設定で退会を申請するか店舗へご連絡ください。ご本人の確認に必要な最小限の情報をお願いします。パスワードや身分証原本をメッセージで送らないでください。 個人情報保護責任者はグルーヴクラブの代表です。閲覧・訂正・削除・処理停止の請求とお問い合わせは、電話 <a href="tel:050713015970">0507-1301-5970</a>、ラウンジアプリ内のお問い合わせ・通報機能、または店舗での書面（부산광역시 부산진구 중앙대로680번가길 52, 2~3층（2〜3階））で受け付けます。 <span data-policy-decision="rightsProcedure">本人または代理人の請求では権限確認に必要な最小限の資料のみ受け取ります。受付時に回答手続き、回答予定時期、利用できる公的な紛争解決窓口を案内します。</span></li>
 <li>退会申請の確認後、アカウント利用を停止し、アカウント、プロフィール、活動、アップロード、購読、申請の記録を整理します。安全管理や法令のため必要な記録は分けて保存し、期間満了時に削除します。他人が保存した公開内容や端末に残る通知は各保存先で削除が必要な場合があります。 <span data-policy-decision="deletionCompletion">退会の確認後、ラウンジへのアクセスを直ちに制限します。R2とスタッフ側の写しは30日以内に整理し、失敗した削除は再試行します。バックアップの循環期限、注文・予約記録の法定例外、通報に必要な最小限の資料と例外は別途案内します。</span></li>
+<li>広告・深夜広告の受信に同意した場合、同意した日から2年ごとに同意の状況をお知らせし、受信を続けるか確認します（情報通信網法第50条第8項）。受信をオフにすると、その時点から広告通知を送りません。</li>
 </ul>
 </section>
+<section class="shell-card policy-section" aria-labelledby="ja-destruction">
+<h2 id="ja-destruction">7. 個人情報の破棄</h2>
+<ul><li><strong>時期.</strong> 保存期間が終了するか処理目的を達成した場合（退会、Kakao連携の解除、投稿の削除など）、遅滞なく破棄します。</li><li><strong>手順.</strong> 保存期間が定められた記録は、サーバーの自動整理処理が定期的に（約5分〜1日ごと）見つけて削除します。退会するとすぐにアカウントへのアクセスを止め、アカウント・プロフィール・活動・アップロードの記録を削除し、写真の保存領域（R2）とスタッフ側の写しは30日以内に整理し、失敗した場合は再試行します。法令や紛争対応のために別途保存する記録は、他の情報と分けてアクセスを制限し、期間が終われば同じ方法で破棄します。</li><li><strong>方法.</strong> 電子ファイルはデータベースと保存領域から削除し、サービス上で再び開いたり復元したりできないようにします。紙に印刷した記録がある場合は、裁断または焼却します。</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="ja-security">
+<h2 id="ja-security">8. 個人情報の安全管理措置</h2>
+<ul><li><strong>アクセス権限の管理.</strong> スタッフの権限を役割（管理・運営・警備・DJなど）で分け、業務に必要な情報だけを見られるようにします。スタッフ用のアクセストークンは署名で検証します。</li><li><strong>アクセス記録.</strong> 通報証拠の閲覧、投稿の非表示・制裁、キープの連携、機能設定の変更などの管理作業は、誰がいつ行ったかを記録します。</li><li><strong>パスワードと識別値の保護.</strong> パスワードはソルト付き PBKDF2（SHA-256）の検証値としてのみ保存し、原文は残しません。電話番号とKakao会員番号は秘密鍵で作った変換値で照合し、Kakao連携の解除に必要なIDは AES-GCM で暗号化して保存します。</li><li><strong>通信の暗号化.</strong> ラウンジのすべての通信は HTTPS で暗号化します。Kakaoログインのクッキーは HTTPS でのみ送信され、画面のスクリプトから読み取れないよう設定しています（Secure・HttpOnly）。</li><li><strong>不正アクセスの防止.</strong> ログイン失敗の回数を制限し、サービスの秘密鍵はコードの保管庫ではなく Cloudflare の秘密値として別に保管します。</li><li><strong>物理的な保護.</strong> サーバーと保存領域は Cloudflare のデータセンターにあり、施設の物理的セキュリティは Cloudflare が管理します。</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="ja-cookies">
+<h2 id="ja-cookies">9. 自動収集装置（クッキー・ブラウザーの保存領域）の設置・運用と拒否</h2>
+<ul><li>ラウンジは広告・分析用のクッキーやトラッキングツールを使いません。</li><li><strong>ブラウザーの保存領域（localStorage）.</strong> ログイン維持のトークン、言語、画面テーマを端末に保存します。</li><li><strong>Kakaoログインのクッキー.</strong> Kakaoログインを始めたブラウザーを確認するため、10分間だけ有効なクッキーを置き、ログインが終わると削除します。</li><li><strong>サービスワーカーのキャッシュ・IndexedDB.</strong> 画面ファイルを保存して素早く・オフラインで開けるようにし、通知を受け取る端末の連携情報を保存します。</li><li><strong>拒否の方法.</strong> ブラウザーの設定で、このサイトのクッキー・サイトデータを削除またはブロックできます（例：Chromeの設定 › プライバシーとセキュリティ › サードパーティ Cookie・サイトデータ、iPhoneの設定 › Safari › 詳細 › Webサイトデータ）。ブロックすると、ログインの維持、Kakaoログイン、オフライン表示、通知が動作しない場合があります。</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="ja-officer">
+<h2 id="ja-officer">10. 個人情報保護責任者</h2>
+<ul><li>個人情報保護責任者 · 職責：代表（더스팟앤그루브）</li><li>電話 · <a href="tel:050713015970">0507-1301-5970</a></li><li>アプリ内 · ラウンジのお問い合わせ・通報機能</li><li>書面 · 부산광역시 부산진구 중앙대로680번가길 52, 2~3층（2〜3階）の店舗</li><li>個人情報の閲覧・訂正・削除・処理停止の請求と苦情は、上記の連絡先で受け付け、遅滞なく回答します。</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="ja-remedy">
+<h2 id="ja-remedy">11. 権利侵害の救済方法</h2>
+<p>個人情報の侵害について相談や救済が必要な場合は、次の韓国の機関に問い合わせることができます。</p><ul><li>個人情報紛争調停委員会 · 1833-6972 · <a href="https://www.kopico.go.kr" target="_blank" rel="noopener noreferrer">www.kopico.go.kr</a></li><li>個人情報侵害申告センター（韓国インターネット振興院）· 118 · <a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener noreferrer">privacy.kisa.or.kr</a></li><li>大検察庁 · 1301 · <a href="https://www.spo.go.kr" target="_blank" rel="noopener noreferrer">www.spo.go.kr</a></li><li>警察庁 · 182 · <a href="https://ecrm.police.go.kr" target="_blank" rel="noopener noreferrer">ecrm.police.go.kr</a></li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="ja-changes">
+<h2 id="ja-changes">12. ポリシーの変更と過去の版</h2>
+<ul><li>このポリシーを変更する場合は、施行の7日前（利用者に不利または重要な変更は30日前）に、ラウンジのお知らせとこのページの冒頭で変更内容と施行日をお知らせします。</li><li>施行日 · 2026年11月28日。過去の版と変更内容の全体は <a href="https://github.com/groovenspot/groovenspot.github.io/commits/main/lounge/policy.html" target="_blank" rel="noopener noreferrer">変更履歴</a>で日付ごとに確認できます。店舗または上記の連絡先に依頼すれば、過去の版をお送りします。</li></ul>
+</section>
 <footer class="shell-card policy-contact">
+<p>商号 더스팟앤그루브 · 代表 김동기 · 事業者登録番号 790-36-01644 · 부산광역시 부산진구 중앙대로680번가길 52, 2~3층（2〜3階） · <a href="tel:050713015970">0507-1301-5970</a></p>
 <p>お問い合わせ電話番号 · <a href="tel:050713015970">0507-1301-5970</a></p>
 <a href="/lounge/">ラウンジに戻る</a>
 </footer>
@@ -346,20 +445,19 @@
 <article id="zh" lang="zh" aria-labelledby="zh-title">
 <header class="policy-intro">
 <h1 id="zh-title">Lounge 使用条款和隐私声明</h1>
-<p data-l26-signup-notice>自助注册补充公告 · 2026年11月28日 · 自助注册开放时生效。</p>
 <p>公告日期 · <span data-policy-announcement>2026年11月20日</span></p>
 <p>补充公告 · 2026年11月21日 — 已在第 4 项表格中加入公开聊天标签页房间的进入同意和消息保存期限（90 天）。</p>
 <p>运营方 · 더스팟앤그루브 (CLUB GROOVE N SPOT)</p>
 <p>生效日期 · <span data-policy-decision="effectiveDate">2026年11月27日</span></p>
+<p>修订记录 · 2026年11月28日 — 新增 Kakao 登录信息、处理依据、跨境传输、销毁、安全保障措施、Cookie 与设备存储、个人信息保护负责人、权益救济、变更告知，以及条款中的服务变更、责任限制、帖子权利、临时措施和适用法律。旧版本见第 12 项。</p>
 </header>
 <nav class="policy-toc" aria-label="Lounge 使用条款和隐私声明">
 <a href="#zh-terms">使用条款</a>
 <a href="#zh-rules">社区规则</a>
-<a href="#zh-privacy">隐私声明</a>
+<a href="#zh-privacy"><strong>隐私政策</strong></a>
 </nav>
 <section class="shell-card policy-section" aria-labelledby="zh-terms">
 <h2 id="zh-terms">1. 使用条款</h2>
-<p data-l26-signup-notice>自助注册仅限年满19岁的用户。短信验证确认你持有该号码，出生日期和年龄声明由本人填写。个人资料默认私密。入口安保人员核验实体证件、确认本人和年龄并完成入场验证前，只能关注DJ和官方账号，以及参加部分无奖励活动。发帖、评论、私信、聊天、积分、权益、楼层投票和DJ评价均锁定。投票和评价还需符合各自的参与条件。</p>
 <p>通过 Kakao 注册时，按韩国时间计算的当年年份减去出生年份须达到 19，且须同意使用条款和隐私政策。若 Kakao 未提供出生年份，注册将暂缓。Kakao 登录用于确认 Kakao 账号。入口安保查验实体证件、确认本人及年龄并完成入场验证后，才可使用社区和奖励功能。在公历生日当天以此方式完成入场验证，每个日历年可获得一次生日称号。</p>
 <ol>
 <li><strong>注册与账号。</strong> Groove Lounge 由 더스팟앤그루브（CLUB GROOVE N SPOT）运营，面向年满 19 周岁的客人。请在店内使用工作人员提供的注册二维码，确认符合年龄要求，并阅读使用条款、社区规则和必读的个人信息说明。其他客人可以看到您的昵称。账号和密码请由本人使用。未经许可，请勿使用他人的账号、号码或二维码。登录遇到问题时，请到店咨询工作人员。</li>
@@ -369,6 +467,11 @@
 <li><strong>专属接待、订桌咨询与拼桌。</strong> 提交订桌咨询不代表预订成功。专属接待或预订工作人员会审核咨询。拼桌是与其他客人共享桌位的申请，经工作人员确认后方可成立。请到店与负责的工作人员办理付款和结算。客人之间请勿要求转账或交换支付信息。只有您另行同意接收广告时，工作人员才会发送派对或优惠信息。</li>
 <li><strong>举报、使用限制与申诉。</strong> 收到举报后，帖子或照片可能被暂时隐藏。获授权的工作人员会审核举报和相关材料，并视情况恢复或删除内容，或给予警告、暂停使用或限制账号。需要了解原因或申请复核时，请提供举报或限制所针对的内容和大致时间。遇到紧急安全问题，请立即联系现场工作人员或安保人员。需要紧急报警或救助时，请联系当地紧急服务。</li>
 <li><strong>变更与注销。</strong> 您可以在“我的”设置中申请注销账号。Lounge 注销与工作人员已受理的预订、订单和存酒事项分别办理。仍在办理的事项请向俱乐部咨询。重要条款变更会在实施前于 Lounge 公示，并在必要时另行征求同意。 <span data-policy-decision="noticeAndAppeal">一般变更会在生效前 7 天于 Lounge 公示，重要或对用户不利的变更会提前 30 天公示。收到使用限制申诉时，我们会告知处理人员和预计回复时间。</span></li>
+<li><strong>服务变更与中止.</strong> 因运营或技术需要，我们可能变更或中止功能。能提前告知的，会先在 Lounge 公告；故障或紧急维护等无法提前告知的，会在事后立即告知。如终止服务，会提前说明剩余积分和进行中订单的处理方式。</li>
+<li><strong>责任限制.</strong> 对于天灾、通信或服务商故障、用户本人过错、其他用户发布的内容或顾客之间的交易等运营者无法控制的原因造成的损失，我们不承担责任。但因运营者故意或重大过失造成的损失，以及法律不允许限制责任的情形除外。</li>
+<li><strong>帖子的权利.</strong> 您上传的文字和照片的著作权归作者所有。作者许可运营者在 Lounge 内展示帖子所需的范围内（发布与展示、调整尺寸与压缩、自动翻译、举报审核）免费使用。如需用于 Lounge 以外的宣传，每次另行征得同意。删除帖子后，该许可即终止（举报保存记录按第 4 项表格执行）。</li>
+<li><strong>侵权举报与临时措施.</strong> 如帖子侵犯了您的隐私、名誉等权利，您可以通过举报菜单、电话 <a href="tel:050713015970">0507-1301-5970</a> 或到店，说明侵权内容并指明帖子，要求删除或刊登反驳内容。收到请求后，我们会立即采取删除、临时措施等必要措施，并通知请求人和发布者。如难以判断是否侵权或可能产生争议，我们可将帖子隐藏最长 30 天（《信息通信网法》第44条之2 临时措施）。发布者可在此期间提出异议，要求恢复发布。</li>
+<li><strong>适用法律与管辖.</strong> 本条款适用大韩民国法律。如因争议需提起诉讼，向依《民事诉讼法》具有管辖权的法院提起。</li>
 </ol>
 </section>
 <section class="shell-card policy-section" aria-labelledby="zh-rules">
@@ -382,10 +485,12 @@
 </ul>
 </section>
 <section class="shell-card policy-section" aria-labelledby="zh-privacy">
-<h2 id="zh-privacy">3. 个人信息的收集、使用及公开范围</h2>
-<p data-l26-signup-notice>注册会要求手机号码、昵称、密码、出生日期和同意选项。出生日期仅用于年龄判断，我们不采集证件号码或复印件。为运营账号及防止重复注册，我们保存手机号码散列与末四位、密码散列、自我声明与验证状态、条款版本和同意时间、可选同意及注册来源。一次性代码散列有效期为五分钟。用于限制发送的号码及IP地址散列会在24小时后由定期任务删除。短信服务商接收号码和验证码用于发送，Cloudflare Turnstile处理连接信息用于安全校验。开放前会在此公布短信受托方及适用的委托和跨境处理信息。广告和夜间广告同意分别可选，并可在账号设置中更改。</p>
+<h2 id="zh-privacy">3. 隐私政策 — 收集、使用及公开范围</h2>
+<p>本隐私政策适用于 더스팟앤그루브（Groove 俱乐部）在 Groove Lounge 中处理的个人信息。</p>
+<nav class="policy-toc" aria-label="隐私政策目录"><a href="#zh-privacy">3. 收集与使用</a><a href="#zh-retention">4. 项目与保存期限</a><a href="#zh-providers">5. 委托与跨境传输</a><a href="#zh-rights">6. 权利行使</a><a href="#zh-destruction">7. 销毁</a><a href="#zh-security">8. 安全保障措施</a><a href="#zh-cookies">9. Cookie 与设备存储</a><a href="#zh-officer">10. 保护负责人</a><a href="#zh-remedy">11. 权益救济</a><a href="#zh-changes">12. 变更与旧版本</a></nav>
+<p><strong>处理依据.</strong> 为完成注册和履行 Lounge 使用合同所必需的信息，依据《个人信息保护法》第15条第1款第4项，无需另行同意即可处理。包括昵称、登录信息（Kakao 会员号的转换值或手机号的转换值及后四位、密码校验值、会话）、注册年龄核验结果、条款确认记录、您发布或发送的文字、照片、私信和请求、到店和积分等功能记录，以及举报、使用限制等安全运营所需的记录。注册页面的隐私政策确认勾选表示您已阅读本政策。</p><p><strong>经同意处理的信息.</strong> 从 Kakao 获取的生日（月、日）和昵称建议、您自行登记的生日、广告及夜间广告接收、网页推送、公开聊天标签页的 90 天保存、头像和简介等可选项目，仅在您分别同意或自行选择时处理，并可随时关闭。不同意也可使用基本功能。法律规定须保存的记录，依该法律保存。</p>
 <p>我们从 Kakao 获取服务用户 ID 和新注册所需的出生年份。经你同意，我们会将 Kakao 昵称作为表单建议，并使用公历生日的月份和日期确认生日到访。出生年份和昵称建议仅在注册流程中使用。Kakao 令牌在查询用户信息后即丢弃。我们使用用户 ID 的散列值进行账号绑定和防止重复，使用加密 ID 向 Kakao 请求解除连接。短时有效的登录 Cookie 用来确认发起登录的浏览器。你选择的昵称、恢复密码的散列值及注册与同意记录用于账号管理。解除连接会删除连接及生日数据，并退出所有设备。加密 ID 保留至解除请求送达 Kakao。已获得的称号保留至注销。你可在「我的」设置中解除连接或注销账号。</p>
-<p>注册时，我们收集昵称、手机号码、密码，以及您年满 19 周岁并完成必需同意的确认。手机号码以供核验的转换值及末四位保存，密码以加盐计算的验证值保存。Lounge 的账号表不保留完整号码和明文密码。工作人员可以使用员工应用身份验证，输入的员工账号名称和密码将传送给员工服务器以核验资格。工作人员的公开资料同样使用昵称。</p>
+<p>通过店内注册二维码注册时，我们收集昵称、手机号码、密码，以及您年满 19 周岁并完成必需同意的确认。手机号码以供核验的转换值及末四位保存，密码以加盐计算的验证值保存。Lounge 的账号表不保留完整号码和明文密码。工作人员可以使用员工应用身份验证，输入的员工账号名称和密码将传送给员工服务器以核验资格。工作人员的公开资料同样使用昵称。</p>
 <p>公开资料可能显示昵称、您设置的头像、简介、偏好楼层及部分活动。资料或申请中所选的楼层是俱乐部内的楼层。这些功能不收集 GPS 或设备实时位置。公开资料不会显示手机号码、存酒关联、专属接待信息或员工账号实名。获授权的工作人员可在核验会员和关联存酒所需的范围内查看昵称、手机号码末四位及关联信息。您可以在自己的咨询页面等位置查看专属接待姓名。使用工作人员的注册二维码时，会员 ID、昵称、号码末四位和二维码对应的工作人员标识会发送给员工服务器，用于注册处理及统计。</p>
 <p>公开帖子和照片、排行榜、挑战结果、店内屏幕内容可能被其他客人或到店人员看到。公开聊天室发言面向该房间的用户，私信向聊天对方显示。获授权的工作人员在履职范围内使用举报、安全请求、预订和商品信息。订桌咨询的楼层、人数和备注，拼桌确认时的成员昵称、会员 ID 和招募条件，可能会传送给工作人员。安保请求可传送昵称、会员 ID、楼层和填写的座位信息。请勿在备注中填写不必要的联系方式、支付信息或敏感个人信息。</p>
 <ul>
@@ -420,23 +525,50 @@
 </tbody></table></div>
 </section>
 <section class="shell-card policy-section" aria-labelledby="zh-providers">
-<h2 id="zh-providers">5. 受托服务、跨境处理和设备存储</h2>
+<h2 id="zh-providers">5. 委托处理与个人信息跨境传输</h2>
 <ul>
-<li>我们使用 Cloudflare Workers、Durable Objects 和 R2 运营服务及存储照片。您发起翻译时，所选句子和目标语言会发送至 <strong>Cloudflare Workers AI</strong>，并返回结果展示。请求不会单独附带您的手机号码或会员 ID。句子中若有个人信息，则会随文本一起处理。 <span data-policy-decision="cloudflareProcessing">如涉及境外处理，我们会在处理前告知受托法人和联系方式、地区、项目、时间、方式、保存、再委托、翻译输入的训练和日志处理、传输依据以及拒绝方式和影响。</span></li>
-<li>开启设备通知时，我们向浏览器或操作系统的推送服务发送不含通知内容的信号。设备再从 Lounge 服务器获取通知。通知可能保留在设备或锁定屏幕上。 <span data-policy-decision="pushProviders">开启推送时，我们会说明设备所用的提供方、联系方式、国家、保存及境外处理信息。您可以在通知页面或设备设置中关闭接收。</span></li>
+<li>我们使用 Cloudflare Workers、Durable Objects 和 R2 运营服务及存储照片。您发起翻译时，所选句子和目标语言会发送至 <strong>Cloudflare Workers AI</strong>，并返回结果展示。请求不会单独附带您的手机号码或会员 ID。句子中若有个人信息，则会随文本一起处理。 Lounge 服务器、数据和照片存储及自动翻译均使用美国公司 Cloudflare, Inc. 的服务处理。跨境传输内容见下表（《个人信息保护法》第28条之8第1款第3项：为履行合同所需的委托处理和保管，并在本政策中公开）。</li>
+<li>开启设备通知时，我们向浏览器或操作系统的推送服务发送不含通知内容的信号。设备再从 Lounge 服务器获取通知。通知可能保留在设备或锁定屏幕上。 推送信号经由您所用浏览器厂商的推送服务（例如 Chrome 和 Android 为 Google，Safari 和 iPhone 为 Apple，Firefox 为 Mozilla）发送到设备。信号不含通知内容，设备直接从 Lounge 服务器获取内容。您可以在通知页面或设备设置中关闭接收。</li>
 <li>员工服务器处理注册、举报通知、安全应对、奖励、预订、订单、接待及存酒关联所需的数据，权限按工作职责限制。 <span data-policy-decision="staffProcessors">获授权的工作人员管理员工系统副本和备份、查阅及对外提供权限。对外委托、依法披露及再提供只涉及获准范围内的必要数据，并记录处理情况。</span></li>
-<li>打开电台、视频、外部链接或外部图片时，相应提供方可能收到连接信息。请查看各提供方的说明。Lounge 使用浏览器存储来维持登录状态与语言偏好，并使用服务工作线程缓存来显示离线页面。 <span data-policy-decision="externalContent">我们会说明外部内容和字体提供方以及实际使用的访问日志和分析项目。需要自愿同意时，我们会另行征求，您可在相关设置中更改选择。</span></li>
+<li>打开电台、视频、外部链接或外部图片时，相应提供方可能收到连接信息。请查看各提供方的说明。Lounge 页面文件由 GitHub, Inc.（美国）的 GitHub Pages 提供。打开页面时，GitHub 会处理 IP 地址、浏览器信息等访问记录。字体从 jsDelivr（cdn.jsdelivr.net）加载，DJ 现场录制的缩略图和视频从 YouTube（i.ytimg.com、youtube.com）加载，这些服务会收到连接信息。Lounge 不使用广告或分析类跟踪工具。 设备存储（Cookie 与浏览器存储）见第 9 项。</li>
 </ul>
+<div class="policy-table"><table role="table"><tbody role="rowgroup"><tr role="row"><th scope="row" role="rowheader">接收方及联系方式</th><td role="cell">Cloudflare, Inc.（美国）· <a href="mailto:privacy@cloudflare.com">privacy@cloudflare.com</a></td></tr><tr role="row"><th scope="row" role="rowheader">传输国家</th><td role="cell">美国及 Cloudflare 设有数据中心的国家（包括最近的接入节点）</td></tr><tr role="row"><th scope="row" role="rowheader">传输项目</th><td role="cell">第 4 项表格中的 Lounge 账号和活动信息、上传的照片、连接信息（如 IP）、请求自动翻译的文字及目标语言</td></tr><tr role="row"><th scope="row" role="rowheader">传输目的</th><td role="cell">服务器运行（Workers、Durable Objects）、照片存储（R2）、自动翻译（Workers AI）</td></tr><tr role="row"><th scope="row" role="rowheader">传输时间与方式</th><td role="cell">每次使用 Lounge 时通过网络传输</td></tr><tr role="row"><th scope="row" role="rowheader">保存与使用期限</th><td role="cell">至第 4 项表格中的保存期限届满（注销或期限届满时删除）。Lounge 不会把翻译请求另存为翻译记录</td></tr><tr role="row"><th scope="row" role="rowheader">拒绝方式及后果</th><td role="cell">Lounge 只在 Cloudflare 上运行，如不希望传输，需不注册或注销账号，此时无法使用 Lounge。如只想避免自动翻译，不点击翻译按钮即可，内容将以原文显示。</td></tr></tbody></table></div>
 </section>
 <section class="shell-card policy-section" aria-labelledby="zh-rights">
 <h2 id="zh-rights">6. 选择权、个人权利与注销</h2>
 <ul>
 <li>广告信息和夜间通知属于相互独立的自愿选项。拒绝不会影响注册或使用基本功能。可在“我的”设置中更改，也可在通知页和设备设置中关闭推送订阅或撤销权限。您也可以选择不使用头像、生日、翻译或邀请功能。</li>
-<li>您可以要求查阅、更正、删除个人信息、停止处理或撤回自愿同意。请通过设置申请注销，或联系俱乐部。我们只会要求核验本人所需的最少信息。请勿通过消息发送密码或身份证件原件。 <span data-policy-decision="privacyContact">个人信息保护负责人为 Groove 俱乐部代表。咨询电话为 0507-1301-5970。书面请求由位于釜山釜山镇区中央大路680番街路52号的门店受理。</span> <span data-policy-decision="rightsProcedure">本人或代理人提出请求时，我们只收集核验权限所需的最少材料。受理时会告知处理程序、预计回复时间和可用的官方争议救济渠道。</span></li>
+<li>您可以要求查阅、更正、删除个人信息、停止处理或撤回自愿同意。请通过设置申请注销，或联系俱乐部。我们只会要求核验本人所需的最少信息。请勿通过消息发送密码或身份证件原件。 个人信息保护负责人为 Groove 俱乐部代表。查阅、更正、删除、停止处理请求及其他咨询，可通过电话 <a href="tel:050713015970">0507-1301-5970</a>、Lounge 应用内的咨询和举报功能，或到店书面（부산광역시 부산진구 중앙대로680번가길 52, 2~3층（2~3层））提出。 <span data-policy-decision="rightsProcedure">本人或代理人提出请求时，我们只收集核验权限所需的最少材料。受理时会告知处理程序、预计回复时间和可用的官方争议救济渠道。</span></li>
 <li>核实注销申请后，我们停止账号访问并清理 Lounge 账号、个人资料、活动、上传内容、订阅和请求记录。服务安全或法定义务所必需的记录会分开保存并在期限届满时删除。他人已保存的公开内容和设备保存的通知，可能需要在相应位置另行删除。 <span data-policy-decision="deletionCompletion">确认注销后立即限制 Lounge 访问。R2 和员工系统副本在 30 天内清理，删除失败会重试。备份轮换到期、订单和预订记录的法定例外以及举报所需的最少证据和例外将另行说明。</span></li>
+<li>如您同意接收广告或夜间广告，我们会自同意之日起每两年告知一次您的同意状态，并确认是否继续接收（《信息通信网法》第50条第8款）。关闭接收后，我们将不再发送广告通知。</li>
 </ul>
 </section>
+<section class="shell-card policy-section" aria-labelledby="zh-destruction">
+<h2 id="zh-destruction">7. 个人信息的销毁</h2>
+<ul><li><strong>时间.</strong> 保存期限届满或处理目的达成时（注销、解除 Kakao 连接、删除帖子等），我们会立即销毁。</li><li><strong>流程.</strong> 设有保存期限的记录由服务器的自动清理任务定期（约每 5 分钟至每天一次）查找并删除。注销后会立即停止账号访问，删除账号、个人资料、活动和上传记录；照片存储（R2）和员工系统副本在 30 天内清理，失败时会重试。因法律或纠纷处理而另行保存的记录，会与其他信息分开并限制访问，期限届满后以相同方式销毁。</li><li><strong>方式.</strong> 电子文件从数据库和存储中删除，使其无法在服务中再次打开或恢复。如有纸质打印记录，则粉碎或焚烧。</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="zh-security">
+<h2 id="zh-security">8. 个人信息的安全保障措施</h2>
+<ul><li><strong>访问权限管理.</strong> 员工权限按角色（管理、运营、安保、DJ 等）划分，只能查看工作所需的信息。员工访问令牌通过签名验证。</li><li><strong>访问记录.</strong> 查看举报证据、隐藏帖子和处罚、关联存酒、更改功能设置等管理操作，会记录操作人和时间。</li><li><strong>密码与标识值保护.</strong> 密码仅以加盐 PBKDF2（SHA-256）校验值保存，不保存原文。手机号和 Kakao 会员号以密钥生成的转换值比对，解除 Kakao 连接所需的 ID 以 AES-GCM 加密保存。</li><li><strong>传输加密.</strong> Lounge 的所有通信均使用 HTTPS 加密。Kakao 登录 Cookie 仅通过 HTTPS 发送，页面脚本无法读取（Secure、HttpOnly）。</li><li><strong>防止非法访问.</strong> 限制登录失败次数，服务密钥作为 Cloudflare 机密值另行保管，不放在代码仓库中。</li><li><strong>物理保护.</strong> 服务器和存储位于 Cloudflare 数据中心，设施的物理安全由 Cloudflare 负责。</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="zh-cookies">
+<h2 id="zh-cookies">9. 自动收集装置（Cookie 与浏览器存储）的设置、运行及拒绝</h2>
+<ul><li>Lounge 不使用广告或分析类 Cookie 及跟踪工具。</li><li><strong>浏览器存储（localStorage）.</strong> 在设备上保存登录令牌、语言和显示主题。</li><li><strong>Kakao 登录 Cookie.</strong> 为确认发起 Kakao 登录的浏览器，设置仅 10 分钟有效的 Cookie，登录完成后删除。</li><li><strong>服务工作线程缓存与 IndexedDB.</strong> 保存页面文件以便快速和离线打开，并保存接收通知的设备关联信息。</li><li><strong>拒绝方式.</strong> 您可以在浏览器设置中清除或阻止本网站的 Cookie 和网站数据（例如 Chrome 设置 › 隐私和安全 › 第三方 Cookie 与网站数据；iPhone 设置 › Safari › 高级 › 网站数据）。阻止后，保持登录、Kakao 登录、离线页面和通知可能无法使用。</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="zh-officer">
+<h2 id="zh-officer">10. 个人信息保护负责人</h2>
+<ul><li>个人信息保护负责人 · 职务：代表（더스팟앤그루브）</li><li>电话 · <a href="tel:050713015970">0507-1301-5970</a></li><li>应用内 · Lounge 的咨询和举报功能</li><li>书面 · 부산광역시 부산진구 중앙대로680번가길 52, 2~3층（2~3层）店铺</li><li>通过以上联系方式提出的查阅、更正、删除、停止处理请求及投诉，我们会及时答复。</li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="zh-remedy">
+<h2 id="zh-remedy">11. 权益受侵害时的救济方式</h2>
+<p>如需就个人信息侵权进行咨询或救济，可联系以下韩国机构。</p><ul><li>个人信息纠纷调解委员会 · 1833-6972 · <a href="https://www.kopico.go.kr" target="_blank" rel="noopener noreferrer">www.kopico.go.kr</a></li><li>个人信息侵权举报中心（韩国互联网振兴院）· 118 · <a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener noreferrer">privacy.kisa.or.kr</a></li><li>大检察厅 · 1301 · <a href="https://www.spo.go.kr" target="_blank" rel="noopener noreferrer">www.spo.go.kr</a></li><li>警察厅 · 182 · <a href="https://ecrm.police.go.kr" target="_blank" rel="noopener noreferrer">ecrm.police.go.kr</a></li></ul>
+</section>
+<section class="shell-card policy-section" aria-labelledby="zh-changes">
+<h2 id="zh-changes">12. 政策变更与旧版本</h2>
+<ul><li>变更本政策时，我们会在生效前 7 天（对用户不利或重要的变更为 30 天）通过 Lounge 公告和本页顶部告知变更内容和生效日期。</li><li>生效日期 · 2026年11月28日。旧版本和全部变更可在<a href="https://github.com/groovenspot/groovenspot.github.io/commits/main/lounge/policy.html" target="_blank" rel="noopener noreferrer">变更记录</a>中按日期查看。也可到店或通过上述联系方式索取旧版本。</li></ul>
+</section>
 <footer class="shell-card policy-contact">
+<p>商号 더스팟앤그루브 · 代表 김동기 · 营业执照号 790-36-01644 · 부산광역시 부산진구 중앙대로680번가길 52, 2~3층（2~3层） · <a href="tel:050713015970">0507-1301-5970</a></p>
 <p>俱乐部联系电话 · <a href="tel:050713015970">0507-1301-5970</a></p>
 <a href="/lounge/">返回 Lounge</a>
 </footer>
@@ -447,7 +579,7 @@
   const articles = [...document.querySelectorAll('article[lang]')];
   const links = [...document.querySelectorAll('[data-language]')];
   const languageLabels = { ko: '언어', en: 'Language', ja: '言語', zh: '语言' };
-  const sections = new Set(['terms', 'rules', 'privacy', 'retention', 'providers', 'rights']);
+  const sections = new Set(['terms', 'rules', 'privacy', 'retention', 'providers', 'rights', 'destruction', 'security', 'cookies', 'officer', 'remedy', 'changes']);
 
   function showPolicy() {
     const [requested, section] = location.hash.slice(1).split('-');
