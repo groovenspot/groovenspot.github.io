@@ -631,7 +631,7 @@
         { caret: true, attrs: 'data-follow' }) +
       (canMessage ? '<a class="pf-btn" href="' + esc(path('dm', user.nick)) + '"><span class="pf-btn-in">' + t('message') + '</span></a>' : '') +
       (staff ? staffAction(staff, user, canMessage) : '') + people;
-    const tag = ['staff', 'vip'].includes(user.tag?.kind) && typeof user.tag.label === 'string' ? user.tag : null;
+    const tag = ['staff', 'vip'].includes(user.tag?.kind) && typeof user.tag.label === 'string' && !(user.tag.kind === 'vip' && L.vipTitle?.(user)) ? user.tag : null;
     const chips = (tag ? L.tagChip(tag, L.lang) : '') +
       (['2F', '3F'].includes(user.floor) ? '<span class="pf-chip">' + esc(user.floor) + '</span>' : '') +
       (!tag && badge ? '<span class="pf-chip profile3-badge">' + esc(badge) + '</span>' : '');

@@ -125,6 +125,18 @@
   border-style: dashed;
 }
 .l26-title-card[data-rarity="special"] button { margin: 0; }
+/* 특별 칭호는 티켓 모양 그림 — 동그란 틀에 넣으면 양옆이 잘려서 티켓 그대로 보여 준다 */
+.l26-title-card[data-rarity="special"] { grid-template-columns: 96px minmax(0, 1fr) auto; }
+.l26-title-medal[data-rarity="special"] {
+  width: min(100%, 96px);
+  aspect-ratio: 512 / 316;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+}
+.l26-title-medal[data-rarity="special"]::before { inset: 8%; border-radius: 8px; }
+.l26-title-medal[data-rarity="special"] img { width: 100%; height: auto; object-fit: cover; object-position: center; aspect-ratio: 512 / 316; }
+.l26-title-medal[data-rarity="special"][data-title-effect="vvip"] { border: 2px solid transparent; }
 
 .l26-title-entry {
   display: flex;

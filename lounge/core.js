@@ -239,8 +239,9 @@
     // 닉네임 + 표식. 직원 팀별 칩이 붙을 때는 닉네임을 따로 감싸서, 자리가 좁으면 닉네임이 먼저 줄어들고(말줄임) 칩은 한 줄로 남는다.
     whoTag: function (person, locale = L.lang) {
       const nick = L.esc(person?.nick);
-      const chip = L.tagChip(person?.tag, locale);
       const title = L.titleChip?.(person?.representative_title, locale);
+      // 대표 칭호가 GROOVE VIP·VVIP 면 예전 'VIP' 표식은 겹치므로 뺀다
+      const chip = title && person?.tag?.kind === 'vip' && L.vipTitle?.(person) ? '' : L.tagChip(person?.tag, locale);
       if (title) return '<span class="l26-title-name">' + nick + ' ' + title + (chip ? ' ' + chip : '') + '</span>';
       if (!chip) return nick;
       return staffBadge(person.tag, locale) ? '<span class="lounge-who"><span class="lounge-who-nick">' + nick + '</span> ' + chip + '</span>' : nick + ' ' + chip;

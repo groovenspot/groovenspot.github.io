@@ -49,6 +49,7 @@
       (title.id === 'vvip' ? '<i class="l26-title-sparkles"></i>' : '') + '</span>';
   }
 
+  L.vipTitle = person => canShow() && ['vip', 'vvip'].includes(person?.representative_title?.id);
   L.titleChip = function (title, locale) {
     if (!canShow() || !title || !/^[a-z][a-z0-9_]{0,40}$/.test(title.id) || !media.has(title.rarity)) return '';
     const label = name(title, locale);
