@@ -206,8 +206,13 @@
 
     const result = state.result;
     const resultSlot = state.root.querySelector('.l26-home-results');
-    putMarkup(resultSlot, primary.live && result?.biz_day === lastNight && result.status === 'final' &&
-      floors.every(floor => Number.isSafeInteger(result.counts?.[floor]) && result.counts[floor] >= 0)
+    // 0표로 끝난 밤은 결과를 숨김 (GPT 회의 2026-11-28: 참여가 없었던 결과를 강조하지 않음)
+    const finalVotes = primary.live && result?.biz_day === lastNight && result.status === 'final' &&
+      floors.every(floor => Number.isSafeInteger(result.counts?.[floor]) && result.counts[floor] >= 0);
+    const zeroNight = finalVotes && floors.every(floor => result.counts[floor] === 0);
+    const primaryButton = state.root.querySelector('.l26-home-primary');
+    if (primaryButton && primary.kind === 'results' && primary.live) primaryButton.textContent = L.t('l26Home.' + (zeroNight ? 'results' : 'liveResults'));
+    putMarkup(resultSlot, finalVotes && !zeroNight
       ? '<ul aria-label="' + t('finalVote') + '">' + floors.map(floor => '<li><b data-home-result-floor="' + floor + '">' +
         floor + '</b> <strong>' + new Intl.NumberFormat(L.lang).format(result.counts[floor]) + '</strong></li>').join('') + '</ul>'
       : '');

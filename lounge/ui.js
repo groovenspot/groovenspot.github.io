@@ -92,6 +92,14 @@
   //  · 이름 글자는 화면에서만 숨겨 둠(읽기 프로그램·검색용). label=false 면 숨긴 이름도 안 넣음
   L.djMark = function (name, fallback, cls, label) {
     var src = L.djLogo(name);
+    // B2B 'UZI x DIA' · 'MUTE & KUPA' — 모두 로고가 있으면 나란히 (작게), 하나라도 없으면 글자
+    var parts = !src && String(name || '').split(/\s+(?:x|X|×|&|\+|b2b|B2B)\s+/);
+    if (parts && parts.length > 1 && parts.every(function (p) { return L.djLogo(p); })) {
+      var small = cls === 'is-hero' ? '' : 'is-sm';
+      return '<span class="l26-dj-b2b">' + parts.map(function (p, i) {
+        return (i ? '<span class="l26-dj-b2b-x" aria-hidden="true">×</span>' : '') + L.djMark(p, '', small, false);
+      }).join('') + '</span>' + (label === false ? '' : '<span class="sr-only">' + L.esc(name) + '</span>');
+    }
     if (!src) return fallback == null ? L.esc(name) : fallback;
     var size = L.djLogoSize(name, cls);
     return '<img class="l26-dj-logo' + (cls ? ' ' + cls : '') + '" src="' + src + '" alt="" width="' + size[0] +

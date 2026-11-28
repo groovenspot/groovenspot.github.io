@@ -270,3 +270,5 @@ html[data-lounge-keyboard] #view .rooms-conversation { --rooms-tabs: 0px; }
 .shell-row .btn .l26-dj-logo.is-sm{margin-right:8px}
 .ui-avatar.is-logo{background:#0c0c10}
 .ui-avatar.is-logo img{object-fit:contain;padding:10%;box-sizing:border-box}
+.l26-dj-b2b{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;vertical-align:middle}
+.l26-dj-b2b-x{font-weight:700;opacity:.7;font-size:13px}

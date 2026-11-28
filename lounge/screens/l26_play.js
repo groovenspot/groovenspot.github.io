@@ -112,7 +112,7 @@
       (done ? label('attendanceDone') : translated(title)) +
       (enabled ? '' : '<small>' + translated('core.soon') + '</small>') + '</span>' +
       (enabled && !done ? L.icon('chevron', { size: 16 }) : '') + '</span>';
-    if (!enabled) return '<div' + attrs + ' aria-disabled="true">' + content + '</div>';
+    if (!enabled) return '';   // 준비 중 칸은 손님 화면에서 숨김 (GPT 회의 2026-11-28)
     if (attendance) return '<button type="button" data-l26-action="attend"' + attrs + (done ? ' disabled' : '') + '>' + content + '</button>';
     return '<a href="#/' + key + '"' + attrs + '>' + content + '</a>';
   }
