@@ -210,7 +210,84 @@
       stat('following', 'following/' + nick) + '</div>';
   }
 
+  function renderAccess(root) {
+    const member = L.me;
+    const label = (ko, en, ja = en, zh = en) => ({ ko, en, ja, zh }[L.lang] || en);
+    root.className = 'l26-access';
+    if (!member.access?.locked) {
+      if (!member.access?.entry_verified) {
+        root.innerHTML = '<h1>' + L.esc(L.t('nav.l26_my')) + '</h1><section class="shell-card"><p>' +
+          L.t('l26Access.active') + '</p><a class="btn" href="#/' + (L.open('l26_shell') ? 'l26_my' : 'me') + '">' +
+          L.esc(L.t('nav.me')) + '</a></section>';
+        return;
+      }
+      root.innerHTML = '<h1>' + label('입장 인증 완료', 'Entry verified', '入場認証完了', '入场验证完成') + '</h1>' +
+        '<section class="shell-card"><p>' + label('계정 잠금이 풀렸어요. 투표와 세트 리뷰는 각 영업일과 세트의 참여 조건이 적용돼요.',
+          'Your account is unlocked. Voting and set reviews follow their own eligibility rules.', 'アカウントの制限が解除されました。投票とセット評価にはそれぞれ参加条件があります。', '账号已解锁。投票和演出评价仍需符合各自的参与条件。') +
+        '</p><a class="btn btn-hot" href="#/' + (L.open('l26_shell') ? 'l26_my' : 'me') + '">' +
+        label('내 라운지 열기', 'Open my Lounge', 'マイラウンジを開く', '打开我的休息室') + '</a></section>';
+      return;
+    }
+    root.innerHTML = '<h1>' + label('입장 인증이 필요해요', 'Verify your entry', '入場認証が必要です', '需要入场验证') + '</h1>' +
+      '<section class="shell-card"><p class="muted">' +
+      label('휴대폰 인증 완료 · 성인 여부는 입구에서 확인', 'Phone verified · Age confirmation at the door', '携帯電話認証済み · 年齢は入口で確認します', '手机已验证 · 年龄由入口安保核验') + '</p><p>' +
+      label('경호팀에 실제 신분증과 입장 QR을 보여 주세요. 인증 후 글쓰기, 메시지, 포인트와 혜택을 이용할 수 있어요.',
+        'Show your ID and Entry QR to a door guard. After verification you can post, message, earn points, and use benefits.', '入口の警備担当者に身分証と入場QRを提示してください。認証後は投稿、メッセージ、ポイント、特典を利用できます。', '请向入口安保出示实体证件和入场二维码。验证后可发帖、发消息、获取积分和使用权益。') +
+      '</p><div class="l26-access-actions">' +
+      (L.open('l26_entry') ? button('entry', 'data-my-qr', true) :
+        '<span class="muted">' + label('입장 QR을 지금 발급할 수 없어요.', 'Entry QR is currently unavailable.', '現在、入場QRを発行できません。', '目前无法生成入场二维码。') + '</span>') +
+      '<button class="btn" type="button" data-refresh>' + label('인증 상태 확인', 'Check verification', '認証状況を確認', '查看验证状态') + '</button></div>' +
+      '<p data-access-status role="status" hidden></p></section><section class="shell-card"><p>' +
+      label('인증 전에는 DJ나 공식 계정을 팔로우하고 월드컵을 보상 없이 즐길 수 있어요.',
+        'While you wait, follow DJs or the official account and play the bracket for practice.', '認証前はDJや公式アカウントをフォローし、報酬なしでトーナメントを練習できます。', '验证前可关注DJ或官方账号，并参加无奖励的锦标赛练习。') +
+      '</p><div class="l26-access-actions"><a class="btn" href="#/djs">' + label('DJ 찾기', 'Find DJs', 'DJを探す', '查找DJ') +
+      '</a><a class="btn" href="#/cup">' + label('월드컵 연습', 'Practice bracket', 'トーナメントの練習', '练习锦标赛') +
+      '</a><button class="btn" type="button" data-official hidden></button></div></section>' +
+      '<div class="l26-access-actions"><a class="shell-link" href="#/me/settings">' + label('계정 설정', 'Account settings', 'アカウント設定', '账号设置') +
+      '</a><button class="shell-link" type="button" data-logout>' + label('로그아웃', 'Log out', 'ログアウト', '退出登录') + '</button></div>';
+    const qr = root.querySelector('[data-my-qr]');
+    if (qr) qr.onclick = () => openMembershipEntryQr(qr);
+    const refresh = root.querySelector('[data-refresh]');
+    const statusNode = root.querySelector('[data-access-status]');
+    const official = root.querySelector('[data-official]');
+    const live = () => root.isConnected && L.me?.id === member.id;
+    function displayOfficial(following) {
+      official.hidden = false;
+      official.textContent = following ? label('공식 계정 팔로우 취소', 'Unfollow official account', '公式アカウントのフォローを解除', '取消关注官方账号') :
+        label('공식 계정 팔로우', 'Follow official account', '公式アカウントをフォロー', '关注官方账号');
+      official.onclick = async () => {
+        official.disabled = true;
+        const data = await L.api(following ? 'l26_official_unfollow' : 'l26_official_follow');
+        if (!live()) return;
+        official.disabled = false;
+        if (data.ok) displayOfficial(data.following);
+        else L.toast(L.errorText(data));
+      };
+    }
+    if (L.open('l26_follow_counts')) L.api('l26_official_status').then(data => {
+      if (live() && data.ok) displayOfficial(data.following);
+    });
+    root.querySelector('[data-logout]').onclick = () => {
+      L.setToken('');
+      L.me = null;
+      L.go('login');
+    };
+    refresh.onclick = async () => {
+      refresh.disabled = true;
+      const data = await L.api('l26_access_status');
+      if (!live()) return;
+      refresh.disabled = false;
+      if (data.ok && !data.access.locked) {
+        L.me = { ...L.me, access: data.access };
+        return L.route(null, true);
+      }
+      statusNode.hidden = false;
+      statusNode.textContent = data.ok ? label('아직 입장 인증을 받지 않았어요.', 'Entry is still unverified.', '入場はまだ認証されていません。', '入场尚未验证。') : L.errorText(data);
+    };
+  }
+
   async function renderMy(root) {
+    if (L.me.access?.locked) return L.go('l26_access');
     const followers = L.open('l26_follow_counts');
     const membership = L.open('l26_return');
     if (!membership && !followers) return legacy(root);
@@ -327,6 +404,13 @@
     });
   }
 
+  L.i18n({
+    ko: { 'l26Access.active': '내 계정을 이용할 수 있어요.' },
+    en: { 'l26Access.active': 'Your account is active.' },
+    ja: { 'l26Access.active': 'アカウントをご利用いただけます。' },
+    zh: { 'l26Access.active': '账号已启用。' }
+  });
+  L.screen('l26_access', { title: 'nav.l26_my', nav: 'me', auth: true, render: renderAccess });
   L.screen('l26_my', { title: 'nav.l26_my', auth: true, render: renderMy });
   L.screen('l26_benefits', { title: 'l26my.benefits', nav: 'me', auth: true, render: renderBenefits });
 })(window.Lounge);

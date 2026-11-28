@@ -362,16 +362,26 @@
     const path = '/lounge/policy.html#' + lang + '-' + key;
     const items = Object.entries(socialPolicy[key]).filter(([feature]) => isOpen(feature))
       .map(([, lines]) => '<li>' + L.esc(lines[locale]) + '</li>').join('');
-    return '<h2>' + t(key + 'Title') + '</h2><p>' + L.esc(copy[key + 'Body'][locale]) +
-      '</p>' + (items ? '<ul>' + items + '</ul>' : '') + policyDates(lang) +
+    const signup = isOpen('l26_open_signup') ? '<p>' + signupText(
+      key === 'terms' ? '셀프 가입은 임시 계정으로 시작하며 경호팀의 실제 신분증 확인과 입장 인증 이후 기능이 열려요.' :
+        '문자 인증과 생년월일의 처리 목적, 발송 제한 기록과 수탁사 고지는 아래 전문에서 확인할 수 있어요.',
+      key === 'terms' ? 'Self-signup starts with a limited account. A door guard checks your ID and verifies entry to unlock features.' :
+        'The full notice explains SMS verification, how we use your date of birth, rate-limit records, and processors.') + '</p>' : '';
+    return '<h2>' + t(key + 'Title') + '</h2><p>' + L.esc(copy[key + 'Body'][locale]) + '</p>' + signup + (items ? '<ul>' + items + '</ul>' : '') + policyDates(lang) +
       '<a class="shell-link" href="' + path + '" target="_blank" rel="noopener noreferrer">' +
       L.esc(policyLink[locale]) + '</a>';
   }
 
-  function consent() {
+  function consent(selfSignup = false) {
     const fields = ['age19', 'terms', 'privacy', 'ads', 'night'];
+    const notice = selfSignup ? signupText(
+      '셀프 가입 추가 고지 · 2026년 11월 28일 · 셀프 가입 공개 시 적용',
+      'Self-signup notice · November 28, 2026 · Applies when self-signup opens',
+      'セルフ登録のお知らせ · 2026年11月28日 · 公開時から適用',
+      '自助注册补充公告 · 2026年11月28日 · 开放时生效') : policyDates(policyLocales[localeIndex()]);
     return '<fieldset class="shell-consent"><legend class="sr-only">' + t('agree') + '</legend>' +
-      '<p class="muted">' + L.esc(consentDetails[localeIndex()]) + '</p>' + policyDates(policyLocales[localeIndex()]) +
+      '<p class="muted">' + L.esc(consentDetails[localeIndex()]) + '</p>' +
+      (selfSignup ? '<p class="muted">' + notice + '</p>' : notice) +
       '<label class="shell-choice"><input type="checkbox" name="all">' + t('all') + '</label>' +
       fields.map(name => '<div class="shell-consent-row"><label class="shell-choice"><input type="checkbox" name="' +
         name + '">' + t(name) + '</label>' +
@@ -495,10 +505,14 @@
         (joining ? consent() : '') +
         '<p class="shell-error" role="alert" hidden></p><button type="submit" class="btn btn-hot">' +
         t(joining ? 'start' : loggingIn ? 'login' : 'savePw') + '</button></form>' +
-        (loggingIn ? '<p class="muted">' + t('resetHelp') + '</p><a class="shell-link" href="#/staff-login">' + t('staffLogin') + '</a>' : '<a class="shell-link" href="#/login">' + t('login') + '</a>') +
+        (loggingIn ? '<a class="btn" data-self-signup href="#/signup" hidden>' + signupText('셀프 가입', 'Sign up', 'セルフ登録', '自助注册') + '</a><p class="muted">' + t('resetHelp') + '</p><a class="shell-link" href="#/staff-login">' + t('staffLogin') + '</a>' : '<a class="shell-link" href="#/login">' + t('login') + '</a>') +
         '</section>');
     const form = root.querySelector('form');
     if (!form) return;
+    if (loggingIn) L.api('l26_signup_status').then(result => {
+      const link = root.querySelector('[data-self-signup]');
+      if (link?.isConnected) link.hidden = result.enabled !== true || !!L.me;
+    });
     if (joining) {
       const byline = root.querySelector('[data-inviter]');
       L.api('join_inviter', { q: qr }).then(({ inviter }) => {
@@ -539,12 +553,186 @@
       L.setToken(result.token);
       L.me = result.me;
       if (result.me.lang) L.setLang(result.me.lang);
+      if (result.me.access?.locked) return L.go('l26_access');
       if (joining && L.open('l26_shell')) return activation(root);
       const next = loggingIn && /^#\/(?!login(?:[/?]|$))/.test(params.next || '') ? params.next : home();
       L.go(next);
       if (joining) window.addEventListener('hashchange', () => L.showInstall(true), { once: true });
     };
   }
+
+  const signupText = (ko, en, ja = en, zh = en) => ({ ko, en, ja, zh }[L.lang] || en);
+  let turnstileLoading;
+  function loadTurnstile() {
+    if (window.turnstile) return Promise.resolve(window.turnstile);
+    return turnstileLoading ||= new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.onload = () => window.turnstile ? resolve(window.turnstile) : reject();
+      script.onerror = reject;
+      document.head.append(script);
+    }).catch(error => { turnstileLoading = null; throw error; });
+  }
+
+  async function selfSignup(root, params) {
+    const label = signupText;
+    const heading = label('셀프 가입', 'Sign up', 'セルフ登録', '自助注册');
+    const unavailable = label('지금은 셀프 가입을 이용할 수 없어요. 매장에서 직원 가입 QR을 요청해 주세요.',
+      'Sign-up is unavailable. Ask staff for a guest sign-up QR at the club.', 'セルフ登録は現在ご利用いただけません。店内でスタッフに登録用QRをお尋ねください。', '自助注册暂未开放。请在店内向工作人员索取注册二维码。');
+    const login = '<a class="shell-link" href="#/login">' + t('login') + '</a>';
+    if (L.me) {
+      const next = L.me.access?.locked ? 'l26_access' : home();
+      root.innerHTML = '<section class="shell-auth l26-signup"><h1>' + t('join') + '</h1><p>' +
+        L.t('auth.signupSignedIn') + '</p><a class="btn" href="#/' + next + '">' + L.t('nav.me') + '</a></section>';
+      return;
+    }
+
+    root.innerHTML = '<section class="shell-auth l26-signup"><h1>' + heading +
+      '</h1><p role="status">' + L.t('core.loading') + '</p>' + login + '</section>';
+    const status = await L.api('l26_signup_status');
+    if (!root.isConnected) return;
+    const panel = root.firstElementChild;
+    if (!status.enabled) {
+      panel.querySelector('[role=status]').textContent = unavailable;
+      return;
+    }
+    panel.innerHTML = '<h1>' + heading + '</h1><p class="muted">' +
+      label('휴대폰 인증 후 임시 계정으로 시작해요. 만 19세 이상 이용 가능하며, 경호팀이 신분증을 확인하고 입장을 인증하면 기능이 열려요.',
+        'Verify your phone to create a limited account. You must be 19 or older. A door guard checks your ID and verifies entry to unlock features.', '携帯電話を認証して仮アカウントを作成します。満19歳以上が対象です。入口で警備担当者が身分証と入場を確認すると機能が開放されます。', '验证手机后可创建临时账号。仅限年满19岁的用户，入口安保核验证件并完成入场验证后即可解锁功能。') +
+      '</p><form class="shell-form"><div class="l26-signup-phone">' +
+      input('phone', 'tel', 'tel') +
+      '<div class="l26-signup-captcha" data-captcha></div><button type="button" class="btn" data-send disabled>' +
+      label('문자 인증번호 받기', 'Send verification code', '認証コードを送信', '获取验证码') + '</button><p class="muted" data-sms-status role="status"></p></div>' +
+      '<fieldset class="l26-signup-details" hidden disabled><label class="shell-field">' +
+      label('인증번호', 'Verification code', '認証コード', '验证码') +
+      '<input name="code" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></label>' +
+      input('nick', 'text', 'nickname') + input('pw', 'password', 'new-password') +
+      '<label class="shell-field">' + label('생년월일', 'Date of birth', '生年月日', '出生日期') +
+      '<input type="date" name="birth_date" min="1900-01-01" required></label>' + consent(true) +
+      '<button type="submit" class="btn btn-hot">' + label('임시 계정 만들기', 'Create account', '仮アカウントを作成', '创建临时账号') + '</button></fieldset>' +
+      '<p role="alert" class="shell-error" hidden></p><p data-recovery hidden>' + t('resetHelp') + '</p></form>' + login;
+    const form = panel.querySelector('form');
+    const send = form.querySelector('[data-send]');
+    const smsStatus = form.querySelector('[data-sms-status]');
+    const details = form.querySelector('fieldset.l26-signup-details');
+    const submit = details.querySelector('[type=submit]');
+    const alert = form.querySelector('[role=alert]');
+    const phone = form.elements.phone;
+    const messages = {
+      signup_unavailable: unavailable,
+      captcha: label('보안 확인을 다시 완료해 주세요.', 'Complete the security check again.'),
+      age: label('올바른 생년월일을 입력해 주세요. 만 19세 이상만 가입할 수 있어요.', 'Check your date of birth. You must be 19 or older.'),
+      otp: label('인증번호를 확인해 주세요. 만료되었거나 5회 틀렸다면 새 번호를 요청하세요.', 'Check the code. Request a new one if it expired or after five incorrect attempts.'),
+      otp_resend: label('문자 발송 후 60초가 지나면 다시 요청할 수 있어요.', 'Wait 60 seconds before requesting another code.'),
+      otp_limit: label('오늘 보낼 수 있는 인증 문자를 모두 사용했어요. 내일 다시 시도해 주세요.', 'You have reached the SMS limit. Try again tomorrow.'),
+      sms: label('문자를 보내지 못했어요. 잠시 후 다시 시도해 주세요.', 'The SMS could not be sent. Try again shortly.'),
+      invite_invalid: label('직원 초대 링크가 유효하지 않아요. 새 링크를 요청하거나 로그인 화면에서 가입해 주세요.', 'The staff invitation is invalid. Ask for a new link or start from the login screen.')
+    };
+    let widget, captcha = '', challenge, timer, waiting = false, resendAt = 0;
+    const recovery = form.querySelector('[data-recovery]');
+    function showError(result) {
+      alert.textContent = messages[result.error] || errorText(result);
+      alert.hidden = false;
+      recovery.hidden = result.error !== 'phone_taken';
+    }
+    function updateSend() {
+      if (!panel.isConnected) { clearInterval(timer); return; }
+      const seconds = Math.max(0, Math.ceil((resendAt - Date.now()) / 1000));
+      send.disabled = waiting || !captcha || seconds > 0;
+      send.textContent = seconds ? label('다시 받기', 'Resend', '再送信', '重新发送') + ' (' + seconds + ')' :
+        challenge ? label('문자 다시 받기', 'Resend code', 'コードを再送信', '重新获取验证码') : label('문자 인증번호 받기', 'Send verification code', '認証コードを送信', '获取验证码');
+    }
+    wireConsent(form);
+    phone.oninput = () => {
+      challenge = null;
+      details.hidden = details.disabled = true;
+      form.elements.code.value = '';
+      smsStatus.textContent = '';
+    };
+    let turnstile;
+    try {
+      turnstile = await loadTurnstile();
+      if (!panel.isConnected) return;
+      widget = turnstile.render(form.querySelector('[data-captcha]'), {
+        sitekey: status.captcha_site_key,
+        action: 'l26_signup',
+        size: 'flexible',
+        callback: token => { captcha = token; updateSend(); },
+        'expired-callback': () => { captcha = ''; updateSend(); },
+        'error-callback': () => { captcha = ''; updateSend(); showError({ error: 'captcha' }); }
+      });
+    } catch {
+      showError({ error: 'captcha' });
+    }
+    const observer = new MutationObserver(() => {
+      if (panel.isConnected) return;
+      observer.disconnect();
+      clearInterval(timer);
+      if (widget !== undefined) turnstile.remove(widget);
+    });
+    observer.observe(root.parentElement, { childList: true });
+    send.onclick = async () => {
+      if (waiting || !captcha || !phone.reportValidity()) return;
+      alert.hidden = recovery.hidden = true;
+      waiting = true;
+      phone.readOnly = true;
+      updateSend();
+      const result = await L.api('l26_signup_otp', { phone: phone.value, captcha });
+      waiting = false;
+      captcha = '';
+      phone.readOnly = false;
+      if (!panel.isConnected) return;
+      turnstile.reset(widget);
+      if (result.challenge) {
+        challenge = result.challenge;
+        resendAt = result.resend_at;
+        details.hidden = details.disabled = false;
+        form.elements.code.value = '';
+        smsStatus.textContent = label('인증번호를 보냈어요. 5분 안에 입력해 주세요.', 'Code sent. Enter it within five minutes.', '認証コードを送信しました。5分以内に入力してください。', '验证码已发送，请在5分钟内输入。');
+        form.elements.code.focus();
+        clearInterval(timer);
+        timer = setInterval(() => {
+          updateSend();
+          if (Date.now() >= resendAt) clearInterval(timer);
+        }, 1000);
+      } else showError(result);
+      updateSend();
+    };
+    form.onsubmit = async event => {
+      event.preventDefault();
+      if (!challenge) return;
+      const data = new FormData(form);
+      const body = { challenge, lang: L.lang, terms_version: status.terms_version, consent_version: status.promo_version };
+      if (params.i !== undefined) body.invite = params.i;
+      for (const field of ['phone', 'code', 'nick', 'pw', 'birth_date']) body[field] = data.get(field);
+      for (const field of ['age19', 'terms', 'privacy', 'ads', 'night']) body[field] = data.has(field);
+      if (!body.age19 || !body.terms || !body.privacy) return showError({ error: 'agree' });
+      submit.disabled = true;
+      send.disabled = true;
+      waiting = true;
+      phone.readOnly = true;
+      alert.hidden = recovery.hidden = true;
+      const result = await L.api('l26_signup_complete', body);
+      if (!panel.isConnected) return;
+      submit.disabled = false;
+      waiting = false;
+      phone.readOnly = false;
+      updateSend();
+      if (!result.token || !result.me) return showError(result);
+      L.setToken(result.token);
+      L.me = result.me;
+      if (result.me.lang) L.setLang(result.me.lang);
+      L.go('l26_access');
+    };
+  }
+
+  L.i18n({
+    ko: { 'auth.signupSignedIn': '이미 로그인했어요.' },
+    en: { 'auth.signupSignedIn': 'You’re already signed in.' },
+    ja: { 'auth.signupSignedIn': 'ログイン済みです。' },
+    zh: { 'auth.signupSignedIn': '你已登录。' }
+  });
+  L.screen('signup', { title: 'auth.join', render: selfSignup });
 
   const tClose = () => L.esc(L.t('core.close'));
   L.screen('join', { title: 'auth.join', render: (root, params) => formScreen('join', params, root) });
