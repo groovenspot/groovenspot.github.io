@@ -836,4 +836,7 @@ Lounge.i18n({zh: {
   "shop.howEarn": "积分可通过签到、任务和游戏获得",
   "shop.error.points": "积分不足",
   "shop.error.stock": "已售罄",
+  "shop.only": "限定",
+  "shop.canSwap": "现在可以兑换",
+  "shop.pickupTag": "到店领取",
 }});

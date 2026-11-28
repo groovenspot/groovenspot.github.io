@@ -836,4 +836,7 @@ Lounge.i18n({ja: {
   "shop.howEarn": "ポイントは出席・ミッション・ゲームで貯まります",
   "shop.error.points": "ポイントが足りません",
   "shop.error.stock": "品切れです",
+  "shop.only": "限定",
+  "shop.canSwap": "今すぐ交換できます",
+  "shop.pickupTag": "店頭受け取り",
 }});
