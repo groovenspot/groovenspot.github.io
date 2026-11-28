@@ -32,8 +32,11 @@
     dj: ['DJ 프로필 보기', 'View DJ profile', 'DJプロフィールを見る', '查看 DJ 资料'],
     survey: ['지난밤 평가하기', 'Rate last night', '昨夜を評価する', '评价昨晚'],
     radio: ['라디오 듣기', 'Listen to the radio', 'ラジオを聴く', '收听电台'],
-    duel: ['같이 대결', 'Play together', 'みんなで対戦', '一起对战'],
-    duelKicker: ['코드로 연결 · 친구·직원 누구와도', 'Connect with a code — friends or staff', 'コードでつないで友達・スタッフと', '用代码连接，和朋友或员工']
+    duel: ['같이 대결 한 판', 'Play a duel together', 'みんなで対戦を一回', '一起对战一局'],
+    duelKicker: ['지금 옆 사람이랑 한 판 붙어볼까요?', 'Challenge the person next to you', '隣の人と一勝負しませんか？', '和身边的人比一局吧？'],
+    duelSub: ['게임을 누르면 바로 방이 열려요 · 코드만 알려주면 끝', 'Tap a game to open a room — just share the code', 'ゲームを押すとすぐ部屋ができます', '点游戏立即开房，分享代码即可'],
+    duelCode: ['코드 받았어요', 'I have a code', 'コードを持っています', '我有代码'],
+    duelGo: ['같이 대결 하러 가기', 'Play together', 'みんなで対戦へ', '去一起对战']
   };
 
   L.i18n(Object.fromEntries(['ko', 'en', 'ja', 'zh'].map((lang, index) => [
@@ -44,7 +47,6 @@
   const translated = key => L.esc(L.t(key));
   // Published GROOVE SESSIONS clips from /data/videos.json.
   const tiles = {
-    cup: ['vote.cup', 'whM3ZZUnSVE'],
     guess: ['l26play.guess'],
     radio: ['radio.title', 'eY3RZgw7fvE'],
     vote: ['vote.title'],
@@ -72,7 +74,7 @@
     djs: '<rect x="26" y="20" width="108" height="48" rx="6"/><circle cx="55" cy="44" r="15"/><circle cx="105" cy="44" r="15"/><path d="M55 44h1m49 0h1M80 28v32m-5-22h10m-10 13h10M20 11h16m88 0h16"/>'
   };
   const missionLinks = {
-    cup: ['cup', 'vote.cup'], dj_content: ['shorts', 'shorts.title'],
+    cup: ['cup', 'vote.cup'], duel: ['duel', 'l26play.duelGo'], dj_content: ['shorts', 'shorts.title'],
     survey: ['vote', 'l26play.survey'], radio: ['radio', 'radio.title']
   };
   const missionHeading = (state = '') => '<header class="l26-play-mission-meta"><h2 id="l26-mission-title">' +
@@ -151,8 +153,9 @@
 
     root.className = 'l26-screen l26-play';
     root.innerHTML = '<header class="l26-play-head"><h1>' + translated('nav.l26_play') +
-      '</h1></header>' + (true ? '<a class="l26-duel-entry" href="#/duel"><span><small>' + L.esc(L.t('l26play.duelKicker')) + '</small><b>' +
-        L.esc(L.t('l26play.duel')) + '</b><em>369 · GROOVE 마블 · NEON MEMORY</em></span>' + L.icon('chevron', { size: 18 }) + '</a>' : '') +
+      '</h1></header>' + '<section class="l26-duel-entry"><a class="l26-duel-entry-top" href="#/duel"><span><small>' + L.esc(L.t('l26play.duelKicker')) + '</small><b>같이 대결</b>' +
+        '<em>' + L.esc(L.t('l26play.duelSub')) + '</em></span>' + L.icon('chevron', { size: 18 }) + '</a><nav class="l26-duel-chips"><a href="#/duel?new=stack" style="--dc:#ffd23d">동전 쌓기</a><a href="#/duel?new=vinyl" style="--dc:#a35cff">턴테이블 꽂기</a><a href="#/duel?new=balloon" style="--dc:#ff3d6e">풍선 펌프</a><a href="#/duel?new=369" style="--dc:#ffe27a">369</a><a href="#/duel?new=marble" style="--dc:#ff7aa0">GROOVE 마블</a><a href="#/duel?new=memory" style="--dc:#3dffb0">NEON MEMORY</a></nav>' +
+        '<a class="l26-duel-code" href="#/duel?code=1">' + L.esc(L.t('l26play.duelCode')) + ' →</a></section>' +
       '<div class="l26-play-member" hidden>' +
       '<a class="l26-play-points" data-l26-points href="#/me" hidden></a><div class="l26-play-attendance" hidden></div></div>' +
       '<section class="l26-play-mission" aria-labelledby="l26-mission-title"><div class="l26-play-mission-art" aria-hidden="true">' +
