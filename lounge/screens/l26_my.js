@@ -233,7 +233,9 @@
     }
     root.innerHTML = '<h1>' + label('입장 인증이 필요해요', 'Verify your entry', '入場認証が必要です', '需要入场验证') + '</h1>' +
       '<section class="shell-card"><p class="muted">' +
-      label('휴대폰 인증 완료 · 성인 여부는 입구에서 확인', 'Phone verified · Age confirmation at the door', '携帯電話認証済み · 年齢は入口で確認します', '手机已验证 · 年龄由入口安保核验') + '</p><p>' +
+      (member.access.signup_method === 'kakao'
+        ? label('카카오로 가입 · 입구에서 신분증 확인', 'Joined with Kakao · ID check at the door', 'Kakaoで登録済み · 入口で身分証確認', '已通过 Kakao 注册 · 入口查验证件')
+        : label('휴대폰 인증 완료 · 성인 여부는 입구에서 확인', 'Phone verified · Age confirmation at the door', '携帯電話認証済み · 年齢は入口で確認します', '手机已验证 · 年龄由入口安保核验')) + '</p><p>' +
       label('경호팀에 실제 신분증과 입장 QR을 보여 주세요. 인증 후 글쓰기, 메시지, 포인트와 혜택을 이용할 수 있어요.',
         'Show your ID and Entry QR to a door guard. After verification you can post, message, earn points, and use benefits.', '入口の警備担当者に身分証と入場QRを提示してください。認証後は投稿、メッセージ、ポイント、特典を利用できます。', '请向入口安保出示实体证件和入场二维码。验证后可发帖、发消息、获取积分和使用权益。') +
       '</p><div class="l26-access-actions">' +

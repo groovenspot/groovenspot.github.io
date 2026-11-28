@@ -367,7 +367,16 @@
         '문자 인증과 생년월일의 처리 목적, 발송 제한 기록과 수탁사 고지는 아래 전문에서 확인할 수 있어요.',
       key === 'terms' ? 'Self-signup starts with a limited account. A door guard checks your ID and verifies entry to unlock features.' :
         'The full notice explains SMS verification, how we use your date of birth, rate-limit records, and processors.') + '</p>' : '';
-    return '<h2>' + t(key + 'Title') + '</h2><p>' + L.esc(copy[key + 'Body'][locale]) + '</p>' + signup + (items ? '<ul>' + items + '</ul>' : '') + policyDates(lang) +
+    const kakao = '<p>' + (key === 'terms' ? signupText(
+      '카카오 가입은 19세 이상(올해 19세가 되는 분 포함)만 할 수 있어요. 경호팀의 신분증 확인과 입장 인증 후 커뮤니티 기능이 열려요.',
+      'Kakao signup requires a difference of at least 19 between the current year in Korea and your birth year. Community features unlock after a door guard checks your ID and verifies entry.',
+      'Kakao登録には、韓国時間の今年から出生年を引いた数が19以上であることが必要です。身分証の確認と入場認証後にコミュニティを利用できます。',
+      '通过 Kakao 注册时，按韩国时间计算的当年年份减去出生年份须达到 19。入口查验证件并完成入场验证后，才可使用社区功能。') : signupText(
+      '카카오 가입에 필요한 출생연도와 선택 항목인 닉네임·양력 생일의 사용, 계정 연결 해제 및 탈퇴 방법은 아래 전문에서 확인할 수 있어요.',
+      'The full policy explains how we use your birth year and optional nickname and solar birthday, and how to disconnect or delete your account.',
+      '出生年と任意のニックネーム・新暦の誕生日の利用、連携解除や退会については、下の全文をご覧ください。',
+      '完整政策说明如何处理出生年份及可选提供的昵称和公历生日，以及如何解除连接或注销账号。')) + '</p>';
+    return '<h2>' + t(key + 'Title') + '</h2><p>' + L.esc(copy[key + 'Body'][locale]) + '</p>' + signup + kakao + (items ? '<ul>' + items + '</ul>' : '') + policyDates(lang) +
       '<a class="shell-link" href="' + path + '" target="_blank" rel="noopener noreferrer">' +
       L.esc(policyLink[locale]) + '</a>';
   }
@@ -505,10 +514,11 @@
         (joining ? consent() : '') +
         '<p class="shell-error" role="alert" hidden></p><button type="submit" class="btn btn-hot">' +
         t(joining ? 'start' : loggingIn ? 'login' : 'savePw') + '</button></form>' +
-        (loggingIn ? '<a class="btn" data-self-signup href="#/signup" hidden>' + signupText('셀프 가입', 'Sign up', 'セルフ登録', '自助注册') + '</a><p class="muted">' + t('resetHelp') + '</p><a class="shell-link" href="#/staff-login">' + t('staffLogin') + '</a>' : '<a class="shell-link" href="#/login">' + t('login') + '</a>') +
+        (loggingIn ? '<div class="l26-kakao-login" data-kakao-login-options></div><a class="btn" data-self-signup href="#/signup" hidden>' + signupText('셀프 가입', 'Sign up', 'セルフ登録', '自助注册') + '</a><p class="muted">' + t('resetHelp') + '</p><a class="shell-link" href="#/staff-login">' + t('staffLogin') + '</a>' : '<a class="shell-link" href="#/login">' + t('login') + '</a>') +
         '</section>');
     const form = root.querySelector('form');
     if (!form) return;
+    if (loggingIn) L.kakaoLogin?.(root.querySelector('[data-kakao-login-options]'), params);
     if (loggingIn) L.api('l26_signup_status').then(result => {
       const link = root.querySelector('[data-self-signup]');
       if (link?.isConnected) link.hidden = result.enabled !== true || !!L.me;
