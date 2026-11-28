@@ -127,6 +127,8 @@
     };
   };
 
+  L.kakaoRecoveryHelp = () => text('recoveryHelp');
+
   L.kakaoSettings = async function (container) {
     const status = await L.api('l26_kakao_status');
     if (!container.isConnected || !status.ok || L.isPreview() || (!status.linked && !status.enroll)) return;
