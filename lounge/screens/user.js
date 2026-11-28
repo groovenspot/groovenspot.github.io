@@ -1045,7 +1045,7 @@
     const stashKey = 'u:' + String(nick || '').toLowerCase();
     const stashed = L.profileKept(stashKey);
     const kept = profile2 ? stashed : null;
-    const response = kept ? { user: kept.user } : nick ? await L.api('user', { nick }) : {};
+    const response = kept && !L.open('l26_titles') ? { user: kept.user } : nick ? await L.api('user', { nick }) : {};
     if (!view.isConnected) return;
     const user = response?.user;
     if (!user) {
@@ -1069,7 +1069,8 @@
     if (profile2) {
       if (mine && L.profileMe) { L.paintNav('me'); return L.profileMe(root); }
       const title = wrap.querySelector('.ui-bar-title h1');
-      if (title) title.innerHTML = esc(user.nick) + (user.private ? ' <span class="pf-bar-lock" aria-hidden="true">' + L.icon('lock', { size: 14 }) + '</span>' : '');
+      const chip = L.titleChip?.(user.representative_title);
+      if (title) title.innerHTML = esc(user.nick) + (chip ? ' ' + chip : '') + (user.private ? ' <span class="pf-bar-lock" aria-hidden="true">' + L.icon('lock', { size: 14 }) + '</span>' : '');
       wrap.querySelector('.ui-bar-side.is-right').innerHTML = menu;
       return enhanced(view, user, false, '', kept, stashKey);
     }

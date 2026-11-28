@@ -644,7 +644,7 @@ const LoungePostUI = (() => {
         allComments.textContent = L.t('feed4.allComments', { n: L.count(comments) });
       }
       if (preview) preview.innerHTML = (comments ? post.preview || [] : []).slice(-2).map(comment => '<div class="feed4-pv"><b>' +
-        L.esc(comment.author?.nick || comment.nick) + '</b> <span>' + L.linkify(comment.text) + '</span></div>').join('');
+        L.whoTag(comment.author || { nick: comment.nick }) + '</b> <span>' + L.linkify(comment.text) + '</span></div>').join('');
     }
     paint();
     track(post.id, { card, post, paint });
@@ -1104,7 +1104,7 @@ const LoungePostUI = (() => {
       if (!result || result.error) return U.error(result);
       const made = result.comment;   // 서버가 돌려준 글(연락처 가림 뒤)을 보여 준다
       if (!parent && made && Array.isArray(post.preview)) {
-        post.preview = [...post.preview, { id: made.id ?? result.cid, author: { nick: made.author?.nick || L.me?.nick }, text: made.text }].slice(-2);
+        post.preview = [...post.preview, { id: made.id ?? result.cid, author: made.author || { nick: L.me?.nick }, text: made.text }].slice(-2);
       }
       field.value = '';
       field.style.height = 'auto';
@@ -1236,7 +1236,8 @@ const LoungePostUI = (() => {
   }
 
   function renderList(root, params) {
-    const kept = L.unstash('feed');
+    const recent = L.unstash('feed');
+    const kept = L.open('l26_titles') ? null : recent;
     const posted = params.posted != null;   // 방금 글을 올리고 왔으면 맡아 둔 목록 대신 새로 불러와 맨 위(전체 탭)를 보여 준다
     const saved = posted ? null : kept;
     const first = posted ? 'all' : remembered();

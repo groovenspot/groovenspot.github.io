@@ -109,11 +109,12 @@
       '<a class="btn" href="#/alerts">' + L.esc(L.t('core.alerts')) + '</a>' +
       (L.open('rewards') ? '<a class="btn" href="#/rewards">' + t('rewards') + '</a>' :
         '<p class="muted">' + t('rewards') + ' · ' + L.esc(L.t('core.soon')) + '</p>') + '</div>' +
-      pointsPlaceholder() +
+      (L.open('l26_titles') && !L.previewMode() ? '<div data-legacy-titles></div>' : '') + pointsPlaceholder() +
       (L.canInstall() ? '<button class="btn" data-install>' + L.esc(L.t('core.install')) + '</button>' : '') + '</div>';
     L.paintInbox();
     const install = root.querySelector('[data-install]');
     if (install) install.onclick = () => L.showInstall(false);
+    void L.mountTitleCollection?.(root.querySelector('[data-legacy-titles]'));
     return renderPoints(root, me);
   }
 
@@ -134,7 +135,16 @@
     root.querySelector('[data-profile-menu]').onclick = () => profileMenu(shown);
     const view = root.querySelector('[data-own-profile]');
     const kept = L.profileKept ? L.profileKept('u:me') : null;      // 뒤로 돌아왔으면 격자·스크롤 그대로 (P31)
-    if (kept) { shown = kept.user; return L.renderProfile3(view, kept.user, true, kept.extra, kept, 'u:me'); }
+    if (kept) {
+      shown = kept.user;
+      if (L.open('l26_titles')) {
+        const fresh = await L.api('user', { nick: me.nick });
+        if (!view.isConnected) return;
+        shown = { ...shown, representative_title: fresh.user?.representative_title };
+      }
+      renderEnhanced(shown, kept.extra, kept);
+      return;
+    }
     const [profile, points] = await Promise.all([L.api('user', { nick: me.nick }), L.api('points')]);
     if (!view.isConnected) return;
     if (!profile.user) {
@@ -149,7 +159,16 @@
     // 포인트·스탬프 띠: 버튼 줄 위 한 줄로 작게 (의도된 차이 — PLAN 5장)
     const dashboard = '<a class="pf-dash profile3-dashboard" href="#/me/points"><span>' + L.esc(L.t('me.dashboard', values)) + '</span>' +
       L.icon('chevron', { size: 14 }) + '</a>';
-    return L.renderProfile3(view, profile.user, true, dashboard, null, 'u:me');
+    renderEnhanced(profile.user, dashboard);
+    function renderEnhanced(user, extra, saved) {
+      const title = L.titleChip?.(user.representative_title);
+      if (title) root.querySelector('[data-own-nick]').insertAdjacentHTML('beforeend', ' ' + title);
+      L.renderProfile3(view, user, true, extra, saved, 'u:me');
+      if (L.open('l26_titles') && !L.previewMode()) {
+        view.querySelector('[data-profile-head]')?.insertAdjacentHTML('afterend', '<div data-own-titles></div>');
+        void L.mountTitleCollection(view.querySelector('[data-own-titles]'));
+      }
+    }
   }
   L.profileMe = renderProfileMe;
 

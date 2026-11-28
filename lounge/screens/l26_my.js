@@ -119,9 +119,11 @@
 
   function membershipProfile(content, followers) {
     const member = L.me;
+    const title = L.titleChip?.(member.representative_title);
     content.insertAdjacentHTML('beforebegin', '<section class="l26-my-card l26-my-intro"' + (followers ? ' data-my-profile' : '') + '>' +
       '<a class="l26-my-identity" href="#/me" aria-label="' + text('legacy') + ' · ' + L.esc(member.nick) + '">' +
-      L.avatar(member, 112) + '<strong>' + L.esc(member.nick) + '</strong></a>' +
+      L.avatar(member, 112) + '<strong>' + L.esc(member.nick) +
+      (title ? ' ' + title : '') + '</strong></a>' +
       (followers ? '<div class="l26-my-profile-stats" aria-busy="true">' +
         L.l26Skeleton(text('loading'), true) + '</div>' : '') +
       (L.open('l26_entry') ? button('entry', 'data-my-qr aria-description="' + text('entryHelp') + '"', true) : '') + '</section>');
@@ -198,7 +200,8 @@
       return;
     }
     const identity = panel.parentElement.querySelector('.l26-my-identity');
-    identity.innerHTML = L.avatar({ ...L.me, ...profile }, 112) + '<strong>' + L.esc(profile.nick) + '</strong>';
+    const title = L.titleChip?.(profile.representative_title);
+    identity.innerHTML = L.avatar({ ...L.me, ...profile }, 112) + '<strong>' + L.esc(profile.nick) + (title ? ' ' + title : '') + '</strong>';
     const stat = (key, href) => {
       const body = '<strong>' + formatPoints(profile[key]) + '</strong><span>' + text(key) + '</span>';
       return href ? '<a href="#/' + href + '">' + body + '</a>' : '<span>' + body + '</span>';
@@ -213,13 +216,18 @@
   async function renderMy(root) {
     const followers = L.open('l26_follow_counts');
     const membership = L.open('l26_return');
-    if (!membership && !followers) return legacy(root);
+    const titles = L.open('l26_titles') && !L.previewMode();
+    if (!membership && !followers && !titles) return legacy(root);
     const content = frame(root, L.esc(L.t('nav.l26_my')));
     const intro = membershipProfile(content, followers);
+    if (titles) {
+      content.insertAdjacentHTML('beforebegin', '<div data-my-titles></div>');
+      void L.mountTitleCollection(root.querySelector('[data-my-titles]'));
+    }
     if (followers) void showProfile(root, intro.querySelector('.l26-my-profile-stats'));
     const result = membership && await load(root, () => L.api('l26_return'));
     if (membership && !result) return;
-    if (result?.error === 'closed' && !followers) return legacy(root);
+    if (result?.error === 'closed' && !followers && !titles) return legacy(root);
     if (!membership || result.error === 'closed') {
       content.removeAttribute('aria-busy');
       content.innerHTML = '<div class="l26-my-links">' + link('djs', 'djs') +
