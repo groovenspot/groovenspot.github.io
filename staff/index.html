@@ -2715,6 +2715,9 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 .lounge-tier-form .btn { justify-self: start; }
 .lounge-entry-result [data-entry-tier] { margin-top: 6px; }
 .lounge-member-vip { background: #ffd66b; color: #2d1b00; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 800; }
+.lounge-keep-suggest { margin: 0 0 16px; }
+.lounge-keep-suggest article { display: grid; gap: 8px; }
+.lounge-keep-suggest .btn, #kLoungeUnlink, [data-keep-request] { min-height: 44px; }
 .lounge-cards article img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; float: right; margin-left: 8px; }
 .lounge-cards article p { white-space: pre-wrap; }
 .lounge-cards .lounge-hidden article { border-color: var(--warn); }
@@ -3552,6 +3555,12 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   function openApp() {
     setWho(); $('who').hidden = false; show('appView');
     var h = (location.hash || '').slice(1);
+    const keepTarget = /^keep:([-\w]{1,100})$/.exec(h);
+    if (keepTarget) {
+      state.loungeKeepNext = keepTarget[1];
+      h = 'keep';
+      history.replaceState(null, '', location.pathname + location.search);
+    }
     if (loungeReportsTarget(h)) { loungeReportsNext = true; h = ''; }
     if (/^chat:(table|yc|guest|ops|gate|live)$/.test(h)) { h = h.slice(5); state.chatOpenNext = h; }
     var dh = /^dec:([-\w]{1,40})$/.exec(h); if (dh) { decGo(dh[1]); h = 'dec'; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }   // 🔗 업무 알림 → 그 업무로
@@ -3670,6 +3679,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       state.s.team = r.team; state.s.admin = !!r.admin; state.s.lead = !!r.lead; state.s.role = r.role || ''; save(state.s); setWho();
       renderSoon();
       if (loungeReportsNext) loungeOpenReports();
+      loungeOpenKeepTarget();
     }).catch(function () {
       busy(false);
       if (soft) $('sync').textContent = '연결이 안 돼요 · 저장된 화면이에요';
@@ -7324,6 +7334,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       var tmp = state.keep ? (state.keep.reqs || []).filter(function (x) { return x.tmp && state.ktmp[x.id]; }) : [];
       state.keep = r; state.kerr = ''; state.kstale = false; r.reqs = tmp.concat(r.reqs || []); kSetReqs(r.reqs.filter(function (x) { return !x.tmp; }));
       kSave(); renderTabsOnly();
+      loungeOpenKeepTarget();
       if (state.tab === 'keep' && state.kview === 'list') renderSoon();
       done();
     }).catch(function () {
@@ -8037,8 +8048,10 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     h += '<p class="meta">' + (kc.full ? (c.phone ? '<a href="tel:' + esc(c.phone.replace(/\D/g, '')) + '">' + esc(c.phone) + '</a>' : '연락처 없음') : (c.p4 ? '연락처 …' + esc(c.p4) : '')) + (c.memo ? ' · ' + esc(c.memo) : '') + '</p>';
     h += kMeChips(c);
     if (c.lounge) h += '<p class="note">' + opIco('check') + ' 라운지 연결됨 / Lounge linked · ' + esc(c.lounge) + '</p>';
-    if (kc.full && (!c.lounge || loungePendingLinks.has(c.id)) && (state.s.admin || state.s.team === '운영팀' || key(c.staff) === key(state.s.name))) {
-      h += loungeButton(opIco('users') + ' 라운지 연결 / Link Lounge account', 'type="button" id="kLounge"');
+    if (kc.full && (state.s.admin || state.s.team === '운영팀' || key(c.staff) === key(state.s.name))) {
+      h += !c.lounge || loungePendingLink(c.id)
+        ? loungeButton(opIco('users') + ' 라운지 연결 / Link Lounge account', 'type="button" id="kLounge"')
+        : loungeButton('라운지 연결 해제 / Unlink Lounge account', 'type="button" id="kLoungeUnlink"');
     }
     if (kc.err) h += '<p class="msg">' + esc(kc.err) + '</p>';
     if (!direct) h += '<p class="note" style="margin:0 0 6px">− · + · 숫자를 누르면 승인 요청이 가요. ' + approversTxt() + ' 승인 후 반영돼요.</p>';
@@ -8079,6 +8092,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     }).join('') + '</ul>';
     area.innerHTML = h;
     if ($('kLounge')) $('kLounge').onclick = () => loungeKeep(c);
+    if ($('kLoungeUnlink')) $('kLoungeUnlink').onclick = () => loungeKeepUnlink(c);
     $('kBack').addEventListener('click', function () { state.kview = 'list'; state.kcur = null; render(); window.scrollTo(0, 0); });
     function item(id) { return c.items.filter(function (x) { return x.id === id; })[0]; }
     area.querySelectorAll('[data-kt]').forEach(function (b) {
@@ -8736,7 +8750,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   async function loungeRequest(action, body, session) {
     const token = session ? await loungeToken(session) : '';
     if (session && state.s?.token !== session) throw new Error('auth');
-    const timedRead = ['config', 'adm_l26_entry_ops', 'adm_l26_followers'].includes(action);
+    const timedRead = ['config', 'adm_l26_entry_ops', 'adm_l26_followers', 'adm_keep_suggest'].includes(action);
     const res = await fetch(loungeUrl(), { method: 'POST', ...(timedRead && { signal: AbortSignal.timeout(5000) }), headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
       body: JSON.stringify({ ...body, a: action, ...(token && { admin: token }) }) });
     if (!res.ok) throw new Error('net');
@@ -9718,6 +9732,11 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       });
   }
   const loungePendingLinks = new Map();
+  function loungePendingLink(id) {
+    const link = loungePendingLinks.get(id);
+    if (link?.session === state.s?.token) return link;
+    if (link) loungePendingLinks.delete(id);
+  }
   function loungeKeep(cust) {
     const session = state.s.token;
     const root = loungeSheet('라운지 연결 / Link Lounge account',
@@ -9725,15 +9744,15 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     const panel = root.querySelector('.lounge-body');
     function confirm(member) {
       panel.innerHTML = '<form><p><strong>' + esc(member.nick) + '</strong> · …' + esc(member.phone4) + '</p>' +
-        '<p>손님 본인이 맞는지 확인했나요? / Have you confirmed this is the guest?</p>' +
+        '<p>매장에서 손님 본인과 회원 닉네임을 확인해 주세요. / Verify the guest’s identity and Lounge nickname in person.</p>' +
         loungeButton('확인하고 연결 / Confirm and link', 'type="submit"', true) +
         loungeButton('다시 찾기 / Search again', 'type="button" data-search-again') + '</form>';
       const form = panel.querySelector('form');
       const back = form.querySelector('[data-search-again]');
-      back.hidden = loungePendingLinks.has(cust.id);
+      back.hidden = Boolean(loungePendingLink(cust.id));
       back.onclick = () => loungeKeep(cust);
       loungeSubmit(form, async () => {
-        const link = loungePendingLinks.get(cust.id) || { member, staffSaved: false, writing: false };
+        const link = loungePendingLink(cust.id) || { member, session, staffSaved: false, writing: false };
         if (link.writing || link.member.id !== member.id) throw new Error('busy');
         loungePendingLinks.set(cust.id, link);
         link.writing = true;
@@ -9744,7 +9763,9 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
               if (['action', 'unknown'].includes(err.message)) return {};
               throw err;
             });
-            if (open?.keepScope === true) await loungeRequest('adm_link_keep', { ...body, checkOnly: true }, session);
+            if (open?.keepScope === true || open?.l26_keep_view === true) {
+              await loungeRequest('adm_link_keep', { ...body, checkOnly: true }, session);
+            }
             await loungeStaff(session, 'lounge_link_set', { ...body, nick: member.nick });
             link.staffSaved = true;
           }
@@ -9767,9 +9788,62 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         renderSoon();
       });
     }
-    const pending = loungePendingLinks.get(cust.id);
-    if (pending) confirm(pending.member);
-    else loungeMemberSearch(panel, session, confirm);
+    const pending = loungePendingLink(cust.id);
+    if (pending) return confirm(pending.member);
+    loungeMemberSearch(panel, session, confirm);
+    const phone = String(cust.phone || '').replace(/\D/g, '');
+    if (!/^\d{10,11}$/.test(phone)) return;
+    const search = panel.querySelector('form');
+    loungeRequest('adm_keep_suggest', { keepId: cust.id, phone }, session).then(({ members }) => {
+      if (!search.isConnected || state.s?.token !== session || !Array.isArray(members)) return;
+      const recommended = document.createElement('section');
+      recommended.className = 'lounge-cards lounge-keep-suggest';
+      recommended.innerHTML = '<h3>추천 / Suggested</h3>' +
+        '<p class="note">같은 번호로 가입한 회원 / Members registered with this number</p>' +
+        (members.length ? members.map((m, i) => '<article><div><strong>' + esc(m.nick) + '</strong> · …' +
+          esc(m.phone4) + '</div>' + loungeButton('이 회원 선택 / Select member', 'type="button" data-keep-suggestion="' + i + '"') +
+          '</article>').join('') : '<p class="note">일치하는 회원이 없어요. / No matching members.</p>');
+      recommended.querySelectorAll('[data-keep-suggestion]').forEach(button => {
+        button.onclick = () => confirm(members[+button.dataset.keepSuggestion]);
+      });
+      panel.prepend(recommended);
+    }).catch(() => {});   // The manual search is available even when recommendations are closed.
+  }
+  function loungeKeepUnlink(cust) {
+    const session = state.s.token;
+    const root = loungeSheet('라운지 연결 해제 / Unlink Lounge account',
+      '<form><p>' + esc(cust.name) + ' · 킵 장부는 보관돼요. / The keep ledger will be preserved.</p>' +
+      loungeSelect('해제 사유 / Reason', 'reason', [['guest_requested', '손님 요청 / Guest request'],
+        ['incorrect_link', '잘못된 연결 / Incorrect link'], ['staff_confirmed', '직원 확인 / Staff confirmed']]) +
+      loungeButton('확인하고 해제 / Confirm unlink', 'type="submit"', true) + '</form>');
+    loungeSubmit(root.querySelector('form'), async data => {
+      await loungeStaff(session, 'lounge_link_unset', { keepId: cust.id, mid: cust.lounge, reason: data.get('reason') });
+      if (state.s?.token !== session) return;
+      cust.lounge = '';
+      if (state.kcur?.cust.id === cust.id) state.kcur.cust.lounge = '';
+      kPut(cust);
+      kSave();
+    }, () => {
+      $('sheetX').click();
+      toast('라운지 연결을 해제했어요. / Lounge account unlinked.');
+      renderSoon();
+    });
+  }
+  function loungeOpenKeepTarget() {
+    if (!state.loungeKeepNext || !state.s || !state.data || !state.keep || state.tab !== 'keep') return;
+    const id = state.loungeKeepNext;
+    state.loungeKeepNext = '';
+    kOpen(id);
+  }
+  function loungeKeepNotice(ref) {
+    const match = /^keep:([-\w]{1,100})$/.exec(ref || '');
+    if (!match || !state.s) return false;
+    state.loungeKeepNext = match[1];
+    if (state.data) {
+      goTab('keep');
+      loungeOpenKeepTarget();
+    }
+    return true;
   }
   const LOUNGE_MOD = {
     show: '다시 보이기 / Show', hide: '가리기 / Hide', delete: '내리기 / Remove',
@@ -11106,10 +11180,21 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         if (!lists.isConnected) return;
         const rows = data.list.map(({ data, ...row }) => ({ ...data, ...row }));
         const going = rows.filter(row => row.kind === 'md_going' && row.day === data.today);
-        lists.innerHTML = '<h3>내 손님 갈래요 / My guests going tonight</h3>' +
+        const keepRequests = rows.filter(row => row.kind === 'keep_link_request');
+        lists.innerHTML = (keepRequests.length ? '<h3>킵 연결 요청 / Keep link requests</h3>' +
+          loungeCards(keepRequests, row => '<article><strong>' + esc(row.nick) + '</strong> · ' + esc(row.day) +
+            (row.keepId ? loungeButton('킵 손님 열기 / Open keep customer',
+              'type="button" data-keep-request="' + esc(row.keepId) + '"') : '') + '</article>') : '') +
+          '<h3>내 손님 갈래요 / My guests going tonight</h3>' +
           loungeCards(going, row => '<article><strong>' + esc(row.nick) + '</strong> · ' + esc(row.day) + '</article>') +
           '<h3>테이블 문의 / Table inquiries</h3><div data-md-tables></div>' +
           '<h3>조각 확정 / Shared tables</h3><div data-md-splits></div>';
+        lists.querySelectorAll('[data-keep-request]').forEach(button => {
+          button.onclick = () => {
+            $('sheetX').click();
+            loungeKeepNotice('keep:' + button.dataset.keepRequest);
+          };
+        });
         await Promise.all([
           loungeList(lists.querySelector('[data-md-tables]'), '', () => ({ tables: rows.filter(row => row.kind === 'table') }), {
             key: 'tables', render: row => '<strong>' + esc(row.nick) + '</strong><p>' +
@@ -11392,6 +11477,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
     if (loungeReportsTarget(e.data?.tab)) { loungeOpenReports(); return; }
+    if (e.data?.tab === 'keep' && loungeKeepNotice(e.data.ref)) return;
     if (e.data?.peek && (/^lounge[_:]reports?$/.test(e.data.peek.kind) || /라운지 신고/.test(e.data.peek.title || ''))) {
       if (document.querySelector('[data-lounge-report-count]')) loungeRefreshReportBadges(true);
       return;
@@ -11993,6 +12079,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     area.querySelectorAll('[data-allgo]').forEach(function (b) { b.addEventListener('click', function () {
       var t = b.dataset.allgo, m = t.match(/^chat:(table|yc|guest|ops|gate|live)$/), dg = /^dec:([-\w]{1,40})$/.exec(b.dataset.allref || '');
       if (dg && t === 'dec') decGo(dg[1]);   // 🔗 업무 코멘트·완료 알림 → 그 업무로 (대표 요청 2026-11-20)
+      if (t === 'keep' && loungeKeepNotice(b.dataset.allref)) return;
       if (loungeReportsTarget(t)) loungeOpenReports();
       else if (m) chatOpen(m[1]); else if (ALL_TABS.indexOf(t) >= 0) goTab(t);
     }); });

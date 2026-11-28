@@ -303,6 +303,10 @@
       content.insertAdjacentHTML('beforebegin', '<div data-my-titles></div>');
       void L.mountTitleCollection(root.querySelector('[data-my-titles]'));
     }
+    if (L.open('l26_keep_view')) {
+      intro.insertAdjacentHTML('afterend', '<div data-l26-keep-card></div>');
+      void L.mountKeepCard?.(intro.nextElementSibling);
+    }
     if (followers) void showProfile(root, intro.querySelector('.l26-my-profile-stats'));
     const result = membership && await load(root, () => L.api('l26_return'));
     if (membership && !result) return;

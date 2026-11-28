@@ -104,6 +104,7 @@
       (me.bio ? '<p class="shell-bio">' + L.esc(me.bio) + '</p>' : '');
     const editLink = '<a class="btn" href="#/me/edit">' + t('edit') + '</a>';
     root.innerHTML = L.bar({ back: false, title: L.t('nav.me'), right: L.inboxIcons() }) + '<div class="shell-stack pf-sub">' + legacy +
+      (L.open('l26_keep_view') ? '<div data-l26-keep-card></div>' : '') +
       '<div class="shell-actions" data-me-actions>' + editLink +
       '<a class="btn" href="#/me/settings">' + t('settings') + '</a>' +
       '<a class="btn" href="#/alerts">' + L.esc(L.t('core.alerts')) + '</a>' +
@@ -112,6 +113,7 @@
       (L.open('l26_titles') && !L.previewMode() ? '<div data-legacy-titles></div>' : '') + pointsPlaceholder() +
       (L.canInstall() ? '<button class="btn" data-install>' + L.esc(L.t('core.install')) + '</button>' : '') + '</div>';
     L.paintInbox();
+    void L.mountKeepCard?.(root.querySelector('[data-l26-keep-card]'));
     const install = root.querySelector('[data-install]');
     if (install) install.onclick = () => L.showInstall(false);
     void L.mountTitleCollection?.(root.querySelector('[data-legacy-titles]'));
@@ -122,17 +124,19 @@
     return '<div class="shell-stack" data-points aria-busy="true"><p role="status">' + a('pending') + '</p></div>';
   }
 
-  async function renderProfileMe(root) {
+  async function renderProfileMe(root, showKeep = false) {
     const me = L.me;
     const U = LoungeScreenUI;
     root.innerHTML = '<div data-profile-root><header class="ui-bar pf-bar-own"><div class="ui-bar-title"><h1 data-own-nick>' + L.esc(me.nick) +
       '</h1></div><div class="ui-bar-side is-right">' +
       (L.open('posts') ? '<a class="ui-bar-btn" href="#/compose" aria-label="' + L.esc(L.t('user4.newPost')) + '">' + L.icon('plusBox') + '</a>' : '') +
       L.inboxIcons() + '<button type="button" class="ui-bar-btn" data-profile-menu aria-haspopup="dialog" aria-label="' +
-      L.esc(L.t('user4.menu')) + '">' + L.icon('menu') + '</button></div></header><div data-own-profile>' + U.status('loading', true) + '</div></div>';
+      L.esc(L.t('user4.menu')) + '">' + L.icon('menu') + '</button></div></header>' +
+      (showKeep && L.open('l26_keep_view') ? '<div data-l26-keep-card></div>' : '') + '<div data-own-profile>' + U.status('loading', true) + '</div></div>';
     L.paintInbox();
     let shown = null;
     root.querySelector('[data-profile-menu]').onclick = () => profileMenu(shown);
+    void L.mountKeepCard?.(root.querySelector('[data-l26-keep-card]'));
     const view = root.querySelector('[data-own-profile]');
     const kept = L.profileKept ? L.profileKept('u:me') : null;      // 뒤로 돌아왔으면 격자·스크롤 그대로 (P31)
     if (kept) {
@@ -343,7 +347,7 @@
           root.innerHTML = L.bar({ back: 'me', title: L.t('me.points') }) + '<div class="shell-stack pf-sub">' + pointsPlaceholder() + '</div>';
           return renderPoints(root, L.me);
         }
-        return renderProfileMe(root);
+        return renderProfileMe(root, true);
       }
       return renderMe(root);
     }

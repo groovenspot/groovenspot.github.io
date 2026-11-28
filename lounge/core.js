@@ -3,7 +3,7 @@
   var API = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
   var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
-  var features = Object.create(null), configPending, routeShell, routePreview, routeFollowCounts, routeDjFeedback, routeTitles;
+  var features = Object.create(null), configPending, routeShell, routePreview, routeFollowCounts, routeDjFeedback, routeTitles, routeKeep;
   var routePublic, viewerMedia = '';
   var guestAuth = new Set(['login', 'kakao-result', 'kakao-recover', 'join', 'reset', 'staff-login', 'terms', 'privacy']);
   var preview = false, previewEligible = false, previewRequested = false, nextConfigCheck = 0;
@@ -356,7 +356,7 @@
       // 로그인·가입 화면은 공개 보기 여부와 상관없이 그대로 열리므로 설정을 기다리지 않는다 (가입 화면이 늦게 떠 입력이 이전 화면에 들어가지 않게).
       const guestAuthRoute = guestAuth.has(requestedScreen) || (requestedScreen === 'signup' && L.hasScreen('signup'));
       if ((!L.me && !guestAuthRoute) || !shown || !route || requestedScreen === 'l26_public' ||
-          route === 'me/settings' || route === 'l26_benefits' ||
+          route === 'me/settings' || route === 'l26_benefits' || route === 'l26_keep' ||
           route === 'l26_dj_feedback' || route === 'alerts/settings' ||
           Object.hasOwn(legacyRoutes, requestedScreen)) {
         await config;
@@ -401,6 +401,7 @@
       routeShell = L.open('l26_shell');
       routePreview = preview;
       routeDjFeedback = L.open('l26_dj_feedback');
+      routeKeep = L.open('l26_keep_view');
       shown = here;
       scrollPending = def?.keepScroll && L.wentBack?.() && Object.hasOwn(scrolls, here) ? scrolls[here] : null;
       delete scrolls[here];
@@ -770,6 +771,10 @@
     const followerScreenChanged = followerScreens.includes(name) && routeFollowCounts !== L.open('l26_follow_counts');
     if (followerScreenChanged || ((routeShell !== L.open('l26_shell') || routePreview !== preview) &&
         (!name || Object.hasOwn(legacyRoutes, name) || name === 'l26_benefits'))) {
+      return L.route(null, true);
+    }
+    if (routeKeep !== L.open('l26_keep_view') &&
+        (['l26_my', 'l26_keep'].includes(name) || /^#\/?me(?:\?|$)/.test(location.hash))) {
       return L.route(null, true);
     }
     if (routeDjFeedback !== L.open('l26_dj_feedback') &&
