@@ -348,7 +348,9 @@
       var route = hash.replace(/^#\/?/, '');
       var config = configReady ? undefined : refreshConfig();
       const requestedScreen = route.split(/[/?]/, 1)[0];
-      if ((!L.me && !guestAuth.has(requestedScreen)) || !shown || !route || requestedScreen === 'l26_public' ||
+      // 로그인·가입 화면은 공개 보기 여부와 상관없이 그대로 열리므로 설정을 기다리지 않는다 (가입 화면이 늦게 떠 입력이 이전 화면에 들어가지 않게).
+      const guestAuthRoute = guestAuth.has(requestedScreen) || (requestedScreen === 'signup' && L.hasScreen('signup'));
+      if ((!L.me && !guestAuthRoute) || !shown || !route || requestedScreen === 'l26_public' ||
           route === 'me/settings' || route === 'l26_benefits' ||
           route === 'l26_dj_feedback' || route === 'alerts/settings' ||
           Object.hasOwn(legacyRoutes, requestedScreen)) {
