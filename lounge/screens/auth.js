@@ -377,7 +377,7 @@
       '出生年と任意のニックネーム・新暦の誕生日の利用、連携解除や退会については、下の全文をご覧ください。',
       '完整政策说明如何处理出生年份及可选提供的昵称和公历生日，以及如何解除连接或注销账号。')) + '</p>';
     return '<h2>' + t(key + 'Title') + '</h2><p>' + L.esc(copy[key + 'Body'][locale]) + '</p>' + signup + kakao + (items ? '<ul>' + items + '</ul>' : '') + policyDates(lang) +
-      '<a class="shell-link" href="' + path + '" target="_blank" rel="noopener noreferrer">' +
+      '<a class="shell-link" style="display:inline-flex;align-items:center;min-height:44px" href="' + path + '" target="_blank" rel="noopener noreferrer">' +
       L.esc(policyLink[locale]) + '</a>';
   }
 
