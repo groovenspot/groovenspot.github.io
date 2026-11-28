@@ -747,7 +747,7 @@
         const photo = typeof message.photo === 'string' && /^p\/[\w:-]+\/[\w-]+\.(jpe?g|webp)$/.test(message.photo)
           ? '<img src="' + esc(L.img(message.photo)) + '" alt="" loading="lazy">' : '';
         const author = groupStart && !message.mine ? '<span class="rooms-avatar" aria-hidden="true">' +
-          (photo || esc([...message.nick][0] || 'G')) + '</span><span class="rooms-author">' + L.whoTag(message) + '</span>' : groupStart && message.tag
+          (photo || esc([...message.nick][0] || 'G')) + '</span><span class="rooms-author">' + L.whoTag(message) + '</span>' : groupStart && (message.tag || L.titleChip?.(message.representative_title))
             ? '<span class="rooms-author rooms-own-author">' + L.whoTag(message) + '</span>' : '';
         const quote = byId.get(replyTargets.get(message.id));
         const body = oc ? mentions(message.text) : null;

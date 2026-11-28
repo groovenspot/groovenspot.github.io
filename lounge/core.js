@@ -3,7 +3,7 @@
   var API = window.LOUNGE_API || 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
   var screens = Object.create(null), dict = { ko: {}, en: {}, ja: {}, zh: {} }, cur = null;
   var session = read('gl_token'), sheetFocus, routeVersion = 0;
-  var features = Object.create(null), configPending, routeShell, routePreview, routeFollowCounts, routeDjFeedback;
+  var features = Object.create(null), configPending, routeShell, routePreview, routeFollowCounts, routeDjFeedback, routeTitles;
   var preview = false, previewEligible = false, previewRequested = false, nextConfigCheck = 0;
   var activeTimer, activeAttempt, activeRecorded;
   var activityDayMs = 86_400_000, activityDayShift = 3_600_000; // 08:00 KST is 23:00 UTC.
@@ -16,7 +16,7 @@
   // 오픈채팅이 켜진 회원에게만 탭 이름이 '오픈채팅'. 지난번 값을 기억해 첫 화면부터 맞는 이름을 그린다.
   var ocNav = read('gl_oc') === '1', navOn;
   var shown = '', scrolls = Object.create(null), scrollPending = null;   // 보던 자리 기억 (keepScroll 화면)
-  var gates = { rooms: 'rooms', dm: 'dm', challenge: 'challenge', compose: 'posts',
+  var gates = { l26_titles: 'l26_titles', rooms: 'rooms', dm: 'dm', challenge: 'challenge', compose: 'posts',
     rewards: 'rewards', rank: 'rewards', shop: 'shop', table: 'sales', split: 'split', songs: 'songs', safety: 'safety', shorts: 'play1', partners: 'partners', partner: 'partners' };
   var STAFF_API = 'https://groove-staff-api.groovenspotbusan.workers.dev/';
   var staffTeamLabels = {
@@ -237,6 +237,8 @@
     whoTag: function (person, locale = L.lang) {
       const nick = L.esc(person?.nick);
       const chip = L.tagChip(person?.tag, locale);
+      const title = L.titleChip?.(person?.representative_title, locale);
+      if (title) return '<span class="l26-title-name">' + nick + ' ' + title + (chip ? ' ' + chip : '') + '</span>';
       if (!chip) return nick;
       return staffBadge(person.tag, locale) ? '<span class="lounge-who"><span class="lounge-who-nick">' + nick + '</span> ' + chip + '</span>' : nick + ' ' + chip;
     },
@@ -384,9 +386,10 @@
       window.scrollTo(0, 0);
       view.focus({ preventScroll: true });
       var gate = Object.hasOwn(gates, name) && gates[name];
-      if (gate || ['play', 'tonight', 'me'].includes(name) || followerScreens.includes(name)) await config;
+      if (gate || ['play', 'tonight', 'me', 'feed', 'room'].includes(name) || followerScreens.includes(name)) await config;
       if (version !== routeVersion) return;
       routeFollowCounts = L.open('l26_follow_counts');
+      routeTitles = L.open('l26_titles');
       refreshBadges(version, config);
       if (gate && !L.open(gate) && !def?.selfGate) {   // 꺼진 기능: 화면 제목 + 준비 중 (selfGate 화면은 스스로 처리 — 통합 때 Claude)
         root.innerHTML = (def?.title && title !== titleKey ? '<h1>' + L.esc(title) + '</h1>' : '') + '<p class="muted">' + L.esc(L.t('core.soon')) + '</p>';
@@ -723,6 +726,8 @@
     if (!shown || version !== routeVersion || document.hidden) return;
     var name = location.hash.replace(/^#\/?/, '').split(/[/?]/, 1)[0];
     if (name === 'u') name = 'user';
+    if (routeTitles !== L.open('l26_titles') &&
+        ['l26_titles', 'l26_my', 'me', 'feed', 'l26_lounge', 'user', 'rooms', 'room'].includes(name)) return L.route(null, true);
     const followerScreenChanged = followerScreens.includes(name) && routeFollowCounts !== L.open('l26_follow_counts');
     if (followerScreenChanged || ((routeShell !== L.open('l26_shell') || routePreview !== preview) &&
         (!name || Object.hasOwn(legacyRoutes, name) || name === 'l26_benefits'))) {

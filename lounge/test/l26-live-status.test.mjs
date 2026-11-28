@@ -19,7 +19,7 @@ async function renderVenue(now, response, scheduleOnly = false) {
   const Lounge = {
     lang: 'ko', t: key => key, esc: value => String(value), icon: () => '', open: () => false,
     screen: (name, definition) => { screen = definition; },
-    l26Skeleton: () => '', l26Empty: label => label, photoSrc: value => value,
+    djMark: value => value, l26Skeleton: () => '', l26Empty: label => label, photoSrc: value => value,
     mountDjFeedback: () => ({ refresh() {}, destroy() {} }),
     api: async () => ({ floors: { '2F': { now: 'DJ A' } }, ...response })
   };
@@ -63,13 +63,13 @@ for (const [name, now, response, state, label] of cases) {
   });
 }
 
-test('before opening shows every floor slot with available session art', async () => {
+test('before opening shows every floor slot using DJ marks', async () => {
   const schedule = await renderVenue(at('20:00:00'), {
     open: false,
     timetable: [{ floor: '2F', at: '21:00', dj: 'DJ A' },
       { floor: '3F', at: '21:30', dj: 'DJ C' }, { floor: '2F', at: '00:30', dj: 'DJ B' }]
   }, true);
   assert.match(schedule, /<time>21:00<\/time><strong>DJ A<\/strong>/);
-  assert.match(schedule, /<time>00:30<\/time><strong>DJ B<\/strong><img src="https:\/\/i.ytimg.com\/vi\/whM3ZZUnSVE/);
-  assert.doesNotMatch(schedule, /<details|DJ C|다음 DJ/);
+  assert.match(schedule, /<time>00:30<\/time><strong>DJ B<\/strong>/);
+  assert.doesNotMatch(schedule, /<details|DJ C|다음 DJ|i.ytimg.com/);
 });
