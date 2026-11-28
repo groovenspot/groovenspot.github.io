@@ -392,3 +392,43 @@
 .l26-shell .l26-my-progress progress {
   accent-color: var(--l26-brand, #ff2d87);
 }
+
+.l26-my-pass[data-membership-tier]::before {
+  box-shadow: inset 0 0 0 1px var(--tier-edge);
+  background: var(--tier-surface);
+}
+
+.l26-my-pass[data-membership-tier="MEMBER"] {
+  --tier-edge: #a6aab166;
+  --tier-metal: #c9ccd2;
+  --tier-surface: linear-gradient(145deg, #24262a, #151619 45%, #0c0d0f 80%);
+}
+
+.l26-my-pass[data-membership-tier="VIP"] {
+  --tier-edge: #c9a45ca8;
+  --tier-metal: #c9a45c;
+  --tier-surface:
+    repeating-linear-gradient(0deg, #f3d89d12 0 1px, transparent 1px 4px, #c9a45c15 4px 5px, transparent 5px 8px),
+    linear-gradient(122deg, #543b1c, #241b12 36%, #412e18 77%, #1b150f);
+}
+
+.l26-my-pass[data-membership-tier="VVIP"] {
+  --tier-edge: #ac99f5a8;
+  --tier-metal: #e7e5ff;
+  --tier-surface:
+    conic-gradient(from 32deg at 86% 21%, #ac99f52e, transparent 13%, #e7e5ff20 24%, #08081044 25% 41%, #ac99f54a 42%, transparent 59%),
+    linear-gradient(148deg, #211d38, #0f0e17 38%, #171426 68%, #0a090e);
+}
+
+.l26-my-tier {
+  grid-area: brand;
+  align-self: center;
+  justify-self: end;
+  color: var(--tier-metal);
+  border: 1px solid var(--tier-edge);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .13em;
+}

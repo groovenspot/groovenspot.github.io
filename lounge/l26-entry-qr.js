@@ -42,12 +42,13 @@
     }
     root.classList.add('l26-entry-qr');
     root.innerHTML = '<h2>' + t(automatic ? 'entrance' : 'title') + '</h2><button type="button" class="btn" hidden></button>' +
-      '<a hidden></a><img alt="' + t('title') + '" hidden><p data-entry-countdown hidden></p><p role="status" hidden></p>';
+      '<a hidden></a><strong data-entry-tier hidden></strong><img alt="' + t('title') + '" hidden><p data-entry-countdown hidden></p><p role="status" hidden></p>';
     const button = root.querySelector('button');
     const login = root.querySelector('a');
     if (loginHref) login.href = loginHref;
     login.textContent = L.t('core.login');
     const image = root.querySelector('img');
+    const tier = root.querySelector('[data-entry-tier]');
     const countdown = root.querySelector('[data-entry-countdown]');
     const status = root.querySelector('[role=status]');
     if (automatic) status.insertAdjacentHTML('beforebegin', '<span class="l26-entry-placeholder" aria-hidden="true" hidden></span>');
@@ -70,7 +71,8 @@
     }
     function clearQr() {
       clearTimeout(tick);
-      image.hidden = countdown.hidden = true;
+      image.hidden = countdown.hidden = tier.hidden = true;
+      tier.textContent = '';
       image.removeAttribute('src');
       expires = 0;
     }
@@ -158,6 +160,8 @@
           offer('show');
           message();
         }
+        tier.textContent = image.hidden ? '' : L.membershipTier(result.membership_tier);
+        tier.hidden = !tier.textContent;
         failures = 0;
       } catch {
         if (pending !== operation || !foreground()) return;

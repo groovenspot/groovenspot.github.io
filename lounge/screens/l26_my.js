@@ -315,9 +315,11 @@
       return;
     }
 
+    const tier = L.membershipTier(result.membership_tier);
     const badges = result.badges.map(key => '<li>' + text(key) + '</li>').join('');
     content.innerHTML =
-      '<section class="l26-my-pass"><h2>GROOVE<br> MEMBERSHIP</h2>' +
+      '<section class="l26-my-pass"' + (tier ? ' data-membership-tier="' + tier + '"' : '') + '><h2>GROOVE<br> MEMBERSHIP</h2>' +
+      (tier ? '<span class="l26-my-tier">' + tier + '</span>' : '') +
       '<section class="l26-my-card l26-my-membership"><div class="l26-my-visit-count"><h2>' + text('visits') +
       '</h2><strong data-my-visits>' + formatPoints(result.visits) + '</strong></div>' +
       '<div class="l26-my-next"><h2>' + text('next') + '</h2>' +

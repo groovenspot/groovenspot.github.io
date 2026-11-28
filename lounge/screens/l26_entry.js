@@ -36,10 +36,12 @@
     const title = text('입장 QR', 'Entry QR');
     const panel = L.sheet('<h2>' + title + '</h2><div class="pf-qr">' +
       '<p>' + text('입구 직원에게 QR을 보여 주세요.', 'Show this QR to the entrance staff.') + '</p>' +
+      '<strong data-entry-tier hidden></strong>' +
       '<canvas data-entry-qr role="img" aria-label="' + title + '" style="width:min(100%, 272px)" hidden></canvas>' +
       '<p data-entry-countdown aria-hidden="true"></p><p data-entry-status role="status"></p>' +
       '<button class="btn" data-entry-refresh type="button">' + text('새 QR 받기', 'Get a new QR') + '</button></div>', { close: true });
     const canvas = panel.querySelector('canvas');
+    const tier = panel.querySelector('[data-entry-tier]');
     const status = panel.querySelector('[data-entry-status]');
     const countdown = panel.querySelector('[data-entry-countdown]');
     const refresh = panel.querySelector('button[data-entry-refresh]');
@@ -48,7 +50,8 @@
 
     function clear() {
       clearInterval(timer);
-      canvas.hidden = true;
+      canvas.hidden = tier.hidden = true;
+      tier.textContent = '';
       canvas.width = 0;
       countdown.textContent = '';
     }
@@ -70,6 +73,8 @@
         const expiresAt = Math.min(result.expires_at, Date.now() + 60_000);
         draw(canvas, make, result.qr);
         canvas.hidden = false;
+        tier.textContent = L.membershipTier(result.membership_tier);
+        tier.hidden = !tier.textContent;
         status.textContent = '';
         const tick = () => {
           if (!live()) return clear();

@@ -279,7 +279,7 @@
     button.onclick = async () => {
       const [blocks, admin] = await Promise.all([
         L.me ? L.api('blocks') : {},
-        user.tag?.kind !== 'staff' ? L.staffAdmin() : ''
+        !L.open('l26_vip_tier') && user.tag?.kind !== 'staff' ? L.staffAdmin() : ''
       ]);
       const allowed = blocks.error !== 'action';
       if (!button.isConnected) return;
