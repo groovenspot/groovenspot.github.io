@@ -15,7 +15,14 @@
     lang: ['언어', 'Language', '言語', '语言'],
     load: ['프로그램을 불러오는 중', 'Loading the program', 'プログラムを読み込み中', '正在加载节目'],
     unavailable: ['프로그램을 불러오지 못했어요.', 'The program could not load.', 'プログラムを読み込めませんでした。', '无法加载节目。'],
-    retry: ['다시 시도', 'Try again', '再試行', '重试']
+    retry: ['다시 시도', 'Try again', '再試行', '重试'],
+    privacy: ['개인정보처리방침', 'Privacy policy', 'プライバシーポリシー', '隐私政策'],
+    terms: ['이용약관', 'Terms of use', '利用規約', '使用条款'],
+    legal: ['운영자 정보와 정책', 'Operator and policies', '運営者情報とポリシー', '运营者信息与政策'],
+    business: ['상호 더스팟앤그루브 · 대표 김동기 · 사업자등록번호 790-36-01644 · 부산광역시 부산진구 중앙대로680번가길 52, 2~3층',
+      'Business name 더스팟앤그루브 (The Spot & Groove) · Representative 김동기 · Business registration no. 790-36-01644 · 2F–3F, 52 Jungang-daero 680beonga-gil, Busanjin-gu, Busan',
+      '商号 더스팟앤그루브 · 代表 김동기 · 事業者登録番号 790-36-01644 · 부산광역시 부산진구 중앙대로680번가길 52, 2~3층（2〜3階）',
+      '商号 더스팟앤그루브 · 代表 김동기 · 营业执照号 790-36-01644 · 부산광역시 부산진구 중앙대로680번가길 52, 2~3층（2~3层）']
   };
   L.i18n(Object.fromEntries(Object.keys(LANGS).map((lang, index) => [lang,
     Object.fromEntries(Object.entries(COPY).map(([key, words]) => ['public.' + key, words[index]]))])));
@@ -74,6 +81,15 @@
       text(self ? 'join' : 'qr') + '</a><a class="btn" href="#/login">' + L.esc(L.t('core.login')) + '</a></div>';
   }
 
+  function legal() {
+    const lang = LANGS[L.lang] ? L.lang : 'ko';
+    const link = (key, label) => '<a href="/lounge/policy.html#' + lang + '-' + key +
+      '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+    return '<footer class="public-legal" aria-label="' + text('legal') + '"><nav>' +
+      link('privacy', '<strong>' + text('privacy') + '</strong>') + link('terms', text('terms')) +
+      '</nav><p>' + text('business') + ' · <a href="tel:050713015970">0507-1301-5970</a></p></footer>';
+  }
+
   function leave() {
     if (!active) return;
     active.stop();
@@ -90,7 +106,7 @@
       '<nav class="public-nav"><a href="#/l26_public"' + (!liveFirst ? ' aria-current="page"' : '') + '>' +
       L.esc(L.t('nav.l26_home')) + '</a><a href="#/l26_public?live=1"' +
       (liveFirst ? ' aria-current="page"' : '') + '>' + text('live') + '</a></nav><div data-program>' +
-      L.l26Skeleton(text('load')) + '</div>';
+      L.l26Skeleton(text('load')) + '</div>' + legal();
     const body = root.querySelector('[data-program]');
     const day = root.querySelector('[data-program-day]');
     const abort = new AbortController();
