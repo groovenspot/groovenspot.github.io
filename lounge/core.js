@@ -10,7 +10,7 @@
   var legacyRoutes = {
     l26_home: 'tonight', l26_live: 'tonight', l26_lounge: 'feed', l26_my: 'me', l26_play: 'play'
   };
-  var lockedScreens = new Set(['l26_access', 'login', 'reset', 'terms', 'privacy', 'djs', 'dj', 'cup']);
+  var lockedScreens = new Set(['l26_access', 'login', 'kakao-result', 'kakao-recover', 'reset', 'terms', 'privacy', 'djs', 'dj', 'cup']);
   var followerScreens = ['l26_my', 'l26_lounge', 'dj', 'user', 'followers', 'following'];
   var shellTabs = { tonight: 'l26_live', l26_lounge: 'feed', rooms: 'feed', me: 'l26_my' };
   // 오픈채팅이 켜진 회원에게만 탭 이름이 '오픈채팅'. 지난번 값을 기억해 첫 화면부터 맞는 이름을 그린다.
@@ -166,6 +166,7 @@
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.content = v === 'light' ? '#ffffff' : '#000000';
     },
+    apiBase: function () { return API; },
     api: function (a, body) {
       var b = Object.assign({}, body, { a: a }); var t = session; if (t && !b.token && !b.admin) b.token = t;
       var mode = L.previewMode();

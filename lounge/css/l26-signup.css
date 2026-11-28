@@ -73,3 +73,16 @@
 #app:has(.l26-signup form) .lounge-inboxes {
   display: none;
 }
+
+.l26-kakao-login:not(:empty) { display: grid; justify-items: start; gap: 12px; }
+.l26-kakao-button {
+  border: 0;
+  border-radius: 6px;
+  padding: 0;
+  background: #fee500;
+  cursor: pointer;
+}
+.l26-kakao-button img { display: block; width: 183px; max-width: 100%; height: auto; }
+.l26-kakao-button:disabled { opacity: .6; cursor: wait; }
+[data-kakao-settings]:empty { display: none; }
+.l26-kakao-result .shell-choice a { color: inherit; }

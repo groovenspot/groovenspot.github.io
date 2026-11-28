@@ -278,7 +278,7 @@
       '<select name="lang"><option value="ko" lang="ko">한국어</option><option value="en" lang="en">English</option>' +
       '<option value="ja" lang="ja">日本語</option><option value="zh" lang="zh">中文</option></select></label>' +
       submit('save') + '</form><section class="shell-card"><h2>' + a('reset') + '</h2><p>' + a('resetHelp') + '</p></section>' +
-      '<button type="button" class="btn" data-lounge-preview-toggle' + (L.previewEligible?.() ? '' : ' hidden') + '>' +
+      '<section data-kakao-settings></section><button type="button" class="btn" data-lounge-preview-toggle' + (L.previewEligible?.() ? '' : ' hidden') + '>' +
       (L.previewEligible?.() ? L.esc(L.t(L.isPreview() ? 'core.previewLegacy' : 'core.previewNew')) : '') + '</button>' +
       '<div class="shell-actions"><button class="btn" data-signout>' + t('signout') + '</button>' +
       '<button class="btn shell-danger" data-withdraw>' + t('withdraw') + '</button></div>' +
@@ -304,6 +304,7 @@
       L.toast(L.t('me.saved'));
     });
     root.querySelector('[data-signout]').onclick = exit;
+    L.kakaoSettings?.(root.querySelector('[data-kakao-settings]'));
     const previewToggle = root.querySelector('[data-lounge-preview-toggle]');
     if (previewToggle) previewToggle.onclick = async () => {
       previewToggle.disabled = true;

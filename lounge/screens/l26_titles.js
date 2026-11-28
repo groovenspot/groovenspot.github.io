@@ -18,7 +18,7 @@
     days: ['앱 출석 {n}일 연속', '{n} consecutive check-in days', 'アプリ出席 {n} 日連続', '连续打卡 {n} 天'],
     quarter: ['분기 인증 방문 {n}회', '{n} verified visits in the quarter', '四半期に認証済み来店 {n} 回', '季度内验证到访 {n} 次'],
     opening: ['오픈 후 30일 내 가입', 'Join within 30 days of opening', 'オープン後30日以内に登録', '开业后 30 天内注册'],
-    birthday: ['생일 확인 기능 준비 중', 'Birthday verification pending', '誕生日の確認機能を準備中', '生日验证功能筹备中'],
+    birthday: ['양력 생일 당일 신분증 확인 및 입장 · 연 1회', 'Verified entry with ID on your solar birthday · once a year', '新暦の誕生日当日に身分証を提示して入場 · 年1回', '公历生日当天出示证件并完成入场验证 · 每年一次'],
     vip: ['VIP 등급', 'VIP membership', 'VIP会員', 'VIP 会员'],
     vvip: ['VVIP 등급', 'VVIP membership', 'VVIP会員', 'VVIP 会员'],
     revoked: ['회수됨', 'Revoked', '取り消し済み', '已撤销'],
@@ -105,7 +105,7 @@
       (earned ? ' data-earned' : '') + '>' + medal(item) + '<div class="l26-title-info"><span class="l26-title-detail">' +
       e(item.rarity) + (item.season ? ' · ' + L.esc(item.season) : '') + '</span><h2>' + L.esc(name(item)) + '</h2><p>' +
       e(item.rule, { n: num(item.target) }) + '</p>' + progress +
-      (item.disabled && item.rule !== 'birthday' ? '<span class="l26-title-detail">' + e('revoked') + '</span>' : '') + '</div>' +
+      (item.disabled && (item.rule !== 'birthday' || item.progress >= item.target) ? '<span class="l26-title-detail">' + e('revoked') + '</span>' : '') + '</div>' +
       (earned ? '<button type="button" data-title-select="' + index + '" aria-pressed="' + chosen +
         '" aria-label="' + L.esc(name(item) + ' · ' + text(chosen ? 'clear' : 'select')) + '">' +
         e(chosen ? 'representative' : 'select') + '</button>' : '') + '</li>';
