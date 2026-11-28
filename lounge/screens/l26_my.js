@@ -2,6 +2,9 @@
   const copy = {
     entry: ['입장 QR', 'Entry QR', '入場QR', '入场二维码'],
     entryHelp: ['입구 직원에게 QR을 보여 주세요.', 'Show the QR to staff at the entrance.', '入口でスタッフにQRを提示してください。', '请在入口向员工出示二维码。'],
+    vip_only: ['VIP·VVIP 전용', 'VIP & VVIP only', 'VIP・VVIP限定', 'VIP・VVIP 专享'],
+    vipOnlyHelp: ['방문 혜택(입장 우선·자리 업그레이드·굿즈·신청곡권)은 VIP·VVIP 회원만 받을 수 있어요.', 'Visit benefits (priority entry, seat upgrade, merch, song request) are for VIP and VVIP members only.', '来店特典（優先入場・席アップグレード・グッズ・リクエスト曲）はVIP・VVIP会員限定です。', '到访权益（优先入场、座位升级、周边、点歌）仅限 VIP・VVIP 会员。'],
+    vipOnlyCard: ['VIP·VVIP 회원만 받을 수 있는 혜택이에요.', 'Only VIP and VVIP members can get this benefit.', 'VIP・VVIP会員だけが受けられる特典です。', '仅 VIP・VVIP 会员可享受此权益。'],
     visits: ['인증 방문', 'Verified visits', '認証済み来店', '已验证到访'],
     history: ['방문 기록', 'Visit history', '来店履歴', '到访记录'],
     empty: ['아직 인증된 방문이 없어요.', 'You have no verified visits yet.', '認証済みの来店はまだありません。', '暂无已验证的到访。'],
@@ -171,7 +174,8 @@
     };
   }
 
-  function benefitProgress(next, visits) {
+  function benefitProgress(next, visits, vipOnly) {
+    if (vipOnly) return '<h3>' + text('vip_only') + '</h3><p>' + text('vipOnlyHelp') + '</p>';
     if (!next) return '<p>' + text('allRequested') + '</p>';
     const current = Math.min(visits, next.visits);
     const label = text('progress', { current: formatPoints(current), target: formatPoints(next.visits) });
@@ -337,7 +341,7 @@
       '<section class="l26-my-card l26-my-membership"><div class="l26-my-visit-count"><h2>' + text('visits') +
       '</h2><strong data-my-visits>' + formatPoints(result.visits) + '</strong></div>' +
       '<div class="l26-my-next"><h2>' + text('next') + '</h2>' +
-      benefitProgress(result.next_benefit, result.visits) + link('l26_benefits', 'benefits') + '</div></section>' +
+      benefitProgress(result.next_benefit, result.visits, result.vip_only) + link('l26_benefits', 'benefits') + '</div></section>' +
       '<section class="l26-my-card l26-my-points"><h2>' + text('points') +
       '</h2><strong>' + formatPoints(result.points) + '</strong></section>' +
       '<div class="l26-my-awards"><h3>' + text('badges') + '</h3>' +
@@ -360,6 +364,8 @@
     switch (item.status) {
       case 'available':
         return available ? button('request', 'data-my-redeem="' + L.esc(item.key) + '"', true) : '';
+      case 'vip_only':
+        return '<p>' + text('vipOnlyCard') + '</p>';
       case 'locked':
         return '<p>' + text('qualify', { target: formatPoints(item.visits) }) + '</p>';
       case 'requested':
