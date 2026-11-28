@@ -131,6 +131,7 @@
     panel.addEventListener('touchcancel', end);
   }
   var L = window.Lounge = {
+    membershipTier: value => ['MEMBER', 'VIP', 'VVIP'].includes(value) ? value : '',
     me: null, lang: lang,
     setToken: function (t) {
       if (!t || session !== t) save('gl_preview', '');

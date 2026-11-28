@@ -440,13 +440,17 @@
       canvas.className = 'l26-home-qr';
       canvas.setAttribute('role', 'img');
       canvas.setAttribute('aria-label', L.t('l26Home.entry_qr'));
-      const expire = () => { canvas.remove(); status.textContent = L.t('l26Home.expired'); };
+      const tier = document.createElement('strong');
+      tier.dataset.entryTier = '';
+      tier.textContent = L.membershipTier(response.membership_tier);
+      const expire = () => { canvas.remove(); tier.remove(); status.textContent = L.t('l26Home.expired'); };
       if (!Number.isFinite(response.expires_at)) throw new Error('expires_at');
       const serverNow = Number.isFinite(response.server_now) ? response.server_now : serverAtStart;
       const remaining = response.expires_at - serverNow - (performance.now() - started);
       if (remaining <= 0) return expire();
       drawQr(canvas, make, response.qr);
       status.textContent = L.t('l26Home.qrHelp');
+      if (tier.textContent) panel.append(tier);
       panel.append(canvas);
       state.qrTimer = setTimeout(expire, remaining);
     } catch {

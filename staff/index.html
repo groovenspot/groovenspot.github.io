@@ -2710,6 +2710,10 @@ html:where([data-theme="light"]) .lounge-report-badge { color: var(--card); }
 .lounge-counts strong { display: block; font-size: 26px; }
 .lounge-cards { display: grid; gap: 10px; margin-top: 12px; }
 .lounge-member-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.lounge-tier-form { display: grid; gap: 8px; margin-top: 12px; }
+.lounge-tier-form input, .lounge-tier-form select { width: 100%; }
+.lounge-tier-form .btn { justify-self: start; }
+.lounge-entry-result [data-entry-tier] { margin-top: 6px; }
 .lounge-member-vip { background: #ffd66b; color: #2d1b00; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 800; }
 .lounge-cards article img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; float: right; margin-left: 8px; }
 .lounge-cards article p { white-space: pre-wrap; }
@@ -8760,6 +8764,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       stage_snapshot: '서버에서 전체 스위치 값을 읽은 뒤 저장할 수 있어요. / Saving requires the complete switch settings from the server.',
       stage_save_unavailable: '서버에서 스위치 저장을 아직 지원하지 않아요. / Switch saving is not available on the server yet.',
       stage_ready: '운영 스위치를 켜려면 준비 점검을 통과해야 해요. / Pass the readiness check before enabling operational switches.',
+      reason: '변경 사유를 입력해 주세요. / Enter a reason for the change.',
+      conflict: '다른 요청에서 변경됐어요. 다시 검색해 주세요. / This changed in another request. Search again.',
       recovery_confirm: '선택한 손님의 본인을 확인해 주세요. / Confirm the selected guest’s identity.',
       points: '0~1,000 사이의 정수 포인트를 입력해 주세요. / Enter whole points from 0 to 1,000.',
       blocked: '차단으로 이 작업을 할 수 없어요. / A block prevents this action.',
@@ -8811,7 +8817,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     const s = state.s, admin = s.admin, ops = s.team === '운영팀', guard = s.team === '경호팀' || state.data?.guard;
     const md = ['클로버', '아룬', '고트'].includes(s.team);
     return { dj: admin || s.team === 'DJ팀', crowd: admin || ops, line: admin || guard,
-      checkin: admin || ops || guard, manage: admin || ops, vote: admin || s.role === '팀장', sales: admin || ops || md, md };
+      checkin: admin || ops || guard, manage: admin || ops, tiers: admin || s.role === '팀장', vote: admin || s.role === '팀장', sales: admin || ops || md, md };
   }
   function loungeButton(label, attrs = '', hot = false) {
     return '<button class="btn' + (hot ? ' btn-hot' : '') + '" ' + attrs + '>' + label + '</button>';
@@ -8822,6 +8828,13 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     entryConfigAt = Date.now();
     entryConfigPending = loungeRequest('config').then(result => result.open || {}, () => ({})).then(config => {
       entryConfig = config;
+      const menu = document.querySelector('.lounge-menu');
+      const tierMenu = menu?.querySelector('[data-tier-management]');
+      if (config.l26_vip_tier !== true) tierMenu?.remove();
+      else if (menu && !tierMenu && state.s && loungeRoles().tiers && !loungeRoles().manage) {
+        menu.insertAdjacentHTML('beforeend', loungeButton(opIco('note') + ' 손님 라운지 관리 / Manage Lounge', 'type="button" data-lounge="manage" data-tier-management'));
+        menu.querySelector('[data-tier-management]').onclick = loungeManage;
+      }
       document.querySelectorAll('[data-lounge="entry"]').forEach(button => { button.hidden = config.l26_entry !== true; });
       document.querySelectorAll('[data-lounge="checkin"]').forEach(button => { button.hidden = config.l26_entry === true; });
       document.querySelectorAll('[data-entry-metrics]').forEach(button => { button.hidden = config.l26_metrics !== true; });
@@ -8845,15 +8858,16 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     links.push(['returnScore', '재접속 기여 점수 / Activation score', 'chart']);
     if (state.s.team === 'DJ팀') links.push(['djReview', GrooveDjReview.label('mine'), 'chart']);
     if (roles.dj || roles.crowd || roles.line) links.push(['tonight', '오늘 밤 입력 / Tonight setup', 'clock']);
-    if (roles.manage) links.push(['manage', '손님 라운지 관리 / Manage Lounge', 'note']);
-    else if (roles.vote) links.push(['vote', '투표 만들기 / Create vote', 'note']);
+    if (roles.manage || (roles.tiers && entryConfig?.l26_vip_tier === true)) links.push(['manage', '손님 라운지 관리 / Manage Lounge', 'note']);
+    if (!roles.manage && roles.vote) links.push(['vote', '투표 만들기 / Create vote', 'note']);
     if (roles.sales) links.push(['sales', '라운지 손님 요청 / Lounge guest requests', 'users']);
     if (loungeLinkLead()) links.push(['linked', '라운지 연결 현황 / Lounge link status', 'chart']);
     if (loungeVice()) links.push(['partners', '제휴 가게 통계 / Partner venue stats', 'chart']);
     links.push(['guide', '라운지 1분 안내 / Lounge guide', 'info']);
     return loungeLinkBand() + '<div class="lounge-menu">' + links.map(([page, label, icon]) =>
-      loungeButton(opIco(icon) + ' ' + label + (page === 'manage' ? loungeReportBadge() : ''),
+      loungeButton(opIco(icon) + ' ' + label + (page === 'manage' && roles.manage ? loungeReportBadge() : ''),
         'type="button" data-lounge="' + page + '"' + (page === 'djReview' ? ' data-dj-review-nav' : '') +
+        (page === 'manage' && !roles.manage ? ' data-tier-management' : '') +
         ((page === 'entry' && entryConfig?.l26_entry !== true) || (page === 'checkin' && entryConfig?.l26_entry === true) ||
           (page === 'returnBenefits' && !Object.hasOwn(entryConfig || {}, 'l26_return')) ||
           (page === 'returnScore' && entryConfig?.l26_staff_score !== true) ||
@@ -9131,6 +9145,12 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         if (!result.ok) throw new Error('server');
         attempt = null;
         scanResult('success', '입장 인증 완료', 'Entry verified');
+        if (LOUNGE_TIERS.includes(result.membership_tier)) {
+          const tier = document.createElement('strong');
+          tier.dataset.entryTier = '';
+          tier.textContent = result.membership_tier;
+          msg.append(tier);
+        }
       } catch (error) {
         if (!live()) return;
         const transient = ['busy', 'net', 'server'].includes(error.message) || error instanceof TypeError;
@@ -9508,6 +9528,61 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     };
     return (labels[language] || labels.en)[Number(vip)];
   }
+  const LOUNGE_TIERS = ['MEMBER', 'VIP', 'VVIP'];
+  function loungeTierForm(article, member, session) {
+    const form = article.querySelector('[data-tier-form]');
+    if (!form) return;
+    const current = form.querySelector('[data-current-tier]');
+    const selector = form.elements.tier;
+    const reason = form.elements.reason;
+    const save = form.querySelector('button');
+    const paint = () => {
+      current.textContent = member.membership_tier;
+      selector.value = member.membership_tier;
+      save.disabled = true;
+    };
+    paint();
+    form.oninput = () => { save.disabled = selector.value === member.membership_tier || !reason.value.trim(); };
+    let attempt;
+    loungeSubmit(form, async data => {
+      const tier = data.get('tier');
+      const why = data.get('reason').trim();
+      if (!why) throw new Error('reason');
+      if (!LOUNGE_TIERS.includes(tier) || tier === member.membership_tier) throw new Error('no_change');
+      if (!window.confirm(member.nick + ' · ' + member.membership_tier + ' → ' + tier +
+          '\n등급을 변경할까요? / Change this membership tier?')) return null;
+      if (attempt?.tier !== tier || attempt?.reason !== why || attempt?.revision !== member.revision) {
+        attempt = { mid: member.id, tier, reason: why, revision: member.revision, request_id: newRid() };
+      }
+      try {
+        return await loungeStaff(session, 'l26_vip_tier_set', attempt);
+      } catch (err) {
+        if (!['forbidden', 'auth', 'closed'].includes(err.message)) throw err;
+        form.closest('.lounge-screen').querySelector(':scope > .lounge-msg').textContent = loungeError(err);
+        form.remove();
+        return null;
+      }
+    }, (result, msg) => {
+      if (!result) return;
+      member.membership_tier = result.membership_tier;
+      member.revision = result.revision;
+      attempt = null;
+      reason.value = '';
+      paint();
+      const chip = article.querySelector('[data-member-vip]');
+      if (chip) chip.hidden = member.membership_tier === 'MEMBER';
+      msg.textContent = LOUNGE_SAVED;
+    });
+  }
+  function loungeTierFields(member) {
+    if (!LOUNGE_TIERS.includes(member.membership_tier)) return '';
+    return '<form data-tier-form class="lounge-tier-form">' +
+      '<div>현재 등급 / Current tier · <strong data-current-tier></strong></div>' +
+      '<label>새 등급 / New tier <select name="tier">' + LOUNGE_TIERS.map(tier => '<option>' + tier + '</option>').join('') + '</select></label>' +
+      '<label>변경 사유 / Reason <input name="reason" maxlength="500" required autocomplete="off"></label>' +
+      loungeButton('등급 변경 / Change tier', 'type="submit" disabled', true) +
+      '<p class="msg lounge-msg" role="status"></p></form>';
+  }
   function loungeMemberActions(article, member, session) {
     const form = article.querySelector('[data-member-actions]');
     if (!form) return;
@@ -9548,7 +9623,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       msg.textContent = LOUNGE_SAVED;
     });
   }
-  function loungeMemberSearch(panel, session, select, nicknameOnly = false) {
+  function loungeMemberSearch(panel, session, select, nicknameOnly = false, tiersOnly = false) {
     panel.innerHTML = '<form><label>' + (nicknameOnly ? '닉네임 / Nickname' : '닉네임 또는 전화번호 뒤 4자리 / Nickname or last 4 digits') +
       '<input name="q" maxlength="100" required autocomplete="off"></label>' +
       loungeButton('찾기 / Search', 'type="submit"', true) + '</form><div class="lounge-cards"></div>';
@@ -9556,15 +9631,24 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     loungeSubmit(panel.querySelector('form'), async data => {
       const q = data.get('q').trim();
       if (nicknameOnly && !q) throw new Error('text');
-      const result = await loungeRequest('adm_members', { q }, session);
+      if (tiersOnly) return loungeStaff(session, 'l26_vip_tier_search', { q });
+      const [result, allowed] = await Promise.all([
+        loungeRequest('adm_members', { q }, session),
+        !select && q && entryConfig?.l26_vip_tier === true && loungeRoles().tiers
+          ? loungeStaff(session, 'l26_vip_tier_search', { q }).catch(() => null) : null
+      ]);
+      if (allowed?.members) {
+        const tiers = new Map(allowed.members.map(m => [m.id, m]));
+        for (const m of result.members) Object.assign(m, tiers.get(m.id));
+      }
       if (nicknameOnly) result.members = result.members.filter(m => m.nick.toLowerCase().includes(q.toLowerCase()));
       return result;
     },
       ({ members }) => {
         list.innerHTML = members.length ? members.map((m, i) => '<article><strong>' + esc(m.nick) + '</strong>' +
-          (select ? '' : ' <span data-member-vip class="lounge-member-vip" hidden>VIP</span>') +
+          (select || tiersOnly ? '' : ' <span data-member-vip class="lounge-member-vip" hidden>VIP</span>') +
           '<div>…' + esc(m.phone4) + ' · 가입 / Joined ' + esc(loungeDate(m.joined)) + '</div>' +
-          (select ? loungeButton('이 회원 선택 / Select member', 'type="button" data-member="' + i + '"') :
+          (tiersOnly ? '' : select ? loungeButton('이 회원 선택 / Select member', 'type="button" data-member="' + i + '"') :
             '<div>담당 / Staff ' + esc(m.staff_name || '—') + ' · ' + loungeCount(m.points) + 'P · ' +
             '<span data-member-status>' + esc(({ ok: '이용 중 / Active', suspended: '정지 / Suspended', banned: '영구 정지 / Banned' })[m.status] || '—') + '</span>' +
             '</div><small>회원 ID / Member ID · ' + esc(m.id) + '</small>' +
@@ -9572,11 +9656,15 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
             '<form data-member-actions class="lounge-member-actions">' +
             ['warn', 'suspend7', 'ban'].map(act => loungeButton(LOUNGE_MOD[act], 'type="submit" name="act" value="' + act + '"')).join('') +
             (loungeChatBan(m) ? loungeButton('채팅 정지 풀기 / Lift chat suspension', 'type="submit" name="act" value="chatlift"') : '') +
-            (state.s?.admin && m.tag?.kind !== 'staff' ? loungeButton(loungeMemberVipLabel(m.tag?.kind === 'vip'),
+            (state.s?.admin && entryConfig?.l26_vip_tier !== true && m.tag?.kind !== 'staff' ? loungeButton(loungeMemberVipLabel(m.tag?.kind === 'vip'),
               'type="submit" name="vip" value="1"') : '') + '</form>') +
+          (!select ? loungeTierFields(m) : '') +
           '</article>').join('') : '<p class="note">찾은 회원이 없어요. / No members found.</p>';
         list.querySelectorAll('[data-member]').forEach(b => { b.onclick = () => select(members[+b.dataset.member]); });
-        if (!select) list.querySelectorAll('article').forEach((article, i) => loungeMemberActions(article, members[i], session));
+        if (!select) list.querySelectorAll('article').forEach((article, i) => {
+          loungeMemberActions(article, members[i], session);
+          loungeTierForm(article, members[i], session);
+        });
       });
   }
   const loungePendingLinks = new Map();
@@ -11040,6 +11128,9 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       if (roles.vote && initial === 'vote') {
         const root = loungeSheet('투표 만들기 / Create vote', '<div class="lounge-body"></div>');
         loungePublish(root.querySelector('.lounge-body'), 'vote', session);
+      } else if (roles.tiers && entryConfig?.l26_vip_tier === true) {
+        const root = loungeSheet('손님 라운지 관리 / Manage Lounge', '<div class="lounge-body"><h3>회원 검색 / Member search</h3><div data-tier-search></div></div>');
+        loungeMemberSearch(root.querySelector('[data-tier-search]'), session, null, false, true);
       }
       return;
     }
@@ -11244,7 +11335,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       vote: () => loungeManage('vote'), sales: loungeSales, linked: loungeLinkStatus, partners: loungePartnerSheet, guide: loungeGuide };
     area.querySelectorAll('[data-lounge]').forEach(b => { b.onclick = screens[b.dataset.lounge]; });
     if (area.querySelector('[data-lounge-band]')) loungeLinkLoad().catch(() => {});   // 연결 띠: 내가 미연결일 때만 (실패하면 조용히 숨김)
-    if (area.querySelector('[data-lounge=manage]')) {
+    if (area.querySelector('[data-lounge=manage]:not([data-tier-management])')) {
       loungePaintReportBadges();
       loungeRefreshReportBadges();
     }
