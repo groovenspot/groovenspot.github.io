@@ -1,0 +1,146 @@
+[data-l26-keep-card]:empty {
+  display: none;
+}
+
+.l26-my > [data-l26-keep-card] {
+  margin-block: 12px;
+}
+
+[data-profile-root] > [data-l26-keep-card] {
+  margin: 12px 16px 0;
+}
+
+.l26-keep-card,
+.l26-keep-box {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 16px;
+  min-width: 0;
+}
+
+.l26-keep-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 68px;
+  color: var(--txt);
+  text-decoration: none;
+}
+
+.l26-keep-card svg {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.l26-keep-summary {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: .875rem;
+}
+
+.l26-keep-detail {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 620px);
+  margin-inline: auto;
+  padding: 12px 16px 20px;
+}
+
+.l26-keep-box {
+  display: grid;
+  gap: 12px;
+  overflow-wrap: anywhere;
+}
+
+.l26-keep-box h2,
+.l26-keep-box p,
+.l26-keep-box dl,
+.l26-keep-box dd,
+.l26-keep-list,
+.l26-keep-log {
+  margin: 0;
+}
+
+.l26-keep-box h2 {
+  font-size: 1rem;
+}
+
+.l26-keep-list,
+.l26-keep-log {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+}
+
+.l26-keep-item,
+.l26-keep-log li {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.l26-keep-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.l26-keep-row p,
+.l26-keep-row time,
+.l26-keep-item dt,
+.l26-keep-item dd {
+  font-size: .8rem;
+}
+
+.l26-keep-row time,
+.l26-keep-item dt {
+  color: var(--muted);
+}
+
+.l26-keep-row time {
+  flex: none;
+}
+
+.l26-keep-item dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.l26-keep-item dd {
+  margin-top: 2px;
+}
+
+.l26-keep-dd {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.l26-keep-item .l26-keep-dd {
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: var(--fill);
+  font-size: .8rem;
+}
+
+.l26-keep-dd.is-soon {
+  color: var(--tint-g-txt);
+}
+
+.l26-keep-item .l26-keep-dd.is-soon {
+  background: var(--tint-g);
+}
+
+.l26-keep-box .btn {
+  min-height: 44px;
+  text-align: center;
+}
+
+.l26-keep-status {
+  color: var(--ok);
+}

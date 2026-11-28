@@ -293,6 +293,10 @@
     if (!membership && !followers) return legacy(root);
     const content = frame(root, L.esc(L.t('nav.l26_my')));
     const intro = membershipProfile(content, followers);
+    if (L.open('l26_keep_view')) {
+      intro.insertAdjacentHTML('afterend', '<div data-l26-keep-card></div>');
+      void L.mountKeepCard?.(intro.nextElementSibling);
+    }
     if (followers) void showProfile(root, intro.querySelector('.l26-my-profile-stats'));
     const result = membership && await load(root, () => L.api('l26_return'));
     if (membership && !result) return;

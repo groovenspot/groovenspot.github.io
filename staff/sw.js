@@ -166,7 +166,7 @@ function openStaff(tab, ref) {
     for (var i = 0; i < cs.length; i++) {
       if (new URL(cs[i].url).pathname.indexOf('/staff/') === 0) { cs[i].postMessage({ tab: tab, ref: ref }); return cs[i].focus(); }
     }
-    return self.clients.openWindow('/staff/' + (/^dec:[-\w]{1,40}$/.test(ref) ? '#' + ref : tab ? '#' + tab : ''));
+    return self.clients.openWindow('/staff/' + ((/^dec:[-\w]{1,40}$/.test(ref) || (tab === 'keep' && /^keep:[-\w]{1,100}$/.test(ref))) ? '#' + ref : tab ? '#' + tab : ''));
   });
 }
 function whereAction(ref, action) {
