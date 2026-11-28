@@ -534,6 +534,7 @@
   L.screen('l26_home', {
     title: 'nav.tonight',
     render(root) {
+      if (!L.me && L.open('l26_public_view')) return L.publicView.mount(root);
       if (!L.open('l26_home')) return legacy();
       loadStyles();
       root.className = 'l26-screen l26-home';

@@ -43,7 +43,7 @@ const LoungeScreenUI = (() => {
     try {
       const parsed = new URL(value, location.href);
       if (parsed.protocol === 'https:' || (parsed.protocol === 'http:' &&
-          ['localhost', '127.0.0.1'].includes(parsed.hostname))) return parsed.href;
+          ['localhost', '127.0.0.1'].includes(parsed.hostname))) return L.mediaSrc(parsed.href);
     } catch { /* Invalid media URL. */ }
     return '';
   }
