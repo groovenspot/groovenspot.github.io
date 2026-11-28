@@ -340,8 +340,8 @@
       (tier ? '<span class="l26-my-tier">' + tier + '</span>' : '') +
       '<section class="l26-my-card l26-my-membership"><div class="l26-my-visit-count"><h2>' + text('visits') +
       '</h2><strong data-my-visits>' + formatPoints(result.visits) + '</strong></div>' +
-      '<div class="l26-my-next"><h2>' + text('next') + '</h2>' +
-      benefitProgress(result.next_benefit, result.visits, result.vip_only) + link('l26_benefits', 'benefits') + '</div></section>' +
+      (result.vip_only ? '' : '<div class="l26-my-next"><h2>' + text('next') + '</h2>' +   // 방문 혜택은 VIP·VVIP 만 — 일반 회원에게는 안 보임 (2026-11-28)
+      benefitProgress(result.next_benefit, result.visits) + link('l26_benefits', 'benefits') + '</div>') + '</section>' +
       '<section class="l26-my-card l26-my-points"><h2>' + text('points') +
       '</h2><strong>' + formatPoints(result.points) + '</strong></section>' +
       '<div class="l26-my-awards"><h3>' + text('badges') + '</h3>' +
