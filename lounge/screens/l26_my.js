@@ -346,7 +346,7 @@
       visitHistory('verified', 'visits', result.entries, 'empty', result.next_before) +
       (Array.isArray(result.legacy_checkins)
         ? visitHistory('self', 'selfCheckins', result.legacy_checkins, 'noSelfCheckins', result.next_legacy_before) : '') + '</section>' +
-      '<div class="l26-my-links">' + link('me', 'legacy') + (L.open('rewards') ? link('rewards', 'legacyRewards') : '') +
+      '<div class="l26-my-links">' + link('me', 'legacy') + '' +
       link('djs', 'djs') + link('me/settings', 'settings') +
       (L.open('l26_dj_feedback') ? '<a class="btn" href="#/alerts/settings">' + L.esc(L.djReviewLabel('reminder')) + '</a>' : '') + '</div>';
 

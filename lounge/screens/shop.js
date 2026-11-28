@@ -2,7 +2,12 @@
 (() => {
   const L = Lounge, U = LoungeScreenUI, R = LoungeRewardUI;
   const t = U.words('shop', {
-    title: ['굿즈', 'Merch'], store: ['매장에서 받고 결제해요.', 'Pick up and pay at the club.'],
+    title: ['포인트 교환소', 'Points shop'], mine: ['내 포인트', 'My points'], need: ['{n}P', '{n}P'],
+    lack: ['{n}P 더 모으면 교환', '{n}P more to redeem'], swap: ['교환하기', 'Redeem'], photoSoon: ['사진 준비 중', 'Photo coming soon'],
+    confirm: ['{name}을(를) {n}P로 교환할까요?', 'Redeem {name} for {n}P?'], pickup: ['교환하면 매장에서 직원에게 받아요. 48시간 안에 안 받으면 포인트가 돌아와요.', 'Pick it up from staff at the club. Points return if not collected within 48 hours.'],
+    yes: ['교환', 'Redeem'], no: ['취소', 'Cancel'], swapped: ['교환 완료! 매장에서 받아 가세요', 'Redeemed! Pick it up at the club'],
+    myOrders: ['내 교환 내역', 'My redemptions'], howEarn: ['포인트는 출석·미션·놀거리로 모아요', 'Earn points from check-ins, missions and games'],
+    'error.points': ['포인트가 모자라요', 'Not enough points'], 'error.stock': ['품절이에요', 'Sold out'], store: ['매장에서 받고 결제해요.', 'Pick up and pay at the club.'],
     quantity: ['수량', 'Quantity'], stock: ['재고 {n}개', '{n} in stock'], soldOut: ['품절', 'Sold out'],
     subtotal: ['상품 합계', 'Merch total'], due: ['매장에서 낼 금액', 'Amount due at the club'],
     discount: ['쓸 포인트', 'Points to use'], discountHelp: ['1P는 1원이에요. 상품 금액의 20%까지 할인받을 수 있어요.', '1P is worth ₩1. Use points for up to 20% off merchandise.'],
@@ -47,7 +52,39 @@
       ' <strong>(' + t(row.status) + ')</strong></li>').join('') + '</ul>');
   }
 
+  // 포인트 교환소 (2026-11-28): sku 'pt-' 상품을 포인트로만 교환 · 매장에서 수령
+  const ICON = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></svg>';
+  function card(good, mine) {
+    const key = good.photo || '';
+    const src = /^p\/staff:[\w:-]+\/[\w-]+\.(?:webp|jpg)$/.test(key) ? L.img(key).replace(/%3A/gi, ':') : '';
+    const lack = Math.max(0, good.price - mine);
+    return '<article class="pshop-card"><div class="pshop-photo">' + (src ? '<img src="' + L.esc(src) + '" alt="" loading="lazy">' : ICON + '<small>' + t('photoSoon') + '</small>') + '</div>' +
+      '<h2>' + L.esc(good.name) + '</h2><strong>' + R.amount(good.price) + 'P</strong>' +
+      (!good.stock ? '<button type="button" class="btn" disabled>' + t('soldOut') + '</button>'
+        : !L.me ? '' : lack ? '<p class="pshop-lack">' + t('lack', { n: R.amount(lack) }) + '</p><div class="pshop-bar"><i style="width:' + Math.min(100, mine / good.price * 100) + '%"></i></div>'
+        : '<button type="button" class="btn btn-hot" data-swap="' + L.esc(good.sku) + '">' + t('swap') + '</button>') + '</article>';
+  }
+  function swaps(rows) {
+    rows = rows.filter(row => row.pay === 'points');
+    if (!rows.length) return '';
+    return R.panel('<h2>' + t('myOrders') + '</h2><ul class="pshop-hist">' + rows.map(row => '<li><span>' +
+      row.items.map(item => L.esc(item.name)).join(', ') + ' · ' + R.amount(row.total) + 'P</span><strong>' + t(row.status) + '</strong></li>').join('') + '</ul>');
+  }
+  function style() {
+    if (document.getElementById('pshop-css')) return;
+    const el = document.createElement('style'); el.id = 'pshop-css';
+    el.textContent = '.pshop-me{display:flex;justify-content:space-between;align-items:center;padding:16px;border-radius:18px;margin-bottom:14px;background:linear-gradient(120deg,#ff7a1a,#ff3d6e);color:#fff}' +
+      '.pshop-me span{font-weight:700;opacity:.9}.pshop-me strong{font-size:1.75rem;font-weight:900}.pshop-earn{font-size:.8125rem;color:var(--muted);margin:-6px 0 14px}' +
+      '.pshop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pshop-card{border:1px solid var(--line);border-radius:16px;padding:10px;background:var(--card);display:flex;flex-direction:column;gap:6px}' +
+      '.pshop-photo{aspect-ratio:1;border-radius:12px;background:var(--fill);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);overflow:hidden}.pshop-photo img{width:100%;height:100%;object-fit:cover}.pshop-photo small{font-size:.75rem}' +
+      '.pshop-card h2{font-size:.9375rem;margin:2px 0 0;line-height:1.3}.pshop-card strong{color:var(--g);font-size:1.125rem}.pshop-card .btn{width:100%;min-height:44px;margin-top:auto}' +
+      '.pshop-lack{font-size:.75rem;color:var(--muted);margin:auto 0 0}.pshop-bar{height:6px;border-radius:3px;background:var(--fill-2);overflow:hidden}.pshop-bar i{display:block;height:100%;background:var(--g)}' +
+      '.pshop-hist{list-style:none;padding:0;margin:0;display:grid;gap:8px}.pshop-hist li{display:flex;justify-content:space-between;gap:8px;font-size:.875rem}';
+    document.head.append(el);
+  }
+
   async function render(root) {
+    style();
     const view = U.mount(root, R.heading(t('title'), '#/play'));
     const config = await L.api('config');
     if (!view.isConnected) return;
@@ -63,41 +100,28 @@
       view.innerHTML = U.status(catalog.error === 'closed' ? 'soon' : 'error');
       return;
     }
-    const goods = catalog.goods;
-    const listing = goods.map(product).join('') || U.status('empty');
-    const checkout = goods.some(good => good.stock > 0) ? R.panel('<p>' + t('store') +
-      '</p><dl style="display:grid;gap:8px">' + triplet('subtotal', 'total') + triplet('due', 'due') +
-      '</dl><label>' + t('discount') + ' <input name="points" type="number" min="0" max="0" value="0" required style="' +
-      R.inputStyle + '"></label><p class="muted">' + t('discountHelp') + '</p><p class="muted">' + t('orderWindow') +
-      '</p>' + R.message() + R.submit(t('order'))) : '';
-    view.innerHTML = L.me ? '<form data-order>' + listing + checkout + '</form>' +
-      history(info?.orders || []) + R.bookings(info?.bookings || []) + '<div data-booking></div>'
-      : '<p>' + t('store') + '</p>' + listing + '<p>' + t('login') + '</p>' +
-        U.button(L.esc(L.t('core.login')), 'data-login', true);
-    if (!L.me) {
-      view.querySelector('[data-login]').onclick = L.needLogin;
-      return;
-    }
-    const refresh = () => render(root);
-    R.bookingForm(view.querySelector('[data-booking]'), { store: true, done: refresh });
-    const form = view.querySelector('[data-order]');
-    if (!checkout) return;
-    const use = form.elements.points;
-    const button = form.querySelector('[type=submit]');
-    function summarize() {
-      const total = goods.reduce((sum, good, i) => sum + good.price * (Number(form.elements['n' + i]?.value) || 0), 0);
-      use.max = Math.min(Math.floor(total / 5), points?.points ?? 0);
-      if (Number(use.value) > Number(use.max)) use.value = use.max;
-      button.disabled = total === 0;
-      form.querySelector('[data-total]').textContent = money(total);
-      form.querySelector('[data-due]').textContent = money(total - (Number(use.value) || 0));
-    }
-    form.oninput = summarize;
-    summarize();
-    R.wire(form, 'order', data => ({
-      items: goods.map((good, i) => ({ sku: good.sku, n: Number(data.get('n' + i)) })).filter(item => item.n > 0),
-      points: Number(data.get('points')), pay: 'store'
-    }), refresh, true);
+    const goods = catalog.goods.filter(good => /^pt-/.test(good.sku)).sort((a, b) => a.price - b.price);
+    const mine = points?.points ?? 0;
+    view.innerHTML = (L.me ? '<div class="pshop-me"><span>' + t('mine') + '</span><strong>' + R.amount(mine) + 'P</strong></div>' : '') +
+      '<p class="pshop-earn">' + t('howEarn') + ' · ' + t('pickup') + '</p>' +
+      '<div class="pshop-grid">' + (goods.map(good => card(good, mine)).join('') || U.status('empty')) + '</div>' +
+      (L.me ? swaps(info?.orders || []) : '<p>' + t('login') + '</p>' + U.button(L.esc(L.t('core.login')), 'data-login', true));
+    if (!L.me) { view.querySelector('[data-login]').onclick = L.needLogin; return; }
+    view.onclick = event => {
+      const b = event.target.closest('[data-swap]'); if (!b) return;
+      const good = goods.find(g => g.sku === b.dataset.swap); if (!good) return;
+      const panel = L.sheet('<h2>' + t('confirm', { name: good.name, n: R.amount(good.price) }) + '</h2><p class="muted">' + t('pickup') + '</p>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"><button type="button" class="btn" data-no>' + t('no') + '</button><button type="button" class="btn btn-hot" data-yes>' + t('yes') + '</button></div>');
+      panel.querySelector('[data-no]').onclick = L.closeSheet;
+      const request = 'px' + crypto.getRandomValues(new Uint32Array(3)).join('').slice(0, 20);
+      panel.querySelector('[data-yes]').onclick = async e => {
+        e.currentTarget.disabled = true;
+        const r = await L.api('order', { pay: 'points', items: [{ sku: good.sku, n: 1 }], request });
+        L.closeSheet();
+        if (r.error) L.toast(L.t('shop.error.' + r.error) !== 'shop.error.' + r.error ? L.t('shop.error.' + r.error) : L.t('core.unavailable'));
+        else { L.toast(L.t('shop.swapped')); render(root); }
+      };
+    };
   }
 
   L.screen('shop', { nav: 'play', title: 'shop.title', render });

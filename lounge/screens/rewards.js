@@ -14,7 +14,7 @@ const LoungeRewardUI = (() => {
     checkins: ['매장 체크인', 'Venue check-ins'], votes: ['투표', 'Votes'], attends: ['출석', 'Daily check-ins'],
     season: ['시즌 레벨 {n}', 'Season level {n}'], next: ['{n}P 모으면 다음 레벨', 'Reach {n}P for the next level'],
     birthday: ['생일 주간', 'Birthday week'], month: ['월', 'Month'], day: ['일', 'Day'], save: ['저장', 'Save'],
-    birthdayHelp: ['생일 주간에 체크인하면 보너스 포인트를 받고, 전광판 축하를 한 번 무료로 예약할 수 있어요.', 'Check in during your birthday week for bonus points and book one free birthday message.'],
+    birthdayHelp: ['생일 주간에 체크인하면 보너스 포인트를 받아요.', 'Check in during your birthday week for bonus points.'],
     birthdayLocked: ['생일은 다음 해에 바꿀 수 있어요.', 'You can change your birthday next year.'],
     birthdayAfterWeek: ['이번 생일 주가 끝나면 생일을 바꿀 수 있어요.', 'You can change your birthday when this birthday week ends.'],
     invite: ['친구 초대', 'Invite a friend'], inviteButton: ['내 초대 코드 보기', 'Show my invite code'],
@@ -330,13 +330,12 @@ const LoungeRewardUI = (() => {
           '</ul><strong>' + t(state.mission.paid ? 'missionDone' : 'missionPoints', { n: state.mission.points }) + '</strong>') +
         panel('<h2>' + t('season', { n: state.season.level }) + '</h2><p>' + amount(state.season.points) + 'P' +
           (state.season.next === null ? '' : ' · ' + t('next', { n: amount(state.season.next) })) + '</p>') +
-        bookings(state.bookings) + '<div data-booking></div>' + birthdayForm(state.birthday) +
+        birthdayForm(state.birthday) +   // 전광판 예약은 2026-11-28 대표 결정으로 뺌
+
         panel('<h2>' + t('invite') + '</h2><p class="muted">' + t('inviteHelp') + '</p>' +
           U.button(t('inviteButton'), 'data-invite') + '<p data-code role="status"></p>') +
         panel('<h2>' + t('recap') + '</h2>' + U.button(t('makeCard'), 'data-make-card') + '<div data-recap></div>');
 
-      const refresh = () => render(root);
-      bookingForm(view.querySelector('[data-booking]'), { birthday: state.birthday?.free, vouchers: state.vouchers, done: refresh });
       const birthday = view.querySelector('[data-birthday]');
       if (birthday) wire(birthday, 'birthday_set',
         data => ({ month: Number(data.get('month')), day: Number(data.get('day')) }),

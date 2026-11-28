@@ -79,7 +79,6 @@
       (L.open('follow2') ? row('userPlus', text('follows.requests'), '#/requests') : '') +
       (L.open('profile2') ? row('tagged', text('user4.tagRequests'), '#/tags') : '') +     // 나를 태그한 글 승인 (화면은 글쓰기 작업창 D)
       row('block', t('blocks'), '#/blocks') +
-      (L.open('rewards') ? row('heart', t('rewards'), '#/rewards') : '') +
       (L.open('l26_entry') ? act('grid', t('entry'), 'data-entry-open') : '') +
       (user && user.private !== true && L.profileQr ? act('grid', text('user4.qr'), 'data-menu-qr') : '') +
       (L.canInstall() ? act('home', text('core.install'), 'data-menu-install') : '') +

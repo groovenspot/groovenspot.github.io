@@ -54,7 +54,6 @@
     shorts: ['shorts.title'],
     challenge: ['challenge.title'],
     rank: ['rank.title'],
-    rewards: ['rewards.title'],
     shop: ['shop.title'],
     partners: ['pt.title'],
     djs: ['dj.list']
