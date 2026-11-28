@@ -8774,6 +8774,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       key: '서버에서 이 설정을 아직 받지 않아요. / This setting is not yet supported.',
       missing: '대상을 찾을 수 없어요. / This item could not be found.',
       entry_closed: '영업 시간에만 입장을 인증할 수 있어요. / Entry verification is available during business hours.',
+      signup_unavailable: '셀프 가입이 준비되면 초대 링크를 만들 수 있어요. / Invite links are available when self-signup opens.',
+      id_check_required: '경호팀이 실제 신분증으로 본인과 만 19세 이상 여부를 확인한 뒤 스캔해 주세요. / A door guard must check the guest’s ID and age before scanning.',
       entry_qr: 'QR을 쓸 수 없어요. 손님에게 새 QR을 받아 주세요. / Ask the guest for a new QR.',
       entry_duplicate: '이번 영업일에 이미 입장을 인증했어요. / Entry is already verified for this business day.',
       qr_closed: '영업 시간에만 가입할 수 있어요. / Sign-up opens during club hours.',
@@ -8822,6 +8824,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     entryConfigAt = Date.now();
     entryConfigPending = loungeRequest('config').then(result => result.open || {}, () => ({})).then(config => {
       entryConfig = config;
+      document.querySelectorAll('[data-lounge="inviteLink"]').forEach(button => { button.hidden = config.l26_open_signup !== true; });
       document.querySelectorAll('[data-lounge="entry"]').forEach(button => { button.hidden = config.l26_entry !== true; });
       document.querySelectorAll('[data-lounge="checkin"]').forEach(button => { button.hidden = config.l26_entry === true; });
       document.querySelectorAll('[data-entry-metrics]').forEach(button => { button.hidden = config.l26_metrics !== true; });
@@ -8838,7 +8841,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
   function loungeMenu() {
     if (!state.s) return '';
     const roles = loungeRoles();
-    const links = [['join', '손님 가입 QR / Guest sign-up QR', 'users']];
+    const links = [['join', '손님 가입 QR / Guest sign-up QR', 'users'],
+      ['inviteLink', '손님 가입 링크 / Guest invite link', 'users']];
     if (roles.checkin) links.push(['checkin', '입구 체크인 QR / Check-in QR', 'shield'],
       ['entry', '입장 QR 스캔 / Scan entry QR', 'shield'],
       ['returnBenefits', '방문 혜택 처리 / Visit benefits', 'note']);
@@ -8854,7 +8858,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     return loungeLinkBand() + '<div class="lounge-menu">' + links.map(([page, label, icon]) =>
       loungeButton(opIco(icon) + ' ' + label + (page === 'manage' ? loungeReportBadge() : ''),
         'type="button" data-lounge="' + page + '"' + (page === 'djReview' ? ' data-dj-review-nav' : '') +
-        ((page === 'entry' && entryConfig?.l26_entry !== true) || (page === 'checkin' && entryConfig?.l26_entry === true) ||
+        ((page === 'inviteLink' && entryConfig?.l26_open_signup !== true) ||
+          (page === 'entry' && entryConfig?.l26_entry !== true) || (page === 'checkin' && entryConfig?.l26_entry === true) ||
           (page === 'returnBenefits' && !Object.hasOwn(entryConfig || {}, 'l26_return')) ||
           (page === 'returnScore' && entryConfig?.l26_staff_score !== true) ||
           (page === 'djReview' && entryConfig?.l26_dj_feedback !== true) ? ' hidden' : ''))).join('') + '</div>';
@@ -9055,11 +9060,54 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     return entryDecoder;
   }
 
+  function loungeStaffInviteLink() {
+    const session = state.s?.token;
+    if (!session || entryConfig?.l26_open_signup !== true) return;
+    const root = loungeSheet('손님 가입 링크 / Guest invite link', '<p class="note">' +
+      '링크는 24시간 뒤 만료돼요. 손님이 새로 가입하면 초대 직원으로 기록돼요. / The link expires in 24 hours and credits you as the inviter for new sign-ups.</p>' +
+      loungeButton('링크 만들기 / Create link', 'type="button" data-invite-create', true) +
+      '<label hidden>초대 링크 / Invite link <input data-invite-url readonly></label>' +
+      loungeButton('링크 복사 / Copy link', 'type="button" data-invite-copy hidden'));
+    const create = root.querySelector('[data-invite-create]');
+    const copy = root.querySelector('[data-invite-copy]');
+    const input = root.querySelector('[data-invite-url]');
+    const status = root.querySelector('[role=status]');
+    const live = () => root.isConnected && state.s?.token === session;
+    create.onclick = async () => {
+      create.disabled = true;
+      copy.hidden = input.parentElement.hidden = true;
+      status.textContent = '';
+      try {
+        const result = await loungeStaff(session, 'l26_staff_invite');
+        if (!live()) return;
+        if (!/^si1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/.test(result.invite)) throw new Error('server');
+        const url = new URL('/lounge/', location.origin);
+        url.hash = '/signup?' + new URLSearchParams({ i: result.invite });
+        input.value = url.href;
+        copy.hidden = input.parentElement.hidden = false;
+      } catch (error) {
+        if (live()) status.textContent = loungeError(error);
+      } finally {
+        create.disabled = false;
+      }
+    };
+    copy.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(input.value);
+        status.textContent = '링크를 복사했어요. / Link copied.';
+      } catch {
+        input.select();
+        status.textContent = '선택한 링크를 복사해 주세요. / Copy the selected link.';
+      }
+    };
+  }
+
   function loungeEntryScanner() {
     const session = state.s?.token;
     if (!session || !loungeRoles().checkin || entryConfig?.l26_entry !== true) return;
     const root = loungeSheet('입장 QR 스캔 / Scan entry QR',
       '<div class="lounge-body"><video playsinline muted hidden aria-label="카메라 / Camera" style="width:100%;max-height:50dvh"></video>' +
+      (loungeRoles().guard ? '<label><input type="checkbox" data-entry-id-check> 실제 신분증으로 본인과 만 19세 이상임을 확인했어요. / I checked the guest’s ID and confirmed they are 19 or older.</label>' : '') +
       loungeButton('카메라 켜기 / Start camera', 'type="button" data-entry-camera', true) +
       '<label>QR 사진 / QR photo <input type="file" accept="image/*" capture="environment" data-entry-photo></label>' +
       loungeButton('같은 요청 다시 보내기 / Retry scan', 'type="button" data-entry-retry hidden') + '</div>');
@@ -9067,6 +9115,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
     msg.classList.add('lounge-entry-result');
     const camera = root.querySelector('[data-entry-camera]'), photo = root.querySelector('[data-entry-photo]');
     const retry = root.querySelector('[data-entry-retry]');
+    const idCheck = root.querySelector('[data-entry-id-check]');
     const frame = document.createElement('canvas'), pen = frame.getContext('2d', { willReadFrequently: true });
     const live = () => root.isConnected && state.s?.token === session;
     let stream, ticker, attempt, pending, reading = false, cameraRun = 0;
@@ -9161,7 +9210,8 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
         return;
       }
       stopCamera();
-      attempt = { qr, request_id: newRid() };
+      attempt = { qr, request_id: newRid(), ...(idCheck?.checked && { id_checked: true }) };
+      if (idCheck) idCheck.checked = false;
       submit();
     }
 
@@ -11239,7 +11289,7 @@ html:where([data-theme="light"]) .lounge-badge.lb-ops { box-shadow: inset 0 0 0 
       '<li>같은 손님에게 반복 메시지</li><li>술 강요 문구</li></ul></section></div>');
   }
   function bindLoungeMenu(area) {
-    const screens = { join: () => loungeQr(false), checkin: () => loungeQr(true), entry: loungeEntryScanner,
+    const screens = { join: () => loungeQr(false), inviteLink: loungeStaffInviteLink, checkin: () => loungeQr(true), entry: loungeEntryScanner,
       returnBenefits: loungeReturnBenefits, returnScore: loungeReturnScore, djReview: loungeDjMine, tonight: loungeTonight, manage: loungeManage,
       vote: () => loungeManage('vote'), sales: loungeSales, linked: loungeLinkStatus, partners: loungePartnerSheet, guide: loungeGuide };
     area.querySelectorAll('[data-lounge]').forEach(b => { b.onclick = screens[b.dataset.lounge]; });
