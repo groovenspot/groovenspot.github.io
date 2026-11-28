@@ -32,8 +32,8 @@
     dj: ['DJ 프로필 보기', 'View DJ profile', 'DJプロフィールを見る', '查看 DJ 资料'],
     survey: ['지난밤 평가하기', 'Rate last night', '昨夜を評価する', '评价昨晚'],
     radio: ['라디오 듣기', 'Listen to the radio', 'ラジオを聴く', '收听电台'],
-    duel: ['손님 vs 직원 대결', 'Guest vs Staff', 'ゲスト vs スタッフ', '顾客 vs 员工'],
-    duelKicker: ['코드로 연결해서 같이 대결', 'Connect with a code and play together', 'コードでつないで対戦', '用代码连接一起对战']
+    duel: ['같이 대결', 'Play together', 'みんなで対戦', '一起对战'],
+    duelKicker: ['코드로 연결 · 친구·직원 누구와도', 'Connect with a code — friends or staff', 'コードでつないで友達・スタッフと', '用代码连接，和朋友或员工']
   };
 
   L.i18n(Object.fromEntries(['ko', 'en', 'ja', 'zh'].map((lang, index) => [

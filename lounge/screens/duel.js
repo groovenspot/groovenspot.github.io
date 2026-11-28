@@ -2,8 +2,8 @@
 (() => {
   const L = Lounge;
   const W = {
-    title: ['손님 vs 직원 대결', 'Guest vs Staff'],
-    sub: ['방을 만들고 4자리 코드를 알려주거나, 받은 코드를 넣어요. 직원이 1명 이상 있어야 시작돼요.', 'Create a room and share the 4-digit code, or enter one. A staff member must be in the room.'],
+    title: ['같이 대결', 'Play together'],
+    sub: ['방을 만들고 4자리 코드를 알려주거나, 받은 코드를 넣어요. 손님끼리도, 직원과도 할 수 있어요.', 'Create a room and share the 4-digit code, or enter one. Play with friends or staff.'],
     join: ['코드로 들어가기', 'Join with code'], enter: ['들어가기', 'Join'], make: ['방 만들기', 'Create room'],
     upto: ['최대 {n}명', 'Up to {n}'], rec: ['내 전적', 'My record'], recLine: ['{p}전 {w}승', '{p} played · {w} won'],
     code: ['입장 코드', 'Room code'], codeHelp: ['같이 할 사람에게 이 코드를 보여 주세요', 'Show this code to the other players'],
@@ -138,9 +138,9 @@
         '<ul class="duel-pens">' + (me.my_pens || []).map((p, i) => '<li>' + L.esc(p) + '<button type="button" data-del="' + i + '" aria-label="삭제">×</button></li>').join('') + '</ul>' +
         ((me.my_pens || []).length < 2 ? '<form class="duel-penform" data-pen><input maxlength="20" placeholder="' + t('penPh') + '" value="' + L.esc(penDraft) + '"><button class="btn">' + t('add') + '</button></form>' : '') +
         (d.host ? '<div class="duel-switch">' + Object.entries(GAME).map(([k, x]) => '<button type="button" class="btn' + (k === d.g.game ? ' is-on' : '') + '" data-game="' + k + '"' + (d.players.length > x.max ? ' disabled' : '') + '>' + L.esc(x.name) + '</button>').join('') + '</div>' +
-          '<button type="button" class="btn btn-hot duel-start" data-start' + (enough && d.staff_ok ? '' : ' disabled') + '>' + t('start') + '</button>' +
-          (!enough ? '<p class="muted duel-small">' + t('needTwo') + '</p>' : !d.staff_ok ? '<p class="muted duel-small">' + t('needStaff') + '</p>' : '')
-          : '<p class="muted duel-wait">' + t(d.staff_ok ? 'waitHost' : 'needStaff') + '</p>') +
+          '<button type="button" class="btn btn-hot duel-start" data-start' + (enough ? '' : ' disabled') + '>' + t('start') + '</button>' +
+          (!enough ? '<p class="muted duel-small">' + t('needTwo') + '</p>' : '')
+          : '<p class="muted duel-wait">' + t('waitHost') + '</p>') +
         '<button type="button" class="btn duel-leave" data-leave>' + t('leave') + '</button>';
     }
 
