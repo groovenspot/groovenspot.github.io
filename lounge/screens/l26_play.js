@@ -31,7 +31,9 @@
     plan_dj: ['다음 방문을 위해 DJ 팔로우하기', 'Follow a DJ for your next visit', '次の来店に向けてDJをフォロー', '为下次到访关注一位 DJ'],
     dj: ['DJ 프로필 보기', 'View DJ profile', 'DJプロフィールを見る', '查看 DJ 资料'],
     survey: ['지난밤 평가하기', 'Rate last night', '昨夜を評価する', '评价昨晚'],
-    radio: ['라디오 듣기', 'Listen to the radio', 'ラジオを聴く', '收听电台']
+    radio: ['라디오 듣기', 'Listen to the radio', 'ラジオを聴く', '收听电台'],
+    duel: ['손님 vs 직원 대결', 'Guest vs Staff', 'ゲスト vs スタッフ', '顾客 vs 员工'],
+    duelKicker: ['코드로 연결해서 같이 대결', 'Connect with a code and play together', 'コードでつないで対戦', '用代码连接一起对战']
   };
 
   L.i18n(Object.fromEntries(['ko', 'en', 'ja', 'zh'].map((lang, index) => [
@@ -149,7 +151,9 @@
 
     root.className = 'l26-screen l26-play';
     root.innerHTML = '<header class="l26-play-head"><h1>' + translated('nav.l26_play') +
-      '</h1></header><div class="l26-play-member" hidden>' +
+      '</h1></header>' + (true ? '<a class="l26-duel-entry" href="#/duel"><span><small>' + L.esc(L.t('l26play.duelKicker')) + '</small><b>' +
+        L.esc(L.t('l26play.duel')) + '</b><em>369 · GROOVE 마블 · NEON MEMORY</em></span>' + L.icon('chevron', { size: 18 }) + '</a>' : '') +
+      '<div class="l26-play-member" hidden>' +
       '<a class="l26-play-points" data-l26-points href="#/me" hidden></a><div class="l26-play-attendance" hidden></div></div>' +
       '<section class="l26-play-mission" aria-labelledby="l26-mission-title"><div class="l26-play-mission-art" aria-hidden="true">' +
       '<svg viewBox="0 0 360 142" fill="none"><g stroke="currentColor" opacity=".45">' +

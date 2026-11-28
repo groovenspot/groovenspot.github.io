@@ -1,5 +1,5 @@
 /* 그루브 라운지 서비스워커 */
-const CACHE = 'groove-lounge-shell-v35';
+const CACHE = 'groove-lounge-shell-v36';
 const API = 'https://groove-lounge-api.groovenspotbusan.workers.dev/';
 const SHELL = [
   '/lounge/', '/lounge/app.css', '/lounge/core.js', '/lounge/ui.js',
@@ -21,7 +21,7 @@ const SHELL = [
   '/lounge/css/l26-keep.css', '/lounge/screens/l26_keep.js',
   '/lounge/css/l26-titles.css', '/lounge/screens/l26_titles.js',
   '/lounge/css/l26-signup.css', '/lounge/screens/l26_kakao.js', '/lounge/assets/kakao-login-ko.png',
-  '/lounge/screens/l26_my.js', '/lounge/screens/l26_play.js',
+  '/lounge/screens/l26_my.js', '/lounge/screens/l26_play.js', '/lounge/screens/duel.js', '/lounge/css/duel.css?v=1',
   '/lounge/i18n/ja.js', '/lounge/i18n/zh.js',
   '/assets/icon.png', '/assets/icon-512.png'
 ];

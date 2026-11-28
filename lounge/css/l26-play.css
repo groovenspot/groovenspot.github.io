@@ -227,3 +227,9 @@ button.l26-play-tile:not(:disabled) { cursor: pointer; }
 
 .l26-play-error { color: var(--l26-play-text); }
 .l26-play :is(button, a):focus-visible { outline-color: var(--l26-play-brand); outline-offset: -3px; }
+/* 손님 vs 직원 대결 입구 (screens/duel.js) */
+.l26-duel-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:16px;border-radius:18px;text-decoration:none;color:#000;background:linear-gradient(120deg,#ffd23d,#ff3d6e 55%,#3dffb0)}
+.l26-duel-entry span{display:grid;gap:2px}
+.l26-duel-entry small{font-size:.75rem;font-weight:700;opacity:.75}
+.l26-duel-entry b{font-size:1.25rem;font-weight:900}
+.l26-duel-entry em{font-style:normal;font-size:.8125rem;font-weight:700}
